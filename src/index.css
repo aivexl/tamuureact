@@ -1,0 +1,223 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   PREMIUM DARK THEME - CSS Variables
+   ============================================ */
+:root {
+  --premium-dark: #0a0a0a;
+  --premium-accent: #bfa181;
+  --premium-accent-light: #d4b491;
+  --premium-accent-dark: #8e7358;
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+body {
+  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+  background-color: var(--premium-dark);
+  color: white;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Font Classes */
+.font-outfit {
+  font-family: 'Outfit', sans-serif;
+}
+
+.font-inter {
+  font-family: 'Inter', sans-serif;
+}
+
+.font-premium {
+  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+}
+
+/* ============================================
+   GLASS MORPHISM
+   ============================================ */
+.glass-panel {
+  background: rgba(15, 15, 15, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ============================================
+   CUSTOM SCROLLBARS
+   ============================================ */
+.premium-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.premium-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.premium-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.premium-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(191, 161, 129, 0);
+  }
+
+  50% {
+    box-shadow: 0 0 30px 5px rgba(191, 161, 129, 0.4);
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(191, 161, 129, 0.1) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+.text-premium-accent {
+  color: var(--premium-accent);
+}
+
+.bg-premium-accent {
+  background-color: var(--premium-accent);
+}
+
+.bg-premium-dark {
+  background-color: var(--premium-dark);
+}
+
+.text-premium-dark {
+  color: var(--premium-dark);
+}
+
+.border-premium-accent {
+  border-color: var(--premium-accent);
+}
+
+/* Selection Styling */
+::selection {
+  background-color: var(--premium-accent);
+  color: var(--premium-dark);
+}
+
+/* Focus Styling - Exclude canvas elements */
+*:focus-visible {
+  outline: 2px solid var(--premium-accent);
+  outline-offset: 2px;
+}
+
+/* Remove focus outline from canvas elements */
+.canvas-element:focus-visible,
+.canvas-element *:focus-visible,
+[data-framer-drag]:focus-visible,
+[data-framer-drag] *:focus-visible {
+  outline: none !important;
+}
+
+/* ============================================
+   FORM INPUTS
+   ============================================ */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-track {
+  background: rgba(255, 255, 255, 0.1);
+  height: 4px;
+  border-radius: 2px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--premium-accent);
+  border-radius: 50%;
+  margin-top: -5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+/* Number Input Hide Arrows */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* ============================================
+   CANVAS ELEMENT STYLES
+   ============================================ */
+.canvas-element-selected {
+  box-shadow: 0 0 0 2px var(--premium-accent), 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================
+   TRANSITIONS
+   ============================================ */
+.transition-premium {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}

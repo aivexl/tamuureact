@@ -1,0 +1,33 @@
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { EditorPage } from './pages/EditorPage';
+import { PreviewPage } from './pages/PreviewPage';
+import { AdminTemplatesPage } from './pages/AdminTemplatesPage';
+import { HomePage } from './pages/HomePage';
+
+const App: React.FC = () => {
+    return (
+        <BrowserRouter>
+            <Routes>
+                {/* Home */}
+                <Route path="/" element={<HomePage />} />
+
+                {/* Editor Routes */}
+                <Route path="/editor" element={<EditorPage />} />
+                <Route path="/editor/:id" element={<EditorPage />} />
+                <Route path="/editor/template/:id" element={<EditorPage isTemplate={true} />} />
+
+                {/* Admin Routes */}
+                <Route path="/admin/templates" element={<AdminTemplatesPage />} />
+
+                {/* Preview Routes */}
+                <Route path="/preview/:slug" element={<PreviewPage />} />
+
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+        </BrowserRouter>
+    );
+};
+
+export default App;
