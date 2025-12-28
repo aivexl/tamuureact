@@ -23,8 +23,6 @@ interface AnimatedLayerProps {
     forceTrigger?: boolean;
     /** Whether parent section is active - matches legacy isSectionActive */
     isSectionActive?: boolean;
-    /** For virtual clipping boundaries */
-    canvasHeight?: number;
 }
 
 /**
@@ -47,8 +45,7 @@ export const AnimatedLayer: React.FC<AnimatedLayerProps> = ({
     scrollContainerRef,
     isEditor = false,
     forceTrigger = false,
-    isSectionActive = true,
-    canvasHeight = 896
+    isSectionActive = true
 }) => {
     const ref = useRef<HTMLDivElement>(null);
     const isAnimationPlaying = useStore(state => state.isAnimationPlaying);
@@ -364,14 +361,8 @@ export const AnimatedLayer: React.FC<AnimatedLayerProps> = ({
     const pathAnimation = useMemo(() => {
         const config = layer.motionPathConfig;
         if (!config?.enabled || !config.points || config.points.length < 2) {
-            // Debug: Log why path animation is not enabled
-            if (config?.enabled) {
-                console.log(`[Motion Path] Element "${layer.name}" has ${config?.points?.length || 0} points (need >= 2)`);
-            }
             return null;
         }
-
-        console.log(`[Motion Path] Generating animation for "${layer.name}" with ${config.points.length} points`);
 
         const points = config.points;
         const xKeyframes: number[] = [];
@@ -379,27 +370,16 @@ export const AnimatedLayer: React.FC<AnimatedLayerProps> = ({
         const rotateKeyframes: number[] = [];
         const scaleKeyframes: number[] = [];
 
-        // Convert absolute canvas points to relative offsets from layer start position
-        points.forEach((p, i) => {
-            xKeyframes.push(p.x - layer.x);
-            yKeyframes.push(p.y - layer.y);
+        // Convert absolute canvas points to relative offsets from layer visual position
+        // CRITICAL FIX: Center the element on the points for accurate targeting
+        const halfWidth = (layer.width || 0) / 2;
+        const halfHeight = (layer.height || 0) / 2;
 
-            // Use explicit rotation from point settings, default to 0 (no rotation)
-            // This gives users full control over rotation at each point
+        points.forEach((p) => {
+            xKeyframes.push(p.x - layer.x - halfWidth);
+            yKeyframes.push(p.y - adjustedY - halfHeight);
             rotateKeyframes.push(p.rotation ?? 0);
-
-            // Use explicit scale from point settings, default to 1 (no scaling)
             scaleKeyframes.push(p.scale ?? 1);
-        });
-
-        // DEBUG: Log all keyframe values to diagnose animation issue
-        console.log(`[Motion Path DEBUG] "${layer.name}" keyframes:`, {
-            layerPosition: { x: layer.x, y: adjustedY },
-            points: points.map((p, i) => ({ i, x: p.x, y: p.y })),
-            xKeyframes,
-            yKeyframes,
-            duration: (config.duration || 3000) / 1000,
-            loop: config.loop
         });
 
         return {
@@ -417,48 +397,15 @@ export const AnimatedLayer: React.FC<AnimatedLayerProps> = ({
                 times: xKeyframes.map((_, i) => i / (xKeyframes.length - 1))
             }
         };
-    }, [layer.motionPathConfig, layer.x, layer.y]); // Use layer.y for stability
+    }, [layer.motionPathConfig, layer.x, adjustedY, layer.width, layer.height]);
 
     // LOOPING ANIMATION PROPS
     const loopingProps = useMemo(() => {
-        if (!shouldAnimate || animationState !== "visible") {
-            console.log(`[Motion Path] Skipped for "${layer.name}": shouldAnimate=${shouldAnimate}, animationState=${animationState}`);
-            return {};
-        }
-        if (pathAnimation) {
-            // console.log(`[Motion Path] ✅ Applying path animation to "${layer.name}":`, pathAnimation.animate);
-            return pathAnimation;
-        }
+        if (!shouldAnimate || animationState !== "visible") return {};
+        if (pathAnimation) return pathAnimation;
         if (loopingConfig) return loopingConfig;
         return {};
     }, [shouldAnimate, animationState, pathAnimation, loopingConfig]);
-
-    const isMotionPath = layer.motionPathConfig?.enabled && (layer.motionPathConfig.points?.length || 0) >= 2;
-
-    // VIRTUAL CLIPPING FOR NON-MOTION PATH ELEMENTS
-    // This allows motion path elements to fly outside while clipping others to the canvas bounds
-    const clipStyle = useMemo(() => {
-        if (isMotionPath) return {}; // No clipping for flight path elements
-
-        const x = layer.x;
-        const y = layer.y; // Standard Y
-        const w = layer.width || 0;
-        const h = layer.height || 0;
-        const canvasW = 414;
-        const canvasH = canvasHeight; // Use passed height
-
-        const top = y < 0 ? -y : 0;
-        const left = x < 0 ? -x : 0;
-        const right = (x + w) > canvasW ? (x + w - canvasW) : 0;
-        const bottom = (y + h) > canvasH ? (y + h - canvasH) : 0;
-
-        if (top > 0 || left > 0 || right > 0 || bottom > 0) {
-            return {
-                clipPath: `inset(${top}px ${right}px ${bottom}px ${left}px)`
-            };
-        }
-        return {};
-    }, [isMotionPath, layer.x, layer.y, layer.width, layer.height]);
 
     return (
         <motion.div
@@ -468,15 +415,13 @@ export const AnimatedLayer: React.FC<AnimatedLayerProps> = ({
             variants={variants}
             className={isEditor ? "w-full h-full" : "absolute origin-center"}
             style={isEditor ? {
-                opacity: layer.opacity ?? 1,
-                ...clipStyle
+                opacity: layer.opacity ?? 1
             } : {
                 left: `${layer.x}px`,
                 top: `${adjustedY}px`,
                 width: `${layer.width}px`,
                 height: `${layer.height}px`,
-                zIndex: layer.zIndex,
-                ...clipStyle
+                zIndex: layer.zIndex
             }}
         >
             <motion.div

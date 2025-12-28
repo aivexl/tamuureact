@@ -417,7 +417,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
             left: 0,
             width: CANVAS_WIDTH,
             height: sectionHeight,
-            overflow: 'visible',
+            overflow: 'hidden',
         };
 
         if (!flowMode) {
@@ -629,9 +629,9 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                     className={`w-full h-full flex ${isPortrait ? 'justify-start' : 'justify-center'} ${transitionStage === 'DONE' ? 'overflow-y-auto' : 'overflow-hidden'}`}
                     style={{ alignItems: 'flex-start' }}
                 >
-                    {/* Visual Layout Wrapper (Matches Visual Size) - overflow-visible for motion path */}
+                    {/* Visual Layout Wrapper (Matches Visual Size) - overflow-hidden */}
                     <div
-                        className="relative overflow-visible"
+                        className="relative overflow-hidden"
                         style={{
                             // Width is scaled width (Visual)
                             width: CANVAS_WIDTH * scaleFactor,
@@ -689,7 +689,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                                                 duration: zoomDuration,
                                                 ease: [0.4, 0, 0.2, 1],
                                             }}
-                                            style={{ transformOrigin: 'center center', overflow: 'visible' }}
+                                            style={{ transformOrigin: 'center center', overflow: 'hidden' }}
                                         >
                                             {/* Background */}
                                             <div
@@ -764,7 +764,6 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                                                             scrollContainerRef={scrollContainerRef}
                                                             forceTrigger={forceTrigger}
                                                             isSectionActive={visibleSections.includes(index)}
-                                                            canvasHeight={sectionHeight}
                                                         />
                                                     );
                                                 })}
