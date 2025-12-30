@@ -335,7 +335,7 @@ export const PropertyInspector: React.FC = () => {
                     <div className="space-y-2">
                         <label className="text-[9px] text-white/30 uppercase font-bold">Looping Effect (Smooth)</label>
                         <select
-                            value={layer.animation?.looping || 'none'}
+                            value={typeof layer.animation?.looping === 'string' ? layer.animation.looping : (layer.animation?.looping ? 'glow' : 'none')}
                             onChange={(e) => handleUpdate({ animation: { ...layer.animation, looping: e.target.value } })}
                             className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none appearance-none"
                         >
@@ -571,14 +571,14 @@ export const PropertyInspector: React.FC = () => {
                     <div className="space-y-3">
                         <div className="flex justify-between items-center">
                             <label className="text-[9px] text-white/30 uppercase font-bold">Opacity</label>
-                            <span className="text-xs text-white/60">{Math.round(layer.opacity * 100)}%</span>
+                            <span className="text-xs text-white/60">{Math.round((layer.opacity ?? 1) * 100)}%</span>
                         </div>
                         <input
                             type="range"
                             min="0"
                             max="1"
                             step="0.01"
-                            value={layer.opacity}
+                            value={layer.opacity ?? 1}
                             onChange={(e) => handleUpdate({ opacity: Number(e.target.value) })}
                             className="w-full accent-premium-accent opacity-50 hover:opacity-100 transition-opacity"
                         />

@@ -68,14 +68,198 @@ const ICON_LIST = [
     { name: 'sparkles', icon: <Sparkles className="w-5 h-5" /> },
 ];
 
-const COUNTDOWN_PRESETS = [
-    { label: 'Elegant', style: 'elegant', preview: '00 : 00 : 00' },
-    { label: 'Classic', style: 'classic', preview: '00 : 00 : 00' },
-    { label: 'Minimal', style: 'minimal', preview: '00 00 00' },
-    { label: 'Flip', style: 'flip', preview: 'Flip Style' },
+// Import enterprise countdown variants
+import { COUNTDOWN_VARIANT_PRESETS, COUNTDOWN_CATEGORIES, CountdownVariantPreset } from '@/components/Countdown';
+
+
+const PHOTO_GRID_PRESETS = [
+    { label: 'Single', variant: 'single', icon: <div className="w-full h-full bg-white/20 rounded" /> },
+    { label: 'Split H', variant: 'split-h', icon: <div className="grid grid-cols-2 gap-0.5 w-full h-full"><div className="bg-white/20 rounded-sm" /><div className="bg-white/10 rounded-sm" /></div> },
+    { label: 'Split V', variant: 'split-v', icon: <div className="grid grid-rows-2 gap-0.5 w-full h-full"><div className="bg-white/20 rounded-sm" /><div className="bg-white/10 rounded-sm" /></div> },
+    { label: 'Quad', variant: 'quad', icon: <div className="grid grid-cols-2 grid-rows-2 gap-0.5 w-full h-full"><div className="bg-white/20 rounded-sm" /><div className="bg-white/10 rounded-sm" /><div className="bg-white/10 rounded-sm" /><div className="bg-white/20 rounded-sm" /></div> },
+    { label: 'Triple H', variant: 'triple-h', icon: <div className="grid grid-cols-3 gap-0.5 w-full h-full"><div className="bg-white/20 rounded-sm" /><div className="bg-white/10 rounded-sm" /><div className="bg-white/20 rounded-sm" /></div> },
+    { label: 'Hero Left', variant: 'hero-left', icon: <div className="grid grid-cols-3 grid-rows-2 gap-0.5 w-full h-full"><div className="col-span-2 row-span-2 bg-white/20 rounded-sm" /><div className="bg-white/10 rounded-sm" /><div className="bg-white/10 rounded-sm" /></div> },
+    { label: 'Hero Right', variant: 'hero-right', icon: <div className="grid grid-cols-3 grid-rows-2 gap-0.5 w-full h-full"><div className="bg-white/10 rounded-sm" /><div className="col-span-2 row-span-2 bg-white/20 rounded-sm" /><div className="bg-white/10 rounded-sm" /></div> },
+    { label: 'Mosaic', variant: 'mosaic', icon: <div className="grid grid-cols-3 gap-0.5 w-full h-full"><div className="row-span-2 bg-white/20 rounded-sm" /><div className="bg-white/10 rounded-sm" /><div className="bg-white/10 rounded-sm" /></div> },
+    { label: 'Featured', variant: 'featured', icon: <div className="grid grid-cols-2 grid-rows-3 gap-0.5 w-full h-full"><div className="col-span-2 row-span-2 bg-white/20 rounded-sm" /><div className="bg-white/10 rounded-sm" /><div className="bg-white/10 rounded-sm" /></div> },
+    { label: 'Cluster', variant: 'cluster', icon: <div className="relative w-full h-full"><div className="absolute top-0 left-0 w-3/5 h-3/5 bg-white/20 rounded-sm rotate-[-10deg]" /><div className="absolute bottom-0 right-0 w-3/5 h-3/5 bg-white/10 rounded-sm rotate-[10deg] border border-white/20" /></div> },
+];
+
+// RSVP + Wishes Variant Presets (matches legacy ElementStyle types)
+const RSVP_WISHES_PRESETS = [
+    // Row 1: Basic Styles
+    {
+        label: 'Classic',
+        style: 'classic',
+        preview: <div className="w-full h-full bg-white border border-gray-100 rounded p-1 flex flex-col gap-0.5">
+            <div className="h-1.5 bg-amber-600/20 rounded w-3/4" />
+            <div className="h-0.5 bg-gray-100 rounded w-1/2" />
+            <div className="h-1.5 bg-amber-600 rounded mt-auto" />
+        </div>
+    },
+    {
+        label: 'Minimal',
+        style: 'minimal',
+        preview: <div className="w-full h-full bg-white rounded-lg shadow-sm p-1.5 flex flex-col gap-1">
+            <div className="h-1.5 bg-gray-100 w-full rounded" />
+            <div className="h-1 bg-gray-100 w-2/3 rounded" />
+            <div className="h-1.5 bg-black rounded-full mt-auto" />
+        </div>
+    },
+    {
+        label: 'Modern',
+        style: 'modern',
+        preview: <div className="w-full h-full bg-white rounded-xl shadow-md p-1.5 flex flex-col gap-1">
+            <div className="h-1.5 bg-blue-50 rounded-full w-full" />
+            <div className="h-1 bg-blue-50 rounded-full w-2/3" />
+            <div className="h-2 bg-blue-600 rounded-lg mt-auto" />
+        </div>
+    },
+    {
+        label: 'Elegant',
+        style: 'elegant',
+        preview: <div className="w-full h-full bg-[#fdfbf7] border border-amber-200 rounded p-1 flex flex-col gap-0.5 shadow-inner">
+            <div className="h-1.5 bg-amber-100 w-3/4 italic" />
+            <div className="h-2 bg-amber-800 rounded mt-auto" />
+        </div>
+    },
+    // Row 2: Nature & Romantic
+    {
+        label: 'Rustic',
+        style: 'rustic',
+        preview: <div className="w-full h-full bg-[#fffaf0] border-t-4 border-[#8b4513] rounded p-1.5 flex flex-col gap-1">
+            <div className="h-1.5 bg-amber-200/50 w-3/4 rounded-sm" />
+            <div className="h-2 bg-[#8b4513] rounded-sm mt-auto" />
+        </div>
+    },
+    {
+        label: 'Romantic',
+        style: 'romantic',
+        preview: <div className="w-full h-full bg-[#fff0f5] rounded-[2rem] shadow-lg shadow-rose-100 p-1.5 flex flex-col gap-1">
+            <div className="h-1.5 bg-rose-200 w-full rounded-full" />
+            <div className="h-2 bg-rose-400 rounded-full mt-auto" />
+        </div>
+    },
+    {
+        label: 'Floral',
+        style: 'floral',
+        preview: <div className="w-full h-full bg-white border-x-4 border-pink-200 rounded-xl p-1.5 flex flex-col gap-1">
+            <div className="h-1.5 bg-pink-100 w-3/4 rounded" />
+            <div className="h-2 bg-pink-500 rounded mt-auto" />
+        </div>
+    },
+    {
+        label: 'Boho',
+        style: 'boho',
+        preview: <div className="w-full h-full bg-[#fbf7f5] border border-[#d2b48c]/30 rounded-2xl p-1.5 flex flex-col gap-1">
+            <div className="h-1 bg-[#d2b48c] w-3/4" />
+            <div className="h-2 bg-[#d2b48c] rounded-full mt-auto" />
+        </div>
+    },
+    // Row 3: Premium & Dark
+    {
+        label: 'Luxury',
+        style: 'luxury',
+        preview: <div className="w-full h-full bg-[#0a0a0a] border border-[#d4af37]/30 rounded p-1.5 flex flex-col gap-1 shadow-[0_0_10px_rgba(212,175,55,0.2)]">
+            <div className="h-1 bg-[#d4af37]/20 w-3/4" />
+            <div className="h-2 bg-[#d4af37] mt-auto" />
+        </div>
+    },
+    {
+        label: 'Dark',
+        style: 'dark',
+        preview: <div className="w-full h-full bg-slate-900 border border-slate-800 rounded-xl p-1.5 flex flex-col gap-1">
+            <div className="h-1.5 bg-slate-700 w-3/4 rounded" />
+            <div className="h-2 bg-indigo-500 rounded mt-auto" />
+        </div>
+    },
+    {
+        label: 'Glass',
+        style: 'glass',
+        preview: <div className="w-full h-full bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl p-1.5 flex flex-col gap-1">
+            <div className="h-1.5 bg-white/40 w-full rounded" />
+            <div className="h-2 bg-white rounded mt-auto shadow-lg" />
+        </div>
+    },
+    {
+        label: 'Neon',
+        style: 'neon',
+        preview: <div className="w-full h-full bg-black border-y border-cyan-400 rounded p-1.5 flex flex-col gap-1 shadow-[0_0_10px_rgba(34,211,238,0.3)]">
+            <div className="h-1 bg-cyan-900 w-3/4 uppercase text-[6px]" />
+            <div className="h-2 bg-cyan-400 shadow-[0_0_5px_#22d3ee] mt-auto" />
+        </div>
+    },
+    // Row 4: Design Forward
+    {
+        label: 'Vintage',
+        style: 'vintage',
+        preview: <div className="w-full h-full bg-[#f4f1ea] border-2 border-[#3d2b1f] shadow-[4px_4px_0_#3d2b1f] p-1 flex flex-col gap-0.5">
+            <div className="h-1 bg-[#3d2b1f]/20 w-3/4" />
+            <div className="h-1.5 bg-[#3d2b1f] mt-auto" />
+        </div>
+    },
+    {
+        label: 'Bold',
+        style: 'bold',
+        preview: <div className="w-full h-full bg-orange-500 border-2 border-black shadow-[4px_4px_0_#000] p-1 flex flex-col gap-0.5">
+            <div className="h-2 bg-white border-2 border-black w-full" />
+            <div className="h-2 bg-black mt-auto" />
+        </div>
+    },
+    {
+        label: 'Outline',
+        style: 'outline',
+        preview: <div className="w-full h-full bg-white border-2 border-gray-900 p-1.5 flex flex-col gap-1">
+            <div className="h-1 bg-gray-100 border border-gray-900 w-3/4" />
+            <div className="h-1.5 border border-gray-900 mt-auto" />
+        </div>
+    },
+    {
+        label: 'Pastel',
+        style: 'pastel',
+        preview: <div className="w-full h-full bg-purple-50 border-4 border-white rounded-3xl shadow-lg p-1.5 flex flex-col gap-1">
+            <div className="h-1.5 bg-purple-200 w-full rounded-full" />
+            <div className="h-2 bg-purple-400 rounded-full mt-auto" />
+        </div>
+    },
+    // Row 5: Creative Styles
+    {
+        label: 'Geometric',
+        style: 'geometric',
+        preview: <div className="w-full h-full bg-white border border-indigo-600 p-1.5 flex flex-col gap-1 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-4 h-4 bg-indigo-600 rounded-bl-lg" />
+            <div className="h-1.5 bg-indigo-50 w-full" />
+            <div className="h-1.5 bg-indigo-600 mt-auto" />
+        </div>
+    },
+    {
+        label: 'Brutalist',
+        style: 'brutalist',
+        preview: <div className="w-full h-full bg-[#ff90e8] border-2 border-black shadow-[4px_4px_0_#000] p-1 flex flex-col gap-1 rotate-[-2deg]">
+            <div className="h-2 bg-white border-2 border-black w-3/4" />
+            <div className="h-1.5 bg-black mt-auto" />
+        </div>
+    },
+    {
+        label: 'Cloud',
+        style: 'cloud',
+        preview: <div className="w-full h-full bg-white rounded-3xl shadow-xl p-2 flex flex-col items-center gap-1">
+            <div className="h-1 bg-gray-100 rounded-full w-full" />
+            <div className="h-2 bg-blue-400 rounded-full w-2/3 mt-auto shadow-lg shadow-blue-100" />
+        </div>
+    },
+    {
+        label: 'Monochrome',
+        style: 'monochrome',
+        preview: <div className="w-full h-full bg-white border-x border-black p-1.5 flex flex-col gap-1 items-center">
+            <div className="h-0.5 bg-black w-full" />
+            <div className="h-1.5 border border-black w-2/3 mt-auto" />
+        </div>
+    }
 ];
 
 export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, onSelect, onClose, direction = 'right' }) => {
+
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [dragActive, setDragActive] = useState(false);
     const [uploading, setUploading] = useState(false);
@@ -163,9 +347,12 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
             case 'button': return 'Add Button';
             case 'countdown': return 'Add Countdown';
             case 'rsvp_form': return 'RSVP Form';
+            case 'rsvp_wishes': return 'RSVP + Guest Wishes';
+            case 'photo_grid': return 'Photo Grid Layout';
             default: return `Add ${type?.charAt(0).toUpperCase() + type?.slice(1)}`;
         }
     };
+
 
     // Use Portal to escape sidebar overflow
     return ReactDOM.createPortal(
@@ -253,23 +440,118 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                     </div>
                 )}
 
-                {/* COUNTDOWN */}
+                {/* COUNTDOWN - 20 Enterprise Variants */}
                 {type === 'countdown' && (
-                    <div className="space-y-2">
-                        {COUNTDOWN_PRESETS.map((preset, i) => (
+                    <div className="space-y-4">
+                        {COUNTDOWN_CATEGORIES.map((category) => (
+                            <div key={category.id}>
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-sm">{category.icon}</span>
+                                    <span className="text-xs font-bold uppercase tracking-wider text-white/60">{category.name}</span>
+                                    <span className="text-[9px] text-white/30">({category.count})</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {COUNTDOWN_VARIANT_PRESETS.filter(p => p.category === category.id).map((preset) => (
+                                        <button
+                                            key={preset.id}
+                                            onClick={() => onSelect({ countdownConfig: { variant: preset.id, ...preset.config } })}
+                                            className="p-3 rounded-xl bg-white/5 hover:bg-premium-accent/20 border border-white/5 hover:border-premium-accent/40 transition-all text-left group"
+                                        >
+                                            <div className="text-xs font-mono text-premium-accent tracking-wide truncate">{preset.previewText}</div>
+                                            <div className="text-[10px] font-semibold text-white/80 mt-1">{preset.name}</div>
+                                            <div className="text-[9px] text-white/40 truncate">{preset.description}</div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* PHOTO GRID */}
+                {type === 'photo_grid' && (
+                    <div className="grid grid-cols-2 gap-3">
+                        {PHOTO_GRID_PRESETS.map((preset, i) => (
                             <button
                                 key={i}
-                                onClick={() => onSelect({ countdownConfig: { style: preset.style } })}
-                                className="w-full p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 transition-all"
+                                onClick={() => onSelect({ photoGridConfig: { variant: preset.variant, images: [] } })}
+                                className="flex flex-col gap-2 p-3 rounded-xl bg-white/5 hover:bg-premium-accent/20 border border-white/5 hover:border-premium-accent/40 transition-all group"
                             >
-                                <div className="text-center font-mono text-premium-accent tracking-widest">{preset.preview}</div>
-                                <div className="text-center text-[10px] text-white/40 mt-1 uppercase tracking-wider">{preset.label}</div>
+                                <div className="w-full aspect-square p-2 bg-black/20 rounded-lg overflow-hidden group-hover:scale-105 transition-transform">
+                                    {preset.icon}
+                                </div>
+                                <span className="text-[10px] text-white/50 group-hover:text-white/80 font-medium">{preset.label}</span>
                             </button>
                         ))}
                     </div>
                 )}
 
+                {/* RSVP + WISHES */}
+                {type === 'rsvp_wishes' && (
+                    <div className="space-y-3">
+                        <p className="text-xs text-white/50 text-center">Pilih gaya desain RSVP Form</p>
+
+                        {/* Style Grid - 4 columns */}
+                        <div className="grid grid-cols-4 gap-2">
+                            {RSVP_WISHES_PRESETS.map((preset, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => onSelect({
+                                        rsvpWishesConfig: {
+                                            style: preset.style,
+                                            title: 'Konfirmasi Kehadiran',
+                                            wishesTitle: 'Ucapan & Doa',
+                                            submitButtonText: 'Kirim RSVP',
+                                            thankYouMessage: 'Terima kasih!',
+                                            showNameField: true,
+                                            showPhoneField: true,
+                                            showEmailField: false,
+                                            showAttendanceField: true,
+                                            showGuestCountField: true,
+                                            showMessageField: true,
+                                            showMealPreference: false,
+                                            showSongRequest: false,
+                                            attendanceOptions: { attending: 'Hadir', notAttending: 'Tidak Hadir', maybe: 'Belum Pasti' },
+                                            guestCountMax: 5,
+                                            guestCountDefault: 1,
+                                            backgroundColor: '#ffffff',
+                                            textColor: '#1f2937',
+                                            buttonColor: '#b8860b',
+                                            buttonTextColor: '#ffffff',
+                                            borderColor: '#e5e5e5',
+                                            borderRadius: 8,
+                                            wishesLayout: 'list',
+                                            wishesMaxDisplay: 50,
+                                            showWishTimestamp: true,
+                                            showWishAvatar: true,
+                                            wishCardStyle: 'minimal',
+                                            wishesAutoScroll: false,
+                                            variant: preset.style,
+                                            nameMinLength: 2,
+                                            nameMaxLength: 100,
+                                            messageMinLength: 0,
+                                            messageMaxLength: 500,
+                                            requireMessage: false,
+                                            enableCaptcha: false,
+                                        }
+                                    })}
+                                    className="flex flex-col gap-1 p-1.5 rounded-lg bg-white/5 hover:bg-premium-accent/20 border border-white/10 hover:border-premium-accent/40 transition-all group"
+                                >
+                                    <div className="w-full aspect-square rounded overflow-hidden group-hover:scale-105 transition-transform">
+                                        {preset.preview}
+                                    </div>
+                                    <span className="text-[8px] text-white/50 group-hover:text-white/80 font-medium truncate text-center">
+                                        {preset.label}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+
                 {/* MEDIA (Image, Video, GIF) */}
+
                 {(type === 'image' || type === 'video' || type === 'gif') && (
                     <div className="space-y-4">
                         <div

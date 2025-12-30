@@ -5,6 +5,7 @@ import { createCanvasSlice, CanvasState } from './canvasSlice';
 import { createLayersSlice, LayersState, Layer, LayerType, AnimationType, TextStyle, IconStyle, CountdownConfig, ButtonConfig, ShapeConfig, MapsConfig, MotionPathPoint, MotionPathConfig } from './layersSlice';
 import { createUISlice, UIState } from './uiSlice';
 import { createSectionsSlice, SectionsState, Section, PredefinedSectionType, SECTION_ICONS, SECTION_LABELS, PREDEFINED_SECTION_TYPES, ZoomPoint, ZoomConfig } from './sectionsSlice';
+import { sanitizeValue } from '@/lib/utils';
 
 // ============================================
 // COMBINED STORE TYPE
@@ -45,11 +46,28 @@ export const useStore = create<StoreState>()(
                 zoom: state.zoom,
                 pan: state.pan,
                 slug: state.slug,
-                projectName: state.projectName
+                projectName: state.projectName,
+                id: state.id
             }),
             onRehydrateStorage: () => (state) => {
                 if (state) {
+                    // CTO MIGRATION: Sanitize entire state recursively
+                    // This removes stale blob:/data: URLs from persisted state
+                    const sanitizedPayload = sanitizeValue({
+                        layers: state.layers,
+                        sections: state.sections,
+                        zoom: state.zoom,
+                        pan: state.pan,
+                        slug: state.slug,
+                        projectName: state.projectName,
+                        id: state.id
+                    });
+
+                    // Update state with sanitized values
+                    Object.assign(state, sanitizedPayload);
+
                     state.setHasHydrated(true);
+                    console.log('[Store] Rehydration complete with recursive sanitization.');
                 }
             }
         }

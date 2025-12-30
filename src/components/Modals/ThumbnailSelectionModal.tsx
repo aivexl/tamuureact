@@ -28,7 +28,7 @@ export const ThumbnailSelectionModal: React.FC<ThumbnailSelectionModalProps> = (
     const cropRef = useRef<HTMLDivElement>(null);
     const imageRef = useRef<HTMLImageElement>(null);
 
-    const timeoutRef = useRef<NodeJS.Timeout>();
+    const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     // Capture Canvas
     const captureCanvas = useCallback(async () => {

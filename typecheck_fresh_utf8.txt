@@ -1,0 +1,36 @@
+﻿src/components/Layout/AssetSelectionModal.tsx(521,45): error TS1117: An object literal cannot have multiple properties with the same name.
+src/components/Layout/ElementToolbar.tsx(93,57): error TS2322: Type '"glow"' is not assignable to type 'boolean | undefined'.
+src/components/Layout/ElementToolbar.tsx(306,13): error TS2741: Property 'hoverEffect' is missing in type '{ variant: "quad"; images: never[]; gap: number; cornerRadius: number; }' but required in type 'PhotoGridConfig'.
+src/components/Modals/ThumbnailSelectionModal.tsx(31,24): error TS2554: Expected 1 arguments, but got 0.
+src/components/Panels/LayersSidebar.tsx(250,68): error TS2345: Argument of type 'boolean | undefined' is not assignable to parameter of type 'boolean'.
+  Type 'undefined' is not assignable to type 'boolean'.
+src/components/Panels/LayersSidebar.tsx(262,62): error TS2345: Argument of type 'boolean | undefined' is not assignable to parameter of type 'boolean'.
+  Type 'undefined' is not assignable to type 'boolean'.
+src/components/Panels/PropertyInspector.tsx(338,29): error TS2322: Type 'true | "none"' is not assignable to type 'string | number | readonly string[] | undefined'.
+  Type 'true' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/components/Panels/PropertyInspector.tsx(574,81): error TS18048: 'layer.opacity' is possibly 'undefined'.
+src/components/Panels/PropertyPanel.tsx(578,94): error TS2339: Property 'aspectRatio' does not exist on type '{ id?: string | undefined; source?: string | undefined; alt?: string | undefined; optimizedUrl?: string | undefined; }'.
+src/components/Panels/PropertyPanel.tsx(592,54): error TS2339: Property 'naturalWidth' does not exist on type '{ id?: string | undefined; source?: string | undefined; alt?: string | undefined; optimizedUrl?: string | undefined; }'.
+src/components/Panels/PropertyPanel.tsx(593,54): error TS2339: Property 'naturalHeight' does not exist on type '{ id?: string | undefined; source?: string | undefined; alt?: string | undefined; optimizedUrl?: string | undefined; }'.
+src/components/Panels/PropertyPanel.tsx(596,54): error TS2339: Property 'aspectRatio' does not exist on type '{ id?: string | undefined; source?: string | undefined; alt?: string | undefined; optimizedUrl?: string | undefined; }'.
+src/components/Panels/PropertyPanel.tsx(598,67): error TS2339: Property 'aspectRatio' does not exist on type '{ id?: string | undefined; source?: string | undefined; alt?: string | undefined; optimizedUrl?: string | undefined; }'.
+src/components/Panels/PropertyPanel.tsx(601,67): error TS2339: Property 'aspectRatio' does not exist on type '{ id?: string | undefined; source?: string | undefined; alt?: string | undefined; optimizedUrl?: string | undefined; }'.
+src/components/Panels/PropertyPanel.tsx(1032,107): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/components/Panels/PropertyPanel.tsx(1319,111): error TS2322: Type 'string' is not assignable to type '"single" | "split-h" | "split-v" | "quad" | "triple-h" | "hero-left" | "hero-right" | "mosaic" | "featured" | "cluster"'.
+src/components/Panels/PropertyPanel.tsx(1360,46): error TS18048: 'layer.photoGridConfig' is possibly 'undefined'.
+src/components/Panels/PropertyPanel.tsx(1361,59): error TS18048: 'layer.photoGridConfig' is possibly 'undefined'.
+src/components/Panels/PropertyPanel.tsx(1402,107): error TS2339: Property 'category' does not exist on type 'VariantStyle'.
+src/components/Panels/PropertyPanel.tsx(2031,33): error TS2322: Type '{ label: string; value: number; min: number; max: number; onChange: (v: number) => void; }' is not assignable to type 'IntrinsicAttributes & { label: string; value: number; step?: number | undefined; min?: number | undefined; onChange: (v: number) => void; }'.
+  Property 'max' does not exist on type 'IntrinsicAttributes & { label: string; value: number; step?: number | undefined; min?: number | undefined; onChange: (v: number) => void; }'.
+src/components/Panels/PropertyPanel.tsx(2041,33): error TS2322: Type '{ label: string; value: number; min: number; max: number; onChange: (v: number) => void; }' is not assignable to type 'IntrinsicAttributes & { label: string; value: number; step?: number | undefined; min?: number | undefined; onChange: (v: number) => void; }'.
+  Property 'max' does not exist on type 'IntrinsicAttributes & { label: string; value: number; step?: number | undefined; min?: number | undefined; onChange: (v: number) => void; }'.
+src/components/Panels/PropertyPanel.tsx(2122,81): error TS7006: Parameter 'point' implicitly has an 'any' type.
+src/components/Panels/PropertyPanel.tsx(2122,88): error TS7006: Parameter 'idx' implicitly has an 'any' type.
+src/components/Preview/AnimatedLayer.tsx(541,25): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/components/Preview/AnimatedLayer.tsx(620,37): error TS2352: Conversion of type '{ height: string; '--marquee-duration': string; } | { width: string; '--marquee-duration': string; }' to type 'CSSProperties' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Object literal may only specify known properties, and ''--marquee-duration'' does not exist in type 'Properties<string | number, string & {}>'.
+src/lib/supabase.ts(5,33): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/lib/supabase.ts(6,33): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/store/sectionsSlice.ts(156,51): error TS2322: Type 'string' is not assignable to type 'boolean | undefined'.
+src/store/sectionsSlice.ts(210,50): error TS2322: Type 'string' is not assignable to type 'boolean | undefined'.

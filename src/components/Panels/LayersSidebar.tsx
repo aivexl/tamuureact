@@ -4,7 +4,7 @@ import { useStore } from '@/store/useStore';
 import {
     Layers, Eye, EyeOff, GripVertical, Trash2, Lock, Unlock,
     Type, Image, Clock, MailOpen, Heart, Square, MapPin, Film, Video,
-    Settings, Palette, Zap, Wind, Upload, Loader2, Link as LinkIcon
+    Settings, Palette, Zap, Wind, Upload, Loader2, Link as LinkIcon, Grid, MessageSquare
 } from 'lucide-react';
 import { LayerType } from '@/store/layersSlice';
 import { supabase } from '@/lib/supabase';
@@ -23,10 +23,13 @@ const layerIcons: Record<LayerType, React.ReactNode> = {
     maps_point: <MapPin className="w-4 h-4" />,
     rsvp_form: <Layers className="w-4 h-4" />,
     guest_wishes: <Layers className="w-4 h-4" />,
+    rsvp_wishes: <MessageSquare className="w-4 h-4" />,
     open_invitation_button: <MailOpen className="w-4 h-4" />,
     lottie: <Zap className="w-4 h-4" />,
-    flying_bird: <Wind className="w-4 h-4" />
+    flying_bird: <Wind className="w-4 h-4" />,
+    photo_grid: <Grid className="w-4 h-4" />
 };
+
 
 type TabType = 'layers' | 'settings';
 
@@ -244,7 +247,7 @@ function LayersTab() {
                                     whileTap={{ scale: 0.9 }}
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        toggleVisibility(layer.id, layer.isVisible);
+                                        toggleVisibility(layer.id, layer.isVisible ?? true);
                                     }}
                                     className={`p-1 rounded ${!layer.isVisible ? 'text-red-400' : 'text-white/30 hover:text-white/60'}`}
                                     title={layer.isVisible ? 'Hide' : 'Show'}
@@ -256,7 +259,7 @@ function LayersTab() {
                                     whileTap={{ scale: 0.9 }}
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        toggleLock(layer.id, layer.isLocked);
+                                        toggleLock(layer.id, layer.isLocked ?? false);
                                     }}
                                     className={`p-1 rounded ${layer.isLocked ? 'text-yellow-400' : 'text-white/30 hover:text-white/60'}`}
                                     title={layer.isLocked ? 'Unlock' : 'Lock'}

@@ -1,8 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
-import { Layer, AnimationType, TextStyle, CountdownConfig, ButtonConfig, ShapeConfig, IconStyle } from '@/store/layersSlice';
+import { Layer, AnimationType, TextStyle, CountdownConfig, ButtonConfig, ShapeConfig, IconStyle, RSVPWishesConfig, RSVPVariantId } from '@/store/layersSlice';
 import { generateId } from '@/lib/utils';
+import { RSVP_VARIANTS, DEFAULT_RSVP_WISHES_CONFIG } from '@/lib/rsvp-variants';
+
 import {
     AlignLeft, AlignCenter, AlignRight,
     ArrowUpToLine, ArrowDownToLine,
@@ -11,12 +13,13 @@ import {
     Eye, EyeOff, FlipHorizontal, FlipVertical,
     FlipHorizontal2, FlipVertical2,
     Heart, ImageIcon, Layout, Layers,
-    Lock, Unlock, MailOpen, MapPin,
+    Lock, Unlock, MailOpen, MapPin, MessageSquare,
     Maximize2, MousePointer2, Move, MoveHorizontal,
     Palette, Plane, Settings2, Sliders,
     Sparkles, Square, Star, Trash2,
     Type, Users, Video, Wind, Zap
 } from 'lucide-react';
+
 import { ElementToolbar } from '@/components/Layout/ElementToolbar';
 
 export const PropertyPanel: React.FC = () => {
@@ -39,7 +42,10 @@ export const PropertyPanel: React.FC = () => {
         sendToBack,
 
         pathEditingId,
-        setPathEditingId
+        setPathEditingId,
+
+        // Image Crop Modal
+        openImageCropModal
     } = useStore();
 
     // 1. Find the Active Section
@@ -210,6 +216,25 @@ export const PropertyPanel: React.FC = () => {
                                             className="w-full accent-premium-accent"
                                         />
                                     </div>
+
+                                    {/* Zoom Mode Toggle - CTOR Ultra Precision */}
+                                    <div className="flex bg-white/5 p-1 rounded-lg border border-white/5">
+                                        <button
+                                            onClick={() => updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig!, zoomMode: 'fit' } })}
+                                            className={`flex-1 flex flex-col items-center py-1.5 rounded-md transition-all ${activeSection.zoomConfig.zoomMode !== 'fill' ? 'bg-premium-accent/10 border border-premium-accent/20 text-premium-accent' : 'text-white/40 hover:text-white/60'}`}
+                                        >
+                                            <span className="text-[9px] font-bold uppercase">Fit</span>
+                                            <span className="text-[7px] opacity-60">Contain Whole Box</span>
+                                        </button>
+                                        <button
+                                            onClick={() => updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig!, zoomMode: 'fill' } })}
+                                            className={`flex-1 flex flex-col items-center py-1.5 rounded-md transition-all ${activeSection.zoomConfig.zoomMode === 'fill' ? 'bg-premium-accent/10 border border-premium-accent/20 text-premium-accent' : 'text-white/40 hover:text-white/60'}`}
+                                        >
+                                            <span className="text-[9px] font-bold uppercase">Fill</span>
+                                            <span className="text-[7px] opacity-60">Full Screen Blur</span>
+                                        </button>
+                                    </div>
+
                                     <NumberInput
                                         label="Zoom Duration (ms)"
                                         value={activeSection.zoomConfig.duration}
@@ -225,6 +250,7 @@ export const PropertyPanel: React.FC = () => {
                                                         id: generateId('zp'),
                                                         label: `Point ${newPoints.length + 1}`,
                                                         duration: 2000,
+                                                        transitionDuration: 1000,
                                                         targetRegion: { x: 50, y: 50, width: 200, height: 200 }
                                                     });
                                                     // Auto-select the newly added point so it appears on canvas immediately
@@ -260,7 +286,7 @@ export const PropertyPanel: React.FC = () => {
                                                                         newPoints[idx] = { ...p, color: e.target.value };
                                                                         updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
                                                                     }}
-                                                                    className="w-5 h-5 rounded cursor-pointer border-0 p-0"
+                                                                    className="w-4 h-4 rounded cursor-pointer border-0 p-0"
                                                                     style={{ backgroundColor: pointColor }}
                                                                 />
                                                             </div>
@@ -275,7 +301,7 @@ export const PropertyPanel: React.FC = () => {
                                                                         newPoints[idx] = { ...p, label: e.target.value };
                                                                         updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
                                                                     }}
-                                                                    className="bg-transparent border-none p-0 text-[11px] text-white/80 focus:ring-0 w-full truncate"
+                                                                    className="bg-transparent border-none p-0 text-[10px] uppercase font-bold text-white/80 focus:ring-0 w-full truncate"
                                                                 />
                                                             </div>
                                                             {/* Actions */}
@@ -299,6 +325,130 @@ export const PropertyPanel: React.FC = () => {
                                                                     <Trash2 className="w-3 h-3" />
                                                                 </button>
                                                             </div>
+                                                        </div>
+
+                                                        {/* TIMING CONTROLS PER POINT */}
+                                                        <div className="mt-2 pt-2 border-t border-white/5 flex gap-3">
+                                                            <div className="flex-1">
+                                                                <label className="text-[8px] text-white/30 uppercase font-bold block mb-1">Move (ms)</label>
+                                                                <input
+                                                                    type="number"
+                                                                    value={p.transitionDuration ?? 1000}
+                                                                    onChange={(e) => {
+                                                                        if (!activeSection.zoomConfig) return;
+                                                                        const newPoints = [...activeSection.zoomConfig.points];
+                                                                        newPoints[idx] = { ...p, transitionDuration: Number(e.target.value) };
+                                                                        updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
+                                                                    }}
+                                                                    className="w-full bg-black/20 border border-white/5 rounded px-1.5 py-0.5 text-[10px] text-white focus:border-premium-accent/50 focus:outline-none"
+                                                                />
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <label className="text-[8px] text-white/30 uppercase font-bold block mb-1">Stay (ms)</label>
+                                                                <input
+                                                                    type="number"
+                                                                    value={p.duration}
+                                                                    onChange={(e) => {
+                                                                        if (!activeSection.zoomConfig) return;
+                                                                        const newPoints = [...activeSection.zoomConfig.points];
+                                                                        newPoints[idx] = { ...p, duration: Number(e.target.value) };
+                                                                        updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
+                                                                    }}
+                                                                    className="w-full bg-black/20 border border-white/5 rounded px-1.5 py-0.5 text-[10px] text-white focus:border-premium-accent/50 focus:outline-none"
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="mt-2 grid grid-cols-4 gap-1.5">
+                                                            <div className="relative">
+                                                                <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[8px] text-white/30 font-bold">X</span>
+                                                                <input
+                                                                    type="number"
+                                                                    step="0.01"
+                                                                    value={p.targetRegion.x}
+                                                                    onChange={(e) => {
+                                                                        if (!activeSection.zoomConfig) return;
+                                                                        const newPoints = [...activeSection.zoomConfig.points];
+                                                                        newPoints[idx] = { ...p, targetRegion: { ...p.targetRegion, x: Number(e.target.value) } };
+                                                                        updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
+                                                                    }}
+                                                                    className="w-full bg-black/40 border border-white/5 rounded pl-4 pr-1 py-0.5 text-[9px] text-white focus:border-premium-accent/50 focus:outline-none font-mono"
+                                                                />
+                                                            </div>
+                                                            <div className="relative">
+                                                                <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[8px] text-white/30 font-bold">Y</span>
+                                                                <input
+                                                                    type="number"
+                                                                    step="0.01"
+                                                                    value={p.targetRegion.y}
+                                                                    onChange={(e) => {
+                                                                        if (!activeSection.zoomConfig) return;
+                                                                        const newPoints = [...activeSection.zoomConfig.points];
+                                                                        newPoints[idx] = { ...p, targetRegion: { ...p.targetRegion, y: Number(e.target.value) } };
+                                                                        updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
+                                                                    }}
+                                                                    className="w-full bg-black/40 border border-white/5 rounded pl-4 pr-1 py-0.5 text-[9px] text-white focus:border-premium-accent/50 focus:outline-none font-mono"
+                                                                />
+                                                            </div>
+                                                            <div className="relative">
+                                                                <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[8px] text-white/30 font-bold">W</span>
+                                                                <input
+                                                                    type="number"
+                                                                    step="0.01"
+                                                                    value={p.targetRegion.width}
+                                                                    onChange={(e) => {
+                                                                        if (!activeSection.zoomConfig) return;
+                                                                        const newPoints = [...activeSection.zoomConfig.points];
+                                                                        newPoints[idx] = { ...p, targetRegion: { ...p.targetRegion, width: Number(e.target.value) } };
+                                                                        updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
+                                                                    }}
+                                                                    className="w-full bg-black/40 border border-white/5 rounded pl-4 pr-1 py-0.5 text-[9px] text-white focus:border-premium-accent/50 focus:outline-none font-mono"
+                                                                />
+                                                            </div>
+                                                            <div className="relative">
+                                                                <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[8px] text-white/30 font-bold">H</span>
+                                                                <input
+                                                                    type="number"
+                                                                    step="0.01"
+                                                                    value={p.targetRegion.height}
+                                                                    onChange={(e) => {
+                                                                        if (!activeSection.zoomConfig) return;
+                                                                        const newPoints = [...activeSection.zoomConfig.points];
+                                                                        newPoints[idx] = { ...p, targetRegion: { ...p.targetRegion, height: Number(e.target.value) } };
+                                                                        updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
+                                                                    }}
+                                                                    className="w-full bg-black/40 border border-white/5 rounded pl-4 pr-1 py-0.5 text-[9px] text-white focus:border-premium-accent/50 focus:outline-none font-mono"
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="mt-2 flex gap-1">
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (!activeSection.zoomConfig) return;
+                                                                    const newPoints = [...activeSection.zoomConfig.points];
+                                                                    newPoints[idx] = { ...p, targetRegion: { x: 0, y: p.targetRegion.y, width: 414, height: p.targetRegion.height } };
+                                                                    updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
+                                                                }}
+                                                                className="flex-1 bg-white/5 hover:bg-white/10 text-[8px] text-white/40 hover:text-white py-1 rounded border border-white/5 uppercase font-bold"
+                                                            >
+                                                                Full Width
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (!activeSection.zoomConfig) return;
+                                                                    const ratio = 896 / 414;
+                                                                    const newHeight = p.targetRegion.width * ratio;
+                                                                    const newPoints = [...activeSection.zoomConfig.points];
+                                                                    newPoints[idx] = { ...p, targetRegion: { ...p.targetRegion, height: newHeight } };
+                                                                    updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
+                                                                }}
+                                                                className="flex-1 bg-white/5 hover:bg-white/10 text-[8px] text-white/40 hover:text-white py-1 rounded border border-white/5 uppercase font-bold"
+                                                            >
+                                                                Mobile Ratio
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 );
@@ -415,6 +565,52 @@ export const PropertyPanel: React.FC = () => {
                         <NumberInput label="Width" value={layer.width} onChange={(v) => handleUpdate({ width: v })} />
                         <NumberInput label="Height" value={layer.height} onChange={(v) => handleUpdate({ height: v })} />
                     </div>
+
+                    {/* Precision Fitting Tools - CTO Unicorn Implementation */}
+                    {layer.assetMetadata && (
+                        <div className="mt-3 flex gap-2">
+                            <motion.button
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => {
+                                    const meta = layer.assetMetadata;
+                                    if (meta && meta.aspectRatio) {
+                                        // Fit height to current width maintaining ratio
+                                        handleUpdate({ height: Math.round(layer.width / meta.aspectRatio) });
+                                    }
+                                }}
+                                className="flex-1 bg-premium-accent/10 hover:bg-premium-accent/20 text-premium-accent text-[9px] font-bold py-2 rounded-lg border border-premium-accent/20 transition-all flex items-center justify-center gap-1.5 group"
+                            >
+                                <Maximize2 className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                                FIT BOUNDARY TO CONTENT
+                            </motion.button>
+                            <motion.button
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => {
+                                    const meta = layer.assetMetadata;
+                                    if (meta && meta.naturalWidth && meta.naturalHeight && meta.aspectRatio) {
+                                        // Reset to original size (clamped to pro max 400 for initial safety)
+                                        let w = meta.naturalWidth;
+                                        let h = meta.naturalHeight;
+                                        const maxDim = 400;
+                                        if (w > maxDim || h > maxDim) {
+                                            if (meta.aspectRatio > 1) {
+                                                w = maxDim;
+                                                h = maxDim / meta.aspectRatio;
+                                            } else {
+                                                h = maxDim;
+                                                w = maxDim * meta.aspectRatio;
+                                            }
+                                        }
+                                        handleUpdate({ width: Math.round(w), height: Math.round(h) });
+                                    }
+                                }}
+                                className="px-3 bg-white/5 hover:bg-white/10 text-white/40 hover:text-white text-[9px] font-bold py-2 rounded-lg border border-white/5 transition-all"
+                                title="Reset to Original Size (Clamped)"
+                            >
+                                RESET
+                            </motion.button>
+                        </div>
+                    )}
 
                     <div className="mt-4">
                         <div className="flex justify-between items-center mb-2">
@@ -613,6 +809,96 @@ export const PropertyPanel: React.FC = () => {
                                     value={layer.textStyle?.color || '#ffffff'}
                                     onChange={(v) => handleUpdate({ textStyle: { ...layer.textStyle!, color: v } })}
                                 />
+
+                                {/* Multiline Toggle */}
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[9px] text-white/30 uppercase font-bold">Multiline</span>
+                                    <motion.button
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => handleUpdate({ textStyle: { ...layer.textStyle!, multiline: !layer.textStyle?.multiline } })}
+                                        className={`relative w-10 h-5 rounded-full transition-colors ${layer.textStyle?.multiline ? 'bg-premium-accent' : 'bg-white/10'}`}
+                                    >
+                                        <motion.div
+                                            animate={{ x: layer.textStyle?.multiline ? 20 : 2 }}
+                                            className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow"
+                                        />
+                                    </motion.button>
+                                </div>
+
+                                {/* Curved Text Toggle */}
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[9px] text-white/30 uppercase font-bold">Curved Text</span>
+                                    <motion.button
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => handleUpdate({
+                                            curvedTextConfig: {
+                                                ...layer.curvedTextConfig,
+                                                enabled: !layer.curvedTextConfig?.enabled,
+                                                radius: layer.curvedTextConfig?.radius || 100,
+                                                angle: layer.curvedTextConfig?.angle || 0,
+                                                spacing: layer.curvedTextConfig?.spacing || 0,
+                                                reverse: layer.curvedTextConfig?.reverse || false
+                                            }
+                                        })}
+                                        className={`relative w-10 h-5 rounded-full transition-colors ${layer.curvedTextConfig?.enabled ? 'bg-premium-accent' : 'bg-white/10'}`}
+                                    >
+                                        <motion.div
+                                            animate={{ x: layer.curvedTextConfig?.enabled ? 20 : 2 }}
+                                            className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow"
+                                        />
+                                    </motion.button>
+                                </div>
+
+                                {/* Curved Text Controls - Only show when enabled */}
+                                {layer.curvedTextConfig?.enabled && (
+                                    <div className="space-y-3 p-3 bg-white/5 rounded-lg border border-white/10">
+                                        <NumberInput
+                                            label="Radius"
+                                            value={layer.curvedTextConfig?.radius || 100}
+                                            min={20}
+                                            max={500}
+                                            step={10}
+                                            onChange={(v) => handleUpdate({
+                                                curvedTextConfig: { ...layer.curvedTextConfig!, radius: v }
+                                            })}
+                                        />
+                                        <NumberInput
+                                            label="Angle"
+                                            value={layer.curvedTextConfig?.angle || 0}
+                                            min={-180}
+                                            max={180}
+                                            step={5}
+                                            onChange={(v) => handleUpdate({
+                                                curvedTextConfig: { ...layer.curvedTextConfig!, angle: v }
+                                            })}
+                                        />
+                                        <NumberInput
+                                            label="Spacing"
+                                            value={layer.curvedTextConfig?.spacing || 0}
+                                            min={-10}
+                                            max={50}
+                                            step={1}
+                                            onChange={(v) => handleUpdate({
+                                                curvedTextConfig: { ...layer.curvedTextConfig!, spacing: v }
+                                            })}
+                                        />
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[9px] text-white/30 uppercase font-bold">Reverse</span>
+                                            <motion.button
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={() => handleUpdate({
+                                                    curvedTextConfig: { ...layer.curvedTextConfig!, reverse: !layer.curvedTextConfig?.reverse }
+                                                })}
+                                                className={`relative w-10 h-5 rounded-full transition-colors ${layer.curvedTextConfig?.reverse ? 'bg-premium-accent' : 'bg-white/10'}`}
+                                            >
+                                                <motion.div
+                                                    animate={{ x: layer.curvedTextConfig?.reverse ? 20 : 2 }}
+                                                    className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow"
+                                                />
+                                            </motion.button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </SectionComponent>
                     )
@@ -639,18 +925,33 @@ export const PropertyPanel: React.FC = () => {
                                     />
                                 </div>
 
-                                {/* Style */}
+                                {/* Variant Selection - 20 Premium Variants */}
                                 <SelectInput
-                                    label="Style"
-                                    value={layer.countdownConfig?.style || 'elegant'}
+                                    label="Variant"
+                                    value={layer.countdownConfig?.variant || 'elegant'}
                                     options={[
-                                        { value: 'classic', label: 'Classic' },
-                                        { value: 'minimal', label: 'Minimal' },
-                                        { value: 'elegant', label: 'Elegant' },
-                                        { value: 'flip', label: 'Flip' },
-                                        { value: 'card', label: 'Card' }
+                                        { value: 'elegant', label: '✨ Elegant' },
+                                        { value: 'classic', label: '✨ Classic' },
+                                        { value: 'minimal', label: '✨ Minimal' },
+                                        { value: 'flip', label: '🔄 Flip Clock' },
+                                        { value: 'flip-dark', label: '🔄 Flip Dark' },
+                                        { value: 'flip-neon', label: '🔄 Flip Neon' },
+                                        { value: 'boxed', label: '⬜ Boxed' },
+                                        { value: 'boxed-gradient', label: '⬜ Boxed Gradient' },
+                                        { value: 'card-glass', label: '⬜ Card Glass' },
+                                        { value: 'card-solid', label: '⬜ Card Solid' },
+                                        { value: 'circle-progress', label: '⭕ Circle Progress' },
+                                        { value: 'circle-minimal', label: '⭕ Circle Minimal' },
+                                        { value: 'ring', label: '⭕ Ring' },
+                                        { value: 'modern-split', label: '💫 Modern Split' },
+                                        { value: 'neon-glow', label: '💫 Neon Glow' },
+                                        { value: 'cyber', label: '💫 Cyber' },
+                                        { value: 'luxury-gold', label: '👑 Luxury Gold' },
+                                        { value: 'luxury-rose', label: '👑 Luxury Rose' },
+                                        { value: 'wedding-script', label: '👑 Wedding Script' },
+                                        { value: 'typewriter', label: '🎯 Typewriter' },
                                     ]}
-                                    onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, style: v as any } })}
+                                    onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, variant: v as any } })}
                                 />
 
                                 {/* Show/Hide Units */}
@@ -676,22 +977,245 @@ export const PropertyPanel: React.FC = () => {
                                     </div>
                                 </div>
 
+                                {/* Typography Controls */}
+                                <div>
+                                    <label className="text-[9px] text-white/30 uppercase font-bold mb-2 block">Typography</label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <NumberInput
+                                            label="Font Size"
+                                            value={layer.countdownConfig?.fontSize || 32}
+                                            min={12}
+                                            max={72}
+                                            onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, fontSize: v } })}
+                                        />
+                                        <SelectInput
+                                            label="Font Weight"
+                                            value={layer.countdownConfig?.fontWeight || 'bold'}
+                                            options={[
+                                                { value: 'normal', label: 'Normal' },
+                                                { value: 'medium', label: 'Medium' },
+                                                { value: 'semibold', label: 'Semibold' },
+                                                { value: 'bold', label: 'Bold' },
+                                                { value: 'black', label: 'Black' },
+                                            ]}
+                                            onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, fontWeight: v as any } })}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Separator Style */}
+                                <SelectInput
+                                    label="Separator Style"
+                                    value={layer.countdownConfig?.separatorStyle || 'colon'}
+                                    options={[
+                                        { value: 'colon', label: 'Colon (:)' },
+                                        { value: 'dot', label: 'Dot (•)' },
+                                        { value: 'line', label: 'Line (|)' },
+                                        { value: 'slash', label: 'Slash (/)' },
+                                        { value: 'none', label: 'None' },
+                                    ]}
+                                    onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, separatorStyle: v as any } })}
+                                />
+
+                                {/* Box Styling */}
+                                <div>
+                                    <label className="text-[9px] text-white/30 uppercase font-bold mb-2 block">Box Styling</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        <NumberInput
+                                            label="Radius"
+                                            value={layer.countdownConfig?.borderRadius || 12}
+                                            min={0}
+                                            max={100}
+                                            onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, borderRadius: v } })}
+                                        />
+                                        <NumberInput
+                                            label="Padding"
+                                            value={layer.countdownConfig?.boxPadding || 16}
+                                            min={0}
+                                            max={48}
+                                            onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, boxPadding: v } })}
+                                        />
+                                        <NumberInput
+                                            label="Gap"
+                                            value={layer.countdownConfig?.boxGap || 12}
+                                            min={0}
+                                            max={40}
+                                            onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, boxGap: v } })}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Shadow */}
+                                <SelectInput
+                                    label="Shadow"
+                                    value={layer.countdownConfig?.boxShadow || 'none'}
+                                    options={[
+                                        { value: 'none', label: 'None' },
+                                        { value: 'soft', label: 'Soft' },
+                                        { value: 'medium', label: 'Medium' },
+                                        { value: 'heavy', label: 'Heavy' },
+                                        { value: 'glow', label: 'Glow' },
+                                        { value: 'neon', label: 'Neon' },
+                                    ]}
+                                    onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, boxShadow: v as any } })}
+                                />
+
                                 {/* Colors */}
-                                <ColorInput
-                                    label="Text Color"
-                                    value={layer.countdownConfig?.textColor || '#ffffff'}
-                                    onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, textColor: v } })}
-                                />
-                                <ColorInput
-                                    label="Accent Color"
-                                    value={layer.countdownConfig?.accentColor || '#bfa181'}
-                                    onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, accentColor: v } })}
-                                />
-                                <ColorInput
-                                    label="Label Color"
-                                    value={layer.countdownConfig?.labelColor || '#888888'}
-                                    onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, labelColor: v } })}
-                                />
+                                <div>
+                                    <label className="text-[9px] text-white/30 uppercase font-bold mb-2 block">Colors</label>
+                                    <div className="space-y-2">
+                                        <ColorInput
+                                            label="Text Color"
+                                            value={layer.countdownConfig?.textColor || '#ffffff'}
+                                            onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, textColor: v } })}
+                                        />
+                                        <ColorInput
+                                            label="Accent Color"
+                                            value={layer.countdownConfig?.accentColor || '#bfa181'}
+                                            onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, accentColor: v } })}
+                                        />
+                                        <ColorInput
+                                            label="Label Color"
+                                            value={layer.countdownConfig?.labelColor || '#888888'}
+                                            onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, labelColor: v } })}
+                                        />
+                                        <ColorInput
+                                            label="Background"
+                                            value={layer.countdownConfig?.backgroundColor || 'transparent'}
+                                            onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, backgroundColor: v } })}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Glow Settings (for neon variants) */}
+                                {(layer.countdownConfig?.variant === 'neon-glow' ||
+                                    layer.countdownConfig?.variant === 'flip-neon' ||
+                                    layer.countdownConfig?.variant === 'cyber') && (
+                                        <div>
+                                            <label className="text-[9px] text-white/30 uppercase font-bold mb-2 block">Glow Settings</label>
+                                            <div className="space-y-2">
+                                                <ColorInput
+                                                    label="Glow Color"
+                                                    value={layer.countdownConfig?.glowColor || '#00ffff'}
+                                                    onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, glowColor: v } })}
+                                                />
+                                                <NumberInput
+                                                    label="Glow Intensity"
+                                                    value={layer.countdownConfig?.glowIntensity || 100}
+                                                    min={0}
+                                                    max={100}
+                                                    onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, glowIntensity: v } })}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                {/* Gradient Settings (for gradient/luxury variants) */}
+                                {(layer.countdownConfig?.variant === 'boxed-gradient' ||
+                                    layer.countdownConfig?.variant?.startsWith('luxury')) && (
+                                        <div>
+                                            <label className="text-[9px] text-white/30 uppercase font-bold mb-2 block">Gradient</label>
+                                            <div className="space-y-2">
+                                                <ColorInput
+                                                    label="Gradient From"
+                                                    value={layer.countdownConfig?.gradientFrom || '#667eea'}
+                                                    onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, gradientFrom: v } })}
+                                                />
+                                                <ColorInput
+                                                    label="Gradient To"
+                                                    value={layer.countdownConfig?.gradientTo || '#764ba2'}
+                                                    onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, gradientTo: v } })}
+                                                />
+                                                <NumberInput
+                                                    label="Gradient Angle"
+                                                    value={layer.countdownConfig?.gradientAngle || 135}
+                                                    min={0}
+                                                    max={360}
+                                                    onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, gradientAngle: v } })}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                {/* Circle Progress Settings */}
+                                {layer.countdownConfig?.variant?.startsWith('circle') && (
+                                    <div>
+                                        <label className="text-[9px] text-white/30 uppercase font-bold mb-2 block">Progress Ring</label>
+                                        <div className="space-y-2">
+                                            <ColorInput
+                                                label="Progress Color"
+                                                value={layer.countdownConfig?.progressColor || '#bfa181'}
+                                                onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, progressColor: v } })}
+                                            />
+                                            <NumberInput
+                                                label="Ring Width"
+                                                value={layer.countdownConfig?.progressWidth || 4}
+                                                min={1}
+                                                max={12}
+                                                onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, progressWidth: v } })}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Animation Settings */}
+                                <div>
+                                    <label className="text-[9px] text-white/30 uppercase font-bold mb-2 block">Animation</label>
+                                    <motion.button
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => handleUpdate({
+                                            countdownConfig: {
+                                                ...layer.countdownConfig!,
+                                                animateOnChange: !layer.countdownConfig?.animateOnChange
+                                            }
+                                        })}
+                                        className={`w-full py-2 rounded-lg text-xs font-medium mb-2 ${layer.countdownConfig?.animateOnChange !== false ? 'bg-premium-accent/20 text-premium-accent' : 'bg-white/5 text-white/60'}`}
+                                    >
+                                        {layer.countdownConfig?.animateOnChange !== false ? '✓ Animate on Change' : 'Animate on Change'}
+                                    </motion.button>
+                                    <SelectInput
+                                        label="Animation Type"
+                                        value={layer.countdownConfig?.animationType || 'fade'}
+                                        options={[
+                                            { value: 'none', label: 'None' },
+                                            { value: 'fade', label: 'Fade' },
+                                            { value: 'slide', label: 'Slide' },
+                                            { value: 'flip', label: 'Flip' },
+                                            { value: 'bounce', label: 'Bounce' },
+                                            { value: 'scale', label: 'Scale' },
+                                            { value: 'blur', label: 'Blur' },
+                                        ]}
+                                        onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, animationType: v as any } })}
+                                    />
+                                </div>
+
+                                {/* Show Labels Toggle */}
+                                <motion.button
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleUpdate({
+                                        countdownConfig: {
+                                            ...layer.countdownConfig!,
+                                            showLabels: !layer.countdownConfig?.showLabels
+                                        }
+                                    })}
+                                    className={`w-full py-2 rounded-lg text-xs font-medium ${layer.countdownConfig?.showLabels !== false ? 'bg-premium-accent/20 text-premium-accent' : 'bg-white/5 text-white/60'}`}
+                                >
+                                    {layer.countdownConfig?.showLabels !== false ? '✓ Show Labels' : 'Show Labels'}
+                                </motion.button>
+
+                                {/* Show Separators Toggle */}
+                                <motion.button
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleUpdate({
+                                        countdownConfig: {
+                                            ...layer.countdownConfig!,
+                                            showSeparators: !layer.countdownConfig?.showSeparators
+                                        }
+                                    })}
+                                    className={`w-full py-2 rounded-lg text-xs font-medium ${layer.countdownConfig?.showSeparators !== false ? 'bg-premium-accent/20 text-premium-accent' : 'bg-white/5 text-white/60'}`}
+                                >
+                                    {layer.countdownConfig?.showSeparators !== false ? '✓ Show Separators' : 'Show Separators'}
+                                </motion.button>
                             </div>
                         </SectionComponent>
                     )
@@ -833,7 +1357,7 @@ export const PropertyPanel: React.FC = () => {
                                 <ColorInput
                                     label="Stroke Color"
                                     value={layer.shapeConfig?.stroke || 'transparent'}
-                                    onChange={(v) => handleUpdate({ shapeConfig: { ...layer.shapeConfig!, stroke: v === 'transparent' ? null : v } })}
+                                    onChange={(v) => handleUpdate({ shapeConfig: { ...layer.shapeConfig!, stroke: v === 'transparent' ? undefined : v } })}
                                 />
                                 <NumberInput
                                     label="Stroke Width"
@@ -1101,23 +1625,325 @@ export const PropertyPanel: React.FC = () => {
                     </SectionComponent>
                 )}
 
+                {/* Photo Grid Config */}
+                {layer.type === 'photo_grid' && layer.photoGridConfig && (
+                    <SectionComponent title="Photo Grid Settings" icon={<Layout className="w-4 h-4 text-blue-400" />}>
+                        <div className="space-y-4">
+                            <SelectInput
+                                label="Layout Variant"
+                                value={layer.photoGridConfig.variant || 'quad'}
+                                options={[
+                                    { value: 'single', label: 'Single' },
+                                    { value: 'split-h', label: 'Split Horizontal' },
+                                    { value: 'split-v', label: 'Split Vertical' },
+                                    { value: 'quad', label: 'Quad (2x2)' },
+                                    { value: 'triple-h', label: 'Triple Horizontal' },
+                                    { value: 'hero-left', label: 'Hero Left' },
+                                    { value: 'hero-right', label: 'Hero Right' },
+                                    { value: 'mosaic', label: 'Mosaic' },
+                                    { value: 'featured', label: 'Featured' },
+                                    { value: 'cluster', label: 'Cluster' }
+                                ]}
+                                onChange={(v) => handleUpdate({ photoGridConfig: { ...layer.photoGridConfig!, variant: v as any } })}
+                            />
+                            <NumberInput
+                                label="Gap (px)"
+                                value={layer.photoGridConfig.gap ?? 8}
+                                min={0}
+                                onChange={(v) => handleUpdate({ photoGridConfig: { ...layer.photoGridConfig!, gap: v } })}
+                            />
+                            <NumberInput
+                                label="Corner Radius"
+                                value={layer.photoGridConfig.cornerRadius ?? 12}
+                                min={0}
+                                onChange={(v) => handleUpdate({ photoGridConfig: { ...layer.photoGridConfig!, cornerRadius: v } })}
+                            />
+                            <div className="space-y-2">
+                                <label className="text-[9px] text-white/30 uppercase font-bold block">Images (click to upload)</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {[0, 1, 2, 3].map((idx) => (
+                                        <div
+                                            key={idx}
+                                            className="aspect-square bg-white/5 rounded-lg border border-white/10 flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors relative overflow-hidden group"
+                                            onClick={() => {
+                                                const input = document.createElement('input');
+                                                input.type = 'file';
+                                                input.accept = 'image/*';
+                                                input.onchange = async (e) => {
+                                                    const file = (e.target as HTMLInputElement).files?.[0];
+                                                    if (!file) return;
+                                                    // Read file as data URL and open crop modal
+                                                    const reader = new FileReader();
+                                                    reader.onload = (event) => {
+                                                        const imageSrc = event.target?.result as string;
+                                                        if (imageSrc && layer.id) {
+                                                            openImageCropModal(imageSrc, layer.id, idx, 1);
+                                                        }
+                                                    };
+                                                    reader.readAsDataURL(file);
+                                                };
+                                                input.click();
+                                            }}
+                                        >
+                                            {layer.photoGridConfig?.images?.[idx] ? (
+                                                <img src={layer.photoGridConfig?.images[idx]} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <ImageIcon className="w-4 h-4 text-white/20" />
+                                            )}
+                                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <span className="text-[9px] text-white/80">Slot {idx + 1}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <p className="text-[9px] text-white/30 italic">Upload images for each grid slot.</p>
+                            </div>
+                        </div>
+                    </SectionComponent>
+                )}
+
+                {/* RSVP Wishes Settings */}
+                {layer?.type === 'rsvp_wishes' && (
+                    <SectionComponent title="RSVP & Wishes Settings" icon={<MessageSquare className="w-4 h-4" />}>
+                        <div className="space-y-4">
+                            {/* Variant Selector */}
+                            <div>
+                                <label className="text-[9px] text-white/30 uppercase font-bold block mb-2">Design Variant</label>
+                                <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                                    {Object.values(RSVP_VARIANTS).map((variant) => (
+                                        <button
+                                            key={variant.id}
+                                            onClick={() => handleUpdate({
+                                                rsvpWishesConfig: {
+                                                    ...(layer.rsvpWishesConfig || DEFAULT_RSVP_WISHES_CONFIG),
+                                                    style: variant.id,
+                                                    variant: variant.id,
+                                                    primaryColor: variant.accentColor
+                                                }
+                                            })}
+                                            className={`p-2 rounded-lg text-left transition-all ${(layer.rsvpWishesConfig?.style || layer.rsvpWishesConfig?.variant || 'modern') === variant.id
+                                                ? 'ring-2 ring-premium-accent bg-white/10'
+                                                : 'bg-white/5 hover:bg-white/10'
+                                                }`}
+                                        >
+                                            <div className="text-[10px] font-semibold text-white/90">{variant.name}</div>
+                                            <div className="text-[8px] text-white/40 capitalize">{(variant as any).category}</div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Form Title */}
+                            <div>
+                                <label className="text-[9px] text-white/30 uppercase font-bold block mb-1">Form Title</label>
+                                <input
+                                    type="text"
+                                    value={layer.rsvpWishesConfig?.title || 'Konfirmasi Kehadiran'}
+                                    onChange={(e) => handleUpdate({
+                                        rsvpWishesConfig: {
+                                            ...(layer.rsvpWishesConfig || DEFAULT_RSVP_WISHES_CONFIG),
+                                            title: e.target.value
+                                        }
+                                    })}
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white"
+                                />
+                            </div>
+
+                            {/* Wishes Title */}
+                            <div>
+                                <label className="text-[9px] text-white/30 uppercase font-bold block mb-1">Wishes Title</label>
+                                <input
+                                    type="text"
+                                    value={layer.rsvpWishesConfig?.wishesTitle || 'Ucapan & Doa'}
+                                    onChange={(e) => handleUpdate({
+                                        rsvpWishesConfig: {
+                                            ...(layer.rsvpWishesConfig || DEFAULT_RSVP_WISHES_CONFIG),
+                                            wishesTitle: e.target.value
+                                        }
+                                    })}
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white"
+                                />
+                            </div>
+
+                            {/* Form Fields Toggle */}
+                            <div>
+                                <label className="text-[9px] text-white/30 uppercase font-bold block mb-2">Show Fields</label>
+                                <div className="space-y-2">
+                                    {[
+                                        { key: 'showNameField', label: 'Name Field' },
+                                        { key: 'showPhoneField', label: 'Phone/WhatsApp' },
+                                        { key: 'showEmailField', label: 'Email Field' },
+                                        { key: 'showAttendanceField', label: 'Attendance Options' },
+                                        { key: 'showGuestCountField', label: 'Guest Count' },
+                                        { key: 'showMessageField', label: 'Message/Wishes' },
+                                        { key: 'showMealPreference', label: 'Meal Preference' },
+                                        { key: 'showSongRequest', label: 'Song Request' },
+                                    ].map(({ key, label }) => (
+                                        <label key={key} className="flex items-center justify-between cursor-pointer group">
+                                            <span className="text-[10px] text-white/70 group-hover:text-white transition-colors">{label}</span>
+                                            <div className="relative">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={(layer.rsvpWishesConfig as any)?.[key] ?? (DEFAULT_RSVP_WISHES_CONFIG as any)[key]}
+                                                    onChange={(e) => handleUpdate({
+                                                        rsvpWishesConfig: {
+                                                            ...(layer.rsvpWishesConfig || DEFAULT_RSVP_WISHES_CONFIG),
+                                                            [key]: e.target.checked
+                                                        }
+                                                    })}
+                                                    className="sr-only peer"
+                                                />
+                                                <div className="w-8 h-4 bg-white/10 rounded-full peer-checked:bg-premium-accent/50 transition-colors" />
+                                                <div className="absolute top-0.5 left-0.5 w-3 h-3 bg-white/50 rounded-full peer-checked:translate-x-4 peer-checked:bg-premium-accent transition-all" />
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Wishes Layout */}
+                            <SelectInput
+                                label="Wishes Layout"
+                                value={layer.rsvpWishesConfig?.wishesLayout || 'list'}
+                                options={[
+                                    { value: 'list', label: 'List' },
+                                    { value: 'grid', label: 'Grid (2 columns)' },
+                                    { value: 'masonry', label: 'Masonry' },
+                                    { value: 'carousel', label: 'Carousel' },
+                                    { value: 'ticker', label: 'Ticker (Auto-scroll)' }
+                                ]}
+                                onChange={(v) => handleUpdate({
+                                    rsvpWishesConfig: {
+                                        ...(layer.rsvpWishesConfig || DEFAULT_RSVP_WISHES_CONFIG),
+                                        wishesLayout: v as any
+                                    }
+                                })}
+                            />
+
+                            {/* Wishes Card Style */}
+                            <SelectInput
+                                label="Wish Card Style"
+                                value={layer.rsvpWishesConfig?.wishCardStyle || 'glass'}
+                                options={[
+                                    { value: 'minimal', label: 'Minimal' },
+                                    { value: 'bordered', label: 'Bordered' },
+                                    { value: 'shadow', label: 'Shadow' },
+                                    { value: 'glass', label: 'Glassmorphism' }
+                                ]}
+                                onChange={(v) => handleUpdate({
+                                    rsvpWishesConfig: {
+                                        ...(layer.rsvpWishesConfig || DEFAULT_RSVP_WISHES_CONFIG),
+                                        wishCardStyle: v as any
+                                    }
+                                })}
+                            />
+
+                            {/* Max Wishes Display */}
+                            <NumberInput
+                                label="Max Wishes to Display"
+                                value={layer.rsvpWishesConfig?.wishesMaxDisplay || 50}
+                                min={5}
+                                onChange={(v) => handleUpdate({
+                                    rsvpWishesConfig: {
+                                        ...(layer.rsvpWishesConfig || DEFAULT_RSVP_WISHES_CONFIG),
+                                        wishesMaxDisplay: v
+                                    }
+                                })}
+                            />
+
+                            {/* Show Options */}
+                            <div className="space-y-2">
+                                {[
+                                    { key: 'showWishTimestamp', label: 'Show Timestamp' },
+                                    { key: 'showWishAvatar', label: 'Show Avatar' },
+                                    { key: 'wishesAutoScroll', label: 'Auto-scroll Wishes' },
+                                    { key: 'requireMessage', label: 'Require Message' },
+                                ].map(({ key, label }) => (
+                                    <label key={key} className="flex items-center justify-between cursor-pointer group">
+                                        <span className="text-[10px] text-white/70 group-hover:text-white transition-colors">{label}</span>
+                                        <div className="relative">
+                                            <input
+                                                type="checkbox"
+                                                checked={(layer.rsvpWishesConfig as any)?.[key] ?? (DEFAULT_RSVP_WISHES_CONFIG as any)[key]}
+                                                onChange={(e) => handleUpdate({
+                                                    rsvpWishesConfig: {
+                                                        ...(layer.rsvpWishesConfig || DEFAULT_RSVP_WISHES_CONFIG),
+                                                        [key]: e.target.checked
+                                                    }
+                                                })}
+                                                className="sr-only peer"
+                                            />
+                                            <div className="w-8 h-4 bg-white/10 rounded-full peer-checked:bg-premium-accent/50 transition-colors" />
+                                            <div className="absolute top-0.5 left-0.5 w-3 h-3 bg-white/50 rounded-full peer-checked:translate-x-4 peer-checked:bg-premium-accent transition-all" />
+                                        </div>
+                                    </label>
+                                ))}
+                            </div>
+
+                            {/* Styling */}
+                            <ColorInput
+                                label="Primary Color"
+                                value={layer.rsvpWishesConfig?.primaryColor || '#bfa181'}
+                                onChange={(v) => handleUpdate({
+                                    rsvpWishesConfig: {
+                                        ...(layer.rsvpWishesConfig || DEFAULT_RSVP_WISHES_CONFIG),
+                                        primaryColor: v
+                                    }
+                                })}
+                            />
+
+                            <ColorInput
+                                label="Text Color"
+                                value={layer.rsvpWishesConfig?.textColor || '#ffffff'}
+                                onChange={(v) => handleUpdate({
+                                    rsvpWishesConfig: {
+                                        ...(layer.rsvpWishesConfig || DEFAULT_RSVP_WISHES_CONFIG),
+                                        textColor: v
+                                    }
+                                })}
+                            />
+
+                            <NumberInput
+                                label="Border Radius"
+                                value={layer.rsvpWishesConfig?.borderRadius || 12}
+                                min={0}
+                                onChange={(v) => handleUpdate({
+                                    rsvpWishesConfig: {
+                                        ...(layer.rsvpWishesConfig || DEFAULT_RSVP_WISHES_CONFIG),
+                                        borderRadius: v
+                                    }
+                                })}
+                            />
+                        </div>
+                    </SectionComponent>
+                )}
+
                 {/* Animation Section */}
-                <SectionComponent title="Animation" icon={<Zap className="w-4 h-4" />}>
-                    <div className="space-y-3">
+
+                <SectionComponent title="Entrance Animation" icon={<Zap className="w-4 h-4" />}>
+                    <div className="space-y-4">
                         <SelectInput
                             label="Trigger"
-                            value={layer.animation?.trigger || 'scroll'}
+                            value={((layer.animation?.entrance as any)?.trigger) || layer.animation?.trigger || 'scroll'}
                             options={[
-                                { value: 'scroll', label: 'On Scroll (Default)' },
+                                { value: 'scroll', label: 'On Scroll' },
                                 { value: 'load', label: 'On Load' },
                                 { value: 'click', label: 'On Click' },
-                                { value: 'open_btn', label: 'With Open Button' }
+                                { value: 'open_btn', label: 'On Open Button' }
                             ]}
-                            onChange={(v) => handleUpdate({ animation: { ...layer.animation, trigger: v as any } })}
+                            onChange={(v) => handleUpdate({
+                                animation: {
+                                    ...layer.animation,
+                                    entrance: {
+                                        ...(typeof layer.animation?.entrance === 'object' ? layer.animation.entrance : { type: (layer.animation?.entrance as any) || 'none' }),
+                                        trigger: v as any
+                                    }
+                                }
+                            })}
                         />
                         <SelectInput
-                            label="Entrance"
-                            value={layer.animation?.entrance || 'none'}
+                            label="Animation Type"
+                            value={(typeof layer.animation?.entrance === 'object' ? layer.animation.entrance.type : layer.animation?.entrance) || 'none'}
                             options={[
                                 { value: 'none', label: 'None' },
                                 { value: 'fade-in', label: 'Fade In' },
@@ -1128,13 +1954,74 @@ export const PropertyPanel: React.FC = () => {
                                 { value: 'zoom-in', label: 'Zoom In' },
                                 { value: 'bounce', label: 'Bounce' },
                                 { value: 'pop-in', label: 'Pop In' },
-                                { value: 'blur-in', label: 'Blur In' }
+                                { value: 'blur-in', label: 'Blur In' },
+                                { value: 'twirl-in', label: 'Twirl In (Premium ✨)' }
                             ]}
-                            onChange={(v) => handleUpdate({ animation: { ...layer.animation, entrance: v as AnimationType } })}
+                            onChange={(v) => handleUpdate({
+                                animation: {
+                                    ...layer.animation,
+                                    entrance: {
+                                        ...(typeof layer.animation?.entrance === 'object' ? layer.animation.entrance : {}),
+                                        type: v as AnimationType
+                                    }
+                                }
+                            })}
+                        />
+                        <div className="grid grid-cols-2 gap-3">
+                            <NumberInput
+                                label="Delay (ms)"
+                                value={(typeof layer.animation?.entrance === 'object' ? layer.animation.entrance.delay : layer.animation?.delay) || 0}
+                                onChange={(v) => handleUpdate({
+                                    animation: {
+                                        ...layer.animation,
+                                        entrance: {
+                                            ...(typeof layer.animation?.entrance === 'object' ? layer.animation.entrance : {}),
+                                            delay: Math.min(v, 10000)
+                                        }
+                                    }
+                                })}
+                            />
+                            <NumberInput
+                                label="Duration (ms)"
+                                value={(typeof layer.animation?.entrance === 'object' ? layer.animation.entrance.duration : layer.animation?.duration) || 800}
+                                onChange={(v) => handleUpdate({
+                                    animation: {
+                                        ...layer.animation,
+                                        entrance: {
+                                            ...(typeof layer.animation?.entrance === 'object' ? layer.animation.entrance : {}),
+                                            duration: Math.min(v, 10000)
+                                        }
+                                    }
+                                })}
+                            />
+                        </div>
+                    </div>
+                </SectionComponent>
+
+                <SectionComponent title="Looping Animation" icon={<Zap className="w-4 h-4" />}>
+                    <div className="space-y-4">
+                        <SelectInput
+                            label="Trigger"
+                            value={((layer.animation?.loop as any)?.trigger) || 'load'}
+                            options={[
+                                { value: 'load', label: 'Continuous' },
+                                { value: 'click', label: 'On Click' },
+                                { value: 'scroll', label: 'While Visible' },
+                                { value: 'open_btn', label: 'After Open' }
+                            ]}
+                            onChange={(v) => handleUpdate({
+                                animation: {
+                                    ...layer.animation,
+                                    loop: {
+                                        ...(layer.animation?.loop || { type: (layer.animation as any)?.looping || 'none' }),
+                                        trigger: v as any
+                                    }
+                                }
+                            })}
                         />
                         <SelectInput
-                            label="Looping"
-                            value={layer.animation?.looping || 'none'}
+                            label="Loop Type"
+                            value={(typeof layer.animation?.loop === 'object' ? layer.animation.loop.type : (layer.animation as any)?.looping) || 'none'}
                             options={[
                                 { value: 'none', label: 'None' },
                                 { value: 'float', label: 'Float' },
@@ -1150,24 +2037,343 @@ export const PropertyPanel: React.FC = () => {
                                 { value: 'fly-right', label: '➡️ Terjang Kanan' },
                                 { value: 'fly-up', label: '⬆️ Terbang Atas' },
                                 { value: 'fly-down', label: '⬇️ Terbang Bawah' },
-                                { value: 'fly-random', label: '🎲 Gerakan Acak' }
+                                { value: 'fly-random', label: '🎲 Gerakan Acak' },
+                                { value: 'twirl', label: '🌀 Twirl & Scale (Premium)' }
                             ]}
-                            onChange={(v) => handleUpdate({ animation: { ...layer.animation, looping: v as AnimationType } })}
+                            onChange={(v) => handleUpdate({
+                                animation: {
+                                    ...layer.animation,
+                                    loop: {
+                                        ...(layer.animation?.loop || {}),
+                                        type: v as AnimationType
+                                    }
+                                }
+                            })}
                         />
+
+                        {(typeof layer.animation?.loop === 'object' ? layer.animation.loop.type : (layer.animation as any)?.looping) === 'spin' && (
+                            <SelectInput
+                                label="Direction"
+                                value={layer.animation?.loop?.direction || 'cw'}
+                                options={[
+                                    { value: 'cw', label: 'Clockwise ↻' },
+                                    { value: 'ccw', label: 'Counter-Clockwise ↺' }
+                                ]}
+                                onChange={(v) => handleUpdate({
+                                    animation: {
+                                        ...layer.animation,
+                                        loop: {
+                                            ...(layer.animation?.loop || {}),
+                                            direction: v as any
+                                        }
+                                    }
+                                })}
+                            />
+                        )}
+
+
                         <div className="grid grid-cols-2 gap-3">
                             <NumberInput
                                 label="Delay (ms)"
-                                value={layer.animation?.delay || 0}
-                                onChange={(v) => handleUpdate({ animation: { ...layer.animation, delay: v } })}
+                                value={layer.animation?.loop?.delay || 0}
+                                onChange={(v) => handleUpdate({
+                                    animation: {
+                                        ...layer.animation,
+                                        loop: {
+                                            ...(layer.animation?.loop || {}),
+                                            delay: Math.min(v, 10000)
+                                        }
+                                    }
+                                })}
                             />
                             <NumberInput
                                 label="Duration (ms)"
-                                value={layer.animation?.duration || 1000}
-                                onChange={(v) => handleUpdate({ animation: { ...layer.animation, duration: v } })}
+                                value={layer.animation?.loop?.duration || 1000}
+                                onChange={(v) => handleUpdate({
+                                    animation: {
+                                        ...layer.animation,
+                                        loop: {
+                                            ...(layer.animation?.loop || {}),
+                                            duration: Math.min(v, 10000)
+                                        }
+                                    }
+                                })}
                             />
                         </div>
                     </div>
                 </SectionComponent>
+
+                {/* Elegant Spin Section (Premium ✨) */}
+                <SectionComponent title="Elegant Spin" icon={<Sparkles className="w-4 h-4 text-premium-accent" />}>
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <span className="text-[10px] text-white/70 font-medium italic">Premium Pulse & Spin</span>
+                            <motion.button
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleUpdate({
+                                    elegantSpinConfig: {
+                                        ...layer.elegantSpinConfig,
+                                        enabled: !layer.elegantSpinConfig?.enabled,
+                                        duration: layer.elegantSpinConfig?.duration || 1000,
+                                        trigger: layer.elegantSpinConfig?.trigger || 'load',
+                                        direction: layer.elegantSpinConfig?.direction || 'cw',
+                                        minScale: layer.elegantSpinConfig?.minScale ?? 0.8,
+                                        maxScale: layer.elegantSpinConfig?.maxScale ?? 1.2
+                                    }
+                                })}
+                                className={`w-10 h-5 rounded-full transition-colors ${layer.elegantSpinConfig?.enabled ? 'bg-premium-accent' : 'bg-white/10'}`}
+                            >
+                                <motion.div
+                                    className="w-4 h-4 bg-white rounded-full shadow-sm"
+                                    animate={{ x: layer.elegantSpinConfig?.enabled ? 22 : 2 }}
+                                />
+                            </motion.button>
+                        </div>
+
+                        {layer.elegantSpinConfig?.enabled && (
+                            <div className="space-y-4 pt-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                                <SelectInput
+                                    label="Trigger"
+                                    value={layer.elegantSpinConfig.trigger || 'load'}
+                                    options={[
+                                        { value: 'load', label: 'On Load' },
+                                        { value: 'scroll', label: 'On Scroll' },
+                                        { value: 'click', label: 'On Click' },
+                                        { value: 'open_btn', label: 'On Open Button' }
+                                    ]}
+                                    onChange={(v) => handleUpdate({ elegantSpinConfig: { ...layer.elegantSpinConfig!, trigger: v as any } })}
+                                />
+
+                                <SelectInput
+                                    label="Direction"
+                                    value={layer.elegantSpinConfig.direction || 'cw'}
+                                    options={[
+                                        { value: 'cw', label: 'Clockwise ↻' },
+                                        { value: 'ccw', label: 'Counter-Clockwise ↺' }
+                                    ]}
+                                    onChange={(v) => handleUpdate({ elegantSpinConfig: { ...layer.elegantSpinConfig!, direction: v as any } })}
+                                />
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <NumberInput
+                                        label="Min Scale"
+                                        value={layer.elegantSpinConfig.minScale ?? 0.8}
+                                        step={0.01}
+                                        min={0}
+                                        onChange={(v) => handleUpdate({ elegantSpinConfig: { ...layer.elegantSpinConfig!, minScale: v } })}
+                                    />
+                                    <NumberInput
+                                        label="Max Scale"
+                                        value={layer.elegantSpinConfig.maxScale ?? 1.2}
+                                        step={0.01}
+                                        min={0}
+                                        onChange={(v) => handleUpdate({ elegantSpinConfig: { ...layer.elegantSpinConfig!, maxScale: v } })}
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <NumberInput
+                                        label="Spin Duration (ms)"
+                                        value={layer.elegantSpinConfig.spinDuration || layer.elegantSpinConfig.duration || 1000}
+                                        onChange={(v) => handleUpdate({ elegantSpinConfig: { ...layer.elegantSpinConfig!, spinDuration: v } })}
+                                    />
+                                    <NumberInput
+                                        label="Growth Duration (ms)"
+                                        value={layer.elegantSpinConfig.scaleDuration || layer.elegantSpinConfig.duration || 1000}
+                                        onChange={(v) => handleUpdate({ elegantSpinConfig: { ...layer.elegantSpinConfig!, scaleDuration: v } })}
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <NumberInput
+                                        label="Delay (ms)"
+                                        value={layer.elegantSpinConfig.delay || 0}
+                                        onChange={(v) => handleUpdate({ elegantSpinConfig: { ...layer.elegantSpinConfig!, delay: v } })}
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </SectionComponent>
+
+                {/* Infinite Marquee Section (Premium 🎞️) */}
+                <SectionComponent title="Infinite Marquee" icon={<MoveHorizontal className="w-4 h-4 text-premium-accent" />}>
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <span className="text-[10px] text-white/70 font-medium italic">Continuous Movement</span>
+                            <motion.button
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleUpdate({
+                                    infiniteMarqueeConfig: {
+                                        ...layer.infiniteMarqueeConfig,
+                                        enabled: !layer.infiniteMarqueeConfig?.enabled,
+                                        speed: layer.infiniteMarqueeConfig?.speed || 50,
+                                        angle: layer.infiniteMarqueeConfig?.angle || 0
+                                    }
+                                })}
+                                className={`w-10 h-5 rounded-full transition-colors ${layer.infiniteMarqueeConfig?.enabled ? 'bg-premium-accent' : 'bg-white/10'}`}
+                            >
+                                <motion.div
+                                    className="w-4 h-4 bg-white rounded-full shadow-sm"
+                                    animate={{ x: layer.infiniteMarqueeConfig?.enabled ? 22 : 2 }}
+                                />
+                            </motion.button>
+                        </div>
+
+                        {layer.infiniteMarqueeConfig?.enabled && (
+                            <div className="space-y-4 pt-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                                <SelectInput
+                                    label="Mode"
+                                    value={layer.infiniteMarqueeConfig.mode || 'seamless'}
+                                    options={[
+                                        { value: 'seamless', label: '✨ Seamless (Infinite Loop)' },
+                                        { value: 'scroll', label: 'Bounce (Back & Forth)' },
+                                        { value: 'tile', label: 'Tile (Pattern Repeat)' }
+                                    ]}
+                                    onChange={(v) => handleUpdate({ infiniteMarqueeConfig: { ...layer.infiniteMarqueeConfig!, mode: v as any } })}
+                                />
+
+                                {layer.infiniteMarqueeConfig.mode === 'seamless' && (
+                                    <div className="p-2 rounded-lg bg-green-500/10 border border-green-500/20">
+                                        <p className="text-[9px] text-green-400/80 leading-tight">
+                                            ✓ Enterprise mode: True infinite scroll tanpa putus, bekerja dengan semua ukuran gambar.
+                                        </p>
+                                    </div>
+                                )}
+
+                                {layer.infiniteMarqueeConfig.mode === 'tile' && (
+                                    <p className="text-[9px] text-amber-400/60 italic leading-tight">
+                                        ⚠️ Tile mode: Gambar akan di-repeat. Gunakan gambar pattern 100-200px.
+                                    </p>
+                                )}
+
+                                <NumberInput
+                                    label="Speed (px/s)"
+                                    value={layer.infiniteMarqueeConfig.speed || 50}
+                                    min={1}
+                                    onChange={(v) => handleUpdate({ infiniteMarqueeConfig: { ...layer.infiniteMarqueeConfig!, speed: v } })}
+                                />
+
+                                {layer.infiniteMarqueeConfig.mode === 'scroll' && (
+                                    <NumberInput
+                                        label="Distance (px)"
+                                        value={layer.infiniteMarqueeConfig.distance || 500}
+                                        min={50}
+                                        onChange={(v) => handleUpdate({ infiniteMarqueeConfig: { ...layer.infiniteMarqueeConfig!, distance: v } })}
+                                    />
+                                )}
+
+                                {/* Direction for Seamless mode */}
+                                {(layer.infiniteMarqueeConfig.mode === 'seamless' || !layer.infiniteMarqueeConfig.mode) && (
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] text-white/30 uppercase font-bold block">Direction</label>
+                                        <div className="grid grid-cols-4 gap-1">
+                                            {[
+                                                { label: '← Left', val: 'left' },
+                                                { label: '→ Right', val: 'right' },
+                                                { label: '↑ Up', val: 'up' },
+                                                { label: '↓ Down', val: 'down' }
+                                            ].map(preset => (
+                                                <button
+                                                    key={preset.val}
+                                                    onClick={() => handleUpdate({ infiniteMarqueeConfig: { ...layer.infiniteMarqueeConfig!, direction: preset.val as any } })}
+                                                    className={`py-1.5 text-[8px] border rounded transition-all ${(layer.infiniteMarqueeConfig?.direction || 'left') === preset.val
+                                                        ? 'border-premium-accent bg-premium-accent/20 text-premium-accent'
+                                                        : 'border-white/5 bg-white/5 text-white/60 hover:bg-white/10'
+                                                        }`}
+                                                >
+                                                    {preset.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Angle for Tile/Scroll mode */}
+                                {layer.infiniteMarqueeConfig.mode === 'tile' && (
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <label className="text-[9px] text-white/30 uppercase font-bold">Direction (Angle: {layer.infiniteMarqueeConfig.angle || 0}°)</label>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="360"
+                                            value={layer.infiniteMarqueeConfig.angle || 0}
+                                            onChange={(e) => handleUpdate({ infiniteMarqueeConfig: { ...layer.infiniteMarqueeConfig!, angle: parseInt(e.target.value) } })}
+                                            className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-premium-accent"
+                                        />
+                                        <div className="grid grid-cols-4 gap-1">
+                                            {[
+                                                { label: 'Right', val: 0 },
+                                                { label: 'Down', val: 90 },
+                                                { label: 'Left', val: 180 },
+                                                { label: 'Up', val: 270 }
+                                            ].map(preset => (
+                                                <button
+                                                    key={preset.val}
+                                                    onClick={() => handleUpdate({ infiniteMarqueeConfig: { ...layer.infiniteMarqueeConfig!, angle: preset.val } })}
+                                                    className="py-1 text-[8px] border border-white/5 bg-white/5 rounded hover:bg-white/10 text-white/60"
+                                                >
+                                                    {preset.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </SectionComponent>
+
+                {/* Photo Grid Settings */}
+                {layer.type === 'photo_grid' && layer.photoGridConfig && (
+                    <SectionComponent title="Photo Grid" icon={<Layout className="w-4 h-4" />}>
+                        <div className="space-y-4">
+                            <SelectInput
+                                label="Hover Effect"
+                                value={layer.photoGridConfig.hoverEffect || 'zoom'}
+                                options={[
+                                    { value: 'none', label: 'None' },
+                                    { value: 'zoom', label: '🔍 Zoom In' },
+                                    { value: 'zoom-rotate', label: '🔄 Zoom + Rotate' },
+                                    { value: 'brightness', label: '☀️ Brightness' },
+                                    { value: 'grayscale', label: '🎨 Grayscale → Color' },
+                                    { value: 'blur-reveal', label: '💨 Blur → Reveal' },
+                                    { value: 'overlay', label: '✨ Gold Overlay' },
+                                    { value: 'tilt', label: '📐 3D Tilt' },
+                                    { value: 'glow', label: '💫 Glow Effect' }
+                                ]}
+                                onChange={(v) => handleUpdate({
+                                    photoGridConfig: {
+                                        ...layer.photoGridConfig!,
+                                        hoverEffect: v as any
+                                    }
+                                })}
+                            />
+
+                            <NumberInput
+                                label="Gap (px)"
+                                value={layer.photoGridConfig.gap ?? 8}
+                                min={0}
+                                max={32}
+                                onChange={(v) => handleUpdate({
+                                    photoGridConfig: { ...layer.photoGridConfig!, gap: v }
+                                })}
+                            />
+
+                            <NumberInput
+                                label="Corner Radius (px)"
+                                value={layer.photoGridConfig.cornerRadius ?? 12}
+                                min={0}
+                                max={50}
+                                onChange={(v) => handleUpdate({
+                                    photoGridConfig: { ...layer.photoGridConfig!, cornerRadius: v }
+                                })}
+                            />
+                        </div>
+                    </SectionComponent>
+                )}
 
                 {/* Motion Path Section */}
                 <SectionComponent title="Motion Path" icon={<Wind className="w-4 h-4" />}>
@@ -1241,7 +2447,7 @@ export const PropertyPanel: React.FC = () => {
                                             </label>
                                         </div>
                                         <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                                            {layer.motionPathConfig.points.map((point, idx) => (
+                                            {layer.motionPathConfig.points.map((point: any, idx: number) => (
                                                 <div key={idx} className="p-2.5 rounded-lg border border-white/10 bg-white/5 group">
                                                     <div className="flex items-center justify-between mb-2">
                                                         <span className="text-[10px] text-premium-accent font-semibold">
@@ -1397,12 +2603,22 @@ const SectionComponent: React.FC<{ title: string; icon: React.ReactNode; childre
     </div>
 );
 
-const NumberInput: React.FC<{ label: string; value: number; onChange: (v: number) => void }> = ({ label, value, onChange }) => (
+const NumberInput: React.FC<{
+    label: string;
+    value: number;
+    step?: number;
+    min?: number;
+    max?: number;
+    onChange: (v: number) => void;
+}> = ({ label, value, step = 1, min, max, onChange }) => (
     <div>
         <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">{label}</label>
         <input
             type="number"
-            value={Math.round(value)}
+            value={value}
+            step={step}
+            min={min}
+            max={max}
             onChange={(e) => onChange(Number(e.target.value))}
             className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none"
         />

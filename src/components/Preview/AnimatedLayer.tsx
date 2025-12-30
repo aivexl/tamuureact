@@ -12,6 +12,15 @@ import { useStore } from '@/store/useStore';
  */
 const globalAnimatedState = new Map<string, boolean>();
 
+/**
+ * Clear the global animation cache.
+ * Called when opening/resetting the preview to ensure animations re-trigger.
+ */
+export const clearAnimationCache = () => {
+    console.log('[AnimatedLayer] Clearing animation cache');
+    globalAnimatedState.clear();
+};
+
 interface AnimatedLayerProps {
     layer: Layer;
     adjustedY: number;
@@ -23,6 +32,8 @@ interface AnimatedLayerProps {
     forceTrigger?: boolean;
     /** Whether parent section is active - matches legacy isSectionActive */
     isSectionActive?: boolean;
+    /** Callback when image dimensions are detected for auto-sizing */
+    onDimensionsDetected?: (width: number, height: number) => void;
 }
 
 /**
@@ -37,7 +48,7 @@ interface AnimatedLayerProps {
  * 4. isSectionActive check before triggering scroll animations
  * 5. Directional reset logic (only reset if element below viewport)
  */
-export const AnimatedLayer: React.FC<AnimatedLayerProps> = ({
+const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     layer,
     adjustedY,
     isOpened,
@@ -45,7 +56,8 @@ export const AnimatedLayer: React.FC<AnimatedLayerProps> = ({
     scrollContainerRef,
     isEditor = false,
     forceTrigger = false,
-    isSectionActive = true
+    isSectionActive = true,
+    onDimensionsDetected
 }) => {
     const ref = useRef<HTMLDivElement>(null);
     const isAnimationPlaying = useStore(state => state.isAnimationPlaying);
@@ -69,17 +81,37 @@ export const AnimatedLayer: React.FC<AnimatedLayerProps> = ({
     }, [inView]);
 
     const { animation } = layer;
-    const trigger = animation?.trigger || 'scroll';
-    const delay = (animation?.delay || 0) / 1000;
-    // Legacy default duration: 800ms (0.8s)
-    const duration = (animation?.duration || 800) / 1000;
+
+    // Split Animation Properties (Enterprise Standard)
+    // Map new schema or fallback to legacy top-level properties
+    const entranceType = (typeof animation?.entrance === 'object' ? animation.entrance.type : animation?.entrance) || animation?.entranceType;
+    const entranceTrigger = (typeof animation?.entrance === 'object' ? animation.entrance.trigger : animation?.trigger) || 'scroll';
+    const entranceDelay = Math.min(((typeof animation?.entrance === 'object' ? animation.entrance.delay : animation?.delay) || 0) / 1000, 10);
+    const entranceDuration = Math.min(((typeof animation?.entrance === 'object' ? animation.entrance.duration : animation?.duration) || 800) / 1000, 10);
+
+    const loopingType = (typeof animation?.loop === 'object' ? animation.loop.type : (animation as any)?.looping) || (layer as any).animationLoop || (animation as any)?.loopingType;
+    const loopTrigger = (typeof animation?.loop === 'object' ? animation.loop.trigger : 'load') || 'load';
+    const loopDelay = Math.min(((typeof animation?.loop === 'object' ? animation.loop.delay : 0) || 0) / 1000, 10);
+    const loopDuration = Math.min(((typeof animation?.loop === 'object' ? animation.loop.duration : ((animation as any)?.duration || 1000)) || 1000) / 1000, 10);
+    const loopDirection = (typeof animation?.loop === 'object' ? animation.loop.direction : 'cw') || 'cw';
+    const minScale = (typeof animation?.loop === 'object' ? animation.loop.minScale : 0.8) ?? 0.8;
+    const maxScale = (typeof animation?.loop === 'object' ? animation.loop.maxScale : 1.2) ?? 1.2;
+
+    // Dedicated Elegant Spin (Enterprise Standard)
+    const elegantSpinConfig = layer.elegantSpinConfig;
+    const isElegantSpinEnabled = !!elegantSpinConfig?.enabled;
+
+    // Dedicated Infinite Marquee (Pattern Walk / Continuous Scroll)
+    const marqueeConfig = layer.infiniteMarqueeConfig;
+    // Marquee is enabled if the config is enabled (no imageUrl requirement for scroll mode)
+    const isMarqueeEnabled = !!marqueeConfig?.enabled;
+    // Tile mode ONLY when explicitly set to 'tile' AND has imageUrl
+    const isMarqueeTileMode = isMarqueeEnabled && marqueeConfig?.mode === 'tile' && !!layer.imageUrl;
 
     // Check if this is an "immediate" trigger (load = animate immediately)
-    const isImmediate = trigger === 'load';
+    const isImmediate = entranceTrigger === 'load' || entranceTrigger === 'immediate';
 
-    // Check for entrance animation
-    const entranceType = animation?.entrance;
-    const loopingType = animation?.looping || (layer as any).animationLoop;
+    // Check for animation presence
     const hasEntranceAnimation = entranceType && entranceType !== 'none';
     const hasLoopingAnimation = loopingType && loopingType !== 'none';
     const shouldAnimate = !isEditor || isAnimationPlaying;
@@ -109,17 +141,14 @@ export const AnimatedLayer: React.FC<AnimatedLayerProps> = ({
 
     const handleContentLoad = useCallback(() => {
         if (isContentReadyRef.current) return;
-
-        console.log(`[AnimatedLayer] Content READY for ${layer.type}:${layer.id} (Name: ${layer.name})`);
         isContentReadyRef.current = true;
 
         if (pendingTriggerRef.current) {
-            console.log(`[AnimatedLayer] Executing PENDING trigger for ${layer.id}`);
             pendingTriggerRef.current = false;
             setAnimationState("visible");
             if (layer.id) globalAnimatedState.set(layer.id, true);
         }
-    }, [layer.id, layer.type, layer.name, setAnimationState]);
+    }, [layer.id, setAnimationState]);
 
     // MEDIA SAFETY FALLBACK: If content takes too long (3s), assume it's "ready enough"
     // to show whatever it has (or an error state) so it doesn't stay invisible.
@@ -139,15 +168,13 @@ export const AnimatedLayer: React.FC<AnimatedLayerProps> = ({
 
         // Validation: Gate on content readiness
         if (!isContentReadyRef.current) {
-            console.log(`[AnimatedLayer] Deferring trigger until content ready: ${layer.id} (${layer.type})`);
             pendingTriggerRef.current = true;
             return;
         }
 
-        console.log(`[AnimatedLayer] Triggering animation REACTIVELY: ${layer.id} at (${layer.x}, ${adjustedY})`);
         setAnimationState("visible");
         if (layer.id) globalAnimatedState.set(layer.id, true);
-    }, [animationState, layer.id, layer.type, layer.x, adjustedY, setAnimationState]);
+    }, [animationState, layer.id, setAnimationState]);
 
     // Entrance Variants
     const variants = useMemo(() => {
@@ -169,21 +196,21 @@ export const AnimatedLayer: React.FC<AnimatedLayerProps> = ({
             scaleX: targetScaleX,
             scaleY: targetScaleY,
             rotate: targetRotate,
-            filter: 'blur(10px)',
+            // Removed default blur to prevent "gejolak" (jitters) on lower-end devices
         };
 
         const visible: any = {
             opacity: layer.opacity ?? 1,
-            filter: 'blur(0px)',
             x: targetX,
             y: targetY,
             scaleX: targetScaleX,
             scaleY: targetScaleY,
             rotate: targetRotate,
             transition: {
-                duration: duration,
-                delay: delay,
-                ease: "easeOut"
+                duration: entranceDuration,
+                delay: entranceDelay,
+                // PROFESSIONAL EASE: Smooth, clean motion
+                ease: [0.22, 1, 0.36, 1]
             }
         };
 
@@ -196,30 +223,40 @@ export const AnimatedLayer: React.FC<AnimatedLayerProps> = ({
 
         switch (entranceType) {
             case 'fade-in':
-                hidden.filter = 'blur(0px)';
                 break;
-            case 'slide-up': hidden.y = targetY + 50; break;
-            case 'slide-down': hidden.y = targetY - 50; break;
-            case 'slide-left': hidden.x = targetX + 50; break;
-            case 'slide-right': hidden.x = targetX - 50; break;
+            case 'slide-up': hidden.y = targetY + 30; break;
+            case 'slide-down': hidden.y = targetY - 30; break;
+            case 'slide-left': hidden.x = targetX + 30; break;
+            case 'slide-right': hidden.x = targetX - 30; break;
             case 'slide-in-left': hidden.x = "-100vw"; hidden.opacity = 0; break;
             case 'slide-in-right': hidden.x = "100vw"; hidden.opacity = 0; break;
             case 'zoom-in':
-                hidden.scaleX = 0.5 * targetScaleX;
-                hidden.scaleY = 0.5 * targetScaleY;
+                hidden.scaleX = 0.8 * targetScaleX;
+                hidden.scaleY = 0.8 * targetScaleY;
                 break;
             case 'zoom-out':
-                hidden.scaleX = 1.5 * targetScaleX;
-                hidden.scaleY = 1.5 * targetScaleY;
+                hidden.scaleX = 1.2 * targetScaleX;
+                hidden.scaleY = 1.2 * targetScaleY;
                 break;
             case 'bounce':
-                hidden.y = targetY - 50;
-                visible.transition = { type: "spring", bounce: 0.6, duration: duration, delay: delay };
+                hidden.y = targetY - 40;
+                visible.transition = { type: "spring", bounce: 0.4, duration: entranceDuration, delay: entranceDelay };
                 break;
             case 'pop-in':
-                hidden.scaleX = 0.5 * targetScaleX;
-                hidden.scaleY = 0.5 * targetScaleY;
-                visible.transition = { type: "spring", stiffness: 300, damping: 15, delay: delay };
+                hidden.scaleX = 0.8 * targetScaleX;
+                hidden.scaleY = 0.8 * targetScaleY;
+                visible.transition = { type: "spring", stiffness: 260, damping: 20, delay: entranceDelay };
+                break;
+            case 'twirl-in':
+                hidden.scaleX = 0;
+                hidden.scaleY = 0;
+                hidden.rotate = targetRotate - 180;
+                visible.transition = {
+                    type: "spring",
+                    duration: entranceDuration,
+                    bounce: 0.2,
+                    delay: entranceDelay
+                };
                 break;
         }
 
@@ -228,8 +265,8 @@ export const AnimatedLayer: React.FC<AnimatedLayerProps> = ({
         entranceType,
         hasEntranceAnimation,
         layer.opacity,
-        duration,
-        delay,
+        entranceDuration,
+        entranceDelay,
         baseScale,
         flipX,
         flipY,
@@ -239,16 +276,13 @@ export const AnimatedLayer: React.FC<AnimatedLayerProps> = ({
         isEditor
     ]);
 
-    // Content Loading Watcher
     useEffect(() => {
         if (isContentReadyRef.current && pendingTriggerRef.current) {
-            console.log(`[AnimatedLayer] Content ready, executing pending trigger for ${layer.id}`);
             pendingTriggerRef.current = false;
             tryTriggerAnimation();
         }
-    }, [isContentReadyRef.current, tryTriggerAnimation, layer.id]);
+    }, [isContentReadyRef.current, tryTriggerAnimation]);
 
-    // INITIAL TRIGGER / REMOUNT SYNC
     useEffect(() => {
         if (animationState === "visible") return;
 
@@ -258,34 +292,48 @@ export const AnimatedLayer: React.FC<AnimatedLayerProps> = ({
             return;
         }
 
-        // Preview immediate trigger
+        // Preview immediate trigger (like trigger='load')
         if (isImmediate) {
             tryTriggerAnimation();
         }
 
-        // Section 0 Fix: If we are in scroll mode and section is active on mount, try trigger
-        if (!isEditor && trigger === 'scroll' && isSectionActive) {
+        // Section 0 Fix: We REMOVED the conflicting scroll check here.
+        // Scroll-triggered elements will now be handled ONLY by the InView useEffect.
+        // This breaks the infinite flicker loop.
+    }, [isImmediate, tryTriggerAnimation, animationState, layer.id, setAnimationState]);
+
+    // SCROLL TRIGGER (Entrance)
+    useEffect(() => {
+        if (isEditor || !hasEntranceAnimation || isImmediate || entranceTrigger !== 'scroll') return;
+
+        // console.log(`[AnimatedLayer] Scroll Watch: ${layer.name} | inView: ${inView} | active: ${isSectionActive}`);
+        if (inView && isSectionActive) {
             tryTriggerAnimation();
         }
-    }, [isImmediate, trigger, isSectionActive, tryTriggerAnimation, animationState, layer.id, isEditor, setAnimationState]);
+    }, [inView, isSectionActive, isEditor, hasEntranceAnimation, isImmediate, entranceTrigger, tryTriggerAnimation, layer.name]);
 
-    // SCROLL TRIGGER
+    // SCROLL RESET (Re-triggering)
     useEffect(() => {
-        if (isEditor || !hasEntranceAnimation || isImmediate || trigger !== 'scroll') return;
+        if (isEditor || !hasEntranceAnimation || isImmediate || entranceTrigger !== 'scroll') return;
 
-        if (inView) {
-            if (isSectionActive) {
-                tryTriggerAnimation();
-            }
-        } else if (ref.current) {
-            // DIRECTIONAL RESET: Only reset if element is far below viewport
+        // When it goes out of view, check if it went off the BOTTOM
+        if (!inView && ref.current) {
             const rect = ref.current.getBoundingClientRect();
-            if (rect.top > window.innerHeight * 1.5) {
-                setAnimationState("hidden");
-                if (layer.id) globalAnimatedState.set(layer.id, false);
+            const viewportH = window.innerHeight;
+
+            // Log for debugging
+            // console.log(`[AnimatedLayer] OutOfView: ${layer.name} | top: ${rect.top} | viewport: ${viewportH}`);
+
+            // If the element's top is below the viewport bottom, it's eligible for reset
+            // We use a more liberal threshold or just check if it's "mostly" below
+            if (rect.top >= viewportH - 100) {
+                if (animationState === "visible") {
+                    setAnimationState("hidden");
+                    if (layer.id) globalAnimatedState.set(layer.id, false);
+                }
             }
         }
-    }, [inView, trigger, isEditor, hasEntranceAnimation, isImmediate, isSectionActive, tryTriggerAnimation, layer.id, setAnimationState]);
+    }, [inView, animationState, layer.id, layer.name, isEditor, hasEntranceAnimation, isImmediate, entranceTrigger]);
 
     // FORCE TRIGGER & OPEN BUTTON
     useEffect(() => {
@@ -304,7 +352,7 @@ export const AnimatedLayer: React.FC<AnimatedLayerProps> = ({
             }
 
             // For click/open_btn modes
-            if (trigger === 'click' || trigger === 'open_btn') {
+            if (entranceTrigger === 'click' || entranceTrigger === 'open_btn') {
                 if (isVisibleRef.current || isImmediate) {
                     tryTriggerAnimation();
                 }
@@ -315,44 +363,159 @@ export const AnimatedLayer: React.FC<AnimatedLayerProps> = ({
                 }
             }
         }
-    }, [forceTrigger, trigger, isEditor, hasEntranceAnimation, isImmediate, isSectionActive, tryTriggerAnimation, animationState]);
+    }, [forceTrigger, entranceTrigger, isEditor, hasEntranceAnimation, isImmediate, isSectionActive, tryTriggerAnimation, animationState]);
 
     useEffect(() => {
         if (isEditor || !hasEntranceAnimation) return;
 
-        if (trigger === 'open_btn' && isOpened) {
+        if (entranceTrigger === 'open_btn' && isOpened) {
             tryTriggerAnimation();
         }
-    }, [isOpened, trigger, isEditor, hasEntranceAnimation, tryTriggerAnimation]);
+    }, [isOpened, entranceTrigger, isEditor, hasEntranceAnimation, tryTriggerAnimation]);
 
     // Looping animations
     const loopingConfig = useMemo(() => {
         if (!loopingType || loopingType === 'none') return null;
+
+        // Loop Trigger Logic
+        if (loopTrigger === 'click' && !forceTrigger) return null;
+        if (loopTrigger === 'scroll' && !inView) return null;
+        if (loopTrigger === 'open_btn' && !isOpened) return null;
+
         const loopTransition = {
-            duration: duration,
+            duration: loopDuration,
             repeat: Infinity,
             repeatType: "reverse" as const,
-            ease: "easeInOut"
+            ease: "easeInOut",
+            delay: loopDelay
         };
+
+        const startRotateForLoop = isEditor ? 0 : baseRotate;
+        const spinRotation = loopDirection === 'ccw' ? startRotateForLoop - 360 : startRotateForLoop + 360;
 
         switch (loopingType) {
             case 'float': return { animate: { y: [0, -15, 0] }, transition: loopTransition };
             case 'pulse': return { animate: { scale: [1, 1.05, 1] }, transition: loopTransition };
-            case 'sway': return { animate: { rotate: [0, 5, 0, -5, 0] }, transition: { ...loopTransition, duration: 4 } };
-            case 'spin': return { animate: { rotate: 360 }, transition: { duration: duration * 5, repeat: Infinity, ease: "linear" } };
+            case 'sway': return { animate: { rotate: [startRotateForLoop, startRotateForLoop + 5, startRotateForLoop, startRotateForLoop - 5, startRotateForLoop] }, transition: { ...loopTransition, duration: 4 } };
+            case 'spin': return { animate: { rotate: [startRotateForLoop, spinRotation] }, transition: { duration: loopDuration * 4, repeat: Infinity, ease: "linear", repeatType: "loop" } };
             case 'glow': return { animate: { filter: ['drop-shadow(0 0 0px rgba(255,255,255,0))', 'drop-shadow(0 0 10px rgba(255,255,255,0.8))', 'drop-shadow(0 0 0px rgba(255,255,255,0))'] }, transition: loopTransition };
-            case 'heartbeat': return { animate: { scale: [1, 1.2, 1] }, transition: { duration: duration * 0.8, repeat: Infinity, repeatType: "mirror" } };
-            case 'sparkle': return { animate: { opacity: [1, 0.5, 1] }, transition: { duration: duration, repeat: Infinity, ease: "easeInOut" } };
-            case 'flap-bob': return { animate: { y: [0, -10, 0], scaleY: [1, 0.6, 1] }, transition: { duration: duration * 0.3, repeat: Infinity, ease: "easeInOut" } };
-            case 'float-flap': return { animate: { y: [0, -20, 0], scaleY: [1, 0.5, 1], rotate: [0, 5, 0, -5, 0] }, transition: { duration: duration, repeat: Infinity, ease: "easeInOut" } };
-            case 'fly-left': return { animate: { x: [0, -200] }, transition: { duration: duration * 3, repeat: Infinity, ease: "linear" } };
-            case 'fly-right': return { animate: { x: [0, 200] }, transition: { duration: duration * 3, repeat: Infinity, ease: "linear" } };
-            case 'fly-up': return { animate: { y: [0, -200], opacity: [1, 0] }, transition: { duration: duration * 4, repeat: Infinity, ease: "easeIn" } };
-            case 'fly-down': return { animate: { y: [0, 200], opacity: [1, 0] }, transition: { duration: duration * 4, repeat: Infinity, ease: "easeIn" } };
-            case 'fly-random': return { animate: { x: [0, 30, -20, 40, 0], y: [0, -40, 20, -10, 0] }, transition: { duration: duration * 8, repeat: Infinity, ease: "easeInOut" } };
+            case 'heartbeat': return { animate: { scale: [1, 1.2, 1] }, transition: { duration: loopDuration * 0.8, repeat: Infinity, repeatType: "mirror" } };
+            case 'sparkle': return { animate: { opacity: [1, 0.5, 1] }, transition: { duration: loopDuration, repeat: Infinity, ease: "easeInOut" } };
+            case 'flap-bob': return { animate: { y: [0, -10, 0], scaleY: [1, 0.6, 1] }, transition: { duration: loopDuration * 0.3, repeat: Infinity, ease: "easeInOut" } };
+            case 'float-flap': return { animate: { y: [0, -20, 0], scaleY: [1, 0.5, 1], rotate: [baseRotate, baseRotate + 5, baseRotate, baseRotate - 5, baseRotate] }, transition: { duration: loopDuration, repeat: Infinity, ease: "easeInOut" } };
+            case 'fly-left': return { animate: { x: [0, -200] }, transition: { duration: loopDuration * 3, repeat: Infinity, ease: "linear" } };
+            case 'fly-right': return { animate: { x: [0, 200] }, transition: { duration: loopDuration * 3, repeat: Infinity, ease: "linear" } };
+            case 'fly-up': return { animate: { y: [0, -200], opacity: [1, 0] }, transition: { duration: loopDuration * 4, repeat: Infinity, ease: "easeIn" } };
+            case 'fly-down': return { animate: { y: [0, 200], opacity: [1, 0] }, transition: { duration: loopDuration * 4, repeat: Infinity, ease: "easeIn" } };
+            case 'fly-random': return { animate: { x: [0, 30, -20, 40, 0], y: [0, -40, 20, -10, 0] }, transition: { duration: loopDuration * 8, repeat: Infinity, ease: "easeInOut" } };
+            case 'twirl': return {
+                animate: {
+                    scale: [0, 1, 1, 0],
+                    rotate: [startRotateForLoop - 360, startRotateForLoop, startRotateForLoop, startRotateForLoop + 360],
+                    opacity: [0, 1, 1, 0]
+                },
+                transition: {
+                    duration: loopDuration * 2.5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    times: [0, 0.4, 0.6, 1],
+                    delay: loopDelay
+                }
+            };
             default: return null;
         }
-    }, [loopingType, duration]);
+    }, [loopingType, loopDuration, loopDelay, loopTrigger, loopDirection, forceTrigger, inView, isOpened, baseRotate, minScale, maxScale, isEditor]);
+
+    // ============================================
+    // ELEGANT SPIN ENGINE (DEDICATED)
+    // ============================================
+    const elegantSpinAnimation = useMemo(() => {
+        if (!isElegantSpinEnabled || !elegantSpinConfig) return null;
+
+        const trigger = elegantSpinConfig.trigger || 'load';
+
+        // Trigger Logic
+        if (trigger === 'click' && !forceTrigger) return null;
+        if (trigger === 'scroll' && !inView) return null;
+        if (trigger === 'open_btn' && !isOpened) return null;
+
+        const spinDuration = (elegantSpinConfig.spinDuration || elegantSpinConfig.duration || 1000) / 1000;
+        const scaleDuration = (elegantSpinConfig.scaleDuration || elegantSpinConfig.duration || 1000) / 1000;
+        const delay = (elegantSpinConfig.delay || 0) / 1000;
+        const direction = elegantSpinConfig.direction || 'cw';
+        const minS = elegantSpinConfig.minScale ?? 0.8;
+        const maxS = elegantSpinConfig.maxScale ?? 1.2;
+
+        const startRotate = isEditor ? 0 : baseRotate;
+        const spinRotation = direction === 'ccw' ? startRotate - 360 : startRotate + 360;
+
+        return {
+            animate: {
+                rotate: [startRotate, spinRotation],
+                scale: [minS, maxS]
+            },
+            transition: {
+                rotate: { duration: spinDuration, repeat: Infinity, ease: "linear" },
+                scale: { duration: scaleDuration, ease: "easeOut" },
+                delay: delay
+            }
+        };
+    }, [isElegantSpinEnabled, elegantSpinConfig, forceTrigger, inView, isOpened, baseRotate]);
+
+    // ============================================
+    // INFINITE MARQUEE ENGINE (Pattern Walk / Continuous Scroll)
+    // ============================================
+    const marqueeMode = marqueeConfig?.mode || 'seamless'; // Default to seamless (true infinite)
+
+    const marqueeAnimation = useMemo(() => {
+        if (!isMarqueeEnabled || !marqueeConfig) return null;
+
+        const speed = marqueeConfig.speed || 50; // px/s
+        const angle = marqueeConfig.angle || 0; // degrees
+        const isReverse = marqueeConfig.reverse;
+        const mode = marqueeConfig.mode || 'scroll';
+
+        const angleRad = (isReverse ? (angle + 180) : angle) * (Math.PI / 180);
+
+        if (mode === 'tile') {
+            // Tile mode: animate background-position for seamless tiling
+            const dist = 2000;
+            const duration = dist / speed;
+            const targetX = Math.cos(angleRad) * dist;
+            const targetY = Math.sin(angleRad) * dist;
+
+            return {
+                animate: {
+                    backgroundPosition: ["0px 0px", `${targetX}px ${targetY}px`]
+                },
+                transition: {
+                    duration: duration,
+                    repeat: Infinity,
+                    ease: "linear"
+                }
+            };
+        } else {
+            // Scroll mode: animate element position (x/y transform)
+            // Uses "mirror" repeatType for seamless back-and-forth without jumping
+            const dist = marqueeConfig.distance || 500; // Default 500px travel
+            const duration = dist / speed;
+            const targetX = Math.cos(angleRad) * dist;
+            const targetY = Math.sin(angleRad) * dist;
+
+            return {
+                animate: {
+                    x: [0, targetX],
+                    y: [0, targetY]
+                },
+                transition: {
+                    duration: duration,
+                    repeat: Infinity,
+                    repeatType: "mirror" as const, // Seamless back-and-forth
+                    ease: "easeInOut"
+                }
+            };
+        }
+    }, [isMarqueeEnabled, marqueeConfig]);
 
     // ============================================
     // MOTION PATH ENGINE (CTO Enterprise Implementation)
@@ -375,7 +538,7 @@ export const AnimatedLayer: React.FC<AnimatedLayerProps> = ({
         const halfWidth = (layer.width || 0) / 2;
         const halfHeight = (layer.height || 0) / 2;
 
-        points.forEach((p) => {
+        points.forEach((p: any) => {
             xKeyframes.push(p.x - layer.x - halfWidth);
             yKeyframes.push(p.y - adjustedY - halfHeight);
             rotateKeyframes.push(p.rotation ?? 0);
@@ -402,10 +565,12 @@ export const AnimatedLayer: React.FC<AnimatedLayerProps> = ({
     // LOOPING ANIMATION PROPS
     const loopingProps = useMemo(() => {
         if (!shouldAnimate || animationState !== "visible") return {};
+        if (marqueeAnimation) return marqueeAnimation;
+        if (elegantSpinAnimation) return elegantSpinAnimation;
         if (pathAnimation) return pathAnimation;
         if (loopingConfig) return loopingConfig;
         return {};
-    }, [shouldAnimate, animationState, pathAnimation, loopingConfig]);
+    }, [shouldAnimate, animationState, marqueeAnimation, elegantSpinAnimation, pathAnimation, loopingConfig]);
 
     return (
         <motion.div
@@ -421,20 +586,92 @@ export const AnimatedLayer: React.FC<AnimatedLayerProps> = ({
                 top: `${adjustedY}px`,
                 width: `${layer.width}px`,
                 height: `${layer.height}px`,
-                zIndex: layer.zIndex
+                zIndex: layer.zIndex,
+                willChange: 'transform, opacity',
             }}
         >
-            <motion.div
-                className="w-full h-full"
-                {...loopingProps}
-            >
-                <ElementRenderer
-                    layer={layer}
-                    onOpenInvitation={onOpenInvitation}
-                    isEditor={isEditor}
-                    onContentLoad={handleContentLoad}
-                />
-            </motion.div>
+            {/* SEAMLESS MODE: Clone-based CSS animation for true infinite scroll */}
+            {isMarqueeEnabled && marqueeMode === 'seamless' ? (
+                (() => {
+                    const direction = marqueeConfig?.direction || 'left';
+                    const speed = marqueeConfig?.speed || 50;
+                    const isVertical = direction === 'up' || direction === 'down';
+                    const dimension = isVertical ? (layer.height || 100) : (layer.width || 100);
+                    // Calculate duration based on speed (px/s) and element size
+                    // Duration = distance / speed. Distance = 2x element size for clone technique
+                    const duration = (dimension * 2) / speed;
+
+                    const animationClass = {
+                        'left': 'animate-seamless-left',
+                        'right': 'animate-seamless-right',
+                        'up': 'animate-seamless-up',
+                        'down': 'animate-seamless-down'
+                    }[direction];
+
+                    const trackClass = isVertical
+                        ? 'seamless-marquee-track-vertical'
+                        : 'seamless-marquee-track';
+
+                    return (
+                        <div className="seamless-marquee-container">
+                            <div
+                                className={`${trackClass} ${animationClass}`}
+                                style={{
+                                    '--marquee-duration': `${duration}s`,
+                                    ...(isVertical ? { height: 'fit-content' } : { width: 'fit-content' })
+                                } as any}
+                            >
+                                {/* Original Element */}
+                                <div className="flex-shrink-0" style={isVertical ? { height: layer.height } : { width: layer.width }}>
+                                    <ElementRenderer
+                                        layer={layer}
+                                        onOpenInvitation={onOpenInvitation}
+                                        isEditor={isEditor}
+                                        onContentLoad={handleContentLoad}
+                                        onDimensionsDetected={onDimensionsDetected}
+                                    />
+                                </div>
+                                {/* Clone for seamless loop */}
+                                <div className="flex-shrink-0" style={isVertical ? { height: layer.height } : { width: layer.width }}>
+                                    <ElementRenderer
+                                        layer={layer}
+                                        onOpenInvitation={onOpenInvitation}
+                                        isEditor={isEditor}
+                                        onContentLoad={handleContentLoad}
+                                        onDimensionsDetected={onDimensionsDetected}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })()
+            ) : (
+                /* TILE MODE or SCROLL MODE or NO MARQUEE */
+                <motion.div
+                    className="w-full h-full"
+                    {...loopingProps}
+                    style={{
+                        ...(isMarqueeTileMode ? {
+                            backgroundImage: `url(${layer.imageUrl})`,
+                            backgroundRepeat: 'repeat',
+                            backgroundSize: 'auto',
+                            backgroundColor: 'transparent'
+                        } : {})
+                    }}
+                >
+                    {!isMarqueeTileMode && (
+                        <ElementRenderer
+                            layer={layer}
+                            onOpenInvitation={onOpenInvitation}
+                            isEditor={isEditor}
+                            onContentLoad={handleContentLoad}
+                            onDimensionsDetected={onDimensionsDetected}
+                        />
+                    )}
+                </motion.div>
+            )}
         </motion.div>
     );
 };
+
+export const AnimatedLayer = React.memo(AnimatedLayerComponent);

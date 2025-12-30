@@ -1,0 +1,47 @@
+﻿src/components/Canvas/SectionCanvas.tsx(233,45): error TS2322: Type '{ key: string; layer: Layer; isSelected: boolean; onSelect: () => void; onDrag: (pos: any) => void; onResize: (size: any) => void; isPanMode: boolean; }' is not assignable to type 'IntrinsicAttributes & CanvasElementProps'.
+  Property 'onDrag' does not exist on type 'IntrinsicAttributes & CanvasElementProps'.
+src/components/Canvas/SectionCanvas.tsx(233,54): error TS7006: Parameter 'pos' implicitly has an 'any' type.
+src/components/Canvas/SectionCanvas.tsx(234,56): error TS7006: Parameter 'size' implicitly has an 'any' type.
+src/components/Canvas/SectionCanvas.tsx(246,99): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/components/Canvas/SectionCanvas.tsx(261,85): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/components/Canvas/SectionCanvas.tsx(261,88): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/components/Canvas/SectionCanvas.tsx(286,102): error TS7006: Parameter '_' implicitly has an 'any' type.
+src/components/Canvas/SectionCanvas.tsx(286,105): error TS7006: Parameter 'idx' implicitly has an 'any' type.
+src/components/Layout/AssetSelectionModal.tsx(521,45): error TS1117: An object literal cannot have multiple properties with the same name.
+src/components/Layout/ElementToolbar.tsx(306,13): error TS2741: Property 'hoverEffect' is missing in type '{ variant: "quad"; images: never[]; gap: number; cornerRadius: number; }' but required in type 'PhotoGridConfig'.
+src/components/Modals/ThumbnailSelectionModal.tsx(31,24): error TS2554: Expected 1 arguments, but got 0.
+src/components/Panels/LayersSidebar.tsx(250,68): error TS2345: Argument of type 'boolean | undefined' is not assignable to parameter of type 'boolean'.
+  Type 'undefined' is not assignable to type 'boolean'.
+src/components/Panels/LayersSidebar.tsx(262,62): error TS2345: Argument of type 'boolean | undefined' is not assignable to parameter of type 'boolean'.
+  Type 'undefined' is not assignable to type 'boolean'.
+src/components/Panels/PropertyInspector.tsx(338,53): error TS2339: Property 'looping' does not exist on type '{ entrance?: any; loop?: any; trigger?: "scroll" | "click" | "open_btn" | "load" | undefined; delay?: number | undefined; duration?: number | undefined; entranceType?: AnimationType | undefined; }'.
+src/components/Panels/PropertyInspector.tsx(574,81): error TS18048: 'layer.opacity' is possibly 'undefined'.
+src/components/Panels/PropertyInspector.tsx(628,44): error TS2339: Property 'canEditPosition' does not exist on type 'Layer'.
+src/components/Panels/PropertyInspector.tsx(647,44): error TS2339: Property 'canEditContent' does not exist on type 'Layer'.
+src/components/Panels/PropertyInspector.tsx(670,52): error TS2339: Property 'isContentProtected' does not exist on type 'Layer'.
+src/components/Panels/PropertyInspector.tsx(688,52): error TS2339: Property 'showCopyButton' does not exist on type 'Layer'.
+src/components/Panels/PropertyPanel.tsx(570,28): error TS2339: Property 'assetMetadata' does not exist on type 'Layer'.
+src/components/Panels/PropertyPanel.tsx(575,56): error TS2339: Property 'assetMetadata' does not exist on type 'Layer'.
+src/components/Panels/PropertyPanel.tsx(589,56): error TS2339: Property 'assetMetadata' does not exist on type 'Layer'.
+src/components/Panels/PropertyPanel.tsx(654,92): error TS2339: Property 'parallaxFactor' does not exist on type 'Layer'.
+src/components/Panels/PropertyPanel.tsx(661,42): error TS2339: Property 'parallaxFactor' does not exist on type 'Layer'.
+src/components/Panels/PropertyPanel.tsx(662,61): error TS2353: Object literal may only specify known properties, and 'parallaxFactor' does not exist in type 'Partial<Layer>'.
+src/components/Panels/PropertyPanel.tsx(1032,107): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/components/Panels/PropertyPanel.tsx(1319,111): error TS2322: Type 'string' is not assignable to type '"single" | "split-h" | "split-v" | "quad" | "triple-h" | "hero-left" | "hero-right" | "mosaic" | "featured" | "cluster"'.
+src/components/Panels/PropertyPanel.tsx(1360,46): error TS18048: 'layer.photoGridConfig' is possibly 'undefined'.
+src/components/Panels/PropertyPanel.tsx(1361,59): error TS18048: 'layer.photoGridConfig' is possibly 'undefined'.
+src/components/Panels/PropertyPanel.tsx(1402,107): error TS2339: Property 'category' does not exist on type 'VariantStyle'.
+src/components/Panels/PropertyPanel.tsx(2031,33): error TS2322: Type '{ label: string; value: number; min: number; max: number; onChange: (v: number) => void; }' is not assignable to type 'IntrinsicAttributes & { label: string; value: number; step?: number | undefined; min?: number | undefined; onChange: (v: number) => void; }'.
+  Property 'max' does not exist on type 'IntrinsicAttributes & { label: string; value: number; step?: number | undefined; min?: number | undefined; onChange: (v: number) => void; }'.
+src/components/Panels/PropertyPanel.tsx(2041,33): error TS2322: Type '{ label: string; value: number; min: number; max: number; onChange: (v: number) => void; }' is not assignable to type 'IntrinsicAttributes & { label: string; value: number; step?: number | undefined; min?: number | undefined; onChange: (v: number) => void; }'.
+  Property 'max' does not exist on type 'IntrinsicAttributes & { label: string; value: number; step?: number | undefined; min?: number | undefined; onChange: (v: number) => void; }'.
+src/components/Panels/PropertyPanel.tsx(2122,81): error TS7006: Parameter 'point' implicitly has an 'any' type.
+src/components/Panels/PropertyPanel.tsx(2122,88): error TS7006: Parameter 'idx' implicitly has an 'any' type.
+src/components/Preview/AnimatedLayer.tsx(541,25): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/components/Preview/AnimatedLayer.tsx(620,37): error TS2352: Conversion of type '{ height: string; '--marquee-duration': string; } | { width: string; '--marquee-duration': string; }' to type 'CSSProperties' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Object literal may only specify known properties, and ''--marquee-duration'' does not exist in type 'Properties<string | number, string & {}>'.
+src/lib/supabase.ts(5,33): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/lib/supabase.ts(6,33): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/store/sectionsSlice.ts(156,51): error TS2353: Object literal may only specify known properties, and 'looping' does not exist in type '{ entrance?: any; loop?: any; trigger?: "scroll" | "click" | "open_btn" | "load" | undefined; delay?: number | undefined; duration?: number | undefined; entranceType?: AnimationType | undefined; }'.
+src/store/sectionsSlice.ts(210,50): error TS2353: Object literal may only specify known properties, and 'looping' does not exist in type '{ entrance?: any; loop?: any; trigger?: "scroll" | "click" | "open_btn" | "load" | undefined; delay?: number | undefined; duration?: number | undefined; entranceType?: AnimationType | undefined; }'.

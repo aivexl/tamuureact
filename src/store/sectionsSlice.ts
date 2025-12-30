@@ -1,5 +1,5 @@
 import { StateCreator } from 'zustand';
-import { Layer, AnimationType } from './layersSlice';
+import { Layer, AnimationType, sanitizeLayer } from './layersSlice';
 import { generateId } from '@/lib/utils';
 
 // ============================================
@@ -42,7 +42,8 @@ export const SECTION_LABELS: Record<PredefinedSectionType, string> = {
 export interface ZoomPoint {
     id: string;
     label: string;
-    duration: number;
+    duration: number; // Stay duration in ms
+    transitionDuration?: number; // Movement duration in ms
     color?: string;  // Optional custom color for the zoom box
     targetRegion: {
         x: number;
@@ -55,8 +56,9 @@ export interface ZoomPoint {
 export interface ZoomConfig {
     enabled: boolean;
     direction: 'in' | 'out';
-    trigger: 'scroll' | 'click' | 'open_btn';
+    trigger: 'scroll' | 'click' | 'open_btn' | 'load';
     behavior: 'stay' | 'reset';
+    zoomMode?: 'fit' | 'fill'; // fit = contain, fill = cover
     scale: number;
     duration: number;
     transitionDuration: number;
@@ -119,6 +121,7 @@ export interface SectionsState {
     addElementToSection: (sectionId: string, element: Layer) => void;
     removeElementFromSection: (sectionId: string, elementId: string) => void;
     updateElementInSection: (sectionId: string, elementId: string, updates: Partial<Layer>) => void;
+    sanitizeAllSectionElements: () => void;
 }
 
 // ============================================
@@ -177,17 +180,29 @@ const createDefaultSections = (): Section[] => [
                 animation: { entrance: 'slide-up' },
                 countdownConfig: {
                     targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                    style: 'classic',
+                    variant: 'classic',
                     showDays: true,
                     showHours: true,
                     showMinutes: true,
                     showSeconds: true,
+                    showLabels: true,
+                    showSeparators: true,
+                    labels: { days: 'Hari', hours: 'Jam', minutes: 'Menit', seconds: 'Detik' },
+                    separatorStyle: 'colon',
                     backgroundColor: 'transparent',
                     textColor: '#ffffff',
                     accentColor: '#BFA181',
                     labelColor: '#999999',
-                    showLabels: true,
-                    labels: { days: 'Hari', hours: 'Jam', minutes: 'Menit', seconds: 'Detik' }
+                    fontFamily: 'DM Serif Display',
+                    fontSize: 32,
+                    fontWeight: 'bold',
+                    borderRadius: 8,
+                    boxPadding: 12,
+                    boxGap: 12,
+                    boxShadow: 'none',
+                    borderStyle: 'none',
+                    animateOnChange: true,
+                    animationType: 'fade',
                 }
             },
             {
@@ -373,10 +388,10 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
                 ? Math.max(...s.elements.map(el => el.zIndex || 0))
                 : 10;
 
-            const elementWithZ = {
+            const elementWithZ = sanitizeLayer({
                 ...element,
                 zIndex: element.zIndex || (maxZ + 1)
-            };
+            });
 
             return { ...s, elements: [...s.elements, elementWithZ] };
         })
@@ -396,10 +411,17 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
                 ? {
                     ...s,
                     elements: s.elements.map((el) =>
-                        el.id === elementId ? { ...el, ...updates } : el
+                        el.id === elementId ? sanitizeLayer({ ...el, ...updates }) : el
                     )
                 }
                 : s
         )
+    })),
+
+    sanitizeAllSectionElements: () => set((state) => ({
+        sections: state.sections.map((s) => ({
+            ...s,
+            elements: s.elements.map(sanitizeLayer)
+        }))
     }))
 });

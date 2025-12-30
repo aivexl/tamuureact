@@ -2,54 +2,84 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { Layer } from '@/store/layersSlice';
-import { X, Upload, Play, MailOpen, MapPin, Clock, ExternalLink, MessageSquare, Heart, Star } from 'lucide-react';
+import { X, Upload, Play, MailOpen, MapPin, Clock, ExternalLink, MessageSquare, Heart, Star, Image as ImageIcon } from 'lucide-react';
 import Lottie from 'lottie-react';
 import * as LucideIcons from 'lucide-react';
 import { shapePaths } from '@/lib/shape-paths';
+import { RSVPWishesElement } from '@/components/RSVPWishes';
+import { CountdownElement } from '@/components/Countdown';
 
 // ============================================
 // ELEMENT RENDERER
 // ============================================
+
 interface ElementRendererProps {
     layer: Layer;
     onOpenInvitation?: () => void;
     isEditor?: boolean;
     onContentLoad?: () => void;
+    onDimensionsDetected?: (width: number, height: number) => void;
 }
 
-export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenInvitation, isEditor, onContentLoad }) => {
-    switch (layer.type) {
-        case 'text':
-            return <TextElement layer={layer} onContentLoad={onContentLoad} />;
-        case 'image':
-        case 'gif':
-        case 'sticker':
-            return <ImageElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
-        case 'icon':
-            return <IconElement layer={layer} onContentLoad={onContentLoad} />;
-        case 'button':
-        case 'open_invitation_button':
-            return <ButtonElement layer={layer} onOpenInvitation={onOpenInvitation} onContentLoad={onContentLoad} />;
-        case 'shape':
-            return <ShapeElement layer={layer} onContentLoad={onContentLoad} />;
-        case 'countdown':
-            return <CountdownElement layer={layer} onContentLoad={onContentLoad} />;
-        case 'lottie':
-            return <LottieElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
-        case 'maps_point':
-            return <MapsElement layer={layer} onContentLoad={onContentLoad} />;
-        case 'video':
-            return <VideoElement layer={layer} onContentLoad={onContentLoad} />;
-        case 'rsvp_form':
-            return <RSVPFormElement layer={layer} onContentLoad={onContentLoad} />;
-        case 'guest_wishes':
-            return <GuestWishesElement layer={layer} onContentLoad={onContentLoad} />;
-        case 'flying_bird':
-            return <FlyingBirdElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
-        default:
-            return <PlaceholderElement layer={layer} onContentLoad={onContentLoad} />;
-    }
+export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenInvitation, isEditor, onContentLoad, onDimensionsDetected }) => {
+    // SAFETY CHECK: If width or height is clearly corrupted (> 800px), we constrain the display container
+    const isExploded = layer.width > 800 || layer.height > 800;
+
+    const renderContent = () => {
+        switch (layer.type) {
+            case 'text':
+                return <TextElement layer={layer} onContentLoad={onContentLoad} />;
+            case 'image':
+            case 'gif':
+            case 'sticker':
+                return <ImageElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} onDimensionsDetected={onDimensionsDetected} />;
+            case 'icon':
+                return <IconElement layer={layer} onContentLoad={onContentLoad} />;
+            case 'button':
+            case 'open_invitation_button':
+                return <ButtonElement layer={layer} onOpenInvitation={onOpenInvitation} onContentLoad={onContentLoad} />;
+            case 'shape':
+                return <ShapeElement layer={layer} onContentLoad={onContentLoad} />;
+            case 'countdown':
+                return <CountdownElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
+            case 'lottie':
+                return <LottieElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
+            case 'maps_point':
+                return <MapsElement layer={layer} onContentLoad={onContentLoad} />;
+            case 'video':
+                return <VideoElement layer={layer} onContentLoad={onContentLoad} />;
+            case 'rsvp_form':
+                return <RSVPFormElement layer={layer} onContentLoad={onContentLoad} />;
+            case 'guest_wishes':
+                return <GuestWishesElement layer={layer} onContentLoad={onContentLoad} />;
+            case 'rsvp_wishes':
+                return <RSVPWishesElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
+            case 'flying_bird':
+                return <FlyingBirdElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
+            case 'photo_grid':
+                return <PhotoGridElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
+            default:
+                return <PlaceholderElement layer={layer} onContentLoad={onContentLoad} />;
+        }
+    };
+
+    return (
+        <div
+            className="w-full h-full relative"
+            style={isExploded ? {
+                maxWidth: '100%',
+                maxHeight: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden'
+            } : undefined}
+        >
+            {renderContent()}
+        </div>
+    );
 };
+
 
 // ============================================
 // TEXT ELEMENT
@@ -57,25 +87,70 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenI
 const TextElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ layer, onContentLoad }) => {
     useEffect(() => {
         onContentLoad?.();
-    }, []); // Non-resource element, reveal immediately
+    }, []);
 
     const style = layer.textStyle;
-    const fontSize = style?.fontSize || 24;
+    const curved = layer.curvedTextConfig;
+
+    if (curved?.enabled) {
+        const radius = curved.radius || 100;
+        const width = layer.width || 200;
+        const height = layer.height || 200;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const startAngle = curved.angle || 0;
+
+        // Feature 9: Curved Text SVG
+        return (
+            <svg
+                viewBox={`0 0 ${width} ${height}`}
+                className="w-full h-full overflow-visible"
+                style={{ filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.3))' }}
+            >
+                <defs>
+                    <path
+                        id={`curved-path-${layer.id}`}
+                        d={`M ${centerX - radius},${centerY} A ${radius},${radius} 0 1 ${curved.reverse ? 0 : 1} ${centerX + radius},${centerY}`}
+                    />
+                </defs>
+                <text
+                    fill={style?.color || '#ffffff'}
+                    style={{
+                        fontFamily: style?.fontFamily || 'Outfit',
+                        fontSize: `${style?.fontSize || 24}px`,
+                        fontWeight: style?.fontWeight || 'normal',
+                        fontStyle: style?.fontStyle || 'normal',
+                        letterSpacing: `${curved.spacing || 0}px`
+                    }}
+                >
+                    <textPath xlinkHref={`#curved-path-${layer.id}`} startOffset="50%" textAnchor="middle">
+                        {layer.content || 'Text'}
+                    </textPath>
+                </text>
+            </svg>
+        );
+    }
+
+    // CTO ENTERPRISE FIX: Professional text rendering
+    // Text should fit within bounding box on single line (unless multiline is explicitly set)
+    const isMultiline = style?.multiline === true;
 
     return (
         <div
-            className="w-full h-full flex items-center justify-center overflow-visible select-none"
+            className="w-full h-full flex items-center justify-center select-none"
             style={{
                 fontFamily: style?.fontFamily || 'Outfit',
-                fontSize: `${fontSize}px`,
+                fontSize: `${style?.fontSize || 24}px`,
                 fontWeight: style?.fontWeight || 'normal',
                 fontStyle: style?.fontStyle || 'normal',
                 textAlign: style?.textAlign || 'center',
                 color: style?.color || '#ffffff',
                 lineHeight: style?.lineHeight || 1.2,
                 letterSpacing: style?.letterSpacing || 0,
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word',
+                // CTO FIX: Single line by default, proper overflow handling
+                whiteSpace: isMultiline ? 'pre-wrap' : 'nowrap',
+                wordBreak: isMultiline ? 'break-word' : 'normal',
+                overflow: 'visible',
                 padding: '4px'
             }}
         >
@@ -87,7 +162,7 @@ const TextElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ l
 // ============================================
 // IMAGE ELEMENT
 // ============================================
-const ImageElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
+const ImageElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void, onDimensionsDetected?: (width: number, height: number) => void }> = ({ layer, isEditor, onContentLoad, onDimensionsDetected }) => {
     const [loaded, setLoaded] = useState(false);
     const [error, setError] = useState(false);
 
@@ -126,14 +201,33 @@ const ImageElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?:
         );
     }
 
+    // Feature 3: Masking logic
+    const mask = layer.maskConfig;
+    const getMaskStyle = () => {
+        if (!mask?.enabled) return {};
+        switch (mask.type) {
+            case 'circle': return { clipPath: 'circle(50% at 50% 50%)' };
+            case 'arch': return { clipPath: 'path("M 0 1 L 0 0.4 A 0.5 0.4 0 0 1 1 0.4 L 1 1 Z")' }; // Simplified SVG path as placeholder for standard arch
+            case 'hexagon': return { clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)' };
+            case 'diamond': return { clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' };
+            case 'blob': return { clipPath: 'url(#blob-mask)' }; // Complex blobs need SVG defs
+            default: return {};
+        }
+    };
+
     return (
-        <div className="w-full h-full relative">
+        <div className={`w-full h-full relative ${loaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-700`} style={getMaskStyle()}>
             <img
                 src={layer.imageUrl}
                 alt={layer.name}
-                onLoad={() => {
+                onLoad={(e) => {
+                    const img = e.currentTarget;
                     setLoaded(true);
                     onContentLoad?.();
+                    // AUTO-RESIZE: Pass dimensions back up for selection box snapping
+                    if (isEditor && onDimensionsDetected && img.naturalWidth && img.naturalHeight) {
+                        onDimensionsDetected(img.naturalWidth, img.naturalHeight);
+                    }
                 }}
                 onError={() => {
                     setError(true);
@@ -239,7 +333,10 @@ const ButtonElement: React.FC<{ layer: Layer, onOpenInvitation?: () => void, onC
 
     return (
         <motion.button
-            onClick={onOpenInvitation}
+            onClick={(e) => {
+                e.stopPropagation();
+                onOpenInvitation?.();
+            }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className={`w-full h-full flex flex-col items-center justify-center gap-1 font-bold transition-all ${shape}`}
@@ -282,52 +379,7 @@ const ShapeElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ 
     );
 };
 
-// ============================================
-// COUNTDOWN ELEMENT
-// ============================================
-const CountdownElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ layer, onContentLoad }) => {
-    useEffect(() => {
-        onContentLoad?.();
-    }, []); // Non-resource element, reveal immediately
-
-    const config = layer.countdownConfig;
-    const [timeLeft, setTimeLeft] = useState({ d: 0, h: 0, m: 0, s: 0 });
-
-    useEffect(() => {
-        if (!config?.targetDate) return;
-        const update = () => {
-            const diff = Math.max(0, new Date(config.targetDate).getTime() - Date.now());
-            setTimeLeft({
-                d: Math.floor(diff / (1000 * 60 * 60 * 24)),
-                h: Math.floor((diff / (1000 * 60 * 60)) % 24),
-                m: Math.floor((diff / (1000 * 60)) % 60),
-                s: Math.floor((diff / 1000) % 60),
-            });
-        };
-        update();
-        const timer = setInterval(update, 1000);
-        return () => clearInterval(timer);
-    }, [config?.targetDate]);
-
-    if (!config) return null;
-    const units = [
-        { label: config.labels?.days || 'Days', value: timeLeft.d, show: config.showDays },
-        { label: config.labels?.hours || 'Hours', value: timeLeft.h, show: config.showHours },
-        { label: config.labels?.minutes || 'Min', value: timeLeft.m, show: config.showMinutes },
-        { label: config.labels?.seconds || 'Sec', value: timeLeft.s, show: config.showSeconds },
-    ].filter(u => u.show !== false);
-
-    return (
-        <div className="w-full h-full flex justify-center items-center gap-4 px-2" style={{ backgroundColor: config.backgroundColor || 'transparent' }}>
-            {units.map((u, i) => (
-                <div key={i} className="flex flex-col items-center">
-                    <span className="text-2xl font-bold font-mono" style={{ color: config.textColor || '#fff' }}>{String(u.value).padStart(2, '0')}</span>
-                    {config.showLabels !== false && <span className="text-[10px] uppercase opacity-50" style={{ color: config.labelColor || '#fff' }}>{(u.label as any) || ''}</span>}
-                </div>
-            ))}
-        </div>
-    );
-};
+// CountdownElement is now imported from @/components/Countdown
 
 // ============================================
 // LOTTIE ELEMENT
@@ -459,6 +511,173 @@ const FlyingBirdElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentL
         </div>
     );
 };
+
+// ============================================
+// PHOTO GRID ELEMENT
+// ============================================
+const PhotoGridElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
+    const openImageCropModal = useStore(state => state.openImageCropModal);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const [pendingSlotIndex, setPendingSlotIndex] = React.useState<number | null>(null);
+
+    useEffect(() => {
+        onContentLoad?.();
+    }, []);
+
+    const config = layer.photoGridConfig;
+    if (!config) return null;
+
+    const images = config.images || [];
+    const gap = config.gap ?? 8;
+    const cornerRadius = config.cornerRadius ?? 12;
+    const hoverEffect = config.hoverEffect || 'zoom';
+
+    // Map hover effect to CSS class
+    const hoverClasses: Record<string, string> = {
+        'none': '',
+        'zoom': 'hover-effect-container hover-zoom',
+        'zoom-rotate': 'hover-effect-container hover-zoom-rotate',
+        'brightness': 'hover-effect-container hover-brightness',
+        'grayscale': 'hover-effect-container hover-grayscale',
+        'blur-reveal': 'hover-effect-container hover-blur-reveal',
+        'overlay': 'hover-effect-container hover-overlay',
+        'tilt': 'hover-effect-container hover-tilt',
+        'glow': 'hover-effect-container hover-glow'
+    };
+
+    const hoverClass = hoverClasses[hoverEffect] || hoverClasses['zoom'];
+
+    // Handle file selection
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file && pendingSlotIndex !== null) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const imageSrc = event.target?.result as string;
+                if (imageSrc) {
+                    // Open crop modal with the selected image
+                    openImageCropModal(imageSrc, layer.id, pendingSlotIndex, 1);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+        // Reset input
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+        setPendingSlotIndex(null);
+    };
+
+    // Handle slot click
+    const handleSlotClick = (index: number) => {
+        if (!isEditor) return;
+        setPendingSlotIndex(index);
+        fileInputRef.current?.click();
+    };
+
+    const renderSlot = (index: number, className: string = "") => {
+        const url = images[index];
+        return (
+            <div
+                className={`group relative bg-white/5 border border-white/5 ${hoverClass} ${className} ${isEditor ? 'cursor-pointer' : ''}`}
+                style={{ borderRadius: cornerRadius }}
+                onClick={() => handleSlotClick(index)}
+            >
+                {url ? (
+                    <img
+                        src={url}
+                        alt={`Photo ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => (e.currentTarget.src = 'https://images.unsplash.com/photo-1518133910546-b6c2fb7d79e3?q=80&w=400&auto=format&fit=crop')}
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center opacity-30">
+                        <ImageIcon className="w-5 h-5" />
+                    </div>
+                )}
+                {isEditor && (
+                    <div className="absolute inset-0 bg-premium-accent/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Upload className="w-4 h-4 text-white" />
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    // Render the grid based on variant
+    const renderGrid = () => {
+        switch (config.variant) {
+            case 'single':
+                return <div className="w-full h-full">{renderSlot(0)}</div>;
+            case 'split-h':
+                return <div className="grid grid-cols-2 h-full w-full" style={{ gap }}>{renderSlot(0)} {renderSlot(1)}</div>;
+            case 'split-v':
+                return <div className="grid grid-rows-2 h-full w-full" style={{ gap }}>{renderSlot(0)} {renderSlot(1)}</div>;
+            case 'quad':
+                return <div className="grid grid-cols-2 grid-rows-2 h-full w-full" style={{ gap }}>{renderSlot(0)} {renderSlot(1)} {renderSlot(2)} {renderSlot(3)}</div>;
+            case 'triple-h':
+                return <div className="grid grid-cols-3 h-full w-full" style={{ gap }}>{renderSlot(0)} {renderSlot(1)} {renderSlot(2)}</div>;
+            case 'hero-left':
+                return (
+                    <div className="grid grid-cols-3 grid-rows-2 h-full w-full" style={{ gap }}>
+                        <div className="col-span-2 row-span-2">{renderSlot(0)}</div>
+                        <div>{renderSlot(1)}</div>
+                        <div>{renderSlot(2)}</div>
+                    </div>
+                );
+            case 'hero-right':
+                return (
+                    <div className="grid grid-cols-3 grid-rows-2 h-full w-full" style={{ gap }}>
+                        <div>{renderSlot(1)}</div>
+                        <div className="col-span-2 row-span-2">{renderSlot(0)}</div>
+                        <div>{renderSlot(2)}</div>
+                    </div>
+                );
+            case 'mosaic':
+                return (
+                    <div className="grid grid-cols-4 grid-rows-2 h-full w-full" style={{ gap }}>
+                        <div className="col-span-2 row-span-2">{renderSlot(0)}</div>
+                        <div className="col-span-2">{renderSlot(1)}</div>
+                        <div>{renderSlot(2)}</div>
+                        <div>{renderSlot(3)}</div>
+                    </div>
+                );
+            case 'featured':
+                return (
+                    <div className="grid grid-cols-2 grid-rows-4 h-full w-full" style={{ gap }}>
+                        <div className="col-span-2 row-span-2">{renderSlot(0)}</div>
+                        <div className="row-span-2">{renderSlot(1)}</div>
+                        <div className="row-span-2">{renderSlot(2)}</div>
+                    </div>
+                );
+            case 'cluster':
+                return (
+                    <div className="relative w-full h-full group">
+                        <div className="absolute top-0 left-0 w-2/3 h-2/3 z-10 -rotate-3 transition-transform group-hover:rotate-0">{renderSlot(0)}</div>
+                        <div className="absolute bottom-4 right-0 w-3/5 h-3/5 z-20 rotate-6 transition-transform group-hover:rotate-0 shadow-xl">{renderSlot(1)}</div>
+                        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-1/2 h-1/2 z-0 rotate-12 opacity-50">{renderSlot(2)}</div>
+                    </div>
+                );
+            default:
+                return <div className="w-full h-full grid grid-cols-2" style={{ gap }}>{renderSlot(0)} {renderSlot(1)}</div>;
+        }
+    };
+
+    return (
+        <>
+            {/* Hidden file input for photo uploads */}
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+            />
+            {renderGrid()}
+        </>
+    );
+};
+
 
 // ============================================
 // PLACEHOLDER ELEMENT

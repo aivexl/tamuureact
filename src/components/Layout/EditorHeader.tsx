@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useStore, useTemporalStore } from '@/store/useStore';
 import {
     ArrowLeft, Play, Save, Sparkles, Check, Loader2,
-    Undo2, Redo2, Edit2, X, ExternalLink, Zap, Link
+    Undo2, Redo2, Edit2, X, ExternalLink, Zap, Link, Wand2
 } from 'lucide-react';
 
 // ============================================
@@ -34,12 +34,20 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
     onPublish,
     isSyncing
 }) => {
-    const { layers, isAnimationPlaying, setAnimationPlaying, slug } = useStore();
+    const {
+        layers,
+        isAnimationPlaying,
+        setAnimationPlaying,
+        slug,
+        sanitizeAllLayers,
+        sanitizeAllSectionElements
+    } = useStore();
     const { undo, redo } = useTemporalStore();
 
     // ============================================
     // STATE
     // ============================================
+    const [isFixing, setIsFixing] = useState(false);
     const [isEditingName, setIsEditingName] = useState(false);
     const [editedName, setEditedName] = useState(templateName);
     const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
@@ -137,6 +145,17 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
             setIsEditingName(false);
         }
     }, [handleNameSubmit, templateName]);
+
+    const handleAutoFix = useCallback(() => {
+        setIsFixing(true);
+        sanitizeAllLayers();
+        sanitizeAllSectionElements();
+
+        // Show success briefly
+        setTimeout(() => {
+            setIsFixing(false);
+        }, 1000);
+    }, [sanitizeAllLayers, sanitizeAllSectionElements]);
 
     // ============================================
     // COMPUTED VALUES
@@ -339,6 +358,18 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
 
             {/* RIGHT SECTION: Actions */}
             <div className="flex items-center gap-2">
+                {/* Auto-Fix Layout (Magic Wand) */}
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleAutoFix}
+                    className={`p-2 rounded-lg transition-colors ${isFixing ? 'bg-premium-accent text-premium-dark' : 'hover:bg-premium-accent/10 text-white/40 hover:text-premium-accent'}`}
+                    title="Fix Global Scaling (Auto-Sanitize)"
+                    disabled={isFixing}
+                >
+                    {isFixing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                </motion.button>
+
                 <motion.button
                     whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.05)' }}
                     whileTap={{ scale: 0.98 }}

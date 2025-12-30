@@ -1,591 +1,494 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Moveable, { OnDrag, OnDragEnd, OnScale, OnScaleEnd, OnRotate, OnRotateEnd, OnDragGroup, OnScaleGroup, OnRotateGroup, OnDragGroupEnd, OnScaleGroupEnd, OnRotateGroupEnd } from 'react-moveable';
 import { useStore, SECTION_ICONS } from '@/store/useStore';
 import { CanvasElement } from './CanvasElement';
 import { Section, ZoomPoint } from '@/store/sectionsSlice';
-import { ChevronUp, ChevronDown, Eye, EyeOff, Copy, Trash2, Eraser } from 'lucide-react';
+import { Layer } from '@/store/layersSlice';
+import { ChevronUp, ChevronDown, Eye, EyeOff, Copy, Trash2, Eraser, Zap, Group, Ungroup } from 'lucide-react';
+
+// ============================================
+// HELPER COMPONENTS
+// Professional Action Button for Toolbar
+// ============================================
+const ToolbarButton: React.FC<{
+    onClick: (e: React.MouseEvent) => void;
+    icon: React.ReactNode;
+    title: string;
+    disabled?: boolean;
+    variant?: 'default' | 'danger' | 'premium';
+}> = ({ onClick, icon, title, disabled, variant = 'default' }) => (
+    <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={(e) => {
+            e.stopPropagation();
+            if (!disabled) onClick(e);
+        }}
+        disabled={disabled}
+        className={`p-1.5 rounded-full transition-all flex items-center justify-center relative group/btn ${disabled ? 'opacity-20 cursor-not-allowed' :
+            variant === 'danger'
+                ? 'text-red-400 hover:bg-red-500 hover:text-white'
+                : variant === 'premium'
+                    ? 'text-premium-dark hover:bg-black/20'
+                    : 'text-white/70 hover:bg-white/10 hover:text-premium-accent'
+            }`}
+        title={title}
+    >
+        {icon}
+        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-black/90 text-[10px] text-white font-bold rounded opacity-0 group-hover/btn:opacity-100 pointer-events-none transition-opacity whitespace-nowrap border border-white/10 shadow-xl z-[100]">
+            {title}
+        </div>
+    </motion.button>
+);
 
 const CANVAS_WIDTH = 414;
-const SECTION_HEIGHT = 896; // Each section height
+const SECTION_HEIGHT = 896;
 
 // ============================================
 // SEAMLESS CANVAS COMPONENT
-// Shows all sections in a continuous vertical scroll view
 // ============================================
 export const SeamlessCanvas: React.FC = () => {
     const {
-        sections,
-        activeSectionId,
-        setActiveSection,
-        updateElementInSection,
-        updateSection,
-        selectLayer,
-        selectedLayerId,
-        reorderSections,
-        removeSection,
-        duplicateSection,
-        copySectionElementsTo,
-        clearSectionContent
+        sections, activeSectionId, setActiveSection,
+        updateElementInSection, updateSection,
+        selectLayer, selectLayers, selectedLayerId, selectedLayerIds, clearSelection,
+        reorderSections, removeSection, duplicateSection, copySectionElementsTo, clearSectionContent
     } = useStore();
 
     const containerRef = useRef<HTMLDivElement>(null);
     const [visibleSectionId, setVisibleSectionId] = useState<string | null>(null);
+    const [zoom, setZoom] = useState(1); // Feature 10: Zoom State
+    const [contextMenu, setContextMenu] = useState<{ x: number, y: number, id: string } | null>(null); // Feature 4: Context Menu
 
-    // Copy Modal State
+    // Modal State
     const [showCopyModal, setShowCopyModal] = useState(false);
     const [copySourceId, setCopySourceId] = useState<string | null>(null);
 
-    const handleOpenCopyModal = (id: string) => {
-        setCopySourceId(id);
-        setShowCopyModal(true);
-    };
-
+    const handleOpenCopyModal = (id: string) => { setCopySourceId(id); setShowCopyModal(true); };
     const handleCopyElements = (targetId: string) => {
-        if (copySourceId && targetId) {
-            copySectionElementsTo(copySourceId, targetId);
-            setShowCopyModal(false);
-            setCopySourceId(null);
-        }
+        if (copySourceId && targetId) { copySectionElementsTo(copySourceId, targetId); setShowCopyModal(false); }
     };
 
-    // Sort sections by order - Memoized to prevent infinite useEffect loops
-    const sortedSections = React.useMemo(() =>
-        [...sections].sort((a, b) => a.order - b.order),
-        [sections]);
+    const sortedSections = useMemo(() => [...sections].sort((a, b) => a.order - b.order), [sections]);
 
-    // Track which section is in view during scroll
+    // Keyboard Shortcuts (CTO Level)
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'g') {
+                e.preventDefault();
+                if (e.shiftKey) handleUngroupSelected();
+                else handleGroupSelected();
+            }
+            if (e.key === 'Escape') clearSelection();
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [selectedLayerIds]);
+
+    // Marquee Selection State
+    const [marquee, setMarquee] = useState<{ x1: number, y1: number, x2: number, y2: number, active: boolean, sectionId: string | null } | null>(null);
+
+    const handleMarqueeStart = (sectionId: string, x: number, y: number) => {
+        setMarquee({ x1: x, y1: y, x2: x, y2: y, active: true, sectionId });
+        clearSelection();
+    };
+
+    const handleMarqueeMove = (x: number, y: number) => {
+        if (!marquee || !marquee.active) return;
+        setMarquee(prev => prev ? { ...prev, x2: x, y2: y } : null);
+    };
+
+    const handleMarqueeEnd = () => {
+        if (!marquee || !marquee.active) return;
+
+        const section = sections.find(s => s.id === marquee.sectionId);
+        if (section) {
+            const xMin = Math.min(marquee.x1, marquee.x2);
+            const xMax = Math.max(marquee.x1, marquee.x2);
+            const yMin = Math.min(marquee.y1, marquee.y2);
+            const yMax = Math.max(marquee.y1, marquee.y2);
+
+            const hits = section.elements.filter(el => {
+                const elXMid = el.x + el.width / 2;
+                const elYMid = el.y + el.height / 2;
+                return elXMid >= xMin && elXMid <= xMax && elYMid >= yMin && elYMid <= yMax;
+            }).map(el => el.id);
+
+            if (hits.length > 0) selectLayers(hits);
+        }
+        setMarquee(null);
+    };
+
     useEffect(() => {
         const container = containerRef.current;
         if (!container) return;
-
         const handleScroll = () => {
             const scrollTop = container.scrollTop;
             const containerHeight = container.clientHeight;
             const scrollCenter = scrollTop + containerHeight / 2;
-
-            // Find which section is at the center of the viewport
-            let totalHeight = 0;
-            for (const section of sortedSections) {
-                const sectionTop = totalHeight;
-                const sectionBottom = totalHeight + SECTION_HEIGHT + 40; // 40 for gap
-
-                if (scrollCenter >= sectionTop && scrollCenter < sectionBottom) {
-                    setVisibleSectionId(section.id);
+            let currentVisibleId = null;
+            for (let i = 0; i < sortedSections.length; i++) {
+                const sectionTop = i * (SECTION_HEIGHT + 64);
+                const sectionBottom = sectionTop + SECTION_HEIGHT;
+                if (scrollCenter >= sectionTop && scrollCenter <= sectionBottom) {
+                    currentVisibleId = sortedSections[i].id;
                     break;
                 }
-                totalHeight = sectionBottom;
             }
+            if (currentVisibleId && currentVisibleId !== visibleSectionId) setVisibleSectionId(currentVisibleId);
         };
-
         container.addEventListener('scroll', handleScroll);
-        handleScroll(); // Initial check
-
+        handleScroll();
         return () => container.removeEventListener('scroll', handleScroll);
-    }, [sortedSections]);
+    }, [sortedSections, visibleSectionId]);
 
-    // Scroll to section when active section changes via sidebar
-    useEffect(() => {
-        if (!activeSectionId || !containerRef.current) return;
-
-        const sectionIndex = sortedSections.findIndex(s => s.id === activeSectionId);
-        if (sectionIndex === -1) return;
-
-        const scrollTarget = sectionIndex * (SECTION_HEIGHT + 40);
-        containerRef.current.scrollTo({
-            top: scrollTarget,
-            behavior: 'smooth'
+    // Grouping Logics (CTO Implementation)
+    const handleGroupSelected = () => {
+        if (selectedLayerIds.length < 2) return;
+        const groupId = `group-${Date.now()}`;
+        selectedLayerIds.forEach(id => {
+            if (activeSectionId) updateElementInSection(activeSectionId, id, { groupId });
         });
-    }, [activeSectionId]);
-
-    // Global Key Listeners (Escape to deselect)
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                selectLayer(null);
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selectLayer]);
-
-    const handleSectionClick = (sectionId: string) => {
-        setActiveSection(sectionId);
     };
 
-    const handleElementDrag = (sectionId: string, elementId: string, newPosition: { x: number; y: number }) => {
-        updateElementInSection(sectionId, elementId, { x: newPosition.x, y: newPosition.y });
-    };
-
-    const handleElementResize = (sectionId: string, elementId: string, updates: { scale?: number; width?: number; height?: number; x?: number; y?: number }) => {
-        updateElementInSection(sectionId, elementId, updates);
-    };
-
-    // Zoom Region Update Handler
-    const handleUpdateZoomRegion = useCallback((sectionId: string, pointIndex: number, updates: Partial<ZoomPoint['targetRegion']>) => {
-        const section = sections.find(s => s.id === sectionId);
-        if (!section?.zoomConfig) return;
-
-        const points = [...section.zoomConfig.points];
-        points[pointIndex] = {
-            ...points[pointIndex],
-            targetRegion: { ...points[pointIndex].targetRegion, ...updates }
-        };
-        updateSection(sectionId, {
-            zoomConfig: { ...section.zoomConfig, points }
+    const handleUngroupSelected = () => {
+        selectedLayerIds.forEach(id => {
+            if (activeSectionId) updateElementInSection(activeSectionId, id, { groupId: undefined });
         });
-    }, [sections, updateSection]);
+    };
+
+    // Feature 10: Zoom Actions
+    const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.1, 2));
+    const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.1, 0.5));
+
+    // Feature 4: Context Menu Actions
+    const handleContextMenu = (e: React.MouseEvent, id: string) => {
+        e.preventDefault();
+        setContextMenu({ x: e.clientX, y: e.clientY, id });
+    };
+
+    const handleAction = (type: 'front' | 'back' | 'duplicate' | 'delete') => {
+        if (!contextMenu) return;
+        const { id } = contextMenu;
+        if (type === 'duplicate') useStore.getState().duplicateLayer(id);
+        if (type === 'delete') {
+            if (activeSectionId) useStore.getState().removeElementFromSection(activeSectionId, id);
+        }
+        if (type === 'front') useStore.getState().bringToFront(id);
+        if (type === 'back') useStore.getState().sendToBack(id);
+        setContextMenu(null);
+    };
 
     return (
-        <div className="flex-1 relative overflow-hidden bg-[#050505]">
-
-            {/* Scrollable Canvas Container */}
-            <div
-                ref={containerRef}
-                className="h-full overflow-y-auto overflow-x-hidden custom-scrollbar flex justify-center py-8"
-            >
-                <div className="flex flex-col gap-10">
+        <div className="w-full h-full bg-[#111111] overflow-hidden flex flex-col relative select-none">
+            <div ref={containerRef} className="h-full overflow-y-auto overflow-x-hidden custom-scrollbar flex justify-center py-12">
+                <div className="flex flex-col gap-16">
                     {sortedSections.map((section, index) => (
                         <SectionFrame
                             key={section.id}
                             section={section}
                             isActive={activeSectionId === section.id}
-                            isVisible={visibleSectionId === section.id}
                             index={index}
-                            onClick={() => handleSectionClick(section.id)}
-                            onElementDrag={(elementId, pos) => handleElementDrag(section.id, elementId, pos)}
-                            onElementResize={(elementId, updates) => handleElementResize(section.id, elementId, updates)}
-                            selectedLayerId={selectedLayerId}
-                            onSelectLayer={selectLayer}
-                            onUpdateZoomRegion={(pointIndex, updates) => handleUpdateZoomRegion(section.id, pointIndex, updates)}
+                            onClick={() => setActiveSection(section.id)}
+                            onSelectLayer={(id, isMulti) => selectLayer(id, isMulti)}
+                            selectedLayerIds={selectedLayerIds}
+                            zoom={zoom}
+                            onElementDrag={(id, pos) => updateElementInSection(section.id, id, pos)}
+                            onElementResize={(id, updates) => updateElementInSection(section.id, id, updates)}
+                            onContextMenu={handleContextMenu}
+                            onDimensionsDetected={(id: string, w: number, h: number) => {
+                                // CTO SMART-SNAP: Sesuai Gambar 2 (Proporsional & Elegant)
+                                const ratio = w / h;
+                                const layer = section.elements.find((el: Layer) => el.id === id);
+                                if (!layer) return;
 
+                                // Hanya auto-resize jika ukurannya masih default/placeholder
+                                const isPlaceholder = (layer.width === 200 && layer.height === 200) ||
+                                    (layer.width === 100 && layer.height === 100);
 
-                            // Toolbar Actions
-                            onMoveUp={() => reorderSections(index, index - 1)}
-                            onMoveDown={() => reorderSections(index, index + 1)}
-                            onToggleVisibility={() => updateSection(section.id, { isVisible: section.isVisible === false })}
-                            onCopyTo={() => handleOpenCopyModal(section.id)}
-                            onClear={() => {
-                                if (window.confirm('Are you sure you want to clear all content and reset background? This cannot be undone.')) {
-                                    clearSectionContent(section.id);
+                                if (isPlaceholder) {
+                                    let newW = 150; // Default for Ornaments/Stickers
+                                    let newH = 150 / ratio;
+
+                                    if (ratio > 2.5) {
+                                        // Case: Wide Border (Seperti di Gambar 2)
+                                        newW = 414;
+                                        newH = 414 / ratio;
+                                    } else if (ratio < 0.4) {
+                                        // Case: Tall Border
+                                        newH = 300;
+                                        newW = 300 * ratio;
+                                    } else if (newH > 250) {
+                                        // Case: Too tall sticker
+                                        newH = 200;
+                                        newW = 200 * ratio;
+                                    }
+
+                                    const finalW = Math.round(newW);
+                                    const finalH = Math.round(newH);
+
+                                    // CTO OPTIMIZATION: Check for changes to prevent infinite render loops
+                                    if (layer.width !== finalW || layer.height !== finalH) {
+                                        updateElementInSection(section.id, id, {
+                                            width: finalW,
+                                            height: finalH
+                                        });
+                                    }
                                 }
                             }}
+                            onMoveUp={() => reorderSections(index, index - 1)}
+                            onMoveDown={() => reorderSections(index, index + 1)}
+                            onToggleVisibility={() => updateSection(section.id, { isVisible: section.isVisible !== false ? false : true })}
+                            onCopyTo={() => handleOpenCopyModal(section.id)}
+                            onClear={() => clearSectionContent(section.id)}
                             onDelete={() => removeSection(section.id)}
                             isFirst={index === 0}
-                            isLast={index === sortedSections.length - 1}
+                            isLast={index === sections.length - 1}
+                            marquee={marquee?.sectionId === section.id ? marquee : null}
+                            onMarqueeStart={handleMarqueeStart}
+                            onMarqueeMove={handleMarqueeMove}
+                            onMarqueeEnd={handleMarqueeEnd}
                         />
                     ))}
-
-
-
-                    {/* End spacer */}
-                    <div className="h-20" />
                 </div>
             </div>
 
-            {/* Copy To Section Modal */}
-            {showCopyModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center">
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCopyModal(false)} />
-                    <div className="relative bg-[#1a1a1a] rounded-xl border border-white/10 shadow-2xl w-80 max-h-[70vh] overflow-hidden z-10">
-                        <div className="p-4 border-b border-white/10">
-                            <h3 className="font-semibold text-white">Copy Elements to Section</h3>
-                            <p className="text-xs text-white/50 mt-1">Select target section</p>
+            {/* Float Command Palette (CTO Design) */}
+            <AnimatePresence>
+                {selectedLayerIds.length > 0 && (
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
+                        className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-black/80 backdrop-blur-2xl px-6 py-3 rounded-2xl border border-white/10 shadow-3xl z-[1000]">
+                        <div className="flex items-center gap-2 pr-4 border-r border-white/10">
+                            <span className="text-premium-accent text-xs font-bold font-mono">{selectedLayerIds.length}</span>
+                            <span className="text-white/40 text-[10px] uppercase tracking-widest">selected</span>
                         </div>
-                        <div className="p-2 max-h-60 overflow-y-auto custom-scrollbar">
-                            {sortedSections.map((section) => (
-                                <button
-                                    key={section.id}
-                                    className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center gap-2 mb-1 ${section.id === copySourceId
-                                        ? 'opacity-50 cursor-not-allowed bg-white/5 text-white/40'
-                                        : 'hover:bg-premium-accent/20 hover:text-premium-accent text-white/70'
-                                        }`}
-                                    disabled={section.id === copySourceId}
-                                    onClick={() => handleCopyElements(section.id)}
-                                >
-                                    <span className="text-lg">{SECTION_ICONS[section.key as keyof typeof SECTION_ICONS] || '📄'}</span>
-                                    <span className="text-sm">{section.title}</span>
-                                    {section.id === copySourceId && <span className="text-xs ml-auto">(source)</span>}
-                                </button>
-                            ))}
+                        <div className="flex items-center gap-2">
+                            <ToolbarButton onClick={handleGroupSelected} icon={<Group className="w-4 h-4" />} title="Group Elements (Ctrl+G)" disabled={selectedLayerIds.length < 2} />
+                            <ToolbarButton onClick={handleUngroupSelected} icon={<Ungroup className="w-4 h-4" />} title="Ungroup" />
                         </div>
-                        <div className="p-3 border-t border-white/10 bg-white/5">
-                            <button
-                                className="w-full py-2 text-sm text-white/50 hover:text-white transition-colors"
-                                onClick={() => setShowCopyModal(false)}
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Feature 4: Enterprise Context Menu */}
+            <AnimatePresence>
+                {contextMenu && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        style={{ left: contextMenu.x, top: contextMenu.y }}
+                        className="fixed bg-black/90 backdrop-blur-xl border border-white/10 rounded-xl py-2 shadow-4xl z-[9999] min-w-[180px]"
+                        onMouseLeave={() => setContextMenu(null)}
+                    >
+                        <ContextItem icon={<Zap className="w-3.5 h-3.5" />} label="Bring to Front" onClick={() => handleAction('front')} />
+                        <ContextItem icon={<ChevronDown className="w-3.5 h-3.5" />} label="Send to Back" onClick={() => handleAction('back')} />
+                        <div className="h-px bg-white/5 my-1" />
+                        <ContextItem icon={<Copy className="w-3.5 h-3.5" />} label="Duplicate" onClick={() => handleAction('duplicate')} />
+                        <ContextItem icon={<Trash2 className="w-3.5 h-3.5 text-red-400" />} label="Delete" variant="danger" onClick={() => handleAction('delete')} />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Feature 10: Zoom Controls */}
+            <div className="absolute top-10 right-10 flex flex-col gap-2 z-[1001]">
+                <ToolbarButton onClick={handleZoomIn} icon={<span className="font-bold">+</span>} title="Zoom In" />
+                <div className="bg-black/50 backdrop-blur rounded-lg px-2 py-1 text-[10px] text-white/50 text-center font-mono">
+                    {Math.round(zoom * 100)}%
                 </div>
-            )}
-
-            {/* Section Navigator (Mini-map) - CTO Refined Positioning to avoid toggle overlap */}
-            <div className="absolute right-6 top-[65%] -translate-y-1/2 z-40 flex flex-col gap-2 bg-black/20 backdrop-blur-sm p-2 rounded-full border border-white/5">
-                {sortedSections.filter(s => s.isVisible).map((section) => (
-                    <motion.button
-                        key={section.id}
-                        whileHover={{ scale: 1.2 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => setActiveSection(section.id)}
-                        className={`w-3 h-3 rounded-full transition-all ${activeSectionId === section.id
-                            ? 'bg-premium-accent scale-125'
-                            : visibleSectionId === section.id
-                                ? 'bg-white/50'
-                                : 'bg-white/20 hover:bg-white/40'
-                            }`}
-                        title={section.title}
-                    />
-                ))}
+                <ToolbarButton onClick={handleZoomOut} icon={<span className="font-bold">-</span>} title="Zoom Out" />
             </div>
-
-            {/* Bottom Info */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-3">
-                <span className="text-xs font-mono text-white/60">
-                    {sortedSections.filter(s => s.isVisible).length} sections
-                </span>
-                <span className="text-[10px] text-white/30">Scroll to navigate</span>
-            </div>
-        </div>
+        </div >
     );
 };
 
-// ============================================
-// SECTION FRAME COMPONENT
-// Individual section container within seamless canvas
-// ============================================
-interface SectionFrameProps {
-    section: Section;
-    isActive: boolean;
-    isVisible: boolean;
-    index: number;
-    onClick: () => void;
-    onElementDrag: (elementId: string, pos: { x: number; y: number }) => void;
-    onElementResize: (elementId: string, updates: { scale?: number; width?: number; height?: number; x?: number; y?: number }) => void;
-    selectedLayerId: string | null;
-    onSelectLayer: (id: string | null) => void;
-    onUpdateZoomRegion: (pointIndex: number, updates: Partial<ZoomPoint['targetRegion']>) => void;
+const ContextItem: React.FC<{ icon: React.ReactNode, label: string, onClick: () => void, variant?: 'danger' | 'default' }> = ({ icon, label, onClick, variant = 'default' }) => (
+    <button
+        onClick={(e) => { e.stopPropagation(); onClick(); }}
+        className={`w-full flex items-center gap-3 px-4 py-2 text-xs transition-colors hover:bg-white/5 ${variant === 'danger' ? 'text-red-400' : 'text-white/80'}`}
+    >
+        {icon}
+        {label}
+    </button>
+);
 
-    // Toolbar Actions
-    onMoveUp: () => void;
-    onMoveDown: () => void;
-    onToggleVisibility: () => void;
-    onCopyTo: () => void;
-    onClear: () => void;
-    onDelete: () => void;
-    isFirst: boolean;
-    isLast: boolean;
-}
-
-const SectionFrame: React.FC<SectionFrameProps> = ({
-    section,
-    isActive,
-    isVisible,
-    index,
-    onClick,
-    onElementDrag,
-    onElementResize,
-    selectedLayerId,
-    onSelectLayer,
-    onUpdateZoomRegion,
-    onMoveUp,
-    onMoveDown,
-    onToggleVisibility,
-    onCopyTo,
-    onClear,
-    onDelete,
-    isFirst,
-    isLast
+// ============================================
+// SECTION FRAME COMPONENT (Centralized Interaction)
+// ============================================
+const SectionFrame: React.FC<{
+    section: Section,
+    isActive: boolean,
+    index: number,
+    onClick: () => void,
+    onSelectLayer: (id: string | null, isMulti?: boolean) => void,
+    selectedLayerIds: string[],
+    zoom: number,
+    onElementDrag: (id: string, pos: { x: number, y: number }) => void,
+    onElementResize: (id: string, updates: Partial<Layer>) => void,
+    onDimensionsDetected: (id: string, w: number, h: number) => void,
+    onContextMenu: (e: React.MouseEvent, id: string) => void,
+    onMoveUp: () => void,
+    onMoveDown: () => void,
+    onToggleVisibility: () => void,
+    onCopyTo: () => void,
+    onClear: () => void,
+    onDelete: () => void,
+    isFirst: boolean,
+    isLast: boolean,
+    marquee: { x1: number, y1: number, x2: number, y2: number, active: boolean, sectionId: string | null } | null,
+    onMarqueeStart: (sectionId: string, x: number, y: number) => void,
+    onMarqueeMove: (x: number, y: number) => void,
+    onMarqueeEnd: () => void
+}> = ({
+    section, isActive, index, onClick, onSelectLayer, selectedLayerIds,
+    onElementResize, onDimensionsDetected, onContextMenu, onMoveUp, onMoveDown, onToggleVisibility, onCopyTo, onClear, onDelete, isFirst, isLast,
+    marquee, onMarqueeStart, onMarqueeMove, onMarqueeEnd, zoom
 }) => {
-    // Sort elements by zIndex
-    const sortedElements = [...section.elements].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
+        // Collect DOM targets for Moveable
+        const targetMap = useRef<Map<string, HTMLDivElement>>(new Map());
+        const [targets, setTargets] = useState<HTMLDivElement[]>([]);
 
-    // Get selected zoom point
-    const selectedZoomPointIndex = section.zoomConfig?.selectedPointIndex;
-    const selectedZoomPoint = selectedZoomPointIndex !== undefined
-        ? section.zoomConfig?.points[selectedZoomPointIndex]
-        : null;
+        useEffect(() => {
+            const activeTargets = selectedLayerIds
+                .map((id: string) => targetMap.current.get(id))
+                .filter(Boolean) as HTMLDivElement[];
+            setTargets(activeTargets);
+        }, [selectedLayerIds, section.elements]);
 
-    return (
-        <motion.div
-            className="relative"
-            initial={false} // Prevent initial animation for speed
-            animate={{ opacity: 1 }}
-        >
-            {/* Section Label */}
-            <div className={`absolute -top-6 left-0 flex items-center gap-2 text-xs transition-colors ${isActive ? 'text-premium-accent' : 'text-white/40'}`}>
-                <span>{SECTION_ICONS[section.key as keyof typeof SECTION_ICONS] || '📄'}</span>
-                <span className="font-medium">{section.title}</span>
-                <span className="text-white/20">({section.elements.length} elements)</span>
-                {section.zoomConfig?.enabled && (
-                    <span className="ml-2 px-2 py-0.5 bg-premium-accent/20 text-premium-accent rounded text-[9px] font-bold">
-                        ZOOM
-                    </span>
-                )}
-            </div>
+        const registerTarget = (id: string, el: HTMLDivElement | null) => {
+            if (el) targetMap.current.set(id, el); else targetMap.current.delete(id);
+        };
 
-            {/* Section Toolbar - Top Right */}
-            <div className={`absolute top-2 right-2 z-50 flex items-center gap-1 bg-black/60 backdrop-blur-md rounded-lg p-1 border border-white/10 transition-opacity ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                <button onClick={(e) => { e.stopPropagation(); onMoveUp(); }} disabled={isFirst} className="p-1.5 hover:bg-white/10 rounded text-white/70 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed" title="Move Up">
-                    <ChevronUp className="w-4 h-4" />
-                </button>
-                <button onClick={(e) => { e.stopPropagation(); onMoveDown(); }} disabled={isLast} className="p-1.5 hover:bg-white/10 rounded text-white/70 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed" title="Move Down">
-                    <ChevronDown className="w-4 h-4" />
-                </button>
-                <div className="w-px h-4 bg-white/10 mx-1" />
-                <button onClick={(e) => { e.stopPropagation(); onToggleVisibility(); }} className="p-1.5 hover:bg-white/10 rounded text-white/70 hover:text-white" title="Toggle Visibility">
-                    {section.isVisible !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4 text-white/40" />}
-                </button>
-                <button onClick={(e) => { e.stopPropagation(); onCopyTo(); }} className="p-1.5 hover:bg-white/10 rounded text-white/70 hover:text-white" title="Copy elements to other section">
-                    <Copy className="w-4 h-4" />
-                </button>
-                <button onClick={(e) => { e.stopPropagation(); onClear(); }} className="p-1.5 hover:bg-white/10 rounded text-white/70 hover:text-white" title="Clear All Content">
-                    <Eraser className="w-4 h-4" />
-                </button>
-                <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="p-1.5 hover:bg-red-500/20 rounded text-red-400 hover:text-red-200" title="Delete Section">
-                    <Trash2 className="w-4 h-4" />
-                </button>
-            </div>
+        return (
+            <motion.div className="relative group" initial={false} animate={{ opacity: 1 }}>
+                {/* Header */}
+                <div className={`absolute -top-10 left-0 right-0 flex items-center justify-between px-1 h-8 z-50 group-header`}>
+                    <div className="flex items-center gap-3 text-[11px]">
+                        <span className="font-bold uppercase tracking-widest text-premium-accent">{section.title}</span>
+                    </div>
 
-            {/* Section Canvas */}
-            <motion.div
-                onClick={(e) => {
-                    // Only deselect if clicking on the canvas itself, not on elements or handles
-                    if (e.target === e.currentTarget) {
-                        onSelectLayer(null);
-                    }
-                    onClick(); // Set active section regardless
-                }}
-                className={`relative shadow-2xl rounded-2xl overflow-hidden cursor-pointer transition-all ${isActive
-                    ? 'ring-2 ring-premium-accent ring-offset-4 ring-offset-[#050505] captured-canvas-target'
-                    : isVisible
-                        ? 'ring-1 ring-white/20'
-                        : ''
-                    }`}
-                style={{
-                    width: CANVAS_WIDTH,
-                    height: SECTION_HEIGHT,
-                    backgroundColor: section.backgroundColor || '#0a0a0a',
-                    backgroundImage: section.backgroundUrl ? `url(${section.backgroundUrl})` : undefined,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    willChange: 'transform, opacity',
-                    opacity: section.isVisible === false ? 0.4 : 1,
-                    filter: section.isVisible === false ? 'grayscale(100%)' : 'none'
-                }}
-                data-capture-target="true"
-            >
-                {/* Background Overlay */}
-                {section.backgroundUrl && (
-                    <div
-                        className="absolute inset-0 bg-black"
-                        style={{ opacity: section.overlayOpacity || 0 }}
-                    />
-                )}
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <ToolbarButton onClick={onMoveUp} icon={<ChevronUp className="w-3.5 h-3.5" />} title="Move Up" disabled={isFirst} />
+                        <ToolbarButton onClick={onMoveDown} icon={<ChevronDown className="w-3.5 h-3.5" />} title="Move Down" disabled={isLast} />
+                        <div className="w-px h-3 bg-white/10 mx-1" />
+                        <ToolbarButton onClick={onToggleVisibility} icon={section.isVisible !== false ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5 text-red-400" />} title="Toggle Visibility" />
+                        <ToolbarButton onClick={onCopyTo} icon={<Copy className="w-3.5 h-3.5" />} title="Copy Section" />
+                        <ToolbarButton onClick={onClear} icon={<Eraser className="w-3.5 h-3.5" />} title="Clear Section" />
+                        <ToolbarButton onClick={onDelete} icon={<Trash2 className="w-3.5 h-3.5 text-red-400" />} title="Delete Section" variant="danger" />
+                    </div>
+                </div>
 
-                {/* Elements */}
-                <AnimatePresence>
-                    {sortedElements.filter(el => el.isVisible).map((element) => (
+                <motion.div
+                    onMouseDown={(e) => {
+                        if (e.target === e.currentTarget) {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            onMarqueeStart(section.id, e.clientX - rect.left, e.clientY - rect.top);
+                        }
+                        onClick();
+                    }}
+                    onMouseMove={(e) => {
+                        if (marquee) {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            onMarqueeMove(e.clientX - rect.left, e.clientY - rect.top);
+                        }
+                    }}
+                    onMouseUp={() => onMarqueeEnd()}
+                    className={`relative shadow-2xl rounded-2xl overflow-hidden transition-all ${isActive ? 'ring-2 ring-premium-accent ring-offset-4 ring-offset-[#050505]' : 'ring-1 ring-white/10'}`}
+                    style={{
+                        width: CANVAS_WIDTH,
+                        height: SECTION_HEIGHT,
+                        backgroundColor: section.backgroundColor || '#0a0a0a',
+                        transform: `scale(${zoom})`,
+                        transformOrigin: 'top center'
+                    }}>
+
+                    {section.elements.map((element: Layer) => (
                         <CanvasElement
                             key={element.id}
                             layer={element}
-                            isSelected={selectedLayerId === element.id}
-                            onSelect={(toggle) => {
-                                onSelectLayer(toggle ? null : element.id);
-                                if (!toggle) onClick(); // Ensure section becomes active when element is selected
+                            isSelected={selectedLayerIds.includes(element.id)}
+                            onSelect={(isMulti) => {
+                                onSelectLayer(element.id, isMulti);
+                                onClick();
                             }}
-                            onDrag={(pos) => onElementDrag(element.id, pos)}
-                            onResize={(updates) => onElementResize(element.id, updates)}
-                            isPanMode={false}
+                            onContextMenu={(e) => onContextMenu(e, element.id)}
+                            onDimensionsDetected={(w, h) => onDimensionsDetected(element.id, w, h)}
+                            elementRef={(el: HTMLDivElement | null) => registerTarget(element.id, el)}
+                            updateLayer={(id, updates) => onElementResize(id, updates)}
                         />
                     ))}
-                </AnimatePresence>
 
-                {/* ============================================ */}
-                {/* ZOOM TARGET REGION BOXES */}
-                {/* Show ALL zoom points - selected is editable, others are reference */}
-                {/* ============================================ */}
-                {section.zoomConfig?.enabled && isActive && section.zoomConfig.points.map((point, idx) => (
-                    <ZoomTargetBox
-                        key={point.id}
-                        zoomPoint={point}
-                        pointIndex={idx}
-                        isSelected={selectedZoomPointIndex === idx}
-                        onUpdate={onUpdateZoomRegion}
-                    />
-                ))}
+                    {/* Marquee Visual */}
+                    {marquee && (
+                        <div className="absolute border border-premium-accent bg-premium-accent/10 pointer-events-none z-[1000]"
+                            style={{
+                                left: Math.min(marquee.x1, marquee.x2),
+                                top: Math.min(marquee.y1, marquee.y2),
+                                width: Math.abs(marquee.x1 - marquee.x2),
+                                height: Math.abs(marquee.y1 - marquee.y2)
+                            }} />
+                    )}
 
-                {/* Section Number Badge */}
-                <div className="absolute top-3 right-3 w-6 h-6 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-[10px] font-bold text-white/60">
-                    {index + 1}
-                </div>
+                    {/* CENTRALIZED MOVEABLE (Enterprise Level) */}
+                    {isActive && targets.length > 0 && (
+                        <Moveable
+                            {...({} as any)}
+                            target={targets}
+                            draggable={true}
+                            scalable={true}
+                            rotatable={true}
+                            snappable={true}
+                            keepRatio={true}
+                            elementGuidelines={[...targets]}
+                            snapGap={5}
+                            snapThreshold={5}
+                            isDisplaySnapDigit={false}
+                            snapElement={true}
+                            snapVertical={true}
+                            snapHorizontal={true}
+                            snapCenter={true}
+
+                            // Single Target Events
+                            onDrag={(e: OnDrag) => {
+                                const id = e.target.getAttribute('data-element-id');
+                                if (id) onElementResize(id, { x: e.left, y: e.top });
+                            }}
+                            onScale={(e: OnScale) => {
+                                const id = e.target.getAttribute('data-element-id');
+                                const scale = e.drag.transform.match(/scale\(([^)]+)\)/)?.[1];
+                                if (id && scale) onElementResize(id, { scale: parseFloat(scale) });
+                            }}
+                            onRotate={(e: OnRotate) => {
+                                const id = e.target.getAttribute('data-element-id');
+                                if (id) onElementResize(id, { rotation: e.rotate });
+                            }}
+
+                            // Group Events
+                            onDragGroup={(e: OnDragGroup) => {
+                                e.events.forEach((ev) => {
+                                    const id = ev.target.getAttribute('data-element-id');
+                                    if (id) onElementResize(id, { x: ev.left, y: ev.top });
+                                });
+                            }}
+                            onScaleGroup={(e: OnScaleGroup) => {
+                                e.events.forEach((ev) => {
+                                    const id = ev.target.getAttribute('data-element-id');
+                                    const scale = ev.drag.transform.match(/scale\(([^)]+)\)/)?.[1];
+                                    if (id && scale) onElementResize(id, { scale: parseFloat(scale) });
+                                });
+                            }}
+                            onRotateGroup={(e: OnRotateGroup) => {
+                                e.events.forEach((ev) => {
+                                    const id = ev.target.getAttribute('data-element-id');
+                                    if (id) onElementResize(id, { rotation: ev.rotate });
+                                });
+                            }}
+
+                            className="custom-moveable"
+                        />
+                    )}
+                </motion.div>
             </motion.div>
-        </motion.div>
-    );
-};
-
-// ============================================
-// ZOOM TARGET BOX COMPONENT
-// Draggable and resizable box for zoom area selection
-// Uses local state during drag for smooth performance
-// ============================================
-
-// Default colors for zoom points (cycle through these)
-const ZOOM_POINT_COLORS = [
-    '#bfa181', // Gold (default premium-accent)
-    '#3b82f6', // Blue
-    '#10b981', // Green
-    '#f59e0b', // Amber
-    '#ef4444', // Red
-    '#8b5cf6', // Purple
-    '#ec4899', // Pink
-    '#06b6d4', // Cyan
-];
-
-interface ZoomTargetBoxProps {
-    zoomPoint: ZoomPoint;
-    pointIndex: number;
-    isSelected: boolean;
-    onUpdate: (pointIndex: number, updates: Partial<ZoomPoint['targetRegion']>) => void;
-}
-
-const ZoomTargetBox: React.FC<ZoomTargetBoxProps> = ({ zoomPoint, pointIndex, isSelected, onUpdate }) => {
-    // Local state for smooth dragging/resizing
-    const [localRegion, setLocalRegion] = useState(zoomPoint.targetRegion);
-    const [isDragging, setIsDragging] = useState(false);
-    const [isResizing, setIsResizing] = useState(false);
-
-    // Sync local state with props when not actively manipulating
-    useEffect(() => {
-        if (!isDragging && !isResizing) {
-            setLocalRegion(zoomPoint.targetRegion);
-        }
-    }, [zoomPoint.targetRegion, isDragging, isResizing]);
-
-    // Determine box color - use custom color or cycle through default colors
-    const boxColor = zoomPoint.color || ZOOM_POINT_COLORS[pointIndex % ZOOM_POINT_COLORS.length];
-
-    const { x, y, width, height } = localRegion;
-
-    // Non-selected box: simple static display without interaction
-    if (!isSelected) {
-        return (
-            <div
-                className="absolute z-40 pointer-events-none select-none"
-                style={{
-                    left: x,
-                    top: y,
-                    width: width,
-                    height: height,
-                }}
-            >
-                {/* Static Border - dimmed for non-selected */}
-                <div
-                    className="absolute inset-0 opacity-40"
-                    style={{
-                        border: `2px dashed ${boxColor}`,
-                        backgroundColor: `${boxColor}08`,
-                    }}
-                >
-                    {/* Label */}
-                    <div
-                        className="absolute -top-5 left-0 px-1.5 py-0.5 rounded text-[8px] font-medium whitespace-nowrap text-white/70"
-                        style={{ backgroundColor: `${boxColor}99` }}
-                    >
-                        {zoomPoint.label}
-                    </div>
-                </div>
-            </div>
         );
-    }
-
-    // Selected box: full interactive display
-    return (
-        <div
-            className="absolute z-50 pointer-events-auto select-none"
-            style={{
-                left: x,
-                top: y,
-                width: width,
-                height: height,
-            }}
-            onClick={(e) => e.stopPropagation()}
-            onMouseDown={(e) => e.stopPropagation()}
-        >
-            {/* Main Box - Draggable Area */}
-            <motion.div
-                className="absolute inset-0 cursor-move"
-                style={{
-                    border: `2px dashed ${boxColor}`,
-                    backgroundColor: `${boxColor}15`,
-                }}
-                drag
-                dragMomentum={false}
-                dragElastic={0}
-                dragConstraints={{ left: 0, top: 0, right: 0, bottom: 0 }}
-                onDragStart={() => setIsDragging(true)}
-                onDrag={(e, info) => {
-                    setLocalRegion(prev => ({
-                        ...prev,
-                        x: prev.x + info.delta.x,
-                        y: prev.y + info.delta.y
-                    }));
-                }}
-                onDragEnd={() => {
-                    setIsDragging(false);
-                    // Persist to store
-                    onUpdate(pointIndex, { x: localRegion.x, y: localRegion.y });
-                }}
-            >
-                {/* Label */}
-                <div
-                    className="absolute -top-6 left-0 px-2 py-0.5 rounded text-[9px] font-bold whitespace-nowrap text-white"
-                    style={{ backgroundColor: boxColor }}
-                >
-                    {zoomPoint.label}
-                </div>
-
-                {/* Corner Handles (decorative) */}
-                <div className="absolute -top-1 -left-1 w-2 h-2 rounded-sm" style={{ backgroundColor: boxColor }} />
-                <div className="absolute -top-1 -right-1 w-2 h-2 rounded-sm" style={{ backgroundColor: boxColor }} />
-                <div className="absolute -bottom-1 -left-1 w-2 h-2 rounded-sm" style={{ backgroundColor: boxColor }} />
-            </motion.div>
-
-            {/* Resize Handle - Bottom Right */}
-            <motion.div
-                className="absolute -bottom-1.5 -right-1.5 w-4 h-4 cursor-nwse-resize flex items-center justify-center z-10"
-                style={{ backgroundColor: boxColor }}
-                drag
-                dragMomentum={false}
-                dragElastic={0}
-                dragConstraints={{ left: 0, top: 0, right: 0, bottom: 0 }}
-                onDragStart={() => setIsResizing(true)}
-                onDrag={(e, info) => {
-                    setLocalRegion(prev => ({
-                        ...prev,
-                        width: Math.max(50, prev.width + info.delta.x),
-                        height: Math.max(50, prev.height + info.delta.y)
-                    }));
-                }}
-                onDragEnd={() => {
-                    setIsResizing(false);
-                    // Persist to store
-                    onUpdate(pointIndex, { width: localRegion.width, height: localRegion.height });
-                }}
-            >
-                <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                    <path d="M21 21L12 12M21 21V15M21 21H15" />
-                </svg>
-            </motion.div>
-
-            {/* Size Indicator */}
-            <div
-                className="absolute -bottom-5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded text-[8px] font-mono text-white whitespace-nowrap"
-                style={{ backgroundColor: boxColor }}
-            >
-                {Math.round(width)}×{Math.round(height)}
-            </div>
-        </div>
-    );
-};
+    };

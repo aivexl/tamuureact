@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { X, Maximize2, Minimize2, Volume2, VolumeX } from 'lucide-react';
 import { ElementRenderer } from '../Canvas/ElementRenderer';
-import { AnimatedLayer } from './AnimatedLayer';
+import { AnimatedLayer, clearAnimationCache } from './AnimatedLayer';
 import { ParticleOverlay } from './ParticleOverlay';
 import Lenis from 'lenis';
 
@@ -129,6 +129,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
             setTransitionStage('IDLE');
             setVisibleSections([0]);
             setCurrentZoomPointIndex({});
+            clearAnimationCache();
 
             // Start zoom animation for section 0 if scroll trigger
             setTimeout(() => {
@@ -270,7 +271,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
 
                 const point = points[currentIndex];
                 const stayDuration = Number(point?.duration || zoomConfig.duration || 3000);
-                const transDuration = Number(zoomConfig.transitionDuration || 1000);
+                const transDuration = Number(point?.transitionDuration || zoomConfig.transitionDuration || 1000);
 
                 setCurrentZoomPointIndex(prev => ({ ...prev, [sectionIndex]: currentIndex }));
 
@@ -287,7 +288,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                 runNext();
             }, 100);
         });
-    }, []);
+    }, [sortedSections]);
 
     // Handle "Open Invitation" button click
     const handleOpenInvitation = useCallback(async () => {
@@ -295,9 +296,9 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
         setIsOpened(true);
         setTransitionStage('ZOOMING');
 
-        // Start zoom animation for section 0 if open_btn trigger
+        // Start zoom animation for section 0 if open_btn or load trigger
         const section0 = sortedSections[0];
-        if (section0?.zoomConfig?.enabled && section0.zoomConfig.trigger === 'open_btn') {
+        if (section0?.zoomConfig?.enabled && (section0.zoomConfig.trigger === 'open_btn' || section0.zoomConfig.trigger === 'load')) {
             await startZoomAnimation(0, section0);
         }
 
@@ -315,6 +316,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
         setVisibleSections(prev => [...prev, 1]);
         const section1 = sortedSections[1];
         if (section1?.zoomConfig?.enabled) {
+            // Section 1 often uses 'load' or 'scroll', we trigger it during reveal
             startZoomAnimation(1, section1);
         }
 
@@ -384,18 +386,35 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
         const { x: boxX, y: boxY, width: boxWidth, height: boxHeight } = point.targetRegion;
 
         // Calculate scale to make the box fill the viewport
+        // Standard width is 414. Standard height for viewport is coverHeight.
         const scaleX = CANVAS_WIDTH / Math.max(boxWidth, 1);
-        const scaleY = CANVAS_HEIGHT / Math.max(boxHeight, 1);
-        const scale = Math.min(Math.max(1.1, Math.min(scaleX, scaleY)), 5);
+        const scaleY = coverHeight / Math.max(boxHeight, 1);
 
-        // Calculate translation to center the box
+        // Use Min to ensure the whole box fits ("Contain" / "Fit")
+        // Use Max to ensure the screen is covered ("Cover" / "Fill")
+        const zoomMode = section.zoomConfig?.zoomMode || 'fit';
+        const rawScale = zoomMode === 'fill' ? Math.max(scaleX, scaleY) : Math.min(scaleX, scaleY);
+
+        // Remove artificial floors and allow massive precision (up to 100x zoom)
+        const scale = Math.min(Math.max(1, rawScale), 100);
+
+        // Content Offset for centering 896 design in dynamic coverHeight
+        // boxY is relative to the internal 896 canvas height
+        const contentOffset = isPortrait ? (coverHeight - CANVAS_HEIGHT) / 2 : 0;
+
+        // Precise Target Center in the unscaled coordinate system (414 x coverHeight)
         const centerX = boxX + boxWidth / 2;
-        const centerY = boxY + boxHeight / 2;
-        const translateX = (CANVAS_WIDTH / 2 - centerX);
-        const translateY = (CANVAS_HEIGHT / 2 - centerY);
+        const centerY = boxY + contentOffset + boxHeight / 2;
+
+        // Final Formula for 'top left' (0,0) origin:
+        // Result = Translation + Scale * LocalPosition
+        // We want Result to be the exact center of the viewport:
+        // Translation = ViewportCenter - (Scale * LocalPosition)
+        const translateX = (CANVAS_WIDTH / 2) - (scale * centerX);
+        const translateY = (coverHeight / 2) - (scale * centerY);
 
         return { scale, x: translateX, y: translateY };
-    }, [currentZoomPointIndex]);
+    }, [currentZoomPointIndex, coverHeight, isPortrait, sortedSections]);
 
     // Get section style based on transition stage (from legacy getSectionSlotStyle)
     const getSectionStyle = useCallback((index: number): React.CSSProperties => {
@@ -558,12 +577,21 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
             (entries) => {
                 entries.forEach((entry) => {
                     const index = parseInt(entry.target.getAttribute('data-index') || '-1');
-                    if (entry.isIntersecting && index !== -1 && !visibleSections.includes(index)) {
-                        setVisibleSections(prev => [...prev, index]);
-                        const section = sortedSections[index];
-                        if (section?.zoomConfig?.enabled && section.zoomConfig.trigger === 'scroll') {
-                            startZoomAnimation(index, section);
-                        }
+                    if (index === -1) return;
+
+                    if (entry.isIntersecting) {
+                        setVisibleSections(prev => {
+                            if (prev.includes(index)) return prev;
+                            const next = [...prev, index];
+                            const section = sortedSections[index];
+                            if (section?.zoomConfig?.enabled && (section.zoomConfig.trigger === 'scroll' || section.zoomConfig.trigger === 'load')) {
+                                startZoomAnimation(index, section);
+                            }
+                            return next;
+                        });
+                    } else {
+                        // Remove from visible sections if it left the top or bottom
+                        setVisibleSections(prev => prev.filter(i => i !== index));
                     }
                 });
             },
@@ -626,8 +654,11 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                 {/* Main Scroll Container */}
                 <div
                     ref={scrollContainerRef}
-                    className={`w-full h-full flex ${isPortrait ? 'justify-start' : 'justify-center'} ${transitionStage === 'DONE' ? 'overflow-y-auto' : 'overflow-hidden'}`}
-                    style={{ alignItems: 'flex-start' }}
+                    className={`w-full h-full flex ${isPortrait ? 'premium-scroll no-scrollbar' : 'premium-scroll'} ${isPortrait ? 'justify-start' : 'justify-center'} ${transitionStage === 'DONE' ? 'overflow-y-auto' : 'overflow-hidden'}`}
+                    style={{
+                        alignItems: 'flex-start',
+                        scrollbarGutter: isPortrait ? 'auto' : 'stable'
+                    }}
                 >
                     {/* Visual Layout Wrapper (Matches Visual Size) - overflow-hidden */}
                     <div
@@ -636,7 +667,9 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                             // Width is scaled width (Visual)
                             width: CANVAS_WIDTH * scaleFactor,
                             // Height is layout height (Visual)
-                            height: (transitionStage === 'DONE' ? totalHeight : coverHeight) * scaleFactor,
+                            // We use totalHeight from the beginning to prevent "gejolak" (layout jumps)
+                            // but parent keeps it clipped until DONE
+                            height: totalHeight * scaleFactor,
                             // Margins for desktop centering
                             marginLeft: isPortrait ? 0 : 'auto',
                             marginRight: isPortrait ? 0 : 'auto',
@@ -658,14 +691,22 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                         >
                             {/* Sections */}
                             {sortedSections.map((section, index) => {
+                                const points = section.zoomConfig?.points || [];
+                                const currentIdx = currentZoomPointIndex[index];
+                                const activePoint = currentIdx !== undefined && currentIdx !== -1 ? points[currentIdx] : null;
                                 const zoomTransform = getZoomTransform(section, index);
-                                const zoomDuration = (section.zoomConfig?.transitionDuration || 1000) / 1000;
+                                const zoomDuration = ((activePoint?.transitionDuration ?? section.zoomConfig?.transitionDuration) || 1000) / 1000;
                                 const sectionStyle = getSectionStyle(index);
 
-                                // Handler for section click (triggers all elements with click trigger)
+                                // Handler for section click (triggers zoom if trigger is 'click')
                                 const handleSectionClick = () => {
                                     if (!clickedSections.includes(index)) {
                                         setClickedSections(prev => [...prev, index]);
+                                    }
+
+                                    // Trigger zoom if trigger is set to 'click'
+                                    if (section?.zoomConfig?.enabled && section.zoomConfig.trigger === 'click') {
+                                        startZoomAnimation(index, section);
                                     }
                                 };
 
@@ -687,86 +728,96 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                                             }}
                                             transition={{
                                                 duration: zoomDuration,
-                                                ease: [0.4, 0, 0.2, 1],
+                                                // PREMIUM LIQUID EASE: More fluid and high-end feel
+                                                ease: [0.22, 1, 0.36, 1],
                                             }}
-                                            style={{ transformOrigin: 'center center', overflow: 'hidden' }}
+                                            style={{
+                                                transformOrigin: '0 0',
+                                                overflow: 'hidden',
+                                                willChange: 'transform',
+                                                transformStyle: 'preserve-3d',
+                                                WebkitFontSmoothing: 'antialiased'
+                                            }}
                                         >
-                                            {/* Background */}
+                                            {/* Design-Space Container for Background & Elements */}
+                                            {/* This ensures background-size: cover behaves 1:1 with the editor */}
                                             <div
-                                                className={`absolute inset-0 bg-cover bg-center ${section.kenBurnsEnabled ? 'animate-ken-burns' : ''}`}
+                                                className="absolute inset-0"
                                                 style={{
-                                                    backgroundColor: section.backgroundColor || '#0a0a0a',
-                                                    backgroundImage: section.backgroundUrl ? `url(${section.backgroundUrl})` : undefined,
+                                                    top: isPortrait ? (coverHeight - CANVAS_HEIGHT) / 2 : 0,
+                                                    height: CANVAS_HEIGHT,
+                                                    width: CANVAS_WIDTH,
                                                 }}
-                                            />
-
-                                            {/* Overlay */}
-                                            {section.backgroundUrl && (section.overlayOpacity || 0) > 0 && (
+                                            >
+                                                {/* Background */}
                                                 <div
-                                                    className="absolute inset-0 bg-black pointer-events-none"
-                                                    style={{ opacity: section.overlayOpacity }}
+                                                    className={`absolute inset-0 bg-cover bg-center pointer-events-none ${section.kenBurnsEnabled ? 'animate-ken-burns' : ''}`}
+                                                    style={{
+                                                        backgroundColor: section.backgroundColor || '#0a0a0a',
+                                                        backgroundImage: section.backgroundUrl ? `url(${section.backgroundUrl})` : undefined,
+                                                    }}
                                                 />
-                                            )}
 
-                                            {/* Particle Effects */}
-                                            {section.particleType && section.particleType !== 'none' && (
-                                                <ParticleOverlay type={section.particleType} />
-                                            )}
+                                                {/* Overlay */}
+                                                {section.backgroundUrl && (section.overlayOpacity || 0) > 0 && (
+                                                    <div
+                                                        className="absolute inset-0 bg-black pointer-events-none"
+                                                        style={{ opacity: section.overlayOpacity }}
+                                                    />
+                                                )}
 
-                                            {/* Elements */}
-                                            {(section.elements || [])
-                                                .filter((el: any) => {
-                                                    if (!el || !el.isVisible) return false;
-                                                    // Legacy logic: Hide "Open" buttons from Section 0 after it's been revealed
-                                                    if (index === 0 && transitionStage === 'DONE' && (el.type === 'button' || el.type === 'open_invitation_button')) {
-                                                        return false;
-                                                    }
-                                                    return true;
-                                                })
-                                                .map((element: any) => {
-                                                    // Adjust Y position for cover section stretch
-                                                    let adjustedY = element.y;
-                                                    if (index === 0 && !isPortrait) {
-                                                        adjustedY = element.y + (coverHeight - CANVAS_HEIGHT) / 2;
-                                                    }
+                                                {/* Particle Effects */}
+                                                {section.particleType && section.particleType !== 'none' && (
+                                                    <div className="absolute inset-0 pointer-events-none">
+                                                        <ParticleOverlay type={section.particleType} />
+                                                    </div>
+                                                )}
 
-                                                    // Determine if this element should be force-triggered
-                                                    // For click trigger: forceTrigger when section is clicked
-                                                    // For open_btn trigger: forceTrigger when isOpened
-                                                    // For scroll trigger: forceTrigger when section is visible
-                                                    // For load trigger: always forceTrigger
-                                                    const elementTrigger = element.animation?.trigger || 'scroll';
-                                                    let forceTrigger = false;
+                                                {/* Elements */}
+                                                {(section.elements || [])
+                                                    .filter((el: any) => {
+                                                        if (!el || !el.isVisible) return false;
+                                                        // Legacy logic: Hide "Open" buttons from Section 0 after it's been revealed
+                                                        if (index === 0 && transitionStage === 'DONE' && (el.type === 'button' || el.type === 'open_invitation_button')) {
+                                                            return false;
+                                                        }
+                                                        return true;
+                                                    })
+                                                    .map((element: any) => {
+                                                        // Determine if this element should be force-triggered
+                                                        const elementTrigger = element.animation?.trigger || 'scroll';
+                                                        let forceTrigger = false;
 
-                                                    switch (elementTrigger) {
-                                                        case 'load':
-                                                            forceTrigger = true;
-                                                            break;
-                                                        case 'scroll':
-                                                            forceTrigger = visibleSections.includes(index);
-                                                            break;
-                                                        case 'open_btn':
-                                                            forceTrigger = isOpened;
-                                                            break;
-                                                        case 'click':
-                                                            forceTrigger = clickedSections.includes(index);
-                                                            break;
-                                                    }
+                                                        switch (elementTrigger) {
+                                                            case 'load':
+                                                                forceTrigger = true;
+                                                                break;
+                                                            case 'scroll':
+                                                                forceTrigger = visibleSections.includes(index);
+                                                                break;
+                                                            case 'open_btn':
+                                                                forceTrigger = isOpened;
+                                                                break;
+                                                            case 'click':
+                                                                forceTrigger = clickedSections.includes(index);
+                                                                break;
+                                                        }
 
-                                                    return (
-                                                        <AnimatedLayer
-                                                            key={`${section.id}-${element.id}`}
-                                                            layer={element}
-                                                            adjustedY={adjustedY}
-                                                            isOpened={isOpened}
-                                                            isEditor={false}
-                                                            onOpenInvitation={handleOpenInvitation}
-                                                            scrollContainerRef={scrollContainerRef}
-                                                            forceTrigger={forceTrigger}
-                                                            isSectionActive={visibleSections.includes(index)}
-                                                        />
-                                                    );
-                                                })}
+                                                        return (
+                                                            <AnimatedLayer
+                                                                key={`${section.id}-${element.id}`}
+                                                                layer={element}
+                                                                adjustedY={element.y}
+                                                                isOpened={isOpened}
+                                                                isEditor={false}
+                                                                onOpenInvitation={handleOpenInvitation}
+                                                                scrollContainerRef={scrollContainerRef}
+                                                                forceTrigger={forceTrigger}
+                                                                isSectionActive={visibleSections.includes(index)}
+                                                            />
+                                                        );
+                                                    })}
+                                            </div>
                                         </motion.div>
                                     </div>
                                 );
@@ -815,7 +866,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                         animation: ken-burns 20s ease-in-out infinite alternate;
                     }
                 `}} />
-            </motion.div>
-        </AnimatePresence>
+            </motion.div >
+        </AnimatePresence >
     );
 };

@@ -5,7 +5,7 @@ import { generateId } from '@/lib/utils';
 import {
     Type, Image as ImageIcon, Clock, MailOpen,
     Heart, Square, Film, MapPin, Video, Sparkles, X,
-    MessageSquare, Users, Circle, Triangle, Diamond, Star, Zap, Wind
+    MessageSquare, Users, Circle, Triangle, Diamond, Star, Zap, Wind, Layout
 } from 'lucide-react';
 
 const CANVAS_WIDTH = 414;
@@ -71,14 +71,25 @@ const elementConfigs: ElementConfig[] = [
             animation: { entrance: 'zoom-in' as const },
             countdownConfig: {
                 targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                style: 'elegant' as const,
+                variant: 'elegant' as const,
                 showDays: true, showHours: true, showMinutes: true, showSeconds: true,
+                showLabels: true, showSeparators: true,
+                labels: { days: 'Hari', hours: 'Jam', minutes: 'Menit', seconds: 'Detik' },
+                separatorStyle: 'colon' as const,
                 backgroundColor: 'transparent',
                 textColor: '#ffffff',
                 accentColor: '#bfa181',
                 labelColor: '#888888',
-                showLabels: true,
-                labels: { days: 'Hari', hours: 'Jam', minutes: 'Menit', seconds: 'Detik' }
+                fontFamily: 'Outfit',
+                fontSize: 32,
+                fontWeight: 'bold' as const,
+                borderRadius: 12,
+                boxPadding: 16,
+                boxGap: 12,
+                boxShadow: 'none' as const,
+                borderStyle: 'none' as const,
+                animateOnChange: true,
+                animationType: 'fade' as const,
             }
         })
     },
@@ -245,8 +256,75 @@ const elementConfigs: ElementConfig[] = [
             width: 320,
             height: 250
         })
+    },
+    {
+        type: 'rsvp_wishes',
+        icon: <MessageSquare className="w-5 h-5" />,
+        label: 'RSVP+Wishes',
+        color: 'hover:bg-gradient-to-r from-emerald-500/10 to-rose-500/10 hover:border-emerald-500/30',
+        createDefault: () => ({
+            width: 360,
+            height: 600,
+            rsvpWishesConfig: {
+                variant: 'modern-glass',
+                title: 'Konfirmasi Kehadiran',
+                subtitle: 'Kami menantikan kehadiran Anda',
+                submitButtonText: 'Kirim RSVP',
+                wishesTitle: 'Ucapan & Doa',
+                wishesSubtitle: 'Dari para tamu undangan',
+                thankYouMessage: 'Terima kasih atas konfirmasi dan ucapan Anda!',
+                showNameField: true,
+                showEmailField: false,
+                showPhoneField: true,
+                showAttendanceField: true,
+                showGuestCountField: true,
+                showMessageField: true,
+                showMealPreference: false,
+                showSongRequest: false,
+                attendanceOptions: { attending: 'Hadir', notAttending: 'Tidak Hadir', maybe: 'Belum Pasti' },
+                guestCountMax: 5,
+                guestCountDefault: 1,
+                primaryColor: '#bfa181',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                textColor: '#ffffff',
+                borderRadius: 12,
+                wishesLayout: 'list',
+                wishesMaxDisplay: 50,
+                showWishTimestamp: true,
+                showWishAvatar: true,
+                wishCardStyle: 'glass',
+                wishesAutoScroll: false,
+                nameMinLength: 2,
+                nameMaxLength: 100,
+                messageMinLength: 0,
+                messageMaxLength: 500,
+                requireMessage: false,
+                enableCaptcha: false,
+                formAnimation: 'fade',
+                wishCardAnimation: 'slide',
+                submitButtonAnimation: 'glow'
+            }
+        })
+    },
+    {
+        type: 'photo_grid',
+        icon: <Layout className="w-5 h-5" />,
+        label: 'Photo Grid',
+        color: 'hover:bg-blue-400/10 hover:border-blue-400/30',
+        createDefault: () => ({
+            width: 320,
+            height: 320,
+            photoGridConfig: {
+                variant: 'quad',
+                images: [],
+                gap: 8,
+                cornerRadius: 12,
+                hoverEffect: 'none'
+            }
+        })
     }
 ];
+
 
 // Shape sub-options
 const shapeOptions = [

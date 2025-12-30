@@ -9,10 +9,12 @@ import { ElementToolbar } from './ElementToolbar';
 import { PropertyPanel } from '../Panels/PropertyPanel';
 import { EditorHeader } from './EditorHeader';
 import { PreviewView } from '../Preview/PreviewView';
+import { ImageCropModal } from '../Modals/ImageCropModal';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { PanelLeftClose, PanelRightClose, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { generateId } from '@/lib/utils';
+import { generateId, dataURLtoBlob, sanitizeValue } from '@/lib/utils';
+
 
 interface EditorLayoutProps {
     templateId?: string;
@@ -20,7 +22,16 @@ interface EditorLayoutProps {
 }
 
 export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTemplate }) => {
-    const { layers, projectName, pathEditingId } = useStore();
+    const {
+        layers,
+        projectName,
+        pathEditingId,
+        sections,
+        updateElementInSection,
+        imageCropModal,
+        closeImageCropModal
+    } = useStore();
+
 
     // Enable keyboard shortcuts
     useKeyboardShortcuts();
@@ -72,30 +83,32 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
 
 
         // Determine correct ID for upsert
-        // 1. If templateId is UUID, use it.
-        // 2. If templateId is slug, attempt to use state.id (the real UUID)
+        // CTO Enterprise Strategy: Strict ID Management
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(templateId);
-        // Use pure UUID generator if no ID exists (from crypto.randomUUID mostly)
-        // We pass no prefix to generateId to hopefully get a cleaner ID, but better to enforce UUID format.
-        // Actually generateId util joins prefix with hyphen.
-        // Let's use pure UUID for the DB ID to avoid 'invalid input syntax for type uuid'.
-        const upsertId = isUuid ? templateId : state.id || crypto.randomUUID();
 
-        if (!state.id && upsertId) {
-            useStore.setState({ id: upsertId });
-        }
+        // Priority: 1. State ID (Real DB ID) 2. URL if it's a UUID 3. Fresh UUID (New project)
+        let upsertId = state.id || (isUuid ? templateId : null);
 
-        if (!upsertId) {
-            console.error('[Persistence] Save Blocked: No valid UUID found for this project.');
-            alert('Error: Cannot save. Project ID not found.');
+        // CTO Enterprise Safety: If we have a slug but no ID, wait for sync to provide the ID
+        // This prevents creating a duplicate template with the same slug but different ID
+        if (!upsertId && !isUuid && templateId) {
+            console.warn('[Persistence] Save Blocked: Slug exists in URL but no ID hydrated yet. Waiting for Cloud Sync...');
             return;
         }
 
+        if (!upsertId) {
+            console.log('[Persistence] Generating new UUID for fresh project...');
+            upsertId = crypto.randomUUID();
+            useStore.setState({ id: upsertId });
+        }
+
+        console.log(`[Persistence] Syncing - Mode: ${isTemplate ? 'Template' : 'Invitation'} | ID: ${upsertId} | Slug: ${state.slug}`);
+
         const payload = {
             id: upsertId,
-            name: state.projectName || state.sections[0]?.title || 'Invitation', // Prioritize projectName
+            name: state.projectName || state.sections[0]?.title || 'Invitation',
             slug: state.slug,
-            thumbnail_url: state.thumbnailUrl, // Add thumbnail_url to payload
+            thumbnail_url: state.thumbnailUrl,
             sections: state.sections,
             layers: state.layers,
             zoom: state.zoom,
@@ -112,7 +125,15 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
             .upsert(payload, { onConflict: 'id' });
 
         if (error) {
-            console.error('[Persistence] Database Sync Error:', error.message);
+            console.error('[Persistence] ❌ Database Sync Error:', error.message);
+            console.error('[Persistence] Error Detail:', error);
+
+            // CTO CRITICAL FIX: If we get a slug conflict, and we have an ID, it means the ID in the store
+            // might be wrong OR the slug was changed to one that exists.
+            if (error.message.includes('unique_template_slug')) {
+                console.warn('[Persistence] Slug conflict detected. Real-time verification required.');
+            }
+
             throw new Error(`Cloud Sync Failed: ${error.message}`);
         }
 
@@ -182,8 +203,13 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                         window.history.replaceState(null, '', `${baseRoute}/${data.slug}`);
                     }
 
-                    const validSections = Array.isArray(data.sections) ? (data.sections as Section[]) : [];
-                    const validLayers = Array.isArray(data.layers) ? (data.layers as Layer[]) : [];
+                    // CTO ENTERPRISE GUARD: URL Sanitization
+                    // Ensure that any stale blob:/data: URLs in the database (from previous failed sanitizations)
+                    // are stripped before entering the application state.
+                    const sanitizedData = sanitizeValue(data);
+
+                    const validSections = Array.isArray(sanitizedData.sections) ? (sanitizedData.sections as Section[]) : [];
+                    const validLayers = Array.isArray(sanitizedData.layers) ? (sanitizedData.layers as Layer[]) : [];
 
                     const processedSections = validSections.map(s => ({
                         ...s,
@@ -194,16 +220,16 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                     useStore.setState({
                         sections: processedSections,
                         layers: validLayers,
-                        zoom: data.zoom || 1,
-                        pan: data.pan || { x: 0, y: 0 },
-                        slug: data.slug || '',
-                        thumbnailUrl: data.thumbnail_url || null, // Hydrate thumbnail_url
-                        id: data.id, // Set the real ID
-                        projectName: data.name || '',
+                        zoom: sanitizedData.zoom || 1,
+                        pan: sanitizedData.pan || { x: 0, y: 0 },
+                        slug: sanitizedData.slug || '',
+                        thumbnailUrl: sanitizedData.thumbnail_url || null, // Hydrate thumbnail_url
+                        id: sanitizedData.id, // Set the real ID
+                        projectName: sanitizedData.name || '',
                         activeSectionId: processedSections[0]?.id || null,
                         selectedLayerId: null
                     });
-                    console.log(`[Persistence] Hydrated ID: '${data.id}' | Slug: '${data.slug}'`);
+                    console.log(`[Persistence] Hydrated ID: '${sanitizedData.id}' | Slug: '${sanitizedData.slug}' with sanitization.`);
                 } else {
                     // New template with no data yet - that's OK
                     console.log('[Persistence] New project - no cloud data yet.');
@@ -308,6 +334,67 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
             </div>
 
             {/* Removed Preview Modal - handled via new tab */}
+
+            {/* Image Crop Modal for Photo Grid */}
+            <ImageCropModal
+                isOpen={imageCropModal.isOpen}
+                imageSrc={imageCropModal.imageSrc}
+                aspectRatio={imageCropModal.aspectRatio}
+                onClose={closeImageCropModal}
+                onCropComplete={async (croppedImageUrl: string) => {
+                    // CTO Refinement: Instead of persisting huge base64 data URLs,
+                    // we upload the crop to Supabase and use the public URL.
+                    // This prevents local storage overflow and broken images on reload.
+                    if (imageCropModal.targetLayerId && imageCropModal.targetSlotIndex !== null) {
+                        try {
+                            const blob = dataURLtoBlob(croppedImageUrl);
+                            const fileName = `crop_${generateId('img')}.png`;
+                            const filePath = `photo-grids/${fileName}`;
+
+                            // 1. Upload to Supabase
+                            const { error: uploadError } = await supabase.storage
+                                .from('invitation-assets')
+                                .upload(filePath, blob, {
+                                    contentType: 'image/png',
+                                    upsert: true
+                                });
+
+                            if (uploadError) throw uploadError;
+
+                            // 2. Get Public URL
+                            const { data: { publicUrl } } = supabase.storage
+                                .from('invitation-assets')
+                                .getPublicUrl(filePath);
+
+                            console.log('[DEBUG] Crop Upload Success. Public URL:', publicUrl);
+
+                            // 3. Update the photo grid image at the target slot
+                            const targetSection = sections.find((s: Section) =>
+                                s.elements.some((e: Layer) => e.id === imageCropModal.targetLayerId)
+                            );
+
+                            if (targetSection) {
+                                const targetLayer = targetSection.elements.find((e: Layer) => e.id === imageCropModal.targetLayerId);
+                                if (targetLayer?.photoGridConfig) {
+                                    const newImages = [...(targetLayer.photoGridConfig.images || [])];
+                                    newImages[imageCropModal.targetSlotIndex] = publicUrl;
+                                    updateElementInSection(targetSection.id, imageCropModal.targetLayerId, {
+                                        photoGridConfig: {
+                                            ...targetLayer.photoGridConfig,
+                                            images: newImages
+                                        }
+                                    });
+                                }
+                            }
+                        } catch (error) {
+                            console.error('[EditorLayout] Crop upload failed:', error);
+                            alert('Failed to upload cropped image. Please try again.');
+                        }
+                    }
+                }}
+            />
+
         </div>
     );
 };
+

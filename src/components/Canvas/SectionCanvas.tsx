@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { useStore } from '@/store/useStore';
 import { CanvasElement } from './CanvasElement';
@@ -32,13 +32,18 @@ export const SectionCanvas: React.FC = () => {
     const canvasLayers = section?.elements || layers;
 
     // 3. Unified update handler - handles both global layers and section-specific elements
-    const handleUpdateLayer = (layerId: string, updates: Partial<any>) => {
-        if (section && section.elements.some(el => el.id === layerId)) {
-            updateElementInSection(section.id, layerId, updates);
+    // CTO Optimization: Using getState inside callback to ensure absolute identity stability
+    // This prevents infinite loops when children trigger updates on mount (like image loading)
+    const handleUpdateLayer = useCallback((layerId: string, updates: Partial<any>) => {
+        const state = useStore.getState();
+        const currentSection = state.sections.find(s => s.id === state.activeSectionId);
+
+        if (currentSection && currentSection.elements.some(el => el.id === layerId)) {
+            state.updateElementInSection(currentSection.id, layerId, updates);
         } else {
-            updateLayer(layerId, updates);
+            state.updateLayer(layerId, updates);
         }
-    };
+    }, []); // Zero dependencies = Infinite stability
     const canvasRef = useRef<HTMLDivElement>(null);
     const wrapperRef = useRef<HTMLDivElement>(null);
     const transformRef = useRef<any>(null);
@@ -74,20 +79,14 @@ export const SectionCanvas: React.FC = () => {
     const sortedLayers = [...canvasLayers].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
 
     // Handle element drag
-    const handleElementDrag = (layerId: string, newPosition: { x: number; y: number }) => {
+    const handleElementDrag = useCallback((layerId: string, newPosition: { x: number; y: number }) => {
         handleUpdateLayer(layerId, { x: newPosition.x, y: newPosition.y });
-    };
+    }, [handleUpdateLayer]);
 
     // Handle element resize
-    const handleElementResize = (layerId: string, updates: { scale?: number; width?: number; height?: number; x?: number; y?: number }) => {
-        const layerUpdates: Record<string, any> = {};
-        if (updates.width !== undefined) layerUpdates.width = updates.width;
-        if (updates.height !== undefined) layerUpdates.height = updates.height;
-        if (updates.x !== undefined) layerUpdates.x = updates.x;
-        if (updates.y !== undefined) layerUpdates.y = updates.y;
-        if (updates.scale !== undefined) layerUpdates.scale = updates.scale;
-        handleUpdateLayer(layerId, layerUpdates);
-    };
+    const handleElementResize = useCallback((layerId: string, updates: any) => {
+        handleUpdateLayer(layerId, updates);
+    }, [handleUpdateLayer]);
 
     // Handle canvas click (deselect or add path point)
     // Modified to support clicks anywhere in the extended editing zone (padding)
@@ -231,8 +230,8 @@ export const SectionCanvas: React.FC = () => {
                                             layer={layer}
                                             isSelected={selectedLayerId === layer.id}
                                             onSelect={() => selectLayer(layer.id)}
-                                            onDrag={(pos) => handleElementDrag(layer.id, pos)}
-                                            onResize={(size) => handleElementResize(layer.id, size)}
+                                            onDrag={(pos: { x: number; y: number }) => handleElementDrag(layer.id, pos)}
+                                            onResize={(size: any) => handleElementResize(layer.id, size)}
                                             isPanMode={isSpacePressed}
                                         />
                                     ))}
@@ -244,7 +243,7 @@ export const SectionCanvas: React.FC = () => {
                                         <path
                                             d={editingLayer.motionPathConfig.points.length > 0
                                                 ? `M ${editingLayer.motionPathConfig.points[0].x} ${editingLayer.motionPathConfig.points[0].y} ` +
-                                                editingLayer.motionPathConfig.points.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')
+                                                editingLayer.motionPathConfig.points.slice(1).map((p: any) => `L ${p.x} ${p.y}`).join(' ')
                                                 : ''
                                             }
                                             fill="none"
@@ -259,7 +258,7 @@ export const SectionCanvas: React.FC = () => {
                         </motion.div>
 
                         {/* Path Handles (Rendered outside overflow:hidden frame) */}
-                        {editingLayer && editingLayer.motionPathConfig?.points.map((p, i) => (
+                        {editingLayer && editingLayer.motionPathConfig?.points.map((p: any, i: number) => (
                             <motion.div
                                 key={`${editingLayer.id}-point-${i}`}
                                 drag
@@ -284,7 +283,7 @@ export const SectionCanvas: React.FC = () => {
                                     onMouseDown={(e) => e.stopPropagation()}
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        const points = editingLayer.motionPathConfig!.points.filter((_, idx) => idx !== i);
+                                        const points = editingLayer.motionPathConfig!.points.filter((_: any, idx: number) => idx !== i);
                                         updateLayer(editingLayer.id, {
                                             motionPathConfig: { ...editingLayer.motionPathConfig!, points }
                                         });
