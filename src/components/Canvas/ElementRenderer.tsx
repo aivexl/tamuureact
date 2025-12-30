@@ -63,17 +63,51 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenI
         }
     };
 
+    const getFilters = () => {
+        const f = layer.filters;
+        if (!f) return 'none';
+        const parts = [];
+        if (f.brightness !== undefined) parts.push(`brightness(${f.brightness}%)`);
+        if (f.contrast !== undefined) parts.push(`contrast(${f.contrast}%)`);
+        if (f.blur !== undefined) parts.push(`blur(${f.blur}px)`);
+        if (f.sepia !== undefined) parts.push(`sepia(${f.sepia}%)`);
+        if (f.grayscale !== undefined) parts.push(`grayscale(${f.grayscale}%)`);
+        if (f.hueRotate !== undefined) parts.push(`hue-rotate(${f.hueRotate}deg)`);
+        if (f.saturate !== undefined) parts.push(`saturate(${f.saturate}%)`);
+        if (f.invert !== undefined) parts.push(`invert(${f.invert}%)`);
+        return parts.length > 0 ? parts.join(' ') : 'none';
+    };
+
+    const getStyling = (): React.CSSProperties => {
+        const s: React.CSSProperties = {};
+        if (layer.borderRadius !== undefined) s.borderRadius = `${layer.borderRadius}px`;
+        if (layer.borderWidth !== undefined) {
+            s.borderWidth = `${layer.borderWidth}px`;
+            s.borderStyle = layer.borderStyle || 'solid';
+            s.borderColor = layer.borderColor || '#ffffff';
+        }
+        if (layer.shadow) {
+            const sh = layer.shadow;
+            s.filter = `${s.filter || ''} drop-shadow(${sh.x}px ${sh.y}px ${sh.blur}px ${sh.color})`.trim();
+        }
+        return s;
+    };
+
     return (
         <div
             className="w-full h-full relative"
-            style={isExploded ? {
-                maxWidth: '100%',
-                maxHeight: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden'
-            } : undefined}
+            style={{
+                filter: getFilters(),
+                ...getStyling(),
+                ...(isExploded ? {
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden'
+                } : {})
+            }}
         >
             {renderContent()}
         </div>

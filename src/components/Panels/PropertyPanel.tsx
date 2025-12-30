@@ -1918,6 +1918,177 @@ export const PropertyPanel: React.FC = () => {
                     </SectionComponent>
                 )}
 
+                {/* Effects & Filters - Enterprise Suite */}
+                <SectionComponent title="Effects & Filters" icon={<Sliders className="w-4 h-4 text-premium-accent" />}>
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-1 gap-3">
+                            <RangeInput
+                                label="Brightness"
+                                value={layer.filters?.brightness ?? 100}
+                                min={0}
+                                max={200}
+                                onChange={(v) => handleUpdate({ filters: { ...layer.filters, brightness: v } })}
+                            />
+                            <RangeInput
+                                label="Contrast"
+                                value={layer.filters?.contrast ?? 100}
+                                min={0}
+                                max={200}
+                                onChange={(v) => handleUpdate({ filters: { ...layer.filters, contrast: v } })}
+                            />
+                            <RangeInput
+                                label="Saturation"
+                                value={layer.filters?.saturate ?? 100}
+                                min={0}
+                                max={200}
+                                onChange={(v) => handleUpdate({ filters: { ...layer.filters, saturate: v } })}
+                            />
+                            <RangeInput
+                                label="Blur"
+                                value={layer.filters?.blur ?? 0}
+                                min={0}
+                                max={20}
+                                step={0.5}
+                                onChange={(v) => handleUpdate({ filters: { ...layer.filters, blur: v } })}
+                            />
+                        </div>
+
+                        {/* Advanced Filters Toggle */}
+                        <div className="pt-2 border-t border-white/5">
+                            <details className="group/adv">
+                                <summary className="flex items-center justify-between cursor-pointer list-none text-[9px] text-white/30 uppercase font-bold hover:text-white/60 transition-colors">
+                                    <span>Advanced Filters</span>
+                                    <ChevronDown className="w-3 h-3 group-open/adv:rotate-180 transition-transform" />
+                                </summary>
+                                <div className="space-y-4 pt-3 animate-in fade-in slide-in-from-top-1 duration-200">
+                                    <RangeInput
+                                        label="Hue Rotate"
+                                        value={layer.filters?.hueRotate ?? 0}
+                                        min={0}
+                                        max={360}
+                                        onChange={(v) => handleUpdate({ filters: { ...layer.filters, hueRotate: v } })}
+                                    />
+                                    <RangeInput
+                                        label="Greyscale"
+                                        value={layer.filters?.grayscale ?? 0}
+                                        min={0}
+                                        max={100}
+                                        onChange={(v) => handleUpdate({ filters: { ...layer.filters, grayscale: v } })}
+                                    />
+                                    <RangeInput
+                                        label="Sepia"
+                                        value={layer.filters?.sepia ?? 0}
+                                        min={0}
+                                        max={100}
+                                        onChange={(v) => handleUpdate({ filters: { ...layer.filters, sepia: v } })}
+                                    />
+                                    <RangeInput
+                                        label="Invert"
+                                        value={layer.filters?.invert ?? 0}
+                                        min={0}
+                                        max={100}
+                                        onChange={(v) => handleUpdate({ filters: { ...layer.filters, invert: v } })}
+                                    />
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                </SectionComponent>
+
+                {/* Borders & Shadows - Premium Framing */}
+                <SectionComponent title="Border & Frame" icon={<Square className="w-4 h-4 text-premium-accent" />}>
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-3">
+                            <NumberInput
+                                label="Radius"
+                                value={layer.borderRadius ?? 0}
+                                min={0}
+                                onChange={(v) => handleUpdate({ borderRadius: v })}
+                            />
+                            <NumberInput
+                                label="Weight"
+                                value={layer.borderWidth ?? 0}
+                                min={0}
+                                onChange={(v) => handleUpdate({ borderWidth: v })}
+                            />
+                        </div>
+                        {(layer.borderWidth || 0) > 0 && (
+                            <div className="space-y-4 animate-in fade-in duration-300">
+                                <SelectInput
+                                    label="Style"
+                                    value={layer.borderStyle || 'solid'}
+                                    options={[
+                                        { value: 'solid', label: 'Solid' },
+                                        { value: 'dashed', label: 'Dashed' },
+                                        { value: 'dotted', label: 'Dotted' }
+                                    ]}
+                                    onChange={(v) => handleUpdate({ borderStyle: v as any })}
+                                />
+                                <ColorInput
+                                    label="Border Color"
+                                    value={layer.borderColor || '#ffffff'}
+                                    onChange={(v) => handleUpdate({ borderColor: v })}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </SectionComponent>
+
+                <SectionComponent title="Shadow Engine" icon={<Sparkles className="w-4 h-4 text-premium-accent" />}>
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] text-white/40 italic">Drop Shadow Controls</span>
+                            <motion.button
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleUpdate({
+                                    shadow: layer.shadow ? undefined : {
+                                        color: 'rgba(0,0,0,0.5)',
+                                        blur: 10,
+                                        x: 0,
+                                        y: 4,
+                                        spread: 0
+                                    }
+                                })}
+                                className={`w-10 h-5 rounded-full transition-colors ${layer.shadow ? 'bg-premium-accent' : 'bg-white/10'}`}
+                            >
+                                <motion.div
+                                    className="w-4 h-4 bg-white rounded-full shadow-sm"
+                                    animate={{ x: layer.shadow ? 22 : 2 }}
+                                />
+                            </motion.button>
+                        </div>
+
+                        {layer.shadow && (
+                            <div className="space-y-4 animate-in fade-in slide-in-from-right-2 duration-300">
+                                <ColorInput
+                                    label="Shadow Color"
+                                    value={layer.shadow.color}
+                                    onChange={(v) => handleUpdate({ shadow: { ...layer.shadow!, color: v } })}
+                                />
+                                <div className="grid grid-cols-2 gap-3">
+                                    <NumberInput
+                                        label="Offset X"
+                                        value={layer.shadow.x}
+                                        onChange={(v) => handleUpdate({ shadow: { ...layer.shadow!, x: v } })}
+                                    />
+                                    <NumberInput
+                                        label="Offset Y"
+                                        value={layer.shadow.y}
+                                        onChange={(v) => handleUpdate({ shadow: { ...layer.shadow!, y: v } })}
+                                    />
+                                </div>
+                                <RangeInput
+                                    label="Blur Radius"
+                                    value={layer.shadow.blur}
+                                    min={0}
+                                    max={50}
+                                    onChange={(v) => handleUpdate({ shadow: { ...layer.shadow!, blur: v } })}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </SectionComponent>
+
                 {/* Animation Section */}
 
                 <SectionComponent title="Entrance Animation" icon={<Zap className="w-4 h-4" />}>
@@ -2657,5 +2828,30 @@ const ColorInput: React.FC<{ label: string; value: string; onChange: (v: string)
                 className="flex-1 bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none font-mono"
             />
         </div>
+    </div>
+);
+
+const RangeInput: React.FC<{
+    label: string;
+    value: number;
+    min: number;
+    max: number;
+    step?: number;
+    onChange: (v: number) => void;
+}> = ({ label, value, min, max, step = 1, onChange }) => (
+    <div className="space-y-1.5">
+        <div className="flex justify-between items-center">
+            <label className="text-[9px] text-white/30 uppercase font-bold">{label}</label>
+            <span className="text-[10px] text-white/60 font-mono">{value}</span>
+        </div>
+        <input
+            type="range"
+            min={min}
+            max={max}
+            step={step}
+            value={value}
+            onChange={(e) => onChange(Number(e.target.value))}
+            className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-premium-accent"
+        />
     </div>
 );

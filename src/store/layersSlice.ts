@@ -455,11 +455,27 @@ export interface Layer {
 
     // Filters
     filters?: {
-        brightness?: number;
-        contrast?: number;
-        blur?: number;
-        sepia?: number;
-        grayscale?: number;
+        brightness?: number; // 0-200
+        contrast?: number;   // 0-200
+        blur?: number;       // 0-20
+        sepia?: number;      // 0-100
+        grayscale?: number;  // 0-100
+        hueRotate?: number;  // 0-360
+        saturate?: number;   // 0-200
+        invert?: number;     // 0-100
+    };
+
+    // Style properties (Enterprise level)
+    borderRadius?: number;
+    borderWidth?: number;
+    borderColor?: string;
+    borderStyle?: 'solid' | 'dashed' | 'dotted';
+    shadow?: {
+        color: string;
+        blur: number;
+        x: number;
+        y: number;
+        spread: number;
     };
 
     // Enterprise Asset Management

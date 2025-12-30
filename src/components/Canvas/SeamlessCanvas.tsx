@@ -5,7 +5,10 @@ import { useStore, SECTION_ICONS } from '@/store/useStore';
 import { CanvasElement } from './CanvasElement';
 import { Section, ZoomPoint } from '@/store/sectionsSlice';
 import { Layer } from '@/store/layersSlice';
-import { ChevronUp, ChevronDown, Eye, EyeOff, Copy, Trash2, Eraser, Zap, Group, Ungroup } from 'lucide-react';
+import {
+    ChevronUp, ChevronDown, Eye, EyeOff, Copy, Trash2, Eraser, Zap, Group, Ungroup,
+    MoveUp, MoveDown, Maximize, Minimize, LayoutDashboard, MousePointer2
+} from 'lucide-react';
 
 // ============================================
 // HELPER COMPONENTS
@@ -53,7 +56,11 @@ export const SeamlessCanvas: React.FC = () => {
         sections, activeSectionId, setActiveSection,
         updateElementInSection, updateSection,
         selectLayer, selectLayers, selectedLayerId, selectedLayerIds, clearSelection,
-        reorderSections, removeSection, duplicateSection, copySectionElementsTo, clearSectionContent
+        reorderSections, removeSection, duplicateSection, copySectionElementsTo, clearSectionContent,
+        // New section-aware element actions
+        duplicateElementInSection, bringElementToFront, sendToBack, sendElementToBack,
+        moveElementUp, moveElementDown, alignElements, distributeElements, matchSize,
+        removeElementFromSection
     } = useStore();
 
     const containerRef = useRef<HTMLDivElement>(null);
@@ -72,19 +79,85 @@ export const SeamlessCanvas: React.FC = () => {
 
     const sortedSections = useMemo(() => [...sections].sort((a, b) => a.order - b.order), [sections]);
 
-    // Keyboard Shortcuts (CTO Level)
+    // Keyboard Shortcuts (CTO Level - Figma/Canva standard)
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'g') {
+            // Prevent shortcuts if user is typing in an input
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || (e.target as HTMLElement).isContentEditable) {
+                return;
+            }
+
+            const isMod = e.ctrlKey || e.metaKey;
+            const hasSelection = selectedLayerIds.length > 0;
+            const activeSection = sections.find(s => s.id === activeSectionId);
+
+            // Nudge (Arrows)
+            if (hasSelection && activeSection && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                e.preventDefault();
+                const step = e.shiftKey ? 10 : 1;
+                selectedLayerIds.forEach(id => {
+                    const el = activeSection.elements.find(layer => layer.id === id);
+                    if (el) {
+                        const updates: any = {};
+                        if (e.key === 'ArrowLeft') updates.x = el.x - step;
+                        if (e.key === 'ArrowRight') updates.x = el.x + step;
+                        if (e.key === 'ArrowUp') updates.y = el.y - step;
+                        if (e.key === 'ArrowDown') updates.y = el.y + step;
+                        updateElementInSection(activeSection.id, id, updates);
+                    }
+                });
+            }
+
+            // Group/Ungroup
+            if (isMod && e.key === 'g') {
                 e.preventDefault();
                 if (e.shiftKey) handleUngroupSelected();
                 else handleGroupSelected();
             }
+
+            // Duplicate
+            if (isMod && (e.key === 'd' || e.key === 'D')) {
+                e.preventDefault();
+                if (hasSelection && activeSectionId) {
+                    selectedLayerIds.forEach(id => duplicateElementInSection(activeSectionId, id));
+                }
+            }
+
+            // Delete
+            if ((e.key === 'Delete' || e.key === 'Backspace') && hasSelection && activeSectionId) {
+                e.preventDefault();
+                selectedLayerIds.forEach(id => removeElementFromSection(activeSectionId, id));
+                clearSelection();
+            }
+
+            // Layer Order
+            if (isMod && hasSelection && activeSectionId) {
+                if (e.key === ']') {
+                    e.preventDefault();
+                    if (e.shiftKey) selectedLayerIds.forEach(id => bringElementToFront(activeSectionId, id));
+                    else selectedLayerIds.forEach(id => moveElementUp(activeSectionId, id));
+                }
+                if (e.key === '[') {
+                    e.preventDefault();
+                    if (e.shiftKey) selectedLayerIds.forEach(id => sendElementToBack(activeSectionId, id));
+                    else selectedLayerIds.forEach(id => moveElementDown(activeSectionId, id));
+                }
+            }
+
+            // Select All
+            if (isMod && e.key === 'a') {
+                e.preventDefault();
+                if (activeSection) {
+                    selectLayers(activeSection.elements.map(el => el.id));
+                }
+            }
+
             if (e.key === 'Escape') clearSelection();
         };
+
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selectedLayerIds]);
+    }, [selectedLayerIds, activeSectionId, sections]);
 
     // Marquee Selection State
     const [marquee, setMarquee] = useState<{ x1: number, y1: number, x2: number, y2: number, active: boolean, sectionId: string | null } | null>(null);
@@ -168,15 +241,20 @@ export const SeamlessCanvas: React.FC = () => {
         setContextMenu({ x: e.clientX, y: e.clientY, id });
     };
 
-    const handleAction = (type: 'front' | 'back' | 'duplicate' | 'delete') => {
-        if (!contextMenu) return;
+    const handleAction = (type: 'front' | 'back' | 'up' | 'down' | 'duplicate' | 'delete') => {
+        if (!contextMenu || !activeSectionId) return;
         const { id } = contextMenu;
-        if (type === 'duplicate') useStore.getState().duplicateLayer(id);
+
+        if (type === 'duplicate') duplicateElementInSection(activeSectionId, id);
         if (type === 'delete') {
-            if (activeSectionId) useStore.getState().removeElementFromSection(activeSectionId, id);
+            removeElementFromSection(activeSectionId, id);
+            clearSelection();
         }
-        if (type === 'front') useStore.getState().bringToFront(id);
-        if (type === 'back') useStore.getState().sendToBack(id);
+        if (type === 'front') bringElementToFront(activeSectionId, id);
+        if (type === 'back') sendElementToBack(activeSectionId, id);
+        if (type === 'up') moveElementUp(activeSectionId, id);
+        if (type === 'down') moveElementDown(activeSectionId, id);
+
         setContextMenu(null);
     };
 
@@ -198,41 +276,46 @@ export const SeamlessCanvas: React.FC = () => {
                             onElementResize={(id, updates) => updateElementInSection(section.id, id, updates)}
                             onContextMenu={handleContextMenu}
                             onDimensionsDetected={(id: string, w: number, h: number) => {
-                                // CTO SMART-SNAP: Sesuai Gambar 2 (Proporsional & Elegant)
-                                const ratio = w / h;
+                                // CTO SMART-SNAP V2: Only resize placeholders & maintain center
+                                const sectionId = section.id;
                                 const layer = section.elements.find((el: Layer) => el.id === id);
                                 if (!layer) return;
 
-                                // Hanya auto-resize jika ukurannya masih default/placeholder
-                                const isPlaceholder = (layer.width === 200 && layer.height === 200) ||
-                                    (layer.width === 100 && layer.height === 100);
+                                // 1. Strict Placeholder Check: Only auto-snap if it's the specific initial dimensions
+                                // This prevents re-snapping elements the user has already adjusted.
+                                const isInitialPlaceholder = (layer.width === 100 && layer.height === 100) ||
+                                    (layer.width === 200 && layer.height === 200);
 
-                                if (isPlaceholder) {
-                                    let newW = 150; // Default for Ornaments/Stickers
-                                    let newH = 150 / ratio;
+                                if (isInitialPlaceholder) {
+                                    const ratio = w / h;
 
-                                    if (ratio > 2.5) {
-                                        // Case: Wide Border (Seperti di Gambar 2)
-                                        newW = 414;
-                                        newH = 414 / ratio;
-                                    } else if (ratio < 0.4) {
-                                        // Case: Tall Border
-                                        newH = 300;
-                                        newW = 300 * ratio;
-                                    } else if (newH > 250) {
-                                        // Case: Too tall sticker
-                                        newH = 200;
-                                        newW = 200 * ratio;
+                                    // Calculate target width (bounded for ornaments, but respects natural ratio)
+                                    let targetW = 200;
+                                    let targetH = 200 / ratio;
+
+                                    // If too tall, bound by height
+                                    if (targetH > 350) {
+                                        targetH = 300;
+                                        targetW = 300 * ratio;
                                     }
 
-                                    const finalW = Math.round(newW);
-                                    const finalH = Math.round(newH);
+                                    const finalW = Math.round(targetW);
+                                    const finalH = Math.round(targetH);
 
-                                    // CTO OPTIMIZATION: Check for changes to prevent infinite render loops
                                     if (layer.width !== finalW || layer.height !== finalH) {
-                                        updateElementInSection(section.id, id, {
+                                        // CRITICAL: Preserve the Center Point
+                                        // newX = currentCenterX - (newWidth / 2)
+                                        const currentCenterX = layer.x + (layer.width / 2);
+                                        const currentCenterY = layer.y + (layer.height / 2);
+
+                                        const newX = Math.round(currentCenterX - (finalW / 2));
+                                        const newY = Math.round(currentCenterY - (finalH / 2));
+
+                                        updateElementInSection(sectionId, id, {
                                             width: finalW,
-                                            height: finalH
+                                            height: finalH,
+                                            x: newX,
+                                            y: newY
                                         });
                                     }
                                 }
@@ -254,18 +337,78 @@ export const SeamlessCanvas: React.FC = () => {
                 </div>
             </div>
 
-            {/* Float Command Palette (CTO Design) */}
+            {/* Enterprise Floating Toolbar (Figma/Canva inspired) */}
             <AnimatePresence>
-                {selectedLayerIds.length > 0 && (
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
-                        className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-black/80 backdrop-blur-2xl px-6 py-3 rounded-2xl border border-white/10 shadow-3xl z-[1000]">
-                        <div className="flex items-center gap-2 pr-4 border-r border-white/10">
-                            <span className="text-premium-accent text-xs font-bold font-mono">{selectedLayerIds.length}</span>
-                            <span className="text-white/40 text-[10px] uppercase tracking-widest">selected</span>
+                {selectedLayerIds.length > 0 && activeSectionId && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20, x: '-50%' }}
+                        animate={{ opacity: 1, y: 0, x: '-50%' }}
+                        exit={{ opacity: 0, y: 20, x: '-50%' }}
+                        className="fixed bottom-10 left-1/2 flex items-center gap-2 bg-[#1A1A1A]/90 backdrop-blur-2xl p-2 rounded-2xl border border-white/10 shadow-3xl z-[1000] scale-90 md:scale-100"
+                    >
+                        {/* Selection Count */}
+                        <div className="flex items-center gap-2 px-3 border-r border-white/10 mr-1">
+                            <div className="w-5 h-5 rounded-full bg-premium-accent flex items-center justify-center">
+                                <span className="text-premium-dark text-[10px] font-bold">{selectedLayerIds.length}</span>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <ToolbarButton onClick={handleGroupSelected} icon={<Group className="w-4 h-4" />} title="Group Elements (Ctrl+G)" disabled={selectedLayerIds.length < 2} />
+
+                        {/* Alignment Section (Only for multi-select) */}
+                        {selectedLayerIds.length > 1 && (
+                            <div className="flex items-center gap-1 pr-2 border-r border-white/10 mr-1">
+                                <ToolbarButton
+                                    onClick={() => alignElements(activeSectionId, selectedLayerIds, 'left')}
+                                    icon={<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="2" height="16" rx="0.5" fill="currentColor" /><rect x="7" y="7" width="10" height="4" rx="1" fill="currentColor" opacity="0.5" /><rect x="7" y="13" width="6" height="4" rx="1" fill="currentColor" opacity="0.5" /></svg>}
+                                    title="Align Left"
+                                />
+                                <ToolbarButton
+                                    onClick={() => alignElements(activeSectionId, selectedLayerIds, 'center')}
+                                    icon={<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"><rect x="11" y="4" width="2" height="16" rx="0.5" fill="currentColor" /><rect x="5" y="7" width="14" height="4" rx="1" fill="currentColor" opacity="0.5" /><rect x="7" y="13" width="10" height="4" rx="1" fill="currentColor" opacity="0.5" /></svg>}
+                                    title="Align Horizontal Center"
+                                />
+                                <ToolbarButton
+                                    onClick={() => alignElements(activeSectionId, selectedLayerIds, 'right')}
+                                    icon={<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"><rect x="19" y="4" width="2" height="16" rx="0.5" fill="currentColor" /><rect x="7" y="7" width="10" height="4" rx="1" fill="currentColor" opacity="0.5" /><rect x="11" y="13" width="6" height="4" rx="1" fill="currentColor" opacity="0.5" /></svg>}
+                                    title="Align Right"
+                                />
+                                <div className="w-px h-4 bg-white/5 mx-0.5" />
+                                <ToolbarButton
+                                    onClick={() => alignElements(activeSectionId, selectedLayerIds, 'top')}
+                                    icon={<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="2" rx="0.5" fill="currentColor" /><rect x="7" y="7" width="4" height="10" rx="1" fill="currentColor" opacity="0.5" /><rect x="13" y="7" width="4" height="6" rx="1" fill="currentColor" opacity="0.5" /></svg>}
+                                    title="Align Top"
+                                />
+                                <ToolbarButton
+                                    onClick={() => alignElements(activeSectionId, selectedLayerIds, 'middle')}
+                                    icon={<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"><rect x="4" y="11" width="16" height="2" rx="0.5" fill="currentColor" /><rect x="7" y="5" width="4" height="14" rx="1" fill="currentColor" opacity="0.5" /><rect x="13" y="7" width="4" height="10" rx="1" fill="currentColor" opacity="0.5" /></svg>}
+                                    title="Align Vertical Center"
+                                />
+                                <ToolbarButton
+                                    onClick={() => alignElements(activeSectionId, selectedLayerIds, 'bottom')}
+                                    icon={<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"><rect x="4" y="19" width="16" height="2" rx="0.5" fill="currentColor" /><rect x="7" y="7" width="4" height="10" rx="1" fill="currentColor" opacity="0.5" /><rect x="13" y="11" width="4" height="6" rx="1" fill="currentColor" opacity="0.5" /></svg>}
+                                    title="Align Bottom"
+                                />
+                                <div className="w-px h-4 bg-white/5 mx-0.5" />
+                                <ToolbarButton onClick={() => distributeElements(activeSectionId, selectedLayerIds, 'horizontal')} icon={<Maximize className="w-4 h-4 rotate-90" />} title="Distribute Horizontally" />
+                                <ToolbarButton onClick={() => distributeElements(activeSectionId, selectedLayerIds, 'vertical')} icon={<Maximize className="w-4 h-4" />} title="Distribute Vertically" />
+                            </div>
+                        )}
+
+                        {/* Order & Grouping */}
+                        <div className="flex items-center gap-1 pr-2 border-r border-white/10 mr-1">
+                            <ToolbarButton onClick={() => selectedLayerIds.forEach(id => bringElementToFront(activeSectionId, id))} icon={<ChevronUp className="w-4 h-4" />} title="Bring to Front" />
+                            <ToolbarButton onClick={() => selectedLayerIds.forEach(id => sendElementToBack(activeSectionId, id))} icon={<ChevronDown className="w-4 h-4" />} title="Send to Back" />
+                            <div className="w-px h-4 bg-white/5 mx-0.5" />
+                            <ToolbarButton onClick={handleGroupSelected} icon={<Group className="w-4 h-4" />} title="Group (Ctrl+G)" disabled={selectedLayerIds.length < 2} />
                             <ToolbarButton onClick={handleUngroupSelected} icon={<Ungroup className="w-4 h-4" />} title="Ungroup" />
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-1">
+                            <ToolbarButton onClick={() => selectedLayerIds.forEach(id => duplicateElementInSection(activeSectionId, id))} icon={<Copy className="w-4 h-4" />} title="Duplicate (Ctrl+D)" />
+                            <ToolbarButton onClick={() => {
+                                selectedLayerIds.forEach(id => removeElementFromSection(activeSectionId, id));
+                                clearSelection();
+                            }} icon={<Trash2 className="w-4 h-4" />} title="Delete (Del)" variant="danger" />
                         </div>
                     </motion.div>
                 )}
@@ -279,14 +422,26 @@ export const SeamlessCanvas: React.FC = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
                         style={{ left: contextMenu.x, top: contextMenu.y }}
-                        className="fixed bg-black/90 backdrop-blur-xl border border-white/10 rounded-xl py-2 shadow-4xl z-[9999] min-w-[180px]"
+                        className="fixed bg-[#1A1A1A]/95 backdrop-blur-xl border border-white/10 rounded-xl py-2 shadow-4xl z-[9999] min-w-[200px] overflow-hidden"
                         onMouseLeave={() => setContextMenu(null)}
                     >
-                        <ContextItem icon={<Zap className="w-3.5 h-3.5" />} label="Bring to Front" onClick={() => handleAction('front')} />
-                        <ContextItem icon={<ChevronDown className="w-3.5 h-3.5" />} label="Send to Back" onClick={() => handleAction('back')} />
+                        <div className="px-3 py-1 mb-1 border-b border-white/5">
+                            <span className="text-[10px] text-white/30 uppercase font-black tracking-tighter">Arrange</span>
+                        </div>
+                        <ContextItem icon={<Zap className="w-3.5 h-3.5" />} label="Bring to Front" shortcut="Ctrl+Shift+]" onClick={() => handleAction('front')} />
+                        <ContextItem icon={<MoveUp className="w-3.5 h-3.5" />} label="Move Up" shortcut="Ctrl+]" onClick={() => handleAction('up')} />
+                        <ContextItem icon={<MoveDown className="w-3.5 h-3.5" />} label="Move Down" shortcut="Ctrl+[" onClick={() => handleAction('down')} />
+                        <ContextItem icon={<ChevronDown className="w-3.5 h-3.5" />} label="Send to Back" shortcut="Ctrl+Shift+[" onClick={() => handleAction('back')} />
+
                         <div className="h-px bg-white/5 my-1" />
-                        <ContextItem icon={<Copy className="w-3.5 h-3.5" />} label="Duplicate" onClick={() => handleAction('duplicate')} />
-                        <ContextItem icon={<Trash2 className="w-3.5 h-3.5 text-red-400" />} label="Delete" variant="danger" onClick={() => handleAction('delete')} />
+                        <div className="px-3 py-1 mb-1 border-b border-white/5">
+                            <span className="text-[10px] text-white/30 uppercase font-black tracking-tighter">Modify</span>
+                        </div>
+                        <ContextItem icon={<Copy className="w-3.5 h-3.5" />} label="Duplicate" shortcut="Ctrl+D" onClick={() => handleAction('duplicate')} />
+                        <ContextItem icon={<Group className="w-3.5 h-3.5" />} label="Group" shortcut="Ctrl+G" onClick={handleGroupSelected} />
+
+                        <div className="h-px bg-white/5 my-1" />
+                        <ContextItem icon={<Trash2 className="w-3.5 h-3.5 text-red-400" />} label="Delete" shortcut="Del" variant="danger" onClick={() => handleAction('delete')} />
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -303,13 +458,24 @@ export const SeamlessCanvas: React.FC = () => {
     );
 };
 
-const ContextItem: React.FC<{ icon: React.ReactNode, label: string, onClick: () => void, variant?: 'danger' | 'default' }> = ({ icon, label, onClick, variant = 'default' }) => (
+const ContextItem: React.FC<{
+    icon: React.ReactNode,
+    label: string,
+    shortcut?: string,
+    onClick: () => void,
+    variant?: 'danger' | 'default'
+}> = ({ icon, label, shortcut, onClick, variant = 'default' }) => (
     <button
         onClick={(e) => { e.stopPropagation(); onClick(); }}
-        className={`w-full flex items-center gap-3 px-4 py-2 text-xs transition-colors hover:bg-white/5 ${variant === 'danger' ? 'text-red-400' : 'text-white/80'}`}
+        className={`w-full flex items-center justify-between px-4 py-2 text-xs transition-colors hover:bg-white/5 ${variant === 'danger' ? 'text-red-400' : 'text-white/80'}`}
     >
-        {icon}
-        {label}
+        <div className="flex items-center gap-3">
+            {icon}
+            {label}
+        </div>
+        {shortcut && (
+            <span className="text-[10px] text-white/20 font-mono tabular-nums">{shortcut}</span>
+        )}
     </button>
 );
 

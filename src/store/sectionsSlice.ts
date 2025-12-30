@@ -121,6 +121,17 @@ export interface SectionsState {
     addElementToSection: (sectionId: string, element: Layer) => void;
     removeElementFromSection: (sectionId: string, elementId: string) => void;
     updateElementInSection: (sectionId: string, elementId: string, updates: Partial<Layer>) => void;
+    duplicateElementInSection: (sectionId: string, elementId: string) => void;
+    bringElementToFront: (sectionId: string, elementId: string) => void;
+    sendElementToBack: (sectionId: string, elementId: string) => void;
+    moveElementUp: (sectionId: string, elementId: string) => void;
+    moveElementDown: (sectionId: string, elementId: string) => void;
+
+    // Figma-like Alignment Tools
+    alignElements: (sectionId: string, elementIds: string[], alignment: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => void;
+    distributeElements: (sectionId: string, elementIds: string[], direction: 'horizontal' | 'vertical') => void;
+    matchSize: (sectionId: string, elementIds: string[], dimension: 'width' | 'height' | 'both') => void;
+
     sanitizeAllSectionElements: () => void;
 }
 
@@ -405,7 +416,7 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
         )
     })),
 
-    updateElementInSection: (sectionId, elementId, updates) => set((state) => ({
+    updateElementInSection: (sectionId: string, elementId: string, updates: Partial<Layer>) => set((state) => ({
         sections: state.sections.map((s) =>
             s.id === sectionId
                 ? {
@@ -417,6 +428,217 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
                 : s
         )
     })),
+
+    duplicateElementInSection: (sectionId, elementId) => set((state) => {
+        const section = state.sections.find(s => s.id === sectionId);
+        if (!section) return state;
+        const element = section.elements.find(el => el.id === elementId);
+        if (!element) return state;
+
+        const newElement = sanitizeLayer({
+            ...element,
+            id: generateId('layer'),
+            name: `${element.name} (Copy)`,
+            x: element.x + 20,
+            y: element.y + 20,
+            zIndex: Math.max(...section.elements.map(el => el.zIndex || 0)) + 1
+        });
+
+        return {
+            sections: state.sections.map(s =>
+                s.id === sectionId ? { ...s, elements: [...s.elements, newElement] } : s
+            )
+        };
+    }),
+
+    bringElementToFront: (sectionId, elementId) => set((state) => ({
+        sections: state.sections.map(s => {
+            if (s.id !== sectionId) return s;
+            const maxZ = Math.max(...s.elements.map(el => el.zIndex || 0), 0);
+            return {
+                ...s,
+                elements: s.elements.map(el =>
+                    el.id === elementId ? { ...el, zIndex: maxZ + 1 } : el
+                )
+            };
+        })
+    })),
+
+    sendElementToBack: (sectionId, elementId) => set((state) => ({
+        sections: state.sections.map(s => {
+            if (s.id !== sectionId) return s;
+            const minZ = Math.min(...s.elements.map(el => el.zIndex || 0), 0);
+            return {
+                ...s,
+                elements: s.elements.map(el =>
+                    el.id === elementId ? { ...el, zIndex: minZ - 1 } : el
+                )
+            };
+        })
+    })),
+
+    moveElementUp: (sectionId, elementId) => set((state) => {
+        const section = state.sections.find(s => s.id === sectionId);
+        if (!section) return state;
+
+        const sorted = [...section.elements].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
+        const idx = sorted.findIndex(el => el.id === elementId);
+        if (idx === -1 || idx === sorted.length - 1) return state;
+
+        const current = sorted[idx];
+        const next = sorted[idx + 1];
+        const tempZ = current.zIndex;
+        current.zIndex = next.zIndex;
+        next.zIndex = tempZ || 0;
+
+        return {
+            sections: state.sections.map(s => s.id === sectionId ? { ...s, elements: [...sorted] } : s)
+        };
+    }),
+
+    moveElementDown: (sectionId, elementId) => set((state) => {
+        const section = state.sections.find(s => s.id === sectionId);
+        if (!section) return state;
+
+        const sorted = [...section.elements].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
+        const idx = sorted.findIndex(el => el.id === elementId);
+        if (idx <= 0) return state;
+
+        const current = sorted[idx];
+        const prev = sorted[idx - 1];
+        const tempZ = current.zIndex;
+        current.zIndex = prev.zIndex;
+        prev.zIndex = tempZ || 0;
+
+        return {
+            sections: state.sections.map(s => s.id === sectionId ? { ...s, elements: [...sorted] } : s)
+        };
+    }),
+
+    alignElements: (sectionId, elementIds, alignment) => set((state) => {
+        const section = state.sections.find(s => s.id === sectionId);
+        if (!section || elementIds.length < 1) return state;
+
+        const elementsToAlign = section.elements.filter(el => elementIds.includes(el.id));
+        if (elementsToAlign.length === 0) return state;
+
+        // Calculate bounds
+        const minX = Math.min(...elementsToAlign.map(el => el.x));
+        const maxX = Math.max(...elementsToAlign.map(el => el.x + (el.width || 0)));
+        const minY = Math.min(...elementsToAlign.map(el => el.y));
+        const maxY = Math.max(...elementsToAlign.map(el => el.y + (el.height || 0)));
+        const centerX = (minX + maxX) / 2;
+        const centerY = (minY + maxY) / 2;
+
+        return {
+            sections: state.sections.map(s => {
+                if (s.id !== sectionId) return s;
+                return {
+                    ...s,
+                    elements: s.elements.map(el => {
+                        if (!elementIds.includes(el.id)) return el;
+                        switch (alignment) {
+                            case 'left': return { ...el, x: minX };
+                            case 'center': return { ...el, x: centerX - (el.width || 0) / 2 };
+                            case 'right': return { ...el, x: maxX - (el.width || 0) };
+                            case 'top': return { ...el, y: minY };
+                            case 'middle': return { ...el, y: centerY - (el.height || 0) / 2 };
+                            case 'bottom': return { ...el, y: maxY - (el.height || 0) };
+                            default: return el;
+                        }
+                    })
+                };
+            })
+        };
+    }),
+
+    distributeElements: (sectionId, elementIds, direction) => set((state) => {
+        const section = state.sections.find(s => s.id === sectionId);
+        if (!section || elementIds.length < 3) return state;
+
+        const elementsToDist = section.elements.filter(el => elementIds.includes(el.id));
+        if (elementsToDist.length < 3) return state;
+
+        if (direction === 'horizontal') {
+            const sorted = [...elementsToDist].sort((a, b) => a.x - b.x);
+            const startX = sorted[0].x;
+            const endX = sorted[sorted.length - 1].x;
+            const totalWidths = sorted.reduce((sum, el) => sum + (el.width || 0), 0);
+            const totalGap = (endX + (sorted[sorted.length - 1].width || 0)) - startX - totalWidths;
+            const gap = totalGap / (sorted.length - 1);
+
+            let currentX = startX;
+            return {
+                sections: state.sections.map(s => {
+                    if (s.id !== sectionId) return s;
+                    return {
+                        ...s,
+                        elements: s.elements.map(el => {
+                            const sortedIdx = sorted.findIndex(sEl => sEl.id === el.id);
+                            if (sortedIdx === -1) return el;
+                            if (sortedIdx === 0) return el; // Keep first
+                            if (sortedIdx === sorted.length - 1) return el; // Keep last
+
+                            // Calculate proper distribution
+                            const prevElementsWidth = sorted.slice(0, sortedIdx).reduce((sum, e) => sum + (e.width || 0), 0);
+                            return { ...el, x: startX + prevElementsWidth + (gap * sortedIdx) };
+                        })
+                    };
+                })
+            };
+        } else {
+            const sorted = [...elementsToDist].sort((a, b) => a.y - b.y);
+            const startY = sorted[0].y;
+            const endY = sorted[sorted.length - 1].y;
+            const totalHeights = sorted.reduce((sum, el) => sum + (el.height || 0), 0);
+            const totalGap = (endY + (sorted[sorted.length - 1].height || 0)) - startY - totalHeights;
+            const gap = totalGap / (sorted.length - 1);
+
+            return {
+                sections: state.sections.map(s => {
+                    if (s.id !== sectionId) return s;
+                    return {
+                        ...s,
+                        elements: s.elements.map(el => {
+                            const sortedIdx = sorted.findIndex(sEl => sEl.id === el.id);
+                            if (sortedIdx === -1) return el;
+                            if (sortedIdx === 0) return el;
+                            if (sortedIdx === sorted.length - 1) return el;
+
+                            const prevElementsHeight = sorted.slice(0, sortedIdx).reduce((sum, e) => sum + (e.height || 0), 0);
+                            return { ...el, y: startY + prevElementsHeight + (gap * sortedIdx) };
+                        })
+                    };
+                })
+            };
+        }
+    }),
+
+    matchSize: (sectionId, elementIds, dimension) => set((state) => {
+        const section = state.sections.find(s => s.id === sectionId);
+        if (!section || elementIds.length < 2) return state;
+
+        const elements = section.elements.filter(el => elementIds.includes(el.id));
+        const maxWidth = Math.max(...elements.map(el => el.width || 0));
+        const maxHeight = Math.max(...elements.map(el => el.height || 0));
+
+        return {
+            sections: state.sections.map(s => {
+                if (s.id !== sectionId) return s;
+                return {
+                    ...s,
+                    elements: s.elements.map(el => {
+                        if (!elementIds.includes(el.id)) return el;
+                        return {
+                            ...el,
+                            width: dimension === 'height' ? el.width : maxWidth,
+                            height: dimension === 'width' ? el.height : maxHeight
+                        };
+                    })
+                };
+            })
+        };
+    }),
 
     sanitizeAllSectionElements: () => set((state) => ({
         sections: state.sections.map((s) => ({
