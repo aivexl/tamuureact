@@ -37,9 +37,13 @@ export const PropertyPanel: React.FC = () => {
         removeElementFromSection,
         duplicateSection, // needed? maybe duplicateElementInSection if it existed
 
-        // UI Actions
-        bringToFront, // This needs to be section-aware too, but let's stick to basic update first
-        sendToBack,
+        // Orbit Actions
+        orbit,
+        activeCanvas,
+        updateOrbitCanvas,
+        updateOrbitElement,
+        removeOrbitElement,
+        setActiveCanvas,
 
         pathEditingId,
         setPathEditingId,
@@ -48,38 +52,48 @@ export const PropertyPanel: React.FC = () => {
         openImageCropModal
     } = useStore();
 
-    // 1. Find the Active Section
+    // 1. Context-Aware Discovery
     const activeSection = sections.find(s => s.id === activeSectionId);
 
-    // 2. Find the Layer: Check active section elements first (Primary), then global layers (Legacy/Fallback)
-    // We prioritize the layer in the active section if 'selectedLayerId' matches one there.
-    const sectionLayer = activeSection?.elements.find(l => l.id === selectedLayerId);
-    const globalLayer = layers.find(l => l.id === selectedLayerId);
+    // Find the Layer based on activeCanvas context
+    const getActiveLayer = () => {
+        if (activeCanvas === 'main') {
+            return activeSection?.elements.find(l => l.id === selectedLayerId);
+        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+            return orbit[activeCanvas].elements.find(l => l.id === selectedLayerId);
+        }
+        return layers.find(l => l.id === selectedLayerId); // Fallback to global
+    };
 
-    const layer = sectionLayer || globalLayer;
+    const layer = getActiveLayer();
 
     // 3. Handle Updates: Redirect to correct store action
     const handleUpdate = (updates: Partial<Layer>) => {
-        if (sectionLayer && activeSectionId) {
-            updateElementInSection(activeSectionId, layer!.id, updates);
-        } else if (globalLayer) {
-            // Fallback for global layers
-            useStore.getState().updateLayer(layer!.id, updates);
+        if (!layer) return;
+
+        if (activeCanvas === 'main' && activeSectionId) {
+            updateElementInSection(activeSectionId, layer.id, updates);
+        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+            updateOrbitElement(activeCanvas, layer.id, updates);
+        } else {
+            useStore.getState().updateLayer(layer.id, updates);
         }
     };
 
     // 4. Handle Alignment Updates: Deselect then reselect to force Moveable remount
-    // This fixes the selection handles staying in old position after alignment
     const handleAlignmentUpdate = (updates: Partial<Layer>) => {
-        const layerId = layer!.id;
+        if (!layer) return;
+        const layerId = layer.id;
 
         // First deselect
         selectLayer(null);
 
         // Update position
-        if (sectionLayer && activeSectionId) {
+        if (activeCanvas === 'main' && activeSectionId) {
             updateElementInSection(activeSectionId, layerId, updates);
-        } else if (globalLayer) {
+        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+            updateOrbitElement(activeCanvas, layerId, updates);
+        } else {
             useStore.getState().updateLayer(layerId, updates);
         }
 
@@ -90,383 +104,446 @@ export const PropertyPanel: React.FC = () => {
     };
 
     const handleRemove = () => {
-        if (sectionLayer && activeSectionId) {
-            removeElementFromSection(activeSectionId, layer!.id);
-            selectLayer(null); // Deselect after removal
-        } else if (globalLayer) {
-            useStore.getState().removeLayer(layer!.id);
-            selectLayer(null);
+        if (!layer) return;
+
+        if (activeCanvas === 'main' && activeSectionId) {
+            removeElementFromSection(activeSectionId, layer.id);
+        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+            removeOrbitElement(activeCanvas, layer.id);
+        } else {
+            useStore.getState().removeLayer(layer.id);
         }
+        selectLayer(null);
     };
 
     const handleDuplicate = () => {
-        if (sectionLayer && activeSectionId) {
-            // We need to implement duplicateElementInSection manually or add it to store
-            // For now, let's manually create a copy
+        if (!layer) return;
+
+        if (activeCanvas === 'main' && activeSectionId) {
             const newLayer = {
-                ...sectionLayer,
+                ...layer,
                 id: generateId('layer'),
-                name: `${sectionLayer.name} (Copy)`,
-                x: sectionLayer.x + 20,
-                y: sectionLayer.y + 20
+                name: `${layer.name} (Copy)`,
+                x: layer.x + 20,
+                y: layer.y + 20
             };
             useStore.getState().addElementToSection(activeSectionId, newLayer);
             selectLayer(newLayer.id);
-        } else if (globalLayer) {
-            useStore.getState().duplicateLayer(layer!.id);
+        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+            const newLayer = {
+                ...layer,
+                id: generateId('layer'),
+                name: `${layer.name} (Copy)`,
+                x: layer.x + 20,
+                y: layer.y + 20
+            };
+            useStore.getState().addOrbitElement(activeCanvas, newLayer);
+            selectLayer(newLayer.id);
+        } else {
+            useStore.getState().duplicateLayer(layer.id);
         }
     };
 
     // Check if we have a layer to show
     if (!layer) {
-        if (!activeSection) {
+        if (activeCanvas === 'main') {
+            if (!activeSection) {
+                return (
+                    <div className="h-full flex flex-col items-center justify-center text-white/20 p-8 text-center">
+                        <Layers className="w-12 h-12 mb-4 opacity-10" />
+                        <p className="text-sm">Select an element or section to customize</p>
+                    </div>
+                );
+            }
+            // Section settings for main canvas
             return (
-                <div className="h-full flex flex-col items-center justify-center text-white/20 p-8 text-center">
-                    <Layers className="w-12 h-12 mb-4 opacity-10" />
-                    <p className="text-sm">Select an element or section to customize</p>
-                </div>
+                <div className="h-full flex flex-col overflow-hidden">
+                    <div className="p-4 border-b border-white/10 shrink-0">
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-premium-accent">Section Settings</h3>
+                        <p className="text-[10px] text-white/40 font-mono">{activeSection.title}</p>
+                    </div>
+                    <div className="flex-1 overflow-y-auto premium-scroll p-4 space-y-6">
+                        <ElementToolbar embedded />
+
+                        {/* Zoom Effect Settings */}
+                        <SectionComponent title="Zoom Effect" icon={<Maximize2 className="w-4 h-4" />}>
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[10px] text-white/70 font-medium">Enable Zoom Engine</span>
+                                    <motion.button
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => updateSection(activeSection.id, {
+                                            zoomConfig: {
+                                                enabled: !activeSection.zoomConfig?.enabled,
+                                                direction: 'in',
+                                                trigger: 'scroll',
+                                                behavior: 'stay',
+                                                scale: 2,
+                                                duration: 3000,
+                                                transitionDuration: 1000,
+                                                loop: false,
+                                                points: activeSection.zoomConfig?.points || []
+                                            }
+                                        })}
+                                        className={`w-10 h-5 rounded-full transition-colors ${activeSection.zoomConfig?.enabled ? 'bg-premium-accent' : 'bg-white/10'}`}
+                                    >
+                                        <motion.div
+                                            className="w-4 h-4 bg-white rounded-full shadow-sm"
+                                            animate={{ x: activeSection.zoomConfig?.enabled ? 22 : 2 }}
+                                        />
+                                    </motion.button>
+                                </div>
+
+                                {activeSection.zoomConfig?.enabled && (
+                                    <div className="space-y-4 pt-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                                        <SelectInput
+                                            label="Direction"
+                                            value={activeSection.zoomConfig.direction}
+                                            options={[
+                                                { value: 'in', label: 'Zoom In' },
+                                                { value: 'out', label: 'Zoom Out' }
+                                            ]}
+                                            onChange={(v) => updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig!, direction: v as any } })}
+                                        />
+                                        <SelectInput
+                                            label="Trigger"
+                                            value={activeSection.zoomConfig.trigger}
+                                            options={[
+                                                { value: 'scroll', label: 'On Scroll' },
+                                                { value: 'click', label: 'On Click' },
+                                                { value: 'open_btn', label: 'On Invitation Open' }
+                                            ]}
+                                            onChange={(v) => updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig!, trigger: v as any } })}
+                                        />
+                                        <SelectInput
+                                            label="After Zoom"
+                                            value={activeSection.zoomConfig.behavior}
+                                            options={[
+                                                { value: 'stay', label: 'Stay Zoomed' },
+                                                { value: 'reset', label: 'Reset back to 1x' }
+                                            ]}
+                                            onChange={(v) => updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig!, behavior: v as any } })}
+                                        />
+                                        <div>
+                                            <div className="flex justify-between items-center mb-2">
+                                                <span className="text-[9px] text-white/30 uppercase font-bold">Zoom Scale</span>
+                                                <span className="text-xs text-white/60">{activeSection.zoomConfig.scale}x</span>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min="1"
+                                                max="5"
+                                                step="0.1"
+                                                value={activeSection.zoomConfig.scale}
+                                                onChange={(e) => updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig!, scale: Number(e.target.value) } })}
+                                                className="w-full accent-premium-accent"
+                                            />
+                                        </div>
+
+                                        {/* Zoom Mode Toggle - CTOR Ultra Precision */}
+                                        <div className="flex bg-white/5 p-1 rounded-lg border border-white/5">
+                                            <button
+                                                onClick={() => updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig!, zoomMode: 'fit' } })}
+                                                className={`flex-1 flex flex-col items-center py-1.5 rounded-md transition-all ${activeSection.zoomConfig.zoomMode !== 'fill' ? 'bg-premium-accent/10 border border-premium-accent/20 text-premium-accent' : 'text-white/40 hover:text-white/60'}`}
+                                            >
+                                                <span className="text-[9px] font-bold uppercase">Fit</span>
+                                                <span className="text-[7px] opacity-60">Contain Whole Box</span>
+                                            </button>
+                                            <button
+                                                onClick={() => updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig!, zoomMode: 'fill' } })}
+                                                className={`flex-1 flex flex-col items-center py-1.5 rounded-md transition-all ${activeSection.zoomConfig.zoomMode === 'fill' ? 'bg-premium-accent/10 border border-premium-accent/20 text-premium-accent' : 'text-white/40 hover:text-white/60'}`}
+                                            >
+                                                <span className="text-[9px] font-bold uppercase">Fill</span>
+                                                <span className="text-[7px] opacity-60">Full Screen Blur</span>
+                                            </button>
+                                        </div>
+
+                                        <NumberInput
+                                            label="Zoom Duration (ms)"
+                                            value={activeSection.zoomConfig.duration}
+                                            onChange={(v) => updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig!, duration: v } })}
+                                        />
+                                        <div className="pt-2">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <label className="text-[9px] text-white/30 uppercase font-bold">Cinematic Points</label>
+                                                <button
+                                                    onClick={() => {
+                                                        const newPoints = [...(activeSection.zoomConfig?.points || [])];
+                                                        newPoints.push({
+                                                            id: generateId('zp'),
+                                                            label: `Point ${newPoints.length + 1}`,
+                                                            duration: 2000,
+                                                            transitionDuration: 1000,
+                                                            targetRegion: { x: 50, y: 50, width: 200, height: 200 }
+                                                        });
+                                                        // Auto-select the newly added point so it appears on canvas immediately
+                                                        updateSection(activeSection.id, {
+                                                            zoomConfig: {
+                                                                ...activeSection.zoomConfig!,
+                                                                points: newPoints,
+                                                                selectedPointIndex: newPoints.length - 1
+                                                            }
+                                                        });
+                                                    }}
+                                                    className="text-[9px] bg-premium-accent/10 hover:bg-premium-accent/20 text-premium-accent px-2 py-0.5 rounded transition-colors"
+                                                >
+                                                    + ADD POINT
+                                                </button>
+                                            </div>
+                                            <div className="space-y-2">
+                                                {activeSection.zoomConfig.points.map((p, idx) => {
+                                                    const ZOOM_POINT_COLORS = ['#bfa181', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
+                                                    const pointColor = p.color || ZOOM_POINT_COLORS[idx % ZOOM_POINT_COLORS.length];
+
+                                                    return (
+                                                        <div key={p.id} className={`p-2 rounded border border-white/5 bg-white/5 group/zp ${activeSection.zoomConfig?.selectedPointIndex === idx ? 'ring-1 ring-premium-accent' : ''}`}>
+                                                            <div className="flex items-center justify-between">
+                                                                {/* Color Picker */}
+                                                                <div className="relative mr-2">
+                                                                    <input
+                                                                        type="color"
+                                                                        value={pointColor}
+                                                                        onChange={(e) => {
+                                                                            if (!activeSection.zoomConfig) return;
+                                                                            const newPoints = [...activeSection.zoomConfig.points];
+                                                                            newPoints[idx] = { ...p, color: e.target.value };
+                                                                            updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
+                                                                        }}
+                                                                        className="w-4 h-4 rounded cursor-pointer border-0 p-0"
+                                                                        style={{ backgroundColor: pointColor }}
+                                                                    />
+                                                                </div>
+                                                                {/* Label Input */}
+                                                                <div className="flex-1 min-w-0 pr-2">
+                                                                    <input
+                                                                        type="text"
+                                                                        value={p.label}
+                                                                        onChange={(e) => {
+                                                                            if (!activeSection.zoomConfig) return;
+                                                                            const newPoints = [...activeSection.zoomConfig.points];
+                                                                            newPoints[idx] = { ...p, label: e.target.value };
+                                                                            updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
+                                                                        }}
+                                                                        className="bg-transparent border-none p-0 text-[10px] uppercase font-bold text-white/80 focus:ring-0 w-full truncate"
+                                                                    />
+                                                                </div>
+                                                                {/* Actions */}
+                                                                <div className="flex items-center gap-1">
+                                                                    <button
+                                                                        onClick={() => activeSection.zoomConfig && updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, selectedPointIndex: idx } })}
+                                                                        className={`p-1 hover:bg-white/10 rounded ${activeSection.zoomConfig?.selectedPointIndex === idx ? 'text-premium-accent' : 'text-white/30'}`}
+                                                                        title="Select to edit on canvas"
+                                                                    >
+                                                                        <Settings2 className="w-3 h-3" />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            if (!activeSection.zoomConfig) return;
+                                                                            const newPoints = activeSection.zoomConfig.points.filter((_, i) => i !== idx);
+                                                                            updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
+                                                                        }}
+                                                                        className="p-1 hover:bg-red-500/10 text-white/20 hover:text-red-400 rounded"
+                                                                        title="Delete point"
+                                                                    >
+                                                                        <Trash2 className="w-3 h-3" />
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* TIMING CONTROLS PER POINT */}
+                                                            <div className="mt-2 pt-2 border-t border-white/5 flex gap-3">
+                                                                <div className="flex-1">
+                                                                    <label className="text-[8px] text-white/30 uppercase font-bold block mb-1">Move (ms)</label>
+                                                                    <input
+                                                                        type="number"
+                                                                        value={p.transitionDuration ?? 1000}
+                                                                        onChange={(e) => {
+                                                                            if (!activeSection.zoomConfig) return;
+                                                                            const newPoints = [...activeSection.zoomConfig.points];
+                                                                            newPoints[idx] = { ...p, transitionDuration: Number(e.target.value) };
+                                                                            updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
+                                                                        }}
+                                                                        className="w-full bg-black/20 border border-white/5 rounded px-1.5 py-0.5 text-[10px] text-white focus:border-premium-accent/50 focus:outline-none"
+                                                                    />
+                                                                </div>
+                                                                <div className="flex-1">
+                                                                    <label className="text-[8px] text-white/30 uppercase font-bold block mb-1">Stay (ms)</label>
+                                                                    <input
+                                                                        type="number"
+                                                                        value={p.duration}
+                                                                        onChange={(e) => {
+                                                                            if (!activeSection.zoomConfig) return;
+                                                                            const newPoints = [...activeSection.zoomConfig.points];
+                                                                            newPoints[idx] = { ...p, duration: Number(e.target.value) };
+                                                                            updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
+                                                                        }}
+                                                                        className="w-full bg-black/20 border border-white/5 rounded px-1.5 py-0.5 text-[10px] text-white focus:border-premium-accent/50 focus:outline-none"
+                                                                    />
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="mt-2 grid grid-cols-4 gap-1.5">
+                                                                <div className="relative">
+                                                                    <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[8px] text-white/30 font-bold">X</span>
+                                                                    <input
+                                                                        type="number"
+                                                                        step="0.01"
+                                                                        value={p.targetRegion.x}
+                                                                        onChange={(e) => {
+                                                                            if (!activeSection.zoomConfig) return;
+                                                                            const newPoints = [...activeSection.zoomConfig.points];
+                                                                            newPoints[idx] = { ...p, targetRegion: { ...p.targetRegion, x: Number(e.target.value) } };
+                                                                            updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
+                                                                        }}
+                                                                        className="w-full bg-black/40 border border-white/5 rounded pl-4 pr-1 py-0.5 text-[9px] text-white focus:border-premium-accent/50 focus:outline-none font-mono"
+                                                                    />
+                                                                </div>
+                                                                <div className="relative">
+                                                                    <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[8px] text-white/30 font-bold">Y</span>
+                                                                    <input
+                                                                        type="number"
+                                                                        step="0.01"
+                                                                        value={p.targetRegion.y}
+                                                                        onChange={(e) => {
+                                                                            if (!activeSection.zoomConfig) return;
+                                                                            const newPoints = [...activeSection.zoomConfig.points];
+                                                                            newPoints[idx] = { ...p, targetRegion: { ...p.targetRegion, y: Number(e.target.value) } };
+                                                                            updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
+                                                                        }}
+                                                                        className="w-full bg-black/40 border border-white/5 rounded pl-4 pr-1 py-0.5 text-[9px] text-white focus:border-premium-accent/50 focus:outline-none font-mono"
+                                                                    />
+                                                                </div>
+                                                                <div className="relative">
+                                                                    <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[8px] text-white/30 font-bold">W</span>
+                                                                    <input
+                                                                        type="number"
+                                                                        step="0.01"
+                                                                        value={p.targetRegion.width}
+                                                                        onChange={(e) => {
+                                                                            if (!activeSection.zoomConfig) return;
+                                                                            const newPoints = [...activeSection.zoomConfig.points];
+                                                                            newPoints[idx] = { ...p, targetRegion: { ...p.targetRegion, width: Number(e.target.value) } };
+                                                                            updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
+                                                                        }}
+                                                                        className="w-full bg-black/40 border border-white/5 rounded pl-4 pr-1 py-0.5 text-[9px] text-white focus:border-premium-accent/50 focus:outline-none font-mono"
+                                                                    />
+                                                                </div>
+                                                                <div className="relative">
+                                                                    <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[8px] text-white/30 font-bold">H</span>
+                                                                    <input
+                                                                        type="number"
+                                                                        step="0.01"
+                                                                        value={p.targetRegion.height}
+                                                                        onChange={(e) => {
+                                                                            if (!activeSection.zoomConfig) return;
+                                                                            const newPoints = [...activeSection.zoomConfig.points];
+                                                                            newPoints[idx] = { ...p, targetRegion: { ...p.targetRegion, height: Number(e.target.value) } };
+                                                                            updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
+                                                                        }}
+                                                                        className="w-full bg-black/40 border border-white/5 rounded pl-4 pr-1 py-0.5 text-[9px] text-white focus:border-premium-accent/50 focus:outline-none font-mono"
+                                                                    />
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="mt-2 flex gap-1">
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        if (!activeSection.zoomConfig) return;
+                                                                        const newPoints = [...activeSection.zoomConfig.points];
+                                                                        newPoints[idx] = { ...p, targetRegion: { x: 0, y: p.targetRegion.y, width: 414, height: p.targetRegion.height } };
+                                                                        updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
+                                                                    }}
+                                                                    className="flex-1 bg-white/5 hover:bg-white/10 text-[8px] text-white/40 hover:text-white py-1 rounded border border-white/5 uppercase font-bold"
+                                                                >
+                                                                    Full Width
+                                                                </button>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        if (!activeSection.zoomConfig) return;
+                                                                        const ratio = 896 / 414;
+                                                                        const newHeight = p.targetRegion.width * ratio;
+                                                                        const newPoints = [...activeSection.zoomConfig.points];
+                                                                        newPoints[idx] = { ...p, targetRegion: { ...p.targetRegion, height: newHeight } };
+                                                                        updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
+                                                                    }}
+                                                                    className="flex-1 bg-white/5 hover:bg-white/10 text-[8px] text-white/40 hover:text-white py-1 rounded border border-white/5 uppercase font-bold"
+                                                                >
+                                                                    Mobile Ratio
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                                {activeSection.zoomConfig.points.length === 0 && (
+                                                    <div className="text-[10px] text-white/20 text-center py-4 border border-dashed border-white/5 rounded">
+                                                        No zoom points defined
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </SectionComponent>
+                    </div >
+                </div >
             );
         }
 
-        // Section settings when no layer is selected
-        return (
-            <div className="h-full flex flex-col overflow-hidden">
-                <div className="p-4 border-b border-white/10 shrink-0">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-premium-accent">Section Settings</h3>
-                    <p className="text-[10px] text-white/40 font-mono">{activeSection.title}</p>
-                </div>
-                <div className="flex-1 overflow-y-auto premium-scroll p-4 space-y-6">
+        if (activeCanvas === 'left' || activeCanvas === 'right') {
+            const orbitCanvas = orbit[activeCanvas];
+            return (
+                <div className="h-full flex flex-col overflow-hidden">
+                    <div className="p-4 border-b border-white/10 shrink-0">
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-purple-400">Stage Settings</h3>
+                        <p className="text-[10px] text-white/40 font-mono">{activeCanvas.toUpperCase()} DECOR STAGE</p>
+                    </div>
+                    <div className="flex-1 overflow-y-auto premium-scroll p-4 space-y-6">
+                        <ElementToolbar embedded />
 
-
-
-                    {/* Element Toolbar */}
-                    <ElementToolbar embedded />
-
-                    {/* Zoom Effect Settings */}
-                    <SectionComponent title="Zoom Effect" icon={<Maximize2 className="w-4 h-4" />}>
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <span className="text-[10px] text-white/70 font-medium">Enable Zoom Engine</span>
-                                <motion.button
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => updateSection(activeSection.id, {
-                                        zoomConfig: {
-                                            enabled: !activeSection.zoomConfig?.enabled,
-                                            direction: 'in',
-                                            trigger: 'scroll',
-                                            behavior: 'stay',
-                                            scale: 2,
-                                            duration: 3000,
-                                            transitionDuration: 1000,
-                                            loop: false,
-                                            points: activeSection.zoomConfig?.points || []
-                                        }
-                                    })}
-                                    className={`w-10 h-5 rounded-full transition-colors ${activeSection.zoomConfig?.enabled ? 'bg-premium-accent' : 'bg-white/10'}`}
-                                >
-                                    <motion.div
-                                        className="w-4 h-4 bg-white rounded-full shadow-sm"
-                                        animate={{ x: activeSection.zoomConfig?.enabled ? 22 : 2 }}
+                        {/* Background Settings */}
+                        <SectionComponent title="Stage Background" icon={<Palette className="w-4 h-4" />}>
+                            <div className="space-y-4">
+                                <ColorInput
+                                    label="Background Color"
+                                    value={orbitCanvas.backgroundColor}
+                                    onChange={(v) => updateOrbitCanvas(activeCanvas as 'left' | 'right', { backgroundColor: v })}
+                                />
+                                <div>
+                                    <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Background Image URL</label>
+                                    <input
+                                        type="text"
+                                        value={orbitCanvas.backgroundUrl || ''}
+                                        onChange={(e) => updateOrbitCanvas(activeCanvas as 'left' | 'right', { backgroundUrl: e.target.value })}
+                                        className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none font-mono"
+                                        placeholder="https://..."
                                     />
-                                </motion.button>
-                            </div>
-
-                            {activeSection.zoomConfig?.enabled && (
-                                <div className="space-y-4 pt-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                                    <SelectInput
-                                        label="Direction"
-                                        value={activeSection.zoomConfig.direction}
-                                        options={[
-                                            { value: 'in', label: 'Zoom In' },
-                                            { value: 'out', label: 'Zoom Out' }
-                                        ]}
-                                        onChange={(v) => updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig!, direction: v as any } })}
-                                    />
-                                    <SelectInput
-                                        label="Trigger"
-                                        value={activeSection.zoomConfig.trigger}
-                                        options={[
-                                            { value: 'scroll', label: 'On Scroll' },
-                                            { value: 'click', label: 'On Click' },
-                                            { value: 'open_btn', label: 'On Invitation Open' }
-                                        ]}
-                                        onChange={(v) => updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig!, trigger: v as any } })}
-                                    />
-                                    <SelectInput
-                                        label="After Zoom"
-                                        value={activeSection.zoomConfig.behavior}
-                                        options={[
-                                            { value: 'stay', label: 'Stay Zoomed' },
-                                            { value: 'reset', label: 'Reset back to 1x' }
-                                        ]}
-                                        onChange={(v) => updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig!, behavior: v as any } })}
-                                    />
-                                    <div>
-                                        <div className="flex justify-between items-center mb-2">
-                                            <span className="text-[9px] text-white/30 uppercase font-bold">Zoom Scale</span>
-                                            <span className="text-xs text-white/60">{activeSection.zoomConfig.scale}x</span>
-                                        </div>
-                                        <input
-                                            type="range"
-                                            min="1"
-                                            max="5"
-                                            step="0.1"
-                                            value={activeSection.zoomConfig.scale}
-                                            onChange={(e) => updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig!, scale: Number(e.target.value) } })}
-                                            className="w-full accent-premium-accent"
-                                        />
-                                    </div>
-
-                                    {/* Zoom Mode Toggle - CTOR Ultra Precision */}
-                                    <div className="flex bg-white/5 p-1 rounded-lg border border-white/5">
-                                        <button
-                                            onClick={() => updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig!, zoomMode: 'fit' } })}
-                                            className={`flex-1 flex flex-col items-center py-1.5 rounded-md transition-all ${activeSection.zoomConfig.zoomMode !== 'fill' ? 'bg-premium-accent/10 border border-premium-accent/20 text-premium-accent' : 'text-white/40 hover:text-white/60'}`}
-                                        >
-                                            <span className="text-[9px] font-bold uppercase">Fit</span>
-                                            <span className="text-[7px] opacity-60">Contain Whole Box</span>
-                                        </button>
-                                        <button
-                                            onClick={() => updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig!, zoomMode: 'fill' } })}
-                                            className={`flex-1 flex flex-col items-center py-1.5 rounded-md transition-all ${activeSection.zoomConfig.zoomMode === 'fill' ? 'bg-premium-accent/10 border border-premium-accent/20 text-premium-accent' : 'text-white/40 hover:text-white/60'}`}
-                                        >
-                                            <span className="text-[9px] font-bold uppercase">Fill</span>
-                                            <span className="text-[7px] opacity-60">Full Screen Blur</span>
-                                        </button>
-                                    </div>
-
-                                    <NumberInput
-                                        label="Zoom Duration (ms)"
-                                        value={activeSection.zoomConfig.duration}
-                                        onChange={(v) => updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig!, duration: v } })}
-                                    />
-                                    <div className="pt-2">
-                                        <div className="flex items-center justify-between mb-3">
-                                            <label className="text-[9px] text-white/30 uppercase font-bold">Cinematic Points</label>
-                                            <button
-                                                onClick={() => {
-                                                    const newPoints = [...(activeSection.zoomConfig?.points || [])];
-                                                    newPoints.push({
-                                                        id: generateId('zp'),
-                                                        label: `Point ${newPoints.length + 1}`,
-                                                        duration: 2000,
-                                                        transitionDuration: 1000,
-                                                        targetRegion: { x: 50, y: 50, width: 200, height: 200 }
-                                                    });
-                                                    // Auto-select the newly added point so it appears on canvas immediately
-                                                    updateSection(activeSection.id, {
-                                                        zoomConfig: {
-                                                            ...activeSection.zoomConfig!,
-                                                            points: newPoints,
-                                                            selectedPointIndex: newPoints.length - 1
-                                                        }
-                                                    });
-                                                }}
-                                                className="text-[9px] bg-premium-accent/10 hover:bg-premium-accent/20 text-premium-accent px-2 py-0.5 rounded transition-colors"
-                                            >
-                                                + ADD POINT
-                                            </button>
-                                        </div>
-                                        <div className="space-y-2">
-                                            {activeSection.zoomConfig.points.map((p, idx) => {
-                                                const ZOOM_POINT_COLORS = ['#bfa181', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
-                                                const pointColor = p.color || ZOOM_POINT_COLORS[idx % ZOOM_POINT_COLORS.length];
-
-                                                return (
-                                                    <div key={p.id} className={`p-2 rounded border border-white/5 bg-white/5 group/zp ${activeSection.zoomConfig?.selectedPointIndex === idx ? 'ring-1 ring-premium-accent' : ''}`}>
-                                                        <div className="flex items-center justify-between">
-                                                            {/* Color Picker */}
-                                                            <div className="relative mr-2">
-                                                                <input
-                                                                    type="color"
-                                                                    value={pointColor}
-                                                                    onChange={(e) => {
-                                                                        if (!activeSection.zoomConfig) return;
-                                                                        const newPoints = [...activeSection.zoomConfig.points];
-                                                                        newPoints[idx] = { ...p, color: e.target.value };
-                                                                        updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
-                                                                    }}
-                                                                    className="w-4 h-4 rounded cursor-pointer border-0 p-0"
-                                                                    style={{ backgroundColor: pointColor }}
-                                                                />
-                                                            </div>
-                                                            {/* Label Input */}
-                                                            <div className="flex-1 min-w-0 pr-2">
-                                                                <input
-                                                                    type="text"
-                                                                    value={p.label}
-                                                                    onChange={(e) => {
-                                                                        if (!activeSection.zoomConfig) return;
-                                                                        const newPoints = [...activeSection.zoomConfig.points];
-                                                                        newPoints[idx] = { ...p, label: e.target.value };
-                                                                        updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
-                                                                    }}
-                                                                    className="bg-transparent border-none p-0 text-[10px] uppercase font-bold text-white/80 focus:ring-0 w-full truncate"
-                                                                />
-                                                            </div>
-                                                            {/* Actions */}
-                                                            <div className="flex items-center gap-1">
-                                                                <button
-                                                                    onClick={() => activeSection.zoomConfig && updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, selectedPointIndex: idx } })}
-                                                                    className={`p-1 hover:bg-white/10 rounded ${activeSection.zoomConfig?.selectedPointIndex === idx ? 'text-premium-accent' : 'text-white/30'}`}
-                                                                    title="Select to edit on canvas"
-                                                                >
-                                                                    <Settings2 className="w-3 h-3" />
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => {
-                                                                        if (!activeSection.zoomConfig) return;
-                                                                        const newPoints = activeSection.zoomConfig.points.filter((_, i) => i !== idx);
-                                                                        updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
-                                                                    }}
-                                                                    className="p-1 hover:bg-red-500/10 text-white/20 hover:text-red-400 rounded"
-                                                                    title="Delete point"
-                                                                >
-                                                                    <Trash2 className="w-3 h-3" />
-                                                                </button>
-                                                            </div>
-                                                        </div>
-
-                                                        {/* TIMING CONTROLS PER POINT */}
-                                                        <div className="mt-2 pt-2 border-t border-white/5 flex gap-3">
-                                                            <div className="flex-1">
-                                                                <label className="text-[8px] text-white/30 uppercase font-bold block mb-1">Move (ms)</label>
-                                                                <input
-                                                                    type="number"
-                                                                    value={p.transitionDuration ?? 1000}
-                                                                    onChange={(e) => {
-                                                                        if (!activeSection.zoomConfig) return;
-                                                                        const newPoints = [...activeSection.zoomConfig.points];
-                                                                        newPoints[idx] = { ...p, transitionDuration: Number(e.target.value) };
-                                                                        updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
-                                                                    }}
-                                                                    className="w-full bg-black/20 border border-white/5 rounded px-1.5 py-0.5 text-[10px] text-white focus:border-premium-accent/50 focus:outline-none"
-                                                                />
-                                                            </div>
-                                                            <div className="flex-1">
-                                                                <label className="text-[8px] text-white/30 uppercase font-bold block mb-1">Stay (ms)</label>
-                                                                <input
-                                                                    type="number"
-                                                                    value={p.duration}
-                                                                    onChange={(e) => {
-                                                                        if (!activeSection.zoomConfig) return;
-                                                                        const newPoints = [...activeSection.zoomConfig.points];
-                                                                        newPoints[idx] = { ...p, duration: Number(e.target.value) };
-                                                                        updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
-                                                                    }}
-                                                                    className="w-full bg-black/20 border border-white/5 rounded px-1.5 py-0.5 text-[10px] text-white focus:border-premium-accent/50 focus:outline-none"
-                                                                />
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="mt-2 grid grid-cols-4 gap-1.5">
-                                                            <div className="relative">
-                                                                <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[8px] text-white/30 font-bold">X</span>
-                                                                <input
-                                                                    type="number"
-                                                                    step="0.01"
-                                                                    value={p.targetRegion.x}
-                                                                    onChange={(e) => {
-                                                                        if (!activeSection.zoomConfig) return;
-                                                                        const newPoints = [...activeSection.zoomConfig.points];
-                                                                        newPoints[idx] = { ...p, targetRegion: { ...p.targetRegion, x: Number(e.target.value) } };
-                                                                        updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
-                                                                    }}
-                                                                    className="w-full bg-black/40 border border-white/5 rounded pl-4 pr-1 py-0.5 text-[9px] text-white focus:border-premium-accent/50 focus:outline-none font-mono"
-                                                                />
-                                                            </div>
-                                                            <div className="relative">
-                                                                <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[8px] text-white/30 font-bold">Y</span>
-                                                                <input
-                                                                    type="number"
-                                                                    step="0.01"
-                                                                    value={p.targetRegion.y}
-                                                                    onChange={(e) => {
-                                                                        if (!activeSection.zoomConfig) return;
-                                                                        const newPoints = [...activeSection.zoomConfig.points];
-                                                                        newPoints[idx] = { ...p, targetRegion: { ...p.targetRegion, y: Number(e.target.value) } };
-                                                                        updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
-                                                                    }}
-                                                                    className="w-full bg-black/40 border border-white/5 rounded pl-4 pr-1 py-0.5 text-[9px] text-white focus:border-premium-accent/50 focus:outline-none font-mono"
-                                                                />
-                                                            </div>
-                                                            <div className="relative">
-                                                                <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[8px] text-white/30 font-bold">W</span>
-                                                                <input
-                                                                    type="number"
-                                                                    step="0.01"
-                                                                    value={p.targetRegion.width}
-                                                                    onChange={(e) => {
-                                                                        if (!activeSection.zoomConfig) return;
-                                                                        const newPoints = [...activeSection.zoomConfig.points];
-                                                                        newPoints[idx] = { ...p, targetRegion: { ...p.targetRegion, width: Number(e.target.value) } };
-                                                                        updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
-                                                                    }}
-                                                                    className="w-full bg-black/40 border border-white/5 rounded pl-4 pr-1 py-0.5 text-[9px] text-white focus:border-premium-accent/50 focus:outline-none font-mono"
-                                                                />
-                                                            </div>
-                                                            <div className="relative">
-                                                                <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[8px] text-white/30 font-bold">H</span>
-                                                                <input
-                                                                    type="number"
-                                                                    step="0.01"
-                                                                    value={p.targetRegion.height}
-                                                                    onChange={(e) => {
-                                                                        if (!activeSection.zoomConfig) return;
-                                                                        const newPoints = [...activeSection.zoomConfig.points];
-                                                                        newPoints[idx] = { ...p, targetRegion: { ...p.targetRegion, height: Number(e.target.value) } };
-                                                                        updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
-                                                                    }}
-                                                                    className="w-full bg-black/40 border border-white/5 rounded pl-4 pr-1 py-0.5 text-[9px] text-white focus:border-premium-accent/50 focus:outline-none font-mono"
-                                                                />
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="mt-2 flex gap-1">
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    if (!activeSection.zoomConfig) return;
-                                                                    const newPoints = [...activeSection.zoomConfig.points];
-                                                                    newPoints[idx] = { ...p, targetRegion: { x: 0, y: p.targetRegion.y, width: 414, height: p.targetRegion.height } };
-                                                                    updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
-                                                                }}
-                                                                className="flex-1 bg-white/5 hover:bg-white/10 text-[8px] text-white/40 hover:text-white py-1 rounded border border-white/5 uppercase font-bold"
-                                                            >
-                                                                Full Width
-                                                            </button>
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    if (!activeSection.zoomConfig) return;
-                                                                    const ratio = 896 / 414;
-                                                                    const newHeight = p.targetRegion.width * ratio;
-                                                                    const newPoints = [...activeSection.zoomConfig.points];
-                                                                    newPoints[idx] = { ...p, targetRegion: { ...p.targetRegion, height: newHeight } };
-                                                                    updateSection(activeSection.id, { zoomConfig: { ...activeSection.zoomConfig, points: newPoints } });
-                                                                }}
-                                                                className="flex-1 bg-white/5 hover:bg-white/10 text-[8px] text-white/40 hover:text-white py-1 rounded border border-white/5 uppercase font-bold"
-                                                            >
-                                                                Mobile Ratio
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
-                                            {activeSection.zoomConfig.points.length === 0 && (
-                                                <div className="text-[10px] text-white/20 text-center py-4 border border-dashed border-white/5 rounded">
-                                                    No zoom points defined
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
                                 </div>
-                            )}
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[10px] text-white/70 font-medium">Stage Visible</span>
+                                    <motion.button
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => updateOrbitCanvas(activeCanvas as 'left' | 'right', { isVisible: !orbitCanvas.isVisible })}
+                                        className={`w-10 h-5 rounded-full transition-colors ${orbitCanvas.isVisible ? 'bg-purple-500' : 'bg-white/10'}`}
+                                    >
+                                        <motion.div
+                                            className="w-4 h-4 bg-white rounded-full shadow-sm"
+                                            animate={{ x: orbitCanvas.isVisible ? 22 : 2 }}
+                                        />
+                                    </motion.button>
+                                </div>
+                            </div>
+                        </SectionComponent>
+
+                        <div className="p-4 bg-purple-500/5 rounded-xl border border-purple-500/10 text-[10px] text-purple-300/60 leading-relaxed italic">
+                            Tip: Decorations on this stage are "Fixed". They will stay in position even when the main invitation scrolls.
                         </div>
-                    </SectionComponent>
-                </div >
-            </div >
-        );
+                    </div>
+                </div>
+            );
+        }
     }
 
     // REMOVED: Redundant handleUpdate function wrapper - used the one defined above

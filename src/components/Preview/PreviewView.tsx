@@ -25,7 +25,7 @@ interface PreviewViewProps {
 }
 
 export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => {
-    const { sections, musicConfig } = useStore();
+    const { sections, musicConfig, orbit } = useStore();
 
     // State
     const [isOpened, setIsOpened] = useState(false); // Track if "Open Invitation" clicked
@@ -623,57 +623,62 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                 className="fixed inset-0 z-[9999] flex flex-col items-center overflow-hidden transition-colors duration-700"
                 style={viewportBackgroundStyle}
             >
-                {/* Controls Overlay */}
-                <div
-                    className="absolute top-4 right-4 z-[1000] flex items-center gap-2"
-                    style={{
-                        transform: `scale(${Math.max(1 / scaleFactor, 0.5)})`,
-                        transformOrigin: 'top right'
-                    }}
-                >
-                    <button
-                        onClick={() => setIsMuted(!isMuted)}
-                        className="p-3 bg-black/50 backdrop-blur-xl text-white/70 hover:text-white rounded-full border border-white/20 transition-colors"
-                    >
-                        {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                    </button>
-                    <button
-                        onClick={toggleFullscreen}
-                        className="p-3 bg-black/50 backdrop-blur-xl text-white/70 hover:text-white rounded-full border border-white/20 transition-colors"
-                    >
-                        {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
-                    </button>
-                    <button
-                        onClick={onClose}
-                        className="p-3 bg-black/50 backdrop-blur-xl text-white/70 hover:text-white rounded-full border border-white/20 transition-colors"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+                {/* 
+                    CTO ENTERPRISE LAYOUT ENGINE V2 - CSS GRID
+                    - Mobile: Single column, full width invitation.
+                    - Desktop: 3-column grid [1fr | center | 1fr] for ZERO-GAP GUARANTEE.
+                */}
 
-                {/* Main Scroll Container */}
+                {/* Main Layout Container - CSS GRID on Desktop, FLEX on Mobile */}
                 <div
                     ref={scrollContainerRef}
-                    className={`w-full h-full flex ${isPortrait ? 'premium-scroll no-scrollbar' : 'premium-scroll'} ${isPortrait ? 'justify-start' : 'justify-center'} ${transitionStage === 'DONE' ? 'overflow-y-auto' : 'overflow-hidden'}`}
+                    className={`w-full h-full ${transitionStage === 'DONE' ? 'overflow-y-auto' : 'overflow-hidden'} ${isPortrait ? 'premium-scroll no-scrollbar' : 'premium-scroll'}`}
                     style={{
-                        alignItems: 'flex-start',
-                        scrollbarGutter: isPortrait ? 'auto' : 'stable'
+                        display: isPortrait ? 'flex' : 'grid',
+                        // GRID: 3-column layout for PERFECT ZERO-GAP alignment
+                        gridTemplateColumns: isPortrait ? undefined : `1fr ${CANVAS_WIDTH * scaleFactor}px 1fr`,
+                        gridTemplateRows: '1fr',
+                        // FLEX fallback for mobile
+                        flexDirection: isPortrait ? 'column' : undefined,
+                        alignItems: isPortrait ? 'flex-start' : 'stretch',
+                        justifyContent: isPortrait ? 'flex-start' : undefined,
                     }}
                 >
-                    {/* Visual Layout Wrapper (Matches Visual Size) - overflow-hidden */}
+                    {/* LEFT STAGE (Grid Column 1) - Desktop Only */}
+                    {!isPortrait && (
+                        <div
+                            className="h-full pointer-events-none overflow-hidden"
+                            style={{
+                                gridColumn: 1,
+                                position: 'relative',
+                            }}
+                        >
+                            <PreviewOrbitStage
+                                type="left"
+                                config={orbit.left}
+                                scaleFactor={scaleFactor}
+                                isOpened={isOpened}
+                                overrideStyle={{
+                                    width: '100%',
+                                    height: '100%',
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                }}
+                            />
+                        </div>
+                    )}
+
+                    {/* CENTER CANVAS (Grid Column 2 / Flex Main) */}
                     <div
                         className="relative overflow-hidden"
                         style={{
+                            gridColumn: isPortrait ? undefined : 2,
                             // Width is scaled width (Visual)
                             width: CANVAS_WIDTH * scaleFactor,
                             // Height is layout height (Visual)
-                            // We use totalHeight from the beginning to prevent "gejolak" (layout jumps)
-                            // but parent keeps it clipped until DONE
                             height: totalHeight * scaleFactor,
-                            // Margins for desktop centering
-                            marginLeft: isPortrait ? 0 : 'auto',
-                            marginRight: isPortrait ? 0 : 'auto',
-                            // Prevent shrinking in flex container
+                            // Prevent shrinking
                             flexShrink: 0,
                         }}
                     >
@@ -824,6 +829,59 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                             })}
                         </div>
                     </div>
+
+                    {/* RIGHT STAGE (Grid Column 3) - Desktop Only */}
+                    {!isPortrait && (
+                        <div
+                            className="h-full pointer-events-none overflow-hidden"
+                            style={{
+                                gridColumn: 3,
+                                position: 'relative',
+                            }}
+                        >
+                            <PreviewOrbitStage
+                                type="right"
+                                config={orbit.right}
+                                scaleFactor={scaleFactor}
+                                isOpened={isOpened}
+                                overrideStyle={{
+                                    width: '100%',
+                                    height: '100%',
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                }}
+                            />
+                        </div>
+                    )}
+                </div>
+
+                {/* Controls Overlay - Absolute positioned over everything */}
+                <div
+                    className="absolute top-4 right-4 z-[1000] flex items-center gap-2"
+                    style={{
+                        transform: `scale(${Math.max(1 / scaleFactor, 0.5)})`,
+                        transformOrigin: 'top right'
+                    }}
+                >
+                    <button
+                        onClick={() => setIsMuted(!isMuted)}
+                        className="p-3 bg-black/50 backdrop-blur-xl text-white/70 hover:text-white rounded-full border border-white/20 transition-colors"
+                    >
+                        {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                    </button>
+                    <button
+                        onClick={toggleFullscreen}
+                        className="p-3 bg-black/50 backdrop-blur-xl text-white/70 hover:text-white rounded-full border border-white/20 transition-colors"
+                    >
+                        {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+                    </button>
+                    <button
+                        onClick={onClose}
+                        className="p-3 bg-black/50 backdrop-blur-xl text-white/70 hover:text-white rounded-full border border-white/20 transition-colors"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
                 </div>
 
                 {/* MIRROR SHUTTERS (Optional Luxury Transition) */}
@@ -868,5 +926,48 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                 `}} />
             </motion.div >
         </AnimatePresence >
+    );
+};
+// ============================================
+// PREVIEW ORBIT STAGE (Production Grade)
+// ============================================
+const PreviewOrbitStage: React.FC<{
+    type: 'left' | 'right',
+    config: any,
+    scaleFactor: number,
+    isOpened: boolean,
+    overrideStyle?: React.CSSProperties
+}> = ({ type, config, scaleFactor, isOpened, overrideStyle }) => {
+    if (!config.isVisible) return null;
+
+    return (
+        <div
+            className={`fixed top-0 bottom-0 pointer-events-none transition-all duration-1000 ${isOpened ? 'opacity-100' : 'opacity-100'
+                }`}
+            style={{
+                width: `calc(50vw - ${(CANVAS_WIDTH * scaleFactor) / 2}px)`,
+                [type]: 0,
+                backgroundColor: config.backgroundColor || 'transparent',
+                backgroundImage: config.backgroundUrl ? `url(${config.backgroundUrl})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                zIndex: 5,
+                overflow: 'hidden',
+                ...overrideStyle
+            }}
+        >
+            {/* Elements */}
+            <div className="absolute inset-0" style={{ transform: `scale(${scaleFactor})`, transformOrigin: type === 'left' ? 'right center' : 'left center' }}>
+                {(config.elements || []).map((element: any) => (
+                    <AnimatedLayer
+                        key={element.id}
+                        layer={element}
+                        adjustedY={element.y}
+                        isOpened={isOpened}
+                        forceTrigger={isOpened}
+                    />
+                ))}
+            </div>
+        </div>
     );
 };

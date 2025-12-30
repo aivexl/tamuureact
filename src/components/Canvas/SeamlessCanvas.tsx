@@ -24,7 +24,10 @@ const ToolbarButton: React.FC<{
     <motion.button
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
+        onPointerDown={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => {
+            e.preventDefault();
             e.stopPropagation();
             if (!disabled) onClick(e);
         }}
@@ -60,7 +63,14 @@ export const SeamlessCanvas: React.FC = () => {
         // New section-aware element actions
         duplicateElementInSection, bringElementToFront, sendToBack, sendElementToBack,
         moveElementUp, moveElementDown, alignElements, distributeElements, matchSize,
-        removeElementFromSection
+        removeElementFromSection,
+
+        // Orbit Context (Phase 3)
+        orbit,
+        activeCanvas,
+        setActiveCanvas,
+        updateOrbitElement,
+        updateOrbitCanvas
     } = useStore();
 
     const containerRef = useRef<HTMLDivElement>(null);
@@ -75,6 +85,22 @@ export const SeamlessCanvas: React.FC = () => {
     const handleOpenCopyModal = (id: string) => { setCopySourceId(id); setShowCopyModal(true); };
     const handleCopyElements = (targetId: string) => {
         if (copySourceId && targetId) { copySectionElementsTo(copySourceId, targetId); setShowCopyModal(false); }
+    };
+
+    const handleClearWithConfirm = (id: string) => {
+        if (confirm('Are you sure you want to clear all elements from this section?')) {
+            clearSectionContent(id);
+        }
+    };
+
+    const handleDeleteWithConfirm = (id: string) => {
+        if (sections.length <= 1) {
+            alert('Cannot delete the last section.');
+            return;
+        }
+        if (confirm('Are you sure you want to delete this section? This cannot be undone.')) {
+            removeSection(id);
+        }
     };
 
     const sortedSections = useMemo(() => [...sections].sort((a, b) => a.order - b.order), [sections]);
@@ -259,81 +285,84 @@ export const SeamlessCanvas: React.FC = () => {
     };
 
     return (
-        <div className="w-full h-full bg-[#111111] overflow-hidden flex flex-col relative select-none">
-            <div ref={containerRef} className="h-full overflow-y-auto overflow-x-hidden custom-scrollbar flex justify-center py-12">
-                <div className="flex flex-col gap-16">
-                    {sortedSections.map((section, index) => (
-                        <SectionFrame
-                            key={section.id}
-                            section={section}
-                            isActive={activeSectionId === section.id}
-                            index={index}
-                            onClick={() => setActiveSection(section.id)}
-                            onSelectLayer={(id, isMulti) => selectLayer(id, isMulti)}
-                            selectedLayerIds={selectedLayerIds}
-                            zoom={zoom}
-                            onElementDrag={(id, pos) => updateElementInSection(section.id, id, pos)}
-                            onElementResize={(id, updates) => updateElementInSection(section.id, id, updates)}
-                            onContextMenu={handleContextMenu}
-                            onDimensionsDetected={(id: string, w: number, h: number) => {
-                                // CTO SMART-SNAP V2: Only resize placeholders & maintain center
-                                const sectionId = section.id;
-                                const layer = section.elements.find((el: Layer) => el.id === id);
-                                if (!layer) return;
+        <div className="w-full h-full bg-[#0a0a0a] overflow-hidden flex relative select-none">
+            {/* Triple-Canvas Engine (Phase 3) */}
+            <div className="flex-1 h-full flex items-stretch overflow-hidden">
 
-                                // 1. Strict Placeholder Check: Only auto-snap if it's the specific initial dimensions
-                                // This prevents re-snapping elements the user has already adjusted.
-                                const isInitialPlaceholder = (layer.width === 100 && layer.height === 100) ||
-                                    (layer.width === 200 && layer.height === 200);
+                {/* LEFT STAGE */}
+                <div className="flex-1 flex justify-end items-center relative overflow-hidden bg-[#050505]/50 border-r border-white/5">
+                    <SideCanvas
+                        type="left"
+                        isActive={activeCanvas === 'left'}
+                        orbit={orbit.left}
+                        onSelect={() => setActiveCanvas('left')}
+                        onUpdateElement={(id, updates) => updateOrbitElement('left', id, updates)}
+                        onSelectLayer={(id, isMulti) => selectLayer(id, isMulti)}
+                        selectedLayerIds={selectedLayerIds}
+                    />
+                </div>
 
-                                if (isInitialPlaceholder) {
-                                    const ratio = w / h;
-
-                                    // Calculate target width (bounded for ornaments, but respects natural ratio)
-                                    let targetW = 200;
-                                    let targetH = 200 / ratio;
-
-                                    // If too tall, bound by height
-                                    if (targetH > 350) {
-                                        targetH = 300;
-                                        targetW = 300 * ratio;
+                {/* MAIN INVITATION (Center Scroll) */}
+                <div
+                    ref={containerRef}
+                    className={`shrink-0 w-[500px] h-full overflow-y-auto overflow-x-hidden custom-scrollbar bg-[#111111] transition-all relative z-10 ${activeCanvas === 'main' ? 'ring-1 ring-premium-accent/20 shadow-2xl' : 'opacity-60 grayscale-[0.2]'}`}
+                    onMouseDown={() => setActiveCanvas('main')}
+                >
+                    <div className="flex flex-col gap-16 py-32 items-center">
+                        {sortedSections.map((section, index) => (
+                            <SectionFrame
+                                key={section.id}
+                                section={section}
+                                isActive={activeSectionId === section.id && activeCanvas === 'main'}
+                                index={index}
+                                onClick={() => {
+                                    setActiveSection(section.id);
+                                    setActiveCanvas('main');
+                                }}
+                                onSelectLayer={(id, isMulti) => selectLayer(id, isMulti)}
+                                selectedLayerIds={activeCanvas === 'main' ? selectedLayerIds : []}
+                                zoom={zoom}
+                                onElementDrag={(id, pos) => updateElementInSection(section.id, id, pos)}
+                                onElementResize={(id, updates) => updateElementInSection(section.id, id, updates)}
+                                onContextMenu={handleContextMenu}
+                                onDimensionsDetected={(id, w, h) => {
+                                    const layer = section.elements.find(el => el.id === id);
+                                    if (layer && ((layer.width === 100 && layer.height === 100) || (layer.width === 200 && layer.height === 200))) {
+                                        const ratio = w / h;
+                                        let finalW = 200;
+                                        let finalH = 200 / ratio;
+                                        if (finalH > 400) { finalH = 400; finalW = 400 * ratio; }
+                                        updateElementInSection(section.id, id, { width: finalW, height: finalH });
                                     }
+                                }}
+                                onMoveUp={() => reorderSections(index, index - 1)}
+                                onMoveDown={() => reorderSections(index, index + 1)}
+                                onToggleVisibility={() => updateSection(section.id, { isVisible: section.isVisible !== false ? false : true })}
+                                onCopyTo={() => handleOpenCopyModal(section.id)}
+                                onClear={() => handleClearWithConfirm(section.id)}
+                                onDelete={() => handleDeleteWithConfirm(section.id)}
+                                isFirst={index === 0}
+                                isLast={index === sections.length - 1}
+                                marquee={marquee?.sectionId === section.id ? marquee : null}
+                                onMarqueeStart={handleMarqueeStart}
+                                onMarqueeMove={handleMarqueeMove}
+                                onMarqueeEnd={handleMarqueeEnd}
+                            />
+                        ))}
+                    </div>
+                </div>
 
-                                    const finalW = Math.round(targetW);
-                                    const finalH = Math.round(targetH);
-
-                                    if (layer.width !== finalW || layer.height !== finalH) {
-                                        // CRITICAL: Preserve the Center Point
-                                        // newX = currentCenterX - (newWidth / 2)
-                                        const currentCenterX = layer.x + (layer.width / 2);
-                                        const currentCenterY = layer.y + (layer.height / 2);
-
-                                        const newX = Math.round(currentCenterX - (finalW / 2));
-                                        const newY = Math.round(currentCenterY - (finalH / 2));
-
-                                        updateElementInSection(sectionId, id, {
-                                            width: finalW,
-                                            height: finalH,
-                                            x: newX,
-                                            y: newY
-                                        });
-                                    }
-                                }
-                            }}
-                            onMoveUp={() => reorderSections(index, index - 1)}
-                            onMoveDown={() => reorderSections(index, index + 1)}
-                            onToggleVisibility={() => updateSection(section.id, { isVisible: section.isVisible !== false ? false : true })}
-                            onCopyTo={() => handleOpenCopyModal(section.id)}
-                            onClear={() => clearSectionContent(section.id)}
-                            onDelete={() => removeSection(section.id)}
-                            isFirst={index === 0}
-                            isLast={index === sections.length - 1}
-                            marquee={marquee?.sectionId === section.id ? marquee : null}
-                            onMarqueeStart={handleMarqueeStart}
-                            onMarqueeMove={handleMarqueeMove}
-                            onMarqueeEnd={handleMarqueeEnd}
-                        />
-                    ))}
+                {/* RIGHT STAGE */}
+                <div className="flex-1 flex justify-start items-center relative overflow-hidden bg-[#050505]/50 border-l border-white/5">
+                    <SideCanvas
+                        type="right"
+                        isActive={activeCanvas === 'right'}
+                        orbit={orbit.right}
+                        onSelect={() => setActiveCanvas('right')}
+                        onUpdateElement={(id, updates) => updateOrbitElement('right', id, updates)}
+                        onSelectLayer={(id, isMulti) => selectLayer(id, isMulti)}
+                        selectedLayerIds={selectedLayerIds}
+                    />
                 </div>
             </div>
 
@@ -454,6 +483,57 @@ export const SeamlessCanvas: React.FC = () => {
                 </div>
                 <ToolbarButton onClick={handleZoomOut} icon={<span className="font-bold">-</span>} title="Zoom Out" />
             </div>
+
+            {/* SECTION COPY MODAL (Enterprise UX) */}
+            <AnimatePresence>
+                {showCopyModal && (
+                    <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="w-full max-w-md bg-[#1A1A1A] border border-white/10 rounded-3xl shadow-4xl overflow-hidden"
+                        >
+                            <div className="p-6 border-b border-white/5">
+                                <h3 className="text-lg font-bold text-premium-accent">Copy Content To...</h3>
+                                <p className="text-xs text-white/40 mt-1">Select the target section to paste elements and background settings.</p>
+                            </div>
+
+                            <div className="p-4 max-h-[400px] overflow-y-auto premium-scroll space-y-2">
+                                {sections
+                                    .filter(s => s.id !== copySourceId)
+                                    .map(s => (
+                                        <button
+                                            key={s.id}
+                                            onClick={() => handleCopyElements(s.id)}
+                                            className="w-full flex items-center justify-between p-4 rounded-xl bg-white/[0.03] hover:bg-premium-accent/10 border border-white/5 hover:border-premium-accent/30 transition-all group"
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <span className="text-xl">{SECTION_ICONS[s.key as keyof typeof SECTION_ICONS] || '📄'}</span>
+                                                <div className="text-left">
+                                                    <div className="text-sm font-bold text-white/80 group-hover:text-premium-accent transition-colors">{s.title}</div>
+                                                    <div className="text-[10px] text-white/20 uppercase tracking-widest">{s.elements.length} Elements</div>
+                                                </div>
+                                            </div>
+                                            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                                                <Copy className="w-4 h-4 text-premium-accent" />
+                                            </div>
+                                        </button>
+                                    ))}
+                            </div>
+
+                            <div className="p-4 bg-black/20 flex justify-end">
+                                <button
+                                    onClick={() => setShowCopyModal(false)}
+                                    className="px-6 py-2 rounded-xl text-xs font-bold text-white/40 hover:text-white transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div >
     );
 };
@@ -527,7 +607,7 @@ const SectionFrame: React.FC<{
         };
 
         return (
-            <motion.div className="relative group" initial={false} animate={{ opacity: 1 }}>
+            <motion.div layout className="relative group" initial={false} animate={{ opacity: 1 }}>
                 {/* Header */}
                 <div className={`absolute -top-10 left-0 right-0 flex items-center justify-between px-1 h-8 z-50 group-header`}>
                     <div className="flex items-center gap-3 text-[11px]">
@@ -658,3 +738,88 @@ const SectionFrame: React.FC<{
             </motion.div>
         );
     };
+const SideCanvas: React.FC<{
+    type: 'left' | 'right',
+    isActive: boolean,
+    orbit: any,
+    onSelect: () => void,
+    onUpdateElement: (id: string, updates: Partial<Layer>) => void,
+    onSelectLayer: (id: string, isMulti: boolean) => void,
+    selectedLayerIds: string[]
+}> = ({ type, isActive, orbit, onSelect, onUpdateElement, onSelectLayer, selectedLayerIds }) => {
+    const stageRef = useRef<HTMLDivElement>(null);
+    const [editorScale, setEditorScale] = useState(0.8);
+
+    useEffect(() => {
+        const updateScale = () => {
+            const width = window.innerWidth;
+            const sideWidth = (width - 414 - 100) / 2;
+            const targetScale = Math.min(Math.max(sideWidth / 600, 0.45), 0.95);
+            setEditorScale(targetScale);
+        };
+        updateScale();
+        window.addEventListener('resize', updateScale);
+        return () => window.removeEventListener('resize', updateScale);
+    }, []);
+
+    if (!orbit.isVisible) return null;
+
+    return (
+        <motion.div
+            ref={stageRef}
+            onClick={(e) => {
+                e.stopPropagation();
+                onSelect();
+            }}
+            initial={false}
+            animate={{
+                opacity: orbit.isVisible ? 1 : 0,
+                scale: editorScale,
+                x: type === 'left' ? 30 : -30
+            }}
+            className={`relative flex-shrink-0 rounded-[2.5rem] shadow-4xl transition-all duration-700 overflow-hidden ${isActive ? 'ring-[3px] ring-purple-500/50 ring-offset-[12px] ring-offset-black/80 z-20' : 'opacity-30 grayscale-[0.8] z-0 hover:opacity-50'
+                }`}
+            style={{
+                width: 800,
+                height: 900,
+                backgroundColor: orbit.backgroundColor || '#050505',
+                backgroundImage: orbit.backgroundUrl ? `url(${orbit.backgroundUrl})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                transformOrigin: type === 'left' ? 'right center' : 'left center',
+                boxShadow: '0 40px 100px -20px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.05)'
+            }}
+        >
+            <div className={`absolute top-8 ${type === 'left' ? 'right-8 text-right' : 'left-8 text-left'} pointer-events-none mix-blend-overlay`}>
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white block opacity-40">CINEMATIC STAGE</span>
+                <span className="text-4xl font-black text-white uppercase tracking-tighter block opacity-10">{type}</span>
+            </div>
+
+            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-transparent to-black/40" />
+
+            {orbit.elements.map((element: Layer) => (
+                <CanvasElement
+                    key={element.id}
+                    layer={element}
+                    isSelected={isActive && selectedLayerIds.includes(element.id)}
+                    onSelect={(isMulti) => {
+                        onSelect();
+                        onSelectLayer(element.id, !!isMulti);
+                    }}
+                    onContextMenu={() => { }}
+                    onDimensionsDetected={(w, h) => {
+                        if ((element.width === 100 && element.height === 100) || (element.width === 200 && element.height === 200)) {
+                            onUpdateElement(element.id, { width: 300, height: 300 * (h / w) });
+                        }
+                    }}
+                    elementRef={() => { }}
+                    updateLayer={(id, updates) => onUpdateElement(id, updates)}
+                />
+            ))}
+
+            {!isActive && (
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-[4px] pointer-events-none transition-opacity duration-700" />
+            )}
+        </motion.div>
+    );
+};

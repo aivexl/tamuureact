@@ -346,13 +346,20 @@ interface ElementToolbarProps {
 }
 
 export const ElementToolbar: React.FC<ElementToolbarProps> = ({ embedded = false }) => {
-    const { activeSectionId, addElementToSection, selectLayer } = useStore();
+    const {
+        activeSectionId,
+        addElementToSection,
+        addOrbitElement,
+        activeCanvas,
+        selectLayer
+    } = useStore();
     const [isExpanded, setIsExpanded] = useState(false);
     const [activeTool, setActiveTool] = useState<LayerType | null>(null);
 
     // This function now receives specific config from the modal
     const handleElementSelect = (additionalConfig: any = {}) => {
-        if (!activeSectionId || !activeTool) return;
+        if (!activeTool) return;
+        if (activeCanvas === 'main' && !activeSectionId) return;
 
         // Find the base config for the active tool
         const config = elementConfigs.find(c => c.type === activeTool);
@@ -361,16 +368,24 @@ export const ElementToolbar: React.FC<ElementToolbarProps> = ({ embedded = false
         const defaults = config.createDefault();
         const newLayerId = generateId('layer');
 
-        // Merge defaults with granular config from modal
-        // Note: We need to be careful about deep merging if needed, 
-        // but for now shallow merge of specific keys is likely enough or we construct the object.
+        // Context-Aware Positioning
+        let defaultX = 0;
+        let defaultY = 200 + Math.random() * 100;
+
+        if (activeCanvas === 'main') {
+            defaultX = CANVAS_WIDTH / 2 - (defaults.width || 100) / 2;
+        } else if (activeCanvas === 'left') {
+            defaultX = -400; // Position to the left of the main canvas
+        } else if (activeCanvas === 'right') {
+            defaultX = 400; // Position to the right of the main canvas
+        }
 
         const newLayer: Layer = {
             id: newLayerId,
             type: config.type,
             name: `New ${config.label}`,
-            x: CANVAS_WIDTH / 2 - (defaults.width || 100) / 2,
-            y: 200 + Math.random() * 100,
+            x: defaultX,
+            y: defaultY,
             width: defaults.width || 100,
             height: defaults.height || 100,
             rotation: 0,
@@ -380,8 +395,7 @@ export const ElementToolbar: React.FC<ElementToolbarProps> = ({ embedded = false
             isLocked: false,
             isVisible: true,
             ...defaults,
-            ...additionalConfig, // Apply potential overrides like image URL, text styles, etc.
-            // Merge nested configs if they exist in both
+            ...additionalConfig,
             ...(additionalConfig.textStyle && defaults.textStyle ? { textStyle: { ...defaults.textStyle, ...additionalConfig.textStyle } } : {}),
             ...(additionalConfig.buttonConfig && defaults.buttonConfig ? { buttonConfig: { ...defaults.buttonConfig, ...additionalConfig.buttonConfig } } : {}),
             ...(additionalConfig.shapeConfig && defaults.shapeConfig ? { shapeConfig: { ...defaults.shapeConfig, ...additionalConfig.shapeConfig } } : {}),
@@ -389,7 +403,13 @@ export const ElementToolbar: React.FC<ElementToolbarProps> = ({ embedded = false
             ...(additionalConfig.countdownConfig && defaults.countdownConfig ? { countdownConfig: { ...defaults.countdownConfig, ...additionalConfig.countdownConfig } } : {}),
         };
 
-        addElementToSection(activeSectionId, newLayer);
+        // Unified Injection Engine
+        if (activeCanvas === 'main' && activeSectionId) {
+            addElementToSection(activeSectionId, newLayer);
+        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+            addOrbitElement(activeCanvas, newLayer);
+        }
+
         selectLayer(newLayerId);
 
         // Reset interaction state

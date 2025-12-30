@@ -111,6 +111,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
             thumbnail_url: state.thumbnailUrl,
             sections: state.sections,
             layers: state.layers,
+            orbit: state.orbit,
             zoom: state.zoom,
             pan: state.pan,
             updated_at: new Date().toISOString()
@@ -168,7 +169,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                 const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(templateId);
 
                 const fetchFromTable = async (table: string) => {
-                    let q = supabase.from(table).select('id,name,slug,thumbnail_url,sections,layers,zoom,pan');
+                    let q = supabase.from(table).select('id,name,slug,thumbnail_url,sections,layers,zoom,pan,orbit');
                     if (isUuid) {
                         q = q.eq('id', templateId);
                     } else {
@@ -227,6 +228,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                         id: sanitizedData.id, // Set the real ID
                         projectName: sanitizedData.name || '',
                         activeSectionId: processedSections[0]?.id || null,
+                        orbit: sanitizedData.orbit || state.orbit,
                         selectedLayerId: null
                     });
                     console.log(`[Persistence] Hydrated ID: '${sanitizedData.id}' | Slug: '${sanitizedData.slug}' with sanitization.`);

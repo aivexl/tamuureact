@@ -36,7 +36,7 @@ export const PreviewPage: React.FC = () => {
                     // Search by ID
                     const { data: templateById } = await supabase
                         .from('templates')
-                        .select('id,name,sections,layers,zoom,pan,slug')
+                        .select('id,name,sections,layers,zoom,pan,slug,orbit')
                         .eq('id', slug)
                         .maybeSingle();
                     data = templateById;
@@ -44,7 +44,7 @@ export const PreviewPage: React.FC = () => {
                     // Search by slug
                     const { data: templateBySlug } = await supabase
                         .from('templates')
-                        .select('id,name,sections,layers,zoom,pan,slug')
+                        .select('id,name,sections,layers,zoom,pan,slug,orbit')
                         .eq('slug', slug)
                         .maybeSingle();
                     data = templateBySlug;
@@ -86,6 +86,7 @@ export const PreviewPage: React.FC = () => {
                         slug: data.slug || '',
                         projectName: data.name || '',
                         activeSectionId: validSections[0]?.id || null,
+                        orbit: data.orbit || state.orbit,
                         selectedLayerId: null
                     });
                 } else {

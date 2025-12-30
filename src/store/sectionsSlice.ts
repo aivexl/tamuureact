@@ -67,6 +67,20 @@ export interface ZoomConfig {
     selectedPointIndex?: number;
 }
 
+export interface OrbitCanvas {
+    backgroundColor: string;
+    backgroundUrl?: string;
+    isVisible: boolean;
+    elements: Layer[];
+}
+
+export interface OrbitState {
+    left: OrbitCanvas;
+    right: OrbitCanvas;
+}
+
+export type CanvasContext = 'main' | 'left' | 'right';
+
 // ============================================
 // SECTION INTERFACE
 // ============================================
@@ -106,6 +120,15 @@ export interface SectionsState {
         loop: boolean;
         volume: number;
     };
+
+    // Project Orbit v2 (Cinematic Stage)
+    orbit: OrbitState;
+    activeCanvas: CanvasContext;
+    setActiveCanvas: (context: CanvasContext) => void;
+    updateOrbitCanvas: (canvas: 'left' | 'right', updates: Partial<OrbitCanvas>) => void;
+    addOrbitElement: (canvas: 'left' | 'right', element: Layer) => void;
+    removeOrbitElement: (canvas: 'left' | 'right', elementId: string) => void;
+    updateOrbitElement: (canvas: 'left' | 'right', elementId: string, updates: Partial<Layer>) => void;
 
     // Actions
     addSection: (section: Partial<Section>) => void;
@@ -267,12 +290,68 @@ const createDefaultSections = (): Section[] => [
     }
 ];
 
+const createDefaultOrbit = (): OrbitState => ({
+    left: {
+        backgroundColor: 'transparent',
+        isVisible: true,
+        elements: []
+    },
+    right: {
+        backgroundColor: 'transparent',
+        isVisible: true,
+        elements: []
+    }
+});
+
 // ============================================
 // SLICE IMPLEMENTATION
 // ============================================
 export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
     sections: createDefaultSections(),
     activeSectionId: 'section-opening',
+    orbit: createDefaultOrbit(),
+    activeCanvas: 'main',
+
+    setActiveCanvas: (context) => set({ activeCanvas: context }),
+
+    updateOrbitCanvas: (canvas, updates) => set((state) => ({
+        orbit: {
+            ...state.orbit,
+            [canvas]: { ...state.orbit[canvas], ...updates }
+        }
+    })),
+
+    addOrbitElement: (canvas, element) => set((state) => ({
+        orbit: {
+            ...state.orbit,
+            [canvas]: {
+                ...state.orbit[canvas],
+                elements: [...state.orbit[canvas].elements, sanitizeLayer(element)]
+            }
+        }
+    })),
+
+    removeOrbitElement: (canvas, elementId) => set((state) => ({
+        orbit: {
+            ...state.orbit,
+            [canvas]: {
+                ...state.orbit[canvas],
+                elements: state.orbit[canvas].elements.filter(el => el.id !== elementId)
+            }
+        }
+    })),
+
+    updateOrbitElement: (canvas, elementId, updates) => set((state) => ({
+        orbit: {
+            ...state.orbit,
+            [canvas]: {
+                ...state.orbit[canvas],
+                elements: state.orbit[canvas].elements.map(el =>
+                    el.id === elementId ? sanitizeLayer({ ...el, ...updates }) : el
+                )
+            }
+        }
+    })),
 
     addSection: (sectionData) => set((state) => {
         const newId = generateId('section');
@@ -312,11 +391,20 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
     })),
 
     reorderSections: (startIndex, endIndex) => set((state) => {
-        const result = Array.from(state.sections);
+        // CTO FIX: Reordering must operate on the CURRENT SORTED sequence
+        const sorted = [...state.sections].sort((a, b) => a.order - b.order);
+        const result = Array.from(sorted);
         const [removed] = result.splice(startIndex, 1);
         result.splice(endIndex, 0, removed);
+
+        // Map back to global state with normalized orders
+        const updatedSections = state.sections.map(s => {
+            const newIndex = result.findIndex(res => res.id === s.id);
+            return { ...s, order: newIndex };
+        });
+
         return {
-            sections: result.map((s, i) => ({ ...s, order: i }))
+            sections: updatedSections
         };
     }),
 

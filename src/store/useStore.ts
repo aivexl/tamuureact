@@ -34,7 +34,8 @@ export const useStore = create<StoreState>()(
                     zoom: state.zoom,
                     pan: state.pan,
                     slug: state.slug,
-                    projectName: state.projectName
+                    projectName: state.projectName,
+                    orbit: state.orbit
                 })
             }
         ),
@@ -47,7 +48,8 @@ export const useStore = create<StoreState>()(
                 pan: state.pan,
                 slug: state.slug,
                 projectName: state.projectName,
-                id: state.id
+                id: state.id,
+                orbit: state.orbit
             }),
             onRehydrateStorage: () => (state) => {
                 if (state) {
@@ -60,7 +62,8 @@ export const useStore = create<StoreState>()(
                         pan: state.pan,
                         slug: state.slug,
                         projectName: state.projectName,
-                        id: state.id
+                        id: state.id,
+                        orbit: state.orbit
                     });
 
                     // Update state with sanitized values

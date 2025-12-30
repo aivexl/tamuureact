@@ -78,46 +78,59 @@ function LayersTab() {
         selectLayer,
         updateLayer,
         removeLayer,
-        reorderLayers,
+        // Orbit Context
+        orbit,
+        activeCanvas,
+        updateOrbitElement,
+        removeOrbitElement,
         // Section Store Actions
         activeSectionId,
         sections,
         updateElementInSection,
         removeElementFromSection
-        // reorderElementsInSection // TODO: Add if available in store, otherwise manual array update
     } = useStore();
 
     const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
     const [editName, setEditName] = useState('');
 
-    // Determine which layers to show: Active Section or Global
-    const activeSection = sections.find(s => s.id === activeSectionId);
+    // Context-Aware Layer Discovery Engine
+    const getDisplayContext = () => {
+        if (activeCanvas === 'main') {
+            const activeSection = sections.find(s => s.id === activeSectionId);
+            return {
+                layers: activeSection ? activeSection.elements : layers,
+                label: `SECTION: ${activeSection?.title || 'Untitled'}`,
+                isSection: true
+            };
+        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+            return {
+                layers: orbit[activeCanvas].elements,
+                label: `STAGE: ${activeCanvas.toUpperCase()}`,
+                isSection: false
+            };
+        }
+        return { layers: [], label: 'Unknown Context', isSection: false };
+    };
 
-    // If we have an active section, use its elements. Otherwise fallback to global layers.
-    // Ensure we handle the case where activeSection might be undefined even if Id exists.
-    const displayLayers = activeSection ? activeSection.elements : layers;
-    const isSectionMode = !!activeSection;
+    const context = getDisplayContext();
+    const displayLayers = context.layers;
 
     const sortedLayers = [...displayLayers].sort((a, b) => {
         if ((b.zIndex || 0) !== (a.zIndex || 0)) {
             return (b.zIndex || 0) - (a.zIndex || 0);
         }
-        // If zIndex is same, fallback to array index (reverse of canvas render)
         const idxA = displayLayers.indexOf(a);
         const idxB = displayLayers.indexOf(b);
         return idxB - idxA;
     });
 
     const handleReorder = (reorderedLayers: typeof sortedLayers) => {
-        // CTO ENTERPRISE SYNC:
-        // Top of the list MUST be highest zIndex to be on top of canvas.
-        // We assign zIndex from reorderedLayers.length down to 1.
-
         reorderedLayers.forEach((layer, index) => {
             const newZIndex = reorderedLayers.length - index;
-            // Immediate store update
-            if (isSectionMode && activeSectionId) {
+            if (activeCanvas === 'main' && activeSectionId) {
                 updateElementInSection(activeSectionId, layer.id, { zIndex: newZIndex });
+            } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                updateOrbitElement(activeCanvas, layer.id, { zIndex: newZIndex });
             } else {
                 updateLayer(layer.id, { zIndex: newZIndex });
             }
@@ -131,8 +144,10 @@ function LayersTab() {
 
     const finishRename = (layerId: string) => {
         if (editName.trim()) {
-            if (isSectionMode && activeSectionId) {
+            if (activeCanvas === 'main' && activeSectionId) {
                 updateElementInSection(activeSectionId, layerId, { name: editName.trim() });
+            } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                updateOrbitElement(activeCanvas, layerId, { name: editName.trim() });
             } else {
                 updateLayer(layerId, { name: editName.trim() });
             }
@@ -143,8 +158,10 @@ function LayersTab() {
 
     // Toggle Visibility Helper
     const toggleVisibility = (layerId: string, current: boolean) => {
-        if (isSectionMode && activeSectionId) {
+        if (activeCanvas === 'main' && activeSectionId) {
             updateElementInSection(activeSectionId, layerId, { isVisible: !current });
+        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+            updateOrbitElement(activeCanvas, layerId, { isVisible: !current });
         } else {
             updateLayer(layerId, { isVisible: !current });
         }
@@ -152,8 +169,10 @@ function LayersTab() {
 
     // Toggle Lock Helper
     const toggleLock = (layerId: string, current: boolean) => {
-        if (isSectionMode && activeSectionId) {
+        if (activeCanvas === 'main' && activeSectionId) {
             updateElementInSection(activeSectionId, layerId, { isLocked: !current });
+        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+            updateOrbitElement(activeCanvas, layerId, { isLocked: !current });
         } else {
             updateLayer(layerId, { isLocked: !current });
         }
@@ -162,8 +181,10 @@ function LayersTab() {
     // Remove Helper
     const removeItem = (layerId: string) => {
         if (confirm('Delete this layer?')) {
-            if (isSectionMode && activeSectionId) {
+            if (activeCanvas === 'main' && activeSectionId) {
                 removeElementFromSection(activeSectionId, layerId);
+            } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                removeOrbitElement(activeCanvas, layerId);
             } else {
                 removeLayer(layerId);
             }
@@ -173,14 +194,15 @@ function LayersTab() {
     return (
         <div className="flex-1 overflow-y-auto premium-scroll p-2">
             {/* Context Indicator */}
-            {isSectionMode && (
-                <div className="px-2 py-1 mb-2 text-[10px] items-center text-premium-accent bg-premium-accent/5 rounded border border-premium-accent/10 flex justify-between">
-                    <span className="font-bold uppercase tracking-widest truncate max-w-[150px]">
-                        SECTION: {activeSection.title || 'Untitled'}
-                    </span>
-                    <span className="opacity-50">{displayLayers.length} items</span>
-                </div>
-            )}
+            <div className={`px-2 py-1 mb-2 text-[10px] items-center rounded border flex justify-between ${activeCanvas === 'main'
+                    ? 'text-premium-accent bg-premium-accent/5 border-premium-accent/10'
+                    : 'text-purple-400 bg-purple-400/5 border-purple-400/10'
+                }`}>
+                <span className="font-bold uppercase tracking-widest truncate max-w-[150px]">
+                    {context.label}
+                </span>
+                <span className="opacity-50">{displayLayers.length} items</span>
+            </div>
 
             <Reorder.Group
                 axis="y"
