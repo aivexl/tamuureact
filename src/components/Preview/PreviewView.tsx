@@ -63,16 +63,26 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
     const isPortrait = windowSize.height >= windowSize.width;
     const scaleFactor = useMemo(() => {
         if (windowSize.width === 0 || windowSize.height === 0) return 1;
-        return isPortrait
-            ? windowSize.width / CANVAS_WIDTH
-            : windowSize.height / CANVAS_HEIGHT;
+
+        const widthScale = windowSize.width / CANVAS_WIDTH;
+        const heightScale = windowSize.height / CANVAS_HEIGHT;
+
+        if (isPortrait) {
+            // "FILL WIDTH" strategy as requested: Always fill the width
+            // This makes it "Full Screen" left-to-right, while height becomes scrollable
+            return widthScale;
+        } else {
+            // Desktop behavior remains: Fit to height
+            return heightScale;
+        }
     }, [windowSize, isPortrait]);
 
-    // Calculate cover height (fills viewport in portrait)
+    // Calculate cover height (fills viewport exactly at current scale)
     const coverHeight = useMemo(() => {
-        if (scaleFactor === 0) return CANVAS_HEIGHT;
-        return isPortrait ? windowSize.height / scaleFactor : CANVAS_HEIGHT;
-    }, [windowSize.height, scaleFactor, isPortrait]);
+        if (!scaleFactor || scaleFactor === 0) return CANVAS_HEIGHT;
+        // Revert to pure viewport height computation for Section 0
+        return windowSize.height / scaleFactor;
+    }, [windowSize.height, scaleFactor]);
 
     // Get transition config from first section
     const transitionConfig = useMemo(() => {
@@ -680,6 +690,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                             height: totalHeight * scaleFactor,
                             // Prevent shrinking
                             flexShrink: 0,
+                            justifySelf: isPortrait ? undefined : 'center',
                         }}
                     >
                         {/* Unscaled Content Container (Transformed) */}
@@ -688,10 +699,11 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                                 width: CANVAS_WIDTH,
                                 height: transitionStage === 'DONE' ? totalHeight : coverHeight,
                                 transform: `scale(${scaleFactor})`,
-                                transformOrigin: 'top left',
+                                transformOrigin: isPortrait ? 'top left' : 'top center',
                                 position: 'absolute',
                                 top: 0,
-                                left: 0,
+                                left: isPortrait ? 0 : '50%',
+                                marginLeft: isPortrait ? 0 : -(CANVAS_WIDTH / 2),
                             }}
                         >
                             {/* Sections */}
@@ -745,16 +757,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                                             }}
                                         >
                                             {/* Design-Space Container for Background & Elements */}
-                                            {/* This ensures background-size: cover behaves 1:1 with the editor */}
-                                            <div
-                                                className="absolute inset-0"
-                                                style={{
-                                                    top: isPortrait ? (coverHeight - CANVAS_HEIGHT) / 2 : 0,
-                                                    height: CANVAS_HEIGHT,
-                                                    width: CANVAS_WIDTH,
-                                                }}
-                                            >
-                                                {/* Background */}
+                                            <div className="absolute inset-0 w-full h-full">
+                                                {/* Background - Fills coverHeight for seamless look */}
                                                 <div
                                                     className={`absolute inset-0 bg-cover bg-center pointer-events-none ${section.kenBurnsEnabled ? 'animate-ken-burns' : ''}`}
                                                     style={{
@@ -763,7 +767,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                                                     }}
                                                 />
 
-                                                {/* Overlay */}
+                                                {/* Overlay - Fills coverHeight */}
                                                 {section.backgroundUrl && (section.overlayOpacity || 0) > 0 && (
                                                     <div
                                                         className="absolute inset-0 bg-black pointer-events-none"
@@ -771,57 +775,84 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                                                     />
                                                 )}
 
-                                                {/* Particle Effects */}
+                                                {/* Particle Effects - Fills coverHeight */}
                                                 {section.particleType && section.particleType !== 'none' && (
                                                     <div className="absolute inset-0 pointer-events-none">
                                                         <ParticleOverlay type={section.particleType} />
                                                     </div>
                                                 )}
 
-                                                {/* Elements */}
-                                                {(section.elements || [])
-                                                    .filter((el: any) => {
-                                                        if (!el || !el.isVisible) return false;
-                                                        // Legacy logic: Hide "Open" buttons from Section 0 after it's been revealed
-                                                        if (index === 0 && transitionStage === 'DONE' && (el.type === 'button' || el.type === 'open_invitation_button')) {
-                                                            return false;
-                                                        }
-                                                        return true;
-                                                    })
-                                                    .map((element: any) => {
-                                                        // Determine if this element should be force-triggered
-                                                        const elementTrigger = element.animation?.trigger || 'scroll';
-                                                        let forceTrigger = false;
+                                                {/* Centered Elements Container (The 896 Design Space) */}
+                                                <div
+                                                    className="absolute left-0 overflow-visible"
+                                                    style={{
+                                                        top: 0,
+                                                        height: index === 0 ? coverHeight : CANVAS_HEIGHT,
+                                                        width: CANVAS_WIDTH,
+                                                    }}
+                                                >
+                                                    {/* Elements */}
+                                                    {(section.elements || [])
+                                                        .filter((el: any) => {
+                                                            if (!el || !el.isVisible) return false;
+                                                            // Legacy logic: Hide "Open" buttons from Section 0 after it's been revealed
+                                                            if (index === 0 && transitionStage === 'DONE' && (el.type === 'button' || el.type === 'open_invitation_button')) {
+                                                                return false;
+                                                            }
+                                                            return true;
+                                                        })
+                                                        .map((element: any) => {
+                                                            // LIQUID LAYOUT ENGINE (Legacy tamuu algorithm)
+                                                            // For Section 0 in mobile, we adjust individual element Y positions
+                                                            // to "compress" or "expand" the layout based on available viewport height.
+                                                            let adjustedY = element.y;
+                                                            if (index === 0 && isPortrait) {
+                                                                const extraHeight = coverHeight - CANVAS_HEIGHT;
+                                                                const elementHeight = element.height || 0;
+                                                                const maxTop = CANVAS_HEIGHT - elementHeight;
 
-                                                        switch (elementTrigger) {
-                                                            case 'load':
-                                                                forceTrigger = true;
-                                                                break;
-                                                            case 'scroll':
-                                                                forceTrigger = visibleSections.includes(index);
-                                                                break;
-                                                            case 'open_btn':
-                                                                forceTrigger = isOpened;
-                                                                break;
-                                                            case 'click':
-                                                                forceTrigger = clickedSections.includes(index);
-                                                                break;
-                                                        }
+                                                                // Progress determines if the element is near the top (0) or bottom (1)
+                                                                let progress = maxTop > 0 ? element.y / maxTop : 0;
+                                                                progress = Math.max(0, Math.min(1, progress));
 
-                                                        return (
-                                                            <AnimatedLayer
-                                                                key={`${section.id}-${element.id}`}
-                                                                layer={element}
-                                                                adjustedY={element.y}
-                                                                isOpened={isOpened}
-                                                                isEditor={false}
-                                                                onOpenInvitation={handleOpenInvitation}
-                                                                scrollContainerRef={scrollContainerRef}
-                                                                forceTrigger={forceTrigger}
-                                                                isSectionActive={visibleSections.includes(index)}
-                                                            />
-                                                        );
-                                                    })}
+                                                                // Apply linear interpolation
+                                                                adjustedY = element.y + (extraHeight * progress);
+                                                            }
+
+                                                            // Determine if this element should be force-triggered
+                                                            const elementTrigger = element.animation?.trigger || 'scroll';
+                                                            let forceTrigger = false;
+
+                                                            switch (elementTrigger) {
+                                                                case 'load':
+                                                                    forceTrigger = true;
+                                                                    break;
+                                                                case 'scroll':
+                                                                    forceTrigger = visibleSections.includes(index);
+                                                                    break;
+                                                                case 'open_btn':
+                                                                    forceTrigger = isOpened;
+                                                                    break;
+                                                                case 'click':
+                                                                    forceTrigger = clickedSections.includes(index);
+                                                                    break;
+                                                            }
+
+                                                            return (
+                                                                <AnimatedLayer
+                                                                    key={`${section.id}-${element.id}`}
+                                                                    layer={element}
+                                                                    adjustedY={adjustedY}
+                                                                    isOpened={isOpened}
+                                                                    isEditor={false}
+                                                                    onOpenInvitation={handleOpenInvitation}
+                                                                    scrollContainerRef={scrollContainerRef}
+                                                                    forceTrigger={forceTrigger}
+                                                                    isSectionActive={visibleSections.includes(index)}
+                                                                />
+                                                            );
+                                                        })}
+                                                </div>
                                             </div>
                                         </motion.div>
                                     </div>
