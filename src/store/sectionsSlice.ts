@@ -134,6 +134,7 @@ export interface SectionsState {
     sendOrbitElementToBack: (canvas: 'left' | 'right', elementId: string) => void;
     moveOrbitElementUp: (canvas: 'left' | 'right', elementId: string) => void;
     moveOrbitElementDown: (canvas: 'left' | 'right', elementId: string) => void;
+    clearOrbitCanvas: (canvas: 'left' | 'right') => void;
 
     // Actions
     addSection: (section: Partial<Section>) => void;
@@ -345,6 +346,16 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
             [canvas]: {
                 ...state.orbit[canvas],
                 elements: state.orbit[canvas].elements.filter(el => el.id !== elementId)
+            }
+        }
+    })),
+
+    clearOrbitCanvas: (canvas) => set((state) => ({
+        orbit: {
+            ...state.orbit,
+            [canvas]: {
+                ...state.orbit[canvas],
+                elements: []
             }
         }
     })),

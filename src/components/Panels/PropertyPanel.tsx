@@ -617,46 +617,94 @@ export const PropertyPanel: React.FC = () => {
                         const designWidth = isOrbit ? 800 : 414;
                         const designHeight = 896;
 
+                        // CTO FIX: Calculate VISUAL bounding box accounting for rotation and scale
+                        const getVisualBounds = () => {
+                            const w = layer.width || 0;
+                            const h = layer.height || 0;
+                            const rotation = (layer.rotation || 0) * Math.PI / 180;
+                            const scale = layer.scale || 1;
+
+                            // Apply scale first
+                            const scaledW = w * scale;
+                            const scaledH = h * scale;
+
+                            // Calculate rotated bounding box
+                            const cos = Math.abs(Math.cos(rotation));
+                            const sin = Math.abs(Math.sin(rotation));
+                            const visualWidth = scaledW * cos + scaledH * sin;
+                            const visualHeight = scaledW * sin + scaledH * cos;
+
+                            return { visualWidth, visualHeight, scaledW, scaledH };
+                        };
+
+                        const { visualWidth, visualHeight } = getVisualBounds();
+
+                        // Calculate alignment positions using visual bounds
+                        const alignLeft = () => {
+                            const offsetX = (visualWidth - (layer.width || 0)) / 2;
+                            handleAlignmentUpdate({ x: offsetX });
+                        };
+                        const alignCenterX = () => {
+                            const offsetX = (visualWidth - (layer.width || 0)) / 2;
+                            handleAlignmentUpdate({ x: (designWidth - visualWidth) / 2 + offsetX });
+                        };
+                        const alignRight = () => {
+                            const offsetX = (visualWidth - (layer.width || 0)) / 2;
+                            handleAlignmentUpdate({ x: designWidth - visualWidth + offsetX });
+                        };
+                        const alignTop = () => {
+                            const offsetY = (visualHeight - (layer.height || 0)) / 2;
+                            handleAlignmentUpdate({ y: offsetY });
+                        };
+                        const alignMiddleY = () => {
+                            const offsetY = (visualHeight - (layer.height || 0)) / 2;
+                            handleAlignmentUpdate({ y: (designHeight - visualHeight) / 2 + offsetY });
+                        };
+                        const alignBottom = () => {
+                            const offsetY = (visualHeight - (layer.height || 0)) / 2;
+                            handleAlignmentUpdate({ y: designHeight - visualHeight + offsetY });
+                        };
+
                         return (
                             <>
                                 {/* Alignment Tools - Figma Style */}
                                 <div className="grid grid-cols-6 gap-1 mb-4 p-1 bg-white/5 rounded-lg border border-white/5">
-                                    <button onClick={() => handleAlignmentUpdate({ x: 0 })} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Left">
+                                    <button onClick={alignLeft} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Left">
                                         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
                                             <rect x="3" y="4" width="2" height="16" rx="0.5" fill="currentColor" />
                                             <rect x="7" y="7" width="10" height="4" rx="1" fill="currentColor" opacity="0.5" />
                                             <rect x="7" y="13" width="6" height="4" rx="1" fill="currentColor" opacity="0.5" />
                                         </svg>
                                     </button>
-                                    <button onClick={() => handleAlignmentUpdate({ x: (designWidth - (layer.width || 0)) / 2 })} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Center">
+                                    <button onClick={alignCenterX} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Center">
                                         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
                                             <rect x="11" y="4" width="2" height="16" rx="0.5" fill="currentColor" />
                                             <rect x="5" y="7" width="14" height="4" rx="1" fill="currentColor" opacity="0.5" />
                                             <rect x="7" y="13" width="10" height="4" rx="1" fill="currentColor" opacity="0.5" />
                                         </svg>
                                     </button>
-                                    <button onClick={() => handleAlignmentUpdate({ x: designWidth - (layer.width || 0) })} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Right">
+                                    <button onClick={alignRight} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Right">
                                         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
                                             <rect x="19" y="4" width="2" height="16" rx="0.5" fill="currentColor" />
                                             <rect x="7" y="7" width="10" height="4" rx="1" fill="currentColor" opacity="0.5" />
                                             <rect x="11" y="13" width="6" height="4" rx="1" fill="currentColor" opacity="0.5" />
                                         </svg>
                                     </button>
-                                    <button onClick={() => handleAlignmentUpdate({ y: 0 })} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Top">
+                                    <button onClick={alignTop} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Top">
                                         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
                                             <rect x="4" y="3" width="16" height="2" rx="0.5" fill="currentColor" />
                                             <rect x="7" y="7" width="4" height="10" rx="1" fill="currentColor" opacity="0.5" />
                                             <rect x="13" y="7" width="4" height="6" rx="1" fill="currentColor" opacity="0.5" />
                                         </svg>
                                     </button>
-                                    <button onClick={() => handleAlignmentUpdate({ y: (designHeight - (layer.height || 0)) / 2 })} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Middle">
+                                    <button onClick={alignMiddleY} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Middle">
                                         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
                                             <rect x="4" y="11" width="16" height="2" rx="0.5" fill="currentColor" />
                                             <rect x="7" y="5" width="4" height="14" rx="1" fill="currentColor" opacity="0.5" />
                                             <rect x="13" y="7" width="4" height="10" rx="1" fill="currentColor" opacity="0.5" />
                                         </svg>
                                     </button>
-                                    <button onClick={() => handleAlignmentUpdate({ y: designHeight - (layer.height || 0) })} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Bottom">
+                                    <button onClick={alignBottom} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Bottom">
                                         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
                                             <rect x="4" y="19" width="16" height="2" rx="0.5" fill="currentColor" />
                                             <rect x="7" y="7" width="4" height="10" rx="1" fill="currentColor" opacity="0.5" />

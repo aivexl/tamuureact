@@ -357,10 +357,11 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                     tryTriggerAnimation();
                 }
             } else {
-                // For scroll mode: only trigger if visible
-                if (isVisibleRef.current) {
-                    tryTriggerAnimation();
-                }
+                // FIX FOR ORBIT: When forceTrigger is explicitly true, 
+                // bypass InView check and trigger immediately.
+                // This ensures orbit elements animate smoothly on preview open.
+                // For scroll mode in main sections, still check visibility.
+                tryTriggerAnimation();
             }
         }
     }, [forceTrigger, entranceTrigger, isEditor, hasEntranceAnimation, isImmediate, isSectionActive, tryTriggerAnimation, animationState]);

@@ -91,9 +91,63 @@ export const SeamlessCanvas: React.FC = () => {
     const [showCopyModal, setShowCopyModal] = useState(false);
     const [copySourceId, setCopySourceId] = useState<string | null>(null);
 
+    // Orbit Copy Modal State
+    const [showOrbitCopyModal, setShowOrbitCopyModal] = useState(false);
+    const [orbitCopySource, setOrbitCopySource] = useState<'left' | 'right' | null>(null);
+
     const handleOpenCopyModal = (id: string) => { setCopySourceId(id); setShowCopyModal(true); };
     const handleCopyElements = (targetId: string) => {
         if (copySourceId && targetId) { copySectionElementsTo(copySourceId, targetId); setShowCopyModal(false); }
+    };
+
+    const handleOpenOrbitCopyModal = (source: 'left' | 'right') => {
+        setOrbitCopySource(source);
+        setShowOrbitCopyModal(true);
+    };
+    const handleCopyOrbitElements = () => {
+        if (!orbitCopySource) return;
+
+        // CRITICAL: Capture all data FIRST before any state changes
+        const sourceCanvas = orbitCopySource;
+        const targetCanvas = sourceCanvas === 'left' ? 'right' : 'left';
+        const sourceOrbit = orbit[sourceCanvas];
+        const elementsToClone = [...sourceOrbit.elements]; // Clone the array
+        const bgColor = sourceOrbit.backgroundColor;
+        const bgUrl = sourceOrbit.backgroundUrl;
+
+        // Orbit canvas width for mirroring calculation
+        const ORBIT_WIDTH = 800;
+
+        // Close modal FIRST to prevent blur lock
+        setShowOrbitCopyModal(false);
+        setOrbitCopySource(null);
+
+        // Then perform copy operation with captured data
+        try {
+            // Copy background settings from source to target
+            useStore.getState().updateOrbitCanvas(targetCanvas, {
+                backgroundColor: bgColor,
+                backgroundUrl: bgUrl
+            });
+
+            // Copy all elements from source to target with mirrored x position
+            elementsToClone.forEach((element: Layer) => {
+                // Mirror x position: newX = ORBIT_WIDTH - (oldX + width)
+                const mirroredX = ORBIT_WIDTH - (element.x + (element.width || 0));
+
+                const newElement = {
+                    ...element,
+                    id: `${element.type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                    name: `${element.name} (Copy)`,
+                    x: mirroredX // Use mirrored x position
+                };
+                useStore.getState().addOrbitElement(targetCanvas, newElement);
+            });
+
+            console.log(`Copied ${elementsToClone.length} elements (mirrored) and background from ${sourceCanvas} to ${targetCanvas}`);
+        } catch (error) {
+            console.error('Error copying orbit elements:', error);
+        }
     };
 
     const handleClearWithConfirm = (id: string) => {
@@ -211,6 +265,46 @@ export const SeamlessCanvas: React.FC = () => {
                     selectLayers(activeSection.elements.map(el => el.id));
                 } else if (activeCanvas === 'left' || activeCanvas === 'right') {
                     selectLayers(orbit[activeCanvas].elements.map((el: Layer) => el.id));
+                }
+            }
+
+            // Copy (Ctrl+C) - Copy selected element to clipboard
+            if (isMod && (e.key === 'c' || e.key === 'C') && hasSelection) {
+                e.preventDefault();
+                const id = selectedLayerIds[0];
+                let elementToCopy: Layer | null = null;
+
+                if (activeCanvas === 'main' && activeSection) {
+                    elementToCopy = activeSection.elements.find(el => el.id === id) || null;
+                } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                    elementToCopy = orbit[activeCanvas].elements.find((el: Layer) => el.id === id) || null;
+                }
+
+                if (elementToCopy) {
+                    useStore.getState().copyLayer(elementToCopy);
+                }
+            }
+
+            // Paste (Ctrl+V) - Paste from clipboard
+            if (isMod && (e.key === 'v' || e.key === 'V')) {
+                e.preventDefault();
+                const clipboard = useStore.getState().clipboard;
+                if (clipboard) {
+                    const newElement = {
+                        ...clipboard,
+                        id: `${clipboard.type}-${Date.now()}`,
+                        name: `${clipboard.name} (Copy)`,
+                        x: clipboard.x + 20,
+                        y: clipboard.y + 20
+                    };
+
+                    if (activeCanvas === 'main' && activeSectionId) {
+                        useStore.getState().addElementToSection(activeSectionId, newElement);
+                    } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                        useStore.getState().addOrbitElement(activeCanvas, newElement);
+                    }
+
+                    selectLayer(newElement.id);
                 }
             }
 
@@ -353,6 +447,12 @@ export const SeamlessCanvas: React.FC = () => {
                         onMarqueeMove={handleMarqueeMove}
                         onMarqueeEnd={handleMarqueeEnd}
                         onContextMenu={handleContextMenu}
+                        onClear={() => {
+                            if (confirm('Clear all elements from LEFT orbit canvas?')) {
+                                useStore.getState().clearOrbitCanvas('left');
+                            }
+                        }}
+                        onCopy={() => handleOpenOrbitCopyModal('left')}
                     />
                 </div>
 
@@ -362,7 +462,7 @@ export const SeamlessCanvas: React.FC = () => {
                     className={`shrink-0 w-[414px] h-full overflow-y-auto overflow-x-hidden custom-scrollbar bg-[#111111] transition-all relative z-10 ${activeCanvas === 'main' ? 'ring-1 ring-premium-accent/20 shadow-2xl' : 'opacity-60 grayscale-[0.2]'}`}
                     onMouseDown={() => setActiveCanvas('main')}
                 >
-                    <div className="flex flex-col gap-16 items-center">
+                    <div className="flex flex-col gap-16 items-center pt-14">
                         {sortedSections.map((section, index) => (
                             <SectionFrame
                                 key={section.id}
@@ -421,6 +521,12 @@ export const SeamlessCanvas: React.FC = () => {
                         onMarqueeMove={handleMarqueeMove}
                         onMarqueeEnd={handleMarqueeEnd}
                         onContextMenu={handleContextMenu}
+                        onClear={() => {
+                            if (confirm('Clear all elements from RIGHT orbit canvas?')) {
+                                useStore.getState().clearOrbitCanvas('right');
+                            }
+                        }}
+                        onCopy={() => handleOpenOrbitCopyModal('right')}
                     />
                 </div>
             </div>
@@ -688,6 +794,66 @@ export const SeamlessCanvas: React.FC = () => {
                     </div>
                 )}
             </AnimatePresence>
+
+            {/* ORBIT COPY MODAL */}
+            <AnimatePresence>
+                {showOrbitCopyModal && orbitCopySource && (
+                    <div
+                        className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+                        onClick={() => { setShowOrbitCopyModal(false); setOrbitCopySource(null); }}
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="w-full max-w-md bg-[#1A1A1A] border border-white/10 rounded-3xl shadow-4xl overflow-hidden"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="p-6 border-b border-white/5">
+                                <h3 className="text-lg font-bold text-premium-accent">Copy Orbit Content</h3>
+                                <p className="text-xs text-white/40 mt-1">
+                                    Copy all elements from <span className="text-premium-accent font-bold uppercase">{orbitCopySource}</span> orbit to <span className="text-premium-accent font-bold uppercase">{orbitCopySource === 'left' ? 'right' : 'left'}</span> orbit.
+                                </p>
+                            </div>
+
+                            <div className="p-6 space-y-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="flex-1 p-4 rounded-xl bg-white/5 border border-white/10 text-center">
+                                        <div className="text-xs text-white/40 uppercase tracking-widest mb-1">From</div>
+                                        <div className="text-lg font-bold text-white uppercase">{orbitCopySource}</div>
+                                        <div className="text-[10px] text-white/30">{orbit[orbitCopySource].elements.length} elements</div>
+                                    </div>
+                                    <div className="text-premium-accent">
+                                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                        </svg>
+                                    </div>
+                                    <div className="flex-1 p-4 rounded-xl bg-premium-accent/10 border border-premium-accent/30 text-center">
+                                        <div className="text-xs text-white/40 uppercase tracking-widest mb-1">To</div>
+                                        <div className="text-lg font-bold text-premium-accent uppercase">{orbitCopySource === 'left' ? 'right' : 'left'}</div>
+                                        <div className="text-[10px] text-white/30">{orbit[orbitCopySource === 'left' ? 'right' : 'left'].elements.length} elements</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="p-4 bg-black/20 flex justify-end gap-2">
+                                <button
+                                    onClick={() => { setShowOrbitCopyModal(false); setOrbitCopySource(null); }}
+                                    className="px-6 py-2 rounded-xl text-xs font-bold text-white/40 hover:text-white transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleCopyOrbitElements}
+                                    className="px-6 py-2 rounded-xl text-xs font-bold bg-premium-accent text-premium-dark hover:bg-premium-accent/90 transition-colors"
+                                >
+                                    Copy Elements
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div >
     );
 };
@@ -768,7 +934,7 @@ const SectionFrame: React.FC<{
                         <span className="font-bold uppercase tracking-widest text-premium-accent">{section.title}</span>
                     </div>
 
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1">
                         <ToolbarButton onClick={onMoveUp} icon={<ChevronUp className="w-3.5 h-3.5" />} title="Move Up" disabled={isFirst} />
                         <ToolbarButton onClick={onMoveDown} icon={<ChevronDown className="w-3.5 h-3.5" />} title="Move Down" disabled={isLast} />
                         <div className="w-px h-3 bg-white/10 mx-1" />
@@ -904,8 +1070,10 @@ const SideCanvas: React.FC<{
     onMarqueeStart: (id: string, x: number, y: number) => void,
     onMarqueeMove: (x: number, y: number) => void,
     onMarqueeEnd: () => void,
-    onContextMenu: (e: React.MouseEvent, id: string) => void
-}> = ({ type, isActive, orbit, onSelect, onUpdateElement, onSelectLayer, selectedLayerIds, marquee, onMarqueeStart, onMarqueeMove, onMarqueeEnd, onContextMenu }) => {
+    onContextMenu: (e: React.MouseEvent, id: string) => void,
+    onClear: () => void,
+    onCopy: () => void
+}> = ({ type, isActive, orbit, onSelect, onUpdateElement, onSelectLayer, selectedLayerIds, marquee, onMarqueeStart, onMarqueeMove, onMarqueeEnd, onContextMenu, onClear, onCopy }) => {
     const stageRef = useRef<HTMLDivElement>(null);
     const [editorScale, setEditorScale] = useState(0.8);
 
@@ -945,7 +1113,7 @@ const SideCanvas: React.FC<{
     return (
         <div
             ref={stageRef}
-            className={`absolute inset-0 ${isActive ? '' : 'opacity-30 grayscale-[0.8]'}`}
+            className={`absolute inset-0 ${isActive ? '' : 'opacity-30 grayscale-[0.8]'} group`}
             onMouseDown={(e) => {
                 if (e.target === e.currentTarget) {
                     const rect = e.currentTarget.getBoundingClientRect();
@@ -961,12 +1129,18 @@ const SideCanvas: React.FC<{
             }}
             onMouseUp={() => onMarqueeEnd()}
         >
+            {/* Orbit Toolbar - Above the canvas */}
+            <div className={`absolute top-2 ${type === 'left' ? 'right-2' : 'left-2'} flex items-center gap-1 z-50 bg-black/60 backdrop-blur-sm rounded-lg p-1`}>
+                <ToolbarButton onClick={onCopy} icon={<Copy className="w-3.5 h-3.5" />} title="Copy All Elements" />
+                <ToolbarButton onClick={onClear} icon={<Eraser className="w-3.5 h-3.5" />} title="Clear All" />
+            </div>
+
             {/* 800px Design Container - Absolute positioned like Preview */}
             <div
                 className={`absolute transition-all duration-700 overflow-hidden ${isActive ? 'ring-[3px] ring-purple-500/50 z-20' : 'z-0 hover:opacity-50'}`}
                 style={{
-                    // CTO FIX: Use TOP-anchored positioning for consistent y-coordinates
-                    top: 0,
+                    // CTO FIX: Match padding with center canvas (pt-14 = 56px)
+                    top: 56,
                     width: 800,
                     height: SECTION_HEIGHT,
                     // Anchor to VIEWPORT edge
