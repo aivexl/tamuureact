@@ -84,6 +84,15 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
         return windowSize.height / scaleFactor;
     }, [windowSize.height, scaleFactor]);
 
+    // Calculate total height for scroll container
+    const totalHeight = useMemo(() => {
+        if (sortedSections.length === 0) return CANVAS_HEIGHT;
+        // In portrait, every section fits the screen height
+        if (isPortrait) return sortedSections.length * coverHeight;
+        // Desktop: First is coverHeight, others are CANVAS_HEIGHT
+        return coverHeight + (sortedSections.length - 1) * CANVAS_HEIGHT;
+    }, [sortedSections, coverHeight, isPortrait]);
+
     // Get transition config from first section
     const transitionConfig = useMemo(() => {
         const section0 = sortedSections[0];
@@ -154,7 +163,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
             Object.values(zoomTimers.current).forEach(timer => clearTimeout(timer));
             zoomTimers.current = {};
         };
-    }, [isOpen]);
+    }, [isOpen, sortedSections]);
 
     // Fullscreen handlers
     const toggleFullscreen = useCallback(() => {
@@ -298,7 +307,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                 runNext();
             }, 100);
         });
-    }, [sortedSections]);
+    }, []); // Removed sortedSections from dependencies as it's not directly used in this useCallback
 
     // Handle "Open Invitation" button click
     const handleOpenInvitation = useCallback(async () => {
@@ -337,7 +346,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
             // Make all sections visible
             setVisibleSections(sortedSections.map((_, i) => i));
         }, transitionDuration * 1000 + 100);
-    }, [isOpened, sortedSections, startZoomAnimation, transitionDuration]);
+    }, [isOpened, sortedSections, startZoomAnimation, transitionDuration, transitionEffect]);
 
     // Handle scroll to Section 1 when transition is DONE
     React.useLayoutEffect(() => {
@@ -349,11 +358,6 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                     // BUT, the previous code had `const scrollTarget = coverHeight * scaleFactor;` commented out?
                     // No, line 223 in original code had `coverHeight * scaleFactor`.
                     // But in my previous fix I used `top: coverHeight`.
-                    // Let's stick to `coverHeight` if the container's *content* is scaled but scroll metrics reflect unscaled.
-                    // Actually, if the container has `transform: scale`, the `scrollHeight` reported by the parent usually ignores the scale?
-                    // Let's use `coverHeight` first as it matches the CSS top position logic. 
-
-                    // CORRECTION: In the previous successful "Revert" fix attempt (step 1507), I used `top: coverHeight`.
                     // The user said "Masih ada bug".
                     // Maybe `coverHeight` IS wrong?
                     // Layout:
@@ -368,6 +372,17 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                     // So I need to scroll 896px (Unscaled).
                     // SO `coverHeight` (Unscaled) is CORRECT.
 
+                    // CORRECTION: In the previous successful "Revert" fix attempt (step 1507), I used `top: coverHeight`.
+                    // The user said "Masih ada bug".
+                    // Maybe `coverHeight` IS wrong?
+                    // Let's use the calculated top for section 1 in flow mode.
+                    // This is `coverHeight` for portrait, and `coverHeight` for desktop.
+                    // So `coverHeight` is correct for the *unscaled* content.
+                    // The scroll position should be relative to the *scaled* container.
+                    // If the content is scaled down, the scroll position needs to be scaled up to compensate.
+                    // Example: content is 1000px high, scaled to 0.5, so it appears 500px high.
+                    // If we want to scroll to 100px *content* position, we need to scroll 100px * 0.5 = 50px *visual* scroll.
+                    // So, if section 1's unscaled top is `coverHeight`, the visual scroll position is `coverHeight * scaleFactor`.
                     top: coverHeight * scaleFactor,
                     behavior: 'instant'
                 });
@@ -424,7 +439,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
         const translateY = (coverHeight / 2) - (scale * centerY);
 
         return { scale, x: translateX, y: translateY };
-    }, [currentZoomPointIndex, coverHeight, isPortrait, sortedSections]);
+    }, [currentZoomPointIndex, coverHeight, isPortrait]); // Removed sortedSections from dependencies as it's not directly used here
 
     // Get section style based on transition stage (from legacy getSectionSlotStyle)
     const getSectionStyle = useCallback((index: number): React.CSSProperties => {
@@ -434,12 +449,16 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
         const isDone = transitionStage === 'DONE';
         const flowMode = isDone;
 
-        // Calculate section position
         // Calculate section height (matches viewport height exactly in portrait)
-        const sectionHeight = coverHeight;
+        const sectionHeight = isPortrait ? coverHeight : CANVAS_HEIGHT;
 
         // Calculate section position
-        let sectionTop = index * sectionHeight; // Simplifies since all sections now use same logic
+        let calculatedTop = 0;
+        if (index > 0) {
+            calculatedTop = isPortrait
+                ? index * coverHeight
+                : coverHeight + (index - 1) * CANVAS_HEIGHT;
+        }
 
         const base: React.CSSProperties = {
             position: 'absolute',
@@ -572,12 +591,12 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
             // FLOW MODE (After transition complete)
             return {
                 ...base,
-                top: sectionTop,
+                top: calculatedTop,
                 zIndex: 1,
                 opacity: 1,
             };
         }
-    }, [transitionStage, transitionEffect, transitionDuration, coverHeight]);
+    }, [transitionStage, transitionEffect, transitionDuration, coverHeight, isPortrait]);
 
     // Intersection observer for scroll-triggered sections
     useEffect(() => {
@@ -613,15 +632,10 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
         });
 
         return () => observer.disconnect();
-    }, [isOpen, sortedSections, visibleSections, startZoomAnimation, transitionStage]);
+    }, [isOpen, sortedSections, startZoomAnimation, transitionStage]); // Removed visibleSections from dependencies as it's updated inside the callback
 
     // Don't render until we have valid window dimensions
     if (!isOpen || windowSize.width === 0 || windowSize.height === 0) return null;
-
-    // Calculate total height for scroll container
-    // Calculate total height for scroll container
-    const effectiveSectionHeight = coverHeight;
-    const totalHeight = sortedSections.length * effectiveSectionHeight;
 
     return (
         <AnimatePresence>
@@ -697,7 +711,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                         <div
                             style={{
                                 width: CANVAS_WIDTH,
-                                height: transitionStage === 'DONE' ? totalHeight : coverHeight,
+                                height: totalHeight,
                                 transform: `scale(${scaleFactor})`,
                                 transformOrigin: isPortrait ? 'top left' : 'top center',
                                 position: 'absolute',
@@ -803,12 +817,14 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                                                         })
                                                         .map((element: any) => {
                                                             // LIQUID LAYOUT ENGINE (Legacy tamuu algorithm)
-                                                            // For Section 0 in mobile, we adjust individual element Y positions
-                                                            // to "compress" or "expand" the layout based on available viewport height.
+                                                            // We adjust individual element Y positions to "compress" or "expand" 
+                                                            // the layout based on available viewport height (coverHeight).
                                                             let adjustedY = element.y;
-                                                            if (index === 0 && isPortrait) {
+                                                            if (isPortrait) {
                                                                 const extraHeight = coverHeight - CANVAS_HEIGHT;
-                                                                const elementHeight = element.height || 0;
+
+                                                                // Robust height detection (matches renderer logic)
+                                                                const elementHeight = element.height || element.size?.height || (element.textStyle?.fontSize) || 0;
                                                                 const maxTop = CANVAS_HEIGHT - elementHeight;
 
                                                                 // Progress determines if the element is near the top (0) or bottom (1)
