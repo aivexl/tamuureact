@@ -70,7 +70,16 @@ export const SeamlessCanvas: React.FC = () => {
         activeCanvas,
         setActiveCanvas,
         updateOrbitElement,
-        updateOrbitCanvas
+        updateOrbitCanvas,
+        duplicateOrbitElement,
+        bringOrbitElementToFront,
+        sendOrbitElementToBack,
+        moveOrbitElementUp,
+        moveOrbitElementDown,
+        removeOrbitElement,
+        alignOrbitElements,
+        distributeOrbitElements,
+        matchOrbitSize
     } = useStore();
 
     const containerRef = useRef<HTMLDivElement>(null);
@@ -118,63 +127,90 @@ export const SeamlessCanvas: React.FC = () => {
             const activeSection = sections.find(s => s.id === activeSectionId);
 
             // Nudge (Arrows)
-            if (hasSelection && activeSection && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+            if (hasSelection && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
                 e.preventDefault();
                 const step = e.shiftKey ? 10 : 1;
+
                 selectedLayerIds.forEach(id => {
-                    const el = activeSection.elements.find(layer => layer.id === id);
+                    let el: Layer | undefined;
+                    if (activeCanvas === 'main' && activeSection) {
+                        el = activeSection.elements.find(layer => layer.id === id);
+                    } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                        el = orbit[activeCanvas].elements.find((layer: Layer) => layer.id === id);
+                    }
+
                     if (el) {
-                        const updates: any = {};
-                        if (e.key === 'ArrowLeft') updates.x = el.x - step;
-                        if (e.key === 'ArrowRight') updates.x = el.x + step;
-                        if (e.key === 'ArrowUp') updates.y = el.y - step;
-                        if (e.key === 'ArrowDown') updates.y = el.y + step;
-                        updateElementInSection(activeSection.id, id, updates);
+                        const updates: any = {
+                            x: el.x + (e.key === 'ArrowRight' ? step : e.key === 'ArrowLeft' ? -step : 0),
+                            y: el.y + (e.key === 'ArrowDown' ? step : e.key === 'ArrowUp' ? -step : 0)
+                        };
+                        if (activeCanvas === 'main' && activeSectionId) {
+                            updateElementInSection(activeSectionId, id, updates);
+                        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                            updateOrbitElement(activeCanvas, id, updates);
+                        }
                     }
                 });
-            }
-
-            // Group/Ungroup
-            if (isMod && e.key === 'g') {
-                e.preventDefault();
-                if (e.shiftKey) handleUngroupSelected();
-                else handleGroupSelected();
             }
 
             // Duplicate
             if (isMod && (e.key === 'd' || e.key === 'D')) {
                 e.preventDefault();
-                if (hasSelection && activeSectionId) {
-                    selectedLayerIds.forEach(id => duplicateElementInSection(activeSectionId, id));
+                if (hasSelection) {
+                    selectedLayerIds.forEach(id => {
+                        if (activeCanvas === 'main' && activeSectionId) {
+                            duplicateElementInSection(activeSectionId, id);
+                        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                            duplicateOrbitElement(activeCanvas, id);
+                        }
+                    });
                 }
             }
 
             // Delete
-            if ((e.key === 'Delete' || e.key === 'Backspace') && hasSelection && activeSectionId) {
+            if ((e.key === 'Delete' || e.key === 'Backspace') && hasSelection) {
                 e.preventDefault();
-                selectedLayerIds.forEach(id => removeElementFromSection(activeSectionId, id));
+                selectedLayerIds.forEach(id => {
+                    if (activeCanvas === 'main' && activeSectionId) {
+                        removeElementFromSection(activeSectionId, id);
+                    } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                        removeOrbitElement(activeCanvas, id);
+                    }
+                });
                 clearSelection();
             }
 
             // Layer Order
-            if (isMod && hasSelection && activeSectionId) {
+            if (isMod && hasSelection) {
                 if (e.key === ']') {
                     e.preventDefault();
-                    if (e.shiftKey) selectedLayerIds.forEach(id => bringElementToFront(activeSectionId, id));
-                    else selectedLayerIds.forEach(id => moveElementUp(activeSectionId, id));
+                    if (activeCanvas === 'main' && activeSectionId) {
+                        if (e.shiftKey) selectedLayerIds.forEach(id => bringElementToFront(activeSectionId, id));
+                        else selectedLayerIds.forEach(id => moveElementUp(activeSectionId, id));
+                    } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                        if (e.shiftKey) selectedLayerIds.forEach(id => bringOrbitElementToFront(activeCanvas, id));
+                        else selectedLayerIds.forEach(id => moveOrbitElementUp(activeCanvas, id));
+                    }
                 }
                 if (e.key === '[') {
                     e.preventDefault();
-                    if (e.shiftKey) selectedLayerIds.forEach(id => sendElementToBack(activeSectionId, id));
-                    else selectedLayerIds.forEach(id => moveElementDown(activeSectionId, id));
+                    if (activeCanvas === 'main' && activeSectionId) {
+                        if (e.shiftKey) selectedLayerIds.forEach(id => sendElementToBack(activeSectionId, id));
+                        else selectedLayerIds.forEach(id => moveElementDown(activeSectionId, id));
+                    } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                        if (e.shiftKey) selectedLayerIds.forEach(id => sendOrbitElementToBack(activeCanvas, id));
+                        else selectedLayerIds.forEach(id => moveOrbitElementDown(activeCanvas, id));
+                    }
                 }
             }
 
             // Select All
             if (isMod && e.key === 'a') {
                 e.preventDefault();
-                if (activeSection) {
+                if (activeCanvas === 'main' && activeSection) {
                     selectLayers(activeSection.elements.map(el => el.id));
+                } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                    selectLayers(orbit[activeCanvas].elements.map((el: Layer) => el.id));
                 }
             }
 
@@ -201,14 +237,21 @@ export const SeamlessCanvas: React.FC = () => {
     const handleMarqueeEnd = () => {
         if (!marquee || !marquee.active) return;
 
-        const section = sections.find(s => s.id === marquee.sectionId);
-        if (section) {
+        let elements: Layer[] = [];
+        if (marquee.sectionId === 'left' || marquee.sectionId === 'right') {
+            elements = orbit[marquee.sectionId].elements;
+        } else {
+            const section = sections.find(s => s.id === marquee.sectionId);
+            if (section) elements = section.elements;
+        }
+
+        if (elements.length > 0) {
             const xMin = Math.min(marquee.x1, marquee.x2);
             const xMax = Math.max(marquee.x1, marquee.x2);
             const yMin = Math.min(marquee.y1, marquee.y2);
             const yMax = Math.max(marquee.y1, marquee.y2);
 
-            const hits = section.elements.filter(el => {
+            const hits = elements.filter(el => {
                 const elXMid = el.x + el.width / 2;
                 const elYMid = el.y + el.height / 2;
                 return elXMid >= xMin && elXMid <= xMax && elYMid >= yMin && elYMid <= yMax;
@@ -268,18 +311,24 @@ export const SeamlessCanvas: React.FC = () => {
     };
 
     const handleAction = (type: 'front' | 'back' | 'up' | 'down' | 'duplicate' | 'delete') => {
-        if (!contextMenu || !activeSectionId) return;
+        if (!contextMenu) return;
         const { id } = contextMenu;
 
-        if (type === 'duplicate') duplicateElementInSection(activeSectionId, id);
-        if (type === 'delete') {
-            removeElementFromSection(activeSectionId, id);
-            clearSelection();
+        if (activeCanvas === 'main' && activeSectionId) {
+            if (type === 'duplicate') duplicateElementInSection(activeSectionId, id);
+            if (type === 'delete') { removeElementFromSection(activeSectionId, id); clearSelection(); }
+            if (type === 'front') bringElementToFront(activeSectionId, id);
+            if (type === 'back') sendElementToBack(activeSectionId, id);
+            if (type === 'up') moveElementUp(activeSectionId, id);
+            if (type === 'down') moveElementDown(activeSectionId, id);
+        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+            if (type === 'duplicate') duplicateOrbitElement(activeCanvas, id);
+            if (type === 'delete') { removeOrbitElement(activeCanvas, id); clearSelection(); }
+            if (type === 'front') bringOrbitElementToFront(activeCanvas, id);
+            if (type === 'back') sendOrbitElementToBack(activeCanvas, id);
+            if (type === 'up') moveOrbitElementUp(activeCanvas, id);
+            if (type === 'down') moveOrbitElementDown(activeCanvas, id);
         }
-        if (type === 'front') bringElementToFront(activeSectionId, id);
-        if (type === 'back') sendElementToBack(activeSectionId, id);
-        if (type === 'up') moveElementUp(activeSectionId, id);
-        if (type === 'down') moveElementDown(activeSectionId, id);
 
         setContextMenu(null);
     };
@@ -290,7 +339,7 @@ export const SeamlessCanvas: React.FC = () => {
             <div className="flex-1 h-full flex items-stretch overflow-hidden">
 
                 {/* LEFT STAGE */}
-                <div className="flex-1 flex justify-end items-center relative overflow-hidden bg-[#050505]/50 border-r border-white/5">
+                <div className="flex-1 relative overflow-hidden bg-[#050505]/50 border-r border-white/5">
                     <SideCanvas
                         type="left"
                         isActive={activeCanvas === 'left'}
@@ -299,16 +348,21 @@ export const SeamlessCanvas: React.FC = () => {
                         onUpdateElement={(id, updates) => updateOrbitElement('left', id, updates)}
                         onSelectLayer={(id, isMulti) => selectLayer(id, isMulti)}
                         selectedLayerIds={selectedLayerIds}
+                        marquee={marquee?.sectionId === 'left' ? marquee : null}
+                        onMarqueeStart={handleMarqueeStart}
+                        onMarqueeMove={handleMarqueeMove}
+                        onMarqueeEnd={handleMarqueeEnd}
+                        onContextMenu={handleContextMenu}
                     />
                 </div>
 
                 {/* MAIN INVITATION (Center Scroll) */}
                 <div
                     ref={containerRef}
-                    className={`shrink-0 w-[500px] h-full overflow-y-auto overflow-x-hidden custom-scrollbar bg-[#111111] transition-all relative z-10 ${activeCanvas === 'main' ? 'ring-1 ring-premium-accent/20 shadow-2xl' : 'opacity-60 grayscale-[0.2]'}`}
+                    className={`shrink-0 w-[414px] h-full overflow-y-auto overflow-x-hidden custom-scrollbar bg-[#111111] transition-all relative z-10 ${activeCanvas === 'main' ? 'ring-1 ring-premium-accent/20 shadow-2xl' : 'opacity-60 grayscale-[0.2]'}`}
                     onMouseDown={() => setActiveCanvas('main')}
                 >
-                    <div className="flex flex-col gap-16 py-32 items-center">
+                    <div className="flex flex-col gap-16 items-center">
                         {sortedSections.map((section, index) => (
                             <SectionFrame
                                 key={section.id}
@@ -353,7 +407,7 @@ export const SeamlessCanvas: React.FC = () => {
                 </div>
 
                 {/* RIGHT STAGE */}
-                <div className="flex-1 flex justify-start items-center relative overflow-hidden bg-[#050505]/50 border-l border-white/5">
+                <div className="flex-1 relative overflow-hidden bg-[#050505]/50 border-l border-white/5">
                     <SideCanvas
                         type="right"
                         isActive={activeCanvas === 'right'}
@@ -362,13 +416,18 @@ export const SeamlessCanvas: React.FC = () => {
                         onUpdateElement={(id, updates) => updateOrbitElement('right', id, updates)}
                         onSelectLayer={(id, isMulti) => selectLayer(id, isMulti)}
                         selectedLayerIds={selectedLayerIds}
+                        marquee={marquee?.sectionId === 'right' ? marquee : null}
+                        onMarqueeStart={handleMarqueeStart}
+                        onMarqueeMove={handleMarqueeMove}
+                        onMarqueeEnd={handleMarqueeEnd}
+                        onContextMenu={handleContextMenu}
                     />
                 </div>
             </div>
 
             {/* Enterprise Floating Toolbar (Figma/Canva inspired) */}
             <AnimatePresence>
-                {selectedLayerIds.length > 0 && activeSectionId && (
+                {selectedLayerIds.length > 0 && (activeCanvas === 'main' ? !!activeSectionId : true) && (
                     <motion.div
                         initial={{ opacity: 0, y: 20, x: '-50%' }}
                         animate={{ opacity: 1, y: 0, x: '-50%' }}
@@ -386,58 +445,153 @@ export const SeamlessCanvas: React.FC = () => {
                         {selectedLayerIds.length > 1 && (
                             <div className="flex items-center gap-1 pr-2 border-r border-white/10 mr-1">
                                 <ToolbarButton
-                                    onClick={() => alignElements(activeSectionId, selectedLayerIds, 'left')}
+                                    onClick={() => {
+                                        if (activeCanvas === 'main' && activeSectionId) {
+                                            alignElements(activeSectionId, selectedLayerIds, 'left');
+                                        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                                            alignOrbitElements(activeCanvas as 'left' | 'right', selectedLayerIds, 'left');
+                                        }
+                                    }}
                                     icon={<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="2" height="16" rx="0.5" fill="currentColor" /><rect x="7" y="7" width="10" height="4" rx="1" fill="currentColor" opacity="0.5" /><rect x="7" y="13" width="6" height="4" rx="1" fill="currentColor" opacity="0.5" /></svg>}
                                     title="Align Left"
                                 />
                                 <ToolbarButton
-                                    onClick={() => alignElements(activeSectionId, selectedLayerIds, 'center')}
+                                    onClick={() => {
+                                        if (activeCanvas === 'main' && activeSectionId) {
+                                            alignElements(activeSectionId, selectedLayerIds, 'center');
+                                        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                                            alignOrbitElements(activeCanvas as 'left' | 'right', selectedLayerIds, 'center');
+                                        }
+                                    }}
                                     icon={<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"><rect x="11" y="4" width="2" height="16" rx="0.5" fill="currentColor" /><rect x="5" y="7" width="14" height="4" rx="1" fill="currentColor" opacity="0.5" /><rect x="7" y="13" width="10" height="4" rx="1" fill="currentColor" opacity="0.5" /></svg>}
                                     title="Align Horizontal Center"
                                 />
                                 <ToolbarButton
-                                    onClick={() => alignElements(activeSectionId, selectedLayerIds, 'right')}
+                                    onClick={() => {
+                                        if (activeCanvas === 'main' && activeSectionId) {
+                                            alignElements(activeSectionId, selectedLayerIds, 'right');
+                                        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                                            alignOrbitElements(activeCanvas as 'left' | 'right', selectedLayerIds, 'right');
+                                        }
+                                    }}
                                     icon={<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"><rect x="19" y="4" width="2" height="16" rx="0.5" fill="currentColor" /><rect x="7" y="7" width="10" height="4" rx="1" fill="currentColor" opacity="0.5" /><rect x="11" y="13" width="6" height="4" rx="1" fill="currentColor" opacity="0.5" /></svg>}
                                     title="Align Right"
                                 />
                                 <div className="w-px h-4 bg-white/5 mx-0.5" />
                                 <ToolbarButton
-                                    onClick={() => alignElements(activeSectionId, selectedLayerIds, 'top')}
+                                    onClick={() => {
+                                        if (activeCanvas === 'main' && activeSectionId) {
+                                            alignElements(activeSectionId, selectedLayerIds, 'top');
+                                        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                                            alignOrbitElements(activeCanvas as 'left' | 'right', selectedLayerIds, 'top');
+                                        }
+                                    }}
                                     icon={<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="2" rx="0.5" fill="currentColor" /><rect x="7" y="7" width="4" height="10" rx="1" fill="currentColor" opacity="0.5" /><rect x="13" y="7" width="4" height="6" rx="1" fill="currentColor" opacity="0.5" /></svg>}
                                     title="Align Top"
                                 />
                                 <ToolbarButton
-                                    onClick={() => alignElements(activeSectionId, selectedLayerIds, 'middle')}
+                                    onClick={() => {
+                                        if (activeCanvas === 'main' && activeSectionId) {
+                                            alignElements(activeSectionId, selectedLayerIds, 'middle');
+                                        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                                            alignOrbitElements(activeCanvas as 'left' | 'right', selectedLayerIds, 'middle');
+                                        }
+                                    }}
                                     icon={<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"><rect x="4" y="11" width="16" height="2" rx="0.5" fill="currentColor" /><rect x="7" y="5" width="4" height="14" rx="1" fill="currentColor" opacity="0.5" /><rect x="13" y="7" width="4" height="10" rx="1" fill="currentColor" opacity="0.5" /></svg>}
                                     title="Align Vertical Center"
                                 />
                                 <ToolbarButton
-                                    onClick={() => alignElements(activeSectionId, selectedLayerIds, 'bottom')}
+                                    onClick={() => {
+                                        if (activeCanvas === 'main' && activeSectionId) {
+                                            alignElements(activeSectionId, selectedLayerIds, 'bottom');
+                                        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                                            alignOrbitElements(activeCanvas as 'left' | 'right', selectedLayerIds, 'bottom');
+                                        }
+                                    }}
                                     icon={<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"><rect x="4" y="19" width="16" height="2" rx="0.5" fill="currentColor" /><rect x="7" y="7" width="4" height="10" rx="1" fill="currentColor" opacity="0.5" /><rect x="13" y="11" width="4" height="6" rx="1" fill="currentColor" opacity="0.5" /></svg>}
                                     title="Align Bottom"
                                 />
                                 <div className="w-px h-4 bg-white/5 mx-0.5" />
-                                <ToolbarButton onClick={() => distributeElements(activeSectionId, selectedLayerIds, 'horizontal')} icon={<Maximize className="w-4 h-4 rotate-90" />} title="Distribute Horizontally" />
-                                <ToolbarButton onClick={() => distributeElements(activeSectionId, selectedLayerIds, 'vertical')} icon={<Maximize className="w-4 h-4" />} title="Distribute Vertically" />
+                                <ToolbarButton
+                                    onClick={() => {
+                                        if (activeCanvas === 'main' && activeSectionId) {
+                                            distributeElements(activeSectionId, selectedLayerIds, 'horizontal');
+                                        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                                            distributeOrbitElements(activeCanvas as 'left' | 'right', selectedLayerIds, 'horizontal');
+                                        }
+                                    }}
+                                    icon={<Maximize className="w-4 h-4 rotate-90" />}
+                                    title="Distribute Horizontally"
+                                />
+                                <ToolbarButton
+                                    onClick={() => {
+                                        if (activeCanvas === 'main' && activeSectionId) {
+                                            distributeElements(activeSectionId, selectedLayerIds, 'vertical');
+                                        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                                            distributeOrbitElements(activeCanvas as 'left' | 'right', selectedLayerIds, 'vertical');
+                                        }
+                                    }}
+                                    icon={<Maximize className="w-4 h-4" />}
+                                    title="Distribute Vertically"
+                                />
                             </div>
                         )}
 
                         {/* Order & Grouping */}
                         <div className="flex items-center gap-1 pr-2 border-r border-white/10 mr-1">
-                            <ToolbarButton onClick={() => selectedLayerIds.forEach(id => bringElementToFront(activeSectionId, id))} icon={<ChevronUp className="w-4 h-4" />} title="Bring to Front" />
-                            <ToolbarButton onClick={() => selectedLayerIds.forEach(id => sendElementToBack(activeSectionId, id))} icon={<ChevronDown className="w-4 h-4" />} title="Send to Back" />
+                            <ToolbarButton
+                                onClick={() => {
+                                    if (activeCanvas === 'main' && activeSectionId) {
+                                        selectedLayerIds.forEach(id => bringElementToFront(activeSectionId, id));
+                                    } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                                        selectedLayerIds.forEach(id => bringOrbitElementToFront(activeCanvas, id));
+                                    }
+                                }}
+                                icon={<ChevronUp className="w-4 h-4" />}
+                                title="Bring to Front"
+                            />
+                            <ToolbarButton
+                                onClick={() => {
+                                    if (activeCanvas === 'main' && activeSectionId) {
+                                        selectedLayerIds.forEach(id => sendElementToBack(activeSectionId, id));
+                                    } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                                        selectedLayerIds.forEach(id => sendOrbitElementToBack(activeCanvas, id));
+                                    }
+                                }}
+                                icon={<ChevronDown className="w-4 h-4" />}
+                                title="Send to Back"
+                            />
                             <div className="w-px h-4 bg-white/5 mx-0.5" />
-                            <ToolbarButton onClick={handleGroupSelected} icon={<Group className="w-4 h-4" />} title="Group (Ctrl+G)" disabled={selectedLayerIds.length < 2} />
-                            <ToolbarButton onClick={handleUngroupSelected} icon={<Ungroup className="w-4 h-4" />} title="Ungroup" />
+                            <ToolbarButton onClick={handleGroupSelected} icon={<Group className="w-4 h-4" />} title="Group (Ctrl+G)" disabled={selectedLayerIds.length < 2 || activeCanvas !== 'main'} />
+                            <ToolbarButton onClick={handleUngroupSelected} icon={<Ungroup className="w-4 h-4" />} title="Ungroup" disabled={activeCanvas !== 'main'} />
                         </div>
 
                         {/* Actions */}
                         <div className="flex items-center gap-1">
-                            <ToolbarButton onClick={() => selectedLayerIds.forEach(id => duplicateElementInSection(activeSectionId, id))} icon={<Copy className="w-4 h-4" />} title="Duplicate (Ctrl+D)" />
-                            <ToolbarButton onClick={() => {
-                                selectedLayerIds.forEach(id => removeElementFromSection(activeSectionId, id));
-                                clearSelection();
-                            }} icon={<Trash2 className="w-4 h-4" />} title="Delete (Del)" variant="danger" />
+                            <ToolbarButton
+                                onClick={() => {
+                                    if (activeCanvas === 'main' && activeSectionId) {
+                                        selectedLayerIds.forEach(id => duplicateElementInSection(activeSectionId, id));
+                                    } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                                        selectedLayerIds.forEach(id => duplicateOrbitElement(activeCanvas, id));
+                                    }
+                                }}
+                                icon={<Copy className="w-4 h-4" />}
+                                title="Duplicate (Ctrl+D)"
+                            />
+                            <ToolbarButton
+                                onClick={() => {
+                                    if (activeCanvas === 'main' && activeSectionId) {
+                                        selectedLayerIds.forEach(id => removeElementFromSection(activeSectionId, id));
+                                    } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                                        selectedLayerIds.forEach(id => removeOrbitElement(activeCanvas, id));
+                                    }
+                                    clearSelection();
+                                }}
+                                icon={<Trash2 className="w-4 h-4" />}
+                                title="Delete (Del)"
+                                variant="danger"
+                            />
                         </div>
                     </motion.div>
                 )}
@@ -745,16 +899,28 @@ const SideCanvas: React.FC<{
     onSelect: () => void,
     onUpdateElement: (id: string, updates: Partial<Layer>) => void,
     onSelectLayer: (id: string, isMulti: boolean) => void,
-    selectedLayerIds: string[]
-}> = ({ type, isActive, orbit, onSelect, onUpdateElement, onSelectLayer, selectedLayerIds }) => {
+    selectedLayerIds: string[],
+    marquee: any,
+    onMarqueeStart: (id: string, x: number, y: number) => void,
+    onMarqueeMove: (x: number, y: number) => void,
+    onMarqueeEnd: () => void,
+    onContextMenu: (e: React.MouseEvent, id: string) => void
+}> = ({ type, isActive, orbit, onSelect, onUpdateElement, onSelectLayer, selectedLayerIds, marquee, onMarqueeStart, onMarqueeMove, onMarqueeEnd, onContextMenu }) => {
     const stageRef = useRef<HTMLDivElement>(null);
     const [editorScale, setEditorScale] = useState(0.8);
 
+    // Collect DOM targets for Moveable
+    const targetMap = useRef<Map<string, HTMLDivElement>>(new Map());
+    const [targets, setTargets] = useState<HTMLDivElement[]>([]);
+
     useEffect(() => {
         const updateScale = () => {
-            const width = window.innerWidth;
-            const sideWidth = (width - 414 - 100) / 2;
-            const targetScale = Math.min(Math.max(sideWidth / 600, 0.45), 0.95);
+            const height = window.innerHeight;
+
+            // CTO FIX: Use EXACT same scaling as Preview for 1:1 parity
+            // Preview landscape: scaleFactor = windowSize.height / CANVAS_HEIGHT (896)
+            // This ensures elements appear at identical positions in both views
+            const targetScale = height / 896;
             setEditorScale(targetScale);
         };
         updateScale();
@@ -762,64 +928,159 @@ const SideCanvas: React.FC<{
         return () => window.removeEventListener('resize', updateScale);
     }, []);
 
+    // Sync targets when selection or elements change
+    useEffect(() => {
+        const activeTargets = selectedLayerIds
+            .map((id: string) => targetMap.current.get(id))
+            .filter(Boolean) as HTMLDivElement[];
+        setTargets(activeTargets);
+    }, [selectedLayerIds, orbit.elements]);
+
+    const registerTarget = (id: string, el: HTMLDivElement | null) => {
+        if (el) targetMap.current.set(id, el); else targetMap.current.delete(id);
+    };
+
     if (!orbit.isVisible) return null;
 
     return (
-        <motion.div
+        <div
             ref={stageRef}
-            onClick={(e) => {
-                e.stopPropagation();
+            className={`absolute inset-0 ${isActive ? '' : 'opacity-30 grayscale-[0.8]'}`}
+            onMouseDown={(e) => {
+                if (e.target === e.currentTarget) {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    onMarqueeStart(type, (e.clientX - rect.left) / editorScale, (e.clientY - rect.top) / editorScale);
+                }
                 onSelect();
             }}
-            initial={false}
-            animate={{
-                opacity: orbit.isVisible ? 1 : 0,
-                scale: editorScale,
-                x: type === 'left' ? 30 : -30
+            onMouseMove={(e) => {
+                if (marquee) {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    onMarqueeMove((e.clientX - rect.left) / editorScale, (e.clientY - rect.top) / editorScale);
+                }
             }}
-            className={`relative flex-shrink-0 rounded-[2.5rem] shadow-4xl transition-all duration-700 overflow-hidden ${isActive ? 'ring-[3px] ring-purple-500/50 ring-offset-[12px] ring-offset-black/80 z-20' : 'opacity-30 grayscale-[0.8] z-0 hover:opacity-50'
-                }`}
-            style={{
-                width: 800,
-                height: 900,
-                backgroundColor: orbit.backgroundColor || '#050505',
-                backgroundImage: orbit.backgroundUrl ? `url(${orbit.backgroundUrl})` : 'none',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                transformOrigin: type === 'left' ? 'right center' : 'left center',
-                boxShadow: '0 40px 100px -20px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.05)'
-            }}
+            onMouseUp={() => onMarqueeEnd()}
         >
-            <div className={`absolute top-8 ${type === 'left' ? 'right-8 text-right' : 'left-8 text-left'} pointer-events-none mix-blend-overlay`}>
-                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white block opacity-40">CINEMATIC STAGE</span>
-                <span className="text-4xl font-black text-white uppercase tracking-tighter block opacity-10">{type}</span>
+            {/* 800px Design Container - Absolute positioned like Preview */}
+            <div
+                className={`absolute transition-all duration-700 overflow-hidden ${isActive ? 'ring-[3px] ring-purple-500/50 z-20' : 'z-0 hover:opacity-50'}`}
+                style={{
+                    // CTO FIX: Use TOP-anchored positioning for consistent y-coordinates
+                    top: 0,
+                    width: 800,
+                    height: SECTION_HEIGHT,
+                    // Anchor to VIEWPORT edge
+                    [type]: 0,
+                    backgroundColor: orbit.backgroundColor || '#050505',
+                    backgroundImage: orbit.backgroundUrl ? `url(${orbit.backgroundUrl})` : 'none',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    // Scale from top corner
+                    transform: `scale(${editorScale})`,
+                    transformOrigin: type === 'left' ? 'left top' : 'right top',
+                }}
+            >
+                <div className={`absolute top-8 ${type === 'left' ? 'right-8 text-right' : 'left-8 text-left'} pointer-events-none mix-blend-overlay`}>
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white block opacity-40">CINEMATIC STAGE</span>
+                    <span className="text-4xl font-black text-white uppercase tracking-tighter block opacity-10">{type}</span>
+                </div>
+
+                <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-transparent to-black/40" />
+
+                {orbit.elements.map((element: Layer) => (
+                    <CanvasElement
+                        key={element.id}
+                        layer={element}
+                        isSelected={isActive && selectedLayerIds.includes(element.id)}
+                        onSelect={(isMulti) => {
+                            onSelect();
+                            onSelectLayer(element.id, !!isMulti);
+                        }}
+                        onContextMenu={(e) => onContextMenu(e, element.id)}
+                        onDimensionsDetected={(w, h) => {
+                            if ((element.width === 100 && element.height === 100) || (element.width === 200 && element.height === 200)) {
+                                onUpdateElement(element.id, { width: 300, height: 300 * (h / w) });
+                            }
+                        }}
+                        elementRef={(el: HTMLDivElement | null) => registerTarget(element.id, el)}
+                        updateLayer={(id, updates) => onUpdateElement(id, updates)}
+                    />
+                ))}
+
+                {/* Marquee Visual */}
+                {marquee && (
+                    <div className="absolute border border-purple-500 bg-purple-500/10 pointer-events-none z-[1000]"
+                        style={{
+                            left: Math.min(marquee.x1, marquee.x2),
+                            top: Math.min(marquee.y1, marquee.y2),
+                            width: Math.abs(marquee.x1 - marquee.x2),
+                            height: Math.abs(marquee.y1 - marquee.y2)
+                        }} />
+                )}
+
+                {/* MOVEABLE FOR ORBIT STAGE */}
+                {isActive && targets.length > 0 && (
+                    <Moveable
+                        {...({} as any)}
+                        target={targets}
+                        draggable={true}
+                        scalable={true}
+                        rotatable={true}
+                        snappable={true}
+                        keepRatio={true}
+                        elementGuidelines={[...targets]}
+                        snapGap={5}
+                        snapThreshold={5}
+                        isDisplaySnapDigit={false}
+                        snapElement={true}
+                        snapVertical={true}
+                        snapHorizontal={true}
+                        snapCenter={true}
+
+                        // Single Target Events
+                        onDrag={(e: OnDrag) => {
+                            const id = e.target.getAttribute('data-element-id');
+                            if (id) onUpdateElement(id, { x: e.left, y: e.top });
+                        }}
+                        onScale={(e: OnScale) => {
+                            const id = e.target.getAttribute('data-element-id');
+                            const scale = e.drag.transform.match(/scale\(([^)]+)\)/)?.[1];
+                            if (id && scale) onUpdateElement(id, { scale: parseFloat(scale) });
+                        }}
+                        onRotate={(e: OnRotate) => {
+                            const id = e.target.getAttribute('data-element-id');
+                            if (id) onUpdateElement(id, { rotation: e.rotate });
+                        }}
+
+                        // Group Events
+                        onDragGroup={(e: OnDragGroup) => {
+                            e.events.forEach((ev) => {
+                                const id = ev.target.getAttribute('data-element-id');
+                                if (id) onUpdateElement(id, { x: ev.left, y: ev.top });
+                            });
+                        }}
+                        onScaleGroup={(e: OnScaleGroup) => {
+                            e.events.forEach((ev) => {
+                                const id = ev.target.getAttribute('data-element-id');
+                                const scale = ev.drag.transform.match(/scale\(([^)]+)\)/)?.[1];
+                                if (id && scale) onUpdateElement(id, { scale: parseFloat(scale) });
+                            });
+                        }}
+                        onRotateGroup={(e: OnRotateGroup) => {
+                            e.events.forEach((ev) => {
+                                const id = ev.target.getAttribute('data-element-id');
+                                if (id) onUpdateElement(id, { rotation: ev.rotate });
+                            });
+                        }}
+
+                        className="custom-moveable"
+                    />
+                )}
+
+                {!isActive && (
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-[4px] pointer-events-none transition-opacity duration-700" />
+                )}
             </div>
-
-            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-transparent to-black/40" />
-
-            {orbit.elements.map((element: Layer) => (
-                <CanvasElement
-                    key={element.id}
-                    layer={element}
-                    isSelected={isActive && selectedLayerIds.includes(element.id)}
-                    onSelect={(isMulti) => {
-                        onSelect();
-                        onSelectLayer(element.id, !!isMulti);
-                    }}
-                    onContextMenu={() => { }}
-                    onDimensionsDetected={(w, h) => {
-                        if ((element.width === 100 && element.height === 100) || (element.width === 200 && element.height === 200)) {
-                            onUpdateElement(element.id, { width: 300, height: 300 * (h / w) });
-                        }
-                    }}
-                    elementRef={() => { }}
-                    updateLayer={(id, updates) => onUpdateElement(id, updates)}
-                />
-            ))}
-
-            {!isActive && (
-                <div className="absolute inset-0 bg-black/40 backdrop-blur-[4px] pointer-events-none transition-opacity duration-700" />
-            )}
-        </motion.div>
+        </div>
     );
 };

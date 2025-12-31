@@ -228,7 +228,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                         id: sanitizedData.id, // Set the real ID
                         projectName: sanitizedData.name || '',
                         activeSectionId: processedSections[0]?.id || null,
-                        orbit: sanitizedData.orbit || state.orbit,
+                        orbit: sanitizedData.orbit || useStore.getState().orbit,
                         selectedLayerId: null
                     });
                     console.log(`[Persistence] Hydrated ID: '${sanitizedData.id}' | Slug: '${sanitizedData.slug}' with sanitization.`);

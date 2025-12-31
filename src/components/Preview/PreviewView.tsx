@@ -671,10 +671,11 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                     {/* LEFT STAGE (Grid Column 1) - Desktop Only */}
                     {!isPortrait && (
                         <div
-                            className="h-full pointer-events-none overflow-hidden"
+                            className="h-screen sticky top-0 pointer-events-none overflow-hidden"
                             style={{
                                 gridColumn: 1,
-                                position: 'relative',
+                                position: 'sticky',
+                                top: 0,
                             }}
                         >
                             <PreviewOrbitStage
@@ -682,6 +683,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                                 config={orbit.left}
                                 scaleFactor={scaleFactor}
                                 isOpened={isOpened}
+                                coverHeight={coverHeight}
+                                isPortrait={isPortrait}
                                 overrideStyle={{
                                     width: '100%',
                                     height: '100%',
@@ -880,10 +883,11 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                     {/* RIGHT STAGE (Grid Column 3) - Desktop Only */}
                     {!isPortrait && (
                         <div
-                            className="h-full pointer-events-none overflow-hidden"
+                            className="h-screen sticky top-0 pointer-events-none overflow-hidden"
                             style={{
                                 gridColumn: 3,
-                                position: 'relative',
+                                position: 'sticky',
+                                top: 0,
                             }}
                         >
                             <PreviewOrbitStage
@@ -891,6 +895,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                                 config={orbit.right}
                                 scaleFactor={scaleFactor}
                                 isOpened={isOpened}
+                                coverHeight={coverHeight}
+                                isPortrait={isPortrait}
                                 overrideStyle={{
                                     width: '100%',
                                     height: '100%',
@@ -975,45 +981,78 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
         </AnimatePresence >
     );
 };
-// ============================================
-// PREVIEW ORBIT STAGE (Production Grade)
-// ============================================
+const DESIGN_ORBIT_WIDTH = 800;
+const DESIGN_ORBIT_HEIGHT = 896;
+
 const PreviewOrbitStage: React.FC<{
     type: 'left' | 'right',
     config: any,
     scaleFactor: number,
     isOpened: boolean,
-    overrideStyle?: React.CSSProperties
-}> = ({ type, config, scaleFactor, isOpened, overrideStyle }) => {
-    if (!config.isVisible) return null;
+    overrideStyle?: React.CSSProperties,
+    coverHeight: number,
+    isPortrait: boolean
+}> = ({ type, config, scaleFactor, isOpened, overrideStyle, coverHeight, isPortrait }) => {
+    if (!config || !config.isVisible) return null;
 
     return (
         <div
-            className={`fixed top-0 bottom-0 pointer-events-none transition-all duration-1000 ${isOpened ? 'opacity-100' : 'opacity-100'
+            className={`absolute inset-0 pointer-events-none transition-all duration-1000 ${isOpened ? 'opacity-100' : 'opacity-100'
                 }`}
             style={{
-                width: `calc(50vw - ${(CANVAS_WIDTH * scaleFactor) / 2}px)`,
                 [type]: 0,
-                backgroundColor: config.backgroundColor || 'transparent',
-                backgroundImage: config.backgroundUrl ? `url(${config.backgroundUrl})` : 'none',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                zIndex: 5,
-                overflow: 'hidden',
+                backgroundColor: isPortrait ? 'transparent' : 'transparent', // Background moves to inner design container
+                backgroundImage: 'none',
+                zIndex: isPortrait ? 100 : 5,
+                zIndex: isPortrait ? 100 : 5,
+                // On mobile, we want overflow visible so framing elements can overlap the central area
+                overflow: isPortrait ? 'visible' : 'hidden',
                 ...overrideStyle
             }}
         >
-            {/* Elements */}
-            <div className="absolute inset-0" style={{ transform: `scale(${scaleFactor})`, transformOrigin: type === 'left' ? 'right center' : 'left center' }}>
-                {(config.elements || []).map((element: any) => (
-                    <AnimatedLayer
-                        key={element.id}
-                        layer={element}
-                        adjustedY={element.y}
-                        isOpened={isOpened}
-                        forceTrigger={isOpened}
-                    />
-                ))}
+            {/* Elements Container - Standardized coordinate system matching editor (800px width) */}
+            <div
+                className="absolute"
+                style={{
+                    // CTO FIX: Use TOP-anchored positioning for consistent y-coordinates
+                    top: 0,
+                    width: DESIGN_ORBIT_WIDTH,
+                    height: isPortrait ? coverHeight : DESIGN_ORBIT_HEIGHT,
+                    // Background styling moved here for 1:1 Editor parity
+                    backgroundColor: isPortrait ? 'transparent' : (config.backgroundColor || '#050505'),
+                    backgroundImage: isPortrait ? 'none' : (config.backgroundUrl ? `url(${config.backgroundUrl})` : 'none'),
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    // Anchor to VIEWPORT edge
+                    [type]: 0,
+                    // Scale from top corner
+                    transform: `scale(${scaleFactor})`,
+                    transformOrigin: type === 'left' ? 'left top' : 'right top'
+                }}
+            >
+                {(config.elements || []).map((element: any) => {
+                    // Apply Liquid Layout for Orbit Stages (Enterprise standard)
+                    // This ensures framing elements distribute correctly on tall viewports
+                    let adjustedY = element.y;
+                    if (isPortrait) {
+                        const extraHeight = Math.max(0, coverHeight - 896); // Capped to prevent compression artifacts
+                        const elementHeight = element.height || element.size?.height || (element.textStyle?.fontSize) || 0;
+                        const maxTop = Math.max(1, 896 - elementHeight);
+                        const progress = Math.max(0, Math.min(1, element.y / maxTop));
+                        adjustedY = element.y + (extraHeight * progress);
+                    }
+
+                    return (
+                        <AnimatedLayer
+                            key={element.id}
+                            layer={element}
+                            adjustedY={adjustedY}
+                            isOpened={isOpened}
+                            isEditor={false}
+                            forceTrigger={isOpened}
+                        />
+                    );
+                })}
             </div>
         </div>
     );

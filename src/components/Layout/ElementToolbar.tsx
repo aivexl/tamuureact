@@ -374,10 +374,9 @@ export const ElementToolbar: React.FC<ElementToolbarProps> = ({ embedded = false
 
         if (activeCanvas === 'main') {
             defaultX = CANVAS_WIDTH / 2 - (defaults.width || 100) / 2;
-        } else if (activeCanvas === 'left') {
-            defaultX = -400; // Position to the left of the main canvas
-        } else if (activeCanvas === 'right') {
-            defaultX = 400; // Position to the right of the main canvas
+        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+            defaultX = 400 - (defaults.width || 100) / 2; // Center in 800px wide Orbit stage
+            defaultY = 450 - (defaults.height || 100) / 2; // Center in 900px high Orbit stage
         }
 
         const newLayer: Layer = {

@@ -129,6 +129,11 @@ export interface SectionsState {
     addOrbitElement: (canvas: 'left' | 'right', element: Layer) => void;
     removeOrbitElement: (canvas: 'left' | 'right', elementId: string) => void;
     updateOrbitElement: (canvas: 'left' | 'right', elementId: string, updates: Partial<Layer>) => void;
+    duplicateOrbitElement: (canvas: 'left' | 'right', elementId: string) => void;
+    bringOrbitElementToFront: (canvas: 'left' | 'right', elementId: string) => void;
+    sendOrbitElementToBack: (canvas: 'left' | 'right', elementId: string) => void;
+    moveOrbitElementUp: (canvas: 'left' | 'right', elementId: string) => void;
+    moveOrbitElementDown: (canvas: 'left' | 'right', elementId: string) => void;
 
     // Actions
     addSection: (section: Partial<Section>) => void;
@@ -149,6 +154,9 @@ export interface SectionsState {
     sendElementToBack: (sectionId: string, elementId: string) => void;
     moveElementUp: (sectionId: string, elementId: string) => void;
     moveElementDown: (sectionId: string, elementId: string) => void;
+    alignOrbitElements: (canvas: 'left' | 'right', elementIds: string[], alignment: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => void;
+    distributeOrbitElements: (canvas: 'left' | 'right', elementIds: string[], direction: 'horizontal' | 'vertical') => void;
+    matchOrbitSize: (canvas: 'left' | 'right', elementIds: string[], dimension: 'width' | 'height' | 'both') => void;
 
     // Figma-like Alignment Tools
     alignElements: (sectionId: string, elementIds: string[], alignment: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => void;
@@ -352,6 +360,109 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
             }
         }
     })),
+
+    duplicateOrbitElement: (canvas, elementId) => set((state) => {
+        const orbitCanvas = state.orbit[canvas];
+        const element = orbitCanvas.elements.find(el => el.id === elementId);
+        if (!element) return state;
+
+        const newElement = sanitizeLayer({
+            ...element,
+            id: generateId('layer'),
+            name: `${element.name} (Copy)`,
+            x: element.x + 20,
+            y: element.y + 20,
+            zIndex: Math.max(...orbitCanvas.elements.map(el => el.zIndex || 0), 10) + 1
+        });
+
+        return {
+            orbit: {
+                ...state.orbit,
+                [canvas]: {
+                    ...orbitCanvas,
+                    elements: [...orbitCanvas.elements, newElement]
+                }
+            }
+        };
+    }),
+
+    bringOrbitElementToFront: (canvas, elementId) => set((state) => {
+        const orbitCanvas = state.orbit[canvas];
+        const maxZ = Math.max(...orbitCanvas.elements.map(el => el.zIndex || 0), 0);
+        return {
+            orbit: {
+                ...state.orbit,
+                [canvas]: {
+                    ...orbitCanvas,
+                    elements: orbitCanvas.elements.map(el =>
+                        el.id === elementId ? { ...el, zIndex: maxZ + 1 } : el
+                    )
+                }
+            }
+        };
+    }),
+
+    sendOrbitElementToBack: (canvas, elementId) => set((state) => {
+        const orbitCanvas = state.orbit[canvas];
+        const minZ = Math.min(...orbitCanvas.elements.map(el => el.zIndex || 0), 0);
+        return {
+            orbit: {
+                ...state.orbit,
+                [canvas]: {
+                    ...orbitCanvas,
+                    elements: orbitCanvas.elements.map(el =>
+                        el.id === elementId ? { ...el, zIndex: minZ - 1 } : el
+                    )
+                }
+            }
+        };
+    }),
+
+    moveOrbitElementUp: (canvas, elementId) => set((state) => {
+        const orbitCanvas = state.orbit[canvas];
+        const sorted = [...orbitCanvas.elements].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
+        const idx = sorted.findIndex(el => el.id === elementId);
+        if (idx === -1 || idx === sorted.length - 1) return state;
+
+        const current = sorted[idx];
+        const next = sorted[idx + 1];
+        const tempZ = current.zIndex;
+        current.zIndex = next.zIndex;
+        next.zIndex = tempZ || 0;
+
+        return {
+            orbit: {
+                ...state.orbit,
+                [canvas]: {
+                    ...orbitCanvas,
+                    elements: [...sorted]
+                }
+            }
+        };
+    }),
+
+    moveOrbitElementDown: (canvas, elementId) => set((state) => {
+        const orbitCanvas = state.orbit[canvas];
+        const sorted = [...orbitCanvas.elements].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
+        const idx = sorted.findIndex(el => el.id === elementId);
+        if (idx <= 0) return state;
+
+        const current = sorted[idx];
+        const prev = sorted[idx - 1];
+        const tempZ = current.zIndex;
+        current.zIndex = prev.zIndex;
+        prev.zIndex = tempZ || 0;
+
+        return {
+            orbit: {
+                ...state.orbit,
+                [canvas]: {
+                    ...orbitCanvas,
+                    elements: [...sorted]
+                }
+            }
+        };
+    }),
 
     addSection: (sectionData) => set((state) => {
         const newId = generateId('section');
@@ -610,11 +721,12 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
         const elementsToAlign = section.elements.filter(el => elementIds.includes(el.id));
         if (elementsToAlign.length === 0) return state;
 
-        // Calculate bounds
-        const minX = Math.min(...elementsToAlign.map(el => el.x));
-        const maxX = Math.max(...elementsToAlign.map(el => el.x + (el.width || 0)));
-        const minY = Math.min(...elementsToAlign.map(el => el.y));
-        const maxY = Math.max(...elementsToAlign.map(el => el.y + (el.height || 0)));
+        // CTO LOGIC: If only one element, align to canvas bounds. Otherwise, align relative to selection.
+        const useCanvasBounds = elementIds.length === 1;
+        const minX = useCanvasBounds ? 0 : Math.min(...elementsToAlign.map(el => el.x));
+        const maxX = useCanvasBounds ? 414 : Math.max(...elementsToAlign.map(el => el.x + (el.width || 0)));
+        const minY = useCanvasBounds ? 0 : Math.min(...elementsToAlign.map(el => el.y));
+        const maxY = useCanvasBounds ? 896 : Math.max(...elementsToAlign.map(el => el.y + (el.height || 0)));
         const centerX = (minX + maxX) / 2;
         const centerY = (minY + maxY) / 2;
 
@@ -725,6 +837,124 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
                     })
                 };
             })
+        };
+    }),
+
+    alignOrbitElements: (canvas, elementIds, alignment) => set((state) => {
+        const orbitCanvas = state.orbit[canvas];
+        if (!orbitCanvas || elementIds.length < 1) return state;
+
+        const elementsToAlign = orbitCanvas.elements.filter(el => elementIds.includes(el.id));
+        if (elementsToAlign.length === 0) return state;
+
+        // CTO LOGIC: If only one element, align to canvas bounds (800x896 for Orbit). 
+        const useCanvasBounds = elementIds.length === 1;
+        const minX = useCanvasBounds ? 0 : Math.min(...elementsToAlign.map(el => el.x));
+        const maxX = useCanvasBounds ? 800 : Math.max(...elementsToAlign.map(el => el.x + (el.width || 0)));
+        const minY = useCanvasBounds ? 0 : Math.min(...elementsToAlign.map(el => el.y));
+        const maxY = useCanvasBounds ? 896 : Math.max(...elementsToAlign.map(el => el.y + (el.height || 0)));
+        const centerX = (minX + maxX) / 2;
+        const centerY = (minY + maxY) / 2;
+
+        return {
+            orbit: {
+                ...state.orbit,
+                [canvas]: {
+                    ...orbitCanvas,
+                    elements: orbitCanvas.elements.map(el => {
+                        if (!elementIds.includes(el.id)) return el;
+                        switch (alignment) {
+                            case 'left': return { ...el, x: minX };
+                            case 'center': return { ...el, x: centerX - (el.width || 0) / 2 };
+                            case 'right': return { ...el, x: maxX - (el.width || 0) };
+                            case 'top': return { ...el, y: minY };
+                            case 'middle': return { ...el, y: centerY - (el.height || 0) / 2 };
+                            case 'bottom': return { ...el, y: maxY - (el.height || 0) };
+                            default: return el;
+                        }
+                    })
+                }
+            }
+        };
+    }),
+
+    distributeOrbitElements: (canvas, elementIds, direction) => set((state) => {
+        const orbitCanvas = state.orbit[canvas];
+        if (!orbitCanvas || elementIds.length < 3) return state;
+
+        const elementsToDist = orbitCanvas.elements.filter(el => elementIds.includes(el.id));
+        if (elementsToDist.length < 3) return state;
+
+        if (direction === 'horizontal') {
+            const sorted = [...elementsToDist].sort((a, b) => a.x - b.x);
+            const startX = sorted[0].x;
+            const endX = sorted[sorted.length - 1].x;
+            const totalWidths = sorted.reduce((sum, el) => sum + (el.width || 0), 0);
+            const totalGap = (endX + (sorted[sorted.length - 1].width || 0)) - startX - totalWidths;
+            const gap = totalGap / (sorted.length - 1);
+
+            return {
+                orbit: {
+                    ...state.orbit,
+                    [canvas]: {
+                        ...orbitCanvas,
+                        elements: orbitCanvas.elements.map(el => {
+                            const sortedIdx = sorted.findIndex(sEl => sEl.id === el.id);
+                            if (sortedIdx === -1 || sortedIdx === 0 || sortedIdx === sorted.length - 1) return el;
+                            const prevElementsWidth = sorted.slice(0, sortedIdx).reduce((sum, e) => sum + (e.width || 0), 0);
+                            return { ...el, x: startX + prevElementsWidth + (gap * sortedIdx) };
+                        })
+                    }
+                }
+            };
+        } else {
+            const sorted = [...elementsToDist].sort((a, b) => a.y - b.y);
+            const startY = sorted[0].y;
+            const endY = sorted[sorted.length - 1].y;
+            const totalHeights = sorted.reduce((sum, el) => sum + (el.height || 0), 0);
+            const totalGap = (endY + (sorted[sorted.length - 1].height || 0)) - startY - totalHeights;
+            const gap = totalGap / (sorted.length - 1);
+
+            return {
+                orbit: {
+                    ...state.orbit,
+                    [canvas]: {
+                        ...orbitCanvas,
+                        elements: orbitCanvas.elements.map(el => {
+                            const sortedIdx = sorted.findIndex(sEl => sEl.id === el.id);
+                            if (sortedIdx === -1 || sortedIdx === 0 || sortedIdx === sorted.length - 1) return el;
+                            const prevElementsHeight = sorted.slice(0, sortedIdx).reduce((sum, e) => sum + (e.height || 0), 0);
+                            return { ...el, y: startY + prevElementsHeight + (gap * sortedIdx) };
+                        })
+                    }
+                }
+            };
+        }
+    }),
+
+    matchOrbitSize: (canvas, elementIds, dimension) => set((state) => {
+        const orbitCanvas = state.orbit[canvas];
+        if (!orbitCanvas || elementIds.length < 2) return state;
+
+        const elements = orbitCanvas.elements.filter(el => elementIds.includes(el.id));
+        const maxWidth = Math.max(...elements.map(el => el.width || 0));
+        const maxHeight = Math.max(...elements.map(el => el.height || 0));
+
+        return {
+            orbit: {
+                ...state.orbit,
+                [canvas]: {
+                    ...orbitCanvas,
+                    elements: orbitCanvas.elements.map(el => {
+                        if (!elementIds.includes(el.id)) return el;
+                        return {
+                            ...el,
+                            width: dimension === 'height' ? el.width : maxWidth,
+                            height: dimension === 'width' ? el.height : maxHeight
+                        };
+                    })
+                }
+            }
         };
     }),
 

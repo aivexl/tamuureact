@@ -4,6 +4,7 @@ import { useStore } from '@/store/useStore';
 import { Layer, AnimationType, TextStyle, CountdownConfig, ButtonConfig, ShapeConfig, IconStyle, RSVPWishesConfig, RSVPVariantId } from '@/store/layersSlice';
 import { generateId } from '@/lib/utils';
 import { RSVP_VARIANTS, DEFAULT_RSVP_WISHES_CONFIG } from '@/lib/rsvp-variants';
+import { SUPPORTED_FONTS } from '@/lib/fonts';
 
 import {
     AlignLeft, AlignCenter, AlignRight,
@@ -43,6 +44,16 @@ export const PropertyPanel: React.FC = () => {
         updateOrbitCanvas,
         updateOrbitElement,
         removeOrbitElement,
+        duplicateOrbitElement,
+        bringOrbitElementToFront,
+        sendOrbitElementToBack,
+        moveOrbitElementUp,
+        moveOrbitElementDown,
+        duplicateElementInSection,
+        bringElementToFront,
+        sendElementToBack,
+        moveElementUp,
+        moveElementDown,
         setActiveCanvas,
 
         pathEditingId,
@@ -120,27 +131,26 @@ export const PropertyPanel: React.FC = () => {
         if (!layer) return;
 
         if (activeCanvas === 'main' && activeSectionId) {
-            const newLayer = {
-                ...layer,
-                id: generateId('layer'),
-                name: `${layer.name} (Copy)`,
-                x: layer.x + 20,
-                y: layer.y + 20
-            };
-            useStore.getState().addElementToSection(activeSectionId, newLayer);
-            selectLayer(newLayer.id);
+            duplicateElementInSection(activeSectionId, layer.id);
         } else if (activeCanvas === 'left' || activeCanvas === 'right') {
-            const newLayer = {
-                ...layer,
-                id: generateId('layer'),
-                name: `${layer.name} (Copy)`,
-                x: layer.x + 20,
-                y: layer.y + 20
-            };
-            useStore.getState().addOrbitElement(activeCanvas, newLayer);
-            selectLayer(newLayer.id);
+            duplicateOrbitElement(activeCanvas, layer.id);
         } else {
             useStore.getState().duplicateLayer(layer.id);
+        }
+    };
+
+    const handleOrder = (direction: 'front' | 'back' | 'up' | 'down') => {
+        if (!layer) return;
+        if (activeCanvas === 'main' && activeSectionId) {
+            if (direction === 'front') bringElementToFront(activeSectionId, layer.id);
+            if (direction === 'back') sendElementToBack(activeSectionId, layer.id);
+            if (direction === 'up') moveElementUp(activeSectionId, layer.id);
+            if (direction === 'down') moveElementDown(activeSectionId, layer.id);
+        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+            if (direction === 'front') bringOrbitElementToFront(activeCanvas, layer.id);
+            if (direction === 'back') sendOrbitElementToBack(activeCanvas, layer.id);
+            if (direction === 'up') moveOrbitElementUp(activeCanvas, layer.id);
+            if (direction === 'down') moveOrbitElementDown(activeCanvas, layer.id);
         }
     };
 
@@ -544,6 +554,17 @@ export const PropertyPanel: React.FC = () => {
                 </div>
             );
         }
+
+        // Final fallback for !layer if no other return was hit
+        return (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4">
+                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-2">
+                    <MousePointer2 className="w-8 h-8 text-white/20" />
+                </div>
+                <h3 className="text-sm font-bold text-white/60">No Selection</h3>
+                <p className="text-xs text-white/30 leading-relaxed">Select an element or section to customize</p>
+            </div>
+        );
     }
 
     // REMOVED: Redundant handleUpdate function wrapper - used the one defined above
@@ -590,51 +611,62 @@ export const PropertyPanel: React.FC = () => {
             <div className="flex-1 overflow-y-auto premium-scroll p-4 space-y-6">
                 {/* Transform Section */}
                 <SectionComponent title="Transform" icon={<Move className="w-4 h-4" />}>
-                    {/* Alignment Tools - Figma Style */}
-                    <div className="grid grid-cols-6 gap-1 mb-4 p-1 bg-white/5 rounded-lg border border-white/5">
-                        <button onClick={() => handleAlignmentUpdate({ x: 0 })} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Left">
-                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-                                <rect x="3" y="4" width="2" height="16" rx="0.5" fill="currentColor" />
-                                <rect x="7" y="7" width="10" height="4" rx="1" fill="currentColor" opacity="0.5" />
-                                <rect x="7" y="13" width="6" height="4" rx="1" fill="currentColor" opacity="0.5" />
-                            </svg>
-                        </button>
-                        <button onClick={() => handleAlignmentUpdate({ x: (414 - (layer.width || 0)) / 2 })} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Center">
-                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-                                <rect x="11" y="4" width="2" height="16" rx="0.5" fill="currentColor" />
-                                <rect x="5" y="7" width="14" height="4" rx="1" fill="currentColor" opacity="0.5" />
-                                <rect x="7" y="13" width="10" height="4" rx="1" fill="currentColor" opacity="0.5" />
-                            </svg>
-                        </button>
-                        <button onClick={() => handleAlignmentUpdate({ x: 414 - (layer.width || 0) })} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Right">
-                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-                                <rect x="19" y="4" width="2" height="16" rx="0.5" fill="currentColor" />
-                                <rect x="7" y="7" width="10" height="4" rx="1" fill="currentColor" opacity="0.5" />
-                                <rect x="11" y="13" width="6" height="4" rx="1" fill="currentColor" opacity="0.5" />
-                            </svg>
-                        </button>
-                        <button onClick={() => handleAlignmentUpdate({ y: 0 })} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Top">
-                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-                                <rect x="4" y="3" width="16" height="2" rx="0.5" fill="currentColor" />
-                                <rect x="7" y="7" width="4" height="10" rx="1" fill="currentColor" opacity="0.5" />
-                                <rect x="13" y="7" width="4" height="6" rx="1" fill="currentColor" opacity="0.5" />
-                            </svg>
-                        </button>
-                        <button onClick={() => handleAlignmentUpdate({ y: (896 - (layer.height || 0)) / 2 })} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Middle">
-                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-                                <rect x="4" y="11" width="16" height="2" rx="0.5" fill="currentColor" />
-                                <rect x="7" y="5" width="4" height="14" rx="1" fill="currentColor" opacity="0.5" />
-                                <rect x="13" y="7" width="4" height="10" rx="1" fill="currentColor" opacity="0.5" />
-                            </svg>
-                        </button>
-                        <button onClick={() => handleAlignmentUpdate({ y: 896 - (layer.height || 0) })} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Bottom">
-                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-                                <rect x="4" y="19" width="16" height="2" rx="0.5" fill="currentColor" />
-                                <rect x="7" y="7" width="4" height="10" rx="1" fill="currentColor" opacity="0.5" />
-                                <rect x="13" y="11" width="4" height="6" rx="1" fill="currentColor" opacity="0.5" />
-                            </svg>
-                        </button>
-                    </div>
+                    {/* CTO COMPUTE: Use correct design dimensions based on active canvas context */}
+                    {(() => {
+                        const isOrbit = activeCanvas === 'left' || activeCanvas === 'right';
+                        const designWidth = isOrbit ? 800 : 414;
+                        const designHeight = 896;
+
+                        return (
+                            <>
+                                {/* Alignment Tools - Figma Style */}
+                                <div className="grid grid-cols-6 gap-1 mb-4 p-1 bg-white/5 rounded-lg border border-white/5">
+                                    <button onClick={() => handleAlignmentUpdate({ x: 0 })} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Left">
+                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                                            <rect x="3" y="4" width="2" height="16" rx="0.5" fill="currentColor" />
+                                            <rect x="7" y="7" width="10" height="4" rx="1" fill="currentColor" opacity="0.5" />
+                                            <rect x="7" y="13" width="6" height="4" rx="1" fill="currentColor" opacity="0.5" />
+                                        </svg>
+                                    </button>
+                                    <button onClick={() => handleAlignmentUpdate({ x: (designWidth - (layer.width || 0)) / 2 })} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Center">
+                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                                            <rect x="11" y="4" width="2" height="16" rx="0.5" fill="currentColor" />
+                                            <rect x="5" y="7" width="14" height="4" rx="1" fill="currentColor" opacity="0.5" />
+                                            <rect x="7" y="13" width="10" height="4" rx="1" fill="currentColor" opacity="0.5" />
+                                        </svg>
+                                    </button>
+                                    <button onClick={() => handleAlignmentUpdate({ x: designWidth - (layer.width || 0) })} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Right">
+                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                                            <rect x="19" y="4" width="2" height="16" rx="0.5" fill="currentColor" />
+                                            <rect x="7" y="7" width="10" height="4" rx="1" fill="currentColor" opacity="0.5" />
+                                            <rect x="11" y="13" width="6" height="4" rx="1" fill="currentColor" opacity="0.5" />
+                                        </svg>
+                                    </button>
+                                    <button onClick={() => handleAlignmentUpdate({ y: 0 })} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Top">
+                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                                            <rect x="4" y="3" width="16" height="2" rx="0.5" fill="currentColor" />
+                                            <rect x="7" y="7" width="4" height="10" rx="1" fill="currentColor" opacity="0.5" />
+                                            <rect x="13" y="7" width="4" height="6" rx="1" fill="currentColor" opacity="0.5" />
+                                        </svg>
+                                    </button>
+                                    <button onClick={() => handleAlignmentUpdate({ y: (designHeight - (layer.height || 0)) / 2 })} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Middle">
+                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                                            <rect x="4" y="11" width="16" height="2" rx="0.5" fill="currentColor" />
+                                            <rect x="7" y="5" width="4" height="14" rx="1" fill="currentColor" opacity="0.5" />
+                                            <rect x="13" y="7" width="4" height="10" rx="1" fill="currentColor" opacity="0.5" />
+                                        </svg>
+                                    </button>
+                                    <button onClick={() => handleAlignmentUpdate({ y: designHeight - (layer.height || 0) })} className="p-1.5 rounded hover:bg-white/10 text-white/60 hover:text-white flex justify-center" title="Align Bottom">
+                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                                            <rect x="4" y="19" width="16" height="2" rx="0.5" fill="currentColor" />
+                                            <rect x="7" y="7" width="4" height="10" rx="1" fill="currentColor" opacity="0.5" />
+                                            <rect x="13" y="11" width="4" height="6" rx="1" fill="currentColor" opacity="0.5" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </>
+                        );
+                    })()}
 
                     <div className="grid grid-cols-2 gap-3">
                         <NumberInput label="X" value={layer.x} onChange={(v) => handleUpdate({ x: v })} />
@@ -809,15 +841,8 @@ export const PropertyPanel: React.FC = () => {
                                 <SelectInput
                                     label="Font Family"
                                     value={layer.textStyle?.fontFamily || 'Outfit'}
-                                    options={[
-                                        { value: 'Outfit', label: 'Outfit' },
-                                        { value: 'Inter', label: 'Inter' },
-                                        { value: 'Playfair Display', label: 'Playfair Display' },
-                                        { value: 'Montserrat', label: 'Montserrat' },
-                                        { value: 'Lora', label: 'Lora' },
-                                        { value: 'Dancing Script', label: 'Dancing Script' },
-                                        { value: 'Great Vibes', label: 'Great Vibes' }
-                                    ]}
+                                    options={SUPPORTED_FONTS.map(f => ({ value: f.name, label: f.name }))}
+                                    isFontPicker
                                     onChange={(v) => handleUpdate({ textStyle: { ...layer.textStyle!, fontFamily: v } })}
                                 />
 
@@ -2792,7 +2817,7 @@ export const PropertyPanel: React.FC = () => {
                     <div className="grid grid-cols-4 gap-2">
                         <motion.button
                             whileTap={{ scale: 0.95 }}
-                            onClick={() => bringToFront(layer.id)}
+                            onClick={() => handleOrder('front')}
                             className="p-2 bg-white/5 rounded-lg text-white/60 hover:bg-white/10 flex items-center justify-center"
                             title="Bring to Front"
                         >
@@ -2800,21 +2825,23 @@ export const PropertyPanel: React.FC = () => {
                         </motion.button>
                         <motion.button
                             whileTap={{ scale: 0.95 }}
-                            onClick={() => handleUpdate({ zIndex: (layer.zIndex || 0) + 1 })}
+                            onClick={() => handleOrder('up')}
                             className="p-2 bg-white/5 rounded-lg text-white/60 hover:bg-white/10 flex items-center justify-center"
+                            title="Bring Forward"
                         >
                             <ChevronUp className="w-4 h-4" />
                         </motion.button>
                         <motion.button
                             whileTap={{ scale: 0.95 }}
-                            onClick={() => handleUpdate({ zIndex: Math.max(0, (layer.zIndex || 0) - 1) })}
+                            onClick={() => handleOrder('down')}
                             className="p-2 bg-white/5 rounded-lg text-white/60 hover:bg-white/10 flex items-center justify-center"
+                            title="Send Backward"
                         >
                             <ChevronDown className="w-4 h-4" />
                         </motion.button>
                         <motion.button
                             whileTap={{ scale: 0.95 }}
-                            onClick={() => sendToBack(layer.id)}
+                            onClick={() => handleOrder('back')}
                             className="p-2 bg-white/5 rounded-lg text-white/60 hover:bg-white/10 flex items-center justify-center"
                             title="Send to Back"
                         >
@@ -2873,17 +2900,33 @@ const NumberInput: React.FC<{
     </div>
 );
 
-const SelectInput: React.FC<{ label: string; value: string; options: { value: string; label: string }[]; onChange: (v: string) => void }> = ({ label, value, options, onChange }) => (
+const SelectInput: React.FC<{
+    label: string;
+    value: string;
+    options: { value: string; label: string }[];
+    onChange: (v: string) => void;
+    isFontPicker?: boolean;
+}> = ({ label, value, options, onChange, isFontPicker }) => (
     <div>
         <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">{label}</label>
         <select
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none appearance-none"
+            className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none appearance-none cursor-pointer"
         >
-            {options.map(opt => (
-                <option key={opt.value} value={opt.value} className="bg-[#1a1a1a]">{opt.label}</option>
-            ))}
+            {options.map(opt => {
+                const fontConfig = isFontPicker ? SUPPORTED_FONTS.find(f => f.name === opt.value) : null;
+                return (
+                    <option
+                        key={opt.value}
+                        value={opt.value}
+                        className="bg-[#1a1a1a]"
+                        style={isFontPicker && fontConfig ? { fontFamily: fontConfig.family } : {}}
+                    >
+                        {opt.label}
+                    </option>
+                );
+            })}
         </select>
     </div>
 );

@@ -86,7 +86,7 @@ export const PreviewPage: React.FC = () => {
                         slug: data.slug || '',
                         projectName: data.name || '',
                         activeSectionId: validSections[0]?.id || null,
-                        orbit: data.orbit || state.orbit,
+                        orbit: data.orbit || useStore.getState().orbit,
                         selectedLayerId: null
                     });
                 } else {

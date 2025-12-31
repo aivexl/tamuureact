@@ -1,11 +1,23 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { EditorPage } from './pages/EditorPage';
 import { PreviewPage } from './pages/PreviewPage';
 import { AdminTemplatesPage } from './pages/AdminTemplatesPage';
 import { HomePage } from './pages/HomePage';
+import { GOOGLE_FONTS_URL } from './lib/fonts';
 
 const App: React.FC = () => {
+    useEffect(() => {
+        // Dynamically inject Google Fonts for all 200 fonts
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = GOOGLE_FONTS_URL;
+        document.head.appendChild(link);
+        return () => {
+            document.head.removeChild(link);
+        };
+    }, []);
+
     return (
         <BrowserRouter>
             <Routes>
