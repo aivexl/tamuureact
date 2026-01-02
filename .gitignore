@@ -5,6 +5,9 @@ node_modules/
 dist/
 dist-ssr/
 *.local
+.turbo/
+apps/**/dist/
+apps/**/.next/
 
 # logs
 npm-debug.log*
@@ -13,7 +16,9 @@ yarn-error.log*
 *.log
 
 # env
-
+.env
+.env.local
+.env.*.local
 
 # misc
 .vscode/
@@ -22,12 +27,15 @@ yarn-error.log*
 search_results.txt
 admin_typecheck.log
 typecheck.log
+*.timestamp-*.mjs
 
 # Large model files
 *.onnx
 *.wasm
 public/imgly/
+apps/**/public/imgly/
 
 # Large folders
 .wrangler/
 tamuu-legacy/
+node_modules/

@@ -6,9 +6,25 @@
 
 export default {
     async fetch(request, env, ctx) {
+        const url = new URL(request.url);
+
         // Handle CORS preflight
         if (request.method === 'OPTIONS') {
             return new Response(null, { headers: corsHeaders() });
+        }
+
+        // Handle R2 Serving (Internal fetch for Image Resizing)
+        if (url.pathname.includes('/r2/')) {
+            const key = url.pathname.split('/r2/')[1];
+            const object = await env.R2_BUCKET.get(key);
+            if (!object) return new Response('Not Found', { status: 404 });
+
+            return new Response(object.body, {
+                headers: {
+                    'Content-Type': object.httpMetadata?.contentType || 'image/png',
+                    'Cache-Control': 'public, max-age=3600'
+                }
+            });
         }
 
         if (request.method !== 'POST') {

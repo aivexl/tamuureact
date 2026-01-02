@@ -1,0 +1,9 @@
+{
+    "name": "@tamuu/config",
+    "version": "0.0.0",
+    "private": true,
+    "files": [
+        "tailwind",
+        "typescript"
+    ]
+}

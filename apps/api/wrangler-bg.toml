@@ -2,10 +2,10 @@ name = "bg-remover"
 main = "bg-remover-worker.js"
 compatibility_date = "2024-01-01"
 
-# Route through tamuu.id for Image Transformations to work
+# Custom Domain for API
 [[routes]]
-pattern = "tamuu.id/api/bg-remover/*"
-zone_name = "tamuu.id"
+pattern = "api.tamuu.id"
+custom_domain = true
 
 # R2 bucket for temporary image storage
 [[r2_buckets]]

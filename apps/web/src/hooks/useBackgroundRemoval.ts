@@ -11,8 +11,8 @@
 
 import { useState, useCallback, useRef } from 'react';
 
-// Worker URL - using workers.dev domain while tamuu.id DNS propagates
-const WORKER_URL = import.meta.env.VITE_BG_REMOVER_URL || 'https://bg-remover.shafania57.workers.dev';
+// Worker URL
+const WORKER_URL = import.meta.env.VITE_BG_REMOVER_URL || 'https://api.tamuu.id';
 
 interface UseBackgroundRemovalReturn {
     processImage: (file: File) => Promise<void>;

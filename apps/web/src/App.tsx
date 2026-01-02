@@ -3,9 +3,11 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { EditorPage } from './pages/EditorPage';
 import { PreviewPage } from './pages/PreviewPage';
 import { AdminTemplatesPage } from './pages/AdminTemplatesPage';
-import { HomePage } from './pages/HomePage';
+import { LandingPage } from './pages/LandingPage';
+import { DashboardPage } from './pages/DashboardPage';
 import { BackgroundRemoverPage } from './pages/BackgroundRemoverPage';
 import { GOOGLE_FONTS_URL } from './lib/fonts';
+import { MainLayout } from './components/Layout/MainLayout';
 
 const App: React.FC = () => {
     useEffect(() => {
@@ -22,8 +24,11 @@ const App: React.FC = () => {
     return (
         <BrowserRouter>
             <Routes>
-                {/* Home */}
-                <Route path="/" element={<HomePage />} />
+                {/* Public Landing */}
+                <Route path="/" element={<MainLayout><LandingPage /></MainLayout>} />
+
+                {/* Dashboard / Developer Panel */}
+                <Route path="/admin/dashboard" element={<MainLayout><DashboardPage /></MainLayout>} />
 
                 {/* Editor Routes */}
                 <Route path="/editor" element={<EditorPage />} />
@@ -31,10 +36,10 @@ const App: React.FC = () => {
                 <Route path="/editor/template/:id" element={<EditorPage isTemplate={true} />} />
 
                 {/* Admin Routes */}
-                <Route path="/admin/templates" element={<AdminTemplatesPage />} />
+                <Route path="/admin/templates" element={<MainLayout><AdminTemplatesPage /></MainLayout>} />
 
                 {/* Tools */}
-                <Route path="/tools/background-remover" element={<BackgroundRemoverPage />} />
+                <Route path="/tools/background-remover" element={<MainLayout><BackgroundRemoverPage /></MainLayout>} />
 
                 {/* Preview Routes */}
                 <Route path="/preview/:slug" element={<PreviewPage />} />

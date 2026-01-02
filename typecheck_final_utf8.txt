@@ -1,2 +1,0 @@
-﻿src/components/Panels/PropertyPanel.tsx(1360,46): error TS18048: 'layer.photoGridConfig' is possibly 'undefined'.
-src/components/Panels/PropertyPanel.tsx(1361,59): error TS18048: 'layer.photoGridConfig' is possibly 'undefined'.
