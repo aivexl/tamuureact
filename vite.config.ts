@@ -9,4 +9,11 @@ export default defineConfig({
       '@': '/src',
     },
   },
+  server: {
+    headers: {
+      // Enable Cross-Origin Isolation for WASM multi-threading
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+    },
+  },
 })

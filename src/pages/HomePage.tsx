@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Sparkles, Layout, Eye, ArrowRight } from 'lucide-react';
+import { Sparkles, Layout, Eye, ArrowRight, Scissors } from 'lucide-react';
 
 export const HomePage: React.FC = () => {
     return (
@@ -77,6 +77,33 @@ export const HomePage: React.FC = () => {
                             <div className="flex items-center gap-2 text-white/60 text-sm font-medium group-hover:gap-3 group-hover:text-white transition-all">
                                 <span>View Preview</span>
                                 <ArrowRight className="w-4 h-4" />
+                            </div>
+                        </motion.div>
+                    </Link>
+                </motion.div>
+
+                {/* Tools Section */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6, duration: 0.6 }}
+                    className="mt-6 w-full max-w-2xl"
+                >
+                    <Link to="/tools/background-remover">
+                        <motion.div
+                            whileHover={{ scale: 1.02, y: -4 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="group p-6 rounded-2xl bg-gradient-to-r from-purple-500/20 via-pink-500/10 to-orange-500/20 border border-purple-500/30 hover:border-purple-500/60 transition-all cursor-pointer"
+                        >
+                            <div className="flex items-center gap-4">
+                                <Scissors className="w-8 h-8 text-purple-400" />
+                                <div className="flex-1">
+                                    <h3 className="text-xl font-semibold text-white">Background Remover</h3>
+                                    <p className="text-white/50 text-sm">
+                                        AI-powered background removal • 100% private
+                                    </p>
+                                </div>
+                                <ArrowRight className="w-5 h-5 text-purple-400 group-hover:translate-x-1 transition-transform" />
                             </div>
                         </motion.div>
                     </Link>

@@ -4,6 +4,7 @@ import { EditorPage } from './pages/EditorPage';
 import { PreviewPage } from './pages/PreviewPage';
 import { AdminTemplatesPage } from './pages/AdminTemplatesPage';
 import { HomePage } from './pages/HomePage';
+import { BackgroundRemoverPage } from './pages/BackgroundRemoverPage';
 import { GOOGLE_FONTS_URL } from './lib/fonts';
 
 const App: React.FC = () => {
@@ -31,6 +32,9 @@ const App: React.FC = () => {
 
                 {/* Admin Routes */}
                 <Route path="/admin/templates" element={<AdminTemplatesPage />} />
+
+                {/* Tools */}
+                <Route path="/tools/background-remover" element={<BackgroundRemoverPage />} />
 
                 {/* Preview Routes */}
                 <Route path="/preview/:slug" element={<PreviewPage />} />

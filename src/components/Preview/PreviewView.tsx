@@ -1004,7 +1004,6 @@ const PreviewOrbitStage: React.FC<{
                 backgroundColor: isPortrait ? 'transparent' : 'transparent', // Background moves to inner design container
                 backgroundImage: 'none',
                 zIndex: isPortrait ? 100 : 5,
-                zIndex: isPortrait ? 100 : 5,
                 // On mobile, we want overflow visible so framing elements can overlap the central area
                 overflow: isPortrait ? 'visible' : 'hidden',
                 ...overrideStyle

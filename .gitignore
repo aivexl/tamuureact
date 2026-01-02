@@ -13,9 +13,7 @@ yarn-error.log*
 *.log
 
 # env
-.env
-.env.production
-.env.local
+
 
 # misc
 .vscode/
@@ -24,3 +22,12 @@ yarn-error.log*
 search_results.txt
 admin_typecheck.log
 typecheck.log
+
+# Large model files
+*.onnx
+*.wasm
+public/imgly/
+
+# Large folders
+.wrangler/
+tamuu-legacy/
