@@ -1,84 +1,86 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, Instagram, Twitter, Mail, ArrowRight } from 'lucide-react';
+import { Sparkles, Instagram, Twitter, Facebook, Mail, Phone, MapPin } from 'lucide-react';
 
 export const Footer: React.FC = () => {
     return (
-        <footer className="bg-white border-t border-gray-100 pt-20 pb-10">
-            <div className="max-w-7xl mx-auto px-6">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+        <footer className="bg-[#0A1128] pt-20 pb-10 px-6 border-t border-white/5">
+            <div className="max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 xl:gap-12 mb-16">
                     {/* Brand */}
-                    <div className="col-span-1 md:col-span-1">
-                        <Link to="/" className="flex items-center gap-2 mb-6">
-                            <div className="w-8 h-8 rounded-lg bg-premium-accent flex items-center justify-center">
-                                <Sparkles className="w-4 h-4 text-white" />
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-[#FFBF00] rounded-2xl flex items-center justify-center shadow-lg shadow-[#FFBF00]/20">
+                                <Sparkles className="w-7 h-7 text-[#0A1128]" />
                             </div>
-                            <span className="text-xl font-bold text-gray-900">
-                                Tamuu<span className="text-premium-accent">.</span>
-                            </span>
-                        </Link>
-                        <p className="text-gray-500 text-sm leading-relaxed mb-6">
-                            Platform undangan digital hiper-interaktif tercanggih untuk momen spesial Anda. Buat, kustomisasi, dan bagikan dalam hitungan menit.
+                            <span className="text-3xl font-black text-white tracking-tighter">Tamuu</span>
+                        </div>
+                        <p className="text-slate-400 text-sm leading-relaxed font-medium">
+                            Platform undangan digital tercanggih di Indonesia. Menghadirkan kemewahan dan kemudahan dalam setiap momen berharga Anda.
                         </p>
-                        <div className="flex gap-4">
-                            <a href="#" className="w-10 h-10 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-premium-accent hover:border-premium-accent transition-all">
-                                <Instagram className="w-4 h-4" />
+                        <div className="flex items-center gap-4">
+                            <a href="#" className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-slate-400 hover:text-[#FFBF00] hover:bg-white/10 transition-all duration-300 border border-white/5">
+                                <Instagram className="w-5 h-5" />
                             </a>
-                            <a href="#" className="w-10 h-10 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-premium-accent hover:border-premium-accent transition-all">
-                                <Twitter className="w-4 h-4" />
+                            <a href="#" className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-slate-400 hover:text-[#FFBF00] hover:bg-white/10 transition-all duration-300 border border-white/5">
+                                <Twitter className="w-5 h-5" />
                             </a>
-                            <a href="#" className="w-10 h-10 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-premium-accent hover:border-premium-accent transition-all">
-                                <Mail className="w-4 h-4" />
+                            <a href="#" className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-slate-400 hover:text-[#FFBF00] hover:bg-white/10 transition-all duration-300 border border-white/5">
+                                <Facebook className="w-5 h-5" />
                             </a>
                         </div>
                     </div>
 
-                    {/* Links */}
+                    {/* Platform Links */}
                     <div>
-                        <h4 className="font-bold text-gray-900 mb-6">Produk</h4>
-                        <ul className="space-y-4 text-sm text-gray-500 font-medium">
-                            <li><Link to="/editor" className="hover:text-premium-accent">Editor Visual</Link></li>
-                            <li><Link to="/tools/background-remover" className="hover:text-premium-accent">AI Background Remover</Link></li>
-                            <li><a href="#" className="hover:text-premium-accent">Template Gallery</a></li>
-                            <li><a href="#" className="hover:text-premium-accent">Fitur Premium</a></li>
+                        <h4 className="text-[#FFBF00] font-black uppercase tracking-widest text-xs mb-8">Platform</h4>
+                        <ul className="space-y-4">
+                            <li><Link to="/" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">Beranda</Link></li>
+                            <li><Link to="/admin/templates" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">Undangan</Link></li>
+                            <li><a href="#features" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">Fitur</a></li>
+                            <li><a href="#pricing" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">Harga</a></li>
                         </ul>
                     </div>
 
+                    {/* Help Links */}
                     <div>
-                        <h4 className="font-bold text-gray-900 mb-6">Dukungan</h4>
-                        <ul className="space-y-4 text-sm text-gray-500 font-medium">
-                            <li><a href="#" className="hover:text-premium-accent">Pusat Bantuan</a></li>
-                            <li><a href="#" className="hover:text-premium-accent">Panduan Desain</a></li>
-                            <li><a href="#" className="hover:text-premium-accent">Kontak Kami</a></li>
-                            <li><a href="#" className="hover:text-premium-accent">API Documentation</a></li>
+                        <h4 className="text-[#FFBF00] font-black uppercase tracking-widest text-xs mb-8">Bantuan</h4>
+                        <ul className="space-y-4">
+                            <li><a href="#" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">Pusat Bantuan</a></li>
+                            <li><a href="#" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">Syarat & Ketentuan</a></li>
+                            <li><a href="#" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">Kebijakan Privasi</a></li>
+                            <li><a href="#" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">Kontak Kami</a></li>
                         </ul>
                     </div>
 
-                    {/* Newsletter */}
+                    {/* Contact Info */}
                     <div>
-                        <h4 className="font-bold text-gray-900 mb-6">Stay Updated</h4>
-                        <p className="text-gray-500 text-sm mb-4">Dapatkan tips desain dan info diskon terbaru.</p>
-                        <div className="relative">
-                            <input
-                                type="email"
-                                placeholder="Email Anda"
-                                className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-premium-accent/20 focus:border-premium-accent transition-all"
-                            />
-                            <button className="absolute right-2 top-2 w-8 h-8 rounded-lg bg-premium-accent flex items-center justify-center text-white">
-                                <ArrowRight className="w-4 h-4" />
-                            </button>
-                        </div>
+                        <h4 className="text-[#FFBF00] font-black uppercase tracking-widest text-xs mb-8">Hubungi Kami</h4>
+                        <ul className="space-y-4">
+                            <li className="flex items-center gap-3 text-slate-400 group">
+                                <Mail className="w-4 h-4 text-[#FFBF00] flex-shrink-0" />
+                                <span className="text-xs font-bold uppercase tracking-tight break-all">support@tamuu.pages.dev</span>
+                            </li>
+                            <li className="flex items-center gap-3 text-slate-400">
+                                <Phone className="w-4 h-4 text-[#FFBF00]" />
+                                <span className="text-xs font-bold uppercase tracking-tight">+62 812 3456 7890</span>
+                            </li>
+                            <li className="flex items-start gap-3 text-slate-400">
+                                <MapPin className="w-4 h-4 text-[#FFBF00] mt-1" />
+                                <span className="text-xs font-bold uppercase tracking-tight">Jakarta Selatan, Indonesia</span>
+                            </li>
+                        </ul>
                     </div>
                 </div>
 
-                <div className="pt-10 border-t border-gray-50 flex flex-col md:flex-row items-center justify-between gap-6">
-                    <p className="text-sm text-gray-400 font-medium">
-                        © 2024 Tamuu Studio. Dipersembahkan dengan ❤️ di Indonesia.
+                <div className="h-[1px] w-full bg-white/5 mb-10" />
+
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+                    <p className="text-slate-500 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-center sm:text-left">
+                        &copy; 2025 Tamuu.pages.dev. All rights reserved.
                     </p>
-                    <div className="flex gap-8 text-xs text-gray-400 font-medium tracking-wide font-sans">
-                        <a href="#" className="hover:text-gray-900">PRIVACY POLICY</a>
-                        <a href="#" className="hover:text-gray-900">TERMS OF SERVICE</a>
-                        <a href="#" className="hover:text-gray-900">COOKIES</a>
+                    <div className="flex items-center gap-8">
+                        <span className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">Crafted by Unicorn Team</span>
                     </div>
                 </div>
             </div>
