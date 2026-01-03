@@ -331,7 +331,10 @@ export const DashboardPage: React.FC = () => {
                                                 </div>
                                                 <h4 className="text-2xl font-bold mb-4">Ganti ke Priority</h4>
                                                 <p className="text-slate-400 mb-8 leading-relaxed text-sm">Buka semua fitur mewah, domain kustom, dan kapasitas tamu tanpa batas.</p>
-                                                <button className="mt-auto w-full py-4 bg-teal-500 hover:bg-teal-400 text-slate-900 font-black rounded-2xl transition-all shadow-lg shadow-teal-500/20 active:scale-95">LIHAT PAKET</button>
+                                                <Link to="/onboarding" className="inline-flex items-center gap-2 px-8 py-4 bg-teal-600 text-white font-bold rounded-2xl hover:bg-teal-700 transition-all shadow-xl shadow-teal-600/20 active:scale-95">
+                                                    <PlusIcon className="w-5 h-5" />
+                                                    Mulai Buat Undangan Pertama
+                                                </Link>
                                             </div>
                                         </div>
                                     </div>

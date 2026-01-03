@@ -30,6 +30,7 @@ const BackgroundRemoverPage = lazy(() => import('./pages/BackgroundRemoverPage')
 const PreviewPage = lazy(() => import('./pages/PreviewPage').then(m => ({ default: m.PreviewPage })));
 const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
 const GuestManagementPage = lazy(() => import('./pages/GuestManagementPage').then(m => ({ default: m.GuestManagementPage })));
+const OnboardingPage = lazy(() => import('./pages/OnboardingPage').then(m => ({ default: m.OnboardingPage })));
 
 const LoadingFallback = () => (
     <div className="min-h-screen bg-[#0A1128] flex flex-col items-center justify-center gap-4">
@@ -46,7 +47,9 @@ const App: React.FC = () => {
         // Optimization: Detect if we are on landing/store or in the heavy app
         const isAppPath = window.location.pathname.startsWith('/editor') ||
             window.location.pathname.startsWith('/admin') ||
+            window.location.pathname.startsWith('/onboarding') ||
             window.location.pathname.startsWith('/tools') ||
+            window.location.pathname.startsWith('/guests') ||
             window.location.pathname.startsWith('/profile');
 
         // Only inject dynamic stylesheet if we are in the heavy app (editor/admin)
@@ -104,6 +107,7 @@ const App: React.FC = () => {
                                 <Route path="/tools/background-remover" element={<MainLayout><BackgroundRemoverPage /></MainLayout>} />
 
                                 {/* Guest Management */}
+                                <Route path="/onboarding" element={<OnboardingPage />} />
                                 <Route path="/guests" element={<GuestManagementPage />} />
                                 <Route path="/guests/:invitationId" element={<GuestManagementPage />} />
                             </>
