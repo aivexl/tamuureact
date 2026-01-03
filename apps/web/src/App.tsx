@@ -5,6 +5,7 @@ import { PreviewPage } from './pages/PreviewPage';
 import { AdminTemplatesPage } from './pages/AdminTemplatesPage';
 import { LandingPage } from './pages/LandingPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { InvitationsStorePage } from './pages/InvitationsStorePage';
 import { BackgroundRemoverPage } from './pages/BackgroundRemoverPage';
 import { GOOGLE_FONTS_URL } from './lib/fonts';
 import { MainLayout } from './components/Layout/MainLayout';
@@ -29,6 +30,9 @@ const App: React.FC = () => {
 
                 {/* Dashboard / Developer Panel */}
                 <Route path="/admin/dashboard" element={<MainLayout><DashboardPage /></MainLayout>} />
+
+                {/* Public Store */}
+                <Route path="/invitations" element={<MainLayout><InvitationsStorePage /></MainLayout>} />
 
                 {/* Editor Routes */}
                 <Route path="/editor" element={<EditorPage />} />

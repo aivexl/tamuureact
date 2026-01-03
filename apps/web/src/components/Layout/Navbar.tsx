@@ -29,7 +29,7 @@ export const Navbar: React.FC = () => {
 
     const navLinks = [
         { name: 'Home', path: '/' },
-        { name: 'Invitations', path: '/admin/templates' },
+        { name: 'Invitations', path: '/invitations' },
         { name: 'Fitur', path: '/#features' },
         { name: 'Harga', path: '/#pricing' },
     ];
