@@ -11,49 +11,49 @@ import {
 import { Link } from 'react-router-dom';
 
 // ============================================
-// TESTIMONIALS DATA (PRESERVED)
+// TESTIMONIALS DATA - Wedding Invitation Users
 // ============================================
 const testimonials = [
     {
-        name: "Elias Decker",
-        role: "Event Organizer",
-        content: "Undangan Tamuu Studio membantu saya memberikan pengalaman berkelas untuk klien. Dashboard editornya sangat intuitif dan hasilnya selalu memukau. Klien saya naik 140% sejak pakai platform ini.",
-        avatar: "https://i.pravatar.cc/150?u=elias",
+        name: "Rina & Andi",
+        role: "Pasangan Pengantin",
+        content: "Undangan digital dari Tamuu benar-benar memukau! Tamu-tamu kami kagum dengan desainnya yang elegan. Fitur RSVP sangat membantu kami menghitung jumlah tamu dengan akurat.",
+        avatar: "https://i.pravatar.cc/150?u=rina",
         rating: 5
     },
     {
-        name: "Marcus Rodriguez",
-        role: "Wedding Photographer",
-        content: "Platform ini memberikan sisi kreatif yang tidak terbatas. Visualisasinya sangat pas untuk audiens saya, dan presisi desainnya tak tertandingi oleh kompetitor lain.",
-        avatar: "https://i.pravatar.cc/150?u=marcus",
+        name: "Dewi Anggraini",
+        role: "Ibu Mempelai",
+        content: "Awalnya ragu pakai undangan digital, tapi setelah lihat hasilnya, saya sangat puas! Tamu-tamu langsung bisa konfirmasi kehadiran dan kirim ucapan. Praktis sekali!",
+        avatar: "https://i.pravatar.cc/150?u=dewi",
         rating: 5
     },
     {
-        name: "Jade Thompson",
-        role: "Digital Artist",
-        content: "Sebagai konten kreator, saya butuh platform yang bisa dipercaya. AI background remover di sini benar-benar game-changer, memudahkan saya kustomisasi foto prewedding klien dengan cepat.",
-        avatar: "https://i.pravatar.cc/150?u=jade",
+        name: "Budi Santoso",
+        role: "Calon Pengantin Pria",
+        content: "Proses pembuatan undangan sangat mudah, cukup dari HP saja. Tema-temanya premium dan modern. Calon istri saya sangat senang dengan hasilnya!",
+        avatar: "https://i.pravatar.cc/150?u=budi",
         rating: 5
     },
     {
-        name: "Alex Park",
-        role: "Groom-to-be",
-        content: "Real-time alerts dan kemudahan sharing lewat WhatsApp sangat membantu koordinasi tamu. Saya bisa fokus ke persiapan acara sementara Tamuu mengurus RSVP dengan otomatis.",
-        avatar: "https://i.pravatar.cc/150?u=alex",
+        name: "Sarah & Kevin",
+        role: "Pasangan Pengantin",
+        content: "Fitur WhatsApp broadcast sangat membantu! Kami bisa kirim undangan ke ratusan tamu dalam sekali klik. Hemat waktu dan hemat biaya cetak undangan fisik.",
+        avatar: "https://i.pravatar.cc/150?u=sarah",
         rating: 5
     },
     {
-        name: "Nina Patel",
-        role: "Minimalist Designer",
-        content: "Dulu saya butuh berjam-jam untuk coding undangan custom. Sekarang dengan Tamuu, semua dikerjakan oleh sistem dan saya cukup drag-and-drop elemen desain favorit saya.",
-        avatar: "https://i.pravatar.cc/150?u=nina",
+        name: "Pak Hendra",
+        role: "Ayah Mempelai",
+        content: "Untuk acara sunatan anak saya, Tamuu memberikan solusi undangan yang modern. Musik latar dan animasinya membuat undangan terasa hidup dan berkesan.",
+        avatar: "https://i.pravatar.cc/150?u=hendra",
         rating: 5
     },
     {
-        name: "Jordan Lee",
-        role: "Influencer",
-        content: "Prediksi analitik tamu di dashboard sangat membantu. Saya jadi lebih cerdas dalam mengatur catering dan kuota tamu karena datanya sangat akurat. Wajib coba buat yang mau nikah!",
-        avatar: "https://i.pravatar.cc/150?u=jordan",
+        name: "Maya Putri",
+        role: "Calon Pengantin Wanita",
+        content: "Dashboard analitik tamu sangat membantu koordinasi dengan vendor catering. Kami tahu persis berapa tamu yang datang. Acara jadi lebih terorganisir!",
+        avatar: "https://i.pravatar.cc/150?u=maya",
         rating: 5
     }
 ];
@@ -373,21 +373,26 @@ export const LandingPage: React.FC = () => {
                 </div>
             </section>
 
-            {/* Testimonials Section - PRESERVED FROM ORIGINAL */}
-            <section id="testimonials" className="py-32 bg-[#0A0A0A] px-6 overflow-hidden relative">
-                <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-premium-accent/10 blur-[150px] rounded-full" />
+            {/* Testimonials Section - Matching Hero Style */}
+            <section id="testimonials" className="py-32 px-6 overflow-hidden relative" style={{ backgroundColor: '#0A1128' }}>
+                {/* Decorative Glows - Same as Hero */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
+                    <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/20 blur-[120px] rounded-full animate-pulse" />
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-500/20 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '2s' }} />
+                    <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-purple-500/20 blur-[100px] rounded-full animate-pulse" style={{ animationDelay: '4s' }} />
+                </div>
 
                 <div className="max-w-7xl mx-auto text-center mb-24 relative z-10">
                     <motion.div
                         initial={{ opacity: 0 }}
                         whileInView={{ opacity: 1 }}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 text-white/70 text-xs font-bold tracking-wider uppercase mb-8 border border-white/10"
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 text-[#FFBF00] text-xs font-bold tracking-wider uppercase mb-8 border border-[#FFBF00]/20"
                     >
-                        <Zap className="w-3 h-3 fill-white" />
+                        <Star className="w-3 h-3 fill-[#FFBF00]" />
                         <span>Testimonial</span>
                     </motion.div>
-                    <h2 className="text-5xl md:text-7xl font-black mb-6 tracking-tight text-white leading-tight">See How We Help <br />Creators Win</h2>
-                    <p className="text-white/40 max-w-xl mx-auto font-medium text-lg">Hear from traders and creators who've accelerated their success with our AI-powered design analytics.</p>
+                    <h2 className="text-5xl md:text-7xl font-black mb-6 tracking-tight text-white leading-tight">Cerita Sukses <br /><span className="text-[#FFBF00]">Pengguna Kami</span></h2>
+                    <p className="text-white/50 max-w-xl mx-auto font-medium text-lg">Dengarkan pengalaman mereka yang telah mempercayakan momen spesial kepada Tamuu.</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto relative z-10">
@@ -402,17 +407,17 @@ export const LandingPage: React.FC = () => {
                         >
                             <div className="flex gap-1 mb-6">
                                 {[...Array(t.rating)].map((_, starI) => (
-                                    <Star key={starI} className="w-4 h-4 fill-premium-accent text-premium-accent" />
+                                    <Star key={starI} className="w-4 h-4 fill-[#FFBF00] text-[#FFBF00]" />
                                 ))}
                             </div>
                             <blockquote className="text-white/80 font-medium leading-relaxed mb-10 flex-1 italic text-lg">
                                 "{t.content}"
                             </blockquote>
-                            <div className="flex items-center gap-4 border-t border-white/5 pt-8 mt-auto">
-                                <img src={t.avatar} alt={t.name} className="w-12 h-12 rounded-full ring-2 ring-premium-accent/30" />
+                            <div className="flex items-center gap-4 border-t border-white/10 pt-8 mt-auto">
+                                <img src={t.avatar} alt={t.name} className="w-12 h-12 rounded-full ring-2 ring-[#FFBF00]/30" />
                                 <div className="text-left">
-                                    <h4 className="font-bold text-white group-hover:text-premium-accent transition-colors">{t.name}</h4>
-                                    <p className="text-[10px] text-white/30 font-bold uppercase tracking-wider">{t.role}</p>
+                                    <h4 className="font-bold text-white group-hover:text-[#FFBF00] transition-colors">{t.name}</h4>
+                                    <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider">{t.role}</p>
                                 </div>
                             </div>
                         </motion.div>
