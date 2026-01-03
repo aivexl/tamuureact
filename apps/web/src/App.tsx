@@ -29,6 +29,7 @@ const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ de
 const BackgroundRemoverPage = lazy(() => import('./pages/BackgroundRemoverPage').then(m => ({ default: m.BackgroundRemoverPage })));
 const PreviewPage = lazy(() => import('./pages/PreviewPage').then(m => ({ default: m.PreviewPage })));
 const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
+const GuestManagementPage = lazy(() => import('./pages/GuestManagementPage').then(m => ({ default: m.GuestManagementPage })));
 
 const LoadingFallback = () => (
     <div className="min-h-screen bg-[#0A1128] flex flex-col items-center justify-center gap-4">
@@ -101,6 +102,10 @@ const App: React.FC = () => {
 
                                 {/* Tools */}
                                 <Route path="/tools/background-remover" element={<MainLayout><BackgroundRemoverPage /></MainLayout>} />
+
+                                {/* Guest Management */}
+                                <Route path="/guests" element={<GuestManagementPage />} />
+                                <Route path="/guests/:invitationId" element={<GuestManagementPage />} />
                             </>
                         ) : (
                             // Redirect app routes to landing on public domain
