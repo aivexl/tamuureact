@@ -13,7 +13,7 @@ export const UserEditorLayout: React.FC<UserEditorLayoutProps> = ({ children }) 
             <Navbar />
 
             {/* Main Content Scroll Area */}
-            <main className="flex-1 overflow-y-auto pt-4 pb-20">
+            <main className="flex-1 overflow-y-auto pt-20 pb-20">
                 {children}
             </main>
 
