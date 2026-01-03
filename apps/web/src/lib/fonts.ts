@@ -222,4 +222,15 @@ export const SUPPORTED_FONTS: FontConfig[] = [
     { name: 'WindSong', family: "'WindSong', cursive", category: 'handwriting' },
 ];
 
-export const GOOGLE_FONTS_URL = `https://fonts.googleapis.com/css2?${SUPPORTED_FONTS.map(f => `family=${f.name.replace(/ /g, '+')}`).join('&')}&display=swap`;
+// Essential fonts for the landing page to ensure maximum performance
+export const CORE_FONTS = ['Outfit', 'Inter', 'Plus Jakarta Sans'];
+
+export const getGoogleFontsUrl = (fonts: string[] = []) => {
+    const list = fonts.length > 0 ? fonts : SUPPORTED_FONTS.map(f => f.name);
+    // Use restricted weights for CORE_FONTS to improve performance
+    const isCoreOnly = fonts.length > 0 && fonts.every(f => CORE_FONTS.includes(f));
+    const weights = isCoreOnly ? 'wght@400;500;600;700' : 'wght@300;400;500;600;700;800;900';
+    return `https://fonts.googleapis.com/css2?${list.map(name => `family=${name.replace(/ /g, '+')}:${weights}`).join('&')}&display=swap`;
+};
+
+export const GOOGLE_FONTS_URL = getGoogleFontsUrl();

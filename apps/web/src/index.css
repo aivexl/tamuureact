@@ -15,7 +15,8 @@
 /* ============================================
    BASE STYLES
    ============================================ */
-html, body {
+html,
+body {
   height: auto;
   min-height: 100%;
   overflow-x: hidden;
@@ -216,14 +217,6 @@ body {
   outline-offset: 2px;
 }
 
-/* Remove focus outline from canvas elements */
-.canvas-element:focus-visible,
-.canvas-element *:focus-visible,
-[data-framer-drag]:focus-visible,
-[data-framer-drag] *:focus-visible {
-  outline: none !important;
-}
-
 /* ============================================
    FORM INPUTS
    ============================================ */
@@ -266,202 +259,7 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* ============================================
-   CANVAS ELEMENT STYLES
-   ============================================ */
-.canvas-element-selected {
-  box-shadow: 0 0 0 2px var(--premium-accent), 0 10px 40px rgba(0, 0, 0, 0.5);
-}
-
-/* ============================================
-   TRANSITIONS
-   ============================================ */
+/* Transitions */
 .transition-premium {
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* ============================================
-   SEAMLESS MARQUEE ANIMATIONS
-   Industry-standard clone-based infinite scroll
-   ============================================ */
-
-/* Container for seamless marquee - hides overflow */
-.seamless-marquee-container {
-  overflow: hidden;
-  width: 100%;
-  height: 100%;
-}
-
-/* The track that contains original + clone */
-.seamless-marquee-track {
-  display: flex;
-  width: fit-content;
-  will-change: transform;
-}
-
-/* Horizontal scroll animations */
-@keyframes seamless-scroll-left {
-  from {
-    transform: translateX(0);
-  }
-
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-@keyframes seamless-scroll-right {
-  from {
-    transform: translateX(-50%);
-  }
-
-  to {
-    transform: translateX(0);
-  }
-}
-
-/* Vertical scroll animations */
-.seamless-marquee-track-vertical {
-  display: flex;
-  flex-direction: column;
-  height: fit-content;
-}
-
-@keyframes seamless-scroll-up {
-  from {
-    transform: translateY(0);
-  }
-
-  to {
-    transform: translateY(-50%);
-  }
-}
-
-@keyframes seamless-scroll-down {
-  from {
-    transform: translateY(-50%);
-  }
-
-  to {
-    transform: translateY(0);
-  }
-}
-
-/* Animation classes */
-.animate-seamless-left {
-  animation: seamless-scroll-left var(--marquee-duration, 10s) linear infinite;
-}
-
-.animate-seamless-right {
-  animation: seamless-scroll-right var(--marquee-duration, 10s) linear infinite;
-}
-
-.animate-seamless-up {
-  animation: seamless-scroll-up var(--marquee-duration, 10s) linear infinite;
-}
-
-.animate-seamless-down {
-  animation: seamless-scroll-down var(--marquee-duration, 10s) linear infinite;
-}
-
-/* ============================================
-   PHOTO GRID HOVER EFFECTS
-   Enterprise-grade interactive image effects
-   ============================================ */
-
-/* Base hover container */
-.hover-effect-container {
-  overflow: hidden;
-  position: relative;
-}
-
-.hover-effect-container img {
-  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
-/* 1. Zoom Effect */
-.hover-zoom:hover img {
-  transform: scale(1.15);
-}
-
-/* 2. Zoom + Rotate Effect */
-.hover-zoom-rotate:hover img {
-  transform: scale(1.1) rotate(2deg);
-}
-
-/* 3. Brightness Effect */
-.hover-brightness img {
-  filter: brightness(0.85);
-}
-
-.hover-brightness:hover img {
-  filter: brightness(1.1);
-}
-
-/* 4. Grayscale to Color Effect */
-.hover-grayscale img {
-  filter: grayscale(100%);
-}
-
-.hover-grayscale:hover img {
-  filter: grayscale(0%);
-}
-
-/* 5. Blur Reveal Effect */
-.hover-blur-reveal img {
-  filter: blur(3px);
-}
-
-.hover-blur-reveal:hover img {
-  filter: blur(0);
-}
-
-/* 6. Overlay Effect */
-.hover-overlay::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(45deg, rgba(191, 161, 129, 0.4), rgba(0, 0, 0, 0.3));
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  pointer-events: none;
-}
-
-.hover-overlay:hover::after {
-  opacity: 1;
-}
-
-.hover-overlay:hover img {
-  transform: scale(1.05);
-}
-
-/* 7. Tilt/Perspective Effect */
-.hover-tilt {
-  perspective: 1000px;
-}
-
-.hover-tilt img {
-  transform-style: preserve-3d;
-}
-
-.hover-tilt:hover img {
-  transform: scale(1.05) rotateX(5deg) rotateY(-5deg);
-}
-
-/* 8. Glow Effect */
-.hover-glow:hover {
-  box-shadow: 0 0 20px rgba(191, 161, 129, 0.5), 0 0 40px rgba(191, 161, 129, 0.3), 0 0 60px rgba(191, 161, 129, 0.1);
-}
-
-.hover-glow:hover img {
-  transform: scale(1.02);
-}
-
-/* Hover Effect Transition Speeds */
-.hover-effect-container.fast img {
-  transition-duration: 0.2s;
-}
-
-.hover-effect-container.slow img {
-  transition-duration: 0.6s;
 }

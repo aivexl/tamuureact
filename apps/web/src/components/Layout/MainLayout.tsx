@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navbar } from './Navbar';
-import { Footer } from './Footer';
+const Footer = React.lazy(() => import('./Footer').then(m => ({ default: m.Footer })));
 
 interface MainLayoutProps {
     children: React.ReactNode;
@@ -13,7 +13,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             <main>
                 {children}
             </main>
-            <Footer />
+            <React.Suspense fallback={null}>
+                <Footer />
+            </React.Suspense>
         </div>
     );
 };

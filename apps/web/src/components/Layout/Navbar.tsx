@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Menu, X, ChevronRight } from 'lucide-react';
+import { m, AnimatePresence } from 'framer-motion';
 
 export const Navbar: React.FC = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -43,12 +42,12 @@ export const Navbar: React.FC = () => {
         >
             <div className="max-w-7xl mx-auto flex items-center justify-between">
                 {/* Logo */}
-                <Link to="/" className="flex items-center gap-3 group">
+                <Link to="/" className="flex items-center gap-3 group" aria-label="Tamuu - Halaman Utama">
                     <div
                         className={`w-10 h-10 bg-gradient-to-tr from-rose-600 to-rose-400 rounded-xl flex items-center justify-center shadow-xl transition-all duration-300 group-hover:scale-105 group-hover:rotate-3 ${isScrolled ? 'shadow-rose-500/20' : 'shadow-rose-500/40'
                             }`}
                     >
-                        <Sparkles className="w-6 h-6 text-white" />
+                        <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364-.707.707M6.343 17.657l-.707.707m0-12.728.707.707m11.314 11.314.707.707M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" /></svg>
                     </div>
                     <span
                         className={`text-2xl font-black transition-all duration-500 tracking-tighter transform translate-y-[1px] ${isDarkTheme ? 'text-slate-900' : 'text-white'
@@ -96,7 +95,7 @@ export const Navbar: React.FC = () => {
                                 }`}
                         >
                             Buat Undangan
-                            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                            <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
                         </Link>
                     </div>
                 </div>
@@ -108,15 +107,20 @@ export const Navbar: React.FC = () => {
                         : 'text-white hover:bg-white/10'
                         }`}
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    aria-label={isMobileMenuOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
+                    aria-expanded={isMobileMenuOpen}
                 >
-                    {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                    {isMobileMenuOpen
+                        ? <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                        : <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+                    }
                 </button>
             </div>
 
             {/* Mobile Navigation */}
             <AnimatePresence>
                 {isMobileMenuOpen && (
-                    <motion.div
+                    <m.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
@@ -165,7 +169,7 @@ export const Navbar: React.FC = () => {
                                 </Link>
                             </div>
                         </div>
-                    </motion.div>
+                    </m.div>
                 )}
             </AnimatePresence>
         </nav>

@@ -11,76 +11,76 @@ export const Footer: React.FC = () => {
                     <div className="space-y-6">
                         <div className="flex items-center gap-3">
                             <div className="w-12 h-12 bg-[#FFBF00] rounded-2xl flex items-center justify-center shadow-lg shadow-[#FFBF00]/20">
-                                <Sparkles className="w-7 h-7 text-[#0A1128]" />
+                                <Sparkles className="w-7 h-7 text-[#0A1128]" aria-hidden="true" />
                             </div>
                             <span className="text-3xl font-black text-white tracking-tighter">Tamuu</span>
                         </div>
-                        <p className="text-slate-400 text-sm leading-relaxed font-medium">
+                        <p className="text-slate-300 text-sm leading-relaxed font-medium">
                             Platform undangan digital tercanggih di Indonesia. Menghadirkan kemewahan dan kemudahan dalam setiap momen berharga Anda.
                         </p>
                         <div className="flex items-center gap-4">
-                            <a href="#" className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-slate-400 hover:text-[#FFBF00] hover:bg-white/10 transition-all duration-300 border border-white/5">
-                                <Instagram className="w-5 h-5" />
+                            <a href="#" className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-slate-400 hover:text-[#FFBF00] hover:bg-white/10 transition-all duration-300 border border-white/5" aria-label="Instagram Tamuu">
+                                <Instagram className="w-5 h-5" aria-hidden="true" />
                             </a>
-                            <a href="#" className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-slate-400 hover:text-[#FFBF00] hover:bg-white/10 transition-all duration-300 border border-white/5">
-                                <Twitter className="w-5 h-5" />
+                            <a href="#" className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-slate-400 hover:text-[#FFBF00] hover:bg-white/10 transition-all duration-300 border border-white/5" aria-label="Twitter Tamuu">
+                                <Twitter className="w-5 h-5" aria-hidden="true" />
                             </a>
-                            <a href="#" className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-slate-400 hover:text-[#FFBF00] hover:bg-white/10 transition-all duration-300 border border-white/5">
-                                <Facebook className="w-5 h-5" />
+                            <a href="#" className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-slate-400 hover:text-[#FFBF00] hover:bg-white/10 transition-all duration-300 border border-white/5" aria-label="Facebook Tamuu">
+                                <Facebook className="w-5 h-5" aria-hidden="true" />
                             </a>
                         </div>
                     </div>
 
                     {/* Platform Links */}
                     <div>
-                        <h4 className="text-[#FFBF00] font-black uppercase tracking-widest text-xs mb-8">Platform</h4>
+                        <h2 className="text-[#FFBF00] font-black uppercase tracking-widest text-xs mb-8">Platform</h2>
                         <ul className="space-y-4">
-                            <li><Link to="/" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">Beranda</Link></li>
-                            <li><Link to="/invitations" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">Undangan</Link></li>
-                            <li><a href="#features" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">Fitur</a></li>
-                            <li><a href="#pricing" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">Harga</a></li>
+                            <li><Link to="/" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Beranda</Link></li>
+                            <li><Link to="/invitations" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Undangan</Link></li>
+                            <li><a href="#features" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Fitur</a></li>
+                            <li><a href="#pricing" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Harga</a></li>
                         </ul>
                     </div>
 
                     {/* Help Links */}
                     <div>
-                        <h4 className="text-[#FFBF00] font-black uppercase tracking-widest text-xs mb-8">Bantuan</h4>
+                        <h2 className="text-[#FFBF00] font-black uppercase tracking-widest text-xs mb-8">Bantuan</h2>
                         <ul className="space-y-4">
-                            <li><a href="#" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">Pusat Bantuan</a></li>
-                            <li><a href="#" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">Syarat & Ketentuan</a></li>
-                            <li><a href="#" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">Kebijakan Privasi</a></li>
-                            <li><a href="#" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">Kontak Kami</a></li>
+                            <li><a href="#" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Pusat Bantuan</a></li>
+                            <li><a href="#" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Syarat & Ketentuan</a></li>
+                            <li><a href="#" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Kebijakan Privasi</a></li>
+                            <li><a href="#" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Kontak Kami</a></li>
                         </ul>
                     </div>
 
                     {/* Contact Info */}
                     <div>
-                        <h4 className="text-[#FFBF00] font-black uppercase tracking-widest text-xs mb-8">Hubungi Kami</h4>
+                        <h2 className="text-[#FFBF00] font-black uppercase tracking-widest text-xs mb-8">Hubungi Kami</h2>
                         <ul className="space-y-4">
-                            <li className="flex items-center gap-3 text-slate-400 group">
-                                <Mail className="w-4 h-4 text-[#FFBF00] flex-shrink-0" />
-                                <span className="text-xs font-bold uppercase tracking-tight break-all">support@tamuu.pages.dev</span>
+                            <li className="flex items-center gap-3 text-slate-300 group">
+                                <Mail className="w-4 h-4 text-[#FFBF00] flex-shrink-0" aria-hidden="true" />
+                                <span className="text-xs font-bold uppercase tracking-tight break-all">support@tamuu.id</span>
                             </li>
-                            <li className="flex items-center gap-3 text-slate-400">
-                                <Phone className="w-4 h-4 text-[#FFBF00]" />
+                            <li className="flex items-center gap-3 text-slate-300">
+                                <Phone className="w-4 h-4 text-[#FFBF00]" aria-hidden="true" />
                                 <span className="text-xs font-bold uppercase tracking-tight">+62 812 3456 7890</span>
                             </li>
-                            <li className="flex items-start gap-3 text-slate-400">
-                                <MapPin className="w-4 h-4 text-[#FFBF00] mt-1" />
+                            <li className="flex items-start gap-3 text-slate-300">
+                                <MapPin className="w-4 h-4 text-[#FFBF00] mt-1" aria-hidden="true" />
                                 <span className="text-xs font-bold uppercase tracking-tight">Jakarta Selatan, Indonesia</span>
                             </li>
                         </ul>
                     </div>
                 </div>
 
-                <div className="h-[1px] w-full bg-white/5 mb-10" />
+                <div className="h-[1px] w-full bg-white/5 mb-10" aria-hidden="true" />
 
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-                    <p className="text-slate-500 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-center sm:text-left">
-                        &copy; 2025 Tamuu.pages.dev. All rights reserved.
+                    <p className="text-slate-300 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-center sm:text-left">
+                        &copy; 2025 Tamuu.id. All rights reserved.
                     </p>
                     <div className="flex items-center gap-8">
-                        <span className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">Crafted by Unicorn Team</span>
+                        <span className="text-slate-300 text-[10px] font-black uppercase tracking-[0.3em]">Crafted by Unicorn Team</span>
                     </div>
                 </div>
             </div>

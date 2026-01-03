@@ -1,6 +1,7 @@
 import React from 'react';
 import { EditorLayout } from '@/components/Layout/EditorLayout';
 import { useParams } from 'react-router-dom';
+import '../styles/editor.css';
 
 interface EditorPageProps {
     isTemplate?: boolean;

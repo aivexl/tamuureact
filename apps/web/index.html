@@ -1,16 +1,260 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hiper-Interaktif Visual Builder</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
-  </head>
-  <body class="bg-premium-dark text-white selection:bg-premium-accent selection:text-premium-dark">
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<html lang="id" class="dark">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tamuu - Platform Undangan Digital Premium & Eksklusif</title>
+  <meta name="description"
+    content="Tingkatkan momen spesial Anda dengan undangan digital premium dari Tamuu. Desain eksklusif, fitur RSVP modern, dan kemudahan bagi para pasangan pengantin." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    media="print" onload="this.media='all'">
+  <link rel="preload" as="image" href="/images/hero-bride.webp" fetchpriority="high" imagesizes="450w"
+    imagesrcset="/images/hero-bride.webp 450w">
+  <style>
+    :root {
+      --premium-dark: #0A1128;
+      --premium-accent: #FFBF00;
+    }
+
+    body {
+      background-color: var(--premium-dark);
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* Critical Hero Layout Hints */
+    .hero-section {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #root {
+      min-height: 100vh;
+    }
+
+    @keyframes soft-float {
+      0% {
+        transform: translate(0px, 0px) scale(1);
+      }
+
+      33% {
+        transform: translate(15px, -25px) scale(1.05);
+      }
+
+      66% {
+        transform: translate(-10px, 10px) scale(0.95);
+      }
+
+      100% {
+        transform: translate(0px, 0px) scale(1);
+      }
+    }
+
+    .animate-soft-float {
+      animation: soft-float 20s ease-in-out infinite;
+    }
+
+    .animation-delay-2000 {
+      animation-delay: 2s;
+    }
+
+    .animation-delay-4000 {
+      animation-delay: 4s;
+    }
+
+    .animation-delay-8000 {
+      animation-delay: 8s;
+    }
+
+    /* Ultra-critical Tailwind Utility Inlines */
+    .bg-white {
+      background-color: #ffffff;
+    }
+
+    .text-white {
+      color: #ffffff;
+    }
+
+    .font-black {
+      font-weight: 900;
+    }
+
+    .tracking-tighter {
+      letter-spacing: -0.05em;
+    }
+
+    .overflow-hidden {
+      overflow: hidden;
+    }
+
+    .relative {
+      position: relative;
+    }
+
+    .z-10 {
+      z-index: 10;
+    }
+
+    .max-w-7xl {
+      max-width: 80rem;
+    }
+
+    .mx-auto {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .grid {
+      display: grid;
+    }
+
+    .pt-24 {
+      padding-top: 6rem;
+    }
+
+    .flex {
+      display: flex;
+    }
+
+    .items-center {
+      align-items: center;
+    }
+
+    .justify-center {
+      justify-content: center;
+    }
+
+    .w-full {
+      width: 100%;
+    }
+
+    .max-w-xl {
+      max-width: 36rem;
+    }
+
+    .space-y-8> :not([hidden])~ :not([hidden]) {
+      --tw-space-y-reverse: 0;
+      margin-top: calc(2rem * calc(1 - var(--tw-space-y-reverse)));
+      margin-bottom: calc(2rem * var(--tw-space-y-reverse));
+    }
+
+    .h-16 {
+      height: 4rem;
+    }
+
+    .h-14 {
+      height: 3.5rem;
+    }
+
+    .h-4 {
+      height: 1rem;
+    }
+
+    .rounded-2xl {
+      border-radius: 1rem;
+    }
+
+    .rounded-xl {
+      border-radius: 0.75rem;
+    }
+
+    .bg-white\/5 {
+      background-color: rgb(255 255 255 / 0.05);
+    }
+
+    .bg-white\/10 {
+      background-color: rgb(255 255 255 / 0.1);
+    }
+
+    .animate-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: .5;
+      }
+    }
+
+    .gap-4 {
+      gap: 1rem;
+    }
+
+    .w-3\/4 {
+      width: 75%;
+    }
+
+    .w-1\/2 {
+      width: 50%;
+    }
+
+    .w-40 {
+      width: 10rem;
+    }
+
+    .px-6 {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+
+    .pt-20 {
+      padding-top: 5rem;
+    }
+
+    .pb-0 {
+      padding-bottom: 0px;
+    }
+
+    .sm\:pt-32 {
+      @media (min-width: 640px) {
+        padding-top: 8rem;
+      }
+    }
+
+    .lg\:justify-start {
+      @media (min-width: 1024px) {
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-premium-dark text-white selection:bg-premium-accent selection:text-premium-dark">
+  <div id="root">
+    <!-- Critical Hero Shell for LCP/PSI -->
+    <section class="relative pt-24 pb-0 sm:pt-32 overflow-hidden hero-section"
+      style="background-color: #0A1128; height: 100vh;">
+      <div class="max-w-7xl mx-auto px-6 relative">
+        <div class="flex items-center justify-center lg:justify-start pt-20">
+          <div class="space-y-8 w-full max-w-xl">
+            <div class="h-16 bg-white/5 rounded-2xl w-3/4 animate-pulse"></div>
+            <div class="h-16 bg-white/5 rounded-2xl w-1/2 animate-pulse"></div>
+            <div class="h-4 bg-white/5 rounded-xl w-full animate-pulse"></div>
+            <div class="flex gap-4">
+              <div class="h-14 bg-white/10 rounded-2xl w-40 animate-pulse"></div>
+              <div class="h-14 bg-white/5 rounded-2xl w-40 animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>
