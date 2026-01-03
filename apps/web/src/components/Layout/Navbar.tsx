@@ -19,9 +19,13 @@ export const Navbar: React.FC = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Dark theme when scrolled past 800px on landing page
+    // Theme logic for landing page:
+    // - Hero (0-700px): dark background -> light text (isDarkTheme = false)
+    // - Features/Pricing (700-2000px): white background -> dark text (isDarkTheme = true)
+    // - Testimonials/CTA (2000px+): dark background -> light text (isDarkTheme = false)
     const isLandingPage = location.pathname === '/';
-    const isDarkTheme = !isLandingPage || scrollPos > 800;
+    const isInWhiteSection = scrollPos > 700 && scrollPos < 2000;
+    const isDarkTheme = !isLandingPage || isInWhiteSection;
 
     const navLinks = [
         { name: 'Home', path: '/' },
