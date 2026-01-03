@@ -11,49 +11,49 @@ import {
 import { Link } from 'react-router-dom';
 
 // ============================================
-// TESTIMONIALS DATA - Wedding Invitation Users
+// TESTIMONIALS DATA - Indonesian Wedding Users
 // ============================================
 const testimonials = [
     {
-        name: "Rina & Andi",
+        name: "Rina Santika",
         role: "Pasangan Pengantin",
         content: "Undangan digital dari Tamuu benar-benar memukau! Tamu-tamu kami kagum dengan desainnya yang elegan. Fitur RSVP sangat membantu kami menghitung jumlah tamu dengan akurat.",
-        avatar: "https://i.pravatar.cc/150?u=rina",
+        avatar: "https://images.unsplash.com/photo-1548142813-c348350df52b?w=150&h=150&fit=crop",
         rating: 5
     },
     {
         name: "Dewi Anggraini",
-        role: "Ibu Mempelai",
+        role: "Calon Pengantin Wanita",
         content: "Awalnya ragu pakai undangan digital, tapi setelah lihat hasilnya, saya sangat puas! Tamu-tamu langsung bisa konfirmasi kehadiran dan kirim ucapan. Praktis sekali!",
-        avatar: "https://i.pravatar.cc/150?u=dewi",
+        avatar: "https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?w=150&h=150&fit=crop",
         rating: 5
     },
     {
         name: "Budi Santoso",
         role: "Calon Pengantin Pria",
-        content: "Proses pembuatan undangan sangat mudah, cukup dari HP saja. Tema-temanya premium dan modern. Calon istri saya sangat senang dengan hasilnya!",
-        avatar: "https://i.pravatar.cc/150?u=budi",
+        content: "Proses pembuatan undangan sangat mudah, cukup dari HP saja. Tema-temanya premium dan modern. Sangat membantu untuk persiapan pernikahan kami yang mendadak.",
+        avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop",
         rating: 5
     },
     {
-        name: "Sarah & Kevin",
-        role: "Pasangan Pengantin",
-        content: "Fitur WhatsApp broadcast sangat membantu! Kami bisa kirim undangan ke ratusan tamu dalam sekali klik. Hemat waktu dan hemat biaya cetak undangan fisik.",
-        avatar: "https://i.pravatar.cc/150?u=sarah",
+        name: "Siti Aminah",
+        role: "Ibu Mempelai",
+        content: "Fitur WhatsApp broadcast sangat membantu! Saya bisa kirim undangan ke keluarga besar dalam sekali klik. Hemat waktu dan tidak perlu repot antar undangan fisik.",
+        avatar: "https://images.unsplash.com/photo-1509460913899-515f1df34fed?w=150&h=150&fit=crop",
         rating: 5
     },
     {
-        name: "Pak Hendra",
+        name: "Hendra Wijaya",
         role: "Ayah Mempelai",
-        content: "Untuk acara sunatan anak saya, Tamuu memberikan solusi undangan yang modern. Musik latar dan animasinya membuat undangan terasa hidup dan berkesan.",
-        avatar: "https://i.pravatar.cc/150?u=hendra",
+        content: "Untuk acara syukuran keluarga, Tamuu memberikan solusi undangan yang modern. Musik latar dan animasinya membuat undangan terasa hidup dan sangat eksklusif.",
+        avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop",
         rating: 5
     },
     {
         name: "Maya Putri",
         role: "Calon Pengantin Wanita",
-        content: "Dashboard analitik tamu sangat membantu koordinasi dengan vendor catering. Kami tahu persis berapa tamu yang datang. Acara jadi lebih terorganisir!",
-        avatar: "https://i.pravatar.cc/150?u=maya",
+        content: "Dashboard analitik tamu sangat membantu koordinasi dengan vendor catering. Kami tahu persis berapa tamu yang akan hadir. Acara jadi lebih terorganisir!",
+        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop",
         rating: 5
     }
 ];
@@ -389,10 +389,10 @@ export const LandingPage: React.FC = () => {
                         className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 text-[#FFBF00] text-xs font-bold tracking-wider uppercase mb-8 border border-[#FFBF00]/20"
                     >
                         <Star className="w-3 h-3 fill-[#FFBF00]" />
-                        <span>Testimonial</span>
+                        <span>Kesan Pelanggan</span>
                     </motion.div>
-                    <h2 className="text-5xl md:text-7xl font-black mb-6 tracking-tight text-white leading-tight">Cerita Sukses <br /><span className="text-[#FFBF00]">Pengguna Kami</span></h2>
-                    <p className="text-white/50 max-w-xl mx-auto font-medium text-lg">Dengarkan pengalaman mereka yang telah mempercayakan momen spesial kepada Tamuu.</p>
+                    <h2 className="text-5xl md:text-7xl font-black mb-6 tracking-tight text-white leading-tight">Apa Kata <br /><span className="text-[#FFBF00]">Mempelai Tamuu</span></h2>
+                    <p className="text-white/50 max-w-xl mx-auto font-medium text-lg">Dengarkan kebahagiaan mereka yang telah mempercayakan momen spesial kepada layanan kami.</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto relative z-10">
