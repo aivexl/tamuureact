@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo, Suspense, lazy } from 'react';
 import { m } from 'framer-motion';
-import { supabase } from '@/lib/supabase';
+import { templates as templatesApi } from '@/lib/api';
 import {
     Search,
     Sparkles,
@@ -48,12 +48,7 @@ export const InvitationsStorePage: React.FC = () => {
     const fetchTemplates = async () => {
         setIsLoading(true);
         try {
-            const { data, error } = await supabase
-                .from('templates')
-                .select('id, name, slug, thumbnail_url, category')
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
+            const data = await templatesApi.list();
             setTemplates(data || []);
         } catch (err) {
             console.error('Failed to fetch store templates:', err);

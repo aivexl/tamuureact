@@ -7,7 +7,7 @@ import {
     Settings, Palette, Zap, Wind, Upload, Loader2, Link as LinkIcon, Grid, MessageSquare
 } from 'lucide-react';
 import { LayerType } from '@/store/layersSlice';
-import { supabase } from '@/lib/supabase';
+import { storage } from '@/lib/api';
 import { ThumbnailSelectionModal } from '../Modals/ThumbnailSelectionModal';
 
 const layerIcons: Record<LayerType, React.ReactNode> = {
@@ -195,8 +195,8 @@ function LayersTab() {
         <div className="flex-1 overflow-y-auto premium-scroll p-2">
             {/* Context Indicator */}
             <div className={`px-2 py-1 mb-2 text-[10px] items-center rounded border flex justify-between ${activeCanvas === 'main'
-                    ? 'text-premium-accent bg-premium-accent/5 border-premium-accent/10'
-                    : 'text-purple-400 bg-purple-400/5 border-purple-400/10'
+                ? 'text-premium-accent bg-premium-accent/5 border-premium-accent/10'
+                : 'text-purple-400 bg-purple-400/5 border-purple-400/10'
                 }`}>
                 <span className="font-bold uppercase tracking-widest truncate max-w-[150px]">
                     {context.label}
@@ -349,22 +349,8 @@ function SettingsTab() {
 
         setUploading(true);
         try {
-            const userId = 'anon';
-            const timestamp = Date.now();
-            const fileName = `${timestamp}_bg_${file.name.replace(/\s+/g, '_')}`;
-            const filePath = `${userId}/${fileName}`;
-
-            const { error: uploadError } = await supabase.storage
-                .from('invitation-assets')
-                .upload(filePath, file);
-
-            if (uploadError) throw uploadError;
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('invitation-assets')
-                .getPublicUrl(filePath);
-
-            updateSection(activeSectionId, { backgroundUrl: publicUrl });
+            const result = await storage.upload(file);
+            updateSection(activeSectionId, { backgroundUrl: result.url });
         } catch (error) {
             console.error('BG Upload failed:', error);
             alert('Background upload failed. Please try again.');
@@ -589,26 +575,11 @@ function ThumbnailControl() {
             setUploading(true);
             const timestamp = Date.now();
             const safeName = (projectName || 'untitled').toLowerCase().replace(/[^a-z0-9]/g, '-');
-            const fileName = `thumb_${safeName}_${timestamp}.jpg`;
-            const filePath = `thumbnails/${fileName}`;
+            const file = new File([blob], `thumb_${safeName}_${timestamp}.jpg`, { type: 'image/jpeg' });
 
-            // Upload to Supabase
-            const { error: uploadError } = await supabase.storage
-                .from('invitation-assets')
-                .upload(filePath, blob, {
-                    contentType: 'image/jpeg',
-                    upsert: true
-                });
-
-            if (uploadError) throw uploadError;
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('invitation-assets')
-                .getPublicUrl(filePath);
-
-            // Update Store
-            setThumbnailUrl(publicUrl);
-            console.log('[Thumbnail] Uploaded:', publicUrl);
+            const result = await storage.upload(file);
+            setThumbnailUrl(result.url);
+            console.log('[Thumbnail] Uploaded:', result.url);
 
         } catch (error) {
             console.error('Thumbnail upload failed:', error);

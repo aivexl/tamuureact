@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { PreviewView } from '@/components/Preview/PreviewView';
 import { useStore, Section, Layer } from '@/store/useStore';
-import { supabase } from '@/lib/supabase';
+import { templates } from '@/lib/api';
 import { Loader2 } from 'lucide-react';
 import { generateId } from '@/lib/utils';
 
@@ -32,22 +32,11 @@ export const PreviewPage: React.FC = () => {
 
                 // SIMPLIFIED: Only fetch from templates table
                 // This prevents data mismatch issues from stale invitations entries
-                if (isUuid) {
-                    // Search by ID
-                    const { data: templateById } = await supabase
-                        .from('templates')
-                        .select('id,name,sections,layers,zoom,pan,slug,orbit')
-                        .eq('id', slug)
-                        .maybeSingle();
-                    data = templateById;
-                } else {
-                    // Search by slug
-                    const { data: templateBySlug } = await supabase
-                        .from('templates')
-                        .select('id,name,sections,layers,zoom,pan,slug,orbit')
-                        .eq('slug', slug)
-                        .maybeSingle();
-                    data = templateBySlug;
+                try {
+                    // API handles both ID and slug lookup
+                    data = await templates.get(slug);
+                } catch (e) {
+                    data = null;
                 }
 
 

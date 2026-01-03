@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { supabase } from '@/lib/supabase';
+import { templates as templatesApi, invitations as invitationsApi } from '@/lib/api';
 import { Plus, Search, Edit2, Trash2, Layout, ExternalLink, Loader2, Sparkles, FolderOpen } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -27,30 +27,23 @@ export const AdminTemplatesPage: React.FC = () => {
     const fetchTemplates = async () => {
         setIsLoading(true);
         try {
-            // CTO Enterprise Strategy: Fetch from both tables to ensure no data is lost
-            // during migration or cross-table creation.
-            const [templatesRes, invitationsRes] = await Promise.all([
-                supabase
-                    .from('templates')
-                    .select('id, name, slug, thumbnail_url, category, updated_at')
-                    .order('updated_at', { ascending: false }),
-                supabase
-                    .from('invitations')
-                    .select('id, name, slug, thumbnail_url, updated_at')
-                    .order('updated_at', { ascending: false })
+            // Fetch from both tables
+            const [templatesData, invitationsData] = await Promise.all([
+                templatesApi.list(),
+                invitationsApi.list()
             ]);
 
-            const templateData = (templatesRes.data || []).map(d => ({
+            const templateData = (templatesData || []).map((d: any) => ({
                 ...d,
                 sourceTable: 'templates' as const
             }));
-            const invitationData = (invitationsRes.data || []).map(d => ({
+            const invitationData = (invitationsData || []).map((d: any) => ({
                 ...d,
-                category: (d as any).category || 'Invitation',
+                category: d.category || 'Invitation',
                 sourceTable: 'invitations' as const
             }));
 
-            // Merge and de-duplicate by ID, prioritizing the one with a thumbnail
+            // Merge and de-duplicate by ID
             const merged = [...templateData, ...invitationData];
             const uniqueMap = new Map<string, Template>();
 
@@ -94,13 +87,7 @@ export const AdminTemplatesPage: React.FC = () => {
         };
 
         try {
-            const { data, error } = await supabase
-                .from('templates')
-                .insert(newTemplate)
-                .select()
-                .single();
-
-            if (error) throw error;
+            const data = await templatesApi.create(newTemplate);
             if (data) navigate(`/editor/template/${data.id}`);
         } catch (err) {
             console.error('[Admin] Create error:', err);
@@ -115,11 +102,12 @@ export const AdminTemplatesPage: React.FC = () => {
         if (!confirm('Are you sure you want to delete this project?')) return;
 
         try {
-            // Use sourceTable for accurate deletion, fallback to category-based logic
             const template = templates.find(t => t.id === id);
-            const tableName = template?.sourceTable || (category === 'Invitation' ? 'invitations' : 'templates');
-            const { error } = await supabase.from(tableName).delete().eq('id', id);
-            if (error) throw error;
+            if (template?.sourceTable === 'invitations') {
+                await invitationsApi.delete(id);
+            } else {
+                await templatesApi.delete(id);
+            }
             setTemplates(prev => prev.filter(t => t.id !== id));
         } catch (err) {
             console.error('[Admin] Delete error:', err);

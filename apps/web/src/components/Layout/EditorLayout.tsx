@@ -12,7 +12,7 @@ import { PreviewView } from '../Preview/PreviewView';
 import { ImageCropModal } from '../Modals/ImageCropModal';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { PanelLeftClose, PanelRightClose, Loader2 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { templates as templatesApi, invitations as invitationsApi, storage } from '@/lib/api';
 import { generateId, dataURLtoBlob, sanitizeValue } from '@/lib/utils';
 
 
@@ -121,24 +121,18 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
         console.log(`[Persistence] Payload generated. Size: ${(jsonPayload.length / 1024).toFixed(2)} KB`);
 
         const tableName = isTemplate ? 'templates' : 'invitations';
-        const { error } = await supabase
-            .from(tableName)
-            .upsert(payload, { onConflict: 'id' });
+        const api = isTemplate ? templatesApi : invitationsApi;
 
-        if (error) {
+        try {
+            await api.update(upsertId, payload);
+            console.log('%c[Persistence] ✅ CLOUD SYNC SUCCESSFUL', 'color: #10b981; font-weight: bold; font-size: 12px;');
+        } catch (error: any) {
             console.error('[Persistence] ❌ Database Sync Error:', error.message);
-            console.error('[Persistence] Error Detail:', error);
-
-            // CTO CRITICAL FIX: If we get a slug conflict, and we have an ID, it means the ID in the store
-            // might be wrong OR the slug was changed to one that exists.
             if (error.message.includes('unique_template_slug')) {
                 console.warn('[Persistence] Slug conflict detected. Real-time verification required.');
             }
-
             throw new Error(`Cloud Sync Failed: ${error.message}`);
         }
-
-        console.log('%c[Persistence] ✅ CLOUD SYNC SUCCESSFUL', 'color: #10b981; font-weight: bold; font-size: 12px;');
     }, [templateId, isSyncing, hasLoaded]);
 
     const handlePublish = useCallback(async () => {
@@ -148,7 +142,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
         console.log('Template published!');
     }, []);
 
-    // Load data from Supabase on mount
+    // Load data from Cloudflare D1 on mount
     useEffect(() => {
         if (!templateId) {
             setIsSyncing(false);
@@ -157,41 +151,26 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
         }
 
         const loadData = async () => {
-            // Quick sync - no artificial delays
             setIsSyncing(true);
 
             try {
-                // CTO Enterprise Strategy: Cloud Resilience
-                // Search in the primary table first, then fallback if nothing found.
-                const primaryTable = isTemplate ? 'templates' : 'invitations';
-                const secondaryTable = isTemplate ? 'invitations' : 'templates';
-
+                const api = isTemplate ? templatesApi : invitationsApi;
+                const fallbackApi = isTemplate ? invitationsApi : templatesApi;
                 const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(templateId);
 
-                const fetchFromTable = async (table: string) => {
-                    let q = supabase.from(table).select('id,name,slug,thumbnail_url,sections,layers,zoom,pan,orbit');
-                    if (isUuid) {
-                        q = q.eq('id', templateId);
-                    } else {
-                        q = q.eq('slug', templateId);
-                    }
-                    return q.maybeSingle();
-                };
-
-                // 1. Primary Attempt
-                let { data, error } = await fetchFromTable(primaryTable);
-
-                // 2. Secondary Fallback (If primary failed or returned an empty shell)
-                // We consider it an 'empty shell' if it has no sections and no layers
-                const isEmptyShell = data && (!data.sections || (data.sections as any[]).length === 0) && (!data.layers || (data.layers as any[]).length === 0);
-
-                if (!data || error || isEmptyShell) {
-                    const { data: fallbackData, error: fallbackError } = await fetchFromTable(secondaryTable);
-                    if (fallbackData && !fallbackError) {
-                        console.log(`[Persistence] Primary table was empty. Falling back to '${secondaryTable}'...`);
-                        data = fallbackData;
+                let data = null;
+                try {
+                    data = await api.get(templateId);
+                } catch {
+                    // Try fallback
+                    try {
+                        data = await fallbackApi.get(templateId);
+                        console.log(`[Persistence] Primary table was empty. Fell back to secondary table...`);
+                    } catch {
+                        data = null;
                     }
                 }
+
 
                 if (data) {
                     console.log(`[Persistence] Cloud data loaded for: ${data.name || data.id}`);
@@ -351,26 +330,15 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                         try {
                             const blob = dataURLtoBlob(croppedImageUrl);
                             const fileName = `crop_${generateId('img')}.png`;
-                            const filePath = `photo-grids/${fileName}`;
+                            const file = new File([blob], fileName, { type: 'image/png' });
 
-                            // 1. Upload to Supabase
-                            const { error: uploadError } = await supabase.storage
-                                .from('invitation-assets')
-                                .upload(filePath, blob, {
-                                    contentType: 'image/png',
-                                    upsert: true
-                                });
-
-                            if (uploadError) throw uploadError;
-
-                            // 2. Get Public URL
-                            const { data: { publicUrl } } = supabase.storage
-                                .from('invitation-assets')
-                                .getPublicUrl(filePath);
+                            // 1. Upload to Cloudflare R2
+                            const result = await storage.upload(file);
+                            const publicUrl = result.url;
 
                             console.log('[DEBUG] Crop Upload Success. Public URL:', publicUrl);
 
-                            // 3. Update the photo grid image at the target slot
+                            // 2. Update the photo grid image at the target slot
                             const targetSection = sections.find((s: Section) =>
                                 s.elements.some((e: Layer) => e.id === imageCropModal.targetLayerId)
                             );

@@ -119,6 +119,7 @@ const App: React.FC = () => {
                                 <Route path="/profile" element={<Navigate to="/" replace />} />
                                 <Route path="/admin/*" element={<Navigate to="/" replace />} />
                                 <Route path="/editor/*" element={<Navigate to="/" replace />} />
+                                <Route path="/user/*" element={<Navigate to="/" replace />} />
                                 <Route path="/tools/*" element={<Navigate to="/" replace />} />
                             </>
                         )}

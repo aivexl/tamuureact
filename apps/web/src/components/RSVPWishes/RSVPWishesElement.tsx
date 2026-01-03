@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Layer, RSVPWishesConfig } from '@/store/layersSlice';
 import { getVariantStyle, DEFAULT_RSVP_WISHES_CONFIG, VariantStyle } from '@/lib/rsvp-variants';
-import { supabase } from '@/lib/supabase';
+import { rsvp } from '@/lib/api';
 import { Send, Check, Loader2, Heart, Users } from 'lucide-react';
 
 // ============================================
@@ -90,21 +90,14 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isPreview, invitat
         setError(null);
 
         try {
-            const { error: submitError } = await supabase
-                .from('rsvp_responses')
-                .insert({
-                    invitation_id: invitationId,
-                    name: formData.name,
-                    email: formData.email || null,
-                    phone: formData.phone || null,
-                    attendance: formData.attendance,
-                    guest_count: formData.guestCount,
-                    message: formData.message || null,
-                    meal_preference: formData.mealPreference || null,
-                    song_request: formData.songRequest || null
-                });
-
-            if (submitError) throw submitError;
+            await rsvp.submit(invitationId, {
+                name: formData.name,
+                email: formData.email || undefined,
+                phone: formData.phone || undefined,
+                attendance: formData.attendance,
+                guest_count: formData.guestCount,
+                message: formData.message || undefined
+            });
             setIsSubmitted(true);
             onSubmitSuccess?.();
         } catch (err) {
@@ -425,51 +418,29 @@ const GuestWishesSection: React.FC<GuestWishesSectionProps & { variant: VariantS
         };
 
         const fetchWishes = async () => {
-            const { data, error } = await supabase
-                .from('rsvp_responses')
-                .select('id, name, message, attendance, submitted_at')
-                .eq('invitation_id', invitationId)
-                .eq('is_visible', true)
-                .not('message', 'is', null)
-                .order('submitted_at', { ascending: false })
-                .limit(config.wishesMaxDisplay);
-
-            if (!error && data) {
-                setWishes(data.map(d => ({
-                    id: d.id,
-                    name: d.name,
-                    message: d.message,
-                    attendance: d.attendance,
-                    submittedAt: formatTimeAgo(new Date(d.submitted_at))
-                })));
+            try {
+                const data = await rsvp.list(invitationId);
+                if (data) {
+                    setWishes(data
+                        .filter((d: any) => d.message)
+                        .slice(0, config.wishesMaxDisplay)
+                        .map((d: any) => ({
+                            id: d.id,
+                            name: d.name,
+                            message: d.message,
+                            attendance: d.attendance,
+                            submittedAt: formatTimeAgo(new Date(d.submitted_at))
+                        })));
+                }
+            } catch (err) {
+                console.error('[RSVP] Fetch wishes error:', err);
             }
             setLoading(false);
         };
 
         fetchWishes();
-
-        const subscription = supabase
-            .channel(`rsvp_${invitationId}`)
-            .on('postgres_changes', {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'rsvp_responses',
-                filter: `invitation_id=eq.${invitationId}`
-            }, (payload) => {
-                const newWish = payload.new as Record<string, string>;
-                if (newWish.message) {
-                    setWishes(prev => [{
-                        id: newWish.id,
-                        name: newWish.name,
-                        message: newWish.message,
-                        attendance: newWish.attendance,
-                        submittedAt: 'Baru saja'
-                    }, ...prev].slice(0, config.wishesMaxDisplay));
-                }
-            })
-            .subscribe();
-
-        return () => { subscription.unsubscribe(); };
+        // Note: D1 doesn't support realtime subscriptions like Supabase
+        // Consider polling or manual refresh for real-time updates
     }, [invitationId, isPreview, config.wishesMaxDisplay, refreshKey]);
 
     if (loading) {

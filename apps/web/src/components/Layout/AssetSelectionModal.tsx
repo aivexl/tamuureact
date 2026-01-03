@@ -9,7 +9,7 @@ import {
     Sun, Moon, Smile, ThumbsUp, Upload, Monitor, Loader2
 } from 'lucide-react';
 import { LayerType } from '@/store/useStore';
-import { supabase } from '@/lib/supabase';
+import { storage } from '@/lib/api';
 
 interface AssetSelectionModalProps {
     type: LayerType | null;
@@ -274,35 +274,15 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
 
         setUploading(true);
         try {
-            // 1. Generate unique path
-            // For now, using 'anon' as user ID since we don't have auth context here yet
-            // In a real app, use the actual user ID
-            const userId = 'anon';
-            const timestamp = Date.now();
-            const random = Math.floor(Math.random() * 10000);
-            const ext = file.name.split('.').pop();
-            const fileName = `${timestamp}_${random}.${ext}`;
-            const filePath = `${userId}/${fileName}`;
+            console.log('Uploading file:', file.name);
 
-            console.log('Uploading to:', filePath);
-
-            // 2. Upload to Supabase
-            const { error: uploadError } = await supabase.storage
-                .from('invitation-assets') // Ensure this bucket exists and is PUBLIC
-                .upload(filePath, file);
-
-            if (uploadError) {
-                throw uploadError;
-            }
-
-            // 3. Get Public URL
-            const { data: { publicUrl } } = supabase.storage
-                .from('invitation-assets')
-                .getPublicUrl(filePath);
+            // Upload to Cloudflare R2
+            const result = await storage.upload(file);
+            const publicUrl = result.url;
 
             console.log('Upload success:', publicUrl);
 
-            // 4. Pass URL to onSelect
+            // Pass URL to onSelect
             if (type === 'image' || type === 'gif' || type === 'sticker') {
                 onSelect({ imageUrl: publicUrl });
             } else if (type === 'video') {
@@ -311,7 +291,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
 
         } catch (error) {
             console.error('Upload failed:', error);
-            alert('Upload failed. Please try again. Make sure the bucket "invitation-assets" exists and is public.');
+            alert('Upload failed. Please try again.');
         } finally {
             setUploading(false);
         }

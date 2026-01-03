@@ -71,12 +71,13 @@ tamuureact/
 
 ### Backend (`apps/api`)
 - **Runtime**: Cloudflare Workers
-- **Database**: Supabase (PostgreSQL)
-- **Storage**: Cloudflare R2 / Supabase Storage
+- **Database**: Cloudflare D1 (SQLite)
+- **Storage**: Cloudflare R2
 
 ### Infrastructure
 - **Hosting**: Cloudflare Pages & Workers
-- **Database**: Supabase
+- **Database**: Cloudflare D1 (`tamuu-db`)
+- **Storage**: Cloudflare R2 (`tamuu-assets`)
 - **Package Manager**: pnpm (workspace)
 - **Build System**: Turborepo
 
@@ -119,8 +120,7 @@ pnpm deploy:api    # Deploy API to Cloudflare Workers
 ## 🔗 Environment Variables
 
 ```env
-VITE_SUPABASE_URL=<supabase-url>
-VITE_SUPABASE_ANON_KEY=<supabase-anon-key>
+VITE_API_URL=https://api.tamuu.id
 ```
 
 ---

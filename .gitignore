@@ -16,9 +16,7 @@ yarn-error.log*
 *.log
 
 # env
-.env
-.env.local
-.env.*.local
+
 
 # misc
 .vscode/
