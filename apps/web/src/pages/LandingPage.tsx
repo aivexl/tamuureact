@@ -10,8 +10,6 @@ import {
     Zap,
     Play
 } from 'lucide-react';
-import { Navbar } from '../components/Layout/Navbar';
-import { Footer } from '../components/Layout/Footer';
 import { WordRoller } from '../components/Landing/WordRoller';
 import { Link } from 'react-router-dom';
 
@@ -62,8 +60,7 @@ const testimonials = [
 
 export const LandingPage: React.FC = () => {
     return (
-        <div className="min-h-screen bg-[#FDFDFD] text-gray-900 overflow-x-hidden font-sans">
-            <Navbar />
+        <div className="bg-[#FDFDFD] text-gray-900 overflow-visible font-sans">
 
             {/* Hero Section */}
             <section className="relative pt-20 pb-20 md:pt-32 md:pb-32 px-6">
@@ -283,7 +280,6 @@ export const LandingPage: React.FC = () => {
                 </div>
             </section>
 
-            <Footer />
         </div>
     );
 };

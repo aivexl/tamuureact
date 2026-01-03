@@ -15,7 +15,8 @@
     "clean": "turbo run clean && rm -rf node_modules",
     "deploy": "turbo run deploy",
     "deploy:web": "turbo run deploy --filter=@tamuu/web",
-    "deploy:api": "turbo run deploy --filter=@tamuu/api"
+    "deploy:api": "turbo run deploy --filter=@tamuu/api",
+    "deploy:pages": "turbo run build --filter=@tamuu/web && npx wrangler pages deploy apps/web/dist --project-name tamuu"
   },
   "devDependencies": {
     "turbo": "^2.0.0"
