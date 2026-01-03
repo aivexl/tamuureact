@@ -87,8 +87,9 @@ const App: React.FC = () => {
                                 {/* User Profile */}
                                 <Route path="/profile" element={<MainLayout><ProfilePage /></MainLayout>} />
 
-                                {/* Dashboard */}
-                                <Route path="/admin/dashboard" element={<MainLayout><DashboardPage /></MainLayout>} />
+                                {/* Dashboard - has own sidebar layout */}
+                                <Route path="/dashboard" element={<DashboardPage />} />
+                                <Route path="/admin/dashboard" element={<DashboardPage />} />
 
                                 {/* Editor Routes */}
                                 <Route path="/editor" element={<EditorPage />} />
