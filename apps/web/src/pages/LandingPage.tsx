@@ -1,18 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
     Star,
     ArrowRight,
-    Smartphone,
-    Share2,
-    Palette,
-    Lock,
     Zap,
-    Play
+    CheckCircle,
+    Sparkles,
+    ShieldCheck
 } from 'lucide-react';
-import { WordRoller } from '../components/Landing/WordRoller';
 import { Link } from 'react-router-dom';
 
+// ============================================
+// TESTIMONIALS DATA (PRESERVED)
+// ============================================
 const testimonials = [
     {
         name: "Elias Decker",
@@ -58,163 +58,322 @@ const testimonials = [
     }
 ];
 
+// ============================================
+// FEATURES DATA (FROM LEGACY)
+// ============================================
+const features = [
+    {
+        title: "450+ Tema Premium",
+        description: "Pilihan tema beragam kategori untuk berbagai jenis acara",
+        icon: Star,
+    },
+    {
+        title: "Edit Mudah",
+        description: "Cukup dari HP, edit undangan dalam hitungan menit",
+        icon: Zap,
+    },
+    {
+        title: "Custom Domain",
+        description: "Tampil unik dengan domain atas nama pribadi atau brand",
+        icon: Sparkles,
+    },
+    {
+        title: "RSVP & Guest Book",
+        description: "Kelola konfirmasi tamu dan ucapan dengan mudah",
+        icon: CheckCircle,
+    },
+    {
+        title: "QR Code Check-in",
+        description: "Sistem check-in modern untuk acara Anda",
+        icon: ShieldCheck,
+    },
+    {
+        title: "WhatsApp Broadcast",
+        description: "Kirim undangan ke semua tamu dalam sekali klik",
+        icon: Sparkles,
+    },
+];
+
+// ============================================
+// PRICING DATA (FROM LEGACY)
+// ============================================
+const pricingPlans = [
+    {
+        name: "Basic",
+        price: 150000,
+        features: [
+            "Aktif 1 bulan",
+            "100+ tema pilihan",
+            "Unlimited tamu",
+            "RSVP & ucapan",
+            "Google Maps",
+            "Musik latar",
+        ],
+    },
+    {
+        name: "Premium",
+        price: 250000,
+        popular: true,
+        features: [
+            "Aktif 3 bulan",
+            "450+ tema pilihan",
+            "Unlimited tamu",
+            "RSVP & ucapan",
+            "QR Code check-in",
+            "Custom domain",
+            "WhatsApp broadcast",
+            "Priority support",
+        ],
+    },
+    {
+        name: "Prioritas",
+        price: 500000,
+        features: [
+            "Aktif 6 bulan",
+            "Semua fitur Premium",
+            "Custom theme",
+            "Video invitation",
+            "Live streaming",
+            "Dedicated support",
+            "Export data",
+        ],
+    },
+];
+
+const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("id-ID").format(price);
+};
+
+// ============================================
+// WORD ROLLER COMPONENT
+// ============================================
+const eventTypes = ["Pernikahan", "Ulang Tahun", "Sunatan", "Syukuran", "Aqiqah", "Tunangan"];
+const ITEM_HEIGHT_EM = 1.7;
+
+const WordRoller: React.FC = () => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [transitionEnabled, setTransitionEnabled] = useState(true);
+    const displayList = [...eventTypes, eventTypes[0]];
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentIndex(prev => {
+                if (prev < eventTypes.length) {
+                    return prev + 1;
+                }
+                return prev;
+            });
+        }, 4000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    useEffect(() => {
+        if (currentIndex === eventTypes.length) {
+            const timeout = setTimeout(() => {
+                setTransitionEnabled(false);
+                setCurrentIndex(0);
+
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        setTransitionEnabled(true);
+                    }, 50);
+                });
+            }, 800);
+            return () => clearTimeout(timeout);
+        }
+    }, [currentIndex]);
+
+    return (
+        <div className="flex items-center justify-center lg:justify-start overflow-visible" style={{ height: `${ITEM_HEIGHT_EM}em` }}>
+            <span className="relative overflow-hidden inline-flex flex-col items-center lg:items-start min-w-[200px] sm:min-w-[400px]" style={{ height: `${ITEM_HEIGHT_EM}em` }}>
+                <span
+                    className={`flex flex-col w-full whitespace-nowrap ${transitionEnabled ? 'transition-transform duration-700 ease-in-out' : ''}`}
+                    style={{ transform: `translateY(-${currentIndex * ITEM_HEIGHT_EM}em)` }}
+                >
+                    {displayList.map((event, i) => (
+                        <span
+                            key={i}
+                            className="flex items-center justify-center lg:justify-start text-[#FFBF00]"
+                            style={{ height: `${ITEM_HEIGHT_EM}em` }}
+                        >
+                            {event}
+                        </span>
+                    ))}
+                </span>
+            </span>
+        </div>
+    );
+};
+
+// ============================================
+// MAIN LANDING PAGE COMPONENT
+// ============================================
 export const LandingPage: React.FC = () => {
     return (
-        <div className="bg-[#FDFDFD] text-gray-900 overflow-visible font-sans">
+        <div className="bg-white text-gray-900 overflow-visible font-sans">
 
-            {/* Hero Section */}
-            <section className="relative pt-20 pb-20 md:pt-32 md:pb-32 px-6">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] pointer-events-none overflow-hidden opacity-50">
-                    <div className="absolute top-[10%] left-[5%] w-[40%] h-[40%] bg-premium-accent/10 blur-[120px] rounded-full" />
-                    <div className="absolute top-[20%] right-[5%] w-[35%] h-[35%] bg-blue-100/40 blur-[100px] rounded-full" />
+            {/* Hero Section - Dark Navy Background */}
+            <section className="relative pt-24 pb-0 sm:pt-32 overflow-hidden" style={{ backgroundColor: '#0A1128' }}>
+                {/* Decorative Glows */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
+                    <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/20 blur-[120px] rounded-full animate-pulse" />
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-500/20 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '2s' }} />
+                    <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-purple-500/20 blur-[100px] rounded-full animate-pulse" style={{ animationDelay: '4s' }} />
                 </div>
 
-                <div className="max-w-7xl mx-auto text-center relative z-10">
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.5 }}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-premium-accent/10 text-premium-accent text-xs font-bold tracking-wider uppercase mb-8 border border-premium-accent/20"
-                    >
-                        <Zap className="w-3 h-3 fill-premium-accent" />
-                        <span>Visual Editor No. 1 di Indonesia</span>
-                    </motion.div>
-
-                    <motion.h1
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2, duration: 0.6 }}
-                        className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[1.1] mb-8"
-                    >
-                        Satu kali sentuh, <br className="hidden md:block" />
-                        undangan <WordRoller words={['pernikahan', 'sunatan', 'ulang tahun', 'wisuda', 'mewah']} /> <br className="hidden md:block" />
-                        Anda selesai.
-                    </motion.h1>
-
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3, duration: 0.6 }}
-                        className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto mb-12 leading-relaxed"
-                    >
-                        Platform pembuatan undangan digital hiper-interaktif dengan visual editor revolusioner. Desain tanpa batas, fitur tanpa ribet, momen tak terlupakan.
-                    </motion.p>
-
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4, duration: 0.6 }}
-                        className="flex flex-col sm:flex-row items-center justify-center gap-4 px-6"
-                    >
-                        <Link
-                            to="/editor"
-                            className="w-full sm:w-auto px-10 py-5 rounded-2xl bg-gray-900 text-white font-bold text-lg hover:bg-black transition-all shadow-xl hover:-translate-y-1 flex items-center justify-center gap-2"
+                <div className="max-w-7xl mx-auto px-6 relative">
+                    <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center lg:items-end min-h-[500px] lg:h-[600px]">
+                        {/* Left Column: Content */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.7, delay: 0.1 }}
+                            className="text-center lg:text-left space-y-8 pb-32 sm:pb-40 lg:pb-60 order-1"
                         >
-                            Buat Sekarang <ArrowRight className="w-5 h-5" />
-                        </Link>
-                        <a
-                            href="#demo"
-                            className="w-full sm:w-auto px-10 py-5 rounded-2xl bg-white text-gray-900 border border-gray-100 font-bold text-lg hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
-                        >
-                            <Play className="w-5 h-5 fill-gray-900" /> Lihat Demo
-                        </a>
-                    </motion.div>
+                            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-6xl font-black text-white flex flex-col items-center lg:items-start gap-2 md:gap-4 w-full tracking-tight leading-[1.05]">
+                                <span className="break-words max-w-full">Platform Undangan Digital Premium</span>
+                                <WordRoller />
+                            </h1>
 
-                    {/* App Mockup Preview */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 40 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.6, duration: 0.8 }}
-                        className="mt-20 relative px-4"
-                    >
-                        <div className="max-w-5xl mx-auto p-4 rounded-[2.5rem] bg-gray-100 border border-white shadow-2xl overflow-hidden aspect-video bg-[url('https://images.unsplash.com/photo-1544256718-3bcf237f3974?auto=format&fit=crop&q=80')] bg-cover bg-center">
-                            <div className="w-full h-full bg-black/20 backdrop-blur-[2px] flex items-center justify-center group cursor-pointer transition-all hover:backdrop-blur-0">
-                                <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-lg group-hover:scale-125 transition-all">
-                                    <Play className="w-8 h-8 text-premium-accent fill-premium-accent" />
-                                </div>
+                            <motion.p
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.7, delay: 0.3 }}
+                                className="text-lg md:text-xl text-white/70 max-w-xl mx-auto lg:mx-0 leading-relaxed tracking-wide"
+                            >
+                                Ciptakan kesan pertama yang tak terlupakan dengan desain eksklusif, fitur tercanggih, dan kualitas premium.
+                            </motion.p>
+
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.7, delay: 0.5 }}
+                                className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center"
+                            >
+                                <Link
+                                    to="/editor"
+                                    className="group relative inline-flex items-center gap-3 px-7 py-4 sm:px-10 sm:py-5 bg-white text-slate-900 font-black rounded-2xl shadow-2xl shadow-indigo-950/20 hover:bg-slate-50 hover:scale-105 transition-all duration-300 w-full sm:w-auto justify-center"
+                                >
+                                    Mulai Sekarang
+                                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                </Link>
+                                <Link
+                                    to="/admin/templates"
+                                    className="px-7 py-4 sm:px-10 sm:py-5 bg-white/10 text-white border border-white/20 font-bold rounded-2xl shadow-sm hover:bg-white/20 hover:border-white/30 hover:scale-105 transition-all duration-300 backdrop-blur-sm w-full sm:w-auto text-center"
+                                >
+                                    Lihat Undangan
+                                </Link>
+                            </motion.div>
+                        </motion.div>
+
+                        {/* Right Column: Visual (Bride) */}
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.8, delay: 0.3 }}
+                            className="relative flex justify-center lg:justify-end items-end order-2 mt-8 lg:mt-0"
+                        >
+                            {/* Backing Glow */}
+                            <div className="absolute bottom-0 right-0 w-[120%] h-[120%] bg-rose-500/10 blur-[120px] rounded-full -z-10 animate-pulse" />
+
+                            {/* Bride Image */}
+                            <div className="relative w-full max-w-[280px] sm:max-w-[380px] lg:max-w-[420px] xl:max-w-[450px] flex items-end">
+                                <img
+                                    src="/images/hero-bride.png"
+                                    alt="Tamuu Premium Guest"
+                                    className="w-full h-auto object-contain object-bottom"
+                                />
                             </div>
-                        </div>
-                    </motion.div>
+                        </motion.div>
+                    </div>
                 </div>
             </section>
 
             {/* Features Section */}
-            <section id="features" className="py-24 bg-white px-6">
-                <div className="max-w-7xl mx-auto">
-                    <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">
-                        <div className="max-w-xl">
-                            <h2 className="text-premium-accent font-bold uppercase tracking-widest text-sm mb-4">Fitur Utama</h2>
-                            <p className="text-4xl md:text-5xl font-black leading-tight">Membangun Masa Depan Undangan Digital.</p>
-                        </div>
-                        <p className="text-gray-500 max-w-sm font-medium mb-1">
-                            Semua yang Anda butuhkan untuk membuat undangan yang berkesan bagi para tamu.
-                        </p>
-                    </div>
+            <section id="features" className="max-w-7xl mx-auto px-6 py-24 bg-white">
+                <div className="text-center mb-20 space-y-4">
+                    <h2 className="text-[#FFBF00] font-black uppercase tracking-widest text-sm">Fitur Masa Depan</h2>
+                    <h2 className="text-4xl md:text-5xl font-black text-[#0A1128] tracking-tight">Eksklusif Untuk Anda</h2>
+                    <div className="w-20 h-1.5 bg-[#FFBF00] mx-auto rounded-full" />
+                </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {[
-                            {
-                                icon: <Palette className="w-6 h-6" />,
-                                title: "Visual Editor",
-                                description: "Drag-and-drop elemen sesuka hati. Tanpa coding, tanpa batas. Desain seperti profesional sekejap mata."
-                            },
-                            {
-                                icon: <Smartphone className="max-w-6 h-6" />,
-                                title: "Mobile Optimized",
-                                description: "Undangan Anda akan terlihat memukau di semua perangkat, mulai dari smartphone hingga desktop."
-                            },
-                            {
-                                icon: <Share2 className="max-w-6 h-6" />,
-                                title: "Instant Sharing",
-                                description: "Bagikan lewat WhatsApp, Telegram, atau e-mail dengan manajemen daftar tamu yang cerdas."
-                            },
-                            {
-                                icon: <Zap className="max-w-6 h-6" />,
-                                title: "Real-time Update",
-                                description: "Ubah data undangan kapan saja. Perubahan akan langsung terlihat oleh semua tamu Anda."
-                            },
-                            {
-                                icon: <Lock className="max-w-6 h-6" />,
-                                title: "Keamanan Data",
-                                description: "Data Anda dan tamu terenkripsi. Kami menghargai privasi dan keamanan momen penting Anda."
-                            },
-                            {
-                                icon: <Star className="max-w-6 h-6" />,
-                                title: "Fitur Interaktif",
-                                description: "Konfirmasi kehadiran (RSVP), amplop digital, hingga musik latar yang terintegrasi."
-                            }
-                        ].map((feature, i) => (
-                            <motion.div
-                                key={i}
-                                whileHover={{ y: -8 }}
-                                className="p-10 rounded-[2rem] bg-gray-50 border border-gray-50 transition-all hover:bg-white hover:border-gray-100 hover:shadow-xl group"
-                            >
-                                <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-premium-accent mb-6 group-hover:scale-110 transition-transform">
-                                    {feature.icon}
+                <div className="grid md:grid-cols-3 gap-10">
+                    {features.map((feature, index) => (
+                        <motion.div
+                            key={index}
+                            whileHover={{ y: -8 }}
+                            className="group p-10 bg-[#F8FAFC] rounded-[2.5rem] border border-slate-200/50 shadow-md hover:shadow-2xl hover:shadow-[#0A1128]/10 transition-all duration-500"
+                        >
+                            <div className="w-16 h-16 bg-[#0A1128]/5 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                                <feature.icon className="w-8 h-8 text-[#0A1128]" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-[#0A1128] mb-4 tracking-tight">{feature.title}</h3>
+                            <p className="text-slate-600 leading-relaxed font-medium">{feature.description}</p>
+                        </motion.div>
+                    ))}
+                </div>
+            </section>
+
+            {/* Pricing Section */}
+            <section id="pricing" className="max-w-7xl mx-auto px-6 py-24 bg-white">
+                <div className="text-center mb-16 space-y-4">
+                    <h2 className="text-[#FFBF00] font-black uppercase tracking-widest text-sm">Investasi Terbaik</h2>
+                    <h2 className="text-4xl md:text-5xl font-black text-[#0A1128] tracking-tight">Pilih Paket Kebahagiaan</h2>
+                    <div className="w-20 h-1.5 bg-[#FFBF00] mx-auto rounded-full" />
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-6 xl:gap-8 items-center max-w-lg lg:max-w-none mx-auto">
+                    {pricingPlans.map((plan, index) => (
+                        <motion.div
+                            key={index}
+                            whileHover={{ y: -8 }}
+                            className={`relative p-8 sm:p-10 rounded-[2.5rem] transition-all duration-500 ${plan.popular
+                                ? 'bg-slate-900 text-white shadow-[0_30px_60px_-15px_rgba(15,23,42,0.3)] lg:scale-105 z-10'
+                                : 'bg-[#F8FAFC] text-slate-900 border border-slate-200 shadow-md hover:shadow-2xl'
+                                }`}
+                        >
+                            {plan.popular && (
+                                <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#FFBF00] text-[#0A1128] text-[10px] font-black tracking-[0.2em] uppercase py-2 px-6 rounded-full shadow-lg">
+                                    Rekomendasi Utama
                                 </div>
-                                <h3 className="text-xl font-bold mb-4">{feature.title}</h3>
-                                <p className="text-gray-500 leading-relaxed font-normal">{feature.description}</p>
-                            </motion.div>
-                        ))}
-                    </div>
+                            )}
+
+                            <h3 className="text-2xl font-black mb-2 tracking-tight">{plan.name}</h3>
+                            <div className="flex items-baseline flex-wrap gap-1 mb-8">
+                                <span className="text-sm font-bold opacity-60 flex-shrink-0">Rp</span>
+                                <span className="text-3xl sm:text-5xl font-black tracking-tighter leading-none">{formatPrice(plan.price)}</span>
+                                <span className="text-xs sm:text-sm font-medium opacity-60 flex-shrink-0">/acara</span>
+                            </div>
+
+                            <div className={`h-[1px] w-full mb-8 ${plan.popular ? 'bg-white/10' : 'bg-slate-200'}`} />
+
+                            <ul className="space-y-4 mb-10">
+                                {plan.features.map((feature, i) => (
+                                    <li key={i} className="flex items-center gap-3 text-sm font-semibold">
+                                        <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${plan.popular ? 'bg-amber-400/20 text-amber-400' : 'bg-[#0A1128]/5 text-[#0A1128]/60'
+                                            }`}>
+                                            <CheckCircle className="w-3.5 h-3.5" />
+                                        </div>
+                                        <span className="opacity-90">{feature}</span>
+                                    </li>
+                                ))}
+                            </ul>
+
+                            <button
+                                className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all duration-300 transform active:scale-95 ${plan.popular
+                                    ? 'bg-[#FFBF00] text-[#0A1128] hover:bg-[#FFD700]'
+                                    : 'bg-[#0A1128] text-white shadow-lg shadow-[#0A1128]/20 hover:bg-slate-800'
+                                    }`}
+                            >
+                                Pilih Sekarang
+                            </button>
+                        </motion.div>
+                    ))}
                 </div>
             </section>
 
-            {/* Social Proof Section */}
-            <section className="py-16 bg-white border-y border-gray-50 px-6">
-                <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-10 opacity-30 grayscale hover:grayscale-0 transition-all">
-                    <div className="text-sm font-bold tracking-widest uppercase text-gray-400">Trusted By</div>
-                    <div className="flex flex-wrap items-center justify-center gap-12 md:gap-20">
-                        <span className="text-2xl font-black italic">Cloudflare</span>
-                        <span className="text-2xl font-black italic">Supabase</span>
-                        <span className="text-2xl font-black italic">Google</span>
-                        <span className="text-2xl font-black italic">Framer</span>
-                        <span className="text-2xl font-black italic">Vercel</span>
-                    </div>
-                </div>
-            </section>
-
-            {/* Testimonials Section - Dark Mode for Impact */}
+            {/* Testimonials Section - PRESERVED FROM ORIGINAL */}
             <section id="testimonials" className="py-32 bg-[#0A0A0A] px-6 overflow-hidden relative">
                 <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-premium-accent/10 blur-[150px] rounded-full" />
 
@@ -227,7 +386,7 @@ export const LandingPage: React.FC = () => {
                         <Zap className="w-3 h-3 fill-white" />
                         <span>Testimonial</span>
                     </motion.div>
-                    <h2 className="text-5xl md:text-7xl font-black mb-6 tracking-tight text-white leading-tight">See How We Help <br /> Creators Win</h2>
+                    <h2 className="text-5xl md:text-7xl font-black mb-6 tracking-tight text-white leading-tight">See How We Help <br />Creators Win</h2>
                     <p className="text-white/40 max-w-xl mx-auto font-medium text-lg">Hear from traders and creators who've accelerated their success with our AI-powered design analytics.</p>
                 </div>
 
@@ -262,17 +421,17 @@ export const LandingPage: React.FC = () => {
             </section>
 
             {/* CTA Section */}
-            <section className="py-32 px-6">
-                <div className="max-w-5xl mx-auto rounded-[3.5rem] bg-gray-900 p-12 md:p-24 text-center overflow-hidden relative shadow-2xl">
-                    <div className="absolute top-0 right-0 w-[40%] h-[40%] bg-premium-accent/20 blur-[100px] rounded-full" />
+            <section className="py-32 px-6 bg-white">
+                <div className="max-w-5xl mx-auto rounded-[3.5rem] bg-[#0A1128] p-12 md:p-24 text-center overflow-hidden relative shadow-2xl">
+                    <div className="absolute top-0 right-0 w-[40%] h-[40%] bg-indigo-500/20 blur-[100px] rounded-full" />
                     <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-blue-500/10 blur-[100px] rounded-full" />
 
                     <div className="relative z-10">
                         <h2 className="text-4xl md:text-6xl font-black text-white mb-8 leading-[1.1]">Siap Untuk Membuat Momen Tak Terlupakan?</h2>
-                        <p className="text-gray-400 text-lg mb-12 max-w-xl mx-auto font-medium">Buat undangan premium Anda hari ini. Mulai gratis, tanpa kartu kredit.</p>
+                        <p className="text-white/50 text-lg mb-12 max-w-xl mx-auto font-medium">Buat undangan premium Anda hari ini. Mulai gratis, tanpa kartu kredit.</p>
                         <Link
                             to="/editor"
-                            className="inline-flex items-center gap-2 px-10 py-5 rounded-2xl bg-premium-accent text-white font-bold text-lg hover:scale-105 active:scale-95 transition-all shadow-xl shadow-premium-accent/20"
+                            className="inline-flex items-center gap-2 px-10 py-5 rounded-2xl bg-[#FFBF00] text-[#0A1128] font-black text-lg hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[#FFBF00]/20"
                         >
                             Daftar Sekarang <ArrowRight className="w-5 h-5" />
                         </Link>
