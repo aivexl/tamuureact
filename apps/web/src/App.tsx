@@ -31,6 +31,7 @@ const PreviewPage = lazy(() => import('./pages/PreviewPage').then(m => ({ defaul
 const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
 const GuestManagementPage = lazy(() => import('./pages/GuestManagementPage').then(m => ({ default: m.GuestManagementPage })));
 const OnboardingPage = lazy(() => import('./pages/OnboardingPage').then(m => ({ default: m.OnboardingPage })));
+const UserEditorPage = lazy(() => import('./pages/UserEditorPage').then(m => ({ default: m.UserEditorPage })));
 
 const LoadingFallback = () => (
     <div className="min-h-screen bg-[#0A1128] flex flex-col items-center justify-center gap-4">
@@ -99,6 +100,7 @@ const App: React.FC = () => {
                                 <Route path="/editor" element={<EditorPage />} />
                                 <Route path="/editor/:id" element={<EditorPage />} />
                                 <Route path="/editor/template/:id" element={<EditorPage isTemplate={true} />} />
+                                <Route path="/user/editor/:id" element={<UserEditorPage />} />
 
                                 {/* Admin Routes */}
                                 <Route path="/admin/templates" element={<MainLayout><AdminTemplatesPage /></MainLayout>} />
