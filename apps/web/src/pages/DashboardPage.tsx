@@ -155,16 +155,10 @@ export const DashboardPage: React.FC = () => {
     return (
         <div className="min-h-screen bg-slate-50 flex pt-20">
             {/* Sidebar */}
-            <aside className={`fixed lg:static inset-y-0 left-0 z-40 flex flex-col bg-white border-r border-slate-200 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-0 lg:w-20'} overflow-hidden`}>
-                {/* Logo Area */}
-                <div className="h-20 flex items-center justify-between px-6 border-b border-slate-100">
-                    {sidebarOpen && (
-                        <Link to="/" className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-teal-500/20">T</div>
-                            <span className="text-xl font-black text-slate-900 tracking-tight">Tamuu</span>
-                        </Link>
-                    )}
-                    <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2.5 rounded-xl hover:bg-slate-100 text-slate-500 lg:hidden">
+            <aside className={`fixed lg:static top-20 inset-y-0 left-0 z-40 flex flex-col bg-white border-r border-slate-200 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-0 lg:w-20'} overflow-hidden`}>
+                {/* Mobile close button */}
+                <div className="h-12 flex items-center justify-end px-4 lg:hidden border-b border-slate-100">
+                    <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2.5 rounded-xl hover:bg-slate-100 text-slate-500">
                         {sidebarOpen ? <XIcon className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
                     </button>
                 </div>
