@@ -153,7 +153,7 @@ export const DashboardPage: React.FC = () => {
     );
 
     return (
-        <div className="min-h-screen bg-slate-50 flex">
+        <div className="min-h-screen bg-slate-50 flex pt-20">
             {/* Sidebar */}
             <aside className={`fixed lg:static inset-y-0 left-0 z-40 flex flex-col bg-white border-r border-slate-200 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-0 lg:w-20'} overflow-hidden`}>
                 {/* Logo Area */}

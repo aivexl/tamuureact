@@ -92,9 +92,9 @@ const App: React.FC = () => {
                                 {/* User Profile */}
                                 <Route path="/profile" element={<MainLayout><ProfilePage /></MainLayout>} />
 
-                                {/* Dashboard - has own sidebar layout */}
-                                <Route path="/dashboard" element={<DashboardPage />} />
-                                <Route path="/admin/dashboard" element={<DashboardPage />} />
+                                {/* Dashboard */}
+                                <Route path="/dashboard" element={<MainLayout><DashboardPage /></MainLayout>} />
+                                <Route path="/admin/dashboard" element={<MainLayout><DashboardPage /></MainLayout>} />
 
                                 {/* Editor Routes */}
                                 <Route path="/editor" element={<EditorPage />} />
@@ -108,10 +108,10 @@ const App: React.FC = () => {
                                 {/* Tools */}
                                 <Route path="/tools/background-remover" element={<MainLayout><BackgroundRemoverPage /></MainLayout>} />
 
-                                {/* Guest Management */}
-                                <Route path="/onboarding" element={<OnboardingPage />} />
-                                <Route path="/guests" element={<GuestManagementPage />} />
-                                <Route path="/guests/:invitationId" element={<GuestManagementPage />} />
+                                {/* Onboarding & Guest Management */}
+                                <Route path="/onboarding" element={<MainLayout><OnboardingPage /></MainLayout>} />
+                                <Route path="/guests" element={<MainLayout><GuestManagementPage /></MainLayout>} />
+                                <Route path="/guests/:invitationId" element={<MainLayout><GuestManagementPage /></MainLayout>} />
                             </>
                         ) : (
                             // Redirect app routes to landing on public domain

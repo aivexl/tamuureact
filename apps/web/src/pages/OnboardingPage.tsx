@@ -91,25 +91,18 @@ export const OnboardingPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col">
-            {/* Header / Nav */}
-            <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-50">
-                <Link to="/dashboard" className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-teal-500/20">T</div>
-                    <span className="text-xl font-black text-slate-900 tracking-tight">Tamuu</span>
-                </Link>
-                <div className="flex items-center gap-2">
-                    {[1, 2, 3].map(s => (
-                        <div key={s} className="flex items-center">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${currentStep >= s ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/20' : 'bg-slate-100 text-slate-400'}`}>
-                                {currentStep > s ? <CheckIcon className="w-4 h-4" /> : s}
-                            </div>
-                            {s < 3 && <div className={`w-10 h-0.5 mx-1 ${currentStep > s ? 'bg-teal-500' : 'bg-slate-200'}`} />}
+        <div className="min-h-screen bg-slate-50 flex flex-col pt-20">
+            {/* Step indicators */}
+            <div className="flex items-center justify-center gap-2 py-4 bg-white border-b border-slate-200">
+                {[1, 2, 3].map(s => (
+                    <div key={s} className="flex items-center">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${currentStep >= s ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/20' : 'bg-slate-100 text-slate-400'}`}>
+                            {currentStep > s ? <CheckIcon className="w-4 h-4" /> : s}
                         </div>
-                    ))}
-                </div>
-                <button onClick={() => navigate('/dashboard')} className="text-sm font-bold text-slate-400 hover:text-slate-600">Batal</button>
-            </header>
+                        {s < 3 && <div className={`w-10 h-0.5 mx-1 ${currentStep > s ? 'bg-teal-500' : 'bg-slate-200'}`} />}
+                    </div>
+                ))}
+            </div>
 
             <main className="flex-1 flex flex-col items-center py-12 px-6">
                 <AnimatePresence mode="wait">
