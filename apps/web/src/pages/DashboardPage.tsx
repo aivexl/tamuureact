@@ -115,6 +115,11 @@ const MonitorIcon = ({ className }: { className?: string }) => (
         <rect width="20" height="14" x="2" y="3" rx="2" /><line x1="8" x2="16" y1="21" y2="21" /><line x1="12" x2="12" y1="17" y2="21" />
     </svg>
 );
+const ScanIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 7V5a2 2 0 0 1 2-2h2" /><path d="M17 3h2a2 2 0 0 1 2 2v2" /><path d="M21 17v2a2 2 0 0 1-2 2h-2" /><path d="M7 21H5a2 2 0 0 1-2-2v-2" /><line x1="9" x2="15" y1="12" y2="12" /><line x1="12" x2="12" y1="9" y2="15" />
+    </svg>
+);
 
 
 // ============================================
@@ -143,14 +148,15 @@ const DUMMY_STATS = {
 // ============================================
 // MENU ITEMS
 // ============================================
-type TabId = 'dashboard' | 'invitations' | 'displays' | 'guests' | 'wishes' | 'invoice' | 'tutorial';
+type TabId = 'dashboard' | 'invitations' | 'displays' | 'guests' | 'scan' | 'wishes' | 'invoice' | 'tutorial';
 
 const menuItems: { id: TabId; label: string; icon: React.FC<{ className?: string }> }[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboardIcon },
-    { id: 'invitations', label: 'Undangan Saya', icon: MailIcon },
-    { id: 'displays', label: 'Desain Layar', icon: MonitorIcon },
+    { id: 'dashboard', label: 'Home', icon: LayoutDashboardIcon },
+    { id: 'invitations', label: 'Undangan', icon: MailIcon },
+    { id: 'displays', label: 'Display', icon: MonitorIcon },
     { id: 'guests', label: 'Buku Tamu', icon: UsersIcon },
-    { id: 'wishes', label: 'Ucapan Tamu', icon: MessageSquareIcon },
+    { id: 'scan', label: 'Scan', icon: ScanIcon },
+    { id: 'wishes', label: 'Ucapan', icon: MessageSquareIcon },
     { id: 'invoice', label: 'Invoice', icon: FileTextIcon },
     { id: 'tutorial', label: 'Tutorial', icon: GraduationCapIcon },
 ];
@@ -177,9 +183,9 @@ export const DashboardPage: React.FC = () => {
     );
 
     return (
-        <div className="min-h-screen bg-slate-50 flex pt-14">
-            {/* Sidebar */}
-            <aside className={`fixed lg:sticky top-14 left-0 z-40 flex flex-col bg-white border-r border-slate-200 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-0 lg:w-20'} h-[calc(100vh-3.5rem)] overflow-hidden`}>
+        <div className="min-h-screen bg-white md:bg-slate-50 flex flex-col md:flex-row pt-14 pb-24 md:pb-0">
+            {/* Sidebar (Desktop Only) */}
+            <aside className={`hidden md:flex fixed md:sticky top-14 left-0 z-40 flex-col bg-white border-r border-slate-200 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'} h-[calc(100vh-3.5rem)] overflow-hidden`}>
                 {/* User Profile Card */}
                 {sidebarOpen && (
                     <div className="p-6">
@@ -238,49 +244,65 @@ export const DashboardPage: React.FC = () => {
             {/* Mobile Sidebar Overlay */}
             {sidebarOpen && <div className="fixed inset-0 bg-black/20 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} style={{ top: '3.5rem' }} />}
 
+            {/* Mobile Bottom Navigation (Floating Pill Design) */}
+            <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-sm bg-slate-900/95 backdrop-blur-2xl border border-white/10 z-50 flex items-center justify-around px-2 py-3 rounded-[2.5rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)]">
+                {menuItems.slice(0, 5).map(item => (
+                    <button
+                        key={item.id}
+                        onClick={() => setActiveTab(item.id)}
+                        className={`flex flex-col items-center gap-1 transition-all ${activeTab === item.id ? 'text-teal-400' : 'text-slate-400'}`}
+                    >
+                        <div className={`w-11 h-11 rounded-[1.25rem] flex items-center justify-center transition-all ${activeTab === item.id ? 'bg-teal-400/20 shadow-[0_0_20px_rgba(45,212,191,0.2)]' : 'bg-transparent'}`}>
+                            <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-teal-400' : 'text-slate-400'}`} />
+                        </div>
+                        <span className="text-[9px] font-black uppercase tracking-widest">{item.label}</span>
+                    </button>
+                ))}
+            </div>
+
             {/* Main Content */}
-            <main className="flex-1 flex flex-col min-h-[calc(100vh-3.5rem)]">
+            <main className="flex-1 flex flex-col min-h-[calc(100vh-3.5rem)] w-full overflow-x-hidden">
                 {/* Content Area */}
-                <div className="flex-1 p-8 bg-gradient-to-br from-slate-50 via-white to-teal-50/30">
+                <div className="flex-1 p-4 md:p-8 bg-gradient-to-br from-white via-white to-teal-50/20 md:from-slate-50 md:via-white md:to-teal-50/30">
                     <AnimatePresence mode="wait">
                         {/* Dashboard Tab */}
                         {activeTab === 'dashboard' && (
                             <m.div key="dashboard" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-10">
                                 {/* Welcome Section */}
                                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                                    <div>
-                                        <h2 className="text-3xl font-bold text-slate-900 mb-2">Selamat datang, {DUMMY_USER.name} ✨</h2>
-                                        <p className="text-slate-500 text-lg">Berikut adalah ringkasan performa undangan Anda hari ini.</p>
+                                    <div className="pt-2 md:pt-0">
+                                        <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-1 md:mb-2 leading-tight">Selamat datang,<br className="md:hidden" /> {DUMMY_USER.name} ✨</h2>
+                                        <p className="text-slate-500 text-sm md:text-lg">Berikut ringkasan performa hari ini.</p>
                                     </div>
-                                    <Link to="/onboarding" className="flex items-center justify-center gap-2 px-6 py-3.5 bg-slate-900 text-white font-semibold rounded-2xl shadow-xl shadow-slate-900/10 hover:shadow-2xl hover:shadow-slate-900/20 hover:-translate-y-0.5 transition-all active:scale-95">
+                                    <Link to="/onboarding" className="flex items-center justify-center gap-2 px-6 py-4 md:py-3.5 bg-slate-900 text-white font-black rounded-2xl shadow-xl shadow-slate-900/10 hover:shadow-2xl hover:shadow-slate-900/20 hover:-translate-y-0.5 transition-all active:scale-95 text-sm md:text-base">
                                         <PlusIcon className="w-5 h-5" /> Buat Undangan Baru
                                     </Link>
                                 </div>
 
                                 {/* Stats Cards */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                                     {[
-                                        { label: 'Undangan Saya', value: DUMMY_STATS.invitations, icon: MailIcon, color: 'teal', badge: 'Total' },
-                                        { label: 'Total Tamu', value: DUMMY_STATS.guests, icon: UsersIcon, color: 'emerald', badge: 'Pax' },
-                                        { label: 'Pengunjung', value: DUMMY_STATS.views, icon: EyeIcon, color: 'blue', badge: 'Views' },
-                                        { label: 'RSVP Terkirim', value: DUMMY_STATS.rsvp, icon: CalendarIcon, color: 'purple', badge: 'Confirm' },
+                                        { label: 'Undangan', value: DUMMY_STATS.invitations, icon: MailIcon, color: 'teal', badge: 'Total' },
+                                        { label: 'Tamu', value: DUMMY_STATS.guests, icon: UsersIcon, color: 'emerald', badge: 'Pax' },
+                                        { label: 'Visitor', value: DUMMY_STATS.views, icon: EyeIcon, color: 'blue', badge: 'Views' },
+                                        { label: 'RSVP', value: DUMMY_STATS.rsvp, icon: CalendarIcon, color: 'purple', badge: 'Conf' },
                                     ].map((stat, i) => (
                                         <m.div
                                             key={stat.label}
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: i * 0.1 }}
-                                            className="group bg-white/70 backdrop-blur-xl rounded-3xl p-7 border border-white/60 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.03)] hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-500"
+                                            className="group bg-white rounded-2xl md:rounded-3xl p-4 md:p-7 border border-slate-100 md:border-white/60 shadow-sm md:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.03)] hover:-translate-y-1 transition-all duration-500"
                                         >
-                                            <div className="flex items-center justify-between mb-4">
-                                                <div className={`w-14 h-14 rounded-2xl bg-${stat.color}-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500`}>
-                                                    <stat.icon className={`w-7 h-7 text-${stat.color}-600`} />
+                                            <div className="flex items-center justify-between mb-3 md:mb-4">
+                                                <div className={`w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-${stat.color}-500/10 flex items-center justify-center`}>
+                                                    <stat.icon className={`w-5 h-5 md:w-7 md:h-7 text-${stat.color}-600`} />
                                                 </div>
-                                                <span className={`text-xs font-bold text-${stat.color}-600 px-3 py-1 bg-${stat.color}-50 rounded-full uppercase tracking-wider`}>{stat.badge}</span>
+                                                <span className={`text-[8px] md:text-xs font-black text-${stat.color}-600 px-2 py-0.5 bg-${stat.color}-50 rounded-full uppercase tracking-wider`}>{stat.badge}</span>
                                             </div>
                                             <div>
-                                                <p className="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-1">{stat.label}</p>
-                                                <p className="text-4xl font-bold text-slate-900">{stat.value.toLocaleString()}</p>
+                                                <p className="text-[10px] md:text-sm font-black text-slate-400 uppercase tracking-widest mb-0.5 md:mb-1">{stat.label}</p>
+                                                <p className="text-2xl md:text-4xl font-bold text-slate-900">{stat.value.toLocaleString()}</p>
                                             </div>
                                         </m.div>
                                     ))}
@@ -289,33 +311,33 @@ export const DashboardPage: React.FC = () => {
                                 {/* Recent Invitations */}
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                                     <div className="lg:col-span-2 space-y-6">
-                                        <div className="flex items-center justify-between">
-                                            <h3 className="text-xl font-bold text-slate-900">Undangan Terbaru</h3>
-                                            <button onClick={() => setActiveTab('invitations')} className="text-sm font-bold text-teal-600 hover:text-teal-700 transition-colors">Lihat Semua</button>
+                                        <div className="flex items-center justify-between px-1">
+                                            <h3 className="text-lg md:text-xl font-black text-slate-900">Undangan Terbaru</h3>
+                                            <button onClick={() => setActiveTab('invitations')} className="text-xs font-black text-teal-600 hover:text-teal-700 transition-colors uppercase tracking-widest">Lihat Semua</button>
                                         </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                                             {DUMMY_INVITATIONS.slice(0, 3).map(inv => (
                                                 <div key={inv.id} className="group bg-white rounded-2xl border border-slate-200/60 overflow-hidden hover:shadow-xl hover:border-teal-400/30 transition-all duration-500">
                                                     <div className="aspect-video relative overflow-hidden">
                                                         <img src={inv.thumbnail} alt={inv.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4">
                                                             <div className="flex gap-2">
-                                                                <button className="p-2.5 bg-white/90 backdrop-blur-md rounded-xl hover:bg-white text-slate-900 transition-all">
+                                                                <button className="p-2 bg-white/90 backdrop-blur-md rounded-xl hover:bg-white text-slate-900 transition-all">
                                                                     <EyeIcon className="w-5 h-5" />
                                                                 </button>
-                                                                <Link to={`/editor/${inv.id}`} className="p-2.5 bg-white/90 backdrop-blur-md rounded-xl hover:bg-white text-slate-900 transition-all">
+                                                                <Link to={`/editor/${inv.id}`} className="p-2 bg-white/90 backdrop-blur-md rounded-xl hover:bg-white text-slate-900 transition-all">
                                                                     <Edit3Icon className="w-5 h-5" />
                                                                 </Link>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div className="p-5">
-                                                        <h5 className="font-bold text-slate-900 truncate mb-1 text-sm">{inv.name}</h5>
-                                                        <p className="text-[10px] text-slate-500 truncate mb-3 capitalize">tamuu.id/{inv.slug}</p>
+                                                    <div className="p-4 md:p-5">
+                                                        <h5 className="font-bold text-slate-900 truncate mb-1 text-xs md:text-sm">{inv.name}</h5>
+                                                        <p className="text-[10px] text-slate-400 truncate mb-3 lowercase">tamuu.id/{inv.slug}</p>
                                                         <div className="flex items-center justify-between mt-auto">
                                                             <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${inv.status === 'published' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>{inv.status}</span>
-                                                            <button className="text-xs font-bold text-slate-900 hover:text-teal-600 transition-colors flex items-center gap-1.5">
+                                                            <button className="text-[10px] font-black text-slate-900 hover:text-teal-600 transition-colors flex items-center gap-1.5">
                                                                 <UsersIcon className="w-3.5 h-3.5" /> Tamu
                                                             </button>
                                                         </div>
@@ -326,19 +348,18 @@ export const DashboardPage: React.FC = () => {
                                     </div>
 
                                     {/* Upgrade Card */}
-                                    <div className="space-y-6">
-                                        <h3 className="text-xl font-bold text-slate-900">Layanan & Akun</h3>
-                                        <div className="bg-slate-900 text-white rounded-[2rem] p-8 relative overflow-hidden group">
+                                    <div className="space-y-6 md:mt-2">
+                                        <h3 className="text-lg md:text-xl font-black text-slate-900 px-1">Layanan & Akun</h3>
+                                        <div className="bg-slate-900 text-white rounded-[2rem] p-7 md:p-8 relative overflow-hidden group shadow-2xl shadow-slate-900/40">
                                             <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/20 rounded-full blur-3xl -mr-10 -mt-10 group-hover:scale-125 transition-transform duration-700" />
                                             <div className="relative z-10 flex flex-col h-full">
                                                 <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center mb-6">
                                                     <SparklesIcon className="w-6 h-6 text-teal-400" />
                                                 </div>
-                                                <h4 className="text-2xl font-bold mb-4">Ganti ke Priority</h4>
-                                                <p className="text-slate-400 mb-8 leading-relaxed text-sm">Buka semua fitur mewah, domain kustom, dan kapasitas tamu tanpa batas.</p>
-                                                <Link to="/onboarding" className="inline-flex items-center gap-2 px-8 py-4 bg-teal-600 text-white font-bold rounded-2xl hover:bg-teal-700 transition-all shadow-xl shadow-teal-600/20 active:scale-95">
-                                                    <PlusIcon className="w-5 h-5" />
-                                                    Mulai Buat Undangan Pertama
+                                                <h4 className="text-xl md:text-2xl font-black mb-3">Ganti ke Priority</h4>
+                                                <p className="text-slate-400 mb-8 leading-relaxed text-xs md:text-sm">Buka fitur premium, domain kustom, & kapasitas tamu tanpa batas.</p>
+                                                <Link to="/onboarding" className="inline-flex items-center justify-center gap-2 px-6 py-4 bg-teal-600 text-white font-black rounded-2xl hover:bg-teal-700 transition-all shadow-xl shadow-teal-600/20 active:scale-95 text-sm">
+                                                    Upgrade Sekarang
                                                 </Link>
                                             </div>
                                         </div>
@@ -352,14 +373,14 @@ export const DashboardPage: React.FC = () => {
                             <m.div key="invitations" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-8">
                                 {/* Search & Actions */}
                                 <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                                    <div className="relative flex-1 max-w-xl w-full">
-                                        <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                    <div className="relative flex-1 w-full order-2 md:order-1">
+                                        <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-slate-400" />
                                         <input
                                             type="text"
                                             value={searchQuery}
                                             onChange={e => setSearchQuery(e.target.value)}
-                                            placeholder="Cari undangan digital Anda..."
-                                            className="w-full pl-12 pr-6 py-4 bg-white/70 backdrop-blur-sm border border-slate-200/60 rounded-2xl focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all shadow-sm"
+                                            placeholder="Cari undangan..."
+                                            className="w-full pl-11 md:pl-12 pr-6 py-3.5 md:py-4 bg-white/70 backdrop-blur-sm border border-slate-200/60 rounded-2xl focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all shadow-sm text-sm"
                                         />
                                     </div>
                                     <div className="flex gap-3 w-full md:w-auto">
@@ -426,10 +447,10 @@ export const DashboardPage: React.FC = () => {
                         {/* Guests Tab */}
                         {activeTab === 'guests' && (
                             <m.div key="guests" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6">
-                                <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-between pt-2 md:pt-0">
                                     <div>
-                                        <h2 className="text-2xl font-bold text-slate-800">Kelola Buku Tamu</h2>
-                                        <p className="text-slate-500">Pilih undangan untuk mengelola daftar tamu Anda.</p>
+                                        <h2 className="text-2xl md:text-3xl font-black text-slate-900 leading-tight">Kelola Buku Tamu</h2>
+                                        <p className="text-slate-500 text-sm">Targetkan tamu untuk setiap acara Anda.</p>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -453,6 +474,66 @@ export const DashboardPage: React.FC = () => {
 
                                         </div>
                                     ))}
+                                </div>
+                            </m.div>
+                        )}
+
+                        {/* Scan Tab */}
+                        {activeTab === 'scan' && (
+                            <m.div key="scan" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6">
+                                <div className="flex items-center justify-between pt-2 md:pt-0">
+                                    <div>
+                                        <h2 className="text-2xl md:text-3xl font-black text-slate-900 leading-tight">Scanner Hub</h2>
+                                        <p className="text-slate-500 text-sm">Pilih acara untuk aktivasi real-time sync.</p>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {DUMMY_INVITATIONS.map((inv, i) => (
+                                        <m.div
+                                            key={inv.id}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: i * 0.1 }}
+                                            className="group bg-white rounded-3xl border border-slate-200 p-6 hover:shadow-2xl hover:border-teal-400 transition-all duration-500 relative overflow-hidden"
+                                        >
+                                            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-100 transition-opacity">
+                                                <ScanIcon className="w-12 h-12 text-teal-600" />
+                                            </div>
+
+                                            <div className="flex items-center gap-4 mb-6">
+                                                <div className="w-14 h-14 rounded-2xl bg-teal-50 flex items-center justify-center shadow-inner">
+                                                    <MailIcon className="w-7 h-7 text-teal-600" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className="font-bold text-slate-900 truncate text-lg group-hover:text-teal-600 transition-colors uppercase tracking-tight">{inv.name}</h3>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+                                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Ready to Sync</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                onClick={() => navigate(`/guests/scan/${inv.id}`)}
+                                                className="w-full py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-teal-500 hover:text-slate-900 transition-all active:scale-95 flex items-center justify-center gap-2"
+                                            >
+                                                <ScanIcon className="w-5 h-5" />
+                                                Buka Scanner
+                                            </button>
+                                        </m.div>
+                                    ))}
+                                </div>
+
+                                {/* Scanner Pro Tip */}
+                                <div className="mt-8 md:mt-12 bg-slate-900 text-white rounded-[2rem] p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 md:gap-8 overflow-hidden relative group">
+                                    <div className="absolute top-0 left-0 w-full h-full bg-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl md:rounded-3xl bg-teal-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-teal-500/40">
+                                        <SparklesIcon className="w-8 h-8 md:w-10 md:h-10 text-white" />
+                                    </div>
+                                    <div className="flex-1 text-center md:text-left relative z-10">
+                                        <h4 className="text-lg md:text-xl font-black mb-2">Gunakan Smartphone 📱</h4>
+                                        <p className="text-slate-400 leading-relaxed text-xs md:text-sm">Fitur scanner dioptimalkan untuk responsivitas maksimal pada Google Chrome (Android) & Safari (iOS).</p>
+                                    </div>
                                 </div>
                             </m.div>
                         )}

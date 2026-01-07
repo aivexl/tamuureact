@@ -5,12 +5,13 @@ import { createCanvasSlice, CanvasState } from './canvasSlice';
 import { createLayersSlice, LayersState, Layer, LayerType, AnimationType, TextStyle, IconStyle, CountdownConfig, ButtonConfig, ShapeConfig, MapsConfig, MotionPathPoint, MotionPathConfig } from './layersSlice';
 import { createUISlice, UIState } from './uiSlice';
 import { createSectionsSlice, SectionsState, Section, PredefinedSectionType, SECTION_ICONS, SECTION_LABELS, PREDEFINED_SECTION_TYPES, ZoomPoint, ZoomConfig } from './sectionsSlice';
+import { createAuthSlice, AuthState } from './authSlice';
 import { sanitizeValue } from '@/lib/utils';
 
 // ============================================
 // COMBINED STORE TYPE
 // ============================================
-type StoreState = CanvasState & LayersState & UIState & SectionsState;
+type StoreState = CanvasState & LayersState & UIState & SectionsState & AuthState;
 
 // ============================================
 // MAIN STORE WITH UNDO/REDO
@@ -23,6 +24,7 @@ export const useStore = create<StoreState>()(
                 ...createLayersSlice(...a),
                 ...createUISlice(...a),
                 ...createSectionsSlice(...a),
+                ...createAuthSlice(...a),
             }),
             {
                 limit: 50,
@@ -49,7 +51,9 @@ export const useStore = create<StoreState>()(
                 slug: state.slug,
                 projectName: state.projectName,
                 id: state.id,
-                orbit: state.orbit
+                orbit: state.orbit,
+                user: state.user,
+                token: state.token
             }),
             onRehydrateStorage: () => (state) => {
                 if (state) {

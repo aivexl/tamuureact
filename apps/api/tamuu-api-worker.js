@@ -194,32 +194,47 @@ export default {
                 return json({ id, deleted: true }, corsHeaders);
             }
 
-            // Real-time Display Trigger (Host Remote)
-            if (path.startsWith('/api/trigger/') && method === 'GET') {
+            // Welcome Elite: Real-time Multi-Device Command Bus
+            if (path.startsWith('/api/trigger/') && (method === 'GET' || method === 'POST')) {
                 const parts = path.split('/');
                 const id = parts[3];
-                const effect = parts[4] || 'confetti';
 
-                // We update BOTH user_display_designs and invitations to be safe
-                // (Since "Display Welcome" might be an invitation with display type)
+                let effect = parts[4] || 'confetti';
+                let guestName = '';
+                let style = 'cinematic';
 
-                // Try updating user_display_designs
+                if (method === 'POST') {
+                    const body = await request.json();
+                    effect = body.effect || effect;
+                    guestName = body.name || '';
+                    style = body.style || 'cinematic';
+                }
+
+                const timestamp = Date.now();
+                const triggerPayload = JSON.stringify({
+                    effect,
+                    name: guestName,
+                    style,
+                    timestamp
+                });
+
+                // CTO Optimization: Use D1 prepared statements to broadcast to display designs
                 await env.DB.prepare(`
                     UPDATE user_display_designs 
-                    SET content = json_set(COALESCE(content, '{}'), '$.activeTrigger', json_object('effect', ?, 'timestamp', ?)),
+                    SET content = json_set(COALESCE(content, '{}'), '$.activeTrigger', json(?)),
                         updated_at = datetime('now')
                     WHERE id = ?
-                `).bind(effect, Date.now(), id).run();
+                `).bind(triggerPayload, id).run();
 
-                // Also try updating invitations (if slug is used as ID)
+                // Broadcast to invitations (slug or ID)
                 await env.DB.prepare(`
                     UPDATE invitations 
-                    SET sections = json_set(COALESCE(sections, '[]'), '$[0].activeTrigger', json_object('effect', ?, 'timestamp', ?)),
+                    SET sections = json_set(COALESCE(sections, '[]'), '$[0].activeTrigger', json(?)),
                         updated_at = datetime('now')
                     WHERE id = ? OR slug = ?
-                `).bind(effect, Date.now(), id, id).run();
+                `).bind(triggerPayload, id, id).run();
 
-                return new Response(`Triggered: ${effect}`, { headers: corsHeaders });
+                return json({ triggered: true, effect, name: guestName }, corsHeaders);
             }
 
             // ============================================

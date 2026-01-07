@@ -11,9 +11,11 @@ import {
     CreditCard
 } from 'lucide-react';
 
+import { useStore } from '../../store/useStore';
+
 export const Navbar: React.FC = () => {
-    // Mocking auth state - in production this would come from a real auth hook/store
-    const isLoggedIn = true; // Set to true for demonstration
+    const { isAuthenticated, user, logout } = useStore();
+    const isLoggedIn = isAuthenticated;
 
     const [isScrolled, setIsScrolled] = useState(false);
     const [scrollPos, setScrollPos] = useState(0);
@@ -151,7 +153,7 @@ export const Navbar: React.FC = () => {
                         !isAppRoute && (
                             <div className="hidden lg:flex items-center gap-4">
                                 <Link
-                                    to="/admin/dashboard"
+                                    to="/login"
                                     className={`text-sm font-bold transition-colors px-4 py-2 ${isDarkTheme
                                         ? 'text-slate-700 hover:text-rose-600'
                                         : 'text-white hover:text-white'
@@ -181,11 +183,11 @@ export const Navbar: React.FC = () => {
                                     }`}
                             >
                                 <div className="flex flex-col items-end hidden md:flex">
-                                    <span className={`text-sm font-bold leading-tight ${isDarkTheme ? 'text-slate-900' : 'text-white'}`}>Anisa Rahma</span>
+                                    <span className={`text-sm font-bold leading-tight ${isDarkTheme ? 'text-slate-900' : 'text-white'}`}>{user?.name || 'User'}</span>
                                     <span className="text-[10px] font-black uppercase tracking-widest text-teal-500">Premium</span>
                                 </div>
                                 <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white font-black shadow-lg shadow-teal-500/20 ring-2 ring-white/10 group-hover:ring-teal-500 transition-all">
-                                    A
+                                    {user?.name?.charAt(0) || 'U'}
                                 </div>
                                 <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''} ${isDarkTheme ? 'text-slate-400' : 'text-white/40'}`} />
                             </button>
@@ -204,7 +206,7 @@ export const Navbar: React.FC = () => {
                                     >
                                         <div className={`p-4 border-b ${isDarkTheme ? 'bg-slate-50/50 border-slate-100' : 'bg-white/5 border-white/5'}`}>
                                             <p className={`text-xs font-black uppercase tracking-[0.2em] mb-1 ${isDarkTheme ? 'text-slate-400' : 'text-white/30'}`}>Akun Anda</p>
-                                            <p className={`font-bold truncate ${isDarkTheme ? 'text-slate-900' : 'text-white'}`}>anisa.rahma@gmail.com</p>
+                                            <p className={`font-bold truncate ${isDarkTheme ? 'text-slate-900' : 'text-white'}`}>{user?.email || 'user@example.com'}</p>
                                         </div>
 
                                         <div className="p-2">
@@ -225,7 +227,13 @@ export const Navbar: React.FC = () => {
                                         <div className={`mx-2 h-px ${isDarkTheme ? 'bg-slate-100' : 'bg-white/5'}`} />
 
                                         <div className="p-2">
-                                            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-rose-500 hover:bg-rose-500/10 transition-colors text-left">
+                                            <button
+                                                onClick={() => {
+                                                    logout();
+                                                    navigate('/');
+                                                }}
+                                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-rose-500 hover:bg-rose-500/10 transition-colors text-left"
+                                            >
                                                 <LogOut className="w-4 h-4" />
                                                 <span className="text-sm font-bold">Keluar Aplikasi</span>
                                             </button>
@@ -288,7 +296,7 @@ export const Navbar: React.FC = () => {
                                     {!isLoggedIn ? (
                                         <>
                                             <Link
-                                                to="/admin/dashboard"
+                                                to="/login"
                                                 className={`text-center py-3 font-extrabold rounded-xl border transition-all ${isDarkTheme
                                                     ? 'text-slate-900 border-slate-200 hover:bg-slate-50'
                                                     : 'text-white border-white/20 hover:bg-white/10'

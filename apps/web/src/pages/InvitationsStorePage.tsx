@@ -91,17 +91,78 @@ export const InvitationsStorePage: React.FC = () => {
                 // 1. Get the full template data
                 const templateData = await templatesApi.get(templateId);
 
-                // 2. Create the invitation using template data
+                // 2. Read Magic Data from Onboarding
+                const rawOnboardingData = localStorage.getItem('tamuu_onboarding_data');
+                const magic = rawOnboardingData ? JSON.parse(rawOnboardingData) : null;
+
+                // 3. Apply Magic Sync (Inject data into sections)
+                let sections = templateData.sections || [];
+                if (magic) {
+                    let magicJson = JSON.stringify(sections);
+
+                    // A. Text Replacement
+                    magicJson = magicJson
+                        .replace(/Mempelai Pria/g, magic.groomName || 'Mempelai Pria')
+                        .replace(/Mempelai Wanita/g, magic.brideName || 'Mempelai Wanita')
+                        .replace(/Nama Mempelai/g, magic.celebrantName || magic.invitationName || 'Nama Mempelai')
+                        .replace(/0000000000/g, magic.accountNumber || '0000000000')
+                        .replace(/Nama Bank/g, magic.bankName || 'Nama Bank')
+                        .replace(/Atas Nama/g, magic.accountHolder || 'Atas Nama')
+                        .replace(/Lokasi Acara/g, magic.eventLocation || 'Lokasi Acara');
+
+                    // B. Photo Injection (Heuristic-based)
+                    try {
+                        const parsedSections = JSON.parse(magicJson);
+                        parsedSections.forEach((section: any) => {
+                            if (section.layers) {
+                                section.layers.forEach((layer: any) => {
+                                    // Main Photo
+                                    if (magic.photoPreview && (layer.name?.toLowerCase().includes('foto utama') || layer.name?.toLowerCase().includes('hero'))) {
+                                        layer.url = magic.photoPreview;
+                                    }
+                                    // Groom Photo
+                                    if (magic.groomPhoto && layer.name?.toLowerCase().includes('pria')) {
+                                        layer.url = magic.groomPhoto;
+                                    }
+                                    // Bride Photo
+                                    if (magic.bridePhoto && layer.name?.toLowerCase().includes('wanita')) {
+                                        layer.url = magic.bridePhoto;
+                                    }
+                                    // Gallery Photos
+                                    if (magic.galleryPhotos?.length > 0 && layer.name?.toLowerCase().includes('gallery')) {
+                                        const match = layer.name.match(/gallery\s*(\d+)/i);
+                                        if (match) {
+                                            const idx = parseInt(match[1]) - 1;
+                                            if (magic.galleryPhotos[idx]) {
+                                                layer.url = magic.galleryPhotos[idx];
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                        sections = parsedSections;
+                    } catch (e) {
+                        console.error('Magic Sync Photo Injection Error:', e);
+                        sections = JSON.parse(magicJson);
+                    }
+                }
+
+                // 4. Create the invitation using synced data
                 const newInvitation = await invitationsApi.create({
                     ...templateData,
                     id: undefined, // Let the backend generate a new UUID
                     template_id: templateId,
-                    name: onboardingName || `Undangan ${onboardingSlug}`,
+                    name: onboardingName || magic?.invitationName || `Undangan ${onboardingSlug}`,
                     slug: onboardingSlug,
+                    sections: sections,
                     is_published: false
                 });
 
-                // 3. Navigate to the user editor with the new ID
+                // Clear storage after successful use
+                localStorage.removeItem('tamuu_onboarding_data');
+
+                // 5. Navigate to the user editor with the new ID
                 navigate(`/user/editor/${newInvitation.id}`);
             } catch (error) {
                 console.error('Failed to create invitation:', error);

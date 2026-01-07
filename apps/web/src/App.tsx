@@ -20,6 +20,8 @@ const getIsAppDomain = (): boolean => {
 // ============================================
 // Eagerly load public pages for instant rendering and better PSI scores
 import { LandingPage } from './pages/LandingPage';
+import { LoginPage } from './pages/LoginPage';
+import { SignupPage } from './pages/SignupPage';
 const InvitationsStorePage = lazy(() => import('./pages/InvitationsStorePage').then(m => ({ default: m.InvitationsStorePage })));
 
 // Lazy load heavy admin/editor pages (app.tamuu.id only)
@@ -39,6 +41,7 @@ const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage').then(
 const DisplayEditorPage = lazy(() => import('./pages/DisplayEditorPage').then(m => ({ default: m.DisplayEditorPage })));
 const RemoteTriggerPage = lazy(() => import('./pages/RemoteTriggerPage').then(m => ({ default: m.RemoteTriggerPage })));
 const AdminDisplayPreviewPage = lazy(() => import('./pages/AdminDisplayPreviewPage').then(m => ({ default: m.AdminDisplayPreviewPage })));
+const GuestScannerPage = lazy(() => import('./pages/GuestScannerPage').then(m => ({ default: m.GuestScannerPage })));
 
 
 const LoadingFallback = () => (
@@ -89,6 +92,10 @@ const App: React.FC = () => {
                         {/* Public Store */}
                         <Route path="/invitations" element={<MainLayout><InvitationsStorePage /></MainLayout>} />
 
+                        {/* Public Auth */}
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/signup" element={<SignupPage />} />
+
                         {/* Preview Routes - Public for sharing */}
                         <Route path="/preview/:slug" element={<PreviewPage />} />
 
@@ -127,6 +134,7 @@ const App: React.FC = () => {
                                 <Route path="/wishes" element={<MainLayout><GuestWishesPage /></MainLayout>} />
                                 <Route path="/welcome/:invitationId/:guestId" element={<GuestWelcomePage />} />
                                 <Route path="/display/:slug" element={<GuestWelcomeDisplay />} />
+                                <Route path="/guests/scan/:id" element={<GuestScannerPage />} />
                             </>
 
                         ) : (
