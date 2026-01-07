@@ -114,6 +114,8 @@ pnpm deploy:api    # Deploy API to Cloudflare Workers
   - Multi-section support
   - Copy/paste between canvases
 - **Template Store** - Galeri template undangan
+- **Admin Dashboard** - Dedicated control center for system management
+- **Display Editor** - Landscape (1920x1080) editor for TV displays
 
 ---
 

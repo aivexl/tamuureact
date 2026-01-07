@@ -5,7 +5,9 @@ import { generateId } from '@/lib/utils';
 import {
     Type, Image as ImageIcon, Clock, MailOpen,
     Heart, Square, Film, MapPin, Video, Sparkles, X,
-    MessageSquare, Users, Circle, Triangle, Diamond, Star, Zap, Wind, Layout
+    MessageSquare, Users, Circle, Triangle, Diamond, Star, Zap, Wind, Layout,
+    Gift, Music, QrCode, Waves, Layers, Monitor, Share2, Sun, Hash, PlaySquare,
+    Component, Palette, Eye
 } from 'lucide-react';
 
 const CANVAS_WIDTH = 414;
@@ -322,6 +324,324 @@ const elementConfigs: ElementConfig[] = [
                 hoverEffect: 'none'
             }
         })
+    },
+    // ============================================
+    // ENTERPRISE V3 ELEMENTS (Unicorn Standard)
+    // ============================================
+    {
+        type: 'confetti',
+        icon: <Sparkles className="w-5 h-5" />,
+        label: 'Confetti',
+        color: 'hover:bg-yellow-500/10 hover:border-yellow-500/30',
+        createDefault: () => ({
+            width: 320,
+            height: 320,
+            confettiConfig: {
+                colors: ['#FFD700', '#FF69B4', '#00BFFF', '#7CFC00'],
+                particleCount: 50,
+                spread: 70,
+                origin: { x: 0.5, y: 0.5 },
+                gravity: 1,
+                drift: 0,
+                ticks: 200
+            }
+        })
+    },
+    {
+        type: 'fireworks',
+        icon: <Zap className="w-5 h-5" />,
+        label: 'Fireworks',
+        color: 'hover:bg-orange-500/10 hover:border-orange-500/30',
+        createDefault: () => ({
+            width: 414,
+            height: 400,
+            fireworksConfig: {
+                colors: ['#FFD700', '#FF4500', '#FF00FF'],
+                burstCount: 3,
+                particleCount: 40,
+                speed: 3
+            }
+        })
+    },
+    {
+        type: 'bubbles',
+        icon: <Circle className="w-5 h-5" />,
+        label: 'Bubbles',
+        color: 'hover:bg-blue-300/10 hover:border-blue-300/30',
+        createDefault: () => ({
+            width: 414,
+            height: 896,
+            particlesConfig: {
+                type: 'bubbles',
+                color: '#ffffff',
+                density: 20,
+                speed: 1,
+                size: 8
+            }
+        })
+    },
+    {
+        type: 'snow',
+        icon: <Wind className="w-5 h-5" />,
+        label: 'Snow',
+        color: 'hover:bg-slate-100/10 hover:border-slate-100/30',
+        createDefault: () => ({
+            width: 414,
+            height: 896,
+            particlesConfig: {
+                type: 'snow',
+                color: '#ffffff',
+                density: 50,
+                speed: 0.5,
+                size: 3
+            }
+        })
+    },
+    {
+        type: 'digital_gift',
+        icon: <Gift className="w-5 h-5" />,
+        label: 'Angpao',
+        color: 'hover:bg-red-500/10 hover:border-red-500/30',
+        createDefault: () => ({
+            width: 280,
+            height: 220,
+            digitalGiftConfig: {
+                title: 'Kado Digital',
+                description: 'Doa restu Anda adalah kado terindah...',
+                bankName: 'Bank Central Asia',
+                accountNumber: '1234567890',
+                accountHolder: 'John Doe',
+                buttonText: 'Salin Rekening',
+                theme: 'gold'
+            }
+        })
+    },
+    {
+        type: 'music_player',
+        icon: <Music className="w-5 h-5" />,
+        label: 'Music',
+        color: 'hover:bg-violet-500/10 hover:border-violet-500/30',
+        createDefault: () => ({
+            width: 300,
+            height: 80,
+            musicPlayerConfig: {
+                audioUrl: '',
+                title: 'Song Title',
+                artist: 'Artist Name',
+                autoplay: true,
+                loop: true,
+                visualizerEnabled: true,
+                visualizerColor: '#bfa181'
+            }
+        })
+    },
+    {
+        type: 'qr_code',
+        icon: <QrCode className="w-5 h-5" />,
+        label: 'Interactive QR',
+        color: 'hover:bg-purple-500/10 hover:border-purple-500/30',
+        createDefault: () => ({
+            width: 150,
+            height: 150,
+            qrCodeConfig: {
+                value: 'https://tamuu.id',
+                size: 150,
+                darkColor: '#000000',
+                lightColor: '#ffffff',
+                includeMargin: true,
+                interactiveEnabled: true,
+                successEffect: 'confetti'
+            }
+        })
+    },
+    {
+        type: 'calendar_sync',
+        icon: <Clock className="w-5 h-5" />,
+        label: 'Calendar',
+        color: 'hover:bg-blue-500/10 hover:border-blue-500/30',
+        createDefault: () => ({
+            width: 200,
+            height: 50
+        })
+    },
+    {
+        type: 'svg_wave',
+        icon: <Waves className="w-5 h-5" />,
+        label: 'Wave',
+        color: 'hover:bg-blue-400/10 hover:border-blue-400/30',
+        createDefault: () => ({
+            width: 414,
+            height: 100,
+            waveConfig: {
+                type: 'wave',
+                color: '#bfa181',
+                opacity: 0.5,
+                amplitude: 20,
+                frequency: 0.01,
+                points: 3,
+                speed: 1
+            }
+        })
+    },
+    {
+        type: 'generative_blob',
+        icon: <Component className="w-5 h-5" />,
+        label: 'Blob',
+        color: 'hover:bg-indigo-400/10 hover:border-indigo-400/30',
+        createDefault: () => ({
+            width: 200,
+            height: 200,
+            waveConfig: {
+                type: 'blob',
+                color: '#bfa181',
+                opacity: 0.3,
+                amplitude: 40,
+                frequency: 0.02,
+                points: 6,
+                speed: 0.5
+            }
+        })
+    },
+    {
+        type: 'glass_card',
+        icon: <Palette className="w-5 h-5" />,
+        label: 'Glass',
+        color: 'hover:bg-white/10 hover:border-white/30',
+        createDefault: () => ({
+            width: 300,
+            height: 200,
+            glassCardConfig: {
+                blur: 10,
+                opacity: 0.1,
+                borderColor: '#ffffff',
+                borderWidth: 1,
+                saturation: 100
+            }
+        })
+    },
+    {
+        type: 'infinite_marquee',
+        icon: <Hash className="w-5 h-5" />,
+        label: 'Marquee',
+        color: 'hover:bg-lime-500/10 hover:border-lime-500/30',
+        createDefault: () => ({
+            width: 414,
+            height: 60,
+            content: 'ENTERPRISE LEVEL • UNICORN STANDARDS • AWARD WINNING DESIGN',
+            infiniteMarqueeConfig: {
+                enabled: true,
+                mode: 'seamless',
+                speed: 50,
+                direction: 'left'
+            }
+        })
+    },
+    {
+        type: 'tilt_card',
+        icon: <Layers className="w-5 h-5" />,
+        label: '3D Card',
+        color: 'hover:bg-fuchsia-500/10 hover:border-fuchsia-500/30',
+        createDefault: () => ({
+            width: 300,
+            height: 400
+        })
+    },
+    {
+        type: 'social_mockup',
+        icon: <Monitor className="w-5 h-5" />,
+        label: 'Social',
+        color: 'hover:bg-sky-500/10 hover:border-sky-500/30',
+        createDefault: () => ({
+            width: 320,
+            height: 120,
+            socialMockupConfig: {
+                platform: 'instagram',
+                username: 'tamuu_id',
+                avatarUrl: '',
+                content: 'Special invitation for our closest friends...',
+                timestamp: '2h ago',
+                verified: true
+            }
+        })
+    },
+    {
+        type: 'weather_widget',
+        icon: <Sun className="w-5 h-5" />,
+        label: 'Weather',
+        color: 'hover:bg-yellow-400/10 hover:border-yellow-400/30',
+        createDefault: () => ({
+            width: 200,
+            height: 100,
+            weatherConfig: {
+                city: 'Jakarta',
+                unit: 'c',
+                showIcon: true,
+                theme: 'glass'
+            }
+        })
+    },
+    {
+        type: 'directions_hub',
+        icon: <MapPin className="w-5 h-5" />,
+        label: 'Directions',
+        color: 'hover:bg-red-400/10 hover:border-red-400/30',
+        createDefault: () => ({
+            width: 300,
+            height: 150
+        })
+    },
+    {
+        type: 'share_context',
+        icon: <Share2 className="w-5 h-5" />,
+        label: 'Share',
+        color: 'hover:bg-emerald-400/10 hover:border-emerald-400/30',
+        createDefault: () => ({
+            width: 200,
+            height: 50
+        })
+    },
+    {
+        type: 'interaction',
+        icon: <Zap className="w-5 h-5" />,
+        label: 'Blast',
+        color: 'hover:bg-premium-accent/10 hover:border-premium-accent/30',
+        createDefault: () => ({
+            width: 100,
+            height: 100,
+            type: 'interaction',
+            interactionConfig: {
+                triggerType: 'click',
+                effect: 'confetti',
+                greetingStyle: 'cinematic',
+                duration: 5000
+            }
+        })
+    },
+    {
+        type: 'name_board' as LayerType,
+        icon: <Users className="w-5 h-5" />,
+        label: 'Name Board',
+        color: 'hover:bg-amber-500/10 hover:border-amber-500/30',
+        createDefault: () => ({
+            width: 400,
+            height: 120,
+            type: 'name_board',
+            nameBoardConfig: {
+                variant: 1,
+                displayText: 'Guest Name',
+                fontFamily: 'Playfair Display',
+                fontSize: 48,
+                textColor: '#f8f9fa',
+                backgroundColor: '#1a1a2e',
+                borderColor: '#4a4a6a',
+                borderWidth: 2,
+                borderRadius: 16,
+                shadowEnabled: true,
+                gradientEnabled: false,
+                gradientStart: '#667eea',
+                gradientEnd: '#764ba2'
+            }
+        })
     }
 ];
 
@@ -336,9 +656,6 @@ const shapeOptions = [
     { type: 'star', icon: <Star className="w-4 h-4" />, label: 'Star' }
 ];
 
-// ... (imports remain)
-
-// ... (previous imports)
 import { AssetSelectionModal } from './AssetSelectionModal';
 
 interface ElementToolbarProps {
@@ -373,7 +690,7 @@ export const ElementToolbar: React.FC<ElementToolbarProps> = ({ embedded = false
         let defaultY = 200 + Math.random() * 100;
 
         if (activeCanvas === 'main') {
-            defaultX = CANVAS_WIDTH / 2 - (defaults.width || 100) / 2;
+            defaultX = (activeCanvas === 'main' ? CANVAS_WIDTH : 1920) / 2 - (defaults.width || 100) / 2;
         } else if (activeCanvas === 'left' || activeCanvas === 'right') {
             defaultX = 400 - (defaults.width || 100) / 2; // Center in 800px wide Orbit stage
             defaultY = 450 - (defaults.height || 100) / 2; // Center in 900px high Orbit stage
@@ -435,7 +752,7 @@ export const ElementToolbar: React.FC<ElementToolbarProps> = ({ embedded = false
 
                 {/* Grid Layout for Embedded Mode */}
                 <SectionComponent title="Add Elements" icon={<Sparkles className="w-4 h-4" />}>
-                    <div className="grid grid-cols-4 gap-2">
+                    <div className="grid grid-cols-4 gap-2 px-1">
                         {allTools.map((config) => (
                             <motion.button
                                 key={config.type}
@@ -448,7 +765,7 @@ export const ElementToolbar: React.FC<ElementToolbarProps> = ({ embedded = false
                                 title={config.label}
                             >
                                 {config.icon}
-                                <span className="text-[9px] mt-1 truncate w-full text-center">{config.label}</span>
+                                <span className="text-[8px] mt-1 truncate w-full text-center leading-none">{config.label}</span>
                             </motion.button>
                         ))}
                     </div>
@@ -474,7 +791,7 @@ export const ElementToolbar: React.FC<ElementToolbarProps> = ({ embedded = false
             </AnimatePresence>
 
             {/* Main Toolbar */}
-            <motion.div layout className="glass-panel p-2 rounded-2xl flex flex-col gap-2">
+            <motion.div layout className="glass-panel p-2 rounded-2xl flex flex-col gap-2 shadow-2xl overflow-hidden border border-white/10">
                 {/* Quick Tools */}
                 {quickTools.map((config) => (
                     <motion.button
@@ -516,13 +833,18 @@ export const ElementToolbar: React.FC<ElementToolbarProps> = ({ embedded = false
             <AnimatePresence>
                 {isExpanded && (
                     <motion.div
-                        initial={{ opacity: 0, x: -20, scale: 0.9 }}
+                        initial={{ opacity: 0, x: -20, scale: 0.95 }}
                         animate={{ opacity: 1, x: 0, scale: 1 }}
-                        exit={{ opacity: 0, x: -20, scale: 0.9 }}
-                        className="absolute left-full top-0 ml-3 glass-panel p-4 rounded-2xl w-72"
+                        exit={{ opacity: 0, x: -20, scale: 0.95 }}
+                        className="absolute left-full top-0 ml-3 glass-panel p-4 rounded-2xl w-80 shadow-2xl border border-white/10"
                     >
-                        <h3 className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-3">More Elements</h3>
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-[10px] font-bold text-premium-accent uppercase tracking-widest">Premium Assets</h3>
+                            <button onClick={() => setIsExpanded(false)} className="text-white/20 hover:text-white/50 transition-colors">
+                                <X className="w-3 h-3" />
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 overflow-y-auto max-h-[70vh] premium-scroll pr-1">
                             {moreTools.map((config) => (
                                 <motion.button
                                     key={config.type}
@@ -538,7 +860,7 @@ export const ElementToolbar: React.FC<ElementToolbarProps> = ({ embedded = false
                                     className={`flex flex-col items-center justify-center h-20 rounded-xl border border-white/5 bg-white/[0.02] text-white/60 transition-all ${config.color}`}
                                 >
                                     {config.icon}
-                                    <span className="text-[9px] mt-1.5">{config.label}</span>
+                                    <span className="text-[9px] mt-1.5 font-medium">{config.label}</span>
                                 </motion.button>
                             ))}
                         </div>

@@ -88,6 +88,7 @@ export const CanvasElement: React.FC<CanvasElementProps> = ({
             ref={elementRef}
             className={`canvas-element group outline-none ${isSelected ? 'ring-1 ring-premium-accent' : ''}`}
             data-element-id={layer.id}
+            data-layer-id={layer.id}
             style={{
                 position: 'absolute',
                 left: layer.x,

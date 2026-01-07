@@ -1,34 +1,56 @@
 import React, { useState } from 'react';
-import { m } from 'framer-motion';
-import { Power, MousePointer2, Layout, Check, ChevronRight } from 'lucide-react';
+import { m, AnimatePresence } from 'framer-motion';
+import { Power, MousePointer2, Layout, Check, Sparkles } from 'lucide-react';
+import { invitations as invitationsApi } from '@/lib/api';
 
-export const StatusToggles: React.FC = () => {
-    const [isActive, setIsActive] = useState(true);
+interface StatusTogglesProps {
+    invitation: any;
+    onUpdate: (updates: any) => void;
+}
+
+export const StatusToggles: React.FC<StatusTogglesProps> = ({ invitation, onUpdate }) => {
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    // Mock states for other toggles for now
     const [isScroll, setIsScroll] = useState(true);
     const [coverEnabled, setCoverEnabled] = useState(true);
 
+    const handleTogglePublished = async (val: boolean) => {
+        if (isUpdating) return;
+        setIsUpdating(true);
+        try {
+            console.log('[StatusToggles] Updating is_published to:', val);
+            await invitationsApi.update(invitation.id, { is_published: val });
+            onUpdate({ ...invitation, is_published: val, status: val ? "Published" : "Draft" });
+        } catch (err) {
+            console.error('[StatusToggles] Failed to update status:', err);
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 transition-opacity duration-300 ${isUpdating ? 'opacity-50 pointer-events-none' : ''}`}>
             <ToggleCard
                 icon={Power}
                 label="Status Undangan"
-                description="Aktifkan/Nonaktifkan publikasi"
-                value={isActive}
-                onChange={setIsActive}
+                description={invitation.is_published ? "Online & Publik" : "Mode Draft (Private)"}
+                value={invitation.is_published}
+                onChange={handleTogglePublished}
                 color="teal"
             />
             <ToggleCard
                 icon={MousePointer2}
-                label="Mode Scroll"
-                description="Scrolling vs. Paging"
+                label="Mode Navigasi"
+                description="Scroll vs Halaman"
                 value={isScroll}
                 onChange={setIsScroll}
                 color="indigo"
             />
             <ToggleCard
                 icon={Layout}
-                label="Cover Depan"
-                description="Tampilkan cover sapaan"
+                label="Cover Greeting"
+                description="Tampilkan Sapaan"
                 value={coverEnabled}
                 onChange={setCoverEnabled}
                 color="purple"
@@ -48,12 +70,30 @@ interface ToggleCardProps {
 
 const ToggleCard: React.FC<ToggleCardProps> = ({ icon: Icon, label, description, value, onChange, color }) => {
     const colors = {
-        teal: 'text-teal-600 bg-teal-50 border-teal-100',
-        indigo: 'text-indigo-600 bg-indigo-50 border-indigo-100',
-        purple: 'text-purple-600 bg-purple-50 border-purple-100',
+        teal: 'text-teal-600 bg-teal-50 border-teal-100 group-hover:bg-teal-500 group-hover:text-white',
+        indigo: 'text-indigo-600 bg-indigo-50 border-indigo-100 group-hover:bg-indigo-500 group-hover:text-white',
+        purple: 'text-purple-600 bg-purple-50 border-purple-100 group-hover:bg-purple-500 group-hover:text-white',
     };
 
-    const activeColors = {
+    const activeBg = {
+        teal: 'bg-teal-500 shadow-[0_0_15px_rgba(20,184,166,0.3)]',
+        indigo: 'bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.3)]',
+        purple: 'bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.3)]',
+    };
+
+    const glowColors = {
+        teal: 'bg-teal-500',
+        indigo: 'bg-indigo-500',
+        purple: 'bg-purple-500',
+    };
+
+    const sparkColors = {
+        teal: 'text-teal-400',
+        indigo: 'text-indigo-400',
+        purple: 'text-purple-400',
+    };
+
+    const dotColors = {
         teal: 'bg-teal-500',
         indigo: 'bg-indigo-500',
         purple: 'bg-purple-500',
@@ -61,27 +101,42 @@ const ToggleCard: React.FC<ToggleCardProps> = ({ icon: Icon, label, description,
 
     return (
         <m.button
-            whileHover={{ y: -2 }}
+            whileHover={{ y: -4, scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onChange(!value)}
-            className="flex items-center justify-between p-6 bg-white/70 backdrop-blur-xl rounded-[2rem] border border-white/60 shadow-[0_15px_35px_-10px_rgba(0,0,0,0.02)] transition-all text-left w-full group"
+            className="group relative flex items-center justify-between p-6 bg-white/70 backdrop-blur-xl rounded-[2.5rem] border border-white/60 shadow-[0_15px_35px_-10px_rgba(0,0,0,0.02)] hover:shadow-[0_25px_50px_-15px_rgba(0,0,0,0.05)] transition-all duration-500 text-left w-full overflow-hidden"
         >
-            <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 duration-500 ${colors[color]}`}>
-                    <Icon className="w-6 h-6" />
+            {/* Background Glow */}
+            <div className={`absolute -right-4 -bottom-4 w-24 h-24 rounded-full blur-3xl opacity-0 group-hover:opacity-10 transition-opacity duration-700 ${glowColors[color]}`} />
+
+            <div className="relative z-10 flex items-center gap-4">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm ${colors[color]}`}>
+                    <Icon className="w-6 h-6 transform group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500" />
                 </div>
                 <div>
-                    <p className="text-sm font-black text-slate-800 tracking-tight">{label}</p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight">{description}</p>
+                    <div className="flex items-center gap-2">
+                        <p className="text-sm font-black text-slate-800 tracking-tight">{label}</p>
+                        {value && (
+                            <m.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                                <Sparkles className={`w-3 h-3 ${sparkColors[color]}`} />
+                            </m.div>
+                        )}
+                    </div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight mt-0.5">{description}</p>
                 </div>
             </div>
 
-            <div className={`w-12 h-6 rounded-full p-1 transition-colors duration-300 ${value ? activeColors[color] : 'bg-slate-100'}`}>
+            <div className={`w-14 h-7 rounded-full p-1.5 transition-all duration-500 relative ${value ? activeBg[color] : 'bg-slate-100 shadow-inner'}`}>
                 <m.div
-                    animate={{ x: value ? 24 : 0 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                    className="w-4 h-4 bg-white rounded-full shadow-sm"
-                />
+                    animate={{
+                        x: value ? 28 : 0,
+                        scale: value ? 1 : 0.9
+                    }}
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    className="w-4 h-4 bg-white rounded-full shadow-lg flex items-center justify-center"
+                >
+                    {value && <div className={`w-1 h-1 rounded-full ${dotColors[color]}`} />}
+                </m.div>
             </div>
         </m.button>
     );

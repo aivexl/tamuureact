@@ -204,7 +204,7 @@ export const SectionsSidebar: React.FC = () => {
 
                                             {/* Element Count */}
                                             <span className="text-[10px] text-white/30 tabular-nums">
-                                                {section.elements.length}
+                                                {(section.elements || []).length}
                                             </span>
 
                                             {/* Visibility Toggle */}

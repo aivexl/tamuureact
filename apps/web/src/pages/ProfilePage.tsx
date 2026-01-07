@@ -15,6 +15,8 @@ const DUMMY_USER = {
     gender: 'female' as 'male' | 'female' | '',
     birthDate: '1995-06-15',
     plan: 'premium' as 'free' | 'basic' | 'premium' | 'priority',
+    subscriptionStart: '2025-06-15',
+    subscriptionEnd: '2026-06-15',
 };
 
 // ============================================
@@ -68,6 +70,21 @@ const CheckIcon = ({ className }: { className?: string }) => (
 const LoaderIcon = ({ className }: { className?: string }) => (
     <svg className={`${className} animate-spin`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+    </svg>
+);
+const ClockIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+    </svg>
+);
+const CreditCardIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect width="20" height="14" x="2" y="5" rx="2" /><line x1="2" x2="22" y1="10" y2="10" />
+    </svg>
+);
+const ExternalLinkIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" x2="21" y1="14" y2="3" />
     </svg>
 );
 
@@ -131,7 +148,7 @@ export const ProfilePage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 pt-28 pb-20 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-slate-50 pt-20 pb-20 px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto">
                 {/* Header */}
                 <m.div
@@ -170,6 +187,50 @@ export const ProfilePage: React.FC = () => {
                                     </span>
                                     <span className="text-slate-400">•</span>
                                     <span className="text-slate-500 text-sm">{DUMMY_USER.email}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Subscription Active Period Section */}
+                        <div className="mb-10 p-5 rounded-2xl bg-gradient-to-br from-indigo-50/50 to-slate-50 border border-indigo-100/50">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div className="flex items-start gap-4">
+                                    <div className="w-12 h-12 rounded-xl bg-white shadow-sm border border-indigo-100 flex items-center justify-center shrink-0">
+                                        <ClockIcon className="w-6 h-6 text-indigo-600" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-sm font-bold text-slate-900 mb-1">Masa Aktif Subscription</h3>
+                                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="text-xs text-slate-500">Berakhir pada:</span>
+                                                <span className="text-sm font-bold text-indigo-700">
+                                                    {new Date(DUMMY_USER.subscriptionEnd).toLocaleDateString('id-ID', {
+                                                        day: 'numeric',
+                                                        month: 'long',
+                                                        year: 'numeric'
+                                                    })}
+                                                </span>
+                                            </div>
+                                            <div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-slate-200" />
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="text-xs text-slate-500">Status:</span>
+                                                <span className="flex items-center gap-1">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                                    <span className="text-xs font-black uppercase text-emerald-600">Aktif</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 transition-all shadow-sm">
+                                        <CreditCardIcon className="w-3.5 h-3.5" />
+                                        Invoice
+                                    </button>
+                                    <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-indigo-100">
+                                        Perpanjang
+                                        <ExternalLinkIcon className="w-3.5 h-3.5" />
+                                    </button>
                                 </div>
                             </div>
                         </div>

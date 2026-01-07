@@ -1,12 +1,13 @@
 import React, { useEffect, useState, useMemo, Suspense, lazy } from 'react';
-import { m } from 'framer-motion';
-import { templates as templatesApi } from '@/lib/api';
+import { m, AnimatePresence } from 'framer-motion';
+import { templates as templatesApi, invitations as invitationsApi } from '@/lib/api';
+
 import {
     Search,
     Sparkles,
     ArrowRight
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useSEO } from '../hooks/useSEO';
 
 // Lazy load the grid to reduce initial payload and TBT
@@ -29,8 +30,22 @@ const GridLoader = () => (
     </div>
 );
 
+const getIsAppDomain = (): boolean => {
+    const host = window.location.hostname;
+    return host.startsWith('app.') || host === 'localhost' || host === '127.0.0.1';
+};
+
+
 export const InvitationsStorePage: React.FC = () => {
+    const { search } = useLocation();
+    const queryParams = useMemo(() => new URLSearchParams(search), [search]);
+    const isOnboarding = queryParams.get('onboarding') === 'true';
+    const onboardingSlug = queryParams.get('slug');
+    const onboardingName = queryParams.get('name');
+    const onboardingTemplateId = queryParams.get('templateId');
+
     const [templates, setTemplates] = useState<Template[]>([]);
+
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
@@ -66,16 +81,51 @@ export const InvitationsStorePage: React.FC = () => {
         });
     }, [templates, selectedCategory, searchQuery]);
 
-    const handleUseTemplate = (templateId: string) => {
-        navigate(`/editor/template/${templateId}`);
+    const handleUseTemplate = async (templateId: string) => {
+        const isAppDomain = getIsAppDomain();
+
+        if (isOnboarding) {
+            // Flow C: Already in onboarding on app domain
+            setIsLoading(true);
+            try {
+                // 1. Get the full template data
+                const templateData = await templatesApi.get(templateId);
+
+                // 2. Create the invitation using template data
+                const newInvitation = await invitationsApi.create({
+                    ...templateData,
+                    id: undefined, // Let the backend generate a new UUID
+                    template_id: templateId,
+                    name: onboardingName || `Undangan ${onboardingSlug}`,
+                    slug: onboardingSlug,
+                    is_published: false
+                });
+
+                // 3. Navigate to the user editor with the new ID
+                navigate(`/user/editor/${newInvitation.id}`);
+            } catch (error) {
+                console.error('Failed to create invitation:', error);
+                alert('Gagal membuat undangan. Silakan coba lagi.');
+            } finally {
+                setIsLoading(false);
+            }
+        } else if (!isAppDomain) {
+            // Flow A: On public domain, redirect to onboarding on app domain
+            window.location.href = `https://app.tamuu.id/onboarding?templateId=${templateId}`;
+        } else {
+            // Flow B: On app domain but not in onboarding, start onboarding
+            navigate(`/onboarding?templateId=${templateId}`);
+        }
     };
+
+
 
     const previewTemplate = (slug: string | undefined, id: string) => {
         window.open(`/preview/${slug || id}`, '_blank');
     };
 
     return (
-        <div className="min-h-screen bg-white text-slate-900">
+        <div className="min-h-screen bg-white text-slate-900 pt-14">
             {/* Mesh Gradient Decorations */}
             <div className="fixed inset-0 pointer-events-none opacity-40 overflow-hidden z-0">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-rose-500/10 rounded-full blur-[120px]" />
@@ -83,6 +133,22 @@ export const InvitationsStorePage: React.FC = () => {
             </div>
 
             <div className="relative z-10">
+                {/* Onboarding Header */}
+                <AnimatePresence>
+                    {isOnboarding && (
+                        <m.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="bg-slate-900/95 backdrop-blur-md text-white py-3 px-6 text-center overflow-hidden sticky top-14 z-40 border-b border-white/10 shadow-2xl shadow-black/20"
+                        >
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em]">
+                                Langkah Terakhir: <span className="text-teal-400">Pilih Desain Dasar</span> Untuk <span className="text-white italic">"{onboardingName || onboardingSlug}"</span>
+                            </p>
+                        </m.div>
+                    )}
+                </AnimatePresence>
+
                 {/* Hero Header */}
                 <header className="pt-32 pb-16 px-6 text-center">
                     <div className="max-w-4xl mx-auto">
@@ -148,10 +214,14 @@ export const InvitationsStorePage: React.FC = () => {
                             filteredTemplates={filteredTemplates}
                             onUseTemplate={handleUseTemplate}
                             onPreviewTemplate={previewTemplate}
+                            selectedId={onboardingTemplateId}
                         />
+
                     </Suspense>
                 </main>
             </div>
         </div>
     );
 };
+
+export default InvitationsStorePage;

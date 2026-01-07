@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+
 import { m, AnimatePresence } from 'framer-motion';
 import { useSEO } from '../hooks/useSEO';
+import { WelcomeDisplaysTab } from '../components/Dashboard/WelcomeDisplaysTab';
 
 // ============================================
 // INLINE SVG ICONS (Zero external dependency)
@@ -26,6 +28,12 @@ const FileTextIcon = ({ className }: { className?: string }) => (
         <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M10 9H8" /><path d="M16 13H8" /><path d="M16 17H8" />
     </svg>
 );
+const MessageSquareIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+);
+
 const GraduationCapIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5" />
@@ -97,6 +105,17 @@ const Trash2Icon = ({ className }: { className?: string }) => (
         <path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" />
     </svg>
 );
+const ExternalLinkIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" x2="21" y1="14" y2="3" />
+    </svg>
+);
+const MonitorIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect width="20" height="14" x="2" y="3" rx="2" /><line x1="8" x2="16" y1="21" y2="21" /><line x1="12" x2="12" y1="17" y2="21" />
+    </svg>
+);
+
 
 // ============================================
 // DUMMY DATA
@@ -124,21 +143,26 @@ const DUMMY_STATS = {
 // ============================================
 // MENU ITEMS
 // ============================================
-type TabId = 'dashboard' | 'invitations' | 'guests' | 'invoice' | 'tutorial';
+type TabId = 'dashboard' | 'invitations' | 'displays' | 'guests' | 'wishes' | 'invoice' | 'tutorial';
 
 const menuItems: { id: TabId; label: string; icon: React.FC<{ className?: string }> }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboardIcon },
     { id: 'invitations', label: 'Undangan Saya', icon: MailIcon },
+    { id: 'displays', label: 'Desain Layar', icon: MonitorIcon },
     { id: 'guests', label: 'Buku Tamu', icon: UsersIcon },
+    { id: 'wishes', label: 'Ucapan Tamu', icon: MessageSquareIcon },
     { id: 'invoice', label: 'Invoice', icon: FileTextIcon },
     { id: 'tutorial', label: 'Tutorial', icon: GraduationCapIcon },
 ];
+
 
 // ============================================
 // MAIN COMPONENT
 // ============================================
 export const DashboardPage: React.FC = () => {
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<TabId>('dashboard');
+
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -153,16 +177,9 @@ export const DashboardPage: React.FC = () => {
     );
 
     return (
-        <div className="min-h-screen bg-slate-50 flex pt-20">
+        <div className="min-h-screen bg-slate-50 flex pt-14">
             {/* Sidebar */}
-            <aside className={`fixed lg:static top-20 inset-y-0 left-0 z-40 flex flex-col bg-white border-r border-slate-200 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-0 lg:w-20'} overflow-hidden`}>
-                {/* Mobile close button */}
-                <div className="h-12 flex items-center justify-end px-4 lg:hidden border-b border-slate-100">
-                    <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2.5 rounded-xl hover:bg-slate-100 text-slate-500">
-                        {sidebarOpen ? <XIcon className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
-                    </button>
-                </div>
-
+            <aside className={`fixed lg:sticky top-14 left-0 z-40 flex flex-col bg-white border-r border-slate-200 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-0 lg:w-20'} h-[calc(100vh-3.5rem)] overflow-hidden`}>
                 {/* User Profile Card */}
                 {sidebarOpen && (
                     <div className="p-6">
@@ -184,7 +201,13 @@ export const DashboardPage: React.FC = () => {
                     {menuItems.map(item => (
                         <button
                             key={item.id}
-                            onClick={() => setActiveTab(item.id)}
+                            onClick={() => {
+                                if (item.id === 'wishes') {
+                                    navigate('/wishes');
+                                } else {
+                                    setActiveTab(item.id);
+                                }
+                            }}
                             className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${activeTab === item.id ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
                         >
                             <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${activeTab === item.id ? 'bg-teal-500 text-slate-900' : 'bg-slate-100 text-slate-400'}`}>
@@ -193,7 +216,10 @@ export const DashboardPage: React.FC = () => {
                             {sidebarOpen && <span className="text-sm font-bold tracking-tight">{item.label}</span>}
                         </button>
                     ))}
+
+
                 </nav>
+
 
                 {/* Account Section */}
                 <div className="p-4 border-t border-slate-100 mt-auto">
@@ -210,25 +236,10 @@ export const DashboardPage: React.FC = () => {
             </aside>
 
             {/* Mobile Sidebar Overlay */}
-            {sidebarOpen && <div className="fixed inset-0 bg-black/20 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />}
+            {sidebarOpen && <div className="fixed inset-0 bg-black/20 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} style={{ top: '3.5rem' }} />}
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col min-h-screen">
-                {/* Top Header */}
-                <header className="h-20 bg-white/70 backdrop-blur-md border-b border-white/40 flex items-center justify-between px-8 sticky top-0 z-20">
-                    <div className="flex items-center gap-6">
-                        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2.5 rounded-xl hover:bg-slate-100/50 text-slate-500 lg:hidden">
-                            <MenuIcon className="w-6 h-6" />
-                        </button>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <button className="p-2.5 rounded-xl hover:bg-slate-100/50 text-slate-500 relative group">
-                            <BellIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white" />
-                        </button>
-                    </div>
-                </header>
-
+            <main className="flex-1 flex flex-col min-h-[calc(100vh-3.5rem)]">
                 {/* Content Area */}
                 <div className="flex-1 p-8 bg-gradient-to-br from-slate-50 via-white to-teal-50/30">
                     <AnimatePresence mode="wait">
@@ -241,7 +252,7 @@ export const DashboardPage: React.FC = () => {
                                         <h2 className="text-3xl font-bold text-slate-900 mb-2">Selamat datang, {DUMMY_USER.name} ✨</h2>
                                         <p className="text-slate-500 text-lg">Berikut adalah ringkasan performa undangan Anda hari ini.</p>
                                     </div>
-                                    <Link to="/editor" className="flex items-center justify-center gap-2 px-6 py-3.5 bg-slate-900 text-white font-semibold rounded-2xl shadow-xl shadow-slate-900/10 hover:shadow-2xl hover:shadow-slate-900/20 hover:-translate-y-0.5 transition-all active:scale-95">
+                                    <Link to="/onboarding" className="flex items-center justify-center gap-2 px-6 py-3.5 bg-slate-900 text-white font-semibold rounded-2xl shadow-xl shadow-slate-900/10 hover:shadow-2xl hover:shadow-slate-900/20 hover:-translate-y-0.5 transition-all active:scale-95">
                                         <PlusIcon className="w-5 h-5" /> Buat Undangan Baru
                                     </Link>
                                 </div>
@@ -355,7 +366,7 @@ export const DashboardPage: React.FC = () => {
                                         <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 bg-white border border-slate-200 font-semibold rounded-2xl hover:bg-slate-50 transition-all text-sm">
                                             <MenuIcon className="w-4 h-4" /> Filter
                                         </button>
-                                        <Link to="/editor" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 bg-slate-900 text-white font-semibold rounded-2xl hover:shadow-xl transition-all text-sm">
+                                        <Link to="/onboarding" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 bg-slate-900 text-white font-semibold rounded-2xl hover:shadow-xl transition-all text-sm">
                                             <PlusIcon className="w-4 h-4" /> Baru
                                         </Link>
                                     </div>
@@ -407,6 +418,11 @@ export const DashboardPage: React.FC = () => {
                             </m.div>
                         )}
 
+                        {/* Displays Tab */}
+                        {activeTab === 'displays' && (
+                            <WelcomeDisplaysTab />
+                        )}
+
                         {/* Guests Tab */}
                         {activeTab === 'guests' && (
                             <m.div key="guests" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6">
@@ -428,7 +444,13 @@ export const DashboardPage: React.FC = () => {
                                                     <p className="text-xs text-slate-400">{inv.status.toUpperCase()}</p>
                                                 </div>
                                             </div>
-                                            <button className="w-full py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-slate-800 transition-all">Buka Buku Tamu</button>
+                                            <button
+                                                onClick={() => navigate(`/guests/${inv.id}`)}
+                                                className="w-full py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-slate-800 transition-all"
+                                            >
+                                                Buka Buku Tamu
+                                            </button>
+
                                         </div>
                                     ))}
                                 </div>
@@ -456,7 +478,10 @@ export const DashboardPage: React.FC = () => {
                                 <p className="text-slate-500 text-center">Video tutorial cara menggunakan Tamuu akan segera hadir</p>
                             </m.div>
                         )}
+
+
                     </AnimatePresence>
+
                 </div>
             </main>
         </div>

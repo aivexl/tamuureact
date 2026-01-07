@@ -1,8 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { templates as templatesApi, invitations as invitationsApi } from '@/lib/api';
-import { Plus, Search, Edit2, Trash2, Layout, ExternalLink, Loader2, Sparkles, FolderOpen } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { templates as templatesApi } from '@/lib/api';
+import { useNavigate } from 'react-router-dom';
+import {
+    Smartphone,
+    Monitor,
+    Plus,
+    Search,
+    Edit3,
+    Trash2,
+    X,
+    FolderOpen,
+    Loader2
+} from 'lucide-react';
+import { AdminLayout } from '../components/Layout/AdminLayout';
 
 interface Template {
     id: string;
@@ -11,15 +22,22 @@ interface Template {
     thumbnail_url?: string;
     category?: string;
     updated_at: string;
-    sourceTable: 'templates' | 'invitations'; // Track origin table for correct deletion
+    type?: 'invitation' | 'display';
+    sourceTable: 'templates' | 'invitations';
 }
 
 export const AdminTemplatesPage: React.FC = () => {
+    const navigate = useNavigate();
+
+    // State
     const [templates, setTemplates] = useState<Template[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const navigate = useNavigate();
+    const [activeTab, setActiveTab] = useState<'invitation' | 'display'>('invitation');
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isCreating, setIsCreating] = useState(false);
 
+    // Initial Fetch
     useEffect(() => {
         fetchTemplates();
     }, []);
@@ -27,231 +45,261 @@ export const AdminTemplatesPage: React.FC = () => {
     const fetchTemplates = async () => {
         setIsLoading(true);
         try {
-            // Fetch from both tables
-            const [templatesData, invitationsData] = await Promise.all([
-                templatesApi.list(),
-                invitationsApi.list()
-            ]);
-
-            const templateData = (templatesData || []).map((d: any) => ({
-                ...d,
-                sourceTable: 'templates' as const
+            const data = await templatesApi.list();
+            const processed = (data || []).map((t: any) => ({
+                ...t,
+                sourceTable: 'templates' as const,
+                type: t.type || 'invitation' // Default to invitation if missing
             }));
-            const invitationData = (invitationsData || []).map((d: any) => ({
-                ...d,
-                category: d.category || 'Invitation',
-                sourceTable: 'invitations' as const
-            }));
-
-            // Merge and de-duplicate by ID
-            const merged = [...templateData, ...invitationData];
-            const uniqueMap = new Map<string, Template>();
-
-            merged.forEach(item => {
-                const existing = uniqueMap.get(item.id);
-                if (!existing || (!existing.thumbnail_url && item.thumbnail_url)) {
-                    uniqueMap.set(item.id, item as Template);
-                }
-            });
-
-            setTemplates(Array.from(uniqueMap.values()).sort((a, b) =>
-                new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-            ));
-
+            setTemplates(processed);
         } catch (err) {
-            console.error('[Admin] Unified Fetch error:', err);
+            console.error('[Admin] Fetch error:', err);
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleCreateTemplate = async () => {
-        setIsLoading(true);
-        const randomSlug = Math.random().toString(36).substring(2, 8).toUpperCase();
-
-        // Default sections for new template
-        const defaultSections = [
-            { id: crypto.randomUUID(), key: 'opening', title: 'Opening', order: 0, isVisible: true, backgroundColor: '#0a0a0a', elements: [] },
-            { id: crypto.randomUUID(), key: 'couple', title: 'Couple', order: 1, isVisible: true, backgroundColor: '#0a0a0a', elements: [] },
-            { id: crypto.randomUUID(), key: 'event', title: 'Event', order: 2, isVisible: true, backgroundColor: '#0a0a0a', elements: [] }
-        ];
-
-        const newTemplate = {
-            name: 'New Premium Template',
-            slug: randomSlug,
-            sections: defaultSections,
-            layers: [],
-            zoom: 1,
-            pan: { x: 0, y: 0 },
-            updated_at: new Date().toISOString()
-        };
-
+    const handleCreateTemplate = async (type: 'invitation' | 'display') => {
+        setIsCreating(true);
         try {
+            const newTemplate = {
+                name: type === 'display' ? 'New Display Template' : 'New Invitation Template',
+                type: type, // KEY DIFFERENCE
+                category: 'Premium',
+                sections: [],
+            };
+
             const data = await templatesApi.create(newTemplate);
-            if (data) navigate(`/editor/template/${data.id}`);
+            if (data) {
+                // Navigate to the correct editor based on type
+                const editorPath = type === 'display'
+                    ? `/admin/display-editor/${data.slug || data.id}`
+                    : `/admin/editor/${data.slug || data.id}`;
+                navigate(editorPath);
+            }
         } catch (err) {
-            console.error('[Admin] Create error:', err);
+            console.error('Create error:', err);
+            alert('Failed to create template');
         } finally {
-            setIsLoading(false);
+            setIsCreating(false);
+            setIsCreateModalOpen(false);
         }
     };
 
-    const handleDeleteTemplate = async (id: string, category: string | undefined, e: React.MouseEvent) => {
+    const handleDelete = async (id: string, e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        if (!confirm('Are you sure you want to delete this project?')) return;
+        if (!confirm('Are you sure you want to delete this template?')) return;
 
         try {
-            const template = templates.find(t => t.id === id);
-            if (template?.sourceTable === 'invitations') {
-                await invitationsApi.delete(id);
-            } else {
-                await templatesApi.delete(id);
-            }
+            await templatesApi.delete(id);
             setTemplates(prev => prev.filter(t => t.id !== id));
         } catch (err) {
-            console.error('[Admin] Delete error:', err);
+            console.error('Delete error:', err);
         }
     };
 
+    // Filter Logic
     const filteredTemplates = templates.filter(t =>
-        t.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.category?.toLowerCase().includes(searchQuery.toLowerCase())
+        (t.type || 'invitation') === activeTab &&
+        t.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white p-8 font-outfit">
-            <div className="max-w-7xl mx-auto">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+        <AdminLayout>
+            <div className="min-h-[calc(100vh-100px)]">
+                {/* Header Action Area */}
+                <div className="flex flex-col md:flex-row items-end md:items-center justify-between gap-6 mb-10">
                     <div>
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 bg-premium-accent/10 rounded-lg">
-                                <Sparkles className="w-5 h-5 text-premium-accent" />
-                            </div>
-                            <h1 className="text-3xl font-bold tracking-tight">Template Management</h1>
+                        <div className="flex items-center gap-4 mb-4">
+                            <button
+                                onClick={() => setActiveTab('invitation')}
+                                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'invitation' ? 'bg-teal-500 text-slate-900' : 'bg-white/5 text-slate-400 hover:text-white'}`}
+                            >
+                                Mobile Invitations
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('display')}
+                                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'display' ? 'bg-purple-500 text-white' : 'bg-white/5 text-slate-400 hover:text-white'}`}
+                            >
+                                TV Displays
+                            </button>
                         </div>
-                        <p className="text-white/40 text-sm">Create and organize premium invitation starting points</p>
+                        <p className="text-slate-400 text-lg">
+                            {activeTab === 'invitation'
+                                ? 'Kelola desain master untuk undangan digital format portrait.'
+                                : 'Kelola desain master untuk layar sapaan format landscape.'}
+                        </p>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        <div className="relative group">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-premium-accent transition-colors" />
+                    <div className="flex gap-4">
+                        <div className="relative">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                             <input
                                 type="text"
-                                placeholder="Search templates..."
                                 value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-premium-accent/50 w-64 transition-all"
+                                onChange={e => setSearchQuery(e.target.value)}
+                                placeholder="Cari template..."
+                                className="pl-12 pr-6 py-3.5 bg-[#111] border border-white/10 text-white rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 outline-none shadow-sm"
                             />
                         </div>
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={handleCreateTemplate}
-                            className="bg-premium-accent text-premium-dark px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 shadow-lg shadow-premium-accent/20 hover:shadow-premium-accent/40 transition-all"
+                        <button
+                            onClick={() => setIsCreateModalOpen(true)}
+                            className="flex items-center gap-2 px-6 py-3.5 bg-teal-500 text-slate-900 font-bold rounded-2xl hover:shadow-xl hover:-translate-y-0.5 transition-all"
                         >
-                            <Plus className="w-4 h-4" />
-                            <span>New Template</span>
-                        </motion.button>
+                            <Plus className="w-5 h-5" /> Create New
+                        </button>
                     </div>
                 </div>
 
+                {/* Content Grid */}
                 {isLoading ? (
-                    <div className="h-[60vh] flex flex-col items-center justify-center gap-4">
-                        <Loader2 className="w-8 h-8 text-premium-accent animate-spin" />
-                        <p className="text-white/20 uppercase tracking-widest text-xs font-bold">Syncing Records...</p>
+                    <div className="h-64 flex flex-col items-center justify-center gap-4">
+                        <Loader2 className="w-8 h-8 text-teal-500 animate-spin" />
+                        <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Memuat Template...</p>
                     </div>
                 ) : filteredTemplates.length === 0 ? (
-                    <div className="h-[50vh] flex flex-col items-center justify-center border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
-                        <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-4">
-                            <FolderOpen className="w-8 h-8 text-white/10" />
-                        </div>
-                        <h3 className="text-lg font-medium text-white/40">No templates found</h3>
-                        <p className="text-white/20 text-sm mt-1">Start by creating your first premium template</p>
-                        <button
-                            onClick={handleCreateTemplate}
-                            className="mt-6 text-premium-accent hover:underline text-sm font-medium"
-                        >
-                            Create New Template
-                        </button>
+                    <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-3xl bg-white/5">
+                        <FolderOpen className="w-12 h-12 text-slate-500 mb-4" />
+                        <p className="text-slate-400 font-medium">No templates created yet.</p>
+                        <button onClick={() => setIsCreateModalOpen(true)} className="mt-4 text-teal-400 font-bold hover:underline">Create One</button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {filteredTemplates.map((template) => (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {filteredTemplates.map(template => (
                             <motion.div
-                                key={template.id}
                                 layout
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="group bg-white/[0.03] border border-white/10 rounded-2xl overflow-hidden hover:border-premium-accent/30 transition-all duration-300 hover:shadow-2xl hover:shadow-black"
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                key={template.id}
+                                className="group bg-[#111] rounded-2xl border border-white/10 overflow-hidden hover:shadow-2xl hover:border-teal-500/30 transition-all duration-500"
                             >
-                                {/* Thumbnail Placeholder */}
-                                <div className="aspect-[3/4] bg-white/5 relative overflow-hidden">
+                                {/* Thumbnail */}
+                                <div className={`relative overflow-hidden ${template.type === 'display' ? 'aspect-video' : 'aspect-[9/16]'}`}>
                                     {template.thumbnail_url ? (
-                                        <img
-                                            src={template.thumbnail_url}
-                                            alt={template.name}
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                        />
+                                        <img src={template.thumbnail_url} alt={template.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                                     ) : (
-                                        <div className="w-full h-full flex flex-col items-center justify-center p-8 opacity-20 group-hover:opacity-40 transition-opacity">
-                                            <Layout className="w-12 h-12 mb-2" />
-                                            <span className="text-[10px] uppercase font-bold tracking-widest">No Preview</span>
+                                        <div className="w-full h-full bg-white/5 flex items-center justify-center">
+                                            {template.type === 'display' ? <Monitor className="w-12 h-12 text-slate-700" /> : <Smartphone className="w-12 h-12 text-slate-700" />}
                                         </div>
                                     )}
 
-                                    {/* Action Overlay */}
-                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                                        <Link
-                                            to={`/editor/template/${template.slug || template.id}`}
-                                            className="p-3 bg-premium-accent text-premium-dark rounded-xl hover:scale-110 transition-transform shadow-xl"
+                                    {/* Overlay Actions */}
+                                    <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3">
+                                        <button
+                                            onClick={() => {
+                                                const editorPath = template.type === 'display'
+                                                    ? `/admin/display-editor/${template.slug || template.id}`
+                                                    : `/admin/editor/${template.slug || template.id}`;
+                                                navigate(editorPath);
+                                            }}
+                                            className="p-3 bg-white rounded-xl hover:scale-110 transition-transform active:scale-90"
+                                            title="Edit Template"
                                         >
-                                            <Edit2 className="w-5 h-5" />
-                                        </Link>
-                                        <Link
-                                            to={`/preview/${template.slug || template.id}`}
-                                            target="_blank"
-                                            className="p-3 bg-white/10 backdrop-blur-md text-white rounded-xl hover:scale-110 transition-transform shadow-xl hover:bg-white/20"
+                                            <Edit3 className="w-5 h-5 text-slate-900" />
+                                        </button>
+                                        <button
+                                            onClick={(e) => handleDelete(template.id, e)}
+                                            className="p-3 bg-white rounded-xl hover:scale-110 transition-transform active:scale-90 hover:text-rose-600"
+                                            title="Hapus"
                                         >
-                                            <ExternalLink className="w-5 h-5" />
-                                        </Link>
+                                            <Trash2 className="w-5 h-5" />
+                                        </button>
                                     </div>
-
-                                    {template.category && (
-                                        <div className="absolute top-3 left-3 px-2 py-1 bg-black/50 backdrop-blur-md rounded text-[9px] font-bold text-premium-accent uppercase tracking-tighter">
-                                            {template.category}
-                                        </div>
-                                    )}
                                 </div>
 
-                                {/* Content */}
-                                <div className="p-4 flex items-center justify-between">
-                                    <div>
-                                        <h3 className="font-bold text-sm group-hover:text-premium-accent transition-colors truncate max-w-[150px]">
-                                            {template.name}
-                                        </h3>
-                                        <p className="text-[10px] text-white/30 font-medium">
-                                            Last sync: {new Date(template.updated_at).toLocaleDateString()}
-                                        </p>
-                                        {template.slug && (
-                                            <p className="text-[9px] text-premium-accent/60 font-mono mt-0.5">
-                                                slug: {template.slug}
-                                            </p>
-                                        )}
+                                {/* Meta */}
+                                <div className="p-5">
+                                    <h3 className="font-bold text-white truncate mb-1">{template.name}</h3>
+                                    <div className="flex items-center justify-between mt-2">
+                                        <span className="text-[10px] font-black uppercase tracking-widest bg-white/10 px-2 py-1 rounded text-slate-400">
+                                            {template.type === 'display' ? 'TV FORMAT' : 'MOBILE FORMAT'}
+                                        </span>
+                                        <span className="text-[10px] text-slate-500">
+                                            {new Date(template.updated_at).toLocaleDateString()}
+                                        </span>
                                     </div>
-                                    <button
-                                        onClick={(e) => handleDeleteTemplate(template.id, template.category, e)}
-                                        className="p-2 text-white/10 hover:text-red-500 transition-colors"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
                                 </div>
                             </motion.div>
                         ))}
                     </div>
                 )}
             </div>
-        </div>
+
+            {/* Creation Modal */}
+            <AnimatePresence>
+                {isCreateModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsCreateModalOpen(false)}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="relative bg-white rounded-[2rem] p-8 max-w-3xl w-full shadow-2xl overflow-hidden"
+                        >
+                            <button
+                                onClick={() => setIsCreateModalOpen(false)}
+                                className="absolute top-6 right-6 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition-colors"
+                            >
+                                <X className="w-5 h-5 text-slate-500" />
+                            </button>
+
+                            <div className="text-center mb-10">
+                                <h2 className="text-3xl font-bold text-slate-900 mb-3">Pilih Tipe Template</h2>
+                                <p className="text-slate-500 text-lg">Format apa yang ingin Anda buat hari ini?</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Option 1: Mobile */}
+                                <button
+                                    onClick={() => handleCreateTemplate('invitation')}
+                                    disabled={isCreating}
+                                    className="group relative flex flex-col bg-slate-50 rounded-3xl border-2 border-slate-100 p-8 hover:border-teal-500 hover:bg-teal-50/50 transition-all duration-300 text-left"
+                                >
+                                    <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                        <Smartphone className="w-8 h-8 text-teal-600" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-slate-900 mb-2">Undangan Digital</h3>
+                                    <p className="text-sm text-slate-500 leading-relaxed">
+                                        Standard mobile invitation (390x844). Cocok untuk disebar via WhatsApp ke tamu undangan.
+                                    </p>
+                                </button>
+
+                                {/* Option 2: Display */}
+                                <button
+                                    onClick={() => handleCreateTemplate('display')}
+                                    disabled={isCreating}
+                                    className="group relative flex flex-col bg-slate-50 rounded-3xl border-2 border-slate-100 p-8 hover:border-purple-500 hover:bg-purple-50/50 transition-all duration-300 text-left"
+                                >
+                                    <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                        <Monitor className="w-8 h-8 text-purple-600" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-slate-900 mb-2">Layar Sapaan (TV)</h3>
+                                    <p className="text-sm text-slate-500 leading-relaxed">
+                                        Widescreen display (1920x1080). Cocok untuk layar Welcome Screen di pintu masuk venue.
+                                    </p>
+                                </button>
+                            </div>
+
+                            {isCreating && (
+                                <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10">
+                                    <div className="flex flex-col items-center gap-4">
+                                        <Loader2 className="w-10 h-10 text-slate-900 animate-spin" />
+                                        <p className="font-bold text-slate-900 animate-pulse">Sedang Membuat Template...</p>
+                                    </div>
+                                </div>
+                            )}
+
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+        </AdminLayout>
     );
 };

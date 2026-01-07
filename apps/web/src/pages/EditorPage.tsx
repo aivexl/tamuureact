@@ -8,11 +8,13 @@ interface EditorPageProps {
 }
 
 export const EditorPage: React.FC<EditorPageProps> = ({ isTemplate }) => {
-    const { id } = useParams<{ id: string }>();
+    // Support both :id and :slug route params
+    const params = useParams<{ id?: string; slug?: string }>();
+    const templateId = params.slug || params.id;
 
     return (
         <div className="w-full h-screen bg-[#050505] text-white selection:bg-premium-accent selection:text-premium-dark overflow-hidden font-outfit">
-            <EditorLayout templateId={id} isTemplate={isTemplate} />
+            <EditorLayout templateId={templateId} isTemplate={isTemplate} />
         </div>
     );
 };

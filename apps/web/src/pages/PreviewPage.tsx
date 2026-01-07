@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { PreviewView } from '@/components/Preview/PreviewView';
-import { useStore, Section, Layer } from '@/store/useStore';
-import { templates } from '@/lib/api';
+import { useStore, Layer } from '@/store/useStore';
+import { templates, invitations } from '@/lib/api';
 import { Loader2 } from 'lucide-react';
 import { generateId } from '@/lib/utils';
 
@@ -27,24 +27,32 @@ export const PreviewPage: React.FC = () => {
             setIsLoading(true);
 
             try {
-                let data = null;
+                let data: any = null;
+                let source = '';
                 const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
 
-                // SIMPLIFIED: Only fetch from templates table
-                // This prevents data mismatch issues from stale invitations entries
+                // Try templates first, then invitations as fallback
                 try {
-                    // API handles both ID and slug lookup
                     data = await templates.get(slug);
+                    source = 'templates';
                 } catch (e) {
-                    data = null;
+                    // Template not found, try invitations
+                    try {
+                        data = await invitations.get(slug);
+                        source = 'invitations';
+                        // Normalize orbit_layers to orbit for consistency
+                        if (data && data.orbit_layers && !data.orbit) {
+                            data.orbit = data.orbit_layers;
+                        }
+                    } catch (e2) {
+                        data = null;
+                    }
                 }
 
-
                 if (data) {
-                    console.log('[PreviewPage] ✅ Data Loaded from TEMPLATES table:', data.name || data.id);
+                    console.log(`[PreviewPage] ✅ Data Loaded from ${source.toUpperCase()}:`, data.name || data.id);
 
-                    // CTO ENTERPRISE GUARD: URL Normalization
-                    // If accessed via UUID but a slug exists, update the URL for a cleaner UX
+                    // URL Normalization: If accessed via UUID but a slug exists, update the URL
                     if (isUuid && data.slug && data.slug !== slug) {
                         console.log(`[PreviewPage] Normalizing URL: ${slug} -> ${data.slug}`);
                         window.history.replaceState(null, '', `/preview/${data.slug}`);
@@ -56,15 +64,12 @@ export const PreviewPage: React.FC = () => {
                     const validSections = rawSections.map(s => ({
                         ...s,
                         id: s.id || generateId('section'),
-                        elements: s.elements || rawLayers.filter(l => (l as any).sectionId === s.id) || []
+                        elements: s.elements || rawLayers.filter((l: any) => l.sectionId === s.id) || []
                     }));
 
-                    // CTO DEBUG: Log all elements with their image URLs
+                    // Debug log elements
                     validSections.forEach((section, index) => {
-                        console.log(`[PreviewPage] Section ${index} has ${section.elements?.length || 0} elements:`);
-                        section.elements?.forEach((el: any) => {
-                            console.log(`  - ${el.type}: ${el.name || el.id}, imageUrl: ${el.imageUrl?.split('/').pop() || 'N/A'}`);
-                        });
+                        console.log(`[PreviewPage] Section ${index} (${section.title || section.key}) has ${section.elements?.length || 0} elements`);
                     });
 
                     useStore.setState({
@@ -82,14 +87,14 @@ export const PreviewPage: React.FC = () => {
                     console.warn('[PreviewPage] No data found for slug:', slug);
                 }
             } catch (err) {
-                console.error('[PreviewPage] Catch Error:', err);
+                console.error('[PreviewPage] Error:', err);
             } finally {
                 setIsLoading(false);
             }
         };
 
         loadData();
-    }, [slug]); // Only slug needed - hasHydrated is checked inside for Draft mode only
+    }, [slug]);
 
     if (isLoading) {
         return (

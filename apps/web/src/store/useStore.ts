@@ -53,17 +53,45 @@ export const useStore = create<StoreState>()(
             }),
             onRehydrateStorage: () => (state) => {
                 if (state) {
-                    // CTO MIGRATION: Sanitize entire state recursively
-                    // This removes stale blob:/data: URLs from persisted state
+                    // CTO CRITICAL FIX: Ensure all sections have valid .elements arrays
+                    // This prevents crashes on initial render when local storage has corrupted data
+                    let sections = Array.isArray(state.sections)
+                        ? state.sections
+                            .filter((s: any) => s && typeof s === 'object')
+                            .map((s: any) => ({
+                                ...s,
+                                id: s.id || `section-${Date.now()}`,
+                                elements: Array.isArray(s.elements) ? s.elements : []
+                            }))
+                        : [];
+
+                    // If no valid sections exist, create a default one
+                    if (sections.length === 0) {
+                        sections = [{
+                            id: 'section-opening-default',
+                            key: 'opening',
+                            title: 'Opening',
+                            order: 0,
+                            isVisible: true,
+                            backgroundColor: '#0a0a0a',
+                            overlayOpacity: 0,
+                            animation: 'fade-in',
+                            elements: []
+                        }];
+                    }
+
+                    const layers = Array.isArray(state.layers) ? state.layers.filter((l: any) => l && typeof l === 'object') : [];
+
                     const sanitizedPayload = sanitizeValue({
-                        layers: state.layers,
-                        sections: state.sections,
+                        layers,
+                        sections,
                         zoom: state.zoom,
                         pan: state.pan,
                         slug: state.slug,
                         projectName: state.projectName,
                         id: state.id,
-                        orbit: state.orbit
+                        orbit: state.orbit,
+                        activeSectionId: sections[0]?.id || null
                     });
 
                     // Update state with sanitized values

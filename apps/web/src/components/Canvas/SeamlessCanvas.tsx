@@ -79,8 +79,13 @@ export const SeamlessCanvas: React.FC = () => {
         removeOrbitElement,
         alignOrbitElements,
         distributeOrbitElements,
-        matchOrbitSize
+        matchOrbitSize,
+        templateType
     } = useStore();
+
+    const isDisplay = templateType === 'display';
+    const dynamicCanvasWidth = isDisplay ? 1920 : 414;
+    const dynamicSectionHeight = isDisplay ? 1080 : 896;
 
     const containerRef = useRef<HTMLDivElement>(null);
     const [visibleSectionId, setVisibleSectionId] = useState<string | null>(null);
@@ -111,7 +116,7 @@ export const SeamlessCanvas: React.FC = () => {
         const sourceCanvas = orbitCopySource;
         const targetCanvas = sourceCanvas === 'left' ? 'right' : 'left';
         const sourceOrbit = orbit[sourceCanvas];
-        const elementsToClone = [...sourceOrbit.elements]; // Clone the array
+        const elementsToClone = [...(sourceOrbit?.elements || [])]; // Clone the array
         const bgColor = sourceOrbit.backgroundColor;
         const bgUrl = sourceOrbit.backgroundUrl;
 
@@ -333,10 +338,10 @@ export const SeamlessCanvas: React.FC = () => {
 
         let elements: Layer[] = [];
         if (marquee.sectionId === 'left' || marquee.sectionId === 'right') {
-            elements = orbit[marquee.sectionId].elements;
+            elements = orbit[marquee.sectionId]?.elements || [];
         } else {
             const section = sections.find(s => s.id === marquee.sectionId);
-            if (section) elements = section.elements;
+            if (section) elements = section.elements || [];
         }
 
         if (elements.length > 0) {
@@ -365,8 +370,8 @@ export const SeamlessCanvas: React.FC = () => {
             const scrollCenter = scrollTop + containerHeight / 2;
             let currentVisibleId = null;
             for (let i = 0; i < sortedSections.length; i++) {
-                const sectionTop = i * (SECTION_HEIGHT + 64);
-                const sectionBottom = sectionTop + SECTION_HEIGHT;
+                const sectionTop = i * (dynamicSectionHeight + 64);
+                const sectionBottom = sectionTop + dynamicSectionHeight;
                 if (scrollCenter >= sectionTop && scrollCenter <= sectionBottom) {
                     currentVisibleId = sortedSections[i].id;
                     break;
@@ -377,7 +382,7 @@ export const SeamlessCanvas: React.FC = () => {
         container.addEventListener('scroll', handleScroll);
         handleScroll();
         return () => container.removeEventListener('scroll', handleScroll);
-    }, [sortedSections, visibleSectionId]);
+    }, [sortedSections, visibleSectionId, dynamicSectionHeight]);
 
     // Grouping Logics (CTO Implementation)
     const handleGroupSelected = () => {
@@ -480,7 +485,7 @@ export const SeamlessCanvas: React.FC = () => {
                                 onElementResize={(id, updates) => updateElementInSection(section.id, id, updates)}
                                 onContextMenu={handleContextMenu}
                                 onDimensionsDetected={(id, w, h) => {
-                                    const layer = section.elements.find(el => el.id === id);
+                                    const layer = (section.elements || []).find(el => el.id === id);
                                     if (layer && ((layer.width === 100 && layer.height === 100) || (layer.width === 200 && layer.height === 200))) {
                                         const ratio = w / h;
                                         let finalW = 200;
@@ -501,6 +506,8 @@ export const SeamlessCanvas: React.FC = () => {
                                 onMarqueeStart={handleMarqueeStart}
                                 onMarqueeMove={handleMarqueeMove}
                                 onMarqueeEnd={handleMarqueeEnd}
+                                canvasWidth={dynamicCanvasWidth}
+                                sectionHeight={dynamicSectionHeight}
                             />
                         ))}
                     </div>
@@ -772,7 +779,7 @@ export const SeamlessCanvas: React.FC = () => {
                                                 <span className="text-xl">{SECTION_ICONS[s.key as keyof typeof SECTION_ICONS] || '📄'}</span>
                                                 <div className="text-left">
                                                     <div className="text-sm font-bold text-white/80 group-hover:text-premium-accent transition-colors">{s.title}</div>
-                                                    <div className="text-[10px] text-white/20 uppercase tracking-widest">{s.elements.length} Elements</div>
+                                                    <div className="text-[10px] text-white/20 uppercase tracking-widest">{(s.elements || []).length} Elements</div>
                                                 </div>
                                             </div>
                                             <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
@@ -905,11 +912,13 @@ const SectionFrame: React.FC<{
     marquee: { x1: number, y1: number, x2: number, y2: number, active: boolean, sectionId: string | null } | null,
     onMarqueeStart: (sectionId: string, x: number, y: number) => void,
     onMarqueeMove: (x: number, y: number) => void,
-    onMarqueeEnd: () => void
+    onMarqueeEnd: () => void,
+    canvasWidth: number,
+    sectionHeight: number
 }> = ({
     section, isActive, index, onClick, onSelectLayer, selectedLayerIds,
     onElementResize, onDimensionsDetected, onContextMenu, onMoveUp, onMoveDown, onToggleVisibility, onCopyTo, onClear, onDelete, isFirst, isLast,
-    marquee, onMarqueeStart, onMarqueeMove, onMarqueeEnd, zoom
+    marquee, onMarqueeStart, onMarqueeMove, onMarqueeEnd, zoom, canvasWidth, sectionHeight
 }) => {
         // Collect DOM targets for Moveable
         const targetMap = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -920,7 +929,7 @@ const SectionFrame: React.FC<{
                 .map((id: string) => targetMap.current.get(id))
                 .filter(Boolean) as HTMLDivElement[];
             setTargets(activeTargets);
-        }, [selectedLayerIds, section.elements]);
+        }, [selectedLayerIds, section?.elements]);
 
         const registerTarget = (id: string, el: HTMLDivElement | null) => {
             if (el) targetMap.current.set(id, el); else targetMap.current.delete(id);
@@ -962,14 +971,14 @@ const SectionFrame: React.FC<{
                     onMouseUp={() => onMarqueeEnd()}
                     className={`relative shadow-2xl rounded-2xl overflow-hidden transition-all ${isActive ? 'ring-2 ring-premium-accent ring-offset-4 ring-offset-[#050505]' : 'ring-1 ring-white/10'}`}
                     style={{
-                        width: CANVAS_WIDTH,
-                        height: SECTION_HEIGHT,
+                        width: canvasWidth,
+                        height: sectionHeight,
                         backgroundColor: section.backgroundColor || '#0a0a0a',
                         transform: `scale(${zoom})`,
                         transformOrigin: 'top center'
                     }}>
 
-                    {section.elements.map((element: Layer) => (
+                    {(section.elements || []).map((element: Layer) => (
                         <CanvasElement
                             key={element.id}
                             layer={element}

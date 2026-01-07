@@ -108,59 +108,34 @@ export const BackgroundRemoverPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white overflow-x-hidden selection:bg-premium-accent selection:text-black">
+        <div className="min-h-screen bg-[#050505] text-white overflow-x-hidden selection:bg-premium-accent selection:text-black pt-14">
             {/* Background Glows */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-premium-accent/10 blur-[120px] rounded-full" />
                 <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/5 blur-[120px] rounded-full" />
             </div>
 
-            {/* Header */}
-            <header className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/[0.05] bg-black/20">
-                <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-                    <div className="flex items-center gap-6">
-                        <Link
-                            to="/"
-                            className="group flex items-center gap-2 text-white/60 hover:text-white transition-colors"
-                        >
-                            <div className="p-2 rounded-xl bg-white/5 border border-white/10 group-hover:border-white/20 transition-all">
-                                <ArrowLeft className="w-5 h-5" />
-                            </div>
-                        </Link>
-                        <div className="h-8 w-px bg-white/10 hidden sm:block" />
-                        <div>
-                            <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
-                                Background Remover
-                            </h1>
-                            <div className="flex items-center gap-2 mt-0.5">
-                                <span className="flex h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                                <p className="text-[10px] font-medium text-white/30 uppercase tracking-[0.2em]">Enterprise AI Tool</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {resultImage && (
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={reset}
-                                className="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all font-medium text-sm"
-                            >
-                                <RefreshCw className="w-4 h-4" />
-                                Reset
-                            </button>
-                            <motion.button
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                onClick={handleDownload}
-                                className="flex items-center gap-2 px-6 py-2.5 bg-premium-accent text-black font-semibold rounded-xl hover:bg-premium-accent-light transition-all shadow-[0_8px_32px_rgb(191,161,129,0.3)] hover:shadow-[0_8px_32px_rgb(191,161,129,0.5)] active:scale-95"
-                            >
-                                <Download className="w-4 h-4" />
-                                Download Result
-                            </motion.button>
-                        </div>
-                    )}
+            {/* Float Reset Button if needed */}
+            {resultImage && (
+                <div className="fixed bottom-8 right-8 z-[60] flex items-center gap-3">
+                    <button
+                        onClick={reset}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl transition-all font-medium text-sm backdrop-blur-xl"
+                    >
+                        <RefreshCw className="w-4 h-4" />
+                        Reset
+                    </button>
+                    <motion.button
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        onClick={handleDownload}
+                        className="flex items-center gap-2 px-6 py-2.5 bg-premium-accent text-black font-semibold rounded-xl hover:bg-premium-accent-light transition-all shadow-[0_8px_32px_rgb(191,161,129,0.3)] hover:shadow-[0_8px_32px_rgb(191,161,129,0.5)] active:scale-95"
+                    >
+                        <Download className="w-4 h-4" />
+                        Download Result
+                    </motion.button>
                 </div>
-            </header>
+            )}
 
             <main className="max-w-7xl mx-auto px-6 py-10 relative">
                 <div className="flex flex-col lg:flex-row gap-10">

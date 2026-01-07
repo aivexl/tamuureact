@@ -26,66 +26,200 @@ export default {
             // TEMPLATES ENDPOINTS
             // ============================================
             if (path === '/api/templates' && method === 'GET') {
-                const { results } = await env.DB.prepare(
+                console.log('GET /api/templates - Start');
+                const response = await env.DB.prepare(
                     'SELECT * FROM templates ORDER BY updated_at DESC LIMIT 100'
                 ).all();
-                return json(results, corsHeaders);
+                console.log('D1 Response success:', response.success);
+                console.log('D1 Results length:', response.results ? response.results.length : 'undefined');
+                return json(response.results || [], corsHeaders);
             }
+
+
 
             if (path === '/api/templates' && method === 'POST') {
                 const body = await request.json();
                 const id = crypto.randomUUID();
                 await env.DB.prepare(
-                    `INSERT INTO templates (id, name, slug, category, sections, layers) 
-                     VALUES (?, ?, ?, ?, ?, ?)`
+                    `INSERT INTO templates (id, name, slug, category, sections, layers, type, thumbnail) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
                 ).bind(
                     id,
                     body.name || 'Untitled Template',
                     body.slug || null,
                     body.category || 'Wedding',
                     JSON.stringify(body.sections || []),
-                    JSON.stringify(body.layers || [])
+                    JSON.stringify(body.layers || []),
+                    body.type || 'invitation',
+                    body.thumbnail_url || null
                 ).run();
                 return json({ id, ...body }, corsHeaders);
             }
 
             if (path.startsWith('/api/templates/') && method === 'GET') {
-                const id = path.split('/')[3];
-                const { results } = await env.DB.prepare(
+                const idOrSlug = path.split('/')[3];
+                // First try by ID
+                let { results } = await env.DB.prepare(
                     'SELECT * FROM templates WHERE id = ?'
-                ).bind(id).all();
+                ).bind(idOrSlug).all();
+                // If not found, try by slug
+                if (results.length === 0) {
+                    const slugResult = await env.DB.prepare(
+                        'SELECT * FROM templates WHERE slug = ?'
+                    ).bind(idOrSlug).all();
+                    results = slugResult.results;
+                }
                 if (results.length === 0) return notFound(corsHeaders);
                 return json(parseJsonFields(results[0]), corsHeaders);
             }
 
+
             if (path.startsWith('/api/templates/') && method === 'PUT') {
                 const id = path.split('/')[3];
-                const body = await request.json();
-                await env.DB.prepare(
-                    `UPDATE templates SET 
-                        name = COALESCE(?, name),
-                        slug = COALESCE(?, slug),
-                        thumbnail = COALESCE(?, thumbnail),
-                        category = COALESCE(?, category),
-                        zoom = COALESCE(?, zoom),
-                        pan = COALESCE(?, pan),
-                        sections = COALESCE(?, sections),
-                        layers = COALESCE(?, layers),
-                        updated_at = datetime('now')
-                     WHERE id = ?`
-                ).bind(
-                    body.name, body.slug, body.thumbnail, body.category,
-                    body.zoom, JSON.stringify(body.pan),
-                    JSON.stringify(body.sections), JSON.stringify(body.layers),
-                    id
-                ).run();
-                return json({ id, updated: true }, corsHeaders);
+                try {
+                    const body = await request.json();
+                    await env.DB.prepare(
+                        `UPDATE templates SET 
+                            name = COALESCE(?, name),
+                            slug = COALESCE(?, slug),
+                            thumbnail = COALESCE(?, thumbnail),
+                            category = COALESCE(?, category),
+                            zoom = COALESCE(?, zoom),
+                            pan = COALESCE(?, pan),
+                            sections = COALESCE(?, sections),
+                            layers = COALESCE(?, layers),
+                            updated_at = datetime('now')
+                         WHERE id = ?`
+                    ).bind(
+                        body.name || null,
+                        body.slug || null,
+                        body.thumbnail || null,
+                        body.category || null,
+                        body.zoom ?? null,
+                        body.pan ? JSON.stringify(body.pan) : null,
+                        body.sections ? JSON.stringify(body.sections) : null,
+                        body.layers ? JSON.stringify(body.layers) : null,
+                        id
+                    ).run();
+                    return json({ id, updated: true }, corsHeaders);
+                } catch (error) {
+                    console.error('Template update error:', error);
+                    return json({ error: 'Failed to update template', details: error.message }, { ...corsHeaders, status: 500 });
+                }
             }
 
             if (path.startsWith('/api/templates/') && method === 'DELETE') {
                 const id = path.split('/')[3];
                 await env.DB.prepare('DELETE FROM templates WHERE id = ?').bind(id).run();
                 return json({ id, deleted: true }, corsHeaders);
+            }
+
+            // ============================================
+            // USER DISPLAY DESIGNS ENDPOINTS (NEW)
+            // ============================================
+            if (path === '/api/user-display-designs' && method === 'GET') {
+                // In a real app, strict User ID filtering happens here via auth token.
+                // For this worker prototype, we assume the frontend sends a query param or header,
+                // BUT current architecture is open. We'll simply list all for now or filter by user_id if passed.
+                // Assuming RLS usually handles this, but since this worker interacts with D1 directly with service role, 
+                // we should filter.
+
+                const urlObj = new URL(request.url);
+                const userId = urlObj.searchParams.get('user_id');
+
+                let query = 'SELECT * FROM user_display_designs ORDER BY updated_at DESC';
+                let params = [];
+
+                if (userId) {
+                    query = 'SELECT * FROM user_display_designs WHERE user_id = ? ORDER BY updated_at DESC';
+                    params = [userId];
+                }
+
+                const { results } = await env.DB.prepare(query).bind(...params).all();
+                return json(results, corsHeaders);
+            }
+
+            if (path === '/api/user-display-designs' && method === 'POST') {
+                const body = await request.json();
+                const id = crypto.randomUUID();
+                await env.DB.prepare(
+                    `INSERT INTO user_display_designs (id, user_id, name, content, thumbnail_url, source_template_id) 
+                     VALUES (?, ?, ?, ?, ?, ?)`
+                ).bind(
+                    id,
+                    body.user_id, // Frontend must send this!
+                    body.name || 'Untitled Display',
+                    JSON.stringify(body.content || {}),
+                    body.thumbnail_url || null,
+                    body.source_template_id || null
+                ).run();
+                return json({ id, ...body }, corsHeaders);
+            }
+
+
+            if (path.match(/^\/api\/user-display-designs\/[^/]+$/) && method === 'PUT') {
+                const id = path.split('/')[3];
+                const body = await request.json();
+                await env.DB.prepare(
+                    `UPDATE user_display_designs SET 
+                         name = COALESCE(?, name),
+                         content = COALESCE(?, content),
+                         thumbnail_url = COALESCE(?, thumbnail_url),
+                         updated_at = datetime('now')
+                      WHERE id = ?`
+                ).bind(
+                    body.name,
+                    JSON.stringify(body.content),
+                    body.thumbnail_url,
+                    id
+                ).run();
+                return json({ id, updated: true }, corsHeaders);
+            }
+
+            if (path.match(/^\/api\/user-display-designs\/[^/]+$/) && method === 'GET') {
+                const id = path.split('/')[3];
+                const { results } = await env.DB.prepare(
+                    'SELECT * FROM user_display_designs WHERE id = ?'
+                ).bind(id).all();
+                const design = results?.[0];
+                if (!design) return notFound(corsHeaders);
+                // Parse Content JSON
+                design.content = JSON.parse(design.content || '{}');
+                return json(design, corsHeaders);
+            }
+
+            if (path.match(/^\/api\/user-display-designs\/[^/]+$/) && method === 'DELETE') {
+                const id = path.split('/')[3];
+                await env.DB.prepare('DELETE FROM user_display_designs WHERE id = ?').bind(id).run();
+                return json({ id, deleted: true }, corsHeaders);
+            }
+
+            // Real-time Display Trigger (Host Remote)
+            if (path.startsWith('/api/trigger/') && method === 'GET') {
+                const parts = path.split('/');
+                const id = parts[3];
+                const effect = parts[4] || 'confetti';
+
+                // We update BOTH user_display_designs and invitations to be safe
+                // (Since "Display Welcome" might be an invitation with display type)
+
+                // Try updating user_display_designs
+                await env.DB.prepare(`
+                    UPDATE user_display_designs 
+                    SET content = json_set(COALESCE(content, '{}'), '$.activeTrigger', json_object('effect', ?, 'timestamp', ?)),
+                        updated_at = datetime('now')
+                    WHERE id = ?
+                `).bind(effect, Date.now(), id).run();
+
+                // Also try updating invitations (if slug is used as ID)
+                await env.DB.prepare(`
+                    UPDATE invitations 
+                    SET sections = json_set(COALESCE(sections, '[]'), '$[0].activeTrigger', json_object('effect', ?, 'timestamp', ?)),
+                        updated_at = datetime('now')
+                    WHERE id = ? OR slug = ?
+                `).bind(effect, Date.now(), id, id).run();
+
+                return new Response(`Triggered: ${effect}`, { headers: corsHeaders });
             }
 
             // ============================================
@@ -101,20 +235,59 @@ export default {
             if (path === '/api/invitations' && method === 'POST') {
                 const body = await request.json();
                 const id = crypto.randomUUID();
+
+                // If template_id provided, fetch template data for cloning
+                let templateData = null;
+                if (body.template_id) {
+                    const { results } = await env.DB.prepare(
+                        'SELECT * FROM templates WHERE id = ?'
+                    ).bind(body.template_id).all();
+                    templateData = results?.[0];
+                }
+
+                // Merge template data with request body (request body takes priority)
+                const sections = body.sections || (templateData?.sections ? JSON.parse(templateData.sections) : []);
+                const layers = body.layers || (templateData?.layers ? JSON.parse(templateData.layers) : []);
+                const orbit = body.orbit || body.orbit_layers || (templateData?.orbit ? JSON.parse(templateData.orbit) : {});
+                const zoom = body.zoom ?? templateData?.zoom ?? 1;
+                const pan = body.pan || (templateData?.pan ? JSON.parse(templateData.pan) : { x: 0, y: 0 });
+                const category = body.category || templateData?.category || 'Wedding';
+                const thumbnailUrl = body.thumbnail_url || templateData?.thumbnail || null;
+
                 await env.DB.prepare(
-                    `INSERT INTO invitations (id, name, slug, category, sections, layers, orbit_layers) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?)`
+                    `INSERT INTO invitations (id, name, slug, category, zoom, pan, sections, layers, orbit_layers, thumbnail_url, template_id, is_published, display_design_id) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
                 ).bind(
                     id,
                     body.name || 'Untitled Invitation',
                     body.slug || null,
-                    body.category || 'Wedding',
-                    JSON.stringify(body.sections || []),
-                    JSON.stringify(body.layers || []),
-                    JSON.stringify(body.orbit_layers || [])
+                    category,
+                    zoom,
+                    JSON.stringify(pan),
+                    JSON.stringify(sections),
+                    JSON.stringify(layers),
+                    JSON.stringify(orbit),
+                    thumbnailUrl,
+                    body.template_id || null,
+                    body.is_published ? 1 : 0,
+                    body.display_design_id || null
                 ).run();
-                return json({ id, ...body }, corsHeaders);
+
+                return json({
+                    id,
+                    name: body.name,
+                    slug: body.slug,
+                    category,
+                    zoom,
+                    pan,
+                    sections,
+                    layers,
+                    orbit_layers: orbit,
+                    thumbnail_url: thumbnailUrl,
+                    template_id: body.template_id
+                }, corsHeaders);
             }
+
 
             if (path.match(/^\/api\/invitations\/[^/]+$/) && method === 'GET') {
                 const id = path.split('/')[3];
@@ -141,13 +314,15 @@ export default {
                         layers = COALESCE(?, layers),
                         orbit_layers = COALESCE(?, orbit_layers),
                         is_published = COALESCE(?, is_published),
+                        display_design_id = COALESCE(?, display_design_id),
                         updated_at = datetime('now')
                      WHERE id = ?`
                 ).bind(
                     body.name, body.slug, body.thumbnail_url, body.category,
                     body.zoom, JSON.stringify(body.pan),
                     JSON.stringify(body.sections), JSON.stringify(body.layers),
-                    JSON.stringify(body.orbit_layers), body.is_published ? 1 : 0,
+                    JSON.stringify(body.orbit_layers), body.is_published !== undefined ? (body.is_published ? 1 : 0) : null,
+                    body.display_design_id !== undefined ? body.display_design_id : null,
                     id
                 ).run();
                 return json({ id, updated: true }, corsHeaders);
@@ -160,8 +335,22 @@ export default {
             }
 
             // ============================================
-            // RSVP ENDPOINTS
+            // RSVP & WISHES ENDPOINTS
             // ============================================
+
+            // New endpoint to fetch all wishes with invitation details
+            if (path === '/api/wishes' && method === 'GET') {
+                const { results } = await env.DB.prepare(`
+                    SELECT r.*, i.name as invitation_name, i.slug as invitation_slug
+                    FROM rsvp_responses r
+                    JOIN invitations i ON r.invitation_id = i.id
+                    WHERE r.deleted_at IS NULL
+                    ORDER BY r.submitted_at DESC
+                    LIMIT 200
+                `).all();
+                return json(results, corsHeaders);
+            }
+
             if (path.match(/^\/api\/invitations\/[^/]+\/rsvp$/) && method === 'GET') {
                 const invitationId = path.split('/')[3];
                 const { results } = await env.DB.prepare(
@@ -190,6 +379,34 @@ export default {
                 return json({ id, success: true }, corsHeaders);
             }
 
+            // RSVPs moderation (PUT/DELETE)
+            if (path.startsWith('/api/rsvp/') && (method === 'PUT' || method === 'DELETE')) {
+                const id = path.split('/')[3];
+                if (method === 'DELETE') {
+                    await env.DB.prepare(
+                        'UPDATE rsvp_responses SET deleted_at = datetime("now") WHERE id = ?'
+                    ).bind(id).run();
+                    return json({ id, deleted: true }, corsHeaders);
+                }
+
+                const body = await request.json();
+                await env.DB.prepare(
+                    `UPDATE rsvp_responses SET 
+                        is_visible = COALESCE(?, is_visible),
+                        attendance = COALESCE(?, attendance),
+                        message = COALESCE(?, message),
+                        updated_at = datetime('now')
+                     WHERE id = ?`
+                ).bind(
+                    body.is_visible !== undefined ? (body.is_visible ? 1 : 0) : null,
+                    body.attendance,
+                    body.message,
+                    id
+                ).run();
+                return json({ id, updated: true }, corsHeaders);
+            }
+
+
             // ============================================
             // ASSET UPLOAD (R2)
             // ============================================
@@ -210,7 +427,7 @@ export default {
                     httpMetadata: { contentType: file.type }
                 });
 
-                const publicUrl = `https://assets.tamuu.id/${key}`;
+                const publicUrl = `https://api.tamuu.id/assets/${key}`;
 
                 // Save to database
                 const id = crypto.randomUUID();
@@ -272,7 +489,8 @@ function notFound(corsHeaders) {
 }
 
 function parseJsonFields(row) {
-    const jsonFields = ['pan', 'sections', 'layers', 'orbit_layers'];
+    const jsonFields = ['pan', 'sections', 'layers', 'orbit_layers', 'orbit'];
+
     const result = { ...row };
     for (const field of jsonFields) {
         if (result[field] && typeof result[field] === 'string') {

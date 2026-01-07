@@ -6,10 +6,15 @@ import { ElementRenderer } from '../Canvas/ElementRenderer';
 import { AnimatedLayer, clearAnimationCache } from './AnimatedLayer';
 import { ParticleOverlay } from './ParticleOverlay';
 import Lenis from 'lenis';
+import { VisualEffectsCanvas } from '../Canvas/VisualEffectsCanvas';
+import { GuestGreetingOverlay } from '../Canvas/GuestGreetingOverlay';
+import { DisplaySimulationHUD } from '../Canvas/DisplaySimulationHUD';
 
-// Canvas dimensions matching the editor
-const CANVAS_WIDTH = 414;
-const CANVAS_HEIGHT = 896;
+// Canvas dimensions - now dynamic based on template type
+const INVITATION_WIDTH = 414;
+const INVITATION_HEIGHT = 896;
+const DISPLAY_WIDTH = 1920;
+const DISPLAY_HEIGHT = 1080;
 
 // Transition effect types (from legacy)
 type TransitionEffect = 'none' | 'slide-up' | 'slide-down' | 'fade' | 'zoom-reveal' | 'stack-reveal' | 'parallax-reveal' | 'door-reveal' | 'carry-up' | 'pinch-close' | 'split-door';
@@ -25,7 +30,15 @@ interface PreviewViewProps {
 }
 
 export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => {
-    const { sections, musicConfig, orbit } = useStore();
+    const { sections, musicConfig, orbit, templateType, id: templateId, triggerGlobalEffect, triggerBatchInteractions,
+        resetInteractions
+    } = useStore();
+    const lastTriggerRef = useRef<{ effect: string, timestamp: number } | null>(null);
+
+    // Dynamic canvas dimensions based on template type
+    const CANVAS_WIDTH = templateType === 'display' ? DISPLAY_WIDTH : INVITATION_WIDTH;
+    const CANVAS_HEIGHT = templateType === 'display' ? DISPLAY_HEIGHT : INVITATION_HEIGHT;
+    const isDisplay = templateType === 'display';
 
     // State
     const [isOpened, setIsOpened] = useState(false); // Track if "Open Invitation" clicked
@@ -44,6 +57,44 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
     const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
     const zoomTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
+    // Interaction Poller (Dev/Local Sync)
+    useEffect(() => {
+        if (!isOpen) return;
+
+        // CTO: Synchronously clear interactions and initialize timestamp reference
+        resetInteractions();
+
+        const stored = localStorage.getItem('tamuu_interaction_event');
+        if (stored) {
+            try {
+                const event = JSON.parse(stored);
+                lastTriggerRef.current = { effect: event.effect, timestamp: event.timestamp };
+                console.log('[PreviewView] Initialized interaction ref from storage:', event.timestamp);
+            } catch (e) { }
+        }
+
+        const checkInteraction = () => {
+            try {
+                const stored = localStorage.getItem('tamuu_interaction_event');
+                if (stored) {
+                    const event = JSON.parse(stored);
+                    const lastTimestamp = lastTriggerRef.current?.timestamp || 0;
+
+                    // If new event (within last 5 seconds)
+                    if (event.timestamp > lastTimestamp && Date.now() - event.timestamp < 5000) {
+                        lastTriggerRef.current = { effect: event.effect, timestamp: event.timestamp };
+                        useStore.getState().triggerInteraction(event.name, event.effect, event.style);
+                    }
+                }
+            } catch (e) {
+                console.error('Interaction poll error:', e);
+            }
+        };
+
+        const interval = setInterval(checkInteraction, 200);
+        return () => clearInterval(interval);
+    }, []);
+
     // Sort sections by order
     const sortedSections = useMemo(() => {
         try {
@@ -60,7 +111,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
     }, [sections]);
 
     // Calculate scale factor for responsive design (with safety checks)
-    const isPortrait = windowSize.height >= windowSize.width;
+    const isPortrait = templateType === 'display' ? false : windowSize.height >= windowSize.width;
     const scaleFactor = useMemo(() => {
         if (windowSize.width === 0 || windowSize.height === 0) return 1;
 
@@ -73,9 +124,10 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
             return widthScale;
         } else {
             // Desktop behavior remains: Fit to height
-            return heightScale;
+            // For display templates, we always want to fit
+            return Math.min(widthScale, heightScale);
         }
-    }, [windowSize, isPortrait]);
+    }, [windowSize, isPortrait, CANVAS_WIDTH, CANVAS_HEIGHT]);
 
     // Calculate cover height (fills viewport exactly at current scale)
     const coverHeight = useMemo(() => {
@@ -139,14 +191,62 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
         return () => window.removeEventListener('resize', updateSize);
     }, []);
 
+    // Live Trigger Polling (Remote Control)
+    useEffect(() => {
+        if (!isOpen || !templateId) return;
+
+        const pollTriggers = async () => {
+            if (useStore.getState().isTemplate) return;
+
+            try {
+                const baseUrl = import.meta.env.VITE_API_URL || 'https://api.tamuu.id';
+                const endpoint = templateType === 'display'
+                    ? `/api/user-display-designs/${templateId}`
+                    : `/api/invitations/${templateId}`;
+
+                const response = await fetch(`${baseUrl}${endpoint}`);
+                if (!response.ok) return;
+
+                const data = await response.json();
+
+                // Triggers can be in content.activeTrigger or sections[0].activeTrigger
+                const trigger = data.content?.activeTrigger || data.sections?.[0]?.activeTrigger;
+
+                if (trigger && trigger.timestamp !== lastTriggerRef.current?.timestamp) {
+                    // Only trigger if it's the first time or a new timestamp
+                    if (lastTriggerRef.current !== null) {
+                        triggerGlobalEffect(trigger.effect);
+                    }
+                    lastTriggerRef.current = trigger;
+                }
+            } catch (err) {
+                // Silently handle polling errors
+                console.error('[LiveTrigger] Polling failed:', err);
+            }
+        };
+
+        const interval = setInterval(pollTriggers, 2000);
+        pollTriggers(); // Initial check
+
+        return () => clearInterval(interval);
+    }, [isOpen, templateId, templateType, triggerGlobalEffect]);
+
     // Reset state when opening
     useEffect(() => {
         if (isOpen) {
             // Update window size immediately when opening
             setWindowSize({ width: window.innerWidth, height: window.innerHeight });
-            setIsOpened(false);
-            setTransitionStage('IDLE');
-            setVisibleSections([0]);
+
+            if (templateType === 'display') {
+                setIsOpened(true);
+                setTransitionStage('DONE');
+                setVisibleSections(sortedSections.map((_, i) => i));
+            } else {
+                setIsOpened(false);
+                setTransitionStage('IDLE');
+                setVisibleSections([0]);
+            }
+
             setCurrentZoomPointIndex({});
             clearAnimationCache();
 
@@ -163,7 +263,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
             Object.values(zoomTimers.current).forEach(timer => clearTimeout(timer));
             zoomTimers.current = {};
         };
-    }, [isOpen, sortedSections]);
+    }, [isOpen, sortedSections, templateType]);
 
     // Fullscreen handlers
     const toggleFullscreen = useCallback(() => {
@@ -253,6 +353,80 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
         document.addEventListener('fullscreenchange', handleFullscreenChange);
         return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
     }, []);
+
+    // ============================================
+    // CLICK INTERACTION LOGIC (Blast)
+    // ============================================
+    const getAllBlastElementsData = useCallback(() => {
+        if (!sections) return [];
+        const allBlastData: { config: any, x: number, y: number }[] = [];
+
+        for (const section of sections) {
+            const blastElements = (section.elements || []).filter((el: any) => el.type === 'interaction');
+            blastElements.forEach((blastElement: any) => {
+                if (blastElement?.interactionConfig) {
+                    allBlastData.push({
+                        config: blastElement.interactionConfig,
+                        x: blastElement.x + (blastElement.width || 100) / 2,
+                        y: blastElement.y + (blastElement.height || 100) / 2
+                    });
+                }
+            });
+        }
+        return allBlastData;
+    }, [sections]);
+
+    const handleClick = (e: React.MouseEvent) => {
+        if (!isDisplay) return;
+
+        console.log('[PreviewView] Click detected');
+        e.stopPropagation();
+
+        const allBlastData = getAllBlastElementsData();
+        const winW = window.innerWidth;
+        const winH = window.innerHeight;
+
+        const hasNameBoard = sections.some((s: any) =>
+            s.elements?.some((el: any) => el.type === 'name_board')
+        );
+
+        if (allBlastData.length > 0) {
+            const interactions = allBlastData.map(data => {
+                const canvasW = DISPLAY_WIDTH * scaleFactor;
+                const canvasH = DISPLAY_HEIGHT * scaleFactor;
+                const offsetX = (winW - canvasW) / 2;
+                const offsetY = (winH - canvasH) / 2;
+
+                const blastScreenX = offsetX + data.x * scaleFactor;
+                const blastScreenY = offsetY + data.y * scaleFactor;
+
+                const origin = { x: blastScreenX / winW, y: blastScreenY / winH };
+                const style = hasNameBoard ? 'none' : (data.config?.greetingStyle || 'cinematic');
+
+                return {
+                    effect: data.config?.effect || 'confetti',
+                    style: style as any,
+                    origin,
+                    resetDuration: data.config?.resetDuration
+                };
+            });
+
+            // Use the test name from the first blast element or fallback
+            const testName = allBlastData[0].config?.testName || 'Guest Name';
+
+            console.log('[PreviewView] Triggering batch interactions:', interactions.length);
+            triggerBatchInteractions(testName, interactions);
+        } else {
+            // Fallback for click anywhere if no interaction elements exist
+            const origin = { x: e.clientX / winW, y: e.clientY / winH };
+            const style = hasNameBoard ? 'none' : 'cinematic';
+            triggerBatchInteractions('Guest Name', [{
+                effect: 'confetti',
+                style: style as any,
+                origin
+            }]);
+        }
+    };
 
     // Start multi-point zoom animation for a section
     const startZoomAnimation = useCallback((sectionIndex: number, section: any) => {
@@ -648,6 +822,16 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                 style={viewportBackgroundStyle}
             >
                 {/* 
+                    INTERACTION OVERLAY (CTO FIX)
+                    A transparent layer on top of everything to catch clicks reliably in preview mode.
+                */}
+                {isDisplay && (
+                    <div
+                        className="absolute inset-0 z-[50000] cursor-pointer"
+                        onClick={handleClick}
+                    />
+                )}
+                {/* 
                     CTO ENTERPRISE LAYOUT ENGINE V2 - CSS GRID
                     - Mobile: Single column, full width invitation.
                     - Desktop: 3-column grid [1fr | center | 1fr] for ZERO-GAP GUARANTEE.
@@ -909,9 +1093,9 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                     )}
                 </div>
 
-                {/* Controls Overlay - Absolute positioned over everything */}
+                {/* Controls Overlay - Highest z-index to ensure clickability above InteractionOverlay */}
                 <div
-                    className="absolute top-4 right-4 z-[1000] flex items-center gap-2"
+                    className="absolute top-4 right-4 z-[60000] flex items-center gap-2"
                     style={{
                         transform: `scale(${Math.max(1 / scaleFactor, 0.5)})`,
                         transformOrigin: 'top right'
@@ -962,8 +1146,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                     )}
                 </AnimatePresence>
 
-                {/* ESC hint */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/30 text-xs">
+                {/* ESC hint - Balanced z-index to be visible but not block clicks if it were clickable */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/30 text-xs z-[60000] pointer-events-none">
                     Press <kbd className="px-1.5 py-0.5 bg-white/10 rounded">ESC</kbd> to close
                 </div>
 
@@ -977,8 +1161,21 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                         animation: ken-burns 20s ease-in-out infinite alternate;
                     }
                 `}} />
-            </motion.div >
-        </AnimatePresence >
+
+                {/* GLOBAL VISUAL ENGINE (Background/Foreground) - INSIDE FULLSCREEN CONTAINER */}
+                <VisualEffectsCanvas mode="global" className="z-[70000]" />
+                {!isDisplay && <GuestGreetingOverlay />}
+
+                {/* Admin HUD (Debug Mode Only) */}
+                {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === 'true' && (
+                    <div className="absolute top-20 right-4 z-[60001]">
+                        <DisplaySimulationHUD />
+                    </div>
+                )}
+            </motion.div>
+
+
+        </AnimatePresence>
     );
 };
 const DESIGN_ORBIT_WIDTH = 800;
@@ -997,7 +1194,7 @@ const PreviewOrbitStage: React.FC<{
 
     return (
         <div
-            className={`absolute inset-0 pointer-events-none transition-all duration-1000 ${isOpened ? 'opacity-100' : 'opacity-100'
+            className={`absolute inset- 0 pointer-events-none transition-all duration-1000 ${isOpened ? 'opacity-100' : 'opacity-100'
                 }`}
             style={{
                 [type]: 0,

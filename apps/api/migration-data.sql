@@ -1,0 +1,3 @@
+INSERT INTO templates (id, name, slug, thumbnail, category, zoom, pan, sections, layers, created_at, updated_at) VALUES ('87a111f6-dda6-41a4-af79-932415286d3f', 'New Premium Template', 'BAS2UF', NULL, 'Wedding', 1, '{"x":0,"y":0}', '[]', '[]', '2025-12-29T10:51:33.50002+00:00', '2025-12-29T10:51:28.423+00:00');
+
+INSERT INTO templates (id, name, slug, thumbnail, category, zoom, pan, sections, layers, created_at, updated_at) VALUES ('1a5b64f5-fcd3-4824-8c87-5eaa49e853e6', 'test template', 'testtemplate', 'https://mqbgpulironhtvzfpzfp.supabase.co/storage/v1/object/public/invitation-assets/thumbnails/thumb_test-template_1766813758137.jpg', 'Wedding', 1, '{"x":56.5,"y":-147.5}', '[]', '[]', '2025-12-27T02:10:56.068473+00:00', '2026-01-01T05:35:12.279172+00:00');

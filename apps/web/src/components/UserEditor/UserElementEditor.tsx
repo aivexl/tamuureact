@@ -1,14 +1,30 @@
 import React from 'react';
 import { m } from 'framer-motion';
-import { Type, Image as ImageIcon, MapPin, Copy, Shield } from 'lucide-react';
+import { Type, Image as ImageIcon, MapPin, Copy, Shield, Clock } from 'lucide-react';
+import { useStore, Layer } from '@/store/useStore';
 
 interface UserElementEditorProps {
-    element: any;
-    onUpdate: (updates: any) => void;
+    element: Layer;
+    sectionId: string;
 }
 
-export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, onUpdate }) => {
+export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, sectionId }) => {
+    const { updateElementInSection } = useStore();
     const isProtected = element.isContentProtected || false;
+
+    const handleUpdate = (updates: Partial<Layer>) => {
+        updateElementInSection(sectionId, element.id, updates);
+    };
+
+    // Get icon based on element type
+    const getIcon = () => {
+        switch (element.type) {
+            case 'text': return <Type className="w-4 h-4" />;
+            case 'countdown': return <Clock className="w-4 h-4" />;
+            case 'image': return <ImageIcon className="w-4 h-4" />;
+            default: return <Type className="w-4 h-4" />;
+        }
+    };
 
     return (
         <m.div
@@ -19,11 +35,11 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, o
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400 group-hover:text-teal-500 transition-colors">
-                        {element.type === 'text' ? <Type className="w-4 h-4" /> : <ImageIcon className="w-4 h-4" />}
+                        {getIcon()}
                     </div>
                     <div>
                         <span className="text-xs font-black text-slate-800 tracking-tight uppercase tracking-widest">
-                            {element.editableLabel || element.name || 'Element'}
+                            {element.name || 'Element'}
                         </span>
                         {isProtected && (
                             <div className="flex items-center gap-1 text-[8px] font-black text-amber-500 uppercase tracking-widest mt-0.5">
@@ -43,13 +59,13 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, o
                 </button>
             </div>
 
-            {/* Field Rendering */}
+            {/* Text Field */}
             {element.type === 'text' && (
                 <div className="space-y-2">
                     {element.content && element.content.length > 50 ? (
                         <textarea
-                            value={element.content}
-                            onChange={(e) => onUpdate({ content: e.target.value })}
+                            value={element.content || ''}
+                            onChange={(e) => handleUpdate({ content: e.target.value })}
                             className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none resize-none"
                             rows={3}
                             placeholder="Mulai mengetik..."
@@ -57,8 +73,8 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, o
                     ) : (
                         <input
                             type="text"
-                            value={element.content}
-                            onChange={(e) => onUpdate({ content: e.target.value })}
+                            value={element.content || ''}
+                            onChange={(e) => handleUpdate({ content: e.target.value })}
                             className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
                             placeholder="Mulai mengetik..."
                         />
@@ -66,6 +82,28 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, o
                 </div>
             )}
 
+            {/* Countdown Date Field */}
+            {element.type === 'countdown' && element.countdownConfig && (
+                <div className="space-y-3">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                        Tanggal Target
+                    </label>
+                    <input
+                        type="datetime-local"
+                        value={element.countdownConfig.targetDate?.slice(0, 16) || ''}
+                        onChange={(e) => handleUpdate({
+                            countdownConfig: {
+                                ...element.countdownConfig!,
+                                targetDate: new Date(e.target.value).toISOString()
+                            } as typeof element.countdownConfig
+                        })}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
+
+                    />
+                </div>
+            )}
+
+            {/* Image Field */}
             {(element.type === 'image' || element.type === 'gif') && (
                 <div className="space-y-3">
                     <div className="relative group/upload h-32 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-teal-300 hover:bg-teal-50/30 transition-all">
@@ -84,6 +122,7 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, o
                 </div>
             )}
 
+            {/* Maps Field */}
             {element.type === 'maps_point' && (
                 <div className="space-y-4">
                     <div className="space-y-1.5">
@@ -92,7 +131,10 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, o
                             <input
                                 type="text"
                                 value={element.mapsConfig?.googleMapsUrl || ''}
-                                onChange={(e) => onUpdate({ mapsConfig: { ...element.mapsConfig, googleMapsUrl: e.target.value } })}
+                                onChange={(e) => handleUpdate({
+                                    mapsConfig: { ...element.mapsConfig!, googleMapsUrl: e.target.value } as typeof element.mapsConfig
+                                })}
+
                                 className="flex-1 px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
                                 placeholder="https://maps.app.goo.gl/..."
                             />

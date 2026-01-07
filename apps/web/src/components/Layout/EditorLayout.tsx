@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useStore, Section, Layer } from '@/store/useStore';
 import { SeamlessCanvas } from '../Canvas/SeamlessCanvas';
 import { SectionCanvas } from '../Canvas/SectionCanvas';
@@ -12,16 +12,20 @@ import { PreviewView } from '../Preview/PreviewView';
 import { ImageCropModal } from '../Modals/ImageCropModal';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { PanelLeftClose, PanelRightClose, Loader2 } from 'lucide-react';
-import { templates as templatesApi, invitations as invitationsApi, storage } from '@/lib/api';
+import { templates as templatesApi, invitations as invitationsApi, userDisplayDesigns, storage } from '@/lib/api';
 import { generateId, dataURLtoBlob, sanitizeValue } from '@/lib/utils';
+import { Layers, List, Zap, Settings } from 'lucide-react';
+import { InteractionsSidebar } from '../Panels/InteractionsSidebar';
+import { SettingsSidebar } from '../Panels/SettingsSidebar';
 
 
 interface EditorLayoutProps {
     templateId?: string;
     isTemplate?: boolean;
+    isDisplayDesign?: boolean;
 }
 
-export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTemplate }) => {
+export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTemplate, isDisplayDesign }) => {
     const {
         layers,
         projectName,
@@ -41,6 +45,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false); // Renamed from isLoading for clarity
     const [hasLoaded, setHasLoaded] = useState(false); // Enterprise Load Guard
+    const [activeSidebarTab, setActiveSidebarTab] = useState<'sections' | 'layers' | 'interactions' | 'settings'>('sections');
 
     // ============================================
     // HEADER HANDLERS
@@ -70,8 +75,8 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
         const state = useStore.getState();
 
         // CTO Verification: Log First Image Element for Debugging
-        const firstSectionWithImage = state.sections.find(s => s.backgroundUrl || s.elements.some(e => e.imageUrl));
-        const firstImg = firstSectionWithImage?.elements.find(e => e.imageUrl)?.imageUrl || firstSectionWithImage?.backgroundUrl;
+        const firstSectionWithImage = state.sections.find(s => s?.backgroundUrl || (s?.elements || []).some(e => e.imageUrl));
+        const firstImg = (firstSectionWithImage?.elements || []).find(e => e.imageUrl)?.imageUrl || firstSectionWithImage?.backgroundUrl;
         console.log(`[Persistence] Audit - First discovered image URL: ${firstImg || 'None'}`);
 
         // Deep verification of payload integrity
@@ -102,7 +107,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
             useStore.setState({ id: upsertId });
         }
 
-        console.log(`[Persistence] Syncing - Mode: ${isTemplate ? 'Template' : 'Invitation'} | ID: ${upsertId} | Slug: ${state.slug}`);
+        console.log(`[Persistence] Syncing - Mode: ${isTemplate ? 'Template' : (isDisplayDesign ? 'DisplayDesign' : 'Invitation')} | ID: ${upsertId} | Slug: ${state.slug}`);
 
         const payload = {
             id: upsertId,
@@ -120,8 +125,8 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
         const jsonPayload = JSON.stringify(payload);
         console.log(`[Persistence] Payload generated. Size: ${(jsonPayload.length / 1024).toFixed(2)} KB`);
 
-        const tableName = isTemplate ? 'templates' : 'invitations';
-        const api = isTemplate ? templatesApi : invitationsApi;
+        const tableName = isTemplate ? 'templates' : (isDisplayDesign ? 'user_display_designs' : 'invitations');
+        const api = isTemplate ? templatesApi : (isDisplayDesign ? userDisplayDesigns : invitationsApi);
 
         try {
             await api.update(upsertId, payload);
@@ -154,7 +159,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
             setIsSyncing(true);
 
             try {
-                const api = isTemplate ? templatesApi : invitationsApi;
+                const api = isTemplate ? templatesApi : (isDisplayDesign ? userDisplayDesigns : invitationsApi);
                 const fallbackApi = isTemplate ? invitationsApi : templatesApi;
                 const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(templateId);
 
@@ -174,6 +179,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
 
                 if (data) {
                     console.log(`[Persistence] Cloud data loaded for: ${data.name || data.id}`);
+                    console.log(`[Persistence] Template Type from API: '${data.type}' (will use: '${data.type || 'invitation'}')`);
 
                     // CTO ENTERPRISE GUARD: URL Normalization
                     // If accessed via UUID but a slug exists, update the URL for a cleaner UX
@@ -191,14 +197,29 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                     const validSections = Array.isArray(sanitizedData.sections) ? (sanitizedData.sections as Section[]) : [];
                     const validLayers = Array.isArray(sanitizedData.layers) ? (sanitizedData.layers as Layer[]) : [];
 
-                    const processedSections = validSections.map(s => ({
-                        ...s,
-                        id: s.id || generateId('section'),
-                        elements: s.elements || []
-                    }));
+                    const processedSections = validSections
+                        .filter(s => s && typeof s === 'object') // Guard against null/undefined/primitive sections
+                        .map(s => ({
+                            ...s,
+                            id: s.id || generateId('section'),
+                            elements: Array.isArray(s.elements) ? s.elements : [] // Guard against undefined elements
+                        }));
+
+                    // CTO FIX: If no sections exist (new template), create a default one
+                    const finalSections = processedSections.length > 0 ? processedSections : [{
+                        id: generateId('section'),
+                        key: 'opening',
+                        title: 'Opening',
+                        order: 0,
+                        isVisible: true,
+                        backgroundColor: '#0a0a0a',
+                        overlayOpacity: 0,
+                        animation: 'fade-in' as const,
+                        elements: []
+                    }];
 
                     useStore.setState({
-                        sections: processedSections,
+                        sections: finalSections,
                         layers: validLayers,
                         zoom: sanitizedData.zoom || 1,
                         pan: sanitizedData.pan || { x: 0, y: 0 },
@@ -206,9 +227,11 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                         thumbnailUrl: sanitizedData.thumbnail_url || null, // Hydrate thumbnail_url
                         id: sanitizedData.id, // Set the real ID
                         projectName: sanitizedData.name || '',
-                        activeSectionId: processedSections[0]?.id || null,
+                        activeSectionId: finalSections[0]?.id || null,
                         orbit: sanitizedData.orbit || useStore.getState().orbit,
-                        selectedLayerId: null
+                        selectedLayerId: null,
+                        templateType: sanitizedData.type || 'invitation',
+                        isTemplate: !!isTemplate
                     });
                     console.log(`[Persistence] Hydrated ID: '${sanitizedData.id}' | Slug: '${sanitizedData.slug}' with sanitization.`);
                 } else {
@@ -228,8 +251,10 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
             }
         };
 
+
+
         loadData();
-    }, [templateId, isTemplate]);
+    }, [templateId, isTemplate, isDisplayDesign]);
 
     // Force sync state to storage on mount to ensure Preview tab has data
     useEffect(() => {
@@ -250,7 +275,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                 templateId={templateId}
                 templateName={projectName || 'Untitled Template'}
                 isSyncing={isSyncing}
-                onBack={() => window.location.href = isTemplate ? '/admin/templates' : '/'}
+                onBack={() => window.location.href = isTemplate ? '/admin/templates' : (isDisplayDesign ? '/user/displays' : '/')}
                 onPreview={handlePreview}
                 onSave={handleSave}
                 onPublish={handlePublish}
@@ -258,20 +283,93 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
 
             {/* Main Content Area */}
             <div className="flex flex-1 pt-14 overflow-hidden">
-                {/* Left Sidebar - Sections + Layers */}
+                {/* Left Sidebar - Tabbed Architecture */}
                 <motion.div
                     initial={false}
-                    animate={{ width: leftPanelOpen ? 260 : 0, opacity: leftPanelOpen ? 1 : 0 }}
-                    className="glass-panel border-r border-white/10 overflow-hidden flex-shrink-0"
+                    animate={{ width: leftPanelOpen ? 300 : 0, opacity: leftPanelOpen ? 1 : 0 }}
+                    className="glass-panel border-r border-white/10 overflow-hidden flex-shrink-0 flex flex-col"
                     style={{ height: 'calc(100vh - 56px)' }}
                 >
-                    {/* Sections Panel - Top Half */}
-                    <div style={{ height: 'calc(50% - 1px)' }} className="border-b border-white/10 overflow-hidden">
-                        <SectionsSidebar />
+                    {/* Sidebar Tab Bar */}
+                    <div className="flex border-b border-white/10 bg-black/20">
+                        <button
+                            onClick={() => setActiveSidebarTab('sections')}
+                            className={`flex-1 flex items-center justify-center gap-2 py-3 transition-colors ${activeSidebarTab === 'sections' ? 'text-premium-accent border-b-2 border-premium-accent bg-premium-accent/5' : 'text-white/40 hover:text-white/60 hover:bg-white/5'}`}
+                        >
+                            <List className="w-4 h-4" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Sections</span>
+                        </button>
+                        <button
+                            onClick={() => setActiveSidebarTab('layers')}
+                            className={`flex-1 flex items-center justify-center gap-2 py-3 transition-colors ${activeSidebarTab === 'layers' ? 'text-premium-accent border-b-2 border-premium-accent bg-premium-accent/5' : 'text-white/40 hover:text-white/60 hover:bg-white/5'}`}
+                        >
+                            <Layers className="w-4 h-4" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Layers</span>
+                        </button>
+                        <button
+                            onClick={() => setActiveSidebarTab('interactions')}
+                            className={`flex-1 flex items-center justify-center gap-2 py-3 transition-colors ${activeSidebarTab === 'interactions' ? 'text-premium-accent border-b-2 border-premium-accent bg-premium-accent/5' : 'text-white/40 hover:text-white/60 hover:bg-white/5'}`}
+                        >
+                            <Zap className="w-4 h-4" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Interactions</span>
+                        </button>
+                        <button
+                            onClick={() => setActiveSidebarTab('settings')}
+                            className={`flex-1 flex items-center justify-center gap-2 py-3 transition-colors ${activeSidebarTab === 'settings' ? 'text-premium-accent border-b-2 border-premium-accent bg-premium-accent/5' : 'text-white/40 hover:text-white/60 hover:bg-white/5'}`}
+                        >
+                            <Settings className="w-4 h-4" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Settings</span>
+                        </button>
                     </div>
-                    {/* Layers Panel - Bottom Half */}
-                    <div style={{ height: '50%' }} className="overflow-hidden">
-                        <LayersSidebar />
+
+                    {/* Active Sidebar Content */}
+                    <div className="flex-1 overflow-hidden relative">
+                        <AnimatePresence mode="wait">
+                            {activeSidebarTab === 'sections' && (
+                                <motion.div
+                                    key="sections"
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -10 }}
+                                    className="absolute inset-0"
+                                >
+                                    <SectionsSidebar />
+                                </motion.div>
+                            )}
+                            {activeSidebarTab === 'layers' && (
+                                <motion.div
+                                    key="layers"
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -10 }}
+                                    className="absolute inset-0"
+                                >
+                                    <LayersSidebar />
+                                </motion.div>
+                            )}
+                            {activeSidebarTab === 'interactions' && (
+                                <motion.div
+                                    key="interactions"
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -10 }}
+                                    className="absolute inset-0"
+                                >
+                                    <InteractionsSidebar />
+                                </motion.div>
+                            )}
+                            {activeSidebarTab === 'settings' && (
+                                <motion.div
+                                    key="settings"
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -10 }}
+                                    className="absolute inset-0"
+                                >
+                                    <SettingsSidebar />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </motion.div>
 
@@ -281,7 +379,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                     whileTap={{ scale: 0.9 }}
                     onClick={() => setLeftPanelOpen(!leftPanelOpen)}
                     className="absolute top-1/2 -translate-y-1/2 z-50 p-2 bg-white/5 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-colors"
-                    style={{ left: leftPanelOpen ? 268 : 8 }}
+                    style={{ left: leftPanelOpen ? 308 : 8 }}
                 >
                     <PanelLeftClose className={`w-4 h-4 transition-transform ${leftPanelOpen ? '' : 'rotate-180'}`} />
                 </motion.button>
@@ -340,7 +438,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
 
                             // 2. Update the photo grid image at the target slot
                             const targetSection = sections.find((s: Section) =>
-                                s.elements.some((e: Layer) => e.id === imageCropModal.targetLayerId)
+                                (s?.elements || []).some((e: Layer) => e.id === imageCropModal.targetLayerId)
                             );
 
                             if (targetSection) {

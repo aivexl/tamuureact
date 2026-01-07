@@ -32,6 +32,14 @@ const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ defaul
 const GuestManagementPage = lazy(() => import('./pages/GuestManagementPage').then(m => ({ default: m.GuestManagementPage })));
 const OnboardingPage = lazy(() => import('./pages/OnboardingPage').then(m => ({ default: m.OnboardingPage })));
 const UserEditorPage = lazy(() => import('./pages/UserEditorPage').then(m => ({ default: m.UserEditorPage })));
+const GuestWishesPage = lazy(() => import('./pages/GuestWishesPage').then(m => ({ default: m.GuestWishesPage })));
+const GuestWelcomePage = lazy(() => import('./pages/GuestWelcomePage').then(m => ({ default: m.GuestWelcomePage })));
+const GuestWelcomeDisplay = lazy(() => import('./pages/GuestWelcomeDisplay').then(m => ({ default: m.GuestWelcomeDisplay })));
+const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })));
+const DisplayEditorPage = lazy(() => import('./pages/DisplayEditorPage').then(m => ({ default: m.DisplayEditorPage })));
+const RemoteTriggerPage = lazy(() => import('./pages/RemoteTriggerPage').then(m => ({ default: m.RemoteTriggerPage })));
+const AdminDisplayPreviewPage = lazy(() => import('./pages/AdminDisplayPreviewPage').then(m => ({ default: m.AdminDisplayPreviewPage })));
+
 
 const LoadingFallback = () => (
     <div className="min-h-screen bg-[#0A1128] flex flex-col items-center justify-center gap-4">
@@ -92,15 +100,19 @@ const App: React.FC = () => {
                                 {/* User Profile */}
                                 <Route path="/profile" element={<MainLayout><ProfilePage /></MainLayout>} />
 
-                                {/* Dashboard */}
                                 <Route path="/dashboard" element={<MainLayout><DashboardPage /></MainLayout>} />
-                                <Route path="/admin/dashboard" element={<MainLayout><DashboardPage /></MainLayout>} />
+                                {/* Admin Routes */}
+                                <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+                                <Route path="/admin/templates" element={<AdminTemplatesPage />} />
 
                                 {/* Editor Routes */}
                                 <Route path="/editor" element={<EditorPage />} />
                                 <Route path="/editor/:id" element={<EditorPage />} />
-                                <Route path="/editor/template/:id" element={<EditorPage isTemplate={true} />} />
+                                <Route path="/admin/editor/:slug" element={<EditorPage isTemplate={true} />} />
+                                <Route path="/admin/display-editor/:slug" element={<DisplayEditorPage />} />
+                                <Route path="/admin/display/:slug" element={<AdminDisplayPreviewPage />} />
                                 <Route path="/user/editor/:id" element={<UserEditorPage />} />
+                                <Route path="/user/display-editor/:id" element={<UserEditorPage mode="welcome" />} />
 
                                 {/* Admin Routes */}
                                 <Route path="/admin/templates" element={<MainLayout><AdminTemplatesPage /></MainLayout>} />
@@ -112,7 +124,11 @@ const App: React.FC = () => {
                                 <Route path="/onboarding" element={<MainLayout><OnboardingPage /></MainLayout>} />
                                 <Route path="/guests" element={<MainLayout><GuestManagementPage /></MainLayout>} />
                                 <Route path="/guests/:invitationId" element={<MainLayout><GuestManagementPage /></MainLayout>} />
+                                <Route path="/wishes" element={<MainLayout><GuestWishesPage /></MainLayout>} />
+                                <Route path="/welcome/:invitationId/:guestId" element={<GuestWelcomePage />} />
+                                <Route path="/display/:slug" element={<GuestWelcomeDisplay />} />
                             </>
+
                         ) : (
                             // Redirect app routes to landing on public domain
                             <>
@@ -123,6 +139,9 @@ const App: React.FC = () => {
                                 <Route path="/tools/*" element={<Navigate to="/" replace />} />
                             </>
                         )}
+
+                        <Route path="/display/:slug" element={<GuestWelcomeDisplay />} />
+                        <Route path="/remote/:id" element={<RemoteTriggerPage />} />
 
                         {/* Fallback */}
                         <Route path="*" element={<Navigate to="/" replace />} />

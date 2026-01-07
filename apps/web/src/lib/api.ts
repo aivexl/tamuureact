@@ -105,6 +105,12 @@ export const rsvp = {
         return res.json();
     },
 
+    async listAll() {
+        const res = await fetch(`${API_BASE}/api/wishes`);
+        if (!res.ok) throw new Error('Failed to fetch all wishes');
+        return res.json();
+    },
+
     async submit(invitationId: string, data: {
         name: string;
         email?: string;
@@ -119,6 +125,73 @@ export const rsvp = {
             body: JSON.stringify(data)
         });
         if (!res.ok) throw new Error('Failed to submit RSVP');
+        return res.json();
+    },
+
+    async updateStatus(id: string, updates: { is_visible?: boolean; attendance?: string; message?: string }) {
+        const res = await fetch(`${API_BASE}/api/rsvp/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updates)
+        });
+        if (!res.ok) throw new Error('Failed to update RSVP');
+        return res.json();
+    },
+
+    async delete(id: string) {
+        const res = await fetch(`${API_BASE}/api/rsvp/${id}`, {
+            method: 'DELETE'
+        });
+        if (!res.ok) throw new Error('Failed to delete RSVP');
+        return res.json();
+    }
+
+};
+
+// ============================================
+// USER DISPLAY DESIGNS API
+// ============================================
+export const userDisplayDesigns = {
+    async list(userId?: string) {
+        const url = userId
+            ? `${API_BASE}/api/user-display-designs?user_id=${userId}`
+            : `${API_BASE}/api/user-display-designs`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Failed to fetch display designs');
+        return res.json();
+    },
+
+    async get(id: string) {
+        const res = await fetch(`${API_BASE}/api/user-display-designs/${id}`);
+        if (!res.ok) throw new Error('Display design not found');
+        return res.json();
+    },
+
+    async create(data: any) {
+        const res = await fetch(`${API_BASE}/api/user-display-designs`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error('Failed to create display design');
+        return res.json();
+    },
+
+    async update(id: string, data: { name?: string; content?: any; thumbnail_url?: string }) {
+        const res = await fetch(`${API_BASE}/api/user-display-designs/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error('Failed to update display design');
+        return res.json();
+    },
+
+    async delete(id: string) {
+        const res = await fetch(`${API_BASE}/api/user-display-designs/${id}`, {
+            method: 'DELETE'
+        });
+        if (!res.ok) throw new Error('Failed to delete display design');
         return res.json();
     }
 };
@@ -156,6 +229,7 @@ export async function healthCheck() {
 export default {
     templates,
     invitations,
+    userDisplayDesigns,
     rsvp,
     storage,
     healthCheck

@@ -1,38 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { m, Reorder, AnimatePresence } from 'framer-motion';
 import {
     GripVertical,
     Eye,
     EyeOff,
     ChevronDown,
-    ChevronUp,
     Plus,
     Sparkles,
-    Settings2
+    Settings2,
+    Check,
+    Loader2,
+    Save
 } from 'lucide-react';
 import { UserKonvaPreview } from './UserKonvaPreview';
 import { UserElementEditor } from './UserElementEditor';
 import { Layout } from 'lucide-react';
+import { useStore } from '@/store/useStore';
+import { useParams } from 'react-router-dom';
+import { invitations as invitationsApi } from '@/lib/api';
 
-const MOCK_SECTIONS = [
-    {
-        id: 'opening', title: 'Pembukaan', type: 'opening', isVisible: true, elements: [
-            { id: 'el1', type: 'text', content: 'Walimatul Urs', editableLabel: 'Judul Utama', canEditContent: true },
-            { id: 'el2', type: 'text', content: 'Muhyina & Misbah', editableLabel: 'Nama Pasangan', canEditContent: true }
-        ]
-    },
-    {
-        id: 'quotes', title: 'Kata Mutiara', type: 'quotes', isVisible: true, elements: [
-            { id: 'el3', type: 'text', content: 'Dan di antara tanda-tanda kekuasaan-Nya...', editableLabel: 'Teks Quote', canEditContent: true }
-        ]
-    },
-    { id: 'couple', title: 'Mempelai', type: 'couple', isVisible: true, elements: [] },
-    { id: 'event', title: 'Acara', type: 'event', isVisible: true, elements: [] },
-];
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 export const TemplateEditArea: React.FC = () => {
-    const [sections, setSections] = useState(MOCK_SECTIONS);
-    const [expandedSection, setExpandedSection] = useState<string | null>('opening');
+    const { id: invitationId } = useParams<{ id: string }>();
+    const {
+        sections,
+        reorderSections,
+        updateSection,
+        orbit
+    } = useStore();
+
+    const [expandedSection, setExpandedSection] = useState<string | null>(null);
+    const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+
+
+    // Set first section as expanded on mount
+    useEffect(() => {
+        if (sections.length > 0 && !expandedSection) {
+            setExpandedSection(sections[0].id);
+        }
+    }, [sections]);
+
+    // Manual save function
+    const handleSave = async () => {
+        if (!invitationId) return;
+
+        setSaveStatus('saving');
+        try {
+            console.log('[Save] Saving invitation changes...');
+            await invitationsApi.update(invitationId, {
+                sections,
+                orbit_layers: orbit
+            });
+            setSaveStatus('saved');
+            console.log('[Save] Changes saved successfully');
+
+            // Reset to idle after 3 seconds
+            setTimeout(() => setSaveStatus('idle'), 3000);
+        } catch (error) {
+            console.error('[Save] Failed to save:', error);
+            setSaveStatus('error');
+        }
+    };
+
 
     const toggleExpand = (id: string) => {
         setExpandedSection(expandedSection === id ? null : id);
@@ -40,8 +70,37 @@ export const TemplateEditArea: React.FC = () => {
 
     const toggleVisibility = (e: React.MouseEvent, id: string) => {
         e.stopPropagation();
-        setSections(sections.map(s => s.id === id ? { ...s, isVisible: !s.isVisible } : s));
+        const section = sections.find(s => s.id === id);
+        if (section) {
+            updateSection(id, { isVisible: !section.isVisible });
+        }
     };
+
+    const handleReorder = (newOrder: typeof sections) => {
+        // Find the moved item's new index
+        const oldOrder = sections.map(s => s.id);
+        const newOrderIds = newOrder.map(s => s.id);
+
+        let startIndex = -1;
+        let endIndex = -1;
+
+        for (let i = 0; i < oldOrder.length; i++) {
+            if (oldOrder[i] !== newOrderIds[i]) {
+                if (startIndex === -1) startIndex = i;
+                endIndex = i;
+            }
+        }
+
+        if (startIndex !== -1 && endIndex !== -1) {
+            // Find where the item at startIndex moved to
+            const movedId = oldOrder[startIndex];
+            const newPosition = newOrderIds.indexOf(movedId);
+            reorderSections(startIndex, newPosition);
+        }
+    };
+
+    // Sort sections by order
+    const sortedSections = [...sections].sort((a, b) => a.order - b.order);
 
     return (
         <div className="space-y-6">
@@ -56,18 +115,44 @@ export const TemplateEditArea: React.FC = () => {
                     </div>
                 </div>
 
-                <m.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="flex items-center gap-2 px-4 py-2 bg-white text-slate-700 font-bold text-xs rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all uppercase tracking-widest"
-                >
-                    <Plus className="w-4 h-4" />
-                    Tambah Halaman
-                </m.button>
+                {/* Save Button */}
+                <div className="flex items-center gap-3">
+                    <m.button
+                        onClick={handleSave}
+                        disabled={saveStatus === 'saving'}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={`flex items-center gap-2 px-5 py-2.5 font-bold text-xs rounded-xl shadow-lg transition-all uppercase tracking-widest ${saveStatus === 'saving'
+                                ? 'bg-amber-500 text-white cursor-wait'
+                                : saveStatus === 'saved'
+                                    ? 'bg-emerald-500 text-white'
+                                    : saveStatus === 'error'
+                                        ? 'bg-red-500 text-white'
+                                        : 'bg-teal-500 text-white hover:bg-teal-600 shadow-teal-500/30'
+                            }`}
+                    >
+                        {saveStatus === 'saving' && <Loader2 className="w-4 h-4 animate-spin" />}
+                        {saveStatus === 'saved' && <Check className="w-4 h-4" />}
+                        {(saveStatus === 'idle' || saveStatus === 'error') && <Save className="w-4 h-4" />}
+                        {saveStatus === 'saving' ? 'Menyimpan...' :
+                            saveStatus === 'saved' ? 'Tersimpan!' :
+                                saveStatus === 'error' ? 'Coba Lagi' : 'Simpan'}
+                    </m.button>
+
+                    <m.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="flex items-center gap-2 px-4 py-2 bg-white text-slate-700 font-bold text-xs rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all uppercase tracking-widest"
+                    >
+                        <Plus className="w-4 h-4" />
+                        Tambah Halaman
+                    </m.button>
+                </div>
+
             </div>
 
-            <Reorder.Group axis="y" values={sections} onReorder={setSections} className="space-y-4">
-                {sections.map((section) => (
+            <Reorder.Group axis="y" values={sortedSections} onReorder={handleReorder} className="space-y-4">
+                {sortedSections.map((section) => (
                     <Reorder.Item
                         key={section.id}
                         value={section}
@@ -99,7 +184,7 @@ export const TemplateEditArea: React.FC = () => {
                                         {section.title}
                                     </h4>
                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                        Type: {section.type}
+                                        {section.elements?.length || 0} elements
                                     </p>
                                 </div>
 
@@ -151,14 +236,16 @@ export const TemplateEditArea: React.FC = () => {
                                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Edit Konten</span>
                                                 </div>
                                                 <div className="space-y-4">
-                                                    {section.elements.length > 0 ? (
-                                                        section.elements.map(element => (
-                                                            <UserElementEditor
-                                                                key={element.id}
-                                                                element={element}
-                                                                onUpdate={(val: any) => console.log('Update', element.id, val)}
-                                                            />
-                                                        ))
+                                                    {section.elements && section.elements.length > 0 ? (
+                                                        section.elements
+                                                            .filter(el => el.type === 'text' || el.type === 'countdown')
+                                                            .map(element => (
+                                                                <UserElementEditor
+                                                                    key={element.id}
+                                                                    element={element}
+                                                                    sectionId={section.id}
+                                                                />
+                                                            ))
                                                     ) : (
                                                         <div className="p-8 text-center bg-white rounded-2xl border border-dashed border-slate-200">
                                                             <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Tidak ada konten editable</p>

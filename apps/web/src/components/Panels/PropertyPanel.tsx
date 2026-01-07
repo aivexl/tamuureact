@@ -1631,6 +1631,253 @@ export const PropertyPanel: React.FC = () => {
                     </SectionComponent>
                 )}
 
+                {/* Interaction Config - Only for interaction elements */}
+                {
+                    layer.type === 'interaction' && (
+                        <SectionComponent title="Interaction Setup" icon={<Zap className="w-4 h-4 text-premium-accent" />}>
+                            <div className="space-y-4">
+                                <div className="p-3 rounded-lg bg-premium-accent/10 border border-premium-accent/20">
+                                    <div className="flex items-start gap-2">
+                                        <Zap className="w-4 h-4 text-premium-accent mt-0.5" />
+                                        <div>
+                                            <h4 className="text-xs font-bold text-premium-accent">Cinematic Trigger</h4>
+                                            <p className="text-[10px] text-white/60 leading-relaxed mt-1">
+                                                This element is invisible on the live site but clickable. When clicked, it triggers a fullscreen effect and reveals the guest's name.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Trigger Method */}
+                                <SelectInput
+                                    label="Trigger Method"
+                                    value={layer.interactionConfig?.triggerType || 'click'}
+                                    options={[
+                                        { value: 'click', label: '👆 On Click/Tap' },
+                                        { value: 'hover', label: '🖱️ On Hover' },
+                                        { value: 'auto', label: '⚡ Auto (On Load)' }
+                                    ]}
+                                    onChange={(v) => handleUpdate({ interactionConfig: { ...layer.interactionConfig!, triggerType: v as any } })}
+                                />
+
+                                {/* Effect Selection */}
+                                <SelectInput
+                                    label="Visual Effect"
+                                    value={layer.interactionConfig?.effect || 'confetti'}
+                                    options={[
+                                        { value: 'confetti', label: '🎉 Confetti' },
+                                        { value: 'gold_rain', label: '💰 Golden Rain' },
+                                        { value: 'rose_petals', label: '🌹 Rose Petals' },
+                                        { value: 'snow', label: '❄️ Snow' },
+                                        { value: 'matrix', label: '📟 Digital Matrix' },
+                                        { value: 'stars', label: '⭐ Stars' },
+                                        { value: 'hearts', label: '❤️ Hearts' },
+                                        { value: 'fireworks', label: '🚀 Fireworks' }
+                                    ]}
+                                    onChange={(v) => handleUpdate({ interactionConfig: { ...layer.interactionConfig!, effect: v as any } })}
+                                />
+
+                                {/* Greeting Style */}
+                                <SelectInput
+                                    label="Greeting Style"
+                                    value={layer.interactionConfig?.greetingStyle || 'cinematic'}
+                                    options={[
+                                        { value: 'cinematic', label: '🎬 Cinematic Typography' },
+                                        { value: 'simple', label: '📝 Simple Text' },
+                                        { value: 'none', label: '🚫 No Text (Effect Only)' }
+                                    ]}
+                                    onChange={(v) => handleUpdate({ interactionConfig: { ...layer.interactionConfig!, greetingStyle: v as any } })}
+                                />
+
+                                {/* Duration */}
+                                <NumberInput
+                                    label="Effect Duration (ms)"
+                                    value={layer.interactionConfig?.duration || 5000}
+                                    min={1000}
+                                    max={10000}
+                                    step={500}
+                                    onChange={(v) => handleUpdate({ interactionConfig: { ...layer.interactionConfig!, duration: v } })}
+                                />
+
+                                {/* Test Name Input */}
+                                <div>
+                                    <label className="text-[10px] font-bold text-white/60 uppercase tracking-wider mb-2 block">Test Name</label>
+                                    <input
+                                        type="text"
+                                        value={layer.interactionConfig?.testName || 'Guest Name'}
+                                        onChange={(e) => handleUpdate({ interactionConfig: { ...layer.interactionConfig!, testName: e.target.value } })}
+                                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-premium-accent/50 focus:ring-1 focus:ring-premium-accent/20"
+                                        placeholder="Enter guest name for testing"
+                                    />
+                                </div>
+
+                                {/* Click Instruction */}
+                                <div className="p-3 rounded-lg bg-white/5 border border-white/10 text-center">
+                                    <div className="text-[10px] text-white/60 mb-1">💡 Cara Test</div>
+                                    <div className="text-xs text-white/80 font-medium">Klik elemen Blast di canvas untuk melihat efek</div>
+                                </div>
+                            </div>
+                        </SectionComponent>
+                    )
+                }
+
+                {/* Name Board Config - Only for name_board elements */}
+                {
+                    layer.type === 'name_board' && (
+                        <SectionComponent title="Name Board Setup" icon={<Users className="w-4 h-4 text-amber-400" />}>
+                            <div className="space-y-4">
+                                {/* Variant Gallery */}
+                                <div>
+                                    <label className="text-[10px] font-bold text-white/60 uppercase tracking-wider mb-2 block">Style Variant</label>
+                                    <div className="grid grid-cols-3 gap-2 max-h-[200px] overflow-y-auto custom-scrollbar">
+                                        {Array.from({ length: 27 }, (_, i) => i + 1).map((v) => {
+                                            const variants = [
+                                                { id: 1, name: 'Classic Elegant', bg: '#1a1a2e', text: '#f8f9fa' },
+                                                { id: 2, name: 'Classic Light', bg: '#ffffff', text: '#2d3436' },
+                                                { id: 3, name: 'Classic Gold', bg: '#0a0a0a', text: '#d4af37' },
+                                                { id: 4, name: 'Classic Rose', bg: '#fff5f5', text: '#c53030' },
+                                                { id: 5, name: 'Classic Navy', bg: '#1a365d', text: '#ffffff' },
+                                                { id: 6, name: 'Frosted Glass', bg: 'rgba(255,255,255,0.1)', text: '#ffffff' },
+                                                { id: 7, name: 'Dark Glass', bg: 'rgba(0,0,0,0.3)', text: '#ffffff' },
+                                                { id: 8, name: 'Blue Glass', bg: 'rgba(59,130,246,0.2)', text: '#ffffff' },
+                                                { id: 9, name: 'Purple Glass', bg: 'rgba(139,92,246,0.2)', text: '#ffffff' },
+                                                { id: 10, name: 'Rose Glass', bg: 'rgba(244,63,94,0.15)', text: '#ffffff' },
+                                                { id: 11, name: 'Neon Cyan', bg: '#0a0a0a', text: '#00ffff' },
+                                                { id: 12, name: 'Neon Pink', bg: '#0a0a0a', text: '#ff00ff' },
+                                                { id: 13, name: 'Neon Green', bg: '#0a0a0a', text: '#00ff00' },
+                                                { id: 14, name: 'Neon Orange', bg: '#0a0a0a', text: '#ff6600' },
+                                                { id: 15, name: 'Neon Blue', bg: '#0a0a0a', text: '#0066ff' },
+                                                { id: 16, name: 'VIP Badge', bg: 'linear-gradient(135deg, #d4af37, #f4e4a6)', text: '#1a1a1a' },
+                                                { id: 17, name: 'Premium Badge', bg: 'linear-gradient(135deg, #667eea, #764ba2)', text: '#ffffff' },
+                                                { id: 18, name: 'Royal Badge', bg: 'linear-gradient(135deg, #1a1a2e, #4a4a6a)', text: '#d4af37' },
+                                                { id: 19, name: 'Coral Badge', bg: 'linear-gradient(135deg, #ff6b6b, #ee5a5a)', text: '#ffffff' },
+                                                { id: 20, name: 'Ocean Badge', bg: 'linear-gradient(135deg, #4facfe, #00f2fe)', text: '#ffffff' },
+                                                { id: 21, name: 'Black Tie', bg: '#000000', text: '#d4af37' },
+                                                { id: 22, name: 'Champagne', bg: '#f5f5dc', text: '#8b7355' },
+                                                { id: 23, name: 'Velvet Red', bg: '#800020', text: '#ffd700' },
+                                                { id: 24, name: 'Midnight Sparkle', bg: '#0c0c1e', text: '#e8e8e8' },
+                                                { id: 25, name: 'Pure White', bg: '#ffffff', text: '#000000' },
+                                                { id: 26, name: 'Pure Black', bg: '#000000', text: '#ffffff' },
+                                                { id: 27, name: 'Soft Gray', bg: '#f0f0f0', text: '#333333' },
+                                            ];
+                                            const preset = variants.find(p => p.id === v) || variants[0];
+                                            const isSelected = (layer.nameBoardConfig?.variant || 1) === v;
+                                            return (
+                                                <button
+                                                    key={v}
+                                                    onClick={() => handleUpdate({
+                                                        nameBoardConfig: {
+                                                            ...layer.nameBoardConfig!,
+                                                            variant: v,
+                                                            backgroundColor: preset.bg,
+                                                            textColor: preset.text
+                                                        }
+                                                    })}
+                                                    className={`p-2 rounded-lg border transition-all text-center ${isSelected ? 'border-amber-500 bg-amber-500/20 ring-2 ring-amber-500/50' : 'border-white/10 hover:border-white/30 bg-white/5'}`}
+                                                    style={{ background: preset.bg.includes('gradient') ? preset.bg : preset.bg }}
+                                                >
+                                                    <div className="text-[8px] font-bold truncate" style={{ color: preset.text }}>{preset.name}</div>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* Display Text */}
+                                <div>
+                                    <label className="text-[10px] font-bold text-white/60 uppercase tracking-wider mb-2 block">Preview Text</label>
+                                    <input
+                                        type="text"
+                                        value={layer.nameBoardConfig?.displayText || 'Guest Name'}
+                                        onChange={(e) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, displayText: e.target.value } })}
+                                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20"
+                                        placeholder="Guest Name"
+                                    />
+                                </div>
+
+                                {/* Font Selection */}
+                                <SelectInput
+                                    label="Font Family"
+                                    value={layer.nameBoardConfig?.fontFamily || 'Playfair Display'}
+                                    isFontPicker={true}
+                                    options={[
+                                        { value: 'Playfair Display', label: 'Playfair Display' },
+                                        { value: 'Great Vibes', label: 'Great Vibes' },
+                                        { value: 'Cormorant Garamond', label: 'Cormorant Garamond' },
+                                        { value: 'Montserrat', label: 'Montserrat' },
+                                        { value: 'Outfit', label: 'Outfit' },
+                                        { value: 'Inter', label: 'Inter' },
+                                        { value: 'Poppins', label: 'Poppins' },
+                                    ]}
+                                    onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, fontFamily: v } })}
+                                />
+
+                                {/* Font Size */}
+                                <NumberInput
+                                    label="Font Size"
+                                    value={layer.nameBoardConfig?.fontSize || 48}
+                                    min={12}
+                                    max={120}
+                                    step={2}
+                                    onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, fontSize: v } })}
+                                />
+
+                                {/* Colors */}
+                                <div className="grid grid-cols-2 gap-3">
+                                    <ColorInput
+                                        label="Text Color"
+                                        value={layer.nameBoardConfig?.textColor || '#f8f9fa'}
+                                        onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, textColor: v } })}
+                                    />
+                                    <ColorInput
+                                        label="Background"
+                                        value={layer.nameBoardConfig?.backgroundColor || '#1a1a2e'}
+                                        onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, backgroundColor: v } })}
+                                    />
+                                </div>
+
+                                {/* Border */}
+                                <div className="grid grid-cols-2 gap-3">
+                                    <ColorInput
+                                        label="Border Color"
+                                        value={layer.nameBoardConfig?.borderColor || '#4a4a6a'}
+                                        onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, borderColor: v } })}
+                                    />
+                                    <NumberInput
+                                        label="Border Width"
+                                        value={layer.nameBoardConfig?.borderWidth || 2}
+                                        min={0}
+                                        max={10}
+                                        step={1}
+                                        onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, borderWidth: v } })}
+                                    />
+                                </div>
+
+                                {/* Border Radius */}
+                                <NumberInput
+                                    label="Corner Radius"
+                                    value={layer.nameBoardConfig?.borderRadius || 16}
+                                    min={0}
+                                    max={50}
+                                    step={2}
+                                    onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, borderRadius: v } })}
+                                />
+
+                                {/* Shadow Toggle */}
+                                <div className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
+                                    <span className="text-xs font-medium text-white/80">Enable Shadow</span>
+                                    <button
+                                        onClick={() => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, shadowEnabled: !layer.nameBoardConfig?.shadowEnabled } })}
+                                        className={`w-10 h-5 rounded-full transition-colors ${layer.nameBoardConfig?.shadowEnabled ? 'bg-amber-500' : 'bg-white/10'}`}
+                                    >
+                                        <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${layer.nameBoardConfig?.shadowEnabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                                    </button>
+                                </div>
+                            </div>
+                        </SectionComponent>
+                    )
+                }
+
                 {/* Flying Bird Config */}
                 {layer.type === 'flying_bird' && (
                     <SectionComponent title="Flying Bird Settings" icon={<Wind className="w-4 h-4 text-blue-400" />}>

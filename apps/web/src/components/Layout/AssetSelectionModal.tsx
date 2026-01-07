@@ -6,7 +6,8 @@ import {
     Heart, Square, Film, MapPin, Video, Sparkles, X,
     MessageSquare, Users, Circle, Triangle, Diamond, Star,
     Music, Camera, Gift, Flower2, Bell, Check, Cloud,
-    Sun, Moon, Smile, ThumbsUp, Upload, Monitor, Loader2
+    Sun, Moon, Smile, ThumbsUp, Upload, Monitor, Loader2,
+    Waves, Zap, Component, Share2, Layers
 } from 'lucide-react';
 import { LayerType } from '@/store/useStore';
 import { storage } from '@/lib/api';
@@ -258,6 +259,106 @@ const RSVP_WISHES_PRESETS = [
     }
 ];
 
+const CONFETTI_PRESETS = [
+    { label: 'Golden Rain', colors: ['#FFD700', '#F0E68C', '#DAA520'], icon: '✨' },
+    { label: 'Party Pop', colors: ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF'], icon: '🎉' },
+    { label: 'Soft Pink', colors: ['#FFC0CB', '#FFB6C1', '#FF69B4'], icon: '🌸' },
+    { label: 'Ice Blue', colors: ['#E0FFFF', '#B0E0E6', '#ADD8E6'], icon: '❄️' },
+];
+
+const WAVE_PRESETS = [
+    { label: 'Gentle Wave', config: { type: 'wave', amplitude: 20, frequency: 0.01, speed: 1 }, icon: <Waves className="w-6 h-6" /> },
+    { label: 'Tech Steps', config: { type: 'steps', amplitude: 30, frequency: 0.02, speed: 0.5 }, icon: <Zap className="w-6 h-6" /> },
+    { label: 'Organic Blob', config: { type: 'blob', amplitude: 40, frequency: 0.02, speed: 0.5 }, icon: <Component className="w-6 h-6" /> },
+];
+
+const MUSIC_LIBRARY = [
+    { title: 'Romantic Piano', artist: 'Tamuu Studio', url: 'https://assets.mixkit.co/music/preview/mixkit-beautiful-dream-493.mp3' },
+    { title: 'Upbeat Celebration', artist: 'Tamuu Studio', url: 'https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3' },
+    { title: 'Zen Garden', artist: 'Tamuu Studio', url: 'https://assets.mixkit.co/music/preview/mixkit-serene-view-443.mp3' },
+];
+
+const TILT_CARD_PRESETS = [
+    { label: 'Royal Gold', icon: <Star className="w-8 h-8 text-amber-500" />, config: { theme: 'gold' } },
+    { label: 'Cyber Neon', icon: <Zap className="w-8 h-8 text-cyan-400" />, config: { theme: 'neon' } },
+    { label: 'Glass Modern', icon: <Layers className="w-8 h-8 text-white/60" />, config: { theme: 'glass' } },
+];
+
+const WEATHER_PRESETS = [
+    { label: 'Jakarta', temp: '28', icon: <Sun className="w-6 h-6" /> },
+    { label: 'Surabaya', temp: '32', icon: <Sun className="w-6 h-6" /> },
+    { label: 'Bandung', temp: '22', icon: <Cloud className="w-6 h-6" /> },
+];
+
+const QR_PRESETS = [
+    { label: 'Standard', fg: '#000000', icon: '⬛' },
+    { label: 'Premium Gold', fg: '#bfa181', icon: '👑' },
+    { label: 'Royal Blue', fg: '#1a365d', icon: '🔷' },
+];
+
+const INTERACTIVE_QR_PRESETS = [
+    {
+        category: 'Celebratory',
+        effects: [
+            { id: 'confetti', label: 'Classic Confetti', icon: '🎉' },
+            { id: 'gold_rain', label: 'Golden Rain', icon: '💰' },
+            { id: 'party_poppers', label: 'Party Poppers', icon: '🎊' },
+            { id: 'glitter', label: 'Glitter', icon: '✨' }
+        ]
+    },
+    {
+        category: 'Nature & Romance',
+        effects: [
+            { id: 'rose_petals', label: 'Rose Petals', icon: '🌹' },
+            { id: 'sakura', label: 'Sakura Petals', icon: '🌸' },
+            { id: 'autumn_leaves', label: 'Autumn Leaves', icon: '🍁' },
+            { id: 'hearts', label: 'Hearts', icon: '❤️' }
+        ]
+    },
+    {
+        category: 'Atmospheric',
+        effects: [
+            { id: 'snow', label: 'Gentle Snow', icon: '❄️' },
+            { id: 'fireflies', label: 'Fireflies', icon: '🏮' },
+            { id: 'bubbles', label: 'Morning Bubbles', icon: '🫧' },
+            { id: 'mist', label: 'Mist Glow', icon: '🌫️' }
+        ]
+    },
+    {
+        category: 'Techno & Matrix',
+        effects: [
+            { id: 'matrix', label: 'Digital Rain', icon: '📟' },
+            { id: 'sparks', label: 'Cyber Sparks', icon: '⚡' },
+            { id: 'glitch', label: 'Neon Glitch', icon: '📺' },
+            { id: 'hexagons', label: 'Hexagons', icon: '⬢' }
+        ]
+    },
+    {
+        category: 'Magic & Mystical',
+        effects: [
+            { id: 'aurora', label: 'Aurora', icon: '🌌' },
+            { id: 'stars', label: 'Star Night', icon: '⭐' },
+            { id: 'orbs', label: 'Spirit Orbs', icon: '🔮' },
+            { id: 'plasma', label: 'Plasma Swirl', icon: '🌀' }
+        ]
+    }
+];
+
+const PARTICLE_PRESETS = {
+    fireworks: [
+        { label: 'Victory Gold', colors: ['#FFD700', '#FFA500'], icon: '🚀' },
+        { label: 'Magenta Mist', colors: ['#FF00FF', '#800080'], icon: '🎇' },
+    ],
+    bubbles: [
+        { label: 'Crystal Clear', colorPath: 'white', icon: '🫧' },
+        { label: 'Rainbow', colorPath: 'gradient', icon: '🌈' },
+    ],
+    snow: [
+        { label: 'Winter Soft', color: '#ffffff', icon: '❄️' },
+        { label: 'Mist Glow', color: '#e2e8f0', icon: '🌫️' },
+    ]
+};
+
 export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, onSelect, onClose, direction = 'right' }) => {
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -329,7 +430,14 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
             case 'rsvp_form': return 'RSVP Form';
             case 'rsvp_wishes': return 'RSVP + Guest Wishes';
             case 'photo_grid': return 'Photo Grid Layout';
-            default: return `Add ${type?.charAt(0).toUpperCase() + type?.slice(1)}`;
+            case 'confetti': return 'Confetti Style';
+            case 'music_player': return 'Music Library';
+            case 'svg_wave': return 'Wave & Blob Presets';
+            case 'digital_gift': return 'Angpao Theme';
+            case 'social_mockup': return 'Social Platform';
+            case 'social_mockup': return 'Social Platform';
+            case 'interaction': return 'Select Cinematic Effect';
+            default: return `Add ${type?.replace('_', ' ').charAt(0).toUpperCase() + type?.replace('_', ' ').slice(1)}`;
         }
     };
 
@@ -448,6 +556,101 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                     </div>
                 )}
 
+                {/* NAME BOARD - 27 Premium Variants */}
+                {type === 'name_board' && (
+                    <div className="space-y-4">
+                        {[
+                            {
+                                id: 'classic', name: 'Classic', icon: '🎨', items: [
+                                    { id: 1, name: 'Elegant', bg: '#1a1a2e', text: '#f8f9fa' },
+                                    { id: 2, name: 'Light', bg: '#ffffff', text: '#2d3436' },
+                                    { id: 3, name: 'Gold', bg: '#0a0a0a', text: '#d4af37' },
+                                    { id: 4, name: 'Rose', bg: '#fff5f5', text: '#c53030' },
+                                    { id: 5, name: 'Navy', bg: '#1a365d', text: '#ffffff' },
+                                ]
+                            },
+                            {
+                                id: 'glass', name: 'Glass', icon: '✨', items: [
+                                    { id: 6, name: 'Frosted', bg: 'rgba(255,255,255,0.1)', text: '#ffffff' },
+                                    { id: 7, name: 'Dark', bg: 'rgba(0,0,0,0.3)', text: '#ffffff' },
+                                    { id: 8, name: 'Blue', bg: 'rgba(59,130,246,0.2)', text: '#ffffff' },
+                                    { id: 9, name: 'Purple', bg: 'rgba(139,92,246,0.2)', text: '#ffffff' },
+                                    { id: 10, name: 'Rose', bg: 'rgba(244,63,94,0.15)', text: '#ffffff' },
+                                ]
+                            },
+                            {
+                                id: 'neon', name: 'Neon', icon: '💡', items: [
+                                    { id: 11, name: 'Cyan', bg: '#0a0a0a', text: '#00ffff' },
+                                    { id: 12, name: 'Pink', bg: '#0a0a0a', text: '#ff00ff' },
+                                    { id: 13, name: 'Green', bg: '#0a0a0a', text: '#00ff00' },
+                                    { id: 14, name: 'Orange', bg: '#0a0a0a', text: '#ff6600' },
+                                    { id: 15, name: 'Blue', bg: '#0a0a0a', text: '#0066ff' },
+                                ]
+                            },
+                            {
+                                id: 'badge', name: 'Badge', icon: '🏆', items: [
+                                    { id: 16, name: 'VIP', bg: 'linear-gradient(135deg, #d4af37, #f4e4a6)', text: '#1a1a1a' },
+                                    { id: 17, name: 'Premium', bg: 'linear-gradient(135deg, #667eea, #764ba2)', text: '#ffffff' },
+                                    { id: 18, name: 'Royal', bg: 'linear-gradient(135deg, #1a1a2e, #4a4a6a)', text: '#d4af37' },
+                                    { id: 19, name: 'Coral', bg: 'linear-gradient(135deg, #ff6b6b, #ee5a5a)', text: '#ffffff' },
+                                    { id: 20, name: 'Ocean', bg: 'linear-gradient(135deg, #4facfe, #00f2fe)', text: '#ffffff' },
+                                ]
+                            },
+                            {
+                                id: 'luxury', name: 'Luxury', icon: '💎', items: [
+                                    { id: 21, name: 'Black Tie', bg: '#000000', text: '#d4af37' },
+                                    { id: 22, name: 'Champagne', bg: '#f5f5dc', text: '#8b7355' },
+                                    { id: 23, name: 'Velvet', bg: '#800020', text: '#ffd700' },
+                                    { id: 24, name: 'Midnight', bg: '#0c0c1e', text: '#e8e8e8' },
+                                ]
+                            },
+                            {
+                                id: 'minimal', name: 'Minimal', icon: '⬜', items: [
+                                    { id: 25, name: 'Pure White', bg: '#ffffff', text: '#000000' },
+                                    { id: 26, name: 'Pure Black', bg: '#000000', text: '#ffffff' },
+                                    { id: 27, name: 'Soft Gray', bg: '#f0f0f0', text: '#333333' },
+                                ]
+                            },
+                        ].map((category) => (
+                            <div key={category.id}>
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-sm">{category.icon}</span>
+                                    <span className="text-xs font-bold uppercase tracking-wider text-white/60">{category.name}</span>
+                                    <span className="text-[9px] text-white/30">({category.items.length})</span>
+                                </div>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {category.items.map((preset) => (
+                                        <button
+                                            key={preset.id}
+                                            onClick={() => onSelect({
+                                                nameBoardConfig: {
+                                                    variant: preset.id,
+                                                    displayText: 'Guest Name',
+                                                    fontFamily: 'Playfair Display',
+                                                    fontSize: 48,
+                                                    textColor: preset.text,
+                                                    backgroundColor: preset.bg,
+                                                    borderColor: preset.text + '40',
+                                                    borderWidth: 2,
+                                                    borderRadius: 16,
+                                                    shadowEnabled: true,
+                                                    gradientEnabled: false,
+                                                    gradientStart: '#667eea',
+                                                    gradientEnd: '#764ba2'
+                                                }
+                                            })}
+                                            className="p-3 rounded-xl border border-white/10 hover:border-amber-500/50 transition-all text-center group"
+                                            style={{ background: preset.bg.includes('gradient') ? preset.bg : preset.bg }}
+                                        >
+                                            <div className="text-[10px] font-bold truncate" style={{ color: preset.text }}>{preset.name}</div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
                 {/* PHOTO GRID */}
                 {type === 'photo_grid' && (
                     <div className="grid grid-cols-2 gap-3">
@@ -529,6 +732,295 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                     </div>
                 )}
 
+
+                {/* CONFETTI */}
+                {type === 'confetti' && (
+                    <div className="grid grid-cols-2 gap-3">
+                        {CONFETTI_PRESETS.map((preset, i) => (
+                            <button
+                                key={i}
+                                onClick={() => onSelect({ confettiConfig: { colors: preset.colors } })}
+                                className="flex flex-col items-center justify-center p-4 rounded-xl bg-white/5 hover:bg-premium-accent/20 border border-white/5 hover:border-premium-accent/40 transition-all gap-2"
+                            >
+                                <span className="text-2xl">{preset.icon}</span>
+                                <span className="text-[10px] font-bold text-white/80">{preset.label}</span>
+                                <div className="flex gap-1 mt-1">
+                                    {preset.colors.slice(0, 3).map((c, j) => (
+                                        <div key={j} className="w-2 h-2 rounded-full" style={{ backgroundColor: c }} />
+                                    ))}
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {/* MUSIC PLAYER */}
+                {type === 'music_player' && (
+                    <div className="space-y-3">
+                        {MUSIC_LIBRARY.map((track, i) => (
+                            <button
+                                key={i}
+                                onClick={() => onSelect({ musicPlayerConfig: { audioUrl: track.url, title: track.title, artist: track.artist } })}
+                                className="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 transition-all text-left group"
+                            >
+                                <div className="w-10 h-10 rounded-lg bg-premium-accent/20 flex items-center justify-center group-hover:bg-premium-accent/40 transition-colors">
+                                    <Music className="w-5 h-5 text-premium-accent" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="text-xs font-bold text-white truncate">{track.title}</div>
+                                    <div className="text-[10px] text-white/40 truncate">{track.artist}</div>
+                                </div>
+                                <div className="px-2 py-1 rounded-md bg-white/5 text-[8px] text-white/40 uppercase tracking-tighter">Preview</div>
+                            </button>
+                        ))}
+                        <div className="p-3 rounded-xl bg-white/5 border border-dashed border-white/10 text-center">
+                            <p className="text-[9px] text-white/30 uppercase tracking-widest">Or upload your own mp3 in Property Panel</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* WAVE & BLOBS */}
+                {type === 'svg_wave' && (
+                    <div className="grid gap-3">
+                        {WAVE_PRESETS.map((preset, i) => (
+                            <button
+                                key={i}
+                                onClick={() => onSelect({ waveConfig: { ...preset.config } })}
+                                className="w-full flex items-center gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 transition-all text-left"
+                            >
+                                <div className="w-12 h-12 rounded-lg bg-premium-accent/10 flex items-center justify-center text-premium-accent">
+                                    {preset.icon}
+                                </div>
+                                <div>
+                                    <div className="text-xs font-bold text-white">{preset.label}</div>
+                                    <div className="text-[10px] text-white/40">Premium vector path</div>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {/* SOCIAL MOCKUP */}
+                {type === 'social_mockup' && (
+                    <div className="grid grid-cols-2 gap-3">
+                        {['instagram', 'twitter', 'whatsapp', 'tiktok'].map((platform) => (
+                            <button
+                                key={platform}
+                                onClick={() => onSelect({ socialMockupConfig: { platform: platform as any } })}
+                                className="flex flex-col items-center justify-center p-4 rounded-xl bg-white/5 hover:bg-premium-accent/20 border border-white/5 hover:border-premium-accent/40 transition-all gap-2 capitalize"
+                            >
+                                <Monitor className="w-6 h-6 text-white/60" />
+                                <span className="text-[10px] font-bold text-white/80">{platform}</span>
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {/* DIGITAL GIFT */}
+                {type === 'digital_gift' && (
+                    <div className="grid gap-3">
+                        <button
+                            onClick={() => onSelect({ digitalGiftConfig: { theme: 'gold' } })}
+                            className="w-full p-4 rounded-xl bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/40 text-left relative overflow-hidden group"
+                        >
+                            <div className="relative z-10">
+                                <span className="text-xs font-bold text-amber-500 uppercase tracking-widest">Luxury Gold</span>
+                                <p className="text-[10px] text-white/60 mt-1">Premium card for bank transfers</p>
+                            </div>
+                        </button>
+                        <button
+                            onClick={() => onSelect({ digitalGiftConfig: { theme: 'glass' } })}
+                            className="w-full p-4 rounded-xl bg-white/5 backdrop-blur-md border border-white/20 text-left group"
+                        >
+                            <span className="text-xs font-bold text-white uppercase tracking-widest">Modern Glass</span>
+                            <p className="text-[10px] text-white/60 mt-1">Clean and professional design</p>
+                        </button>
+                    </div>
+                )}
+
+                {/* TILT CARD (3D) */}
+                {type === 'tilt_card' && (
+                    <div className="grid grid-cols-2 gap-3">
+                        {TILT_CARD_PRESETS.map((preset, i) => (
+                            <button
+                                key={i}
+                                onClick={() => onSelect({ ...preset.config })}
+                                className="flex flex-col items-center justify-center p-4 rounded-xl bg-white/5 hover:bg-premium-accent/20 border border-white/5 hover:border-premium-accent/40 transition-all gap-2"
+                            >
+                                {preset.icon}
+                                <span className="text-[10px] font-bold text-white/80">{preset.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {/* WEATHER WIDGET */}
+                {type === 'weather_widget' && (
+                    <div className="grid gap-2">
+                        {WEATHER_PRESETS.map((p, i) => (
+                            <button
+                                key={i}
+                                onClick={() => onSelect({ weatherConfig: { city: p.label, temp: p.temp } })}
+                                className="w-full flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all"
+                            >
+                                <div className="flex items-center gap-3">
+                                    {p.icon}
+                                    <span className="text-xs font-bold text-white">{p.label}</span>
+                                </div>
+                                <span className="text-xs text-premium-accent font-black">{p.temp}°C</span>
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {/* QR CODE - Interactive & Static */}
+                {type === 'qr_code' && (
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-3 gap-2">
+                            {QR_PRESETS.map((p, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => onSelect({ qrCodeConfig: { foreground: p.fg, interactiveEnabled: false } })}
+                                    className="flex flex-col items-center p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all group"
+                                >
+                                    <span className="text-xl mb-1 group-hover:scale-110 transition-transform">{p.icon}</span>
+                                    <span className="text-[8px] text-white/60 truncate w-full text-center">Static {p.label}</span>
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="h-px bg-white/10 mx-2" />
+
+                        <div className="space-y-4">
+                            <h3 className="text-[10px] font-black text-premium-accent uppercase tracking-[0.2em] px-1">Interactive Triggers</h3>
+
+                            {INTERACTIVE_QR_PRESETS.map((cat, idx) => (
+                                <div key={idx} className="space-y-2">
+                                    <div className="text-[9px] font-bold text-white/30 uppercase tracking-widest flex items-center gap-2">
+                                        <div className="w-1 h-1 rounded-full bg-premium-accent/50" />
+                                        {cat.category}
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {cat.effects.map((eff) => (
+                                            <button
+                                                key={eff.id}
+                                                onClick={() => onSelect({
+                                                    qrCodeConfig: {
+                                                        interactiveEnabled: true,
+                                                        successEffect: eff.id as any
+                                                    }
+                                                })}
+                                                className="flex items-center gap-2 p-2.5 rounded-lg bg-white/5 hover:bg-premium-accent/20 border border-white/5 hover:border-premium-accent/40 transition-all group"
+                                            >
+                                                <span className="text-sm group-hover:rotate-12 transition-transform">{eff.icon}</span>
+                                                <span className="text-[10px] text-white/70 group-hover:text-white font-medium truncate">{eff.label}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* MARQUEE & TICKERS */}
+                {type === 'infinite_marquee' && (
+                    <div className="grid gap-2">
+                        <button
+                            onClick={() => onSelect({ content: 'AWARD WINNING DESIGN • ENTERPRISE STANDARDS • ' })}
+                            className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-xs text-white/80 text-left"
+                        >
+                            Standard Enterprise Ticker
+                        </button>
+                        <button
+                            onClick={() => onSelect({ content: 'SPECIAL INVITATION • UNLIMITED MAGIC • ' })}
+                            className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-xs text-white/80 text-left"
+                        >
+                            Invitation Magic Ticker
+                        </button>
+                    </div>
+                )}
+
+                {/* UTILITY BUTTONS (Calendar, Directions, Share) */}
+                {(type === 'calendar_sync' || type === 'directions_hub' || type === 'share_context') && (
+                    <div className="p-4 rounded-xl bg-premium-accent/10 border border-premium-accent/20 text-center">
+                        <Sparkles className="w-8 h-8 text-premium-accent mx-auto mb-2" />
+                        <h4 className="text-xs font-black text-white uppercase tracking-widest mb-1">Standard Preset</h4>
+                        <p className="text-[10px] text-white/40 mb-3">Add the default {type.replace('_', ' ')} logic to your canvas.</p>
+                        <button
+                            onClick={() => onSelect({})}
+                            className="w-full py-2 bg-premium-accent text-premium-dark rounded-lg font-black text-[10px] uppercase tracking-widest"
+                        >
+                            Add Default Element
+                        </button>
+                    </div>
+                )}
+
+                {/* OTHER PARTICLES (Fireworks, Bubbles, Snow) */}
+                {(type === 'fireworks' || type === 'bubbles' || type === 'snow') && (
+                    <div className="grid grid-cols-2 gap-3">
+                        {PARTICLE_PRESETS[type as keyof typeof PARTICLE_PRESETS]?.map((p: any, i: number) => (
+                            <button
+                                key={i}
+                                onClick={() => onSelect(type === 'fireworks' ? { fireworksConfig: { colors: p.colors } } : { particlesConfig: { color: p.color } })}
+                                className="flex flex-col items-center justify-center p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all gap-2"
+                            >
+                                <span className="text-2xl">{p.icon}</span>
+                                <span className="text-[10px] font-bold text-white/80">{p.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {/* GLASS CARD */}
+                {type === 'glass_card' && (
+                    <div className="grid gap-3">
+                        <button
+                            onClick={() => onSelect({ glassCardConfig: { opacity: 0.1, blur: 20 } })}
+                            className="p-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-left"
+                        >
+                            <span className="text-xs font-black text-white uppercase tracking-widest">Ultra Glass</span>
+                            <div className="text-[10px] text-white/40 mt-1">Maximum transparency & blur</div>
+                        </button>
+                    </div>
+                )}
+
+
+                {/* INTERACTION (BLAST) */}
+                {type === 'interaction' && (
+                    <div className="space-y-6">
+                        <div className="p-3 bg-premium-accent/10 border border-premium-accent/20 rounded-xl mb-4">
+                            <h4 className="text-xs font-bold text-premium-accent mb-1 flex items-center gap-2">
+                                <Zap className="w-3 h-3" />
+                                Cinematic Trigger
+                            </h4>
+                            <p className="text-[10px] text-white/60 leading-relaxed">
+                                This element creates a hidden trigger area. When clicked by a guest, it will fire a synchronized visual "Blast" across the entire screen and reveal their name.
+                            </p>
+                        </div>
+
+                        {INTERACTIVE_QR_PRESETS.map((cat, idx) => (
+                            <div key={idx}>
+                                <h4 className="text-xs font-bold text-white/40 uppercase tracking-widest px-1 mb-2">{cat.category}</h4>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {cat.effects.map((effect) => (
+                                        <button
+                                            key={effect.id}
+                                            onClick={() => onSelect({ interactionConfig: { effect: effect.id } })}
+                                            className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-premium-accent/20 border border-white/5 hover:border-premium-accent/40 transition-all text-left group"
+                                        >
+                                            <span className="text-2xl group-hover:scale-110 transition-transform">{effect.icon}</span>
+                                            <div>
+                                                <div className="text-xs font-bold text-white">{effect.label}</div>
+                                                <div className="text-[9px] text-white/40">Full screen burst</div>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
 
                 {/* MEDIA (Image, Video, GIF) */}
 

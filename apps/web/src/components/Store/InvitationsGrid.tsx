@@ -7,22 +7,27 @@ interface Template {
     name: string;
     slug?: string;
     thumbnail_url?: string;
+    thumbnail?: string; // API returns 'thumbnail', grid uses 'thumbnail_url'
     category?: string;
     price?: number;
 }
+
 
 interface InvitationsGridProps {
     isLoading: boolean;
     filteredTemplates: Template[];
     onUseTemplate: (id: string) => void;
     onPreviewTemplate: (slug: string | undefined, id: string) => void;
+    selectedId?: string | null;
 }
+
 
 const InvitationsGrid: React.FC<InvitationsGridProps> = ({
     isLoading,
     filteredTemplates,
     onUseTemplate,
-    onPreviewTemplate
+    onPreviewTemplate,
+    selectedId
 }) => {
     if (isLoading) {
         return (
@@ -53,13 +58,16 @@ const InvitationsGrid: React.FC<InvitationsGridProps> = ({
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="group bg-white rounded-3xl border border-slate-200/60 overflow-hidden shadow-sm hover:shadow-2xl hover:border-[#FFBF00]/30 transition-all duration-500"
+                        className={`group bg-white rounded-3xl border overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 ${template.id === selectedId
+                            ? 'border-teal-500 ring-4 ring-teal-500/10 shadow-xl shadow-teal-500/10 scale-[1.02] z-10'
+                            : 'border-slate-200/60 hover:border-[#FFBF00]/30'
+                            }`}
                     >
                         {/* Thumbnail Area */}
                         <div className="aspect-[4/5] bg-slate-100 relative overflow-hidden">
-                            {template.thumbnail_url ? (
+                            {(template.thumbnail_url || template.thumbnail) ? (
                                 <img
-                                    src={template.thumbnail_url}
+                                    src={template.thumbnail_url || template.thumbnail}
                                     alt={template.name}
                                     width={400}
                                     height={500}
@@ -72,6 +80,7 @@ const InvitationsGrid: React.FC<InvitationsGridProps> = ({
                                 </div>
                             )}
 
+
                             {/* Hover Like Overlay */}
                             <div className="absolute top-4 right-4">
                                 <button
@@ -83,12 +92,22 @@ const InvitationsGrid: React.FC<InvitationsGridProps> = ({
                             </div>
 
                             {/* Category Tag */}
-                            <div className="absolute top-4 left-4">
+                            <div className="absolute top-4 left-4 flex gap-2">
                                 <span className="px-3 py-1 bg-slate-900/80 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-widest rounded-lg">
                                     {template.category || 'Premium'}
                                 </span>
+                                {template.id === selectedId && (
+                                    <m.span
+                                        initial={{ x: -10, opacity: 0 }}
+                                        animate={{ x: 0, opacity: 1 }}
+                                        className="px-3 py-1 bg-teal-500 text-white text-[9px] font-black uppercase tracking-widest rounded-lg shadow-lg flex items-center gap-1"
+                                    >
+                                        <Sparkles className="w-3 h-3" /> Pilihan Anda
+                                    </m.span>
+                                )}
                             </div>
                         </div>
+
 
                         {/* Info & Actions */}
                         <div className="p-6">
@@ -103,9 +122,12 @@ const InvitationsGrid: React.FC<InvitationsGridProps> = ({
                             <div className="grid grid-cols-1 gap-3">
                                 <button
                                     onClick={() => onUseTemplate(template.id)}
-                                    className="w-full py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#FFBF00] hover:text-slate-900 transition-all active:scale-95 shadow-lg shadow-slate-900/10"
+                                    className={`w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 shadow-lg ${template.id === selectedId
+                                        ? 'bg-teal-500 text-white hover:bg-teal-600 shadow-teal-500/20'
+                                        : 'bg-slate-900 text-white hover:bg-[#FFBF00] hover:text-slate-900 shadow-slate-900/10'
+                                        }`}
                                 >
-                                    Gunakan Desain
+                                    {template.id === selectedId ? 'Konfirmasi Desain' : 'Gunakan Desain'}
                                 </button>
                                 <button
                                     onClick={() => onPreviewTemplate(template.slug, template.id)}

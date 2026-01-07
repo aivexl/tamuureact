@@ -8,6 +8,22 @@ import * as LucideIcons from 'lucide-react';
 import { shapePaths } from '@/lib/shape-paths';
 import { RSVPWishesElement } from '@/components/RSVPWishes';
 import { CountdownElement } from '@/components/Countdown';
+import { NameBoardElement } from '@/components/NameBoard';
+import {
+    ParticlesElement,
+    DigitalGiftElement,
+    MusicPlayerElement,
+    QRCodeElement,
+    AtmosphericVectorElement,
+    GlassCardElement,
+    SocialMockupElement,
+    WeatherElement,
+    MarqueeElement,
+    TiltCardElement,
+    CalendarSyncElement,
+    DirectionsHubElement,
+    ShareContextElement
+} from '@/components/Elements';
 
 // ============================================
 // ELEMENT RENDERER
@@ -58,6 +74,42 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenI
                 return <FlyingBirdElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             case 'photo_grid':
                 return <PhotoGridElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
+
+            // ENTERPRISE V3 ELEMENTS
+            case 'confetti':
+            case 'fireworks':
+            case 'bubbles':
+            case 'snow':
+                return <ParticlesElement layer={layer} onContentLoad={onContentLoad} />;
+            case 'digital_gift':
+                return <DigitalGiftElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
+            case 'music_player':
+                return <MusicPlayerElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
+            case 'qr_code':
+                return <QRCodeElement layer={layer} onContentLoad={onContentLoad} />;
+            case 'svg_wave':
+            case 'generative_blob':
+                return <AtmosphericVectorElement layer={layer} onContentLoad={onContentLoad} />;
+            case 'glass_card':
+                return <GlassCardElement layer={layer} onContentLoad={onContentLoad} />;
+            case 'social_mockup':
+                return <SocialMockupElement layer={layer} onContentLoad={onContentLoad} />;
+            case 'weather_widget':
+                return <WeatherElement layer={layer} onContentLoad={onContentLoad} />;
+            case 'infinite_marquee':
+                return <MarqueeElement layer={layer} onContentLoad={onContentLoad} />;
+            case 'tilt_card':
+                return <TiltCardElement layer={layer} onContentLoad={onContentLoad} />;
+            case 'calendar_sync':
+                return <CalendarSyncElement layer={layer} onContentLoad={onContentLoad} />;
+            case 'directions_hub':
+                return <DirectionsHubElement layer={layer} onContentLoad={onContentLoad} />;
+            case 'share_context':
+                return <ShareContextElement layer={layer} onContentLoad={onContentLoad} />;
+            case 'interaction':
+                return <InteractionElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
+            case 'name_board':
+                return <NameBoardElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             default:
                 return <PlaceholderElement layer={layer} onContentLoad={onContentLoad} />;
         }
@@ -709,6 +761,73 @@ const PhotoGridElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLo
             />
             {renderGrid()}
         </>
+    );
+};
+
+
+// ============================================
+// INTERACTION TRIGGER ELEMENT (EDITOR ONLY VISUAL)
+// ============================================
+const InteractionElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
+    const triggerInteraction = useStore(state => state.triggerInteraction);
+
+    useEffect(() => {
+        onContentLoad?.();
+    }, []);
+
+    const config = layer.interactionConfig;
+    const effect = config?.effect || 'confetti';
+    const testName = config?.testName || 'Guest Name';
+
+    // Find icon for effect
+    const effectIcons: Record<string, string> = {
+        'confetti': '🎉',
+        'gold_rain': '💰',
+        'rose_petals': '🌹',
+        'snow': '❄️',
+        'matrix': '📟',
+        'stars': '⭐',
+        'hearts': '❤️',
+        'fireworks': '🚀'
+    };
+
+    const handleClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const rect = e.currentTarget.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        triggerInteraction(
+            testName,
+            config?.effect || 'confetti',
+            (config?.greetingStyle || 'cinematic') as any,
+            {
+                x: centerX / window.innerWidth,
+                y: centerY / window.innerHeight
+            }
+        );
+    };
+
+    // In preview mode, the element is invisible - it only serves as an origin point for effects
+    // Click anywhere triggers are handled by AdminDisplayPreviewPage, not by clicking this element
+    if (!isEditor) {
+        return null;
+    }
+
+    return (
+        <div
+            className="w-full h-full flex flex-col items-center justify-center p-2 rounded-2xl transition-all overflow-hidden cursor-pointer bg-premium-accent/10 border-2 border-dashed border-premium-accent/30 group hover:bg-premium-accent/20 hover:scale-105"
+            onClick={handleClick}
+        >
+            <div className="relative">
+                <LucideIcons.Zap className="w-8 h-8 text-premium-accent animate-pulse" />
+                <div className="absolute -top-1 -right-1 text-lg">{effectIcons[effect] || '⚡'}</div>
+            </div>
+            <div className="mt-2 text-[10px] font-black text-premium-accent uppercase tracking-tighter opacity-80 text-center">
+                {effect.replace('_', ' ')} trigger
+            </div>
+            <div className="text-[8px] text-white/40 font-medium uppercase tracking-[0.2em] mt-1">Effect Origin Point</div>
+        </div>
     );
 };
 

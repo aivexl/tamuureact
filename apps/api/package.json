@@ -5,9 +5,11 @@
     "scripts": {
         "dev": "wrangler dev",
         "deploy": "wrangler deploy",
+        "deploy:api": "wrangler deploy -c wrangler-api.toml",
         "deploy:bg-remover": "wrangler deploy -c wrangler-bg.toml"
     },
     "devDependencies": {
+        "@supabase/supabase-js": "^2.89.0",
         "wrangler": "^4.0.0"
     }
 }

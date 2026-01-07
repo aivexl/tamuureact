@@ -21,7 +21,32 @@ export type LayerType =
     | 'rsvp_wishes'
     | 'lottie'
     | 'flying_bird'
-    | 'photo_grid';
+    | 'photo_grid'
+    // ENTERPRISE V2 TYPES
+    | 'confetti'
+    | 'fireworks'
+    | 'bubbles'
+    | 'snow'
+    | 'digital_gift'
+    | 'guestbook_ticker'
+    | 'music_player'
+    | 'calendar_sync'
+    | 'svg_wave'
+    | 'generative_blob'
+    | 'glass_card'
+    | 'infinite_marquee'
+    | 'tilt_card'
+    | 'parallax_layer'
+    | 'hologram_overlay'
+    | 'gradient_mesh'
+    | 'qr_code'
+    | 'info_ticker'
+    | 'social_mockup'
+    | 'weather_widget'
+    | 'directions_hub'
+    | 'share_context'
+    | 'interaction'
+    | 'name_board';
 
 
 // ============================================
@@ -435,6 +460,133 @@ export interface CurvedTextConfig {
     reverse: boolean;
 }
 
+// ============================================
+// ENTERPRISE V3 CONFIGS (Unicorn Grade)
+// ============================================
+
+export interface ConfettiConfig {
+    colors: string[];
+    particleCount: number;
+    spread: number;
+    origin: { x: number; y: number };
+    gravity: number;
+    drift: number;
+    ticks: number;
+}
+
+export interface FireworksConfig {
+    colors: string[];
+    burstCount: number;
+    particleCount: number;
+    speed: number;
+}
+
+export interface ParticlesConfig {
+    type: 'bubbles' | 'snow' | 'stars' | 'bokeh';
+    color: string;
+    density: number;
+    speed: number;
+    size: number;
+}
+
+export interface DigitalGiftConfig {
+    title: string;
+    description: string;
+    bankName: string;
+    accountNumber: string;
+    accountHolder: string;
+    qrImage?: string;
+    buttonText: string;
+    theme: 'gold' | 'silver' | 'glass' | 'custom';
+}
+
+export interface MusicPlayerConfig {
+    audioUrl: string;
+    title: string;
+    artist: string;
+    coverUrl?: string;
+    autoplay: boolean;
+    loop: boolean;
+    visualizerEnabled: boolean;
+    visualizerColor: string;
+}
+
+export interface QRCodeConfig {
+    value: string;
+    size: number;
+    foreground?: string;
+    background?: string;
+    darkColor?: string;
+    lightColor?: string;
+    logoUrl?: string;
+    includeMargin: boolean;
+    interactiveEnabled?: boolean;
+    successEffect?: LayersState['activeEffect'];
+}
+
+export interface WaveConfig {
+    type: 'wave' | 'blob' | 'steps';
+    color: string;
+    opacity: number;
+    amplitude: number;
+    frequency: number;
+    points: number;
+    speed: number;
+}
+
+export interface InteractionConfig {
+    effect: LayersState['activeEffect'];
+    greetingStyle: 'cinematic' | 'simple' | 'none';
+    triggerType: 'click' | 'hover' | 'auto' | 'test' | 'on_checkin' | 'manual';
+    autoClose?: boolean;
+    duration?: number;
+    resetDuration?: number; // CTO: Auto-reset duration in MS (default 8000)
+    testName?: string;
+}
+
+export interface NameBoardConfig {
+    variant: number;
+    displayText: string;
+    fontFamily: string;
+    fontSize: number;
+    textColor: string;
+    backgroundColor: string;
+    borderColor: string;
+    borderWidth: number;
+    borderRadius: number;
+    shadowEnabled: boolean;
+    gradientEnabled: boolean;
+    gradientStart: string;
+    gradientEnd: string;
+}
+
+export interface GlassCardConfig {
+    blur: number;
+    opacity: number;
+    borderColor: string;
+    borderWidth: number;
+    saturation: number;
+}
+
+export interface SocialMockupConfig {
+    platform: 'instagram' | 'twitter' | 'whatsapp' | 'tiktok';
+    username: string;
+    handle?: string;
+    avatarUrl: string;
+    content: string;
+    timestamp: string;
+    likes?: string;
+    verified?: boolean;
+}
+
+export interface WeatherConfig {
+    city: string;
+    temp?: string;
+    unit: 'c' | 'f';
+    showIcon: boolean;
+    theme: 'minimal' | 'glass' | 'dynamic';
+}
+
 export interface Layer {
     id: string;
     type: LayerType;
@@ -509,6 +661,25 @@ export interface Layer {
     rsvpFormConfig?: any;
     guestWishesConfig?: any;
     rsvpWishesConfig?: any;
+    interactionConfig?: InteractionConfig;
+
+    // ENTERPRISE V3 CONFIGS
+    confettiConfig?: ConfettiConfig;
+    fireworksConfig?: FireworksConfig;
+    particlesConfig?: ParticlesConfig;
+    digitalGiftConfig?: DigitalGiftConfig;
+    musicPlayerConfig?: MusicPlayerConfig;
+    qrCodeConfig?: QRCodeConfig;
+    waveConfig?: WaveConfig;
+    glassCardConfig?: GlassCardConfig;
+    socialMockupConfig?: SocialMockupConfig;
+    weatherConfig?: WeatherConfig;
+    calendarSyncConfig?: any;
+    tickerConfig?: any;
+    parallaxConfig?: any;
+    hologramConfig?: any;
+    gradientMeshConfig?: any;
+    nameBoardConfig?: NameBoardConfig;
 
     // ENTERPRISE V2 FEATURES
     maskConfig?: MaskConfig;
@@ -577,6 +748,18 @@ export interface LayersState {
     // Feature 7: Global Theme
     globalTheme: GlobalTheme;
     updateGlobalTheme: (updates: Partial<GlobalTheme>) => void;
+
+    // Feature 8: Global Effects
+    activeEffect: 'none' | string;
+    activeEffects: { id: string, type: string, origin: { x: number, y: number }, timestamp: number }[];
+    greetingName: string;
+    greetingStyle: 'cinematic' | 'simple' | 'none';
+    lastInteractionId: number;
+    triggerGlobalEffect: (effect: string, origin?: { x: number, y: number }) => void;
+    triggerInteraction: (name: string, effect: string, style?: 'cinematic' | 'simple' | 'none', origin?: { x: number, y: number }, customResetDuration?: number) => void;
+    triggerBatchInteractions: (name: string, interactions: { effect: string, style?: 'cinematic' | 'simple' | 'none', origin?: { x: number, y: number }, resetDuration?: number }[]) => void;
+    removeActiveEffect: (id: string) => void;
+    resetInteractions: () => void; // CTO: Clear all interaction states synchronously
 }
 
 // ============================================
@@ -821,5 +1004,101 @@ export const createLayersSlice: StateCreator<LayersState> = (set, get) => ({
 
     updateGlobalTheme: (updates) => set((state) => ({
         globalTheme: { ...state.globalTheme, ...updates }
+    })),
+
+    // Feature 8: Global Effects Implementation
+    activeEffect: 'none',
+    activeEffects: [],
+    greetingName: '',
+    greetingStyle: 'cinematic',
+    lastInteractionId: 0,
+    triggerGlobalEffect: (effect, origin) => {
+        const id = generateId('effect');
+        set((state) => ({
+            activeEffect: effect, // Keep legacy sync
+            activeEffects: [...state.activeEffects, {
+                id,
+                type: effect,
+                origin: origin || { x: 0.5, y: 0.5 }, // 0.5 = Center relative
+                timestamp: Date.now()
+            }]
+        }));
+
+        // Auto-cleanup handles itself in VisualEffectsCanvas, but we safety clear here too
+        setTimeout(() => {
+            set((state) => ({
+                activeEffects: state.activeEffects.filter(e => e.id !== id),
+                activeEffect: state.activeEffects.length > 1 ? state.activeEffects[state.activeEffects.length - 2].type : 'none'
+            }));
+        }, 8000);
+    },
+    triggerInteraction: (name, effect, style = 'cinematic', origin, customResetDuration) => {
+        get().triggerBatchInteractions(name, [{ effect, style, origin, resetDuration: customResetDuration }]);
+    },
+    triggerBatchInteractions: (name, interactions) => {
+        if (!interactions.length) return;
+
+        const timestamp = Date.now();
+        const primaryInteraction = interactions[0];
+        const style = primaryInteraction.style || 'cinematic';
+
+        console.log(`[Store] triggerBatchInteractions: ${name} | count: ${interactions.length}`);
+
+        // Dev Sync: Write to localStorage for cross-tab preview
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('tamuu_interaction_event', JSON.stringify({
+                name,
+                interactions: interactions.map(i => ({
+                    effect: i.effect,
+                    style: i.style || 'cinematic',
+                    origin: i.origin || { x: 0.5, y: 0.5 },
+                    resetDuration: i.resetDuration
+                })),
+                timestamp
+            }));
+        }
+
+        const newActiveEffects = interactions.map(i => ({
+            id: generateId('effect'),
+            type: i.effect,
+            origin: i.origin || { x: 0.5, y: 0.5 },
+            timestamp
+        }));
+
+        set((state) => ({
+            greetingName: name,
+            activeEffect: primaryInteraction.effect,
+            greetingStyle: style,
+            lastInteractionId: timestamp,
+            activeEffects: [...state.activeEffects, ...newActiveEffects]
+        }));
+
+        // Reset after duration
+        interactions.forEach((i, idx) => {
+            const effectId = newActiveEffects[idx].id;
+            const duration = i.resetDuration || 8000;
+
+            setTimeout(() => {
+                set((state) => {
+                    const isStillSame = state.lastInteractionId === timestamp;
+                    return {
+                        greetingName: isStillSame ? '' : state.greetingName,
+                        activeEffects: state.activeEffects.filter(e => e.id !== effectId),
+                        activeEffect: state.activeEffects.length > 1
+                            ? state.activeEffects[state.activeEffects.length - 2].type
+                            : 'none'
+                    };
+                });
+            }, duration);
+        });
+    },
+    removeActiveEffect: (id) => set((state) => ({
+        activeEffects: state.activeEffects.filter(e => e.id !== id)
+    })),
+    resetInteractions: () => set(() => ({
+        greetingName: '',
+        activeEffect: 'none',
+        activeEffects: [],
+        lastInteractionId: 0
     }))
 });

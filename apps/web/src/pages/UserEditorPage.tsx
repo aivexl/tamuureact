@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { UserEditorLayout } from '../components/Layout/UserEditorLayout';
+import { EditorLayout } from '@/components/Layout/EditorLayout';
 import { IconGridMenu } from '../components/UserEditor/IconGridMenu';
 import { StatusToggles } from '../components/UserEditor/StatusToggles';
 import { TemplateEditArea } from '../components/UserEditor/TemplateEditArea';
@@ -8,48 +9,85 @@ import { InvitationInfoCard } from '../components/UserEditor/InvitationInfoCard'
 import { Modal } from '@/components/ui/Modal';
 import { MusicPanel } from '@/components/UserEditor/Panels/MusicPanel';
 import { ThemePanel } from '@/components/UserEditor/Panels/ThemePanel';
+import { SharePanel } from '@/components/UserEditor/Panels/SharePanel';
 import { useStore } from '@/store/useStore';
-import { Loader2 } from 'lucide-react';
+import { invitations as invitationsApi } from '@/lib/api';
+import { Loader2, Sparkles, AlertCircle } from 'lucide-react';
 
-export const UserEditorPage: React.FC = () => {
+interface UserEditorPageProps {
+    mode?: 'invitation' | 'welcome';
+}
+
+export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitation' }) => {
     const { id } = useParams<{ id: string }>();
+
+    if (mode === 'welcome') {
+        return (
+            <div className="w-full h-screen bg-[#050505] text-white selection:bg-premium-accent selection:text-premium-dark overflow-hidden font-outfit">
+                <EditorLayout templateId={id} isTemplate={false} isDisplayDesign={true} />
+            </div>
+        );
+    }
+
     const navigate = useNavigate();
     const {
         activeSectionId,
         setActiveSection,
+        setSections,
+        setOrbitLayers,
     } = useStore();
 
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [invitation, setInvitation] = useState<any>(null);
     const [activePanel, setActivePanel] = useState<string | null>(null);
 
     useEffect(() => {
-        // Simulation of loading invitation data
-        // In a real scenario, this would fetch from an API or use a store action
         const loadInvitation = async () => {
+            if (!id) return;
+
             setLoading(true);
+            setError(null);
+
             try {
-                // Mock fetch
-                setTimeout(() => {
-                    setInvitation({
-                        id,
-                        title: "Undangan Pernikahan Kita",
-                        slug: "wedding-kita",
-                        status: "published",
-                        activeUntil: "2025-12-31"
-                    });
-                    setLoading(false);
-                }, 1000);
-            } catch (error) {
-                console.error("Failed to load invitation:", error);
+                console.log('[UserEditor] Loading invitation:', id);
+                const data = await invitationsApi.get(id);
+                console.log('[UserEditor] Invitation loaded:', data.name);
+
+                // Set local state for UI
+                setInvitation({
+                    id: data.id,
+                    title: data.name,
+                    slug: data.slug,
+                    status: data.is_published ? "Published" : "Draft",
+                    thumbnailUrl: data.thumbnail_url,
+                    category: data.category
+                });
+
+                // Hydrate Zustand store with sections and orbit
+                if (data.sections && Array.isArray(data.sections)) {
+                    setSections(data.sections);
+                    // Set first section as active if none selected
+                    if (data.sections.length > 0 && !activeSectionId) {
+                        setActiveSection(data.sections[0].id);
+                    }
+                }
+
+                if (data.orbit_layers) {
+                    setOrbitLayers(data.orbit_layers);
+                }
+
+            } catch (err) {
+                console.error('[UserEditor] Failed to load invitation:', err);
+                setError('Undangan tidak ditemukan atau terjadi kesalahan.');
+            } finally {
                 setLoading(false);
             }
         };
 
-        if (id) {
-            loadInvitation();
-        }
-    }, [id]);
+        loadInvitation();
+    }, [id, setSections, setOrbitLayers, setActiveSection]);
+
 
     if (loading) {
         return (
@@ -59,6 +97,22 @@ export const UserEditorPage: React.FC = () => {
             </div>
         );
     }
+
+    if (error || !invitation) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4">
+                <AlertCircle className="w-12 h-12 text-red-400" />
+                <p className="text-slate-600 font-medium">{error || 'Undangan tidak ditemukan'}</p>
+                <button
+                    onClick={() => navigate('/dashboard')}
+                    className="px-6 py-2 bg-slate-900 text-white rounded-xl text-sm font-medium hover:bg-slate-800 transition-colors"
+                >
+                    Kembali ke Dashboard
+                </button>
+            </div>
+        );
+    }
+
 
     return (
         <UserEditorLayout>
@@ -70,7 +124,11 @@ export const UserEditorPage: React.FC = () => {
                 <IconGridMenu onOpenPanel={(id: string) => setActivePanel(id)} />
 
                 {/* 3. Global Toggles */}
-                <StatusToggles />
+                <StatusToggles
+                    invitation={invitation}
+                    onUpdate={(updates) => setInvitation(updates)}
+                />
+
 
                 {/* 4. Main Edit Area */}
                 <TemplateEditArea />
@@ -84,11 +142,19 @@ export const UserEditorPage: React.FC = () => {
                 >
                     {activePanel === 'music' && <MusicPanel />}
                     {activePanel === 'theme' && <ThemePanel />}
-                    {activePanel !== 'music' && activePanel !== 'theme' && (
-                        <div className="py-20 text-center">
-                            <p className="text-slate-400 font-bold uppercase tracking-widest">
-                                Panel untuk <span className="text-slate-900">{activePanel}</span> akan segera hadir
-                            </p>
+                    {activePanel === 'share' && <SharePanel slug={invitation.slug} />}
+                    {!['music', 'theme', 'share'].includes(activePanel || '') && (
+                        <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
+                            <div className="w-20 h-20 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-slate-300">
+                                <Sparkles className="w-10 h-10" />
+                            </div>
+                            <div>
+                                <h4 className="font-black text-slate-800 tracking-tight text-xl uppercase tracking-widest">Segera Hadir</h4>
+                                <p className="text-sm text-slate-400 font-medium max-w-xs mx-auto">Fitur <span className="text-teal-600 font-bold">{activePanel?.toUpperCase()}</span> sedang dalam tahap pengembangan premium.</p>
+                            </div>
+                            <button onClick={() => setActivePanel(null)} className="px-8 py-3 bg-slate-100 text-slate-600 font-bold text-xs uppercase tracking-widest rounded-2xl hover:bg-slate-200 transition-all">
+                                Tutup
+                            </button>
                         </div>
                     )}
                 </Modal>

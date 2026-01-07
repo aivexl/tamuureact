@@ -165,7 +165,12 @@ export interface SectionsState {
     matchSize: (sectionId: string, elementIds: string[], dimension: 'width' | 'height' | 'both') => void;
 
     sanitizeAllSectionElements: () => void;
+
+    // Bulk setters for API hydration
+    setSections: (sections: Section[]) => void;
+    setOrbitLayers: (orbit: OrbitState | Record<string, any>) => void;
 }
+
 
 // ============================================
 // DEFAULT SECTIONS
@@ -322,6 +327,27 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
     activeCanvas: 'main',
 
     setActiveCanvas: (context) => set({ activeCanvas: context }),
+
+    // Bulk setters for API hydration
+    setSections: (sections) => set({ sections }),
+
+    setOrbitLayers: (orbit) => set((state) => ({
+        orbit: {
+            left: {
+                backgroundColor: orbit?.left?.backgroundColor || state.orbit.left.backgroundColor,
+                backgroundUrl: orbit?.left?.backgroundUrl || state.orbit.left.backgroundUrl,
+                isVisible: orbit?.left?.isVisible ?? state.orbit.left.isVisible,
+                elements: orbit?.left?.elements || state.orbit.left.elements
+            },
+            right: {
+                backgroundColor: orbit?.right?.backgroundColor || state.orbit.right.backgroundColor,
+                backgroundUrl: orbit?.right?.backgroundUrl || state.orbit.right.backgroundUrl,
+                isVisible: orbit?.right?.isVisible ?? state.orbit.right.isVisible,
+                elements: orbit?.right?.elements || state.orbit.right.elements
+            }
+        }
+    })),
+
 
     updateOrbitCanvas: (canvas, updates) => set((state) => ({
         orbit: {

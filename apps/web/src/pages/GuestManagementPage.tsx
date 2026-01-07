@@ -1,7 +1,12 @@
+
 import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { m, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { useSEO } from '../hooks/useSEO';
+import { ImportModal } from '../components/Modals/ImportModal';
+import { ConfirmationModal } from '../components/Modals/ConfirmationModal';
+import { QRModal } from '../components/Modals/QRModal';
+import * as XLSX from 'xlsx';
 
 // ============================================
 // INLINE SVG ICONS
@@ -61,29 +66,9 @@ const FileDownIcon = ({ className }: { className?: string }) => (
         <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M12 18v-6" /><path d="m9 15 3 3 3-3" />
     </svg>
 );
-const UsersIcon = ({ className }: { className?: string }) => (
+const QrCodeIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-);
-const MailIcon = ({ className }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-    </svg>
-);
-const StarIcon = ({ className }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
-);
-const LogInIcon = ({ className }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><polyline points="10 17 15 12 10 7" /><line x1="15" x2="3" y1="12" y2="12" />
-    </svg>
-);
-const LogOutIcon = ({ className }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" />
+        <rect width="5" height="5" x="3" y="3" rx="1" /><rect width="5" height="5" x="16" y="3" rx="1" /><rect width="5" height="5" x="3" y="16" rx="1" /><path d="M21 16h-3a2 2 0 0 0-2 2v3" /><path d="M21 21v.01" /><path d="M12 7v3a2 2 0 0 1-2 2H7" /><path d="M3 12h.01" /><path d="M12 3h.01" /><path d="M12 16v.01" /><path d="M16 12h1" /><path d="M21 12v.01" /><path d="M12 21v-1" />
     </svg>
 );
 
@@ -134,6 +119,15 @@ export const GuestManagementPage: React.FC = () => {
     const [invitationMessage, setInvitationMessage] = useState(DEFAULT_MESSAGE);
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
+    // Delete Confirmation State
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [guestToDelete, setGuestToDelete] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    // QR Modal State
+    const [showQRModal, setShowQRModal] = useState(false);
+    const [selectedQRGuest, setSelectedQRGuest] = useState<Guest | null>(null);
+
     const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
     const [toast, setToast] = useState<{ show: boolean; message: string }>({ show: false, message: '' });
 
@@ -141,6 +135,11 @@ export const GuestManagementPage: React.FC = () => {
     const [formData, setFormData] = useState({
         name: '', phone: '', address: 'di tempat', tableNumber: '', tier: 'reguler' as Guest['tier'], guestCount: 1
     });
+
+    // Import state
+    const [showImportModal, setShowImportModal] = useState(false);
+    const [isImporting, setIsImporting] = useState(false);
+    const [showExportDropdown, setShowExportDropdown] = useState(false);
 
     useSEO({
         title: 'Buku Tamu - Tamuu',
@@ -166,6 +165,16 @@ export const GuestManagementPage: React.FC = () => {
     const showToast = (message: string) => {
         setToast({ show: true, message });
         setTimeout(() => setToast({ show: false, message: '' }), 3000);
+    };
+
+    const normalizePhone = (phone: string) => {
+        let p = phone.replace(/\D/g, ''); // Remove non-digits
+        if (p.startsWith('0')) {
+            p = '62' + p.slice(1);
+        } else if (!p.startsWith('62')) {
+            p = '62' + p;
+        }
+        return p;
     };
 
     const copyGeneralLink = () => {
@@ -194,7 +203,7 @@ export const GuestManagementPage: React.FC = () => {
             id: Date.now().toString(),
             checkInCode: `AB${String(guests.length + 1).padStart(3, '0')}`,
             name: formData.name,
-            phone: formData.phone ? `62${formData.phone.replace(/^0/, '')}` : null,
+            phone: formData.phone ? normalizePhone(formData.phone) : null,
             address: formData.address,
             tableNumber: formData.tableNumber,
             tier: formData.tier,
@@ -213,7 +222,7 @@ export const GuestManagementPage: React.FC = () => {
         setEditingGuest(guest);
         setFormData({
             name: guest.name,
-            phone: guest.phone?.replace(/^62/, '') || '',
+            phone: guest.phone?.replace(/^62/, '0') || '',
             address: guest.address,
             tableNumber: guest.tableNumber,
             tier: guest.tier,
@@ -227,7 +236,7 @@ export const GuestManagementPage: React.FC = () => {
         setGuests(prev => prev.map(g => g.id === editingGuest.id ? {
             ...g,
             name: formData.name,
-            phone: formData.phone ? `62${formData.phone.replace(/^0/, '')}` : null,
+            phone: formData.phone ? normalizePhone(formData.phone) : null,
             address: formData.address,
             tableNumber: formData.tableNumber,
             tier: formData.tier,
@@ -239,9 +248,112 @@ export const GuestManagementPage: React.FC = () => {
     };
 
     const handleDeleteGuest = (guestId: string) => {
-        if (!confirm('Hapus tamu ini?')) return;
-        setGuests(prev => prev.filter(g => g.id !== guestId));
-        showToast('Tamu dihapus!');
+        setGuestToDelete(guestId);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDeleteGuest = () => {
+        if (!guestToDelete) return;
+        setIsDeleting(true);
+        setTimeout(() => {
+            setGuests(prev => prev.filter(g => g.id !== guestToDelete));
+            showToast('Tamu dihapus!');
+            setIsDeleting(false);
+            setShowDeleteModal(false);
+            setGuestToDelete(null);
+        }, 500); // Simulate network delay
+    };
+
+    const handleShowQR = (guest: Guest) => {
+        setSelectedQRGuest(guest);
+        setShowQRModal(true);
+    };
+
+    // ============================================
+    // IMPORT / EXPORT LOGIC
+    // ============================================
+
+    const downloadImportFormat = (format: 'csv' | 'xlsx') => {
+        const data = [
+            { 'Tier': 'VIP', 'Nama': 'Contoh Nama VIP', 'No WhatsApp': '081234567890', 'Alamat': 'Jakarta', 'Jumlah': 2, 'Meja': 'Meja A1' },
+            { 'Tier': 'REGULER', 'Nama': 'Contoh Nama Reguler', 'No WhatsApp': '085678901234', 'Alamat': 'di tempat', 'Jumlah': 1, 'Meja': 'Room 302' }
+        ];
+
+        if (format === 'xlsx') {
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Format Import');
+            XLSX.writeFile(workbook, 'format-import-tamu.xlsx');
+        } else {
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Format Import');
+            XLSX.writeFile(workbook, 'format-import-tamu.csv', { bookType: 'csv' });
+        }
+    };
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        // Redundant - now handled inside ImportModal
+    };
+
+    const confirmImport = (pendingGuests: any[]) => {
+        setIsImporting(true);
+        setTimeout(() => {
+            const newGuests: Guest[] = pendingGuests.map((ig, i) => ({
+                id: `import-${Date.now()}-${i}`,
+                checkInCode: `IM${String(guests.length + i + 1).padStart(3, '0')}`,
+                name: ig.name,
+                phone: ig.phone ? normalizePhone(ig.phone) : null,
+                address: ig.address,
+                tableNumber: ig.tableNumber,
+                tier: ig.tier,
+                guestCount: ig.guestCount,
+                sharedAt: null,
+                checkedInAt: null,
+                checkedOutAt: null
+            }));
+
+            setGuests(prev => [...newGuests, ...prev]);
+            setShowImportModal(false);
+            setIsImporting(false);
+            showToast(`Berhasil mengimpor ${newGuests.length} tamu!`);
+        }, 1000);
+    };
+
+    const handleExport = (format: 'csv' | 'json' | 'xlsx') => {
+        const exportData = guests.map(g => ({
+            'ID': g.checkInCode,
+            'Tier': g.tier.toUpperCase(),
+            'Nama': g.name,
+            'WhatsApp': g.phone ? `+ ${g.phone} ` : '-',
+            'Alamat': g.address,
+            'Meja': g.tableNumber || '-',
+            'Jumlah': g.guestCount,
+            'Status WA': g.sharedAt ? 'Terkirim' : 'Belum',
+            'Kehadiran': g.checkedInAt ? 'Hadir' : 'Belum'
+        }));
+
+        if (format === 'xlsx') {
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Daftar Tamu');
+            XLSX.writeFile(workbook, `export -tamu - ${invitationId || 'data'}.xlsx`);
+        } else if (format === 'json') {
+            const blob = new Blob([JSON.stringify(guests, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `export -tamu - ${invitationId || 'data'}.json`;
+            link.click();
+        } else {
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            const csv = XLSX.utils.sheet_to_csv(worksheet);
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `export -tamu - ${invitationId || 'data'}.csv`;
+            link.click();
+        }
+        setShowExportDropdown(false);
     };
 
     const getTierBadge = (tier: Guest['tier']) => {
@@ -254,7 +366,7 @@ export const GuestManagementPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 pt-20">
+        <div className="min-h-screen bg-slate-50 pt-14">
             {/* Page Header */}
             <div className="bg-white border-b border-slate-200 px-4 lg:px-8 py-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -341,12 +453,34 @@ export const GuestManagementPage: React.FC = () => {
                         />
                     </div>
                     <div className="flex items-center gap-2">
-                        <button className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all font-medium">
-                            <FileUpIcon className="w-4 h-4" /> Import
+                        <button
+                            onClick={() => setShowImportModal(true)}
+                            className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all font-medium shadow-lg shadow-slate-900/10"
+                        >
+                            <FileUpIcon className="w-4 h-4" /> Import CSV / Excel
                         </button>
-                        <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-all font-medium">
-                            <FileDownIcon className="w-4 h-4" /> Export
-                        </button>
+
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowExportDropdown(!showExportDropdown)}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-all font-medium"
+                            >
+                                <FileDownIcon className="w-4 h-4" /> Export
+                            </button>
+                            {showExportDropdown && (
+                                <div className="absolute right-0 top-full mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-20 py-2 w-48 overflow-hidden">
+                                    <button onClick={() => handleExport('xlsx')} className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-sm font-bold text-slate-700 flex items-center gap-2">
+                                        Export ke Excel (.xlsx)
+                                    </button>
+                                    <button onClick={() => handleExport('csv')} className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-sm font-medium text-slate-700 flex items-center gap-2">
+                                        Export ke CSV
+                                    </button>
+                                    <button onClick={() => handleExport('json')} className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-sm font-medium text-slate-700 flex items-center gap-2">
+                                        Export ke JSON
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -380,7 +514,7 @@ export const GuestManagementPage: React.FC = () => {
                                         <tr key={guest.id} className="hover:bg-slate-50 transition-all duration-200">
                                             <td className="px-4 py-4 text-[12px] font-mono text-slate-500 uppercase font-bold">{guest.checkInCode}</td>
                                             <td className="px-4 py-4">
-                                                <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ring-1 ring-inset ${getTierBadge(guest.tier)}`}>
+                                                <span className={`text - [9px] font - black uppercase tracking - widest px - 2 py - 1 rounded - lg ring - 1 ring - inset ${getTierBadge(guest.tier)} `}>
                                                     {guest.tier === 'reguler' ? 'REG' : guest.tier.toUpperCase()}
                                                 </span>
                                             </td>
@@ -405,8 +539,15 @@ export const GuestManagementPage: React.FC = () => {
                                             </td>
                                             <td className="px-4 py-4">
                                                 <div className="flex items-center justify-center gap-1">
-                                                    <button onClick={() => shareWhatsApp(guest)} className={`p-2 rounded-xl transition-all hover:scale-110 ${guest.sharedAt ? 'bg-emerald-500 text-white' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`} title="Kirim WhatsApp">
+                                                    <button onClick={() => shareWhatsApp(guest)} className={`p - 2 rounded - xl transition - all hover: scale - 110 ${guest.sharedAt ? 'bg-emerald-500 text-white' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'} `} title="Kirim WhatsApp">
                                                         {guest.sharedAt ? <CheckIcon className="w-4 h-4" /> : <MessageSquareIcon className="w-4 h-4" />}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleShowQR(guest)}
+                                                        className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
+                                                        title="QR Code"
+                                                    >
+                                                        <QrCodeIcon className="w-5 h-5" />
                                                     </button>
                                                     <button onClick={() => copyGuestLink(guest)} className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-xl transition-all" title="Salin Link">
                                                         <CopyIcon className="w-4 h-4" />
@@ -441,29 +582,29 @@ export const GuestManagementPage: React.FC = () => {
                             <div className="space-y-4">
                                 <div>
                                     <label className="text-sm font-medium text-slate-700">Nama Tamu *</label>
-                                    <input type="text" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} className="mt-1 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none" placeholder="Nama lengkap" />
+                                    <input type="text" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} className="mt-1 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none text-slate-900" placeholder="Nama lengkap" />
                                 </div>
                                 <div>
                                     <label className="text-sm font-medium text-slate-700">No WhatsApp</label>
                                     <div className="mt-1 flex">
                                         <span className="inline-flex items-center px-3 bg-slate-100 border border-r-0 border-slate-200 rounded-l-xl text-slate-500 text-sm">+62</span>
-                                        <input type="tel" value={formData.phone} onChange={e => setFormData(p => ({ ...p, phone: e.target.value }))} className="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-r-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none" placeholder="81234567890" />
+                                        <input type="tel" value={formData.phone} onChange={e => setFormData(p => ({ ...p, phone: e.target.value }))} className="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-r-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none text-slate-900" placeholder="81234567890" />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-sm font-medium text-slate-700">Alamat</label>
-                                        <input type="text" value={formData.address} onChange={e => setFormData(p => ({ ...p, address: e.target.value }))} className="mt-1 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" placeholder="di tempat" />
+                                        <input type="text" value={formData.address} onChange={e => setFormData(p => ({ ...p, address: e.target.value }))} className="mt-1 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-slate-900" placeholder="di tempat" />
                                     </div>
                                     <div>
                                         <label className="text-sm font-medium text-slate-700">Meja/Kursi</label>
-                                        <input type="text" value={formData.tableNumber} onChange={e => setFormData(p => ({ ...p, tableNumber: e.target.value }))} className="mt-1 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" placeholder="A1" />
+                                        <input type="text" value={formData.tableNumber} onChange={e => setFormData(p => ({ ...p, tableNumber: e.target.value }))} className="mt-1 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-slate-900" placeholder="A1" />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-sm font-medium text-slate-700">Tier</label>
-                                        <select value={formData.tier} onChange={e => setFormData(p => ({ ...p, tier: e.target.value as Guest['tier'] }))} className="mt-1 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                                        <select value={formData.tier} onChange={e => setFormData(p => ({ ...p, tier: e.target.value as Guest['tier'] }))} className="mt-1 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-slate-900">
                                             <option value="reguler">Reguler</option>
                                             <option value="vip">VIP</option>
                                             <option value="vvip">VVIP</option>
@@ -471,7 +612,7 @@ export const GuestManagementPage: React.FC = () => {
                                     </div>
                                     <div>
                                         <label className="text-sm font-medium text-slate-700">Jumlah Tamu</label>
-                                        <input type="number" min={1} value={formData.guestCount} onChange={e => setFormData(p => ({ ...p, guestCount: parseInt(e.target.value) || 1 }))} className="mt-1 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" />
+                                        <input type="number" min={1} value={formData.guestCount} onChange={e => setFormData(p => ({ ...p, guestCount: parseInt(e.target.value) || 1 }))} className="mt-1 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-slate-900" />
                                     </div>
                                 </div>
                             </div>
@@ -497,29 +638,29 @@ export const GuestManagementPage: React.FC = () => {
                             <div className="space-y-4">
                                 <div>
                                     <label className="text-sm font-medium text-slate-700">Nama Tamu *</label>
-                                    <input type="text" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} className="mt-1 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none" />
+                                    <input type="text" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} className="mt-1 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none text-slate-900" />
                                 </div>
                                 <div>
                                     <label className="text-sm font-medium text-slate-700">No WhatsApp</label>
                                     <div className="mt-1 flex">
                                         <span className="inline-flex items-center px-3 bg-slate-100 border border-r-0 border-slate-200 rounded-l-xl text-slate-500 text-sm">+62</span>
-                                        <input type="tel" value={formData.phone} onChange={e => setFormData(p => ({ ...p, phone: e.target.value }))} className="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-r-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none" />
+                                        <input type="tel" value={formData.phone} onChange={e => setFormData(p => ({ ...p, phone: e.target.value }))} className="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-r-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none text-slate-900" />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-sm font-medium text-slate-700">Alamat</label>
-                                        <input type="text" value={formData.address} onChange={e => setFormData(p => ({ ...p, address: e.target.value }))} className="mt-1 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" />
+                                        <input type="text" value={formData.address} onChange={e => setFormData(p => ({ ...p, address: e.target.value }))} className="mt-1 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-slate-900" />
                                     </div>
                                     <div>
                                         <label className="text-sm font-medium text-slate-700">Meja/Kursi</label>
-                                        <input type="text" value={formData.tableNumber} onChange={e => setFormData(p => ({ ...p, tableNumber: e.target.value }))} className="mt-1 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" />
+                                        <input type="text" value={formData.tableNumber} onChange={e => setFormData(p => ({ ...p, tableNumber: e.target.value }))} className="mt-1 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-slate-900" />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-sm font-medium text-slate-700">Tier</label>
-                                        <select value={formData.tier} onChange={e => setFormData(p => ({ ...p, tier: e.target.value as Guest['tier'] }))} className="mt-1 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                                        <select value={formData.tier} onChange={e => setFormData(p => ({ ...p, tier: e.target.value as Guest['tier'] }))} className="mt-1 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-slate-900">
                                             <option value="reguler">Reguler</option>
                                             <option value="vip">VIP</option>
                                             <option value="vvip">VVIP</option>
@@ -527,7 +668,7 @@ export const GuestManagementPage: React.FC = () => {
                                     </div>
                                     <div>
                                         <label className="text-sm font-medium text-slate-700">Jumlah Tamu</label>
-                                        <input type="number" min={1} value={formData.guestCount} onChange={e => setFormData(p => ({ ...p, guestCount: parseInt(e.target.value) || 1 }))} className="mt-1 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" />
+                                        <input type="number" min={1} value={formData.guestCount} onChange={e => setFormData(p => ({ ...p, guestCount: parseInt(e.target.value) || 1 }))} className="mt-1 w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-slate-900" />
                                     </div>
                                 </div>
                             </div>
@@ -553,6 +694,34 @@ export const GuestManagementPage: React.FC = () => {
                     </m.div>
                 )}
             </AnimatePresence>
+
+            <ConfirmationModal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={confirmDeleteGuest}
+                title="Hapus Data Tamu?"
+                message="Data tamu yang dihapus tidak dapat dikembalikan lagi. Anda harus menambahkan ulang jika ingin mengundangnya kembali."
+                confirmText="Hapus Tamu"
+                cancelText="Batal"
+                type="danger"
+                isLoading={isDeleting}
+            />
+
+            <QRModal
+                isOpen={showQRModal}
+                onClose={() => setShowQRModal(false)}
+                guestName={selectedQRGuest?.name || 'Tamu'}
+                url={`https://app.tamuu.id/welcome/${invitationId || 'preview'}/${selectedQRGuest?.id || ''}`}
+                tier={selectedQRGuest?.tier}
+            />
+
+            <ImportModal
+                isOpen={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onDownloadFormat={downloadImportFormat}
+                onConfirm={confirmImport}
+                isImporting={isImporting}
+            />
         </div>
     );
 };

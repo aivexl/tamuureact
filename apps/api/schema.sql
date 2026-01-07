@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS templates (
     slug TEXT,
     thumbnail TEXT,
     category TEXT DEFAULT 'Wedding',
+    type TEXT DEFAULT 'invitation',  -- 'invitation' or 'display'
     zoom REAL DEFAULT 1,
     pan TEXT DEFAULT '{"x": 0, "y": 0}',
     sections TEXT DEFAULT '[]',
