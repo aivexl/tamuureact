@@ -1,46 +1,51 @@
-import React from 'react';
 import { m } from 'framer-motion';
 import { CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useStore } from '../../store/useStore';
 
 const pricingPlans = [
     {
-        name: "Basic",
-        price: 150000,
+        name: "Free",
+        price: 0,
+        originalPrice: null,
+        duration: "per bulan",
         features: [
-            "Aktif 1 bulan",
-            "100+ tema pilihan",
-            "Unlimited tamu",
-            "RSVP & ucapan",
-            "Google Maps",
-            "Musik latar",
+            "1 Undangan Aktif",
+            "Template Dasar",
+            "Buku Tamu Digital",
+            "Integrasi WhatsApp",
+            "Masa Aktif 1 Bulan",
         ],
     },
     {
-        name: "Premium",
-        price: 250000,
+        name: "VIP",
+        price: 99000,
+        originalPrice: 149000,
+        duration: "per tahun",
         popular: true,
         features: [
-            "Aktif 3 bulan",
-            "450+ tema pilihan",
-            "Unlimited tamu",
-            "RSVP & ucapan",
-            "QR Code check-in",
-            "Custom domain",
-            "WhatsApp broadcast",
-            "Priority support",
+            "1 Undangan Aktif",
+            "Semua Template VIP",
+            "Export PDF Full HD",
+            "Hapus Branding Tamuu",
+            "Manajemen RSVP",
+            "Masa Aktif 1 Tahun",
+            "Dukungan Prioritas",
         ],
     },
     {
-        name: "Prioritas",
-        price: 500000,
+        name: "VVIP",
+        price: 199000,
+        originalPrice: 299000,
+        duration: "per tahun",
         features: [
-            "Aktif 6 bulan",
-            "Semua fitur Premium",
-            "Custom theme",
-            "Video invitation",
-            "Live streaming",
-            "Dedicated support",
-            "Export data",
+            "3 Undangan Aktif",
+            "Akses Semua Template",
+            "Export Undangan Video",
+            "Custom Musik/MP3",
+            "White-label (No Brand)",
+            "Masa Aktif 1 Tahun",
+            "Layanan Setup Concierge",
         ],
     },
 ];
@@ -50,6 +55,17 @@ const formatPrice = (price: number) => {
 };
 
 const PricingSection: React.FC = () => {
+    const navigate = useNavigate();
+    const { user } = useStore();
+
+    const handleAction = () => {
+        if (user) {
+            navigate('/upgrade');
+        } else {
+            navigate('/signup');
+        }
+    };
+
     return (
         <section id="pricing" className="max-w-7xl mx-auto px-6 py-24 bg-white">
             <div className="text-center mb-16 space-y-4">
@@ -75,10 +91,19 @@ const PricingSection: React.FC = () => {
                         )}
 
                         <h3 className="text-2xl font-black mb-2 tracking-tight">{plan.name}</h3>
-                        <div className="flex items-baseline flex-wrap gap-1 mb-8">
-                            <span className="text-sm font-bold opacity-60 flex-shrink-0">Rp</span>
-                            <span className="text-3xl sm:text-5xl font-black tracking-tighter leading-none">{formatPrice(plan.price)}</span>
-                            <span className="text-xs sm:text-sm font-medium opacity-60 flex-shrink-0">/acara</span>
+                        <div className="flex flex-col mb-8">
+                            {plan.originalPrice && (
+                                <span className="text-sm font-medium opacity-50 line-through">
+                                    Rp {formatPrice(plan.originalPrice)}
+                                </span>
+                            )}
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-sm font-bold opacity-60 flex-shrink-0">Rp</span>
+                                <span className="text-3xl sm:text-5xl font-black tracking-tighter leading-none">
+                                    {plan.price === 0 ? "0" : formatPrice(plan.price).replace(/,00$/, '').replace(/\.000$/, 'k')}
+                                </span>
+                                <span className="text-xs sm:text-sm font-medium opacity-60 flex-shrink-0">{plan.duration}</span>
+                            </div>
                         </div>
 
                         <div className={`h-[1px] w-full mb-8 ${plan.popular ? 'bg-white/10' : 'bg-slate-200'}`} />
@@ -96,6 +121,7 @@ const PricingSection: React.FC = () => {
                         </ul>
 
                         <button
+                            onClick={handleAction}
                             className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all duration-300 transform active:scale-95 ${plan.popular
                                 ? 'bg-[#FFBF00] text-[#0A1128] hover:bg-[#FFD700]'
                                 : 'bg-[#0A1128] text-white shadow-lg shadow-[#0A1128]/20 hover:bg-slate-800'

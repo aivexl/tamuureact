@@ -32,6 +32,16 @@
             "dependsOn": [
                 "build"
             ]
+        },
+        "deploy:api": {
+            "dependsOn": [
+                "^build"
+            ]
+        },
+        "deploy:bg-remover": {
+            "dependsOn": [
+                "^build"
+            ]
         }
     }
 }

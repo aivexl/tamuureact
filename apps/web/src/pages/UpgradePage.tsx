@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Check, Zap, Crown, Star, ArrowRight } from 'lucide-react';
 import { useStore } from '../store/useStore';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface TierCardProps {
     name: string;
