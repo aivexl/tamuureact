@@ -23,6 +23,37 @@ Platform undangan digital dengan arsitektur multi-domain dan monorepo.
 | `bg-remover` | - | `api.tamuu.id` | Background remover API |
 | `tamuuid-cdn` | `tamuuid-cdn.shafania57.workers.dev` | `cdn.tamuu.id` | CDN worker |
 
+---
+
+## 🗺️ Application Sitemap
+
+### 🌐 Public & Shared Routes (`tamuu.id` & `app.tamuu.id`)
+- `/` - Landing Page (Premium design & animations)
+- `/invitations` - Template Store / Gallery
+- `/login` / `/signup` - Authentication (Supabase Auth)
+- `/onboarding` - Magic Form creation flow (Shared)
+- `/dashboard` - User Dashboard (Invitations, Displays, Profile)
+- `/profile` - User Settings & Account Management
+- `/upgrade` - Pricing Plans & Tier Selection
+- `/billing` - Payment Status & History / Status
+- `/preview/:slug` - Public Invitation Preview (Mobile-optimized)
+- `/terms` / `/privacy` - Legal & Policy pages
+
+### 🚀 App Domain Exclusive (`app.tamuu.id`)
+- `/user/editor/:id` - Invitation Editor (Konva.js Canvas)
+- `/user/display-editor/:id` - Landscape Welcome Display Editor
+- `/guests/:id` - Guest List Management, RSVP, & QR Generator
+- `/wishes` - Management of Guest Wishes/Comments
+- `/tools/background-remover` - AI Background Remover Studio
+- `/admin/dashboard` - System Metrics & Admin Overview
+- `/admin/templates` - System Template Management
+- `/admin/editor/:slug` - Template Builder (System Level)
+
+### 📡 API & Services
+- `api.tamuu.id/v1/...` - Core API (Cloudflare D1 & Workers)
+- `cdn.tamuu.id/assets/...` - Asset CDN (Cloudflare R2)
+- `api.tamuu.id/bg-remover` - BEN2 AI Model API
+
 
 ---
 
@@ -151,7 +182,18 @@ VITE_API_URL=https://api.tamuu.id
 
 ---
 
-## 📝 Notes
+## �️ Management & Tools
+
+| Service | Dashboard Link | Fungsi |
+|---------|----------------|--------|
+| **Cloudflare** | [dash.cloudflare.com](https://dash.cloudflare.com) | Pages, Workers, D1, R2, DNS |
+| **Supabase** | [supabase.com/dashboard](https://supabase.com/dashboard) | Authentication & Auth Config |
+| **Xendit** | [dashboard.xendit.co](https://dashboard.xendit.co) | Payment tracking & API Keys |
+| **GitHub** | [github.com/aivexl/tamuureact](https://github.com/aivexl/tamuureact) | Source Control & CI/CD |
+
+---
+
+## �📝 Notes
 
 - Legacy Vue implementation tersedia di `tamuu-legacy/` sebagai referensi
 - Semua komponen menggunakan TypeScript strict mode

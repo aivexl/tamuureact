@@ -1,11 +1,36 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { CreditCard, History, Zap, Shield, ExternalLink, Calendar } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useStore } from '../store/useStore';
-import { Link } from 'react-router-dom';
+import { billing as billingApi } from '../lib/api';
+import { Loader2, Zap, History, ExternalLink, CreditCard, Shield } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export const BillingPage: React.FC = () => {
-    const { user } = useStore();
+    const navigate = useNavigate();
+    const { user, isAuthenticated } = useStore();
+    const [transactions, setTransactions] = React.useState<any[]>([]);
+    const [isLoading, setIsLoading] = React.useState(true);
+
+    const fetchTransactions = React.useCallback(async () => {
+        if (!user?.id) return;
+        setIsLoading(true);
+        try {
+            const data = await billingApi.listTransactions(user.id);
+            setTransactions(data || []);
+        } catch (err) {
+            console.error('[BillingPage] Fetch error:', err);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [user?.id]);
+
+    React.useEffect(() => {
+        if (!isAuthenticated) {
+            navigate('/login');
+            return;
+        }
+        fetchTransactions();
+    }, [isAuthenticated, navigate, fetchTransactions]);
 
     const tierLabels = {
         free: 'Free Explorer',
@@ -106,14 +131,69 @@ export const BillingPage: React.FC = () => {
                     </div>
 
                     <div className="p-0">
-                        {/* Empty State placeholder */}
-                        <div className="py-20 flex flex-col items-center justify-center text-center px-8">
-                            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4">
-                                <CreditCard className="w-8 h-8 text-slate-300" />
+                        {isLoading ? (
+                            <div className="py-20 flex flex-col items-center justify-center">
+                                <Loader2 className="w-8 h-8 text-indigo-500 animate-spin mb-4" />
+                                <p className="text-slate-400 text-sm font-medium">Memuat riwayat transaksi...</p>
                             </div>
-                            <h4 className="text-slate-900 font-bold mb-1">No invoices yet</h4>
-                            <p className="text-slate-400 text-sm max-w-xs">Once you make a purchase, your invoices will appear here for you to download and manage.</p>
-                        </div>
+                        ) : transactions.length > 0 ? (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="bg-slate-50 text-[10px] uppercase tracking-widest font-black text-slate-400">
+                                            <th className="px-8 py-4">Transaction ID</th>
+                                            <th className="px-6 py-4">Date</th>
+                                            <th className="px-6 py-4">Plan</th>
+                                            <th className="px-6 py-4">Amount</th>
+                                            <th className="px-6 py-4">Status</th>
+                                            <th className="px-8 py-4 text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 italic font-medium">
+                                        {transactions.map((tx) => (
+                                            <tr key={tx.id} className="hover:bg-slate-50 transition-colors">
+                                                <td className="px-8 py-5 text-xs text-slate-400 font-mono">
+                                                    {tx.external_id?.substring(0, 12)}...
+                                                </td>
+                                                <td className="px-6 py-5 text-sm text-slate-600">
+                                                    {new Date(tx.created_at || Date.now()).toLocaleDateString('id-ID')}
+                                                </td>
+                                                <td className="px-6 py-5">
+                                                    <span className="text-xs font-bold uppercase text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
+                                                        {tx.tier}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-5 text-sm font-bold text-slate-900">
+                                                    Rp {tx.amount?.toLocaleString('id-ID')}
+                                                </td>
+                                                <td className="px-6 py-5">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className={`w-2 h-2 rounded-full ${tx.status === 'PAID' ? 'bg-emerald-500' : tx.status === 'PENDING' ? 'bg-amber-500' : 'bg-rose-500'}`} />
+                                                        <span className={`text-[10px] font-black uppercase tracking-tighter ${tx.status === 'PAID' ? 'text-emerald-600' : tx.status === 'PENDING' ? 'text-amber-600' : 'text-rose-600'}`}>
+                                                            {tx.status}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-5 text-right">
+                                                    <button className="text-slate-400 hover:text-indigo-600 transition-colors">
+                                                        <ExternalLink className="w-4 h-4" />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            /* Empty State */
+                            <div className="py-20 flex flex-col items-center justify-center text-center px-8">
+                                <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4">
+                                    <CreditCard className="w-8 h-8 text-slate-300" />
+                                </div>
+                                <h4 className="text-slate-900 font-bold mb-1">No invoices yet</h4>
+                                <p className="text-slate-400 text-sm max-w-xs">Once you make a purchase, your invoices will appear here for you to download and manage.</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 

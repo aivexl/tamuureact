@@ -115,10 +115,10 @@ export const SeamlessCanvas: React.FC = () => {
         // CRITICAL: Capture all data FIRST before any state changes
         const sourceCanvas = orbitCopySource;
         const targetCanvas = sourceCanvas === 'left' ? 'right' : 'left';
-        const sourceOrbit = orbit[sourceCanvas];
-        const elementsToClone = [...(sourceOrbit?.elements || [])]; // Clone the array
-        const bgColor = sourceOrbit.backgroundColor;
-        const bgUrl = sourceOrbit.backgroundUrl;
+        const sourceOrbit = orbit?.[sourceCanvas];
+        const elementsToClone = [...(sourceOrbit?.elements || [])];
+        const bgColor = sourceOrbit?.backgroundColor || 'transparent';
+        const bgUrl = sourceOrbit?.backgroundUrl;
 
         // Orbit canvas width for mirroring calculation
         const ORBIT_WIDTH = 800;
@@ -195,7 +195,7 @@ export const SeamlessCanvas: React.FC = () => {
                     if (activeCanvas === 'main' && activeSection) {
                         el = activeSection.elements.find(layer => layer.id === id);
                     } else if (activeCanvas === 'left' || activeCanvas === 'right') {
-                        el = orbit[activeCanvas].elements.find((layer: Layer) => layer.id === id);
+                        el = orbit?.[activeCanvas]?.elements?.find((layer: Layer) => layer.id === id);
                     }
 
                     if (el) {

@@ -77,7 +77,7 @@ export const Footer: React.FC = () => {
 
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                     <p className="text-slate-300 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-center sm:text-left">
-                        &copy; 2025 Tamuu.id. All rights reserved.
+                        &copy; {new Date().getFullYear()} Tamuu.id. All rights reserved.
                     </p>
                     <div className="flex items-center gap-8">
                         <span className="text-slate-300 text-[10px] font-black uppercase tracking-[0.3em]">Crafted by Unicorn Team</span>

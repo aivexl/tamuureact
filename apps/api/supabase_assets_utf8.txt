@@ -1,0 +1,38 @@
+﻿
+ Ôøà´©Å wrangler 4.54.0 (update available 4.58.0)
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+Resource location: remote 
+
+­ƒîÇ Executing on remote database tamuu-db (cb0a336d-c070-49e6-80d4-c198a2df141d):
+­ƒîÇ To execute on your local development database, remove the --remote flag from your wrangler command.
+­ƒÜú Executed 1 command in 0.24ms
+[
+  {
+    "results": [
+      {
+        "type": "template",
+        "id": "1a5b64f5-fcd3-4824-8c87-5eaa49e853e6",
+        "name": "test template",
+        "url": "https://mqbgpulironhtvzfpzfp.supabase.co/storage/v1/object/public/invitation-assets/thumbnails/thumb_test-template_1766813758137.jpg"
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.2376
+      },
+      "duration": 0.2376,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 151552,
+      "rows_read": 10,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

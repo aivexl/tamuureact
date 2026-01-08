@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo, Suspense, lazy } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { templates as templatesApi, invitations as invitationsApi } from '@/lib/api';
+import { useStore } from '@/store/useStore';
 
 import {
     Search,
@@ -38,6 +39,7 @@ const getIsAppDomain = (): boolean => {
 
 export const InvitationsStorePage: React.FC = () => {
     const { search } = useLocation();
+    const { isAuthenticated } = useStore();
     const queryParams = useMemo(() => new URLSearchParams(search), [search]);
     const isOnboarding = queryParams.get('onboarding') === 'true';
     const onboardingSlug = queryParams.get('slug');
@@ -82,6 +84,13 @@ export const InvitationsStorePage: React.FC = () => {
     }, [templates, selectedCategory, searchQuery]);
 
     const handleUseTemplate = async (templateId: string) => {
+        if (!isAuthenticated) {
+            // Redirect to login with current search params to preserve onboarding context
+            const redirectUrl = encodeURIComponent(window.location.pathname + window.location.search);
+            navigate(`/login?redirect=${redirectUrl}`);
+            return;
+        }
+
         const isAppDomain = getIsAppDomain();
 
         if (isOnboarding) {

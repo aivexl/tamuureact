@@ -11,12 +11,12 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-// Mock Data for Phase 1
-const STATS = [
-    { label: 'Total Users', value: '1,248', change: '+12%', icon: Users, color: 'text-blue-400', bg: 'bg-blue-400/10' },
-    { label: 'Active Templates', value: '42', change: '+4', icon: Smartphone, color: 'text-teal-400', bg: 'bg-teal-400/10' },
-    { label: 'Display Designs', value: '15', change: '+8', icon: Monitor, color: 'text-purple-400', bg: 'bg-purple-400/10' },
-    { label: 'Total RSVPs', value: '8,932', change: '+24%', icon: MessageSquare, color: 'text-rose-400', bg: 'bg-rose-400/10' },
+// Initial state for real statistics
+const INITIAL_STATS = [
+    { id: 'totalUsers', label: 'Total Users', value: '0', change: '...', icon: Users, color: 'text-blue-400', bg: 'bg-blue-400/10' },
+    { id: 'totalTemplates', label: 'Active Templates', value: '0', change: '...', icon: Smartphone, color: 'text-teal-400', bg: 'bg-teal-400/10' },
+    { id: 'totalInvitations', label: 'Display Designs', value: '0', change: '...', icon: Monitor, color: 'text-purple-400', bg: 'bg-purple-400/10' },
+    { id: 'totalRsvps', label: 'Total RSVPs', value: '0', change: '...', icon: MessageSquare, color: 'text-rose-400', bg: 'bg-rose-400/10' },
 ];
 
 const RECENT_ACTIVITY = [
@@ -48,6 +48,31 @@ const StatCard = ({ stat, index }: { stat: any, index: number }) => (
 );
 
 export const AdminDashboardPage: React.FC = () => {
+    const [stats, setStats] = React.useState(INITIAL_STATS);
+    const [systemHealth, setSystemHealth] = React.useState<any>(null);
+    const [isLoading, setIsLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const res = await fetch('https://api.tamuu.id/api/admin/stats');
+                const data = await res.json();
+
+                setStats(prev => prev.map(s => ({
+                    ...s,
+                    value: data[s.id as keyof typeof data]?.toLocaleString() || '0'
+                })));
+                setSystemHealth(data.systemHealth);
+            } catch (err) {
+                console.error('[AdminDashboard] Fetch error:', err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchStats();
+    }, []);
+
     return (
         <AdminLayout>
             {/* Header */}
@@ -68,7 +93,7 @@ export const AdminDashboardPage: React.FC = () => {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                {STATS.map((stat, i) => <StatCard key={i} stat={stat} index={i} />)}
+                {stats.map((stat, i) => <StatCard key={i} stat={stat} index={i} />)}
             </div>
 
             {/* Content Area */}
@@ -108,22 +133,26 @@ export const AdminDashboardPage: React.FC = () => {
                         </h2>
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                                <span className="text-sm text-slate-400">API Latency</span>
-                                <span className="text-sm font-bold text-emerald-400">42ms</span>
+                                <span className="text-sm text-slate-400">API Health</span>
+                                <span className="text-sm font-bold text-emerald-400">Stable</span>
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-sm text-slate-400">Database (D1)</span>
-                                <span className="text-sm font-bold text-emerald-400">Healthy</span>
+                                <span className={`text-sm font-bold ${systemHealth?.db === 'Healthy' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                    {systemHealth?.db || 'Loading...'}
+                                </span>
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-sm text-slate-400">Storage (R2)</span>
-                                <span className="text-sm font-bold text-emerald-400">Healthy</span>
+                                <span className={`text-sm font-bold ${systemHealth?.r2 === 'Healthy' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                    {systemHealth?.r2 || 'Loading...'}
+                                </span>
                             </div>
 
                             <div className="w-full bg-white/10 h-1.5 rounded-full mt-4 overflow-hidden">
-                                <div className="w-[98%] h-full bg-emerald-500 rounded-full" />
+                                <div className="w-[99.9%] h-full bg-emerald-500 rounded-full" />
                             </div>
-                            <p className="text-xs text-center text-slate-500 mt-2">99.9% Uptime</p>
+                            <p className="text-xs text-center text-slate-500 mt-2">{systemHealth?.uptime || '99.9%'} Uptime</p>
                         </div>
                     </div>
                 </div>

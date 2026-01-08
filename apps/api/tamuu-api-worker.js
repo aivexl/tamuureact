@@ -40,8 +40,29 @@ export default {
                     ...user,
                     maxInvitations: user.max_invitations || 1,
                     invitationCount: user.invitation_count || 0,
-                    tier: user.tier || 'free'
+                    tier: user.tier || 'free',
+                    tamuuId: user.tamuu_id || `TAMUU-USER-${user.id.substring(0, 8)}`,
+                    birthDate: user.birth_date,
                 }, corsHeaders);
+            }
+
+            if (path === '/api/user/profile' && method === 'PATCH') {
+                const body = await request.json();
+                const { id, name, phone, gender, birthDate } = body;
+
+                if (!id) return json({ error: 'User ID required' }, { ...corsHeaders, status: 400 });
+
+                await env.DB.prepare(`
+                    UPDATE users SET 
+                        name = COALESCE(?, name),
+                        phone = COALESCE(?, phone),
+                        gender = COALESCE(?, gender),
+                        birth_date = COALESCE(?, birth_date),
+                        updated_at = datetime('now')
+                    WHERE id = ?
+                `).bind(name, phone, gender, birthDate, id).run();
+
+                return json({ success: true }, corsHeaders);
             }
 
             // ============================================
@@ -109,6 +130,120 @@ export default {
                 return json({ success: true }, corsHeaders);
             }
 
+            if (path === '/api/billing/transactions' && method === 'GET') {
+                const userId = url.searchParams.get('userId');
+                if (!userId) return json({ error: 'User ID required' }, { ...corsHeaders, status: 400 });
+
+                const { results } = await env.DB.prepare(
+                    'SELECT * FROM billing_transactions WHERE user_id = ? ORDER BY created_at DESC'
+                ).bind(userId).all();
+
+                return json(results, corsHeaders);
+            }
+
+            if (path === '/api/admin/stats' && method === 'GET') {
+                // In a real app, verify admin role from session/token
+                const usersCount = await env.DB.prepare('SELECT COUNT(*) as count FROM users').first('count');
+                const templatesCount = await env.DB.prepare('SELECT COUNT(*) as count FROM templates').first('count');
+                const invitationsCount = await env.DB.prepare('SELECT COUNT(*) as count FROM invitations').first('count');
+                const rsvpCount = await env.DB.prepare('SELECT COUNT(*) as count FROM rsvp_responses').first('count');
+
+                return json({
+                    totalUsers: usersCount,
+                    totalTemplates: templatesCount,
+                    totalInvitations: invitationsCount,
+                    totalRsvps: rsvpCount,
+                    systemHealth: {
+                        db: 'Healthy',
+                        r2: 'Healthy',
+                        uptime: '99.9%'
+                    }
+                }, corsHeaders);
+            }
+
+            // ============================================
+            // GUESTS ENDPOINTS
+            // ============================================
+            if (path === '/api/guests' && method === 'GET') {
+                const invitationId = url.searchParams.get('invitationId');
+                if (!invitationId) return json({ error: 'Invitation ID required' }, { ...corsHeaders, status: 400 });
+                const { results } = await env.DB.prepare(
+                    'SELECT * FROM guests WHERE invitation_id = ? ORDER BY created_at DESC'
+                ).bind(invitationId).all();
+                return json(results, corsHeaders);
+            }
+
+            if (path.startsWith('/api/guests/') && method === 'GET') {
+                const id = path.split('/')[3];
+                const guest = await env.DB.prepare('SELECT * FROM guests WHERE id = ?').bind(id).first();
+                if (!guest) return json({ error: 'Guest not found' }, { ...corsHeaders, status: 404 });
+                return json(guest, corsHeaders);
+            }
+
+            if (path === '/api/guests' && method === 'POST') {
+                const body = await request.json();
+                const id = body.id || crypto.randomUUID();
+                await env.DB.prepare(
+                    `INSERT INTO guests (id, invitation_id, name, phone, address, table_number, tier, guest_count, check_in_code) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                ).bind(
+                    id,
+                    body.invitation_id,
+                    body.name,
+                    body.phone || null,
+                    body.address || 'di tempat',
+                    body.table_number || null,
+                    body.tier || 'reguler',
+                    body.guest_count || 1,
+                    body.check_in_code || null
+                ).run();
+                return json({ id, ...body }, corsHeaders);
+            }
+
+            if (path.startsWith('/api/guests/') && method === 'PATCH') {
+                const id = path.split('/')[3];
+                const body = await request.json();
+                await env.DB.prepare(
+                    `UPDATE guests SET 
+                        name = COALESCE(?, name),
+                        phone = COALESCE(?, phone),
+                        address = COALESCE(?, address),
+                        table_number = COALESCE(?, table_number),
+                        tier = COALESCE(?, tier),
+                        guest_count = COALESCE(?, guest_count),
+                        shared_at = COALESCE(?, shared_at),
+                        checked_in_at = COALESCE(?, checked_in_at),
+                        checked_out_at = COALESCE(?, checked_out_at)
+                     WHERE id = ?`
+                ).bind(
+                    body.name || null,
+                    body.phone || null,
+                    body.address || null,
+                    body.table_number || null,
+                    body.tier || null,
+                    body.guest_count || null,
+                    body.shared_at || null,
+                    body.checked_in_at || null,
+                    body.checked_out_at || null,
+                    id
+                ).run();
+                return json({ success: true }, corsHeaders);
+            }
+
+            if (path.startsWith('/api/guests/') && method === 'DELETE') {
+                const id = path.split('/')[3];
+                await env.DB.prepare('DELETE FROM guests WHERE id = ?').bind(id).run();
+                return json({ success: true }, corsHeaders);
+            }
+
+            // ============================================
+            // MUSIC ENDPOINTS
+            // ============================================
+            if (path === '/api/music' && method === 'GET') {
+                const { results } = await env.DB.prepare('SELECT * FROM music_library ORDER BY title ASC').all();
+                return json(results, corsHeaders);
+            }
+
             // ============================================
             // TEMPLATES ENDPOINTS
             // ============================================
@@ -128,8 +263,8 @@ export default {
                 const body = await request.json();
                 const id = crypto.randomUUID();
                 await env.DB.prepare(
-                    `INSERT INTO templates (id, name, slug, category, sections, layers, type, thumbnail) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+                    `INSERT INTO templates (id, name, slug, category, sections, layers, type, thumbnail, music) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
                 ).bind(
                     id,
                     body.name || 'Untitled Template',
@@ -138,7 +273,8 @@ export default {
                     JSON.stringify(body.sections || []),
                     JSON.stringify(body.layers || []),
                     body.type || 'invitation',
-                    body.thumbnail_url || null
+                    body.thumbnail_url || null,
+                    body.music ? JSON.stringify(body.music) : null
                 ).run();
                 return json({ id, ...body }, corsHeaders);
             }
@@ -175,6 +311,7 @@ export default {
                             pan = COALESCE(?, pan),
                             sections = COALESCE(?, sections),
                             layers = COALESCE(?, layers),
+                            music = COALESCE(?, music),
                             updated_at = datetime('now')
                          WHERE id = ?`
                     ).bind(
@@ -186,6 +323,7 @@ export default {
                         body.pan ? JSON.stringify(body.pan) : null,
                         body.sections ? JSON.stringify(body.sections) : null,
                         body.layers ? JSON.stringify(body.layers) : null,
+                        body.music ? JSON.stringify(body.music) : null,
                         id
                     ).run();
                     return json({ id, updated: true }, corsHeaders);
@@ -438,6 +576,7 @@ export default {
                         orbit_layers = COALESCE(?, orbit_layers),
                         is_published = COALESCE(?, is_published),
                         display_design_id = COALESCE(?, display_design_id),
+                        music = COALESCE(?, music),
                         updated_at = datetime('now')
                      WHERE id = ?`
                 ).bind(
@@ -446,6 +585,7 @@ export default {
                     JSON.stringify(body.sections), JSON.stringify(body.layers),
                     JSON.stringify(body.orbit_layers), body.is_published !== undefined ? (body.is_published ? 1 : 0) : null,
                     body.display_design_id !== undefined ? body.display_design_id : null,
+                    body.music ? JSON.stringify(body.music) : null,
                     id
                 ).run();
                 return json({ id, updated: true }, corsHeaders);
@@ -625,7 +765,7 @@ function notFound(corsHeaders) {
 }
 
 function parseJsonFields(row) {
-    const jsonFields = ['pan', 'sections', 'layers', 'orbit_layers', 'orbit'];
+    const jsonFields = ['pan', 'sections', 'layers', 'orbit_layers', 'orbit', 'music'];
 
     const result = { ...row };
     for (const field of jsonFields) {

@@ -88,6 +88,18 @@ export const Navbar: React.FC = () => {
     const isAppDomain = window.location.hostname.startsWith('app.') ||
         window.location.hostname.includes('tamuu-app');
 
+    const handleNavClick = (e: React.MouseEvent, path: string) => {
+        if (path.startsWith('/#')) {
+            const id = path.split('#')[1];
+            const element = document.getElementById(id);
+            if (element) {
+                e.preventDefault();
+                element.scrollIntoView({ behavior: 'smooth' });
+                setIsMobileMenuOpen(false);
+            }
+        }
+    };
+
     return (
         <nav
             className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-700 ease-in-out px-4 md:px-8 ${isScrolled || isAppRoute
@@ -133,16 +145,30 @@ export const Navbar: React.FC = () => {
                 {!isAppRoute && (
                     <div className="hidden lg:flex items-center gap-6">
                         {navLinks.map((link) => (
-                            <Link
-                                key={link.name}
-                                to={link.path}
-                                className={`text-sm font-semibold transition-colors duration-200 ${isDarkTheme
-                                    ? 'text-slate-600 hover:text-rose-600'
-                                    : 'text-white/90 hover:text-white'
-                                    }`}
-                            >
-                                {link.name}
-                            </Link>
+                            link.path.startsWith('/#') ? (
+                                <a
+                                    key={link.name}
+                                    href={link.path}
+                                    onClick={(e) => handleNavClick(e, link.path)}
+                                    className={`text-sm font-semibold transition-colors duration-200 cursor-pointer ${isDarkTheme
+                                        ? 'text-slate-600 hover:text-rose-600'
+                                        : 'text-white/90 hover:text-white'
+                                        }`}
+                                >
+                                    {link.name}
+                                </a>
+                            ) : (
+                                <Link
+                                    key={link.name}
+                                    to={link.path}
+                                    className={`text-sm font-semibold transition-colors duration-200 ${isDarkTheme
+                                        ? 'text-slate-600 hover:text-rose-600'
+                                        : 'text-white/90 hover:text-white'
+                                        }`}
+                                >
+                                    {link.name}
+                                </Link>
+                            )
                         ))}
                     </div>
                 )}
@@ -161,8 +187,14 @@ export const Navbar: React.FC = () => {
                                 >
                                     Masuk
                                 </Link>
-                                <Link
-                                    to="/onboarding"
+                                <button
+                                    onClick={() => {
+                                        if (isAuthenticated) {
+                                            navigate('/onboarding');
+                                        } else {
+                                            navigate('/login?redirect=/onboarding');
+                                        }
+                                    }}
                                     className={`group relative inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${isDarkTheme
                                         ? 'bg-[#0A1128] text-white shadow-xl shadow-slate-200 hover:bg-rose-600 hover:shadow-rose-100'
                                         : 'bg-white text-[#0A1128] shadow-xl shadow-rose-950/20 hover:bg-rose-50'
@@ -170,7 +202,7 @@ export const Navbar: React.FC = () => {
                                 >
                                     Buat Undangan
                                     <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
-                                </Link>
+                                </button>
                             </div>
                         )
                     ) : (
@@ -279,17 +311,31 @@ export const Navbar: React.FC = () => {
                         >
                             <div className="flex flex-col gap-5">
                                 {navLinks.map((link) => (
-                                    <Link
-                                        key={link.name}
-                                        to={link.path}
-                                        className={`text-lg font-bold px-4 py-2 rounded-xl transition-all ${isDarkTheme
-                                            ? 'text-slate-900 hover:bg-slate-50'
-                                            : 'text-white hover:bg-white/10'
-                                            }`}
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                        {link.name}
-                                    </Link>
+                                    link.path.startsWith('/#') ? (
+                                        <a
+                                            key={link.name}
+                                            href={link.path}
+                                            onClick={(e) => handleNavClick(e, link.path)}
+                                            className={`text-lg font-bold px-4 py-2 rounded-xl transition-all ${isDarkTheme
+                                                ? 'text-slate-900 hover:bg-slate-50'
+                                                : 'text-white hover:bg-white/10'
+                                                }`}
+                                        >
+                                            {link.name}
+                                        </a>
+                                    ) : (
+                                        <Link
+                                            key={link.name}
+                                            to={link.path}
+                                            className={`text-lg font-bold px-4 py-2 rounded-xl transition-all ${isDarkTheme
+                                                ? 'text-slate-900 hover:bg-slate-50'
+                                                : 'text-white hover:bg-white/10'
+                                                }`}
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            {link.name}
+                                        </Link>
+                                    )
                                 ))}
 
                                 <div className={`h-[1px] my-1 ${isDarkTheme ? 'bg-slate-100' : 'bg-white/5'}`} />
@@ -307,16 +353,22 @@ export const Navbar: React.FC = () => {
                                             >
                                                 Masuk
                                             </Link>
-                                            <Link
-                                                to="/onboarding"
+                                            <button
+                                                onClick={() => {
+                                                    setIsMobileMenuOpen(false);
+                                                    if (isAuthenticated) {
+                                                        navigate('/onboarding');
+                                                    } else {
+                                                        navigate('/login?redirect=/onboarding');
+                                                    }
+                                                }}
                                                 className={`text-center py-3 font-extrabold rounded-xl shadow-lg transition-all ${isDarkTheme
                                                     ? 'bg-[#0A1128] text-white shadow-[#0A1128]/20'
                                                     : 'bg-white text-[#0A1128] shadow-white/10'
                                                     }`}
-                                                onClick={() => setIsMobileMenuOpen(false)}
                                             >
                                                 Buat Undangan
-                                            </Link>
+                                            </button>
                                         </>
                                     ) : (
                                         <div className={`p-4 rounded-2xl flex items-center gap-4 ${isDarkTheme ? 'bg-slate-50' : 'bg-white/5'}`}>
@@ -337,6 +389,7 @@ export const Navbar: React.FC = () => {
                     )}
                 </AnimatePresence>
             )}
+
         </nav>
     );
 };

@@ -30,7 +30,7 @@ export const useExportVideo = (): UseExportVideoResult => {
 
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const chunksRef = useRef<Blob[]>([]);
-    const recordingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const recordingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const stopRecording = useCallback(() => {
         if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {

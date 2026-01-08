@@ -45,6 +45,8 @@ const AdminDisplayPreviewPage = lazy(() => import('./pages/AdminDisplayPreviewPa
 const GuestScannerPage = lazy(() => import('./pages/GuestScannerPage').then(m => ({ default: m.GuestScannerPage })));
 const UpgradePage = lazy(() => import('./pages/UpgradePage').then(m => ({ default: m.UpgradePage })));
 const BillingPage = lazy(() => import('./pages/BillingPage').then(m => ({ default: m.BillingPage })));
+const TermsPage = lazy(() => import('./pages/TermsPage').then(m => ({ default: m.TermsPage })));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then(m => ({ default: m.PrivacyPage })));
 
 
 const LoadingFallback = () => (
@@ -104,16 +106,27 @@ const App: React.FC = () => {
                         <Route path="/preview/:slug" element={<PreviewPage />} />
                         <Route path="/upgrade" element={<MainLayout><UpgradePage /></MainLayout>} />
                         <Route path="/billing" element={<MainLayout><BillingPage /></MainLayout>} />
+                        <Route path="/terms" element={<MainLayout><TermsPage /></MainLayout>} />
+                        <Route path="/privacy" element={<MainLayout><PrivacyPage /></MainLayout>} />
 
                         {/* ============================================ */}
                         {/* APP ROUTES - Only on app.tamuu.id */}
                         {/* ============================================ */}
+                        <Route path="/onboarding" element={<MainLayout><OnboardingPage /></MainLayout>} />
+                        <Route path="/dashboard" element={<MainLayout><DashboardPage /></MainLayout>} />
+                        <Route path="/profile" element={<MainLayout><ProfilePage /></MainLayout>} />
+                        <Route path="/billing" element={<MainLayout><BillingPage /></MainLayout>} />
+                        <Route path="/upgrade" element={<MainLayout><UpgradePage /></MainLayout>} />
+                        <Route path="/guests" element={<MainLayout><GuestManagementPage /></MainLayout>} />
+                        <Route path="/guests/:invitationId" element={<MainLayout><GuestManagementPage /></MainLayout>} />
+                        <Route path="/wishes" element={<MainLayout><GuestWishesPage /></MainLayout>} />
+                        <Route path="/tools/background-remover" element={<MainLayout><BackgroundRemoverPage /></MainLayout>} />
+
+                        {/* ============================================ */}
+                        {/* APP ROUTES - Guarded by Domain/Auth logic in components if needed */}
+                        {/* ============================================ */}
                         {isAppDomain ? (
                             <>
-                                {/* User Profile */}
-                                <Route path="/profile" element={<MainLayout><ProfilePage /></MainLayout>} />
-
-                                <Route path="/dashboard" element={<MainLayout><DashboardPage /></MainLayout>} />
                                 {/* Admin Routes */}
                                 <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
                                 <Route path="/admin/templates" element={<AdminTemplatesPage />} />
@@ -127,32 +140,18 @@ const App: React.FC = () => {
                                 <Route path="/user/editor/:id" element={<UserEditorPage />} />
                                 <Route path="/user/display-editor/:id" element={<UserEditorPage mode="welcome" />} />
 
-                                {/* Admin Routes */}
-                                <Route path="/admin/templates" element={<MainLayout><AdminTemplatesPage /></MainLayout>} />
-
-                                {/* Tools */}
-                                <Route path="/tools/background-remover" element={<MainLayout><BackgroundRemoverPage /></MainLayout>} />
-
                                 {/* Onboarding & Guest Management */}
-                                <Route path="/onboarding" element={<MainLayout><OnboardingPage /></MainLayout>} />
-                                <Route path="/guests" element={<MainLayout><GuestManagementPage /></MainLayout>} />
-                                <Route path="/guests/:invitationId" element={<MainLayout><GuestManagementPage /></MainLayout>} />
-                                <Route path="/wishes" element={<MainLayout><GuestWishesPage /></MainLayout>} />
                                 <Route path="/welcome/:invitationId/:guestId" element={<GuestWelcomePage />} />
                                 <Route path="/display/:slug" element={<GuestWelcomeDisplay />} />
                                 <Route path="/guests/scan/:id" element={<GuestScannerPage />} />
                             </>
 
                         ) : (
-                            // Redirect app routes to landing on public domain
+                            // Public domain specific fallbacks/redirects
                             <>
-                                <Route path="/profile" element={<Navigate to="/" replace />} />
                                 <Route path="/admin/*" element={<Navigate to="/" replace />} />
                                 <Route path="/editor/*" element={<Navigate to="/" replace />} />
                                 <Route path="/user/*" element={<Navigate to="/" replace />} />
-                                <Route path="/upgrade" element={<MainLayout><UpgradePage /></MainLayout>} />
-                                <Route path="/billing" element={<MainLayout><BillingPage /></MainLayout>} />
-                                <Route path="/tools/*" element={<Navigate to="/" replace />} />
                             </>
                         )}
 

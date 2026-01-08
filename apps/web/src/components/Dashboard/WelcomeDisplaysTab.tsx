@@ -2,22 +2,26 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { m } from 'framer-motion';
 import { userDisplayDesigns } from '@/lib/api';
-import { Loader2, Plus, Monitor, Edit3, Trash2, ExternalLink, Settings, Copy } from 'lucide-react';
+import { useStore } from '@/store/useStore';
+import { Loader2, Plus, Monitor, Edit3, Trash2, ExternalLink } from 'lucide-react';
 
 export const WelcomeDisplaysTab: React.FC = () => {
+    const { user } = useStore();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [designs, setDesigns] = useState<any[]>([]);
     const [creating, setCreating] = useState(false);
 
     useEffect(() => {
-        loadDesigns();
-    }, []);
+        if (user?.id) {
+            loadDesigns();
+        }
+    }, [user?.id]);
 
     const loadDesigns = async () => {
         try {
             setLoading(true);
-            const res = await userDisplayDesigns.list();
+            const res = await userDisplayDesigns.list(user?.id);
             if (Array.isArray(res)) {
                 setDesigns(res);
             }
@@ -29,10 +33,11 @@ export const WelcomeDisplaysTab: React.FC = () => {
     };
 
     const handleCreateNew = async () => {
+        if (!user?.id) return;
         try {
             setCreating(true);
             const newDesign = await userDisplayDesigns.create({
-                user_id: 'default-user', // Dummy ID for now
+                user_id: user.id,
                 name: 'Desain Layar Baru',
                 thumbnail_url: undefined,
                 sections: [], // Empty initially

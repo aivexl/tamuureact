@@ -12,6 +12,12 @@ interface AuthModalProps {
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode = 'login' }) => {
     const { setLoading, isLoading, setUser, setError } = useStore();
+    const [internalMode, setInternalMode] = React.useState<'login' | 'signup'>(mode);
+
+    // Sync internal mode if prop changes
+    React.useEffect(() => {
+        setInternalMode(mode);
+    }, [mode, isOpen]);
 
     const handleAuth = async (data: any) => {
         setLoading(true);
@@ -71,17 +77,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode = 'l
                                 <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364-.707.707M6.343 17.657l-.707.707m0-12.728.707.707m11.314 11.314.707.707M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" /></svg>
                             </div>
                             <h3 className="text-2xl font-black text-white tracking-tight mb-2">
-                                {mode === 'login' ? 'Masuk ke Tamuu' : 'Gabung Bersama Kami'}
+                                {internalMode === 'login' ? 'Masuk ke Tamuu' : 'Gabung Bersama Kami'}
                             </h3>
                             <p className="text-white/40 text-sm font-medium">
-                                Silakan {mode === 'login' ? 'masuk' : 'daftar'} untuk melanjutkan.
+                                Silakan {internalMode === 'login' ? 'masuk' : 'daftar'} untuk melanjutkan.
                             </p>
                         </div>
 
-                        <AuthForm mode={mode} onSubmit={handleAuth} isLoading={isLoading} />
+                        <AuthForm mode={internalMode} onSubmit={handleAuth} isLoading={isLoading} />
 
-                        <div className="mt-8 pt-8 border-t border-white/5 text-center">
-                            <p className="text-xs text-white/20 font-bold uppercase tracking-widest">
+                        <div className="mt-8 pt-8 border-t border-white/5 text-center space-y-4">
+                            <button
+                                onClick={() => setInternalMode(internalMode === 'login' ? 'signup' : 'login')}
+                                className="text-xs font-bold text-white/40 hover:text-premium-accent transition-colors uppercase tracking-[0.2em]"
+                            >
+                                {internalMode === 'login' ? 'Belum punya akun? Daftar' : 'Sudah punya akun? Masuk'}
+                            </button>
+                            <p className="text-[10px] text-white/20 font-black uppercase tracking-widest block">
                                 Premium Digital Invitation Platform
                             </p>
                         </div>

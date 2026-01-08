@@ -35,7 +35,10 @@ export const LoginPage: React.FC = () => {
                 invitationCount: 0
             });
 
-            navigate('/dashboard');
+            // Handle redirect if present
+            const searchParams = new URLSearchParams(window.location.search);
+            const redirect = searchParams.get('redirect') || '/dashboard';
+            navigate(redirect);
         } catch (err) {
             setError('Email atau password salah. Silakan coba lagi.');
         } finally {

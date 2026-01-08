@@ -1,23 +1,10 @@
 import React, { useState } from 'react';
-import { m } from 'framer-motion';
+import { useStore } from '../store/useStore';
+import { useProfileStore } from '../store/useProfileStore';
+import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
+import { motion as m } from 'framer-motion';
 import { useSEO } from '../hooks/useSEO';
-
-// ============================================
-// DUMMY USER DATA (Replace with auth later)
-// ============================================
-const DUMMY_USER = {
-    id: 'usr_premium_001',
-    tamuuId: 'TAMUU-2025-ANISA-7X9K',
-    email: 'anisa.rahma@gmail.com',
-    name: 'Anisa Rahma Putri',
-    phone: '+62 812 3456 7890',
-    avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&auto=format&fit=crop&crop=face&q=80',
-    gender: 'female' as 'male' | 'female' | '',
-    birthDate: '1995-06-15',
-    plan: 'premium' as 'free' | 'basic' | 'premium' | 'priority',
-    subscriptionStart: '2025-06-15',
-    subscriptionEnd: '2026-06-15',
-};
 
 // ============================================
 // INLINE SVG ICONS (Zero dependency)
@@ -93,30 +80,60 @@ const ExternalLinkIcon = ({ className }: { className?: string }) => (
 // ============================================
 const getTierConfig = (plan: string) => {
     const configs: Record<string, { label: string; bgClass: string; textClass: string }> = {
-        free: { label: 'FREE', bgClass: 'bg-slate-100', textClass: 'text-slate-700 border-slate-300' },
-        basic: { label: 'BASIC', bgClass: 'bg-blue-100', textClass: 'text-blue-700 border-blue-300' },
-        premium: { label: 'PREMIUM', bgClass: 'bg-purple-100', textClass: 'text-purple-700 border-purple-300' },
-        priority: { label: 'PRIORITY', bgClass: 'bg-amber-100', textClass: 'text-amber-700 border-amber-300' },
+        free: { label: 'FREE EXPLORER', bgClass: 'bg-slate-100', textClass: 'text-slate-700 border-slate-200' },
+        vip: { label: 'VIP PREMIERE', bgClass: 'bg-indigo-100', textClass: 'text-indigo-700 border-indigo-200' },
+        vvip: { label: 'VVIP EXCLUSIVE', bgClass: 'bg-amber-100', textClass: 'text-amber-700 border-amber-200' },
     };
-    return configs[plan] || configs.free;
+    return configs[plan.toLowerCase()] || configs.free;
 };
 
 // ============================================
 // MAIN PROFILE PAGE COMPONENT
 // ============================================
 export const ProfilePage: React.FC = () => {
+    const navigate = useNavigate();
+    const { user, isAuthenticated } = useStore();
+    const { profile, fetchProfile, updateProfile, isLoading: isStoreLoading } = useProfileStore();
+
     const [profileData, setProfileData] = useState({
-        name: DUMMY_USER.name,
-        phone: DUMMY_USER.phone,
-        gender: DUMMY_USER.gender,
-        birthDate: DUMMY_USER.birthDate,
+        name: '',
+        phone: '',
+        gender: '' as 'male' | 'female' | '',
+        birthDate: '',
     });
+
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
     const [copySuccess, setCopySuccess] = useState(false);
     const [isHoveringTamuuId, setIsHoveringTamuuId] = useState(false);
 
-    const tierConfig = getTierConfig(DUMMY_USER.plan);
+    // Redirect if not authenticated
+    React.useEffect(() => {
+        if (!isAuthenticated) {
+            navigate('/login');
+        }
+    }, [isAuthenticated, navigate]);
+
+    // Initial fetch
+    React.useEffect(() => {
+        if (user?.email) {
+            fetchProfile(user.email);
+        }
+    }, [user?.email, fetchProfile]);
+
+    // Sync local form with store profile
+    React.useEffect(() => {
+        if (profile) {
+            setProfileData({
+                name: profile.name || '',
+                phone: profile.phone || '',
+                gender: (profile.gender as 'male' | 'female' | '') || '',
+                birthDate: profile.birthDate || '',
+            });
+        }
+    }, [profile]);
+
+    const tierConfig = getTierConfig(profile?.plan || 'free');
 
     useSEO({
         title: 'Account Settings - Tamuu',
@@ -130,22 +147,37 @@ export const ProfilePage: React.FC = () => {
     const handleSave = async () => {
         setIsSaving(true);
         setSaveSuccess(false);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        const success = await updateProfile(profileData);
+
         setIsSaving(false);
-        setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000);
+        if (success) {
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 3000);
+        }
     };
 
     const copyTamuuId = async () => {
+        if (!profile?.tamuuId) return;
         try {
-            await navigator.clipboard.writeText(DUMMY_USER.tamuuId);
+            await navigator.clipboard.writeText(profile.tamuuId);
             setCopySuccess(true);
             setTimeout(() => setCopySuccess(false), 2000);
         } catch (err) {
             console.error('Failed to copy:', err);
         }
     };
+
+    if (isStoreLoading && !profile) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4">
+                <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
+                <p className="text-slate-400 font-medium animate-pulse">Synchronizing Identity...</p>
+            </div>
+        );
+    }
+
+    if (!profile) return null;
 
     return (
         <div className="min-h-screen bg-slate-50 pt-20 pb-20 px-4 sm:px-6 lg:px-8">
@@ -172,21 +204,21 @@ export const ProfilePage: React.FC = () => {
                         <div className="flex items-center gap-6 mb-8">
                             <div className="relative">
                                 <div className="w-24 h-24 rounded-full bg-indigo-100 flex items-center justify-center border-4 border-white shadow-md overflow-hidden">
-                                    {DUMMY_USER.avatarUrl ? (
-                                        <img src={DUMMY_USER.avatarUrl} alt={DUMMY_USER.name} className="w-full h-full object-cover" />
+                                    {profile.avatarUrl ? (
+                                        <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full object-cover" />
                                     ) : (
                                         <UserIcon className="w-10 h-10 text-indigo-500" />
                                     )}
                                 </div>
                             </div>
                             <div>
-                                <h2 className="text-xl font-semibold text-slate-900">{DUMMY_USER.name}</h2>
+                                <h2 className="text-xl font-semibold text-slate-900">{profile.name || 'Set your name'}</h2>
                                 <div className="flex items-center gap-2 mt-1">
                                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border ${tierConfig.bgClass} ${tierConfig.textClass}`}>
                                         {tierConfig.label}
                                     </span>
                                     <span className="text-slate-400">•</span>
-                                    <span className="text-slate-500 text-sm">{DUMMY_USER.email}</span>
+                                    <span className="text-slate-500 text-sm">{profile.email}</span>
                                 </div>
                             </div>
                         </div>
@@ -204,11 +236,11 @@ export const ProfilePage: React.FC = () => {
                                             <div className="flex items-center gap-1.5">
                                                 <span className="text-xs text-slate-500">Berakhir pada:</span>
                                                 <span className="text-sm font-bold text-indigo-700">
-                                                    {new Date(DUMMY_USER.subscriptionEnd).toLocaleDateString('id-ID', {
+                                                    {profile.expires_at ? new Date(profile.expires_at).toLocaleDateString('id-ID', {
                                                         day: 'numeric',
                                                         month: 'long',
                                                         year: 'numeric'
-                                                    })}
+                                                    }) : 'N/A'}
                                                 </span>
                                             </div>
                                             <div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-slate-200" />
@@ -320,7 +352,7 @@ export const ProfilePage: React.FC = () => {
                                         <MailIcon className="w-4 h-4" />
                                     </div>
                                     <input
-                                        value={DUMMY_USER.email}
+                                        value={profile.email}
                                         disabled
                                         className="block w-full pl-10 pr-3 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed text-sm"
                                     />
@@ -340,7 +372,7 @@ export const ProfilePage: React.FC = () => {
                                         <ShieldIcon className="w-4 h-4" />
                                     </div>
                                     <input
-                                        value={DUMMY_USER.tamuuId}
+                                        value={profile.tamuuId}
                                         disabled
                                         className="block w-full pl-10 pr-12 py-2.5 bg-gradient-to-r from-slate-50 to-indigo-50 border border-indigo-100 rounded-xl text-indigo-700 font-mono text-sm cursor-default tracking-wide"
                                     />

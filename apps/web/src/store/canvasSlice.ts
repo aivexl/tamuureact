@@ -10,6 +10,13 @@ export interface CanvasState {
     thumbnailUrl?: string; // Optional thumbnail URL
     templateType: 'invitation' | 'display';
     isTemplate: boolean;
+    music?: {
+        id: string;
+        url: string;
+        title: string;
+        artist: string;
+        source_type: 'library' | 'gdrive';
+    };
     setId: (id: string) => void;
     setThumbnailUrl: (url: string) => void;
     setProjectName: (name: string) => void;
@@ -20,6 +27,7 @@ export interface CanvasState {
     setCanvasTransform: (transform: { x: number; y: number; zoom: number }) => void;
     setTemplateType: (type: 'invitation' | 'display') => void;
     setIsTemplate: (isTemplate: boolean) => void;
+    setMusic: (music: CanvasState['music']) => void;
 }
 
 export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
@@ -32,6 +40,7 @@ export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
     id: undefined,
     templateType: 'invitation',
     isTemplate: false,
+    music: undefined,
     setZoom: (zoom) => set({ zoom }),
     setPan: (pan) => set({ pan }),
     setBackgroundColor: (backgroundColor) => set({ backgroundColor }),
@@ -42,4 +51,5 @@ export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
     setCanvasTransform: ({ x, y, zoom }) => set({ pan: { x, y }, zoom }),
     setTemplateType: (templateType) => set({ templateType }),
     setIsTemplate: (isTemplate) => set({ isTemplate }),
+    setMusic: (music) => set({ music }),
 });

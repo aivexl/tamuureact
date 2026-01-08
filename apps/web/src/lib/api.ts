@@ -218,8 +218,113 @@ export const storage = {
 };
 
 // ============================================
-// HEALTH CHECK
+// BILLING API
 // ============================================
+export const billing = {
+    async createInvoice(data: { userId: string; tier: string; amount: number; email: string }) {
+        const res = await fetch(`${API_BASE}/api/billing/create-invoice`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error('Failed to create invoice');
+        return res.json();
+    },
+
+    async listTransactions(userId: string) {
+        const res = await fetch(`${API_BASE}/api/billing/transactions?userId=${userId}`);
+        if (!res.ok) throw new Error('Failed to fetch transactions');
+        return res.json();
+    }
+};
+
+// ============================================
+// USERS API
+// ============================================
+export const users = {
+    async getMe(email: string) {
+        const res = await fetch(`${API_BASE}/api/auth/me?email=${email}`);
+        if (!res.ok) throw new Error('Failed to fetch user data');
+        return res.json();
+    },
+
+    async updateProfile(data: { id: string; name?: string; phone?: string; gender?: string; birthDate?: string }) {
+        const res = await fetch(`${API_BASE}/api/user/profile`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error('Failed to update profile');
+        return res.json();
+    }
+};
+
+// ============================================
+// GUESTS API
+// ============================================
+export const guests = {
+    async list(invitationId: string) {
+        const res = await fetch(`${API_BASE}/api/guests?invitationId=${invitationId}`);
+        if (!res.ok) throw new Error('Failed to fetch guests');
+        return res.json();
+    },
+
+    async get(id: string) {
+        const res = await fetch(`${API_BASE}/api/guests/${id}`);
+        if (!res.ok) throw new Error('Failed to fetch guest');
+        return res.json();
+    },
+
+    async create(data: { invitation_id: string; name: string; phone?: string; address?: string; table_number?: string; tier?: string; guest_count?: number; check_in_code?: string }) {
+        const res = await fetch(`${API_BASE}/api/guests`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error('Failed to create guest');
+        return res.json();
+    },
+
+    async update(id: string, data: any) {
+        const res = await fetch(`${API_BASE}/api/guests/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error('Failed to update guest');
+        return res.json();
+    },
+
+    async delete(id: string) {
+        const res = await fetch(`${API_BASE}/api/guests/${id}`, {
+            method: 'DELETE'
+        });
+        if (!res.ok) throw new Error('Failed to delete guest');
+        return res.json();
+    }
+};
+
+// ============================================
+// MUSIC API
+// ============================================
+export const music = {
+    async list() {
+        const res = await fetch(`${API_BASE}/api/music`);
+        if (!res.ok) throw new Error('Failed to fetch music library');
+        return res.json();
+    }
+};
+
+// ============================================
+// ADMIN API
+// ============================================
+export const admin = {
+    async getStats() {
+        const res = await fetch(`${API_BASE}/api/admin/stats`);
+        if (!res.ok) throw new Error('Failed to fetch admin stats');
+        return res.json();
+    }
+};
 export async function healthCheck() {
     const res = await fetch(`${API_BASE}/api/health`);
     return res.json();
@@ -232,5 +337,10 @@ export default {
     userDisplayDesigns,
     rsvp,
     storage,
+    users,
+    billing,
+    guests,
+    music,
+    admin,
     healthCheck
 };

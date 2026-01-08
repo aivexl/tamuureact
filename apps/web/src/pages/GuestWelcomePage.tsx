@@ -4,14 +4,7 @@ import { m } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { useSEO } from '../hooks/useSEO';
 
-// Dummy data fallback (in real app, use API)
-const DUMMY_GUESTS_DATA: Record<string, any> = {
-    '1': { name: 'Budi Santoso', tableNumber: 'A1', tier: 'vip', paxi: 2 },
-    '2': { name: 'Siti Rahma', tableNumber: 'A2', tier: 'vvip', paxi: 3 },
-    '3': { name: 'Ahmad Hidayat', tableNumber: 'B1', tier: 'reguler', paxi: 1 },
-    '4': { name: 'Dewi Lestari', tableNumber: 'B2', tier: 'reguler', paxi: 2 },
-    '5': { name: 'Rizki Pratama', tableNumber: 'C1', tier: 'vip', paxi: 4 },
-};
+import { guests as guestsApi } from '../lib/api';
 
 export const GuestWelcomePage: React.FC = () => {
     const { invitationId, guestId } = useParams<{ invitationId: string; guestId: string }>();
@@ -26,20 +19,28 @@ export const GuestWelcomePage: React.FC = () => {
     useEffect(() => {
         // Simulate API fetch
         const loadGuest = async () => {
-            // In a real scenario, fetch from: /api/invitations/:invitationId/guests/:guestId
-            // For now, use the dummy data or query params if provided
-            await new Promise(r => setTimeout(r, 1000));
+            if (!guestId) return;
+            try {
+                const data = await guestsApi.get(guestId);
+                // Map snake_case from DB
+                const mappedGuest = {
+                    ...data,
+                    guestCount: data.guest_count || 1,
+                    tableNumber: data.table_number || '-',
+                };
+                setGuest(mappedGuest);
 
-            // Check if guestId exists in dummy data (string comparison)
-            if (guestId && DUMMY_GUESTS_DATA[guestId]) {
-                setGuest(DUMMY_GUESTS_DATA[guestId]);
-            } else {
-                // Fallback for demo if id not found (just show param)
+                // Auto Check-in if not yet checked in
+                if (!data.checked_in_at) {
+                    await guestsApi.update(guestId, { checked_in_at: new Date().toISOString() });
+                }
+            } catch (error) {
+                console.error('Failed to load guest:', error);
                 setGuest({
                     name: 'Tamu Undangan',
                     tableNumber: '-',
                     tier: 'reguler',
-                    paxi: 1
+                    guestCount: 1
                 });
             }
             setIsLoading(false);

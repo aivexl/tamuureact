@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AnimatePresence, m } from 'framer-motion';
@@ -7,6 +6,8 @@ import { ImportModal } from '../components/Modals/ImportModal';
 import { ConfirmationModal } from '../components/Modals/ConfirmationModal';
 import { QRModal } from '../components/Modals/QRModal';
 import * as XLSX from 'xlsx';
+import { guests as guestsApi, invitations as invitationsApi } from '../lib/api';
+import { Loader2 } from 'lucide-react';
 
 // ============================================
 // INLINE SVG ICONS
@@ -92,21 +93,6 @@ interface Guest {
 // ============================================
 // DUMMY DATA
 // ============================================
-const DUMMY_INVITATION = {
-    id: 'inv-001',
-    name: 'Pernikahan Anisa & Budi',
-    slug: 'anisa-budi',
-    category: 'wedding',
-};
-
-const DUMMY_GUESTS: Guest[] = [
-    { id: '1', checkInCode: 'AB001', name: 'Budi Santoso', phone: '6281234567890', address: 'Jakarta', tableNumber: 'A1', tier: 'vip', guestCount: 2, sharedAt: '2026-01-01T10:00:00Z', checkedInAt: '2026-01-02T18:30:00Z', checkedOutAt: null },
-    { id: '2', checkInCode: 'AB002', name: 'Siti Rahma', phone: '6285678901234', address: 'Bandung', tableNumber: 'A2', tier: 'vvip', guestCount: 3, sharedAt: '2026-01-01T11:00:00Z', checkedInAt: null, checkedOutAt: null },
-    { id: '3', checkInCode: 'AB003', name: 'Ahmad Hidayat', phone: '6287890123456', address: 'Surabaya', tableNumber: 'B1', tier: 'reguler', guestCount: 1, sharedAt: null, checkedInAt: null, checkedOutAt: null },
-    { id: '4', checkInCode: 'AB004', name: 'Dewi Lestari', phone: '6289012345678', address: 'Yogyakarta', tableNumber: 'B2', tier: 'reguler', guestCount: 2, sharedAt: '2026-01-01T14:00:00Z', checkedInAt: '2026-01-02T19:00:00Z', checkedOutAt: '2026-01-02T22:00:00Z' },
-    { id: '5', checkInCode: 'AB005', name: 'Rizki Pratama', phone: '6281122334455', address: 'Semarang', tableNumber: 'C1', tier: 'vip', guestCount: 4, sharedAt: null, checkedInAt: null, checkedOutAt: null },
-];
-
 const DEFAULT_MESSAGE = "Tanpa mengurangi rasa hormat, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk hadir di acara Pernikahan kami.";
 
 // ============================================
@@ -114,7 +100,9 @@ const DEFAULT_MESSAGE = "Tanpa mengurangi rasa hormat, kami bermaksud mengundang
 // ============================================
 export const GuestManagementPage: React.FC = () => {
     const { invitationId } = useParams<{ invitationId: string }>();
-    const [guests, setGuests] = useState<Guest[]>(DUMMY_GUESTS);
+    const [invitation, setInvitation] = useState<any>(null);
+    const [guests, setGuests] = useState<Guest[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [invitationMessage, setInvitationMessage] = useState(DEFAULT_MESSAGE);
     const [showAddModal, setShowAddModal] = useState(false);
@@ -145,6 +133,41 @@ export const GuestManagementPage: React.FC = () => {
         title: 'Buku Tamu - Tamuu',
         description: 'Kelola daftar tamu undangan digital Anda.',
     });
+
+    // Fetch data
+    React.useEffect(() => {
+        if (invitationId) {
+            fetchData();
+        }
+    }, [invitationId]);
+
+    const fetchData = async () => {
+        setIsLoading(true);
+        try {
+            const [guestList, invData] = await Promise.all([
+                guestsApi.list(invitationId!),
+                invitationsApi.get(invitationId!)
+            ]);
+            // Map snake_case from DB if necessary, but D1 results usually match keys if selected as *
+            // Let's ensure guestCount vs guest_count naming consistency
+            const mappedGuests = guestList.map((g: any) => ({
+                ...g,
+                guestCount: g.guest_count || g.guestCount || 1,
+                tableNumber: g.table_number || g.tableNumber || '',
+                checkInCode: g.check_in_code || g.checkInCode || '',
+                sharedAt: g.shared_at || g.sharedAt || null,
+                checkedInAt: g.checked_in_at || g.checkedInAt || null,
+                checkedOutAt: g.checked_out_at || g.checkedOutAt || null,
+            }));
+            setGuests(mappedGuests);
+            setInvitation(invData);
+        } catch (error) {
+            console.error('Failed to fetch guest data:', error);
+            showToast('Gagal memuat data tamu.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     // Computed
     const filteredGuests = guests.filter(g =>
@@ -178,44 +201,60 @@ export const GuestManagementPage: React.FC = () => {
     };
 
     const copyGeneralLink = () => {
-        navigator.clipboard.writeText(`https://tamuu.id/${DUMMY_INVITATION.slug}`);
+        if (!invitation) return;
+        navigator.clipboard.writeText(`https://tamuu.id/${invitation.slug}`);
         showToast('Link umum disalin!');
     };
 
     const copyGuestLink = (guest: Guest) => {
-        navigator.clipboard.writeText(`https://tamuu.id/${DUMMY_INVITATION.slug}?to=${encodeURIComponent(guest.name)}`);
+        if (!invitation) return;
+        navigator.clipboard.writeText(`https://tamuu.id/${invitation.slug}?to=${encodeURIComponent(guest.name)}`);
         showToast(`Link untuk ${guest.name} disalin!`);
     };
 
-    const shareWhatsApp = (guest: Guest) => {
+    const shareWhatsApp = async (guest: Guest) => {
+        if (!invitation) return;
         const phone = guest.phone || '';
-        const message = `${invitationMessage}\n\nLink Undangan: https://tamuu.id/${DUMMY_INVITATION.slug}?to=${encodeURIComponent(guest.name)}`;
+        const message = `${invitationMessage}\n\nLink Undangan: https://tamuu.id/${invitation.slug}?to=${encodeURIComponent(guest.name)}`;
         window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
 
-        // Mark as shared
-        setGuests(prev => prev.map(g => g.id === guest.id ? { ...g, sharedAt: new Date().toISOString() } : g));
+        // Mark as shared in DB
+        try {
+            const now = new Date().toISOString();
+            await guestsApi.update(guest.id, { shared_at: now });
+            setGuests(prev => prev.map(g => g.id === guest.id ? { ...g, sharedAt: now } : g));
+        } catch (error) {
+            console.error('Failed to update share status:', error);
+        }
         showToast('WhatsApp dibuka!');
     };
 
-    const handleAddGuest = () => {
-        if (!formData.name) return;
-        const newGuest: Guest = {
-            id: Date.now().toString(),
-            checkInCode: `AB${String(guests.length + 1).padStart(3, '0')}`,
-            name: formData.name,
-            phone: formData.phone ? normalizePhone(formData.phone) : null,
-            address: formData.address,
-            tableNumber: formData.tableNumber,
-            tier: formData.tier,
-            guestCount: formData.guestCount,
-            sharedAt: null,
-            checkedInAt: null,
-            checkedOutAt: null,
-        };
-        setGuests(prev => [newGuest, ...prev]);
-        setShowAddModal(false);
-        setFormData({ name: '', phone: '', address: 'di tempat', tableNumber: '', tier: 'reguler', guestCount: 1 });
-        showToast('Tamu berhasil ditambahkan!');
+    const handleAddGuest = async () => {
+        if (!formData.name || !invitationId) return;
+        try {
+            const checkInCode = `${invitation?.slug?.substring(0, 2).toUpperCase() || 'TM'}${String(guests.length + 1).padStart(3, '0')}`;
+            const gData = {
+                invitation_id: invitationId,
+                name: formData.name,
+                phone: formData.phone ? normalizePhone(formData.phone) : undefined,
+                address: formData.address,
+                table_number: formData.tableNumber,
+                tier: formData.tier,
+                guest_count: formData.guestCount,
+                check_in_code: checkInCode
+            };
+            const newGuest = await guestsApi.create(gData);
+            // Map keys from snake_case DB to camelCase component types if needed
+            // But let's assume they match for now or update Guest interface
+            setGuests(prev => [newGuest, ...prev]);
+            setShowAddModal(false);
+            setFormData({ name: '', phone: '', address: 'di tempat', tableNumber: '', tier: 'reguler', guestCount: 1 });
+            showToast('Tamu berhasil ditambahkan!');
+            fetchData(); // Refresh to ensure correct camelCase mapping from D1
+        } catch (error) {
+            console.error('Failed to add guest:', error);
+            showToast('Gagal menambah tamu.');
+        }
     };
 
     const openEditModal = (guest: Guest) => {
@@ -231,20 +270,25 @@ export const GuestManagementPage: React.FC = () => {
         setShowEditModal(true);
     };
 
-    const handleUpdateGuest = () => {
+    const handleUpdateGuest = async () => {
         if (!editingGuest || !formData.name) return;
-        setGuests(prev => prev.map(g => g.id === editingGuest.id ? {
-            ...g,
-            name: formData.name,
-            phone: formData.phone ? normalizePhone(formData.phone) : null,
-            address: formData.address,
-            tableNumber: formData.tableNumber,
-            tier: formData.tier,
-            guestCount: formData.guestCount,
-        } : g));
-        setShowEditModal(false);
-        setEditingGuest(null);
-        showToast('Data tamu diperbarui!');
+        try {
+            await guestsApi.update(editingGuest.id, {
+                name: formData.name,
+                phone: formData.phone ? normalizePhone(formData.phone) : null,
+                address: formData.address,
+                table_number: formData.tableNumber,
+                tier: formData.tier,
+                guest_count: formData.guestCount,
+            });
+            setShowEditModal(false);
+            setEditingGuest(null);
+            showToast('Data tamu diperbarui!');
+            fetchData();
+        } catch (error) {
+            console.error('Failed to update guest:', error);
+            showToast('Gagal memperbarui data.');
+        }
     };
 
     const handleDeleteGuest = (guestId: string) => {
@@ -252,16 +296,21 @@ export const GuestManagementPage: React.FC = () => {
         setShowDeleteModal(true);
     };
 
-    const confirmDeleteGuest = () => {
+    const confirmDeleteGuest = async () => {
         if (!guestToDelete) return;
         setIsDeleting(true);
-        setTimeout(() => {
-            setGuests(prev => prev.filter(g => g.id !== guestToDelete));
+        try {
+            await guestsApi.delete(guestToDelete);
             showToast('Tamu dihapus!');
-            setIsDeleting(false);
             setShowDeleteModal(false);
             setGuestToDelete(null);
-        }, 500); // Simulate network delay
+            fetchData();
+        } catch (error) {
+            console.error('Failed to delete guest:', error);
+            showToast('Gagal menghapus tamu.');
+        } finally {
+            setIsDeleting(false);
+        }
     };
 
     const handleShowQR = (guest: Guest) => {
@@ -364,6 +413,15 @@ export const GuestManagementPage: React.FC = () => {
         };
         return styles[tier];
     };
+
+    if (isLoading && !guests.length) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4">
+                <Loader2 className="w-10 h-10 text-teal-600 animate-spin" />
+                <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Memuat Data Tamu...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 pt-14">

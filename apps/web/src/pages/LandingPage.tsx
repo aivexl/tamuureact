@@ -1,6 +1,7 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSEO } from '../hooks/useSEO';
+import { useStore } from '../store/useStore';
 
 // Lazy load non-critical sections to improve TBT and FCP
 // Eagerly load the first section below the fold to improve Speed Index
@@ -83,6 +84,20 @@ const WordRoller: React.FC = () => {
 // MAIN LANDING PAGE COMPONENT
 // ============================================
 export const LandingPage: React.FC = () => {
+    const navigate = useNavigate();
+    const { isAuthenticated } = useStore();
+
+    useEffect(() => {
+        if (window.location.hash) {
+            const id = window.location.hash.substring(1);
+            setTimeout(() => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 500); // Wait for lazy sections to potentially load
+        }
+    }, []);
     useSEO({
         title: 'Platform Undangan Digital Premium & Eksklusif',
         description: 'Tingkatkan momen spesial Anda dengan undangan digital premium dari Tamuu. Desain eksklusif, fitur RSVP modern, dan kemudahan bagi para pasangan pengantin.'
@@ -114,15 +129,21 @@ export const LandingPage: React.FC = () => {
                             </p>
 
                             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center animate-in fade-in slide-in-from-bottom-16 duration-700 delay-500">
-                                <Link
-                                    to="/editor"
+                                <button
+                                    onClick={() => {
+                                        if (isAuthenticated) {
+                                            navigate('/onboarding');
+                                        } else {
+                                            navigate('/login?redirect=/onboarding');
+                                        }
+                                    }}
                                     className="group relative inline-flex items-center gap-3 px-7 py-4 sm:px-10 sm:py-5 bg-white text-slate-900 font-black rounded-2xl shadow-2xl shadow-indigo-950/20 hover:bg-slate-50 hover:scale-105 transition-all duration-300 w-full sm:w-auto justify-center"
                                 >
                                     Mulai Sekarang
                                     <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14m-7-7 7 7-7 7" /></svg>
-                                </Link>
+                                </button>
                                 <Link
-                                    to="/admin/templates"
+                                    to="/invitations"
                                     className="px-7 py-4 sm:px-10 sm:py-5 bg-white/10 text-white border border-white/20 font-bold rounded-2xl shadow-sm hover:bg-white/20 hover:border-white/30 hover:scale-105 transition-all duration-300 backdrop-blur-sm w-full sm:w-auto text-center"
                                 >
                                     Lihat Undangan

@@ -9,6 +9,8 @@ import Lenis from 'lenis';
 import { VisualEffectsCanvas } from '../Canvas/VisualEffectsCanvas';
 import { GuestGreetingOverlay } from '../Canvas/GuestGreetingOverlay';
 import { DisplaySimulationHUD } from '../Canvas/DisplaySimulationHUD';
+import { useAudioController } from '@/hooks/useAudioController';
+import { useSEO } from '@/hooks/useSEO';
 
 // Canvas dimensions - now dynamic based on template type
 const INVITATION_WIDTH = 414;
@@ -30,7 +32,7 @@ interface PreviewViewProps {
 }
 
 export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => {
-    const { sections, musicConfig, orbit, templateType, id: templateId, triggerGlobalEffect, triggerBatchInteractions,
+    const { sections, orbit, templateType, id: templateId, triggerGlobalEffect, triggerBatchInteractions,
         resetInteractions
     } = useStore();
     const lastTriggerRef = useRef<{ effect: string, timestamp: number } | null>(null);
@@ -277,40 +279,26 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
     }, []);
 
     // Audio Handling
-    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const { play, pause, isPlaying: isGlobalPlaying } = useAudioController();
+    const music = useStore(state => state.music);
+
     useEffect(() => {
-        if (!musicConfig?.url || !isOpen) return;
+        if (!isOpen || !music?.url) return;
 
-        if (!audioRef.current) {
-            audioRef.current = new Audio(musicConfig.url);
-            audioRef.current.loop = musicConfig.loop !== false;
-            audioRef.current.volume = (musicConfig.volume || 100) / 100;
-        }
-
-        const audio = audioRef.current;
-
-        if (isOpened && !isMuted) {
-            audio.play().catch(e => console.log('Audio Autoplay blocked:', e));
-        } else {
-            audio.pause();
-        }
+        // Force Autoplay Logic for Public View
+        // We attempt to play as soon as the preview is open
+        // The controller handles the interaction fallback if blocked
+        play(music.url);
 
         return () => {
-            if (audio) {
-                audio.pause();
-                // We don't nullify here as we might re-open, 
-                // but for true React safety we should nullify on "PreviewView" unmount 
-            }
+            pause();
         };
-    }, [isOpened, isMuted, musicConfig, isOpen]);
+    }, [isOpen, music?.url]);
 
     // Extra cleanup on actual component unmount
     useEffect(() => {
         return () => {
-            if (audioRef.current) {
-                audioRef.current.pause();
-                audioRef.current = null;
-            }
+            pause();
         };
     }, []);
 
@@ -1101,12 +1089,14 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                         transformOrigin: 'top right'
                     }}
                 >
-                    <button
-                        onClick={() => setIsMuted(!isMuted)}
-                        className="p-3 bg-black/50 backdrop-blur-xl text-white/70 hover:text-white rounded-full border border-white/20 transition-colors"
-                    >
-                        {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                    </button>
+                    {music?.url && (
+                        <button
+                            onClick={() => isGlobalPlaying ? pause() : play()}
+                            className="p-3 bg-white/10 backdrop-blur-md rounded-2xl text-white hover:bg-premium-glow/20 transition-all border border-white/10 shadow-xl"
+                        >
+                            {!isGlobalPlaying ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                        </button>
+                    )}
                     <button
                         onClick={toggleFullscreen}
                         className="p-3 bg-black/50 backdrop-blur-xl text-white/70 hover:text-white rounded-full border border-white/20 transition-colors"
@@ -1194,7 +1184,7 @@ const PreviewOrbitStage: React.FC<{
 
     return (
         <div
-            className={`absolute inset- 0 pointer-events-none transition-all duration-1000 ${isOpened ? 'opacity-100' : 'opacity-100'
+            className={`absolute inset-0 pointer-events-none transition-all duration-1000 ${isOpened ? 'opacity-100' : 'opacity-100'
                 }`}
             style={{
                 [type]: 0,

@@ -84,18 +84,33 @@ export const useStore = create<StoreState>()(
                         }];
                     }
 
+                    // Deep guard for Orbit (TV Stage)
+                    const orbit = {
+                        left: {
+                            backgroundColor: state.orbit?.left?.backgroundColor || 'transparent',
+                            isVisible: state.orbit?.left?.isVisible ?? true,
+                            elements: Array.isArray(state.orbit?.left?.elements) ? state.orbit?.left?.elements : []
+                        },
+                        right: {
+                            backgroundColor: state.orbit?.right?.backgroundColor || 'transparent',
+                            isVisible: state.orbit?.right?.isVisible ?? true,
+                            elements: Array.isArray(state.orbit?.right?.elements) ? state.orbit?.right?.elements : []
+                        }
+                    };
+
                     const layers = Array.isArray(state.layers) ? state.layers.filter((l: any) => l && typeof l === 'object') : [];
 
                     const sanitizedPayload = sanitizeValue({
                         layers,
                         sections,
-                        zoom: state.zoom,
-                        pan: state.pan,
-                        slug: state.slug,
-                        projectName: state.projectName,
+                        zoom: state.zoom || 1,
+                        pan: state.pan || { x: 0, y: 0 },
+                        slug: state.slug || '',
+                        projectName: state.projectName || 'Untitled Design',
                         id: state.id,
-                        orbit: state.orbit,
-                        activeSectionId: sections[0]?.id || null
+                        orbit,
+                        activeSectionId: state.activeSectionId || sections[0]?.id || null,
+                        activeCanvas: state.activeCanvas || 'main'
                     });
 
                     // Update state with sanitized values

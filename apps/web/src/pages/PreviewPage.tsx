@@ -81,7 +81,10 @@ export const PreviewPage: React.FC = () => {
                         projectName: data.name || '',
                         activeSectionId: validSections[0]?.id || null,
                         orbit: data.orbit || useStore.getState().orbit,
-                        selectedLayerId: null
+                        music: data.music || undefined,
+                        id: data.id,
+                        selectedLayerId: null,
+                        hasHydrated: true
                     });
                 } else {
                     console.warn('[PreviewPage] No data found for slug:', slug);

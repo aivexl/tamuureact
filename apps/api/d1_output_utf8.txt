@@ -1,0 +1,77 @@
+﻿
+ Ôøà´©Å wrangler 4.54.0 (update available 4.58.0)
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+Resource location: remote 
+
+­ƒîÇ Executing on remote database tamuu-db (cb0a336d-c070-49e6-80d4-c198a2df141d):
+­ƒîÇ To execute on your local development database, remove the --remote flag from your wrangler command.
+­ƒÜú Executed 1 command in 0.12ms
+[
+  {
+    "results": [
+      {
+        "id": "87a111f6-dda6-41a4-af79-932415286d3f",
+        "name": "New Premium Template",
+        "thumbnail": null
+      },
+      {
+        "id": "1a5b64f5-fcd3-4824-8c87-5eaa49e853e6",
+        "name": "test template",
+        "thumbnail": null
+      },
+      {
+        "id": "d23d4061-b786-4063-8cfe-4cf6c3439511",
+        "name": "New Premium Template",
+        "thumbnail": null
+      },
+      {
+        "id": "7cb68298-be8d-4bb2-a7cd-f5171c5f5934",
+        "name": "New Premium Template",
+        "thumbnail": null
+      },
+      {
+        "id": "32bfd859-f69b-4984-afbd-0b4f7fed46b3",
+        "name": "New Display Template",
+        "thumbnail": null
+      },
+      {
+        "id": "2d152dd6-89e6-47e5-ba04-b760cda48cd1",
+        "name": "New Display Template",
+        "thumbnail": null
+      },
+      {
+        "id": "92e43a83-d7b8-4edd-912f-79beca6dd9b8",
+        "name": "New Display Template",
+        "thumbnail": null
+      },
+      {
+        "id": "66339df6-7285-4ffb-9ed2-26bbcc586ead",
+        "name": "New Display Template",
+        "thumbnail": null
+      },
+      {
+        "id": "9067b0bd-e127-404b-b90e-42f6cf51f41c",
+        "name": "New Display Template",
+        "thumbnail": null
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.1221
+      },
+      "duration": 0.1221,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 151552,
+      "rows_read": 9,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]
