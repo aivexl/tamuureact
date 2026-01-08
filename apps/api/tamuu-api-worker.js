@@ -23,6 +23,93 @@ export default {
 
         try {
             // ============================================
+            // AUTH & USER ENDPOINTS
+            // ============================================
+            if (path === '/api/auth/me' && method === 'GET') {
+                const email = url.searchParams.get('email');
+                if (!email) return json({ error: 'Email required' }, { ...corsHeaders, status: 400 });
+
+                const { results } = await env.DB.prepare(
+                    'SELECT * FROM users WHERE email = ?'
+                ).bind(email).all();
+
+                if (results.length === 0) return notFound(corsHeaders);
+
+                const user = results[0];
+                return json({
+                    ...user,
+                    maxInvitations: user.max_invitations || 1,
+                    invitationCount: user.invitation_count || 0,
+                    tier: user.tier || 'free'
+                }, corsHeaders);
+            }
+
+            // ============================================
+            // BILLING & XENDIT ENDPOINTS
+            // ============================================
+            if (path === '/api/billing/create-invoice' && method === 'POST') {
+                const body = await request.json();
+                const { userId, tier, amount, email } = body;
+
+                if (!userId || !tier || !amount) {
+                    return json({ error: 'Missing required fields' }, { ...corsHeaders, status: 400 });
+                }
+
+                // Call Xendit API
+                const xenditResponse = await fetch('https://api.xendit.co/v2/invoices', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Basic ${btoa(env.XENDIT_SECRET_KEY + ':')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        external_id: `inv-${Date.now()}-${userId}`,
+                        amount: amount,
+                        description: `Tamuu ${tier.toUpperCase()} Subscription`,
+                        payer_email: email,
+                        callback_virtual_accounts_expiration_time: 86400,
+                        success_redirect_url: 'https://app.tamuu.id/billing?success=true',
+                        failure_redirect_url: 'https://app.tamuu.id/billing?error=true',
+                        metadata: { userId, tier }
+                    })
+                });
+
+                const invoice = await xenditResponse.json();
+
+                // Log transaction in DB
+                await env.DB.prepare(
+                    `INSERT INTO billing_transactions (user_id, external_id, amount, status, tier) 
+                     VALUES (?, ?, ?, ?, ?)`
+                ).bind(userId, invoice.id, amount, 'PENDING', tier).run();
+
+                return json({ invoice_url: invoice.invoice_url }, corsHeaders);
+            }
+
+            if (path === '/api/billing/webhook' && method === 'POST') {
+                const body = await request.json();
+                const { status, id, metadata } = body;
+
+                if (status === 'PAID') {
+                    const userId = metadata.userId;
+                    const tier = metadata.tier;
+                    const maxInvitations = tier === 'vvip' ? 3 : 1;
+                    const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+
+                    // 1. Update Transaction
+                    await env.DB.prepare(
+                        'UPDATE billing_transactions SET status = ?, paid_at = datetime("now"), payment_method = ?, payment_channel = ? WHERE external_id = ?'
+                    ).bind('PAID', body.payment_method, body.payment_channel, id).run();
+
+                    // 2. Provision User
+                    await env.DB.prepare(
+                        'UPDATE users SET tier = ?, max_invitations = ?, expires_at = ?, updated_at = datetime("now") WHERE id = ?'
+                    ).bind(tier, maxInvitations, expiresAt, userId).run();
+                }
+
+                return json({ success: true }, corsHeaders);
+            }
+
+            // ============================================
             // TEMPLATES ENDPOINTS
             // ============================================
             if (path === '/api/templates' && method === 'GET') {
@@ -249,6 +336,20 @@ export default {
 
             if (path === '/api/invitations' && method === 'POST') {
                 const body = await request.json();
+                const userId = body.user_id;
+
+                // Check Gating: Invitation Limit
+                if (userId) {
+                    const { results } = await env.DB.prepare(
+                        'SELECT tier, max_invitations, invitation_count FROM users WHERE id = ?'
+                    ).bind(userId).all();
+
+                    const user = results[0];
+                    if (user && user.invitation_count >= (user.max_invitations || 1)) {
+                        return json({ error: 'Invitation limit reached. Please upgrade your plan.' }, { ...corsHeaders, status: 403 });
+                    }
+                }
+
                 const id = crypto.randomUUID();
 
                 // If template_id provided, fetch template data for cloning
@@ -287,6 +388,13 @@ export default {
                     body.is_published ? 1 : 0,
                     body.display_design_id || null
                 ).run();
+
+                // Update User's Invitation Count
+                if (body.user_id) {
+                    await env.DB.prepare(
+                        'UPDATE users SET invitation_count = invitation_count + 1 WHERE id = ?'
+                    ).bind(body.user_id).run();
+                }
 
                 return json({
                     id,
@@ -345,7 +453,20 @@ export default {
 
             if (path.match(/^\/api\/invitations\/[^/]+$/) && method === 'DELETE') {
                 const id = path.split('/')[3];
+
+                // Get invitation to find user_id
+                const { results } = await env.DB.prepare('SELECT user_id FROM invitations WHERE id = ?').bind(id).all();
+                const invitation = results[0];
+
                 await env.DB.prepare('DELETE FROM invitations WHERE id = ?').bind(id).run();
+
+                // If deleted by user, decrement count
+                if (invitation && invitation.user_id) {
+                    await env.DB.prepare(
+                        'UPDATE users SET invitation_count = MAX(0, invitation_count - 1) WHERE id = ?'
+                    ).bind(invitation.user_id).run();
+                }
+
                 return json({ id, deleted: true }, corsHeaders);
             }
 

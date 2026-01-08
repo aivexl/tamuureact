@@ -26,10 +26,13 @@ export const LoginPage: React.FC = () => {
             await new Promise(resolve => setTimeout(resolve, 1500));
 
             setUser({
-                id: 'user-1',
+                id: 'user-new',
                 email: data.email,
-                name: 'Anisa Rahma',
-                role: 'user'
+                name: data.name,
+                role: 'user',
+                tier: 'free',
+                maxInvitations: 1,
+                invitationCount: 0
             });
 
             navigate('/dashboard');

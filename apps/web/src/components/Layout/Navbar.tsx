@@ -184,7 +184,9 @@ export const Navbar: React.FC = () => {
                             >
                                 <div className="flex flex-col items-end hidden md:flex">
                                     <span className={`text-sm font-bold leading-tight ${isDarkTheme ? 'text-slate-900' : 'text-white'}`}>{user?.name || 'User'}</span>
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-teal-500">Premium</span>
+                                    <span className={`text-[10px] font-black uppercase tracking-widest ${user?.tier === 'vvip' ? 'text-[#FFBF00]' : user?.tier === 'vip' ? 'text-teal-500' : 'text-slate-400'}`}>
+                                        {user?.tier || 'Free'} Member
+                                    </span>
                                 </div>
                                 <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white font-black shadow-lg shadow-teal-500/20 ring-2 ring-white/10 group-hover:ring-teal-500 transition-all">
                                     {user?.name?.charAt(0) || 'U'}
@@ -218,7 +220,7 @@ export const Navbar: React.FC = () => {
                                                 <LayoutDashboard className="w-4 h-4" />
                                                 <span className="text-sm font-bold">Dashboard Saya</span>
                                             </Link>
-                                            <Link to="/profile#billing" className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${isDarkTheme ? 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' : 'text-white/70 hover:bg-white/5 hover:text-white'}`}>
+                                            <Link to="/billing" className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${isDarkTheme ? 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' : 'text-white/70 hover:bg-white/5 hover:text-white'}`}>
                                                 <CreditCard className="w-4 h-4" />
                                                 <span className="text-sm font-bold">Langganan & Billing</span>
                                             </Link>
@@ -322,8 +324,10 @@ export const Navbar: React.FC = () => {
                                                 A
                                             </div>
                                             <div>
-                                                <p className={`font-bold ${isDarkTheme ? 'text-slate-900' : 'text-white'}`}>Anisa Rahma</p>
-                                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-500">Premium Member</p>
+                                                <p className={`font-bold ${isDarkTheme ? 'text-slate-900' : 'text-white'}`}>{user?.name || 'User'}</p>
+                                                <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${user?.tier === 'vvip' ? 'text-[#FFBF00]' : user?.tier === 'vip' ? 'text-teal-500' : 'text-slate-400'}`}>
+                                                    {user?.tier || 'Free'} Member
+                                                </p>
                                             </div>
                                         </div>
                                     )}

@@ -1,6 +1,9 @@
 import React from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { Loader2, Search, Sparkles, Heart, Eye } from 'lucide-react';
+import { Loader2, Search, Sparkles, Heart, Eye, Lock, Crown, Star } from 'lucide-react';
+import { useStore } from '@/store/useStore';
+import { useNavigate } from 'react-router-dom';
+import { SubscriptionTier } from '@/store/authSlice';
 
 interface Template {
     id: string;
@@ -9,6 +12,7 @@ interface Template {
     thumbnail_url?: string;
     thumbnail?: string; // API returns 'thumbnail', grid uses 'thumbnail_url'
     category?: string;
+    tier?: SubscriptionTier;
     price?: number;
 }
 
@@ -22,13 +26,22 @@ interface InvitationsGridProps {
 }
 
 
-const InvitationsGrid: React.FC<InvitationsGridProps> = ({
+export const InvitationsGrid: React.FC<InvitationsGridProps> = ({
     isLoading,
     filteredTemplates,
     onUseTemplate,
     onPreviewTemplate,
     selectedId
 }) => {
+    const { user } = useStore();
+    const navigate = useNavigate();
+
+    const checkAccess = (templateTier?: SubscriptionTier) => {
+        if (!templateTier || templateTier === 'free') return true;
+        if (user?.tier === 'vvip') return true;
+        if (user?.tier === 'vip' && templateTier === 'vip') return true;
+        return false;
+    };
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center py-32">
@@ -105,6 +118,12 @@ const InvitationsGrid: React.FC<InvitationsGridProps> = ({
                                         <Sparkles className="w-3 h-3" /> Pilihan Anda
                                     </m.span>
                                 )}
+                                {template.tier && template.tier !== 'free' && (
+                                    <span className={`px-3 py-1 ${template.tier === 'vvip' ? 'bg-[#FFBF00] text-[#0A1128]' : 'bg-indigo-600 text-white'} text-[9px] font-black uppercase tracking-widest rounded-lg shadow-lg flex items-center gap-1`}>
+                                        {template.tier === 'vvip' ? <Star className="w-3 h-3 fill-current" /> : <Crown className="w-3 h-3 fill-current" />}
+                                        {template.tier.toUpperCase()}
+                                    </span>
+                                )}
                             </div>
                         </div>
 
@@ -121,13 +140,26 @@ const InvitationsGrid: React.FC<InvitationsGridProps> = ({
 
                             <div className="grid grid-cols-1 gap-3">
                                 <button
-                                    onClick={() => onUseTemplate(template.id)}
-                                    className={`w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 shadow-lg ${template.id === selectedId
-                                        ? 'bg-teal-500 text-white hover:bg-teal-600 shadow-teal-500/20'
-                                        : 'bg-slate-900 text-white hover:bg-[#FFBF00] hover:text-slate-900 shadow-slate-900/10'
+                                    onClick={() => {
+                                        if (checkAccess(template.tier)) {
+                                            onUseTemplate(template.id);
+                                        } else {
+                                            navigate('/upgrade');
+                                        }
+                                    }}
+                                    className={`w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 ${!checkAccess(template.tier)
+                                            ? 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                                            : template.id === selectedId
+                                                ? 'bg-teal-500 text-white hover:bg-teal-600 shadow-teal-500/20'
+                                                : 'bg-slate-900 text-white hover:bg-[#FFBF00] hover:text-slate-900 shadow-slate-900/10'
                                         }`}
                                 >
-                                    {template.id === selectedId ? 'Konfirmasi Desain' : 'Gunakan Desain'}
+                                    {!checkAccess(template.tier) && <Lock className="w-3 h-3" />}
+                                    {template.id === selectedId
+                                        ? 'Konfirmasi Desain'
+                                        : !checkAccess(template.tier)
+                                            ? `Unlock ${template.tier?.toUpperCase()}`
+                                            : 'Gunakan Desain'}
                                 </button>
                                 <button
                                     onClick={() => onPreviewTemplate(template.slug, template.id)}

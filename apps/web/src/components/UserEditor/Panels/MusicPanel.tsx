@@ -1,6 +1,8 @@
 import React from 'react';
 import { m } from 'framer-motion';
-import { Music, Play, Pause, Search, Plus, Radio } from 'lucide-react';
+import { Music, Play, Pause, Search, Plus, Radio, Crown } from 'lucide-react';
+import { useStore } from '@/store/useStore';
+import { useNavigate } from 'react-router-dom';
 
 const MOCK_SONGS = [
     { id: '1', title: 'A Thousand Years', artist: 'Christina Perri', duration: '4:45', category: 'Romantic' },
@@ -10,6 +12,9 @@ const MOCK_SONGS = [
 ];
 
 export const MusicPanel: React.FC = () => {
+    const { user } = useStore();
+    const navigate = useNavigate();
+
     return (
         <div className="space-y-6">
             {/* Search and Upload */}
@@ -22,9 +27,27 @@ export const MusicPanel: React.FC = () => {
                         className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all outline-none"
                     />
                 </div>
-                <button className="px-4 py-3 bg-white border border-slate-100 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-2 font-bold text-xs uppercase tracking-widest whitespace-nowrap shadow-sm">
-                    <Plus className="w-4 h-4 text-pink-500" />
+                <button
+                    onClick={() => {
+                        if (user?.tier === 'vvip') {
+                            // Trigger upload logic
+                        } else {
+                            navigate('/upgrade');
+                        }
+                    }}
+                    className={`relative group px-4 py-3 border border-slate-100 rounded-2xl transition-all flex items-center gap-2 font-bold text-xs uppercase tracking-widest whitespace-nowrap shadow-sm ${user?.tier === 'vvip' ? 'bg-white text-slate-600 hover:bg-slate-50' : 'bg-slate-50 text-slate-400'
+                        }`}
+                >
+                    <Plus className={`w-4 h-4 ${user?.tier === 'vvip' ? 'text-pink-500' : 'text-slate-300'}`} />
                     Upload MP3
+                    {user?.tier !== 'vvip' && (
+                        <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-all pointer-events-none translate-y-2 group-hover:translate-y-0">
+                            <div className="bg-[#0A1128] text-[#FFBF00] text-[8px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-xl border border-white/10 flex items-center gap-1.5 w-max mx-auto">
+                                <Crown className="w-3 h-3" />
+                                VVIP Feature
+                            </div>
+                        </div>
+                    )}
                 </button>
             </div>
 

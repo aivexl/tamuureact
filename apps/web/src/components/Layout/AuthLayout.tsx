@@ -1,6 +1,6 @@
-import React from 'react';
 import { m } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 
 interface AuthLayoutProps {
     children: React.ReactNode;
@@ -15,13 +15,16 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
     subtitle,
     image = "/images/hero-bride.webp"
 }) => {
+    const navigate = useNavigate();
+
     return (
         <div className="min-h-screen bg-[#0A1128] flex overflow-hidden">
             {/* Left Pane: Immersive Visual (Hidden on mobile) */}
             <div className="hidden lg:flex lg:w-[60%] relative items-center justify-center overflow-hidden">
-                {/* Dynamic Mesh Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/80 via-transparent to-rose-950/30 z-10" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(191,161,129,0.1),transparent_50%)] z-10" />
+                {/* Dynamic Multi-layered Overlay for Maximum Legibility */}
+                <div className="absolute inset-0 bg-gradient-to-r from-[#0A1128]/95 via-[#0A1128]/40 to-transparent z-10" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A1128]/80 via-transparent to-transparent z-10" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(0,0,0,0.4),transparent_70%)] z-10" />
 
                 <m.img
                     initial={{ scale: 1.1, opacity: 0 }}
@@ -29,11 +32,11 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
                     transition={{ duration: 1.5, ease: "easeOut" }}
                     src={image}
                     alt="Tamuu Premium Authentication"
-                    className="absolute inset-0 w-full h-full object-cover object-center grayscale-[20%] contrast-[110%]"
+                    className="absolute inset-0 w-full h-full object-cover object-center grayscale-[15%] contrast-[105%]"
                 />
 
                 {/* Floating Brand Content */}
-                <div className="relative z-20 text-white p-16 max-w-2xl">
+                <div className="relative z-20 text-white p-16 max-w-2xl drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]">
                     <m.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -48,10 +51,10 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
 
                         <h1 className="text-6xl font-black leading-[0.9] mb-8 tracking-tighter">
                             Tingkatkan <br />
-                            <span className="text-premium-accent">Momen Spesial</span> <br />
+                            <span className="text-premium-accent drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">Momen Spesial</span> <br />
                             Anda.
                         </h1>
-                        <p className="text-xl text-white/60 font-medium leading-relaxed max-w-md">
+                        <p className="text-xl text-white/80 font-semibold leading-relaxed max-w-md drop-shadow-md">
                             Bergabunglah dengan ribuan pasangan yang telah menciptakan undangan digital paling eksklusif di dunia.
                         </p>
                     </m.div>
@@ -76,6 +79,19 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
 
             {/* Right Pane: Action Area */}
             <div className="w-full lg:w-[40%] bg-[#0A1128] relative flex flex-col justify-center px-8 sm:px-16 lg:px-20 py-12">
+                {/* Premium Back Button */}
+                <div className="absolute top-10 right-8 lg:left-20 lg:right-auto z-30">
+                    <m.button
+                        whileHover={{ x: -4, scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => navigate(-1)}
+                        className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition-all backdrop-blur-md group"
+                    >
+                        <ArrowLeft className="w-4 h-4 group-hover:text-premium-accent transition-colors" />
+                        <span className="text-xs font-bold uppercase tracking-widest">Kembali</span>
+                    </m.button>
+                </div>
+
                 {/* Mobile Header (Only visible on small screens) */}
                 <div className="lg:hidden absolute top-12 left-8">
                     <Link to="/" className="flex items-center gap-3">

@@ -9,7 +9,8 @@ import {
     BarChart3,
     Share2,
     Settings,
-    Sparkles
+    Sparkles,
+    Download
 } from 'lucide-react';
 
 const MENU_ITEMS = [
@@ -20,6 +21,7 @@ const MENU_ITEMS = [
     { id: 'wishes', label: 'Ucapan', icon: MessageSquare, color: 'text-orange-600', bg: 'bg-orange-50', gradient: 'from-orange-500/20 to-amber-500/20' },
     { id: 'analytics', label: 'Analitik', icon: BarChart3, color: 'text-indigo-600', bg: 'bg-indigo-50', gradient: 'from-indigo-500/20 to-blue-500/20' },
     { id: 'share', label: 'Bagikan', icon: Share2, color: 'text-teal-600', bg: 'bg-teal-50', gradient: 'from-teal-500/20 to-emerald-500/20' },
+    { id: 'download', label: 'Download', icon: Download, color: 'text-rose-600', bg: 'bg-rose-50', gradient: 'from-rose-500/20 to-pink-500/20', isNew: true },
     { id: 'settings', label: 'Pengaturan', icon: Settings, color: 'text-gray-600', bg: 'bg-gray-50', gradient: 'from-slate-500/20 to-gray-500/20' },
 ];
 
@@ -88,6 +90,11 @@ export const IconGridMenu: React.FC<IconGridMenuProps> = ({ onOpenPanel }) => {
                                 <Sparkles className="w-4 h-4 text-purple-400" />
                             </m.div>
                         </div>
+                    )}
+
+                    {/* NEW Badge for Download */}
+                    {(item as any).isNew && (
+                        <div className="absolute top-3 right-3 px-2 py-0.5 bg-rose-500 text-white text-[8px] font-black uppercase tracking-wider rounded-full">New</div>
                     )}
                 </m.button>
             ))}

@@ -10,9 +10,11 @@ import { Modal } from '@/components/ui/Modal';
 import { MusicPanel } from '@/components/UserEditor/Panels/MusicPanel';
 import { ThemePanel } from '@/components/UserEditor/Panels/ThemePanel';
 import { SharePanel } from '@/components/UserEditor/Panels/SharePanel';
+import { ExportPanel } from '@/components/UserEditor/Panels/ExportPanel';
 import { useStore } from '@/store/useStore';
 import { invitations as invitationsApi } from '@/lib/api';
 import { Loader2, Sparkles, AlertCircle } from 'lucide-react';
+import { useRef } from 'react';
 
 interface UserEditorPageProps {
     mode?: 'invitation' | 'welcome';
@@ -41,6 +43,7 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
     const [error, setError] = useState<string | null>(null);
     const [invitation, setInvitation] = useState<any>(null);
     const [activePanel, setActivePanel] = useState<string | null>(null);
+    const previewRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const loadInvitation = async () => {
@@ -143,7 +146,8 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                     {activePanel === 'music' && <MusicPanel />}
                     {activePanel === 'theme' && <ThemePanel />}
                     {activePanel === 'share' && <SharePanel slug={invitation.slug} />}
-                    {!['music', 'theme', 'share'].includes(activePanel || '') && (
+                    {activePanel === 'download' && <ExportPanel previewRef={previewRef as React.RefObject<HTMLElement>} />}
+                    {!['music', 'theme', 'share', 'download'].includes(activePanel || '') && (
                         <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
                             <div className="w-20 h-20 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-slate-300">
                                 <Sparkles className="w-10 h-10" />

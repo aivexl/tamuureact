@@ -80,6 +80,25 @@ tamuureact/
 - **Storage**: Cloudflare R2 (`tamuu-assets`)
 - **Package Manager**: pnpm (workspace)
 - **Build System**: Turborepo
+- **Payment Gateway**: Xendit (Invoice API)
+
+---
+
+## 💰 Monetization & Billing
+
+### Subscription Tiers (Consumer)
+| Tier | Price | Features |
+|------|-------|----------|
+| **Free** | Rp 0 | 1 Invitation, Basic Templates |
+| **VIP** | Rp 99k/yr | 1 Invitation, VIP Templates, HD PDF Export |
+| **VVIP** | Rp 199k/yr | 3 Invitations, All Access, Video Export, Custom MP3 |
+
+### Billing Architecture
+- **Xendit Integration**: Menggunakan Xendit Invoice API untuk auto-generate link pembayaran.
+- **Webhook Listener**: Endpoint `/api/billing/webhook` menangani konfirmasi pembayaran secara asinkron.
+- **Gating Logic**: 
+  - **FE**: UI-level restrictions di `ExportPanel`, `MusicPanel`, dan `InvitationsGrid`.
+  - **BE**: Hard limits di API layer (Cloudflare D1) untuk mencegah bypass.
 
 ---
 
@@ -114,8 +133,13 @@ pnpm deploy:api    # Deploy API to Cloudflare Workers
   - Multi-section support
   - Copy/paste between canvases
 - **Template Store** - Galeri template undangan
-- **Admin Dashboard** - Dedicated control center for system management
-- **Display Editor** - Landscape (1920x1080) editor for TV displays
+- **Admin Dashboard**: Dedicated control center for system management
+- **Display Editor**: Landscape (1920x1080) editor for TV displays
+- **Billing & Upgrade Center**:
+  - Prestige UI for tier selection
+  - Xendit payment link integration
+  - Auto-provisioning system
+  - Usage tracking (invitation counts)
 
 ---
 

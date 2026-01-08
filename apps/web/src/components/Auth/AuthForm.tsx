@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, Loader2, ArrowRight, User, Mail, Lock } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface AuthFormProps {
     mode: 'login' | 'signup';
@@ -124,9 +125,9 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit, isLoading = 
 
             {mode === 'login' && (
                 <div className="flex justify-end px-2">
-                    <button type="button" className="text-xs font-bold text-premium-accent hover:text-premium-accent-light transition-colors uppercase tracking-widest">
+                    <Link to="/forgot-password" className="text-xs font-bold text-premium-accent hover:text-premium-accent-light transition-colors uppercase tracking-widest cursor-pointer">
                         Lupa Password?
-                    </button>
+                    </Link>
                 </div>
             )}
 

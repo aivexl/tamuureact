@@ -22,6 +22,7 @@ const getIsAppDomain = (): boolean => {
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 const InvitationsStorePage = lazy(() => import('./pages/InvitationsStorePage').then(m => ({ default: m.InvitationsStorePage })));
 
 // Lazy load heavy admin/editor pages (app.tamuu.id only)
@@ -42,6 +43,8 @@ const DisplayEditorPage = lazy(() => import('./pages/DisplayEditorPage').then(m 
 const RemoteTriggerPage = lazy(() => import('./pages/RemoteTriggerPage').then(m => ({ default: m.RemoteTriggerPage })));
 const AdminDisplayPreviewPage = lazy(() => import('./pages/AdminDisplayPreviewPage').then(m => ({ default: m.AdminDisplayPreviewPage })));
 const GuestScannerPage = lazy(() => import('./pages/GuestScannerPage').then(m => ({ default: m.GuestScannerPage })));
+const UpgradePage = lazy(() => import('./pages/UpgradePage').then(m => ({ default: m.UpgradePage })));
+const BillingPage = lazy(() => import('./pages/BillingPage').then(m => ({ default: m.BillingPage })));
 
 
 const LoadingFallback = () => (
@@ -95,9 +98,12 @@ const App: React.FC = () => {
                         {/* Public Auth */}
                         <Route path="/login" element={<LoginPage />} />
                         <Route path="/signup" element={<SignupPage />} />
+                        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
                         {/* Preview Routes - Public for sharing */}
                         <Route path="/preview/:slug" element={<PreviewPage />} />
+                        <Route path="/upgrade" element={<MainLayout><UpgradePage /></MainLayout>} />
+                        <Route path="/billing" element={<MainLayout><BillingPage /></MainLayout>} />
 
                         {/* ============================================ */}
                         {/* APP ROUTES - Only on app.tamuu.id */}
@@ -144,6 +150,8 @@ const App: React.FC = () => {
                                 <Route path="/admin/*" element={<Navigate to="/" replace />} />
                                 <Route path="/editor/*" element={<Navigate to="/" replace />} />
                                 <Route path="/user/*" element={<Navigate to="/" replace />} />
+                                <Route path="/upgrade" element={<MainLayout><UpgradePage /></MainLayout>} />
+                                <Route path="/billing" element={<MainLayout><BillingPage /></MainLayout>} />
                                 <Route path="/tools/*" element={<Navigate to="/" replace />} />
                             </>
                         )}

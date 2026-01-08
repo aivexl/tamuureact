@@ -20,10 +20,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode = 'l
             // Mock auth logic
             await new Promise(resolve => setTimeout(resolve, 1500));
             setUser({
-                id: 'user-modal',
+                id: '1',
                 email: data.email,
-                name: data.name || 'User',
-                role: 'user'
+                name: 'Demo User',
+                role: 'user',
+                tier: 'free',
+                maxInvitations: 1,
+                invitationCount: 0
             });
             onClose();
         } catch (err) {

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { m, AnimatePresence } from 'framer-motion';
+import { useStore } from '../store/useStore';
 import { useSEO } from '../hooks/useSEO';
 import { WelcomeDisplaysTab } from '../components/Dashboard/WelcomeDisplaysTab';
 
@@ -122,28 +123,7 @@ const ScanIcon = ({ className }: { className?: string }) => (
 );
 
 
-// ============================================
-// DUMMY DATA
-// ============================================
-const DUMMY_USER = {
-    name: 'Anisa Rahma',
-    email: 'anisa@gmail.com',
-    plan: 'Premium',
-    avatar: null,
-};
-
-const DUMMY_INVITATIONS = [
-    { id: '1', name: 'Pernikahan Anisa & Budi', slug: 'anisa-budi', status: 'published', thumbnail: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=300&fit=crop' },
-    { id: '2', name: 'Akad Nikah Siti', slug: 'siti-wedding', status: 'draft', thumbnail: 'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=400&h=300&fit=crop' },
-    { id: '3', name: 'Resepsi Ahmad', slug: 'ahmad-resepsi', status: 'published', thumbnail: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&h=300&fit=crop' },
-];
-
-const DUMMY_STATS = {
-    invitations: 3,
-    guests: 156,
-    views: 1420,
-    rsvp: 89,
-};
+// Stat types handled by live data
 
 // ============================================
 // MENU ITEMS
@@ -167,17 +147,27 @@ const menuItems: { id: TabId; label: string; icon: React.FC<{ className?: string
 // ============================================
 export const DashboardPage: React.FC = () => {
     const navigate = useNavigate();
+    const { user, logout } = useStore();
     const [activeTab, setActiveTab] = useState<TabId>('dashboard');
 
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+
+    // In production, these would be fetched from the API
+    const invitations: any[] = []; // Fallback to empty for now
+    const stats = {
+        invitations: user?.invitationCount || 0,
+        guests: 0,
+        views: 0,
+        rsvp: 0,
+    };
 
     useSEO({
         title: 'Dashboard - Tamuu',
         description: 'Kelola undangan digital Anda dengan mudah.',
     });
 
-    const filteredInvitations = DUMMY_INVITATIONS.filter(inv =>
+    const filteredInvitations = invitations.filter((inv: any) =>
         inv.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         inv.slug.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -191,11 +181,11 @@ export const DashboardPage: React.FC = () => {
                     <div className="p-6">
                         <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:border-teal-200 transition-all cursor-pointer">
                             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-teal-500/20 group-hover:scale-105 transition-transform">
-                                {DUMMY_USER.name.charAt(0)}
+                                {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="font-bold text-slate-900 truncate leading-tight">{DUMMY_USER.name}</p>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-teal-600 mt-0.5">{DUMMY_USER.plan} Plan</p>
+                                <p className="font-bold text-slate-900 truncate leading-tight">{user?.name || user?.email}</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-teal-600 mt-0.5">{user?.tier || 'Free'} Plan</p>
                             </div>
                         </div>
                     </div>
@@ -234,7 +224,7 @@ export const DashboardPage: React.FC = () => {
                         <UserIcon className="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110" />
                         {sidebarOpen && <span className="text-sm font-bold tracking-tight">Edit Profil</span>}
                     </Link>
-                    <button className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-rose-600 hover:bg-rose-50 transition-all">
+                    <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-rose-600 hover:bg-rose-50 transition-all">
                         <LogOutIcon className="w-5 h-5 flex-shrink-0" />
                         {sidebarOpen && <span className="text-sm font-bold tracking-tight">Log Out</span>}
                     </button>
@@ -271,7 +261,7 @@ export const DashboardPage: React.FC = () => {
                                 {/* Welcome Section */}
                                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                                     <div className="pt-2 md:pt-0">
-                                        <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-1 md:mb-2 leading-tight">Selamat datang,<br className="md:hidden" /> {DUMMY_USER.name} ✨</h2>
+                                        <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-1 md:mb-2 leading-tight">Selamat datang,<br className="md:hidden" /> {user?.name || 'User'} ✨</h2>
                                         <p className="text-slate-500 text-sm md:text-lg">Berikut ringkasan performa hari ini.</p>
                                     </div>
                                     <Link to="/onboarding" className="flex items-center justify-center gap-2 px-6 py-4 md:py-3.5 bg-slate-900 text-white font-black rounded-2xl shadow-xl shadow-slate-900/10 hover:shadow-2xl hover:shadow-slate-900/20 hover:-translate-y-0.5 transition-all active:scale-95 text-sm md:text-base">
@@ -282,10 +272,10 @@ export const DashboardPage: React.FC = () => {
                                 {/* Stats Cards */}
                                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                                     {[
-                                        { label: 'Undangan', value: DUMMY_STATS.invitations, icon: MailIcon, color: 'teal', badge: 'Total' },
-                                        { label: 'Tamu', value: DUMMY_STATS.guests, icon: UsersIcon, color: 'emerald', badge: 'Pax' },
-                                        { label: 'Visitor', value: DUMMY_STATS.views, icon: EyeIcon, color: 'blue', badge: 'Views' },
-                                        { label: 'RSVP', value: DUMMY_STATS.rsvp, icon: CalendarIcon, color: 'purple', badge: 'Conf' },
+                                        { label: 'Undangan', value: stats.invitations, icon: MailIcon, color: 'teal', badge: 'Total' },
+                                        { label: 'Tamu', value: stats.guests, icon: UsersIcon, color: 'emerald', badge: 'Pax' },
+                                        { label: 'Visitor', value: stats.views, icon: EyeIcon, color: 'blue', badge: 'Views' },
+                                        { label: 'RSVP', value: stats.rsvp, icon: CalendarIcon, color: 'purple', badge: 'Conf' },
                                     ].map((stat, i) => (
                                         <m.div
                                             key={stat.label}
@@ -317,7 +307,7 @@ export const DashboardPage: React.FC = () => {
                                         </div>
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                                            {DUMMY_INVITATIONS.slice(0, 3).map(inv => (
+                                            {invitations.slice(0, 3).map((inv: any) => (
                                                 <div key={inv.id} className="group bg-white rounded-2xl border border-slate-200/60 overflow-hidden hover:shadow-xl hover:border-teal-400/30 transition-all duration-500">
                                                     <div className="aspect-video relative overflow-hidden">
                                                         <img src={inv.thumbnail} alt={inv.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
@@ -356,11 +346,19 @@ export const DashboardPage: React.FC = () => {
                                                 <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center mb-6">
                                                     <SparklesIcon className="w-6 h-6 text-teal-400" />
                                                 </div>
-                                                <h4 className="text-xl md:text-2xl font-black mb-3">Ganti ke Priority</h4>
-                                                <p className="text-slate-400 mb-8 leading-relaxed text-xs md:text-sm">Buka fitur premium, domain kustom, & kapasitas tamu tanpa batas.</p>
-                                                <Link to="/onboarding" className="inline-flex items-center justify-center gap-2 px-6 py-4 bg-teal-600 text-white font-black rounded-2xl hover:bg-teal-700 transition-all shadow-xl shadow-teal-600/20 active:scale-95 text-sm">
-                                                    Upgrade Sekarang
-                                                </Link>
+                                                <h4 className="text-xl md:text-2xl font-black mb-3">
+                                                    {user?.tier === 'free' ? 'Ganti ke VIP' : user?.tier === 'vip' ? 'Ganti ke VVIP' : 'Premium Active'}
+                                                </h4>
+                                                <p className="text-slate-400 mb-8 leading-relaxed text-xs md:text-sm">
+                                                    {user?.tier === 'free'
+                                                        ? 'Buka fitur premium, domain kustom, & kapasitas tamu tanpa batas.'
+                                                        : 'Terima kasih telah berlangganan paket premium kami.'}
+                                                </p>
+                                                {user?.tier !== 'vvip' && (
+                                                    <Link to="/upgrade" className="inline-flex items-center justify-center gap-2 px-6 py-4 bg-teal-600 text-white font-black rounded-2xl hover:bg-teal-700 transition-all shadow-xl shadow-teal-600/20 active:scale-95 text-sm">
+                                                        Upgrade Sekarang
+                                                    </Link>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -454,7 +452,7 @@ export const DashboardPage: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {DUMMY_INVITATIONS.map(inv => (
+                                    {invitations.map((inv: any) => (
                                         <div key={inv.id} className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-lg transition-all flex flex-col gap-4">
                                             <div className="flex items-center gap-4">
                                                 <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center">
@@ -488,7 +486,7 @@ export const DashboardPage: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {DUMMY_INVITATIONS.map((inv, i) => (
+                                    {invitations.map((inv: any, i: number) => (
                                         <m.div
                                             key={inv.id}
                                             initial={{ opacity: 0, y: 20 }}

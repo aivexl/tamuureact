@@ -28,7 +28,10 @@ export const SignupPage: React.FC = () => {
                 id: 'user-new',
                 email: data.email,
                 name: data.name,
-                role: 'user'
+                role: 'user',
+                tier: 'free',
+                maxInvitations: 1,
+                invitationCount: 0
             });
 
             navigate('/onboarding');
