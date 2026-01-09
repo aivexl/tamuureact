@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import {
     Settings, Palette, Image, Upload, Loader2, Link as LinkIcon,
-    Trash2, Zap
+    Trash2, Zap, Tag, Plus, ChevronDown, Pencil, X, Check
 } from 'lucide-react';
-import { storage } from '@/lib/api';
+import { storage, categories as categoriesApi, Category } from '@/lib/api';
 import { ThumbnailSelectionModal } from '../Modals/ThumbnailSelectionModal';
 
 export const SettingsSidebar: React.FC = () => {
@@ -17,8 +17,77 @@ export const SettingsSidebar: React.FC = () => {
         projectName,
         setSlug,
         setProjectName,
-        id
+        id,
+        category,
+        setCategory,
+        isTemplate
     } = useStore();
+
+    // Category state
+    const [categoryList, setCategoryList] = useState<Category[]>([]);
+    const [loadingCategories, setLoadingCategories] = useState(true);
+    const [showNewCategory, setShowNewCategory] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+    const [editCategoryName, setEditCategoryName] = useState('');
+    const [showCategoryManager, setShowCategoryManager] = useState(false);
+
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+    const fetchCategories = async () => {
+        try {
+            const data = await categoriesApi.list();
+            setCategoryList(data);
+        } catch (e) {
+            console.error('Failed to fetch categories:', e);
+        } finally {
+            setLoadingCategories(false);
+        }
+    };
+
+    const handleCreateCategory = async () => {
+        if (!newCategoryName.trim()) return;
+        try {
+            const newCat = await categoriesApi.create({ name: newCategoryName.trim() });
+            setCategoryList(prev => [...prev, newCat]);
+            setCategory(newCat.name);
+            setNewCategoryName('');
+            setShowNewCategory(false);
+        } catch (e) {
+            console.error('Failed to create category:', e);
+        }
+    };
+
+    const handleEditCategory = async (id: string) => {
+        if (!editCategoryName.trim()) return;
+        try {
+            await categoriesApi.update(id, { name: editCategoryName.trim() });
+            setCategoryList(prev => prev.map(cat =>
+                cat.id === id ? { ...cat, name: editCategoryName.trim() } : cat
+            ));
+            // Update selected category if it was the one being edited
+            const oldCat = categoryList.find(c => c.id === id);
+            if (oldCat && category === oldCat.name) {
+                setCategory(editCategoryName.trim());
+            }
+            setEditingCategoryId(null);
+            setEditCategoryName('');
+        } catch (e) {
+            console.error('Failed to update category:', e);
+        }
+    };
+
+    const handleDeleteCategory = async (id: string) => {
+        if (!confirm('Yakin hapus kategori ini?')) return;
+        try {
+            await categoriesApi.delete(id);
+            setCategoryList(prev => prev.filter(cat => cat.id !== id));
+        } catch (e) {
+            console.error('Failed to delete category:', e);
+        }
+    };
 
     // Get active section's background color
     const activeSection = sections.find(s => s.id === activeSectionId);
@@ -94,6 +163,126 @@ export const SettingsSidebar: React.FC = () => {
                             placeholder="My Premium Template"
                         />
                     </div>
+
+                    {/* Category Selection (Admin Only for Templates) */}
+                    {isTemplate && (
+                        <div className="pt-2">
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="text-[9px] text-white/30 uppercase font-bold flex items-center gap-1.5">
+                                    <Tag className="w-3 h-3" />
+                                    Category
+                                </label>
+                                <button
+                                    onClick={() => setShowCategoryManager(!showCategoryManager)}
+                                    className="text-[9px] text-premium-accent hover:underline flex items-center gap-1"
+                                >
+                                    <Settings className="w-3 h-3" />
+                                    {showCategoryManager ? 'Done' : 'Manage'}
+                                </button>
+                            </div>
+
+                            {!showCategoryManager ? (
+                                <div className="space-y-2">
+                                    <select
+                                        value={category || ''}
+                                        onChange={(e) => setCategory(e.target.value)}
+                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none appearance-none cursor-pointer"
+                                    >
+                                        <option value="" className="bg-slate-900">Select category...</option>
+                                        {categoryList.map(cat => (
+                                            <option key={cat.id} value={cat.name} className="bg-slate-900">
+                                                {cat.icon} {cat.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            ) : (
+                                <div className="space-y-2 bg-white/5 rounded-lg p-3 border border-white/10">
+                                    {/* List */}
+                                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1 premium-scroll">
+                                        {categoryList.map(cat => (
+                                            <div key={cat.id} className="flex items-center gap-2 group">
+                                                {editingCategoryId === cat.id ? (
+                                                    <div className="flex-1 flex items-center gap-1">
+                                                        <input
+                                                            type="text"
+                                                            value={editCategoryName}
+                                                            onChange={(e) => setEditCategoryName(e.target.value)}
+                                                            className="flex-1 bg-black/40 border border-premium-accent/50 rounded px-2 py-1 text-xs focus:outline-none"
+                                                            autoFocus
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') handleEditCategory(cat.id);
+                                                                if (e.key === 'Escape') setEditingCategoryId(null);
+                                                            }}
+                                                        />
+                                                        <button onClick={() => handleEditCategory(cat.id)} className="p-1 text-green-400 hover:bg-white/10 rounded"><Check className="w-3 h-3" /></button>
+                                                        <button onClick={() => setEditingCategoryId(null)} className="p-1 text-red-400 hover:bg-white/10 rounded"><X className="w-3 h-3" /></button>
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <span className="flex-1 text-xs text-white/80 truncate">
+                                                            {cat.icon} {cat.name}
+                                                        </span>
+                                                        <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <button
+                                                                onClick={() => {
+                                                                    setEditingCategoryId(cat.id);
+                                                                    setEditCategoryName(cat.name);
+                                                                }}
+                                                                className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 rounded"
+                                                            >
+                                                                <Pencil className="w-3 h-3" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDeleteCategory(cat.id)}
+                                                                className="p-1.5 text-white/40 hover:text-red-400 hover:bg-white/10 rounded"
+                                                            >
+                                                                <Trash2 className="w-3 h-3" />
+                                                            </button>
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Add New */}
+                                    {!showNewCategory ? (
+                                        <button
+                                            onClick={() => setShowNewCategory(true)}
+                                            className="w-full py-2 border border-dashed border-white/10 rounded-lg text-[10px] text-white/40 hover:text-white hover:border-white/30 transition-colors flex items-center justify-center gap-1 mt-2"
+                                        >
+                                            <Plus className="w-3 h-3" /> Add New Category
+                                        </button>
+                                    ) : (
+                                        <div className="flex gap-2 mt-2 pt-2 border-t border-white/5">
+                                            <input
+                                                type="text"
+                                                value={newCategoryName}
+                                                onChange={(e) => setNewCategoryName(e.target.value)}
+                                                placeholder="New category..."
+                                                className="flex-1 bg-black/40 border border-white/10 rounded px-2 py-1 text-xs focus:border-premium-accent/50 focus:outline-none"
+                                                autoFocus
+                                                onKeyDown={(e) => e.key === 'Enter' && handleCreateCategory()}
+                                            />
+                                            <button
+                                                onClick={handleCreateCategory}
+                                                className="px-2 py-1 bg-premium-accent text-premium-dark rounded text-xs font-bold"
+                                            >
+                                                Add
+                                            </button>
+                                            <button
+                                                onClick={() => setShowNewCategory(false)}
+                                                className="px-2 py-1 bg-white/10 text-white rounded text-xs hover:bg-white/20"
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {/* Thumbnail Selection */}
                     <div className="pt-2">

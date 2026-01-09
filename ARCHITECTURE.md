@@ -20,7 +20,6 @@ Platform undangan digital dengan arsitektur multi-domain dan monorepo.
 |--------------|-------------|---------------|--------|
 | `tamuu-app` | `tamuu-app.pages.dev` | `app.tamuu.id` | Dashboard & Editor |
 | `tamuu` | `tamuu.pages.dev` | `tamuu.id` | Landing page |
-| `bg-remover` | - | `api.tamuu.id` | Background remover API |
 | `tamuuid-cdn` | `tamuuid-cdn.shafania57.workers.dev` | `cdn.tamuu.id` | CDN worker |
 
 ---
@@ -44,7 +43,6 @@ Platform undangan digital dengan arsitektur multi-domain dan monorepo.
 - `/user/display-editor/:id` - Landscape Welcome Display Editor
 - `/guests/:id` - Guest List Management, RSVP, & QR Generator
 - `/wishes` - Management of Guest Wishes/Comments
-- `/tools/background-remover` - AI Background Remover Studio
 - `/admin/dashboard` - System Metrics & Admin Overview
 - `/admin/templates` - System Template Management
 - `/admin/editor/:slug` - Template Builder (System Level)
@@ -52,7 +50,6 @@ Platform undangan digital dengan arsitektur multi-domain dan monorepo.
 ### 📡 API & Services
 - `api.tamuu.id/v1/...` - Core API (Cloudflare D1 & Workers)
 - `cdn.tamuu.id/assets/...` - Asset CDN (Cloudflare R2)
-- `api.tamuu.id/bg-remover` - BEN2 AI Model API
 
 
 ---
@@ -74,7 +71,6 @@ tamuureact/
 │   │
 │   └── api/                    # Backend (Cloudflare Workers)
 │       ├── tamuuid-cdn-worker.js
-│       ├── bg-remover-worker.js
 │       └── wrangler.toml
 │
 ├── packages/
@@ -160,7 +156,6 @@ pnpm deploy:api    # Deploy API to Cloudflare Workers
 - **Invitation Editor** - Drag-and-drop canvas editor
   - Element animations (entrance & looping)
   - Motion path animations
-  - Background removal (AI/BEN2)
   - Multi-section support
   - Copy/paste between canvases
 - **Template Store** - Galeri template undangan

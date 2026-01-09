@@ -84,7 +84,8 @@ export const PreviewPage: React.FC = () => {
                         music: data.music || undefined,
                         id: data.id,
                         selectedLayerId: null,
-                        hasHydrated: true
+                        hasHydrated: true,
+                        isTemplate: source === 'templates' // Prevent polling for templates
                     });
                 } else {
                     console.warn('[PreviewPage] No data found for slug:', slug);

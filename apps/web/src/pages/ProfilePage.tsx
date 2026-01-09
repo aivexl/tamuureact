@@ -74,6 +74,11 @@ const ExternalLinkIcon = ({ className }: { className?: string }) => (
         <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" x2="21" y1="14" y2="3" />
     </svg>
 );
+const MapPinIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
+    </svg>
+);
 
 // ============================================
 // TIER CONFIG
@@ -100,7 +105,18 @@ export const ProfilePage: React.FC = () => {
         phone: '',
         gender: '' as 'male' | 'female' | '',
         birthDate: '',
+        bank1Name: '',
+        bank1Number: '',
+        bank1Holder: '',
+        bank2Name: '',
+        bank2Number: '',
+        bank2Holder: '',
+        emoneyType: '' as 'dana' | 'shopeepay' | '',
+        emoneyNumber: '',
+        giftAddress: '',
     });
+
+    const [activeTab, setActiveTab] = useState<'profile' | 'gift'>('profile');
 
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
@@ -129,6 +145,15 @@ export const ProfilePage: React.FC = () => {
                 phone: profile.phone || '',
                 gender: (profile.gender as 'male' | 'female' | '') || '',
                 birthDate: profile.birthDate || '',
+                bank1Name: profile.bank1Name || '',
+                bank1Number: profile.bank1Number || '',
+                bank1Holder: profile.bank1Holder || '',
+                bank2Name: profile.bank2Name || '',
+                bank2Number: profile.bank2Number || '',
+                bank2Holder: profile.bank2Holder || '',
+                emoneyType: (profile.emoneyType as 'dana' | 'shopeepay' | '') || '',
+                emoneyNumber: profile.emoneyNumber || '',
+                giftAddress: profile.giftAddress || '',
             });
         }
     }, [profile]);
@@ -223,170 +248,327 @@ export const ProfilePage: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Subscription Active Period Section */}
-                        <div className="mb-10 p-5 rounded-2xl bg-gradient-to-br from-indigo-50/50 to-slate-50 border border-indigo-100/50">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 rounded-xl bg-white shadow-sm border border-indigo-100 flex items-center justify-center shrink-0">
-                                        <ClockIcon className="w-6 h-6 text-indigo-600" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-sm font-bold text-slate-900 mb-1">Masa Aktif Subscription</h3>
-                                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                                            <div className="flex items-center gap-1.5">
-                                                <span className="text-xs text-slate-500">Berakhir pada:</span>
-                                                <span className="text-sm font-bold text-indigo-700">
-                                                    {profile.expires_at ? new Date(profile.expires_at).toLocaleDateString('id-ID', {
-                                                        day: 'numeric',
-                                                        month: 'long',
-                                                        year: 'numeric'
-                                                    }) : 'N/A'}
-                                                </span>
-                                            </div>
-                                            <div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-slate-200" />
-                                            <div className="flex items-center gap-1.5">
-                                                <span className="text-xs text-slate-500">Status:</span>
-                                                <span className="flex items-center gap-1">
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                                    <span className="text-xs font-black uppercase text-emerald-600">Aktif</span>
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 transition-all shadow-sm">
-                                        <CreditCardIcon className="w-3.5 h-3.5" />
-                                        Invoice
-                                    </button>
-                                    <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-indigo-100">
-                                        Perpanjang
-                                        <ExternalLinkIcon className="w-3.5 h-3.5" />
-                                    </button>
-                                </div>
-                            </div>
+                        {/* Tabs Navigation */}
+                        <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl mb-10 w-fit">
+                            <button
+                                onClick={() => setActiveTab('profile')}
+                                className={`px-5 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'profile' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                Informasi Profil
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('gift')}
+                                className={`px-5 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'gift' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                Kado Digital
+                            </button>
                         </div>
 
-                        {/* Form Fields */}
-                        <div className="space-y-6">
-                            {/* Name & Phone Row */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Name */}
-                                <div className="space-y-1.5">
-                                    <label className="text-sm font-medium text-slate-700">Full Name</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                            <UserIcon className="w-4 h-4" />
+                        {/* Tab Contents */}
+                        <div className="min-h-[400px]">
+                            {activeTab === 'profile' && (
+                                <m.div
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    className="space-y-6"
+                                >
+                                    {/* Subscription Active Period Section */}
+                                    <div className="mb-10 p-5 rounded-2xl bg-gradient-to-br from-indigo-50/50 to-slate-50 border border-indigo-100/50">
+                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                            <div className="flex items-start gap-4">
+                                                <div className="w-12 h-12 rounded-xl bg-white shadow-sm border border-indigo-100 flex items-center justify-center shrink-0">
+                                                    <ClockIcon className="w-6 h-6 text-indigo-600" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-sm font-bold text-slate-900 mb-1">Masa Aktif Subscription</h3>
+                                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span className="text-xs text-slate-500">Berakhir pada:</span>
+                                                            <span className="text-sm font-bold text-indigo-700">
+                                                                {profile.expires_at ? new Date(profile.expires_at).toLocaleDateString('id-ID', {
+                                                                    day: 'numeric',
+                                                                    month: 'long',
+                                                                    year: 'numeric'
+                                                                }) : 'N/A'}
+                                                            </span>
+                                                        </div>
+                                                        <div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-slate-200" />
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span className="text-xs text-slate-500">Status:</span>
+                                                            <span className="flex items-center gap-1">
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                                                <span className="text-xs font-black uppercase text-emerald-600">Aktif</span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 transition-all shadow-sm">
+                                                    <CreditCardIcon className="w-3.5 h-3.5" />
+                                                    Invoice
+                                                </button>
+                                                <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-indigo-100">
+                                                    Perpanjang
+                                                    <ExternalLinkIcon className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
                                         </div>
-                                        <input
-                                            type="text"
-                                            value={profileData.name}
-                                            onChange={(e) => handleInputChange('name', e.target.value)}
-                                            className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 transition-all outline-none text-sm"
-                                            placeholder="Jane Doe"
-                                        />
                                     </div>
-                                </div>
 
-                                {/* Phone */}
-                                <div className="space-y-1.5">
-                                    <label className="text-sm font-medium text-slate-700">Phone Number</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                            <PhoneIcon className="w-4 h-4" />
+                                    {/* Name & Phone Row */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {/* Name */}
+                                        <div className="space-y-1.5">
+                                            <label className="text-sm font-medium text-slate-700">Full Name</label>
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                                    <UserIcon className="w-4 h-4" />
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    value={profileData.name}
+                                                    onChange={(e) => handleInputChange('name', e.target.value)}
+                                                    className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 transition-all outline-none text-sm"
+                                                    placeholder="Jane Doe"
+                                                />
+                                            </div>
                                         </div>
-                                        <input
-                                            type="tel"
-                                            value={profileData.phone}
-                                            onChange={(e) => handleInputChange('phone', e.target.value)}
-                                            className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 transition-all outline-none text-sm"
-                                            placeholder="+62 812..."
-                                        />
-                                    </div>
-                                </div>
-                            </div>
 
-                            {/* Gender & Birth Date Row */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Gender */}
-                                <div className="space-y-1.5">
-                                    <label className="text-sm font-medium text-slate-700">Gender</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                            <UsersIcon className="w-4 h-4" />
+                                        {/* Phone */}
+                                        <div className="space-y-1.5">
+                                            <label className="text-sm font-medium text-slate-700">Phone Number</label>
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                                    <PhoneIcon className="w-4 h-4" />
+                                                </div>
+                                                <input
+                                                    type="tel"
+                                                    value={profileData.phone}
+                                                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                                                    className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 transition-all outline-none text-sm"
+                                                    placeholder="+62 812..."
+                                                />
+                                            </div>
                                         </div>
-                                        <select
-                                            value={profileData.gender}
-                                            onChange={(e) => handleInputChange('gender', e.target.value)}
-                                            className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 transition-all outline-none text-sm appearance-none"
-                                        >
-                                            <option value="">Select Gender</option>
-                                            <option value="male">Male</option>
-                                            <option value="female">Female</option>
-                                        </select>
                                     </div>
-                                </div>
 
-                                {/* Birth Date */}
-                                <div className="space-y-1.5">
-                                    <label className="text-sm font-medium text-slate-700">Birth Date</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                            <CalendarIcon className="w-4 h-4" />
+                                    {/* Gender & Birth Date Row */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {/* Gender */}
+                                        <div className="space-y-1.5">
+                                            <label className="text-sm font-medium text-slate-700">Gender</label>
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                                    <UsersIcon className="w-4 h-4" />
+                                                </div>
+                                                <select
+                                                    value={profileData.gender}
+                                                    onChange={(e) => handleInputChange('gender', e.target.value)}
+                                                    className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 transition-all outline-none text-sm appearance-none"
+                                                >
+                                                    <option value="">Select Gender</option>
+                                                    <option value="male">Male</option>
+                                                    <option value="female">Female</option>
+                                                </select>
+                                            </div>
                                         </div>
-                                        <input
-                                            type="date"
-                                            value={profileData.birthDate}
-                                            onChange={(e) => handleInputChange('birthDate', e.target.value)}
-                                            className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 transition-all outline-none text-sm"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
 
-                            {/* Email (Read-only) */}
-                            <div className="space-y-1.5 opacity-60">
-                                <label className="text-sm font-medium text-slate-700">Email Address</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                        <MailIcon className="w-4 h-4" />
+                                        {/* Birth Date */}
+                                        <div className="space-y-1.5">
+                                            <label className="text-sm font-medium text-slate-700">Birth Date</label>
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                                    <CalendarIcon className="w-4 h-4" />
+                                                </div>
+                                                <input
+                                                    type="date"
+                                                    value={profileData.birthDate}
+                                                    onChange={(e) => handleInputChange('birthDate', e.target.value)}
+                                                    className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 transition-all outline-none text-sm"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <input
-                                        value={profile.email}
-                                        disabled
-                                        className="block w-full pl-10 pr-3 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed text-sm"
-                                    />
-                                </div>
-                                <p className="text-xs text-slate-500">Email cannot be changed for security reasons.</p>
-                            </div>
 
-                            {/* Tamuu ID (Read-only with Copy) */}
-                            <div
-                                className="space-y-1.5 group"
-                                onMouseEnter={() => setIsHoveringTamuuId(true)}
-                                onMouseLeave={() => setIsHoveringTamuuId(false)}
-                            >
-                                <label className="text-sm font-medium text-slate-700">Tamuu ID</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                        <ShieldIcon className="w-4 h-4" />
+                                    {/* Email (Read-only) */}
+                                    <div className="space-y-1.5 opacity-60">
+                                        <label className="text-sm font-medium text-slate-700">Email Address</label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                                <MailIcon className="w-4 h-4" />
+                                            </div>
+                                            <input
+                                                value={profile.email}
+                                                disabled
+                                                className="block w-full pl-10 pr-3 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed text-sm"
+                                            />
+                                        </div>
                                     </div>
-                                    <input
-                                        value={profile.tamuuId}
-                                        disabled
-                                        className="block w-full pl-10 pr-12 py-2.5 bg-gradient-to-r from-slate-50 to-indigo-50 border border-indigo-100 rounded-xl text-indigo-700 font-mono text-sm cursor-default tracking-wide"
-                                    />
-                                    {/* Copy Button */}
-                                    {(isHoveringTamuuId || copySuccess) && (
-                                        <button
-                                            onClick={copyTamuuId}
-                                            className={`absolute inset-y-0 right-0 pr-3 flex items-center transition-all ${copySuccess ? 'text-emerald-600' : 'text-indigo-500 hover:text-indigo-700'}`}
-                                        >
-                                            {copySuccess ? <CheckIcon className="w-4 h-4" /> : <CopyIcon className="w-4 h-4" />}
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
+
+                                    {/* Tamuu ID (Read-only with Copy) */}
+                                    <div
+                                        className="space-y-1.5 group"
+                                        onMouseEnter={() => setIsHoveringTamuuId(true)}
+                                        onMouseLeave={() => setIsHoveringTamuuId(false)}
+                                    >
+                                        <label className="text-sm font-medium text-slate-700">Tamuu ID</label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                                <ShieldIcon className="w-4 h-4" />
+                                            </div>
+                                            <input
+                                                value={profile.tamuuId}
+                                                disabled
+                                                className="block w-full pl-10 pr-12 py-2.5 bg-gradient-to-r from-slate-50 to-indigo-50 border border-indigo-100 rounded-xl text-indigo-700 font-mono text-sm cursor-default tracking-wide"
+                                            />
+                                            {/* Copy Button */}
+                                            {(isHoveringTamuuId || copySuccess) && (
+                                                <button
+                                                    onClick={copyTamuuId}
+                                                    className={`absolute inset-y-0 right-0 pr-3 flex items-center transition-all ${copySuccess ? 'text-emerald-600' : 'text-indigo-500 hover:text-indigo-700'}`}
+                                                >
+                                                    {copySuccess ? <CheckIcon className="w-4 h-4" /> : <CopyIcon className="w-4 h-4" />}
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </m.div>
+                            )}
+
+                            {activeTab === 'gift' && (
+                                <m.div
+                                    initial={{ opacity: 0, x: 10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    className="space-y-8"
+                                >
+                                    {/* Bank Accounts Section */}
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                                                <CreditCardIcon className="w-4 h-4 text-amber-600" />
+                                            </div>
+                                            <h3 className="text-lg font-bold text-slate-900">Rekening Bank (Maks. 2)</h3>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 rounded-2xl bg-slate-50 border border-slate-200">
+                                            {/* Bank 1 */}
+                                            <div className="space-y-4">
+                                                <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">Bank Utama #1</h4>
+                                                <div className="space-y-3">
+                                                    <input
+                                                        type="text"
+                                                        value={profileData.bank1Name}
+                                                        onChange={(e) => handleInputChange('bank1Name', e.target.value)}
+                                                        className="block w-full px-4 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-bold"
+                                                        placeholder="Nama Bank (e.g. BCA)"
+                                                    />
+                                                    <input
+                                                        type="text"
+                                                        value={profileData.bank1Number}
+                                                        onChange={(e) => handleInputChange('bank1Number', e.target.value)}
+                                                        className="block w-full px-4 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-mono"
+                                                        placeholder="Nomor Rekening"
+                                                    />
+                                                    <input
+                                                        type="text"
+                                                        value={profileData.bank1Holder}
+                                                        onChange={(e) => handleInputChange('bank1Holder', e.target.value)}
+                                                        className="block w-full px-4 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                                                        placeholder="Atas Nama"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* Bank 2 */}
+                                            <div className="space-y-4 pt-8 md:pt-0 md:border-l md:pl-8 border-slate-200">
+                                                <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">Bank Alternatif #2</h4>
+                                                <div className="space-y-3">
+                                                    <input
+                                                        type="text"
+                                                        value={profileData.bank2Name}
+                                                        onChange={(e) => handleInputChange('bank2Name', e.target.value)}
+                                                        className="block w-full px-4 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-bold"
+                                                        placeholder="Nama Bank (e.g. Mandiri)"
+                                                    />
+                                                    <input
+                                                        type="text"
+                                                        value={profileData.bank2Number}
+                                                        onChange={(e) => handleInputChange('bank2Number', e.target.value)}
+                                                        className="block w-full px-4 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-mono"
+                                                        placeholder="Nomor Rekening"
+                                                    />
+                                                    <input
+                                                        type="text"
+                                                        value={profileData.bank2Holder}
+                                                        onChange={(e) => handleInputChange('bank2Holder', e.target.value)}
+                                                        className="block w-full px-4 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                                                        placeholder="Atas Nama"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* E-Money Section */}
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                                                <PhoneIcon className="w-4 h-4 text-emerald-600" />
+                                            </div>
+                                            <h3 className="text-lg font-bold text-slate-900">E-Money</h3>
+                                        </div>
+
+                                        <div className="p-6 rounded-2xl bg-emerald-50/30 border border-emerald-100 flex flex-col sm:flex-row gap-6">
+                                            <div className="w-full sm:w-1/3">
+                                                <label className="text-xs font-bold text-emerald-700 uppercase mb-2 block">Provider</label>
+                                                <select
+                                                    value={profileData.emoneyType}
+                                                    onChange={(e) => handleInputChange('emoneyType', e.target.value)}
+                                                    className="block w-full px-4 py-2.5 bg-white border border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm font-bold appearance-none"
+                                                >
+                                                    <option value="">Pilih E-Money</option>
+                                                    <option value="dana">DANA</option>
+                                                    <option value="shopeepay">ShopeePay</option>
+                                                </select>
+                                            </div>
+                                            <div className="flex-1">
+                                                <label className="text-xs font-bold text-emerald-700 uppercase mb-2 block">Nomor HP</label>
+                                                <input
+                                                    type="text"
+                                                    value={profileData.emoneyNumber}
+                                                    onChange={(e) => handleInputChange('emoneyNumber', e.target.value)}
+                                                    className="block w-full px-4 py-2.5 bg-white border border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm font-mono"
+                                                    placeholder="08xx xxxx xxxx"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Gift Address Section */}
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center">
+                                                <MapPinIcon className="w-4 h-4 text-indigo-600" />
+                                            </div>
+                                            <h3 className="text-lg font-bold text-slate-900">Alamat Pengiriman Kado Fisik</h3>
+                                        </div>
+
+                                        <div className="p-6 rounded-2xl bg-indigo-50/30 border border-indigo-100">
+                                            <textarea
+                                                value={profileData.giftAddress}
+                                                onChange={(e) => handleInputChange('giftAddress', e.target.value)}
+                                                className="block w-full px-4 py-3 bg-white border border-indigo-100 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm leading-relaxed"
+                                                rows={4}
+                                                placeholder="Contoh: Jl. Kemewahan No. 123, Jakarta Selatan (UP: Jane Doe / 08123456789)"
+                                            />
+                                            <p className="mt-3 text-xs text-indigo-400 font-medium italic">
+                                                *Alamat ini akan ditampilkan di bagian 'Kirim Kado' untuk memudahkan tamu mengirim kado fisik.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </m.div>
+                            )}
                         </div>
                     </div>
 

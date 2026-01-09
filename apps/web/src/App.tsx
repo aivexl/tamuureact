@@ -29,7 +29,6 @@ const InvitationsStorePage = lazy(() => import('./pages/InvitationsStorePage').t
 const EditorPage = lazy(() => import('./pages/EditorPage').then(m => ({ default: m.EditorPage })));
 const AdminTemplatesPage = lazy(() => import('./pages/AdminTemplatesPage').then(m => ({ default: m.AdminTemplatesPage })));
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ default: m.DashboardPage })));
-const BackgroundRemoverPage = lazy(() => import('./pages/BackgroundRemoverPage').then(m => ({ default: m.BackgroundRemoverPage })));
 const PreviewPage = lazy(() => import('./pages/PreviewPage').then(m => ({ default: m.PreviewPage })));
 const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
 const GuestManagementPage = lazy(() => import('./pages/GuestManagementPage').then(m => ({ default: m.GuestManagementPage })));
@@ -120,7 +119,6 @@ const App: React.FC = () => {
                         <Route path="/guests" element={<MainLayout><GuestManagementPage /></MainLayout>} />
                         <Route path="/guests/:invitationId" element={<MainLayout><GuestManagementPage /></MainLayout>} />
                         <Route path="/wishes" element={<MainLayout><GuestWishesPage /></MainLayout>} />
-                        <Route path="/tools/background-remover" element={<MainLayout><BackgroundRemoverPage /></MainLayout>} />
 
                         {/* ============================================ */}
                         {/* APP ROUTES - Guarded by Domain/Auth logic in components if needed */}

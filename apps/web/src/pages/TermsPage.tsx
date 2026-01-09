@@ -68,7 +68,7 @@ export const TermsPage: React.FC = () => {
 
                 {/* Footer Legal */}
                 <div className="mt-20 pt-10 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6">
-                    <p className="text-sm text-slate-400 font-medium italic">© 2026 Tamuu Elite Platform. All rights reserved.</p>
+                    <p className="text-sm text-slate-400 font-medium italic">© {new Date().getFullYear()} Tamuu Elite Platform. All rights reserved.</p>
                     <div className="flex gap-6">
                         <button className="text-sm text-indigo-600 font-bold hover:underline">Support Center</button>
                         <button className="text-sm text-indigo-600 font-bold hover:underline">Contact Legal</button>

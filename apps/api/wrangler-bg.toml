@@ -1,9 +1,0 @@
-name = "bg-remover"
-main = "bg-remover-worker.js"
-compatibility_date = "2024-01-01"
-
-
-# R2 bucket for temporary image storage
-[[r2_buckets]]
-bucket_name = "bg-temp"
-binding = "R2_BUCKET"

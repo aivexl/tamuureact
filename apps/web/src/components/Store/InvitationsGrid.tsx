@@ -23,6 +23,8 @@ interface InvitationsGridProps {
     onUseTemplate: (id: string) => void;
     onPreviewTemplate: (slug: string | undefined, id: string) => void;
     selectedId?: string | null;
+    wishlist?: string[];
+    onToggleWishlist?: (templateId: string, isWishlisted: boolean) => void;
 }
 
 
@@ -31,7 +33,9 @@ export const InvitationsGrid: React.FC<InvitationsGridProps> = ({
     filteredTemplates,
     onUseTemplate,
     onPreviewTemplate,
-    selectedId
+    selectedId,
+    wishlist = [],
+    onToggleWishlist
 }) => {
     const { user } = useStore();
     const navigate = useNavigate();
@@ -97,10 +101,15 @@ export const InvitationsGrid: React.FC<InvitationsGridProps> = ({
                             {/* Hover Like Overlay */}
                             <div className="absolute top-4 right-4">
                                 <button
-                                    className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 transition-colors shadow-sm"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        const isWishlisted = wishlist.includes(template.id);
+                                        onToggleWishlist?.(template.id, isWishlisted);
+                                    }}
+                                    className={`w-10 h-10 backdrop-blur-md rounded-full flex items-center justify-center transition-all shadow-sm ${wishlist.includes(template.id) ? 'bg-rose-500 text-white' : 'bg-white/80 text-slate-400 hover:text-rose-500'}`}
                                     aria-label="Sukai desain ini"
                                 >
-                                    <Heart className="w-5 h-5" />
+                                    <Heart className={`w-5 h-5 ${wishlist.includes(template.id) ? 'fill-current' : ''}`} />
                                 </button>
                             </div>
 
@@ -148,10 +157,10 @@ export const InvitationsGrid: React.FC<InvitationsGridProps> = ({
                                         }
                                     }}
                                     className={`w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 ${!checkAccess(template.tier)
-                                            ? 'bg-slate-100 text-slate-400 hover:bg-slate-200'
-                                            : template.id === selectedId
-                                                ? 'bg-teal-500 text-white hover:bg-teal-600 shadow-teal-500/20'
-                                                : 'bg-slate-900 text-white hover:bg-[#FFBF00] hover:text-slate-900 shadow-slate-900/10'
+                                        ? 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                                        : template.id === selectedId
+                                            ? 'bg-teal-500 text-white hover:bg-teal-600 shadow-teal-500/20'
+                                            : 'bg-slate-900 text-white hover:bg-[#FFBF00] hover:text-slate-900 shadow-slate-900/10'
                                         }`}
                                 >
                                     {!checkAccess(template.tier) && <Lock className="w-3 h-3" />}

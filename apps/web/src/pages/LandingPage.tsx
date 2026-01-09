@@ -10,6 +10,7 @@ import FeaturesSection from '../components/Landing/FeaturesSection';
 // Lazy load non-critical sections further down
 const PricingSection = lazy(() => import('../components/Landing/PricingSection'));
 const TestimonialsSection = lazy(() => import('../components/Landing/TestimonialsSection'));
+const FAQSection = lazy(() => import('../components/Landing/FAQSection'));
 const CTASection = lazy(() => import('../components/Landing/CTASection'));
 
 const SectionLoader = () => (
@@ -178,6 +179,7 @@ export const LandingPage: React.FC = () => {
             <Suspense fallback={<SectionLoader />}>
                 <PricingSection />
                 <TestimonialsSection />
+                <FAQSection />
                 <CTASection />
             </Suspense>
 

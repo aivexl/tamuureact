@@ -14,6 +14,7 @@ import { generateId, sanitizeValue } from '@/lib/utils';
 import { Layers, List, Settings } from 'lucide-react';
 import { SettingsSidebar } from '../Panels/SettingsSidebar';
 import { useNavigate } from 'react-router-dom';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 // ============================================
 // DISPLAY EDITOR LAYOUT
@@ -34,6 +35,9 @@ export const DisplayEditorLayout: React.FC<DisplayEditorLayoutProps> = ({ templa
     const [isSyncing, setIsSyncing] = useState(false);
     const [hasLoaded, setHasLoaded] = useState(false);
     const [activeSidebarTab, setActiveSidebarTab] = useState<'sections' | 'layers' | 'settings'>('sections');
+
+    // Enable keyboard shortcuts
+    useKeyboardShortcuts();
 
     // ============================================
     // SAVE HANDLER

@@ -1,12 +1,13 @@
-import React, { useEffect, useState, useMemo, Suspense, lazy } from 'react';
+import React, { useEffect, useState, useMemo, Suspense, lazy, useCallback } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { templates as templatesApi, invitations as invitationsApi } from '@/lib/api';
+import { templates as templatesApi, invitations as invitationsApi, wishlist as wishlistApi, categories as categoriesApi, Category } from '@/lib/api';
 import { useStore } from '@/store/useStore';
 
 import {
     Search,
     Sparkles,
-    ArrowRight
+    ArrowRight,
+    Heart
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSEO } from '../hooks/useSEO';
@@ -23,7 +24,7 @@ interface Template {
     price?: number;
 }
 
-const CATEGORIES = ['All', 'Wedding', 'Birthday', 'Event', 'Classic', 'Floral'];
+// Removed hardcoded CATEGORIES - now fetched from API
 
 const GridLoader = () => (
     <div className="py-20 flex justify-center items-center">
@@ -47,11 +48,15 @@ export const InvitationsStorePage: React.FC = () => {
     const onboardingTemplateId = queryParams.get('templateId');
 
     const [templates, setTemplates] = useState<Template[]>([]);
+    const [wishlist, setWishlist] = useState<string[]>([]);
+    const [categoryList, setCategoryList] = useState<Category[]>([]);
 
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
+    const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
     const navigate = useNavigate();
+    const { user } = useStore();
 
     useSEO({
         title: 'Koleksi Desain Undangan Digital Premium',
@@ -60,7 +65,20 @@ export const InvitationsStorePage: React.FC = () => {
 
     useEffect(() => {
         fetchTemplates();
-    }, []);
+        fetchCategories();
+        if (user?.id) {
+            fetchWishlist();
+        }
+    }, [user?.id]);
+
+    const fetchCategories = async () => {
+        try {
+            const data = await categoriesApi.list();
+            setCategoryList(data);
+        } catch (err) {
+            console.error('Failed to fetch categories:', err);
+        }
+    };
 
     const fetchTemplates = async () => {
         setIsLoading(true);
@@ -74,14 +92,48 @@ export const InvitationsStorePage: React.FC = () => {
         }
     };
 
+    const fetchWishlist = async () => {
+        if (!user?.id) return;
+        try {
+            const data = await wishlistApi.list(user.id);
+            setWishlist(data || []);
+        } catch (err) {
+            console.error('Failed to fetch wishlist:', err);
+        }
+    };
+
+    const handleToggleWishlist = useCallback(async (templateId: string, isWishlisted: boolean) => {
+        if (!user?.id) {
+            navigate('/login');
+            return;
+        }
+        // Optimistic update
+        setWishlist(prev =>
+            isWishlisted
+                ? prev.filter(id => id !== templateId)
+                : [...prev, templateId]
+        );
+        try {
+            await wishlistApi.toggle(user.id, templateId, isWishlisted);
+        } catch (err) {
+            // Rollback on error
+            setWishlist(prev =>
+                isWishlisted
+                    ? [...prev, templateId]
+                    : prev.filter(id => id !== templateId)
+            );
+        }
+    }, [user?.id, navigate]);
+
     const filteredTemplates = useMemo(() => {
         return templates.filter(t => {
             const matchesCategory = selectedCategory === 'All' || t.category === selectedCategory;
             const matchesSearch = t.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 t.category?.toLowerCase().includes(searchQuery.toLowerCase());
-            return matchesCategory && matchesSearch;
+            const matchesFavorites = !showFavoritesOnly || wishlist.includes(t.id);
+            return matchesCategory && matchesSearch && matchesFavorites;
         });
-    }, [templates, selectedCategory, searchQuery]);
+    }, [templates, selectedCategory, searchQuery, showFavoritesOnly, wishlist]);
 
     const handleUseTemplate = async (templateId: string) => {
         if (!isAuthenticated) {
@@ -114,9 +166,9 @@ export const InvitationsStorePage: React.FC = () => {
                         .replace(/Mempelai Pria/g, magic.groomName || 'Mempelai Pria')
                         .replace(/Mempelai Wanita/g, magic.brideName || 'Mempelai Wanita')
                         .replace(/Nama Mempelai/g, magic.celebrantName || magic.invitationName || 'Nama Mempelai')
-                        .replace(/0000000000/g, magic.accountNumber || '0000000000')
-                        .replace(/Nama Bank/g, magic.bankName || 'Nama Bank')
-                        .replace(/Atas Nama/g, magic.accountHolder || 'Atas Nama')
+                        .replace(/0000000000/g, magic.bank1Number || '0000000000')
+                        .replace(/Nama Bank/g, magic.bank1Name || 'Nama Bank')
+                        .replace(/Atas Nama/g, magic.bank1Holder || 'Atas Nama')
                         .replace(/Lokasi Acara/g, magic.eventLocation || 'Lokasi Acara');
 
                     // B. Photo Injection (Heuristic-based)
@@ -260,18 +312,45 @@ export const InvitationsStorePage: React.FC = () => {
                             transition={{ delay: 0.3 }}
                             className="flex flex-wrap justify-center gap-3"
                         >
-                            {CATEGORIES.map((cat) => (
+                            {/* All Category Button */}
+                            <button
+                                onClick={() => { setSelectedCategory('All'); setShowFavoritesOnly(false); }}
+                                className={`px-6 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 border ${selectedCategory === 'All' && !showFavoritesOnly
+                                    ? 'bg-slate-900 text-white border-slate-900 shadow-xl shadow-slate-900/10'
+                                    : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-900'
+                                    }`}
+                            >
+                                All
+                            </button>
+
+                            {/* Dynamic Categories */}
+                            {categoryList.map((cat) => (
                                 <button
-                                    key={cat}
-                                    onClick={() => setSelectedCategory(cat)}
-                                    className={`px-6 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 border ${selectedCategory === cat
+                                    key={cat.id}
+                                    onClick={() => { setSelectedCategory(cat.name); setShowFavoritesOnly(false); }}
+                                    className={`px-6 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 border ${selectedCategory === cat.name && !showFavoritesOnly
                                         ? 'bg-slate-900 text-white border-slate-900 shadow-xl shadow-slate-900/10'
                                         : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-900'
                                         }`}
+                                    style={{ borderColor: selectedCategory === cat.name ? cat.color : undefined }}
                                 >
-                                    {cat}
+                                    {cat.icon} {cat.name}
                                 </button>
                             ))}
+
+                            {/* Favorites Tab */}
+                            {user && (
+                                <button
+                                    onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                                    className={`px-6 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 border flex items-center gap-2 ${showFavoritesOnly
+                                        ? 'bg-rose-500 text-white border-rose-500 shadow-xl shadow-rose-500/20'
+                                        : 'bg-white text-slate-500 border-slate-200 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200'
+                                        }`}
+                                >
+                                    <Heart className={`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`} />
+                                    Favorit {wishlist.length > 0 && `(${wishlist.length})`}
+                                </button>
+                            )}
                         </m.div>
                     </div>
                 </header>
@@ -285,6 +364,8 @@ export const InvitationsStorePage: React.FC = () => {
                             onUseTemplate={handleUseTemplate}
                             onPreviewTemplate={previewTemplate}
                             selectedId={onboardingTemplateId}
+                            wishlist={wishlist}
+                            onToggleWishlist={handleToggleWishlist}
                         />
 
                     </Suspense>

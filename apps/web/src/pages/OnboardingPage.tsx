@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { m, AnimatePresence } from 'framer-motion';
 import { useSEO } from '../hooks/useSEO';
@@ -8,6 +8,8 @@ import {
     ArrowLeft, ArrowRight, Check, Sparkles, Camera,
     Calendar, MapPin, CreditCard, Landmark, User
 } from 'lucide-react';
+import { useStore } from '../store/useStore';
+import { useProfileStore } from '../store/useProfileStore';
 
 // ============================================
 // DATA & TYPES
@@ -48,6 +50,9 @@ export const OnboardingPage: React.FC = () => {
     const [currentStep, setCurrentStep] = useState(1);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(queryParams.get('category'));
 
+    const { user, isAuthenticated } = useStore();
+    const { profile, fetchProfile } = useProfileStore();
+
     // Names
     const [groomName, setGroomName] = useState('');
     const [brideName, setBrideName] = useState('');
@@ -63,10 +68,29 @@ export const OnboardingPage: React.FC = () => {
     const [eventDate, setEventDate] = useState('');
     const [eventLocation, setEventLocation] = useState('');
 
-    // Gift/Bank
+    // Gift/Bank (Master data states)
     const [bankName, setBankName] = useState('');
     const [accountNumber, setAccountNumber] = useState('');
     const [accountHolder, setAccountHolder] = useState('');
+
+    // Auto-fill logic (Placed after state declarations)
+    const [hasAutoFilled, setHasAutoFilled] = useState(false);
+
+    useEffect(() => {
+        if (isAuthenticated && !profile && user?.email) {
+            fetchProfile(user.email);
+        }
+    }, [isAuthenticated, profile, user, fetchProfile]);
+
+    useEffect(() => {
+        if (profile && !hasAutoFilled) {
+            // Only fill if local state is empty to allow user edits to persist during navigation
+            if (profile.bank1Name && !bankName) setBankName(profile.bank1Name);
+            if (profile.bank1Number && !accountNumber) setAccountNumber(profile.bank1Number);
+            if (profile.bank1Holder && !accountHolder) setAccountHolder(profile.bank1Holder);
+            setHasAutoFilled(true);
+        }
+    }, [profile, hasAutoFilled, bankName, accountNumber, accountHolder]);
 
     // Final Link
     const [slug, setSlug] = useState('');
@@ -155,9 +179,17 @@ export const OnboardingPage: React.FC = () => {
             galleryPhotos,
             eventDate,
             eventLocation,
-            bankName,
-            accountNumber,
-            accountHolder,
+            // primary bank (from form)
+            bank1Name: bankName,
+            bank1Number: accountNumber,
+            bank1Holder: accountHolder,
+            // Carry over secondary gift data from profile if available
+            bank2Name: profile?.bank2Name || '',
+            bank2Number: profile?.bank2Number || '',
+            bank2Holder: profile?.bank2Holder || '',
+            emoneyType: profile?.emoneyType || '',
+            emoneyNumber: profile?.emoneyNumber || '',
+            giftAddress: profile?.giftAddress || '',
             slug,
             invitationName: invitationName || celebrantName || (groomName && brideName ? `${groomName} & ${brideName}` : '')
         };

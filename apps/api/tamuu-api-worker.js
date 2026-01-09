@@ -8,6 +8,40 @@ export default {
         const url = new URL(request.url);
         const path = url.pathname;
         const method = request.method;
+        const cache = caches.default;
+
+        /**
+         * Smart Caching Helper for Edge Caching
+         * Wraps a fetcher function and caches the result using Cloudflare Cache API
+         */
+        const smart_cache = async (req, ttl, fetcher) => {
+            const cacheKey = new Request(req.url, req);
+            let response = await cache.match(cacheKey);
+
+            if (!response) {
+                // Cache MISS - Fetch fresh data
+                const freshData = await fetcher();
+                if (!freshData) return null; // Fetcher signals error/not found
+
+                // Create cacheable response
+                response = json(freshData, {
+                    ...corsHeaders,
+                    'Cache-Control': `public, max-age=${ttl}`,
+                    'CF-Cache-Status': 'MISS',
+                    'X-Tamuu-Cache': 'MISS'
+                });
+
+                // Store in cache asynchronously
+                ctx.waitUntil(cache.put(cacheKey, response.clone()));
+            } else {
+                // Cache HIT - (Optional) Reconstruct response to add debug headers if strict mode
+                // usually valid response is returned directly
+                // response = new Response(response.body, response);
+                // response.headers.set('X-Tamuu-Cache', 'HIT');
+            }
+            return response;
+        };
+
 
         // CORS headers
         const corsHeaders = {
@@ -43,12 +77,25 @@ export default {
                     tier: user.tier || 'free',
                     tamuuId: user.tamuu_id || `TAMUU-USER-${user.id.substring(0, 8)}`,
                     birthDate: user.birth_date,
+                    bank1Name: user.bank1_name,
+                    bank1Number: user.bank1_number,
+                    bank1Holder: user.bank1_holder,
+                    bank2Name: user.bank2_name,
+                    bank2Number: user.bank2_number,
+                    bank2Holder: user.bank2_holder,
+                    emoneyType: user.emoney_type,
+                    emoneyNumber: user.emoney_number,
+                    giftAddress: user.gift_address
                 }, corsHeaders);
             }
 
             if (path === '/api/user/profile' && method === 'PATCH') {
-                const body = await request.json();
-                const { id, name, phone, gender, birthDate } = body;
+                const {
+                    id, name, phone, gender, birthDate,
+                    bank1Name, bank1Number, bank1Holder,
+                    bank2Name, bank2Number, bank2Holder,
+                    emoneyType, emoneyNumber, giftAddress
+                } = body;
 
                 if (!id) return json({ error: 'User ID required' }, { ...corsHeaders, status: 400 });
 
@@ -58,9 +105,24 @@ export default {
                         phone = COALESCE(?, phone),
                         gender = COALESCE(?, gender),
                         birth_date = COALESCE(?, birth_date),
+                        bank1_name = COALESCE(?, bank1_name),
+                        bank1_number = COALESCE(?, bank1_number),
+                        bank1_holder = COALESCE(?, bank1_holder),
+                        bank2_name = COALESCE(?, bank2_name),
+                        bank2_number = COALESCE(?, bank2_number),
+                        bank2_holder = COALESCE(?, bank2_holder),
+                        emoney_type = COALESCE(?, emoney_type),
+                        emoney_number = COALESCE(?, emoney_number),
+                        gift_address = COALESCE(?, gift_address),
                         updated_at = datetime('now')
                     WHERE id = ?
-                `).bind(name, phone, gender, birthDate, id).run();
+                `).bind(
+                    name, phone, gender, birthDate,
+                    bank1Name, bank1Number, bank1Holder,
+                    bank2Name, bank2Number, bank2Holder,
+                    emoneyType, emoneyNumber, giftAddress,
+                    id
+                ).run();
 
                 return json({ success: true }, corsHeaders);
             }
@@ -245,16 +307,145 @@ export default {
             }
 
             // ============================================
+            // WISHLIST ENDPOINTS
+            // ============================================
+
+            // Get user's wishlist
+            if (path === '/api/wishlist' && method === 'GET') {
+                const userId = url.searchParams.get('user_id');
+                if (!userId) return json({ error: 'User ID required' }, { ...corsHeaders, status: 400 });
+
+                const { results } = await env.DB.prepare(
+                    'SELECT template_id FROM user_wishlist WHERE user_id = ? ORDER BY created_at DESC'
+                ).bind(userId).all();
+
+                return json(results.map(r => r.template_id), corsHeaders);
+            }
+
+            // Add to wishlist
+            if (path === '/api/wishlist' && method === 'POST') {
+                const body = await request.json();
+                const { user_id, template_id } = body;
+
+                if (!user_id || !template_id) {
+                    return json({ error: 'user_id and template_id required' }, { ...corsHeaders, status: 400 });
+                }
+
+                try {
+                    await env.DB.prepare(
+                        'INSERT OR IGNORE INTO user_wishlist (user_id, template_id) VALUES (?, ?)'
+                    ).bind(user_id, template_id).run();
+                    return json({ success: true, added: true }, corsHeaders);
+                } catch (err) {
+                    return json({ success: false, error: err.message }, { ...corsHeaders, status: 500 });
+                }
+            }
+
+            // Remove from wishlist
+            if (path === '/api/wishlist' && method === 'DELETE') {
+                const body = await request.json();
+                const { user_id, template_id } = body;
+
+                if (!user_id || !template_id) {
+                    return json({ error: 'user_id and template_id required' }, { ...corsHeaders, status: 400 });
+                }
+
+                await env.DB.prepare(
+                    'DELETE FROM user_wishlist WHERE user_id = ? AND template_id = ?'
+                ).bind(user_id, template_id).run();
+
+                return json({ success: true, removed: true }, corsHeaders);
+            }
+
+            // ============================================
+            // TEMPLATE CATEGORIES ENDPOINTS
+            // ============================================
+
+            // List all categories
+            // List all categories (Cached 1 hour)
+            if (path === '/api/categories' && method === 'GET') {
+                return await smart_cache(request, 3600, async () => {
+                    const { results } = await env.DB.prepare(
+                        'SELECT * FROM template_categories WHERE is_active = 1 ORDER BY display_order ASC'
+                    ).all();
+                    return results || [];
+                });
+            }
+
+            // Create category (Admin only)
+            if (path === '/api/categories' && method === 'POST') {
+                const body = await request.json();
+                const { name, icon, color } = body;
+
+                if (!name) {
+                    return json({ error: 'Category name is required' }, { ...corsHeaders, status: 400 });
+                }
+
+                const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                const id = crypto.randomUUID();
+
+                // Get max order
+                const maxOrder = await env.DB.prepare(
+                    'SELECT MAX(display_order) as max_order FROM template_categories'
+                ).first();
+                const newOrder = (maxOrder?.max_order || 0) + 1;
+
+                await env.DB.prepare(
+                    'INSERT INTO template_categories (id, name, slug, icon, color, display_order) VALUES (?, ?, ?, ?, ?, ?)'
+                ).bind(id, name, slug, icon || '📁', color || '#6366F1', newOrder).run();
+
+                return json({ id, name, slug, icon, color, display_order: newOrder }, corsHeaders);
+            }
+
+            // Update category
+            if (path.match(/^\/api\/categories\/[^/]+$/) && method === 'PUT') {
+                const id = path.split('/').pop();
+                const body = await request.json();
+
+                await env.DB.prepare(
+                    `UPDATE template_categories SET 
+                        name = COALESCE(?, name),
+                        icon = COALESCE(?, icon),
+                        color = COALESCE(?, color),
+                        display_order = COALESCE(?, display_order),
+                        updated_at = datetime('now')
+                     WHERE id = ?`
+                ).bind(body.name, body.icon, body.color, body.display_order, id).run();
+
+                return json({ id, updated: true }, corsHeaders);
+            }
+
+            // Delete category (soft delete)
+            if (path.match(/^\/api\/categories\/[^/]+$/) && method === 'DELETE') {
+                const id = path.split('/').pop();
+
+                await env.DB.prepare(
+                    'UPDATE template_categories SET is_active = 0, updated_at = datetime(\'now\') WHERE id = ?'
+                ).bind(id).run();
+
+                return json({ id, deleted: true }, corsHeaders);
+            }
+
+            // ============================================
             // TEMPLATES ENDPOINTS
             // ============================================
             if (path === '/api/templates' && method === 'GET') {
-                console.log('GET /api/templates - Start');
-                const response = await env.DB.prepare(
-                    'SELECT * FROM templates ORDER BY updated_at DESC LIMIT 100'
-                ).all();
-                console.log('D1 Response success:', response.success);
-                console.log('D1 Results length:', response.results ? response.results.length : 'undefined');
-                return json(response.results || [], corsHeaders);
+                // Cache templates for 5 minutes (300s)
+                return await smart_cache(request, 300, async () => {
+                    const response = await env.DB.prepare(
+                        'SELECT * FROM templates ORDER BY updated_at DESC LIMIT 100'
+                    ).all();
+
+                    if (!response.success || !response.results) return [];
+
+                    // Optimize: map R2 URLs here if needed, but currently stored as paths
+                    return response.results.map(t => ({
+                        ...t,
+                        thumbnail_url: t.thumbnail && !t.thumbnail.startsWith('http')
+                            ?\`https://api.tamuu.id/assets/\${t.thumbnail}\` 
+                            : t.thumbnail
+                    }));
+                });
             }
 
 
@@ -263,8 +454,8 @@ export default {
                 const body = await request.json();
                 const id = crypto.randomUUID();
                 await env.DB.prepare(
-                    `INSERT INTO templates (id, name, slug, category, sections, layers, type, thumbnail, music) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                    `INSERT INTO templates(id, name, slug, category, sections, layers, type, thumbnail, music) 
+                     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)`
                 ).bind(
                     id,
                     body.name || 'Untitled Template',
@@ -304,16 +495,16 @@ export default {
                     await env.DB.prepare(
                         `UPDATE templates SET 
                             name = COALESCE(?, name),
-                            slug = COALESCE(?, slug),
-                            thumbnail = COALESCE(?, thumbnail),
-                            category = COALESCE(?, category),
-                            zoom = COALESCE(?, zoom),
-                            pan = COALESCE(?, pan),
-                            sections = COALESCE(?, sections),
-                            layers = COALESCE(?, layers),
-                            music = COALESCE(?, music),
-                            updated_at = datetime('now')
-                         WHERE id = ?`
+                        slug = COALESCE(?, slug),
+                        thumbnail = COALESCE(?, thumbnail),
+                        category = COALESCE(?, category),
+                        zoom = COALESCE(?, zoom),
+                        pan = COALESCE(?, pan),
+                        sections = COALESCE(?, sections),
+                        layers = COALESCE(?, layers),
+                        music = COALESCE(?, music),
+                        updated_at = datetime('now')
+                         WHERE id = ? `
                     ).bind(
                         body.name || null,
                         body.slug || null,
@@ -368,8 +559,8 @@ export default {
                 const body = await request.json();
                 const id = crypto.randomUUID();
                 await env.DB.prepare(
-                    `INSERT INTO user_display_designs (id, user_id, name, content, thumbnail_url, source_template_id) 
-                     VALUES (?, ?, ?, ?, ?, ?)`
+                    `INSERT INTO user_display_designs(id, user_id, name, content, thumbnail_url, source_template_id) 
+                     VALUES(?, ?, ?, ?, ?, ?)`
                 ).bind(
                     id,
                     body.user_id, // Frontend must send this!
@@ -388,10 +579,10 @@ export default {
                 await env.DB.prepare(
                     `UPDATE user_display_designs SET 
                          name = COALESCE(?, name),
-                         content = COALESCE(?, content),
-                         thumbnail_url = COALESCE(?, thumbnail_url),
-                         updated_at = datetime('now')
-                      WHERE id = ?`
+                        content = COALESCE(?, content),
+                        thumbnail_url = COALESCE(?, thumbnail_url),
+                        updated_at = datetime('now')
+                      WHERE id = ? `
                 ).bind(
                     body.name,
                     JSON.stringify(body.content),
@@ -449,7 +640,7 @@ export default {
                     SET content = json_set(COALESCE(content, '{}'), '$.activeTrigger', json(?)),
                         updated_at = datetime('now')
                     WHERE id = ?
-                `).bind(triggerPayload, id).run();
+                        `).bind(triggerPayload, id).run();
 
                 // Broadcast to invitations (slug or ID)
                 await env.DB.prepare(`
@@ -457,7 +648,7 @@ export default {
                     SET sections = json_set(COALESCE(sections, '[]'), '$[0].activeTrigger', json(?)),
                         updated_at = datetime('now')
                     WHERE id = ? OR slug = ?
-                `).bind(triggerPayload, id, id).run();
+                        `).bind(triggerPayload, id, id).run();
 
                 return json({ triggered: true, effect, name: guestName }, corsHeaders);
             }
@@ -466,9 +657,19 @@ export default {
             // INVITATIONS ENDPOINTS
             // ============================================
             if (path === '/api/invitations' && method === 'GET') {
-                const { results } = await env.DB.prepare(
-                    'SELECT * FROM invitations ORDER BY updated_at DESC LIMIT 100'
-                ).all();
+                const urlObj = new URL(request.url);
+                const userId = urlObj.searchParams.get('user_id');
+
+                let query = 'SELECT * FROM invitations ORDER BY updated_at DESC LIMIT 100';
+                let params = [];
+
+                // Filter by user_id if provided (for dashboard)
+                if (userId) {
+                    query = 'SELECT * FROM invitations WHERE user_id = ? ORDER BY updated_at DESC LIMIT 100';
+                    params = [userId];
+                }
+
+                const { results } = await env.DB.prepare(query).bind(...params).all();
                 return json(results.map(parseJsonFields), corsHeaders);
             }
 
@@ -509,10 +710,11 @@ export default {
                 const thumbnailUrl = body.thumbnail_url || templateData?.thumbnail || null;
 
                 await env.DB.prepare(
-                    `INSERT INTO invitations (id, name, slug, category, zoom, pan, sections, layers, orbit_layers, thumbnail_url, template_id, is_published, display_design_id) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                    `INSERT INTO invitations(id, user_id, name, slug, category, zoom, pan, sections, layers, orbit_layers, thumbnail_url, template_id, is_published, display_design_id) 
+                     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
                 ).bind(
                     id,
+                    userId || null,
                     body.name || 'Untitled Invitation',
                     body.slug || null,
                     category,
@@ -578,7 +780,7 @@ export default {
                         display_design_id = COALESCE(?, display_design_id),
                         music = COALESCE(?, music),
                         updated_at = datetime('now')
-                     WHERE id = ?`
+                     WHERE id = ? `
                 ).bind(
                     body.name, body.slug, body.thumbnail_url, body.category,
                     body.zoom, JSON.stringify(body.pan),
@@ -623,7 +825,7 @@ export default {
                     WHERE r.deleted_at IS NULL
                     ORDER BY r.submitted_at DESC
                     LIMIT 200
-                `).all();
+                        `).all();
                 return json(results, corsHeaders);
             }
 
@@ -642,9 +844,9 @@ export default {
                 const body = await request.json();
                 const id = crypto.randomUUID();
                 await env.DB.prepare(
-                    `INSERT INTO rsvp_responses 
-                     (id, invitation_id, name, email, phone, attendance, guest_count, message, ip_address, user_agent)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                    `INSERT INTO rsvp_responses
+                        (id, invitation_id, name, email, phone, attendance, guest_count, message, ip_address, user_agent)
+                     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
                 ).bind(
                     id, invitationId,
                     body.name, body.email || null, body.phone || null,
@@ -672,7 +874,7 @@ export default {
                         attendance = COALESCE(?, attendance),
                         message = COALESCE(?, message),
                         updated_at = datetime('now')
-                     WHERE id = ?`
+                     WHERE id = ? `
                 ).bind(
                     body.is_visible !== undefined ? (body.is_visible ? 1 : 0) : null,
                     body.attendance,
@@ -696,8 +898,8 @@ export default {
                     });
                 }
 
-                const filename = `${Date.now()}-${file.name}`;
-                const key = `uploads/${filename}`;
+                const filename = `${ Date.now() } - ${ file.name }`;
+                const key = `uploads / ${ filename }`;
 
                 await env.ASSETS.put(key, file.stream(), {
                     httpMetadata: { contentType: file.type }
@@ -705,53 +907,56 @@ export default {
 
                 const publicUrl = `https://api.tamuu.id/assets/${key}`;
 
-                // Save to database
-                const id = crypto.randomUUID();
-                await env.DB.prepare(
-                    `INSERT INTO assets (id, filename, content_type, size, r2_key, public_url)
-                     VALUES (?, ?, ?, ?, ?, ?)`
-                ).bind(id, file.name, file.type, file.size, key, publicUrl).run();
+                // Get user_id from form data if provided
+                const userId = formData.get('user_id');
 
-                return json({ id, url: publicUrl, key }, corsHeaders);
-            }
+                    // Save to database with user_id
+                    const id = crypto.randomUUID();
+                    await env.DB.prepare(
+                        `INSERT INTO assets (id, user_id, filename, content_type, size, r2_key, public_url)
+                     VALUES (?, ?, ?, ?, ?, ?, ?)`
+                    ).bind(id, userId || null, file.name, file.type, file.size, key, publicUrl).run();
+
+                    return json({ id, url: publicUrl, key }, corsHeaders);
+                }
 
             // ============================================
             // SERVE ASSETS FROM R2
             // ============================================
             if (path.startsWith('/assets/')) {
-                const key = path.replace('/assets/', '');
-                const object = await env.ASSETS.get(key);
-                if (!object) return notFound(corsHeaders);
+                    const key = path.replace('/assets/', '');
+                    const object = await env.ASSETS.get(key);
+                    if (!object) return notFound(corsHeaders);
 
-                const headers = new Headers();
-                object.writeHttpMetadata(headers);
-                headers.set('etag', object.httpEtag);
-                headers.set('Cache-Control', 'public, max-age=31536000');
+                    const headers = new Headers();
+                    object.writeHttpMetadata(headers);
+                    headers.set('etag', object.httpEtag);
+                    headers.set('Cache-Control', 'public, max-age=31536000');
 
-                return new Response(object.body, { headers });
+                    return new Response(object.body, { headers });
+                }
+
+                // ============================================
+                // HEALTH CHECK
+                // ============================================
+                if (path === '/api/health') {
+                    return json({ status: 'ok', timestamp: new Date().toISOString() }, corsHeaders);
+                }
+
+                return notFound(corsHeaders);
+
+            } catch (error) {
+                console.error('API Error:', error);
+                return new Response(JSON.stringify({ error: error.message }), {
+                    status: 500,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                });
             }
-
-            // ============================================
-            // HEALTH CHECK
-            // ============================================
-            if (path === '/api/health') {
-                return json({ status: 'ok', timestamp: new Date().toISOString() }, corsHeaders);
-            }
-
-            return notFound(corsHeaders);
-
-        } catch (error) {
-            console.error('API Error:', error);
-            return new Response(JSON.stringify({ error: error.message }), {
-                status: 500,
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            });
         }
-    }
 };
 
-// Helper functions
-function json(data, corsHeaders) {
+    // Helper functions
+    function json(data, corsHeaders) {
     return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });

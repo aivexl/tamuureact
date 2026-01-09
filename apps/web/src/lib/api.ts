@@ -51,11 +51,101 @@ export const templates = {
 };
 
 // ============================================
+// CATEGORIES API
+// ============================================
+export interface Category {
+    id: string;
+    name: string;
+    slug: string;
+    icon?: string;
+    color?: string;
+    display_order?: number;
+}
+
+export const categories = {
+    async list(): Promise<Category[]> {
+        const res = await fetch(`${API_BASE}/api/categories`);
+        if (!res.ok) throw new Error('Failed to fetch categories');
+        return res.json();
+    },
+
+    async create(data: { name: string; icon?: string; color?: string }) {
+        const res = await fetch(`${API_BASE}/api/categories`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error('Failed to create category');
+        return res.json();
+    },
+
+    async update(id: string, data: Partial<Category>) {
+        const res = await fetch(`${API_BASE}/api/categories/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error('Failed to update category');
+        return res.json();
+    },
+
+    async delete(id: string) {
+        const res = await fetch(`${API_BASE}/api/categories/${id}`, {
+            method: 'DELETE'
+        });
+        if (!res.ok) throw new Error('Failed to delete category');
+        return res.json();
+    }
+};
+
+// ============================================
+// WISHLIST API
+// ============================================
+export const wishlist = {
+    async list(userId: string): Promise<string[]> {
+        const res = await fetch(`${API_BASE}/api/wishlist?user_id=${userId}`);
+        if (!res.ok) throw new Error('Failed to fetch wishlist');
+        return res.json();
+    },
+
+    async add(userId: string, templateId: string) {
+        const res = await fetch(`${API_BASE}/api/wishlist`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, template_id: templateId })
+        });
+        if (!res.ok) throw new Error('Failed to add to wishlist');
+        return res.json();
+    },
+
+    async remove(userId: string, templateId: string) {
+        const res = await fetch(`${API_BASE}/api/wishlist`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, template_id: templateId })
+        });
+        if (!res.ok) throw new Error('Failed to remove from wishlist');
+        return res.json();
+    },
+
+    async toggle(userId: string, templateId: string, isCurrentlyWishlisted: boolean) {
+        if (isCurrentlyWishlisted) {
+            return this.remove(userId, templateId);
+        } else {
+            return this.add(userId, templateId);
+        }
+    }
+};
+
+// ============================================
 // INVITATIONS API
 // ============================================
 export const invitations = {
-    async list() {
-        const res = await fetch(`${API_BASE}/api/invitations`);
+    async list(userId?: string) {
+        const url = userId
+            ? `${API_BASE}/api/invitations?user_id=${userId}`
+            : `${API_BASE}/api/invitations`;
+        const res = await fetch(url);
         if (!res.ok) throw new Error('Failed to fetch invitations');
         return res.json();
     },
@@ -248,7 +338,22 @@ export const users = {
         return res.json();
     },
 
-    async updateProfile(data: { id: string; name?: string; phone?: string; gender?: string; birthDate?: string }) {
+    async updateProfile(data: {
+        id: string;
+        name?: string;
+        phone?: string;
+        gender?: string;
+        birthDate?: string;
+        bank1Name?: string;
+        bank1Number?: string;
+        bank1Holder?: string;
+        bank2Name?: string;
+        bank2Number?: string;
+        bank2Holder?: string;
+        emoneyType?: string;
+        emoneyNumber?: string;
+        giftAddress?: string;
+    }) {
         const res = await fetch(`${API_BASE}/api/user/profile`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },

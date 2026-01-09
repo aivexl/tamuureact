@@ -8,6 +8,7 @@ export interface CanvasState {
     id?: string; // Real UUID from database
     projectName: string;
     thumbnailUrl?: string; // Optional thumbnail URL
+    category?: string; // Template category
     templateType: 'invitation' | 'display';
     isTemplate: boolean;
     music?: {
@@ -27,6 +28,7 @@ export interface CanvasState {
     setCanvasTransform: (transform: { x: number; y: number; zoom: number }) => void;
     setTemplateType: (type: 'invitation' | 'display') => void;
     setIsTemplate: (isTemplate: boolean) => void;
+    setCategory: (category: string) => void;
     setMusic: (music: CanvasState['music']) => void;
 }
 
@@ -40,6 +42,7 @@ export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
     id: undefined,
     templateType: 'invitation',
     isTemplate: false,
+    category: undefined,
     music: undefined,
     setZoom: (zoom) => set({ zoom }),
     setPan: (pan) => set({ pan }),
@@ -51,5 +54,6 @@ export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
     setCanvasTransform: ({ x, y, zoom }) => set({ pan: { x, y }, zoom }),
     setTemplateType: (templateType) => set({ templateType }),
     setIsTemplate: (isTemplate) => set({ isTemplate }),
+    setCategory: (category) => set({ category }),
     setMusic: (music) => set({ music }),
 });
