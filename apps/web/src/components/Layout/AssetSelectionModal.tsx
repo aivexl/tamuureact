@@ -378,10 +378,12 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
             console.log('Uploading file:', file.name);
 
             // Upload to Cloudflare R2
-            const result = await storage.upload(file);
+            // "gallery" is a safe default context for general asset uploads
+            const result = await storage.upload(file, 'gallery');
             const publicUrl = result.url;
 
-            console.log('Upload success:', publicUrl);
+            // BlurHash is available in result.blurHash if needed for future UI updates
+            console.log('Upload success:', publicUrl, result.blurHash ? '(BlurHash Generated)' : '');
 
             // Pass URL to onSelect
             if (type === 'image' || type === 'gif' || type === 'sticker') {

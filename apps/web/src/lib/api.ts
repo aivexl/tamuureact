@@ -289,17 +289,42 @@ export const userDisplayDesigns = {
 // ============================================
 // STORAGE API (R2)
 // ============================================
+import { processImage, type ImageContext } from './image-manager';
+
 export const storage = {
-    async upload(file: File): Promise<{ id: string; url: string; key: string }> {
+    async upload(file: File, context: ImageContext = 'gallery'): Promise<{ id: string; url: string; key: string; blurHash?: string }> {
+
+        let fileToUpload = file;
+        let blurHash = '';
+
+        // Only compress images, not videos
+        if (file.type.startsWith('image/')) {
+            try {
+                const processed = await processImage(file, context);
+                fileToUpload = processed.file;
+                blurHash = processed.blurHash;
+                console.log(`[Storage] Compressed: ${Math.round(file.size / 1024)}KB -> ${Math.round(fileToUpload.size / 1024)}KB (${processed.compressionRatio}% saved)`);
+            } catch (err) {
+                console.warn('[Storage] Compression failed, uploading original', err);
+            }
+        }
+
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', fileToUpload);
+
+        // Send BlurHash in header or metadata if backend supports it (optional for now)
+        // For now, we return it to the UI for immediate display
 
         const res = await fetch(`${API_BASE}/api/upload`, {
             method: 'POST',
             body: formData
         });
+
         if (!res.ok) throw new Error('Failed to upload file');
-        return res.json();
+        const data = await res.json();
+
+        // Attach generated blurHash to response so UI can use it
+        return { ...data, blurHash };
     },
 
     getPublicUrl(key: string): string {

@@ -302,8 +302,10 @@ export default {
             // MUSIC ENDPOINTS
             // ============================================
             if (path === '/api/music' && method === 'GET') {
-                const { results } = await env.DB.prepare('SELECT * FROM music_library ORDER BY title ASC').all();
-                return json(results, corsHeaders);
+                return await smart_cache(request, 3600, async () => {
+                    const { results } = await env.DB.prepare('SELECT * FROM music_library ORDER BY title ASC').all();
+                    return results;
+                });
             }
 
             // ============================================
@@ -471,20 +473,22 @@ export default {
             }
 
             if (path.startsWith('/api/templates/') && method === 'GET') {
-                const idOrSlug = path.split('/')[3];
-                // First try by ID
-                let { results } = await env.DB.prepare(
-                    'SELECT * FROM templates WHERE id = ?'
-                ).bind(idOrSlug).all();
-                // If not found, try by slug
-                if (results.length === 0) {
-                    const slugResult = await env.DB.prepare(
-                        'SELECT * FROM templates WHERE slug = ?'
+                return await smart_cache(request, 300, async () => {
+                    const idOrSlug = path.split('/')[3];
+                    // First try by ID
+                    let { results } = await env.DB.prepare(
+                        'SELECT * FROM templates WHERE id = ?'
                     ).bind(idOrSlug).all();
-                    results = slugResult.results;
-                }
-                if (results.length === 0) return notFound(corsHeaders);
-                return json(parseJsonFields(results[0]), corsHeaders);
+                    // If not found, try by slug
+                    if (results.length === 0) {
+                        const slugResult = await env.DB.prepare(
+                            'SELECT * FROM templates WHERE slug = ?'
+                        ).bind(idOrSlug).all();
+                        results = slugResult.results;
+                    }
+                    if (results.length === 0) return null; // Will trigger 404 in smart_cache or needs handling
+                    return parseJsonFields(results[0]);
+                });
             }
 
 
@@ -753,13 +757,16 @@ export default {
 
 
             if (path.match(/^\/api\/invitations\/[^/]+$/) && method === 'GET') {
-                const id = path.split('/')[3];
-                // Try by ID first, then by slug
-                let { results } = await env.DB.prepare(
-                    'SELECT * FROM invitations WHERE id = ? OR slug = ?'
-                ).bind(id, id).all();
-                if (results.length === 0) return notFound(corsHeaders);
-                return json(parseJsonFields(results[0]), corsHeaders);
+                // Short cache (60s) for high traffic public pages
+                return await smart_cache(request, 60, async () => {
+                    const id = path.split('/')[3];
+                    // Try by ID first, then by slug
+                    let { results } = await env.DB.prepare(
+                        'SELECT * FROM invitations WHERE id = ? OR slug = ?'
+                    ).bind(id, id).all();
+                    if (results.length === 0) return null;
+                    return parseJsonFields(results[0]);
+                });
             }
 
             if (path.match(/^\/api\/invitations\/[^/]+$/) && method === 'PUT') {
@@ -931,7 +938,7 @@ export default {
                     const headers = new Headers();
                     object.writeHttpMetadata(headers);
                     headers.set('etag', object.httpEtag);
-                    headers.set('Cache-Control', 'public, max-age=31536000');
+                    headers.set('Cache-Control', 'public, max-age=31536000, immutable');
 
                     return new Response(object.body, { headers });
                 }
