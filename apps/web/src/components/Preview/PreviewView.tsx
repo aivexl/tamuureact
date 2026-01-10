@@ -1100,9 +1100,9 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                     )}
                 </div>
 
-                {/* Controls Overlay - Highest z-index to ensure clickability above InteractionOverlay */}
+                {/* Controls Overlay - Highest z-index (Level 90000) to ensure clickability above all effects */}
                 <div
-                    className="absolute top-4 right-4 z-[60000] flex items-center gap-2"
+                    className="absolute top-4 right-4 z-[90000] flex items-center gap-2"
                     style={{
                         transform: `scale(${Math.max(1 / scaleFactor, 0.5)})`,
                         transformOrigin: 'top right'
@@ -1160,8 +1160,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                     )}
                 </AnimatePresence>
 
-                {/* Branding Footer - Premium TAMUU.ID */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/50 text-base z-[60000] pointer-events-none tracking-[0.4em] uppercase" style={{ fontFamily: "'Poiret One', cursive", fontWeight: 400 }}>
+                {/* Branding Footer - High z-index but below interactive controls */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/50 text-base z-[89999] pointer-events-none tracking-[0.4em] uppercase" style={{ fontFamily: "'Poiret One', cursive", fontWeight: 400 }}>
                     TAMUU.ID
                 </div>
 
