@@ -91,7 +91,8 @@ export const PreviewPage: React.FC = () => {
                         id: data.id,
                         selectedLayerId: null,
                         hasHydrated: true,
-                        isTemplate: source === 'templates' // Prevent polling for templates
+                        isTemplate: source === 'templates', // Prevent polling for templates
+                        templateType: data.type === 'display' ? 'display' : 'invitation' // Force correct type
                     });
                 } else {
                     console.warn('[PreviewPage] No data found for slug:', slug);
