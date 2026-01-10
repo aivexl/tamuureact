@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { CORE_FONTS, getGoogleFontsUrl } from './lib/fonts';
 import { MainLayout } from './components/Layout/MainLayout';
 import { Loader2 } from 'lucide-react';
-import { LazyMotion, domAnimation } from 'framer-motion';
+import { LazyMotion, domMax } from 'framer-motion';
 
 // ============================================
 // DOMAIN DETECTION
@@ -84,7 +84,7 @@ const App: React.FC = () => {
 
     return (
         <BrowserRouter>
-            <LazyMotion features={domAnimation} strict>
+            <LazyMotion features={domMax} strict>
                 <Suspense fallback={<LoadingFallback />}>
                     <Routes>
                         {/* ============================================ */}

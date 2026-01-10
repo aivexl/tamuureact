@@ -15,6 +15,10 @@ export const PreviewPage: React.FC = () => {
         if (!slug) return;
 
         const loadData = async () => {
+            // CRITICAL: Reset templateType immediately to prevent stale localStorage values
+            // from hiding UI controls meant for invitation templates.
+            useStore.setState({ templateType: 'invitation' });
+
             if (slug === 'draft') {
                 console.log('[PreviewPage] Mode: Draft. hasHydrated:', hasHydrated);
                 if (hasHydrated) {

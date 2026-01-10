@@ -44,22 +44,31 @@ export const useAudioController = () => {
             const playPromise = globalAudio.play();
             if (playPromise !== undefined) {
                 playPromise.catch((error) => {
-                    console.warn('Autoplay blocked, waiting for interaction:', error);
-                    setPlaying(false);
+                    console.warn('[AudioController] Autoplay blocked, waiting for interaction:', error);
+                    // CRITICAL: Do NOT set isPlaying to false here.
+                    // Instead, keep the intent and unlock on first interaction.
 
-                    // Force Autoplay on first interaction
+                    // Store the URL for the unlock callback (stable reference)
+                    const urlToPlay = currentUrl;
+
                     const unlock = () => {
-                        if (globalAudio && isPlaying) {
-                            globalAudio.play();
-                            setPlaying(true);
+                        console.log('[AudioController] Unlocking audio on user interaction');
+                        if (globalAudio) {
+                            globalAudio.src = urlToPlay; // Ensure URL is set
+                            globalAudio.play().then(() => {
+                                setPlaying(true);
+                                console.log('[AudioController] Audio unlocked and playing');
+                            }).catch(e => console.error('[AudioController] Unlock play failed:', e));
                         }
                         window.removeEventListener('click', unlock);
                         window.removeEventListener('touchstart', unlock);
                         window.removeEventListener('scroll', unlock);
+                        window.removeEventListener('keydown', unlock);
                     };
-                    window.addEventListener('click', unlock);
-                    window.addEventListener('touchstart', unlock);
-                    window.addEventListener('scroll', unlock);
+                    window.addEventListener('click', unlock, { once: true });
+                    window.addEventListener('touchstart', unlock, { once: true });
+                    window.addEventListener('scroll', unlock, { once: true });
+                    window.addEventListener('keydown', unlock, { once: true });
                 });
             }
 

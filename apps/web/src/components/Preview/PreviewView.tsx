@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { X, Maximize2, Minimize2, Play, Square } from 'lucide-react';
 import { ElementRenderer } from '../Canvas/ElementRenderer';
@@ -49,12 +49,13 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
     const [transitionStage, setTransitionStage] = useState<'IDLE' | 'ZOOMING' | 'REVEALING' | 'DONE'>('IDLE');
     const [shutterVisible, setShutterVisible] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+    const [showMusicTitle, setShowMusicTitle] = useState(false); // New Premium State
     const [isMuted, setIsMuted] = useState(true);
     const [currentZoomPointIndex, setCurrentZoomPointIndex] = useState<Record<string, number>>({});
     const [visibleSections, setVisibleSections] = useState<number[]>([0]);
     const [clickedSections, setClickedSections] = useState<number[]>([]); // Track which sections have been clicked (for click trigger)
     const [windowSize, setWindowSize] = useState({ width: 800, height: 600 }); // Default values to prevent NaN
-    const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
     // Refs
     const containerRef = useRef<HTMLDivElement>(null);
@@ -289,6 +290,10 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
     // Robust Autoplay: Attempt immediately and on first interaction
     useEffect(() => {
         if (!isOpen) return;
+
+        // Show music title for 5 seconds on load for premium discovery effect
+        setShowMusicTitle(true);
+        const timer = setTimeout(() => setShowMusicTitle(false), 5000);
 
         const musicUrl = music?.url || 'https://api.tamuu.id/assets/music/tr-01.mp3';
 
@@ -820,7 +825,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
 
     return (
         <AnimatePresence>
-            <motion.div
+            <m.div
                 ref={containerRef}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -944,7 +949,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                                         onClick={handleSectionClick}
                                     >
                                         {/* Zoom Animation Wrapper */}
-                                        <motion.div
+                                        <m.div
                                             className="absolute inset-0 w-full h-full"
                                             animate={{
                                                 scale: zoomTransform.scale,
@@ -1064,7 +1069,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                                                         })}
                                                 </div>
                                             </div>
-                                        </motion.div>
+                                        </m.div>
                                     </div>
                                 );
                             })}
@@ -1108,19 +1113,62 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                         transformOrigin: 'top right'
                     }}
                 >
-                    {/* Music Button - Always visible for invitation templates */}
-                    {!isDisplay && (
+                    {/* Premium Music Control - Enterprise-Grade Aesthetic */}
+                    <m.div
+                        layout
+                        initial={{ width: 48 }}
+                        animate={{ width: showMusicTitle ? 'auto' : 48 }}
+                        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                        className="flex items-center bg-black/60 backdrop-blur-xl rounded-full border border-white/20 shadow-lg overflow-hidden"
+                        style={{ height: 48 }}
+                    >
                         <button
-                            onClick={() => {
+                            onClick={(e) => {
+                                e.stopPropagation();
                                 const url = music?.url || currentUrl || 'https://api.tamuu.id/assets/music/tr-01.mp3';
                                 isGlobalPlaying ? pause() : play(url);
                             }}
-                            className="p-3 bg-premium-accent/20 backdrop-blur-md rounded-2xl text-premium-accent hover:bg-premium-accent/40 transition-all border border-premium-accent/30 shadow-[0_0_20px_rgba(191,161,129,0.2)]"
+                            className="relative flex items-center justify-center text-premium-accent hover:bg-white/10 transition-all cursor-pointer flex-shrink-0"
+                            style={{ width: 48, height: 48 }}
                             title={isGlobalPlaying ? 'Stop Music' : 'Play Music'}
                         >
-                            {!isGlobalPlaying ? <Play className="w-5 h-5 fill-current" /> : <Square className="w-5 h-5 fill-current" />}
+                            {/* Rotating Indicator (Liquid Calc Centering) */}
+                            {isGlobalPlaying && (
+                                <m.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1, rotate: 360 }}
+                                    transition={{ rotate: { duration: 4, repeat: Infinity, ease: "linear" }, opacity: { duration: 0.3 } }}
+                                    className="absolute border-2 border-dashed border-premium-accent/60 rounded-full pointer-events-none"
+                                    style={{
+                                        width: 36,
+                                        height: 36,
+                                        top: 'calc(50% - 18px)',
+                                        left: 'calc(50% - 18px)',
+                                    }}
+                                />
+                            )}
+                            <div className="relative z-10 transition-transform active:scale-95">
+                                {!isGlobalPlaying ? <Play className="w-5 h-5 fill-current" /> : <Square className="w-5 h-5 fill-current" />}
+                            </div>
                         </button>
-                    )}
+
+                        <AnimatePresence mode="wait">
+                            {showMusicTitle && (
+                                <m.div
+                                    key="music-title"
+                                    initial={{ opacity: 0, x: -10, width: 0 }}
+                                    animate={{ opacity: 1, x: 0, width: 'auto' }}
+                                    exit={{ opacity: 0, x: -10, width: 0 }}
+                                    className="pr-5 py-2 whitespace-nowrap overflow-hidden flex-shrink-0"
+                                >
+                                    <div className="flex flex-col justify-center">
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 leading-none mb-1">Now Playing</span>
+                                        <span className="text-xs font-bold text-premium-accent leading-none truncate max-w-[120px]">{music?.title || 'Sabilulungan'}</span>
+                                    </div>
+                                </m.div>
+                            )}
+                        </AnimatePresence>
+                    </m.div>
                     <button
                         onClick={toggleFullscreen}
                         className="p-3 bg-black/50 backdrop-blur-xl text-white/70 hover:text-white rounded-full border border-white/20 transition-colors"
@@ -1138,25 +1186,25 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                 {/* MIRROR SHUTTERS (Optional Luxury Transition) */}
                 <AnimatePresence>
                     {shutterVisible && (
-                        <motion.div
+                        <m.div
                             initial={{ opacity: 1 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             className="absolute inset-0 z-[100] flex overflow-hidden pointer-events-none"
                         >
-                            <motion.div
+                            <m.div
                                 initial={{ x: 0 }}
                                 animate={{ x: '-100%' }}
                                 transition={{ duration: transitionDuration, ease: [0.22, 1, 0.36, 1] }}
                                 className="w-1/2 h-full bg-white/20 backdrop-blur-md border-r border-white/30"
                             />
-                            <motion.div
+                            <m.div
                                 initial={{ x: 0 }}
                                 animate={{ x: '100%' }}
                                 transition={{ duration: transitionDuration, ease: [0.22, 1, 0.36, 1] }}
                                 className="w-1/2 h-full bg-white/20 backdrop-blur-md border-l border-white/30"
                             />
-                        </motion.div>
+                        </m.div>
                     )}
                 </AnimatePresence>
 
@@ -1202,7 +1250,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                         <DisplaySimulationHUD />
                     </div>
                 )}
-            </motion.div>
+            </m.div>
 
 
         </AnimatePresence>
