@@ -11,7 +11,8 @@ import {
     X,
     Settings,
     Activity,
-    CreditCard
+    CreditCard,
+    Music
 } from 'lucide-react';
 
 interface SidebarItemProps {
@@ -26,8 +27,8 @@ const SidebarItem = ({ href, icon: Icon, label, active, sidebarOpen }: SidebarIt
     <Link
         to={href}
         className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group ${active
-                ? 'bg-teal-500/10 text-teal-400 border border-teal-500/20 shadow-[0_0_20px_rgba(20,184,166,0.1)]'
-                : 'text-slate-400 hover:bg-white/5 hover:text-white'
+            ? 'bg-teal-500/10 text-teal-400 border border-teal-500/20 shadow-[0_0_20px_rgba(20,184,166,0.1)]'
+            : 'text-slate-400 hover:bg-white/5 hover:text-white'
             }`}
     >
         <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${active ? 'bg-teal-500 text-slate-900' : 'bg-white/5 text-slate-400 group-hover:bg-white/10'
@@ -96,6 +97,14 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                         icon={Smartphone}
                         label="Templates"
                         active={location.pathname.startsWith('/admin/templates')}
+                        sidebarOpen={sidebarOpen}
+                    />
+
+                    <SidebarItem
+                        href="/admin/music"
+                        icon={Music}
+                        label="Music Library"
+                        active={location.pathname.startsWith('/admin/music')}
                         sidebarOpen={sidebarOpen}
                     />
 

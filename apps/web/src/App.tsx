@@ -38,6 +38,7 @@ const GuestWishesPage = lazy(() => import('./pages/GuestWishesPage').then(m => (
 const GuestWelcomePage = lazy(() => import('./pages/GuestWelcomePage').then(m => ({ default: m.GuestWelcomePage })));
 const GuestWelcomeDisplay = lazy(() => import('./pages/GuestWelcomeDisplay').then(m => ({ default: m.GuestWelcomeDisplay })));
 const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })));
+const AdminMusicPage = lazy(() => import('./pages/AdminMusicPage').then(m => ({ default: m.AdminMusicPage })));
 const DisplayEditorPage = lazy(() => import('./pages/DisplayEditorPage').then(m => ({ default: m.DisplayEditorPage })));
 const RemoteTriggerPage = lazy(() => import('./pages/RemoteTriggerPage').then(m => ({ default: m.RemoteTriggerPage })));
 const AdminDisplayPreviewPage = lazy(() => import('./pages/AdminDisplayPreviewPage').then(m => ({ default: m.AdminDisplayPreviewPage })));
@@ -127,6 +128,7 @@ const App: React.FC = () => {
                             <>
                                 {/* Admin Routes */}
                                 <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+                                <Route path="/admin/music" element={<AdminMusicPage />} />
                                 <Route path="/admin/templates" element={<AdminTemplatesPage />} />
 
                                 {/* Editor Routes */}

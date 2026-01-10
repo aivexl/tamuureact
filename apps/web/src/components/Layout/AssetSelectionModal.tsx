@@ -10,7 +10,8 @@ import {
     Waves, Zap, Component, Share2, Layers
 } from 'lucide-react';
 import { LayerType } from '@/store/useStore';
-import { storage } from '@/lib/api';
+import { storage, music as musicApi } from '@/lib/api';
+import { useEffect } from 'react';
 
 interface AssetSelectionModalProps {
     type: LayerType | null;
@@ -272,11 +273,7 @@ const WAVE_PRESETS = [
     { label: 'Organic Blob', config: { type: 'blob', amplitude: 40, frequency: 0.02, speed: 0.5 }, icon: <Component className="w-6 h-6" /> },
 ];
 
-const MUSIC_LIBRARY = [
-    { title: 'Romantic Piano', artist: 'Tamuu Studio', url: 'https://assets.mixkit.co/music/preview/mixkit-beautiful-dream-493.mp3' },
-    { title: 'Upbeat Celebration', artist: 'Tamuu Studio', url: 'https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3' },
-    { title: 'Zen Garden', artist: 'Tamuu Studio', url: 'https://assets.mixkit.co/music/preview/mixkit-serene-view-443.mp3' },
-];
+// MUSIC_LIBRARY removed in favor of dynamic API fetching
 
 const TILT_CARD_PRESETS = [
     { label: 'Royal Gold', icon: <Star className="w-8 h-8 text-amber-500" />, config: { theme: 'gold' } },
@@ -364,6 +361,25 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [dragActive, setDragActive] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [songs, setSongs] = useState<any[]>([]);
+    const [isLoadingSongs, setIsLoadingSongs] = useState(false);
+
+    useEffect(() => {
+        if (type === 'music_player') {
+            const fetchMusic = async () => {
+                setIsLoadingSongs(true);
+                try {
+                    const data = await musicApi.list();
+                    setSongs(data);
+                } catch (error) {
+                    console.error('Failed to fetch music:', error);
+                } finally {
+                    setIsLoadingSongs(false);
+                }
+            };
+            fetchMusic();
+        }
+    }, [type]);
 
     if (!type) return null;
 
@@ -756,25 +772,45 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                     </div>
                 )}
 
-                {/* MUSIC PLAYER */}
+                {/* MUSIC LIBRARY */}
                 {type === 'music_player' && (
                     <div className="space-y-3">
-                        {MUSIC_LIBRARY.map((track, i) => (
-                            <button
-                                key={i}
-                                onClick={() => onSelect({ musicPlayerConfig: { audioUrl: track.url, title: track.title, artist: track.artist } })}
-                                className="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 transition-all text-left group"
-                            >
-                                <div className="w-10 h-10 rounded-lg bg-premium-accent/20 flex items-center justify-center group-hover:bg-premium-accent/40 transition-colors">
-                                    <Music className="w-5 h-5 text-premium-accent" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="text-xs font-bold text-white truncate">{track.title}</div>
-                                    <div className="text-[10px] text-white/40 truncate">{track.artist}</div>
-                                </div>
-                                <div className="px-2 py-1 rounded-md bg-white/5 text-[8px] text-white/40 uppercase tracking-tighter">Preview</div>
-                            </button>
-                        ))}
+                        {isLoadingSongs ? (
+                            <div className="flex flex-col items-center justify-center p-8 text-white/20 gap-3">
+                                <Loader2 className="w-8 h-8 animate-spin" />
+                                <p className="text-[10px] uppercase tracking-widest">Loading Library...</p>
+                            </div>
+                        ) : songs.length > 0 ? (
+                            songs.map((track, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => onSelect({
+                                        musicPlayerConfig: {
+                                            audioUrl: track.url,
+                                            title: track.title,
+                                            artist: track.artist,
+                                            id: track.id
+                                        }
+                                    })}
+                                    className="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 transition-all text-left group"
+                                >
+                                    <div className="w-10 h-10 rounded-lg bg-premium-accent/20 flex items-center justify-center group-hover:bg-premium-accent/40 transition-colors">
+                                        <Music className="w-5 h-5 text-premium-accent" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="text-xs font-bold text-white truncate">{track.title}</div>
+                                        <div className="text-[10px] text-white/40 truncate">{track.artist}</div>
+                                    </div>
+                                    <div className="px-2 py-1 rounded-md bg-white/5 text-[8px] text-white/40 uppercase tracking-tighter">
+                                        {track.category || 'Preview'}
+                                    </div>
+                                </button>
+                            ))
+                        ) : (
+                            <div className="p-8 text-center text-white/20">
+                                <p className="text-[10px] uppercase tracking-widest">No music found</p>
+                            </div>
+                        )}
                         <div className="p-3 rounded-xl bg-white/5 border border-dashed border-white/10 text-center">
                             <p className="text-[9px] text-white/30 uppercase tracking-widest">Or upload your own mp3 in Property Panel</p>
                         </div>

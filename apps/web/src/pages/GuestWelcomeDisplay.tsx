@@ -2,7 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { userDisplayDesigns } from '@/lib/api';
 import { AnimatedLayer } from '@/components/Preview/AnimatedLayer';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, Play, Square, Maximize2 } from 'lucide-react';
+import { useAudioController } from '@/hooks/useAudioController';
 import { useStore } from '@/store/useStore';
 import { Layer } from '@/store/layersSlice';
 import { Section } from '@/store/sectionsSlice';
@@ -18,6 +19,7 @@ export const GuestWelcomeDisplay: React.FC = () => {
     const [scale, setScale] = useState(1);
 
     const { isAnimationPlaying, setAnimationPlaying, triggerBatchInteractions, resetInteractions } = useStore();
+    const { play, pause, isPlaying: isGlobalPlaying } = useAudioController();
 
     useEffect(() => {
         // Force animation playing for runtime
@@ -32,6 +34,12 @@ export const GuestWelcomeDisplay: React.FC = () => {
                 setLoading(true);
                 const data = await userDisplayDesigns.get(slug);
                 setDesign(data);
+
+                // Auto-play music if config exists
+                const music = data.music || data.content?.music;
+                if (music?.url) {
+                    play(music.url);
+                }
             } catch (err) {
                 console.error('Failed to load display design:', err);
                 setError('Design not found');
@@ -40,7 +48,11 @@ export const GuestWelcomeDisplay: React.FC = () => {
             }
         };
         loadDesign();
-    }, [slug, setAnimationPlaying]);
+
+        return () => {
+            pause();
+        };
+    }, [slug, setAnimationPlaying, play, pause]);
 
     // Enhanced Auto-Scaling Logic
     useEffect(() => {
@@ -248,6 +260,33 @@ export const GuestWelcomeDisplay: React.FC = () => {
 
             {/* Interaction Layer (Future Sync) */}
             <DisplaySimulationHUD className="fixed bottom-4 left-4 scale-75 origin-bottom-left opacity-0 hover:opacity-100 transition-opacity" />
+
+            {/* UI Controls Overlay */}
+            <div className="fixed top-4 right-4 z-[60000] flex items-center gap-2">
+                {(design?.music?.url || design?.content?.music?.url) && (
+                    <button
+                        onClick={() => isGlobalPlaying ? pause() : play(design.music?.url || design.content?.music?.url)}
+                        className="p-3 bg-premium-accent/20 backdrop-blur-md rounded-2xl text-premium-accent hover:bg-premium-accent/40 transition-all border border-premium-accent/30 shadow-[0_0_20px_rgba(191,161,129,0.2)]"
+                        title={isGlobalPlaying ? 'Stop Music' : 'Play Music'}
+                    >
+                        {!isGlobalPlaying ? <Play className="w-5 h-5 fill-current" /> : <Square className="w-5 h-5 fill-current" />}
+                    </button>
+                )}
+
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (!document.fullscreenElement) {
+                            document.documentElement.requestFullscreen();
+                        } else {
+                            document.exitFullscreen();
+                        }
+                    }}
+                    className="p-3 bg-black/50 backdrop-blur-xl text-white/70 hover:text-white rounded-full border border-white/20 transition-colors"
+                >
+                    <Maximize2 className="w-5 h-5" />
+                </button>
+            </div>
 
             <button
                 onClick={() => document.documentElement.requestFullscreen()}

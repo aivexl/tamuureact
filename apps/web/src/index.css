@@ -40,6 +40,10 @@ body {
   font-family: 'Inter', sans-serif;
 }
 
+.font-josefin {
+  font-family: 'Josefin Sans', sans-serif;
+}
+
 .font-premium {
   font-family: 'Outfit', 'Inter', system-ui, sans-serif;
 }
@@ -262,4 +266,84 @@ input[type="number"] {
 /* Transitions */
 .transition-premium {
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ============================================
+   SEAMLESS MARQUEE ANIMATIONS (Enterprise V2)
+   ============================================ */
+.seamless-marquee-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.seamless-marquee-track {
+  display: flex;
+  width: max-content;
+}
+
+.seamless-marquee-track-vertical {
+  display: flex;
+  flex-direction: column;
+  height: max-content;
+}
+
+/* Horizontal Keyframes */
+@keyframes seamless-scroll-left {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes seamless-scroll-right {
+  from {
+    transform: translateX(-50%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Vertical Keyframes */
+@keyframes seamless-scroll-up {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes seamless-scroll-down {
+  from {
+    transform: translateY(-50%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Animation Utility Classes */
+.animate-seamless-left {
+  animation: seamless-scroll-left var(--marquee-duration, 10s) linear infinite;
+}
+
+.animate-seamless-right {
+  animation: seamless-scroll-right var(--marquee-duration, 10s) linear infinite;
+}
+
+.animate-seamless-up {
+  animation: seamless-scroll-up var(--marquee-duration, 10s) linear infinite;
+}
+
+.animate-seamless-down {
+  animation: seamless-scroll-down var(--marquee-duration, 10s) linear infinite;
 }

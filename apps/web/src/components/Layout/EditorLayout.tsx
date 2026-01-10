@@ -14,8 +14,7 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { PanelLeftClose, PanelRightClose, Loader2 } from 'lucide-react';
 import { templates as templatesApi, invitations as invitationsApi, userDisplayDesigns, storage } from '@/lib/api';
 import { generateId, dataURLtoBlob, sanitizeValue } from '@/lib/utils';
-import { Layers, List, Zap, Settings } from 'lucide-react';
-import { InteractionsSidebar } from '../Panels/InteractionsSidebar';
+import { Layers, List, Settings } from 'lucide-react';
 import { SettingsSidebar } from '../Panels/SettingsSidebar';
 
 
@@ -45,7 +44,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false); // Renamed from isLoading for clarity
     const [hasLoaded, setHasLoaded] = useState(false); // Enterprise Load Guard
-    const [activeSidebarTab, setActiveSidebarTab] = useState<'sections' | 'layers' | 'interactions' | 'settings'>('sections');
+    const [activeSidebarTab, setActiveSidebarTab] = useState<'sections' | 'layers' | 'settings'>('sections');
 
     // ============================================
     // HEADER HANDLERS
@@ -117,6 +116,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
             sections: state.sections,
             layers: state.layers,
             orbit: state.orbit,
+            music: state.music,
             zoom: state.zoom,
             pan: state.pan,
             updated_at: new Date().toISOString()
@@ -229,6 +229,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                         projectName: sanitizedData.name || '',
                         activeSectionId: finalSections[0]?.id || null,
                         orbit: sanitizedData.orbit || useStore.getState().orbit,
+                        music: sanitizedData.music || null,
                         selectedLayerId: null,
                         templateType: sanitizedData.type || 'invitation',
                         isTemplate: !!isTemplate
@@ -306,13 +307,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                             <Layers className="w-4 h-4" />
                             <span className="text-[10px] font-bold uppercase tracking-wider">Layers</span>
                         </button>
-                        <button
-                            onClick={() => setActiveSidebarTab('interactions')}
-                            className={`flex-1 flex items-center justify-center gap-2 py-3 transition-colors ${activeSidebarTab === 'interactions' ? 'text-premium-accent border-b-2 border-premium-accent bg-premium-accent/5' : 'text-white/40 hover:text-white/60 hover:bg-white/5'}`}
-                        >
-                            <Zap className="w-4 h-4" />
-                            <span className="text-[10px] font-bold uppercase tracking-wider">Interactions</span>
-                        </button>
+
                         <button
                             onClick={() => setActiveSidebarTab('settings')}
                             className={`flex-1 flex items-center justify-center gap-2 py-3 transition-colors ${activeSidebarTab === 'settings' ? 'text-premium-accent border-b-2 border-premium-accent bg-premium-accent/5' : 'text-white/40 hover:text-white/60 hover:bg-white/5'}`}
@@ -347,17 +342,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                                     <LayersSidebar />
                                 </motion.div>
                             )}
-                            {activeSidebarTab === 'interactions' && (
-                                <motion.div
-                                    key="interactions"
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -10 }}
-                                    className="absolute inset-0"
-                                >
-                                    <InteractionsSidebar />
-                                </motion.div>
-                            )}
+
                             {activeSidebarTab === 'settings' && (
                                 <motion.div
                                     key="settings"

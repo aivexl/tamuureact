@@ -2,7 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import { Layer } from '@/store/layersSlice';
 import { useStore } from '@/store/useStore';
 import { motion } from 'framer-motion';
-import { Music, MessageSquare, Share2, Sun, Image as ImageIcon, Heart, Clock, MapPin, Star } from 'lucide-react';
+import { Music, MessageSquare, Share2, Sun, Image as ImageIcon, Heart, Clock, MapPin, Star, Play, Pause } from 'lucide-react';
+import { useAudioController } from '@/hooks/useAudioController';
 
 // ============================================
 // PARTICLES ELEMENT (Confetti, Fireworks, etc.)
@@ -203,20 +204,49 @@ export const DigitalGiftElement: React.FC<{ layer: Layer, isEditor?: boolean, on
 // ============================================
 export const MusicPlayerElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
     useEffect(() => { onContentLoad?.(); }, []);
-    const config = layer.musicPlayerConfig || { title: 'Wedding March', artist: 'Classical', theme: 'glass' };
+    const { play, pause, isPlaying, currentUrl } = useAudioController();
+    const config = layer.musicPlayerConfig || {
+        audioUrl: '',
+        title: 'Wedding March',
+        artist: 'Classical',
+        autoplay: false,
+        loop: false,
+        visualizerEnabled: false,
+        visualizerColor: '#ffffff'
+    };
+
+    // Auto-play when added or loaded if url exists (and not in editor to avoid chaos, or optionally in editor)
+    // For now, let's make it clickable to play/pause
+    const handleToggle = () => {
+        if (!config.audioUrl) return;
+        if (currentUrl === config.audioUrl && isPlaying) {
+            pause();
+        } else {
+            play(config.audioUrl);
+        }
+    };
+
+    const isThisPlaying = currentUrl === config.audioUrl && isPlaying;
 
     return (
         <motion.div
-            className="w-full h-full glass-panel flex items-center p-3 gap-3 border border-white/10"
+            className="w-full h-full glass-panel flex items-center p-3 gap-3 border border-white/10 cursor-pointer hover:bg-white/5 transition-colors"
             style={{ borderRadius: 16 }}
+            onClick={handleToggle}
         >
             <div className="w-10 h-10 rounded-full bg-premium-accent/20 flex items-center justify-center relative overflow-hidden">
-                <Music className="w-5 h-5 text-premium-accent" />
-                <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                    className="absolute inset-0 border-2 border-dashed border-premium-accent/40 rounded-full"
-                />
+                {isThisPlaying ? (
+                    <Pause className="w-5 h-5 text-premium-accent fill-current" />
+                ) : (
+                    <Music className="w-5 h-5 text-premium-accent" />
+                )}
+                {isThisPlaying && (
+                    <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                        className="absolute inset-0 border-2 border-dashed border-premium-accent/40 rounded-full"
+                    />
+                )}
             </div>
             <div className="flex-1 min-w-0">
                 <div className="text-[10px] font-bold text-white truncate">{config.title || 'Untitled Track'}</div>
@@ -226,7 +256,7 @@ export const MusicPlayerElement: React.FC<{ layer: Layer, isEditor?: boolean, on
                 {[0.4, 0.7, 0.3, 0.9, 0.5].map((h, i) => (
                     <motion.div
                         key={i}
-                        animate={{ height: [h * 20, (1 - h) * 20, h * 20] }}
+                        animate={isThisPlaying ? { height: [h * 20, (1 - h) * 20, h * 20] } : { height: 4 }}
                         transition={{ duration: 1, repeat: Infinity, delay: i * 0.1 }}
                         className="w-0.5 bg-premium-accent/60 rounded-full"
                     />

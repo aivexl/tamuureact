@@ -3,7 +3,8 @@
  * Replaces Supabase client with Cloudflare-based API
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://api.tamuu.id';
+const API_BASE = import.meta.env.PROD ? 'https://api.tamuu.id' : (import.meta.env.VITE_API_URL || 'https://api.tamuu.id');
+// const API_BASE = 'https://tamuu-api.shafania57.workers.dev';
 
 // ============================================
 // TEMPLATES API
@@ -431,6 +432,22 @@ export const guests = {
         });
         if (!res.ok) throw new Error('Failed to delete guest');
         return res.json();
+    },
+
+    async checkIn(idOrCode: string) {
+        const res = await fetch(`${API_BASE}/api/guests/${idOrCode}/checkin`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        return res.json(); // Returns { success, code, guest, error }
+    },
+
+    async checkOut(idOrCode: string) {
+        const res = await fetch(`${API_BASE}/api/guests/${idOrCode}/checkout`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        return res.json(); // Returns { success, code, guest, error }
     }
 };
 

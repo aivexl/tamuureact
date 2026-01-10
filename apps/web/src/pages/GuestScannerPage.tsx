@@ -29,6 +29,7 @@ export const GuestScannerPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [guestName, setGuestName] = useState<string | null>(null);
     const [permissionStatus, setPermissionStatus] = useState<'pending' | 'granted' | 'denied'>('pending');
+    const [checkInStatus, setCheckInStatus] = useState<'idle' | 'success' | 'duplicate' | 'error'>('idle');
 
     const scannerRef = useRef<Html5Qrcode | null>(null);
 
@@ -103,49 +104,81 @@ export const GuestScannerPage: React.FC = () => {
             await scannerRef.current.stop().catch(console.error);
         }
 
-        // AUTO-TRIGGER LOGIC
-        // We assume the QR code contains the Guest ID/Name in some format
-        // For now, let's treat the decodedText as the Guest Name for testing
-        // or a JSON string if it's more complex.
-
-        let identifiedName = decodedText;
+        // Parse QR Data: Can be guest ID, check_in_code, or URL with "to" param
+        let guestIdOrCode = decodedText;
         try {
-            const data = JSON.parse(decodedText);
-            identifiedName = data.name || data.guestName || decodedText;
+            // Check if it's a URL (e.g., https://tamuu.id/preview/slug?to=GUEST_CODE)
+            if (decodedText.includes('?to=')) {
+                const url = new URL(decodedText);
+                guestIdOrCode = url.searchParams.get('to') || decodedText;
+            } else {
+                // Try parsing as JSON
+                const data = JSON.parse(decodedText);
+                guestIdOrCode = data.id || data.code || data.checkInCode || decodedText;
+            }
         } catch (e) {
-            // Not JSON, use raw text
+            // Raw text - use as code directly
         }
 
-        setGuestName(identifiedName);
-        triggerBlast(identifiedName);
+        await performCheckIn(guestIdOrCode);
     };
 
-    const triggerBlast = async (name: string) => {
+    const performCheckIn = async (guestIdOrCode: string) => {
         setIsLoading(true);
         setError(null);
 
         try {
-            // CTO: Use the standardized Command Bus API
-            const response = await fetch(`https://api.tamuu.id/api/trigger/${id}`, {
+            // Call Check-In API
+            const response = await fetch(`https://api.tamuu.id/api/guests/${guestIdOrCode}/checkin`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                // SUCCESS: Guest checked in
+                setGuestName(result.guest.name);
+                setCheckInStatus('success');
+
+                // Trigger display blast for visual effect
+                await triggerBlast(result.guest.name);
+            } else if (result.code === 'ALREADY_CHECKED_IN') {
+                // DUPLICATE: Already checked in
+                setGuestName(result.guest.name);
+                setCheckInStatus('duplicate');
+                setError(`${result.guest.name} sudah check-in sebelumnya!`);
+            } else if (result.code === 'NOT_FOUND') {
+                setCheckInStatus('error');
+                setError('QR Code tidak dikenali. Pastikan tamu terdaftar.');
+            } else {
+                setCheckInStatus('error');
+                setError(result.error || 'Gagal melakukan check-in.');
+            }
+        } catch (err: any) {
+            console.error(err);
+            setCheckInStatus('error');
+            setError('Gagal terhubung ke server. Coba lagi.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const triggerBlast = async (name: string) => {
+        try {
+            // CTO: Use the standardized Command Bus API for display sync
+            await fetch(`https://api.tamuu.id/api/trigger/${id}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: name,
-                    effect: 'confetti', // Default interaction
+                    effect: 'confetti',
                     style: 'cinematic',
                     timestamp: Date.now()
                 })
             });
-
-            if (!response.ok) throw new Error('API Sync Failed');
-
-            // Success Visual Feedback
             console.log(`[Scanner] Blast triggered for ${name}`);
         } catch (err: any) {
-            console.error(err);
-            setError('Gagal sinkronisasi ke layar. Coba lagi.');
-        } finally {
-            setIsLoading(false);
+            console.warn('Display sync failed, but check-in was successful');
         }
     };
 

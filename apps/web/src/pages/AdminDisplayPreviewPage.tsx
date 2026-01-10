@@ -3,7 +3,8 @@ import { useParams } from 'react-router-dom';
 import { templates } from '@/lib/api';
 import { AnimatedLayer } from '@/components/Preview/AnimatedLayer';
 import { VisualEffectsCanvas } from '@/components/Canvas/VisualEffectsCanvas';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, Play, Square, Maximize2 } from 'lucide-react';
+import { useAudioController } from '@/hooks/useAudioController';
 import { useStore } from '@/store/useStore';
 import { Layer } from '@/store/layersSlice';
 import { Section } from '@/store/sectionsSlice';
@@ -25,6 +26,8 @@ export const AdminDisplayPreviewPage: React.FC = () => {
     const [scale, setScale] = useState(1);
 
     const { isAnimationPlaying, setAnimationPlaying, triggerBatchInteractions, resetInteractions } = useStore();
+    const { play, pause, isPlaying: isGlobalPlaying } = useAudioController();
+    const [isMuted, setIsMuted] = useState(false);
 
     // Load template design AND reset greetingName on mount
     useEffect(() => {
@@ -42,6 +45,16 @@ export const AdminDisplayPreviewPage: React.FC = () => {
                 const data = await templates.get(slug);
                 console.log('[AdminDisplayPreview] Design loaded:', data);
                 setDesign(data);
+
+                // Set animation playing
+                setAnimationPlaying(true);
+
+                // Auto-play music if config exists
+                const music = data.music || data.content?.music;
+                if (music?.url) {
+                    console.log('[AdminDisplayPreview] Auto-playing music:', music.title);
+                    play(music.url);
+                }
             } catch (err) {
                 console.error('Failed to load display design:', err);
                 setError('Design not found');
@@ -50,7 +63,11 @@ export const AdminDisplayPreviewPage: React.FC = () => {
             }
         };
         loadDesign();
-    }, [slug, setAnimationPlaying]);
+
+        return () => {
+            pause();
+        };
+    }, [slug, setAnimationPlaying, play, pause]);
 
     // Auto-scaling
     useEffect(() => {
@@ -223,6 +240,33 @@ export const AdminDisplayPreviewPage: React.FC = () => {
                 ))}
             </div>
 
+            {/* UI Controls Overlay */}
+            <div className="fixed top-4 right-4 z-[60000] flex items-center gap-2">
+                {(design?.music?.url || design?.content?.music?.url) && (
+                    <button
+                        onClick={() => isGlobalPlaying ? pause() : play(design.music?.url || design.content?.music?.url)}
+                        className="p-3 bg-premium-accent/20 backdrop-blur-md rounded-2xl text-premium-accent hover:bg-premium-accent/40 transition-all border border-premium-accent/30 shadow-[0_0_20px_rgba(191,161,129,0.2)]"
+                        title={isGlobalPlaying ? 'Stop Music' : 'Play Music'}
+                    >
+                        {!isGlobalPlaying ? <Play className="w-5 h-5 fill-current" /> : <Square className="w-5 h-5 fill-current" />}
+                    </button>
+                )}
+
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (!document.fullscreenElement) {
+                            document.documentElement.requestFullscreen();
+                        } else {
+                            document.exitFullscreen();
+                        }
+                    }}
+                    className="p-3 bg-black/50 backdrop-blur-xl text-white/70 hover:text-white rounded-full border border-white/20 transition-colors"
+                >
+                    <Maximize2 className="w-5 h-5" />
+                </button>
+            </div>
+
             {/* Click Hint for Admin */}
             {hasBlast && (
                 <div className="fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-black/50 backdrop-blur rounded-lg text-white/60 text-sm pointer-events-none">
@@ -234,17 +278,6 @@ export const AdminDisplayPreviewPage: React.FC = () => {
             <div className="fixed inset-0 z-[99999] pointer-events-none">
                 <VisualEffectsCanvas mode="global" />
             </div>
-
-            {/* Fullscreen Toggle */}
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    document.documentElement.requestFullscreen();
-                }}
-                className="fixed bottom-4 right-4 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg transition-colors z-[100000]"
-            >
-                Fullscreen
-            </button>
         </div>
     );
 };

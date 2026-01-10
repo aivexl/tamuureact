@@ -6,7 +6,8 @@ import {
     Heart, Baby, Gift, BookOpen, Mic, TreePine, Sun,
     PartyPopper, UtensilsCrossed, GraduationCap, Star,
     ArrowLeft, ArrowRight, Check, Sparkles, Camera,
-    Calendar, MapPin, CreditCard, Landmark, User
+    Calendar, MapPin, CreditCard, Landmark, User,
+    Plus, X, Smartphone
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { useProfileStore } from '../store/useProfileStore';
@@ -72,6 +73,15 @@ export const OnboardingPage: React.FC = () => {
     const [bankName, setBankName] = useState('');
     const [accountNumber, setAccountNumber] = useState('');
     const [accountHolder, setAccountHolder] = useState('');
+    // Bank 2
+    const [bank2Name, setBank2Name] = useState('');
+    const [bank2Number, setBank2Number] = useState('');
+    const [bank2Holder, setBank2Holder] = useState('');
+    // E-Money & Gift Address
+    const [emoneyType, setEmoneyType] = useState('');
+    const [emoneyNumber, setEmoneyNumber] = useState('');
+    const [giftAddress, setGiftAddress] = useState('');
+    const [showBank2, setShowBank2] = useState(false);
 
     // Auto-fill logic (Placed after state declarations)
     const [hasAutoFilled, setHasAutoFilled] = useState(false);
@@ -88,6 +98,14 @@ export const OnboardingPage: React.FC = () => {
             if (profile.bank1Name && !bankName) setBankName(profile.bank1Name);
             if (profile.bank1Number && !accountNumber) setAccountNumber(profile.bank1Number);
             if (profile.bank1Holder && !accountHolder) setAccountHolder(profile.bank1Holder);
+            // Bank 2
+            if (profile.bank2Name) { setBank2Name(profile.bank2Name); setShowBank2(true); }
+            if (profile.bank2Number) setBank2Number(profile.bank2Number);
+            if (profile.bank2Holder) setBank2Holder(profile.bank2Holder);
+            // E-Money & Gift
+            if (profile.emoneyType) setEmoneyType(profile.emoneyType);
+            if (profile.emoneyNumber) setEmoneyNumber(profile.emoneyNumber);
+            if (profile.giftAddress) setGiftAddress(profile.giftAddress);
             setHasAutoFilled(true);
         }
     }, [profile, hasAutoFilled, bankName, accountNumber, accountHolder]);
@@ -96,6 +114,65 @@ export const OnboardingPage: React.FC = () => {
     const [slug, setSlug] = useState('');
     const [invitationName, setInvitationName] = useState('');
     const [templateId] = useState(initialTemplateId);
+
+    // ============================================
+    // PERSISTENT STATE - Save/Restore from localStorage
+    // ============================================
+    const STORAGE_KEY = 'tamuu_onboarding_progress';
+    const [isRestored, setIsRestored] = useState(false);
+
+    // Restore state from localStorage on mount
+    useEffect(() => {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                if (data.currentStep) setCurrentStep(data.currentStep);
+                if (data.selectedCategory) setSelectedCategory(data.selectedCategory);
+                if (data.groomName) setGroomName(data.groomName);
+                if (data.brideName) setBrideName(data.brideName);
+                if (data.celebrantName) setCelebrantName(data.celebrantName);
+                if (data.photoPreview) setPhotoPreview(data.photoPreview);
+                if (data.groomPhoto) setGroomPhoto(data.groomPhoto);
+                if (data.bridePhoto) setBridePhoto(data.bridePhoto);
+                if (data.galleryPhotos) setGalleryPhotos(data.galleryPhotos);
+                if (data.eventDate) setEventDate(data.eventDate);
+                if (data.eventLocation) setEventLocation(data.eventLocation);
+                if (data.bankName) setBankName(data.bankName);
+                if (data.accountNumber) setAccountNumber(data.accountNumber);
+                if (data.accountHolder) setAccountHolder(data.accountHolder);
+                if (data.bank2Name) { setBank2Name(data.bank2Name); setShowBank2(true); }
+                if (data.bank2Number) setBank2Number(data.bank2Number);
+                if (data.bank2Holder) setBank2Holder(data.bank2Holder);
+                if (data.emoneyType) setEmoneyType(data.emoneyType);
+                if (data.emoneyNumber) setEmoneyNumber(data.emoneyNumber);
+                if (data.giftAddress) setGiftAddress(data.giftAddress);
+                if (data.slug) setSlug(data.slug);
+                if (data.invitationName) setInvitationName(data.invitationName);
+            } catch (e) {
+                console.error('Failed to restore onboarding progress:', e);
+            }
+        }
+        // Mark restore as complete (even if no data was found)
+        setIsRestored(true);
+    }, []); // Run once on mount
+
+    // Save state to localStorage on changes (ONLY after restore completes)
+    useEffect(() => {
+        if (!isRestored) return; // Don't save until restore is complete
+        const data = {
+            currentStep, selectedCategory, groomName, brideName, celebrantName,
+            photoPreview, groomPhoto, bridePhoto, galleryPhotos,
+            eventDate, eventLocation, bankName, accountNumber, accountHolder,
+            bank2Name, bank2Number, bank2Holder, emoneyType, emoneyNumber, giftAddress,
+            slug, invitationName
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }, [isRestored, currentStep, selectedCategory, groomName, brideName, celebrantName,
+        photoPreview, groomPhoto, bridePhoto, galleryPhotos,
+        eventDate, eventLocation, bankName, accountNumber, accountHolder,
+        bank2Name, bank2Number, bank2Holder, emoneyType, emoneyNumber, giftAddress,
+        slug, invitationName]);
 
     useSEO({
         title: 'Magic Form Onboarding - Tamuu',
@@ -150,7 +227,7 @@ export const OnboardingPage: React.FC = () => {
         const totalPhotos = galleryPhotos.length + files.length;
 
         if (totalPhotos > 6) {
-            alert('Maksimal 6 foto ya kak 🙏');
+            alert('Maksimal 6 foto ya kak');
             return;
         }
 
@@ -183,13 +260,14 @@ export const OnboardingPage: React.FC = () => {
             bank1Name: bankName,
             bank1Number: accountNumber,
             bank1Holder: accountHolder,
-            // Carry over secondary gift data from profile if available
-            bank2Name: profile?.bank2Name || '',
-            bank2Number: profile?.bank2Number || '',
-            bank2Holder: profile?.bank2Holder || '',
-            emoneyType: profile?.emoneyType || '',
-            emoneyNumber: profile?.emoneyNumber || '',
-            giftAddress: profile?.giftAddress || '',
+            // Bank 2 (from form)
+            bank2Name,
+            bank2Number,
+            bank2Holder,
+            // E-Money & Gift Address (from form)
+            emoneyType,
+            emoneyNumber,
+            giftAddress,
             slug,
             invitationName: invitationName || celebrantName || (groomName && brideName ? `${groomName} & ${brideName}` : '')
         };
@@ -245,7 +323,7 @@ export const OnboardingPage: React.FC = () => {
                                 <div className="w-20 h-20 bg-teal-500 text-white rounded-[2rem] flex items-center justify-center mx-auto shadow-2xl shadow-teal-500/20 animate-bounce">
                                     <Sparkles className="w-10 h-10" />
                                 </div>
-                                <h1 className="text-3xl md:text-4xl font-black text-slate-900 leading-tight">Halo! 😊 Senang sekali bisa membantu menyiapkan hari spesialmu.</h1>
+                                <h1 className="text-3xl md:text-4xl font-black text-slate-900 leading-tight">Halo! Senang sekali bisa membantu menyiapkan hari spesialmu.</h1>
                                 <p className="text-slate-500 text-lg">Kira-kira, acara apa nih yang akan kita rayakan hari ini?</p>
                             </div>
                             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
@@ -308,7 +386,7 @@ export const OnboardingPage: React.FC = () => {
                                 <div className="w-16 h-16 bg-white border border-slate-100 rounded-3xl flex items-center justify-center mx-auto shadow-xl">
                                     <Camera className="w-8 h-8 text-rose-500" />
                                 </div>
-                                <h1 className="text-3xl font-black text-slate-900 leading-tight">Biar lebih berkesan, yuk pasang foto terbaikmu! 📸</h1>
+                                <h1 className="text-3xl font-black text-slate-900 leading-tight">Biar lebih berkesan, yuk pasang foto terbaikmu!</h1>
                                 <p className="text-slate-500">Foto ini akan ditampilkan di halaman utama undanganmu.</p>
                             </div>
 
@@ -385,7 +463,7 @@ export const OnboardingPage: React.FC = () => {
                                 <div className="w-16 h-16 bg-white border border-slate-100 rounded-3xl flex items-center justify-center mx-auto shadow-xl">
                                     <BookOpen className="w-8 h-8 text-teal-500" />
                                 </div>
-                                <h1 className="text-3xl font-black text-slate-900 leading-tight">Bagiin lebih banyak momen seru! ✨</h1>
+                                <h1 className="text-3xl font-black text-slate-900 leading-tight">Bagiin lebih banyak momen seru!</h1>
                                 <p className="text-slate-500 text-sm">Upload foto-fotomu untuk galeri (maksimal 6 foto).</p>
                             </div>
 
@@ -426,7 +504,7 @@ export const OnboardingPage: React.FC = () => {
                                 <div className="w-16 h-16 bg-white border border-slate-100 rounded-3xl flex items-center justify-center mx-auto shadow-xl">
                                     <Calendar className="w-8 h-8 text-blue-500" />
                                 </div>
-                                <h1 className="text-3xl font-black text-slate-900 leading-tight">Di mana dan kapan kebahagiaan ini akan dibagikan? 🗓️</h1>
+                                <h1 className="text-3xl font-black text-slate-900 leading-tight">Di mana dan kapan kebahagiaan ini akan dibagikan?</h1>
                                 <p className="text-slate-500">Kita siapkan detail waktu dan lokasinya ya.</p>
                             </div>
 
@@ -451,31 +529,66 @@ export const OnboardingPage: React.FC = () => {
 
                     {/* STEP 6: GIFT / REKENING */}
                     {currentStep === 6 && (
-                        <m.div key="step6" initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -100 }} className="max-w-xl w-full text-center space-y-10">
+                        <m.div key="step6" initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -100 }} className="max-w-xl w-full text-center space-y-8">
                             <div className="space-y-4">
                                 <div className="w-16 h-16 bg-white border border-slate-100 rounded-3xl flex items-center justify-center mx-auto shadow-xl">
                                     <CreditCard className="w-8 h-8 text-amber-500" />
                                 </div>
-                                <h1 className="text-2xl md:text-3xl font-black text-slate-900 leading-tight px-4">Agar kado cinta dari kerabat bisa tersampaikan dengan mudah... 🎁</h1>
+                                <h1 className="text-2xl md:text-3xl font-black text-slate-900 leading-tight px-4">Agar kado cinta dari kerabat bisa tersampaikan dengan mudah...</h1>
                                 <p className="text-slate-500">Kakak mau cantumkan nomor rekening untuk kado digital?</p>
                             </div>
 
-                            <div className="bg-white rounded-[3rem] p-10 shadow-2xl border border-slate-50 space-y-4 text-left">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Pilih Bank</label>
-                                    <div className="relative">
-                                        <Landmark className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
-                                        <input type="text" value={bankName} onChange={e => setBankName(e.target.value)} className="w-full pl-16 pr-8 py-5 bg-slate-50 border-none rounded-[1.5rem] focus:ring-4 focus:ring-teal-500/10 text-lg font-bold text-slate-900 placeholder:text-slate-300" placeholder="Contoh: BCA / Mandiri / BNI" />
+                            {/* Bank 1 */}
+                            <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-50 space-y-3 text-left">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Landmark className="w-4 h-4 text-amber-500" />
+                                    <span className="text-xs font-black uppercase tracking-widest text-slate-600">Rekening 1</span>
+                                </div>
+                                <input type="text" value={bankName} onChange={e => setBankName(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Nama Bank (BCA, Mandiri, dll)" />
+                                <input type="text" value={accountNumber} onChange={e => setAccountNumber(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Nomor Rekening" />
+                                <input type="text" value={accountHolder} onChange={e => setAccountHolder(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Atas Nama" />
+                            </div>
+
+                            {/* Bank 2 (Toggle) */}
+                            {!showBank2 ? (
+                                <button onClick={() => setShowBank2(true)} className="flex items-center gap-2 mx-auto text-teal-600 hover:text-teal-700 font-bold text-sm transition-colors">
+                                    <Plus className="w-4 h-4" />
+                                    Tambah Rekening Kedua
+                                </button>
+                            ) : (
+                                <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-50 space-y-3 text-left">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <Landmark className="w-4 h-4 text-blue-500" />
+                                            <span className="text-xs font-black uppercase tracking-widest text-slate-600">Rekening 2</span>
+                                        </div>
+                                        <button onClick={() => { setShowBank2(false); setBank2Name(''); setBank2Number(''); setBank2Holder(''); }} className="text-slate-400 hover:text-red-500 transition-colors">
+                                            <X className="w-4 h-4" />
+                                        </button>
                                     </div>
+                                    <input type="text" value={bank2Name} onChange={e => setBank2Name(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Nama Bank" />
+                                    <input type="text" value={bank2Number} onChange={e => setBank2Number(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Nomor Rekening" />
+                                    <input type="text" value={bank2Holder} onChange={e => setBank2Holder(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Atas Nama" />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Nomor Rekening</label>
-                                    <input type="text" value={accountNumber} onChange={e => setAccountNumber(e.target.value)} className="w-full px-8 py-5 bg-slate-50 border-none rounded-[1.5rem] focus:ring-4 focus:ring-teal-500/10 text-lg font-bold text-slate-900 placeholder:text-slate-300" placeholder="00012345678" />
+                            )}
+
+                            {/* E-Money */}
+                            <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-50 space-y-3 text-left">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Smartphone className="w-4 h-4 text-green-500" />
+                                    <span className="text-xs font-black uppercase tracking-widest text-slate-600">E-Wallet (Opsional)</span>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Atas Nama</label>
-                                    <input type="text" value={accountHolder} onChange={e => setAccountHolder(e.target.value)} className="w-full px-8 py-5 bg-slate-50 border-none rounded-[1.5rem] focus:ring-4 focus:ring-teal-500/10 text-lg font-bold text-slate-900 placeholder:text-slate-300" placeholder="Contoh: Andi Wijaya" />
+                                <input type="text" value={emoneyType} onChange={e => setEmoneyType(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Jenis (GoPay, OVO, DANA, dll)" />
+                                <input type="text" value={emoneyNumber} onChange={e => setEmoneyNumber(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Nomor E-Wallet" />
+                            </div>
+
+                            {/* Gift Address */}
+                            <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-50 space-y-3 text-left">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <MapPin className="w-4 h-4 text-rose-500" />
+                                    <span className="text-xs font-black uppercase tracking-widest text-slate-600">Alamat Pengiriman Kado (Opsional)</span>
                                 </div>
+                                <textarea value={giftAddress} onChange={e => setGiftAddress(e.target.value)} rows={3} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300 resize-none" placeholder="Alamat lengkap untuk pengiriman kado fisik..." />
                             </div>
 
                             <button onClick={nextStep} className="text-slate-400 hover:text-slate-600 font-bold uppercase tracking-widest text-[10px] underline underline-offset-8">Lewati dulu, akan saya isi nanti di editor</button>
@@ -489,7 +602,7 @@ export const OnboardingPage: React.FC = () => {
                                 <div className="w-16 h-16 bg-white border border-slate-100 rounded-3xl flex items-center justify-center mx-auto shadow-xl">
                                     <Landmark className="w-8 h-8 text-emerald-500" />
                                 </div>
-                                <h1 className="text-3xl font-black text-slate-900 leading-tight">Terakhir, buat link unik untuk undanganmu! ✨</h1>
+                                <h1 className="text-3xl font-black text-slate-900 leading-tight">Terakhir, buat link unik untuk undanganmu!</h1>
                                 <p className="text-slate-500">Tentukan alamat website untuk dibagikan ke para tamu.</p>
                             </div>
 
@@ -545,7 +658,7 @@ export const OnboardingPage: React.FC = () => {
                         disabled={!isStepValid()}
                         className={`group relative flex-1 h-16 rounded-[2.5rem] font-black text-xs md:text-sm uppercase tracking-[0.2em] shadow-2xl transition-all flex items-center justify-center gap-3 active:scale-95 ${isStepValid() ? 'bg-slate-900 text-white hover:bg-teal-600' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
                     >
-                        {currentStep === 6 ? 'Selesai & Pilih Desain' : 'Lanjut Sekarang'}
+                        {currentStep === 7 ? 'Selesai & Pilih Desain' : 'Lanjut Sekarang'}
                         <ArrowRight className={`w-5 h-5 transition-transform ${isStepValid() ? 'group-hover:translate-x-1' : ''}`} />
                         {isStepValid() && (
                             <m.div layoutId="glow" className="absolute inset-0 rounded-[2.5rem] bg-teal-400/20 blur-xl -z-10" />

@@ -35,9 +35,9 @@ export const useStore = create<StoreState>()(
                     activeSectionId: state.activeSectionId,
                     zoom: state.zoom,
                     pan: state.pan,
-                    slug: state.slug,
                     projectName: state.projectName,
-                    orbit: state.orbit
+                    orbit: state.orbit,
+                    music: state.music
                 })
             }
         ),
@@ -52,6 +52,7 @@ export const useStore = create<StoreState>()(
                 projectName: state.projectName,
                 id: state.id,
                 orbit: state.orbit,
+                music: state.music,
                 user: state.user,
                 token: state.token
             }),

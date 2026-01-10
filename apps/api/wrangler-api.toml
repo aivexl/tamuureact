@@ -2,18 +2,15 @@ name = "tamuu-api"
 main = "tamuu-api-worker.js"
 compatibility_date = "2024-01-01"
 
-# Custom Domain
 [[routes]]
 pattern = "api.tamuu.id"
 custom_domain = true
 
-# D1 Database
 [[d1_databases]]
 binding = "DB"
 database_name = "tamuu-db"
 database_id = "cb0a336d-c070-49e6-80d4-c198a2df141d"
 
-# R2 Storage
 [[r2_buckets]]
 binding = "ASSETS"
 bucket_name = "tamuu-assets"

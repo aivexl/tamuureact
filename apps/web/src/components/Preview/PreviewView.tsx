@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
-import { X, Maximize2, Minimize2, Volume2, VolumeX } from 'lucide-react';
+import { X, Maximize2, Minimize2, Play, Square } from 'lucide-react';
 import { ElementRenderer } from '../Canvas/ElementRenderer';
 import { AnimatedLayer, clearAnimationCache } from './AnimatedLayer';
 import { ParticleOverlay } from './ParticleOverlay';
@@ -11,6 +11,8 @@ import { GuestGreetingOverlay } from '../Canvas/GuestGreetingOverlay';
 import { DisplaySimulationHUD } from '../Canvas/DisplaySimulationHUD';
 import { useAudioController } from '@/hooks/useAudioController';
 import { useSEO } from '@/hooks/useSEO';
+import { GuestQRTrigger } from './GuestQRTrigger';
+import { GuestQRModal } from './GuestQRModal';
 
 // Canvas dimensions - now dynamic based on template type
 const INVITATION_WIDTH = 414;
@@ -52,6 +54,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
     const [visibleSections, setVisibleSections] = useState<number[]>([0]);
     const [clickedSections, setClickedSections] = useState<number[]>([]); // Track which sections have been clicked (for click trigger)
     const [windowSize, setWindowSize] = useState({ width: 800, height: 600 }); // Default values to prevent NaN
+    const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
     // Refs
     const containerRef = useRef<HTMLDivElement>(null);
@@ -1092,9 +1095,10 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                     {music?.url && (
                         <button
                             onClick={() => isGlobalPlaying ? pause() : play()}
-                            className="p-3 bg-white/10 backdrop-blur-md rounded-2xl text-white hover:bg-premium-glow/20 transition-all border border-white/10 shadow-xl"
+                            className="p-3 bg-premium-accent/20 backdrop-blur-md rounded-2xl text-premium-accent hover:bg-premium-accent/40 transition-all border border-premium-accent/30 shadow-[0_0_20px_rgba(191,161,129,0.2)]"
+                            title={isGlobalPlaying ? 'Stop Music' : 'Play Music'}
                         >
-                            {!isGlobalPlaying ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                            {!isGlobalPlaying ? <Play className="w-5 h-5 fill-current" /> : <Square className="w-5 h-5 fill-current" />}
                         </button>
                     )}
                     <button
@@ -1136,9 +1140,9 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                     )}
                 </AnimatePresence>
 
-                {/* ESC hint - Balanced z-index to be visible but not block clicks if it were clickable */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/30 text-xs z-[60000] pointer-events-none">
-                    Press <kbd className="px-1.5 py-0.5 bg-white/10 rounded">ESC</kbd> to close
+                {/* Branding Footer - Premium TAMUU.ID */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/50 text-base z-[60000] pointer-events-none tracking-[0.4em] uppercase" style={{ fontFamily: "'Poiret One', cursive", fontWeight: 400 }}>
+                    TAMUU.ID
                 </div>
 
                 <style dangerouslySetInnerHTML={{
@@ -1155,6 +1159,22 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                 {/* GLOBAL VISUAL ENGINE (Background/Foreground) - INSIDE FULLSCREEN CONTAINER */}
                 <VisualEffectsCanvas mode="global" className="z-[70000]" />
                 {!isDisplay && <GuestGreetingOverlay />}
+
+                {/* Premium Guest QR System */}
+                {!isDisplay && (
+                    <>
+                        <GuestQRTrigger
+                            isVisible={true}
+                            onClick={() => setIsQRModalOpen(true)}
+                        />
+                        <GuestQRModal
+                            isOpen={isQRModalOpen}
+                            onClose={() => setIsQRModalOpen(false)}
+                            guestName={useStore.getState().isTemplate ? "John Doe & Partner" : (useStore.getState().greetingName || "Guest Name")}
+                            guestId={useStore.getState().isTemplate ? "TMU-2026-X99" : (useStore.getState().id || "UNKNOWN")}
+                        />
+                    </>
+                )}
 
                 {/* Admin HUD (Debug Mode Only) */}
                 {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === 'true' && (

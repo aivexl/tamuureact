@@ -21,23 +21,20 @@ export default {
             if (!response) {
                 // Cache MISS - Fetch fresh data
                 const freshData = await fetcher();
-                if (!freshData) return null; // Fetcher signals error/not found
+                if (!freshData) return notFound(corsHeaders);
 
                 // Create cacheable response
                 response = json(freshData, {
-                    ...corsHeaders,
-                    'Cache-Control': `public, max-age=${ttl}`,
-                    'CF-Cache-Status': 'MISS',
-                    'X-Tamuu-Cache': 'MISS'
+                    headers: {
+                        ...corsHeaders,
+                        'Cache-Control': `public, max-age=${ttl}`,
+                        'CF-Cache-Status': 'MISS',
+                        'X-Tamuu-Cache': 'MISS'
+                    }
                 });
 
                 // Store in cache asynchronously
                 ctx.waitUntil(cache.put(cacheKey, response.clone()));
-            } else {
-                // Cache HIT - (Optional) Reconstruct response to add debug headers if strict mode
-                // usually valid response is returned directly
-                // response = new Response(response.body, response);
-                // response.headers.set('X-Tamuu-Cache', 'HIT');
             }
             return response;
         };
@@ -299,6 +296,130 @@ export default {
             }
 
             // ============================================
+            // GUEST CHECK-IN ENDPOINT (Enterprise Feature)
+            // POST /api/guests/:id/checkin OR /api/guests/code/:code/checkin
+            // ============================================
+            if (path.match(/\/api\/guests\/[^/]+\/checkin/) && method === 'POST') {
+                const parts = path.split('/');
+                const idOrCode = parts[3];
+                const isCodeLookup = parts[2] === 'code';
+
+                // Find guest by ID or check_in_code
+                let guest;
+                if (isCodeLookup || idOrCode.length < 20) {
+                    // Short code lookup (e.g., "ABC123")
+                    guest = await env.DB.prepare('SELECT * FROM guests WHERE check_in_code = ?').bind(idOrCode).first();
+                } else {
+                    // UUID lookup
+                    guest = await env.DB.prepare('SELECT * FROM guests WHERE id = ?').bind(idOrCode).first();
+                }
+
+                if (!guest) {
+                    return json({ success: false, error: 'Guest not found', code: 'NOT_FOUND' }, { ...corsHeaders, status: 404 });
+                }
+
+                // Duplicate check-in prevention
+                if (guest.checked_in_at) {
+                    return json({
+                        success: false,
+                        error: 'Guest already checked in',
+                        code: 'ALREADY_CHECKED_IN',
+                        guest: {
+                            id: guest.id,
+                            name: guest.name,
+                            tier: guest.tier,
+                            table_number: guest.table_number,
+                            checked_in_at: guest.checked_in_at
+                        }
+                    }, { ...corsHeaders, status: 409 });
+                }
+
+                // Perform check-in
+                const checkedInAt = new Date().toISOString();
+                await env.DB.prepare(`
+                    UPDATE guests SET checked_in_at = ? WHERE id = ?
+                `).bind(checkedInAt, guest.id).run();
+
+                return json({
+                    success: true,
+                    code: 'CHECK_IN_SUCCESS',
+                    guest: {
+                        id: guest.id,
+                        name: guest.name,
+                        tier: guest.tier,
+                        table_number: guest.table_number,
+                        guest_count: guest.guest_count,
+                        checked_in_at: checkedInAt
+                    }
+                }, corsHeaders);
+            }
+
+            // ============================================
+            // GUEST CHECK-OUT ENDPOINT (Enterprise Feature)
+            // POST /api/guests/:id/checkout
+            // ============================================
+            if (path.match(/\/api\/guests\/[^/]+\/checkout/) && method === 'POST') {
+                const parts = path.split('/');
+                const idOrCode = parts[3];
+
+                // Find guest by ID or check_in_code
+                let guest;
+                if (idOrCode.length < 20) {
+                    guest = await env.DB.prepare('SELECT * FROM guests WHERE check_in_code = ?').bind(idOrCode).first();
+                } else {
+                    guest = await env.DB.prepare('SELECT * FROM guests WHERE id = ?').bind(idOrCode).first();
+                }
+
+                if (!guest) {
+                    return json({ success: false, error: 'Guest not found', code: 'NOT_FOUND' }, { ...corsHeaders, status: 404 });
+                }
+
+                // Must be checked in first
+                if (!guest.checked_in_at) {
+                    return json({
+                        success: false,
+                        error: 'Guest has not checked in yet',
+                        code: 'NOT_CHECKED_IN',
+                        guest: { id: guest.id, name: guest.name }
+                    }, { ...corsHeaders, status: 400 });
+                }
+
+                // Already checked out prevention
+                if (guest.checked_out_at) {
+                    return json({
+                        success: false,
+                        error: 'Guest already checked out',
+                        code: 'ALREADY_CHECKED_OUT',
+                        guest: {
+                            id: guest.id,
+                            name: guest.name,
+                            checked_in_at: guest.checked_in_at,
+                            checked_out_at: guest.checked_out_at
+                        }
+                    }, { ...corsHeaders, status: 409 });
+                }
+
+                // Perform check-out
+                const checkedOutAt = new Date().toISOString();
+                await env.DB.prepare(`
+                    UPDATE guests SET checked_out_at = ? WHERE id = ?
+                `).bind(checkedOutAt, guest.id).run();
+
+                return json({
+                    success: true,
+                    code: 'CHECK_OUT_SUCCESS',
+                    guest: {
+                        id: guest.id,
+                        name: guest.name,
+                        tier: guest.tier,
+                        table_number: guest.table_number,
+                        checked_in_at: guest.checked_in_at,
+                        checked_out_at: checkedOutAt
+                    }
+                }, corsHeaders);
+            }
+
+            // ============================================
             // MUSIC ENDPOINTS
             // ============================================
             if (path === '/api/music' && method === 'GET') {
@@ -444,7 +565,7 @@ export default {
                     return response.results.map(t => ({
                         ...t,
                         thumbnail_url: t.thumbnail && !t.thumbnail.startsWith('http')
-                            ?\`https://api.tamuu.id/assets/\${t.thumbnail}\` 
+                            ? `https://api.tamuu.id/assets/${t.thumbnail}`
                             : t.thumbnail
                     }));
                 });
@@ -756,10 +877,12 @@ export default {
             }
 
 
-            if (path.match(/^\/api\/invitations\/[^/]+$/) && method === 'GET') {
+            if (path.match(/^\/api\/invitations\/(public\/)?[^/]+$/) && method === 'GET') {
                 // Short cache (60s) for high traffic public pages
                 return await smart_cache(request, 60, async () => {
-                    const id = path.split('/')[3];
+                    const parts = path.split('/');
+                    const id = parts[parts.length - 1]; // Handles /api/invitations/slug and /api/invitations/public/slug
+
                     // Try by ID first, then by slug
                     let { results } = await env.DB.prepare(
                         'SELECT * FROM invitations WHERE id = ? OR slug = ?'
@@ -905,8 +1028,8 @@ export default {
                     });
                 }
 
-                const filename = `${ Date.now() } - ${ file.name }`;
-                const key = `uploads / ${ filename }`;
+                const filename = `${Date.now()} - ${file.name}`;
+                const key = `uploads / ${filename}`;
 
                 await env.ASSETS.put(key, file.stream(), {
                     httpMetadata: { contentType: file.type }
@@ -917,63 +1040,215 @@ export default {
                 // Get user_id from form data if provided
                 const userId = formData.get('user_id');
 
-                    // Save to database with user_id
-                    const id = crypto.randomUUID();
-                    await env.DB.prepare(
-                        `INSERT INTO assets (id, user_id, filename, content_type, size, r2_key, public_url)
+                // Save to database with user_id
+                const id = crypto.randomUUID();
+                await env.DB.prepare(
+                    `INSERT INTO assets (id, user_id, filename, content_type, size, r2_key, public_url)
                      VALUES (?, ?, ?, ?, ?, ?, ?)`
-                    ).bind(id, userId || null, file.name, file.type, file.size, key, publicUrl).run();
+                ).bind(id, userId || null, file.name, file.type, file.size, key, publicUrl).run();
 
-                    return json({ id, url: publicUrl, key }, corsHeaders);
-                }
+                return json({ id, url: publicUrl, key }, corsHeaders);
+            }
 
             // ============================================
             // SERVE ASSETS FROM R2
             // ============================================
             if (path.startsWith('/assets/')) {
-                    const key = path.replace('/assets/', '');
-                    const object = await env.ASSETS.get(key);
-                    if (!object) return notFound(corsHeaders);
+                const key = path.replace('/assets/', '');
+                const object = await env.ASSETS.get(key);
+                if (!object) return notFound(corsHeaders);
 
-                    const headers = new Headers();
-                    object.writeHttpMetadata(headers);
-                    headers.set('etag', object.httpEtag);
-                    headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+                const headers = new Headers();
+                object.writeHttpMetadata(headers);
+                headers.set('etag', object.httpEtag);
+                headers.set('Cache-Control', 'public, max-age=31536000, immutable');
 
-                    return new Response(object.body, { headers });
-                }
-
-                // ============================================
-                // HEALTH CHECK
-                // ============================================
-                if (path === '/api/health') {
-                    return json({ status: 'ok', timestamp: new Date().toISOString() }, corsHeaders);
-                }
-
-                return notFound(corsHeaders);
-
-            } catch (error) {
-                console.error('API Error:', error);
-                return new Response(JSON.stringify({ error: error.message }), {
-                    status: 500,
-                    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-                });
+                return new Response(object.body, { headers });
             }
+
+            // ============================================
+            // HEALTH CHECK
+            // ============================================
+            if (path === '/api/health') {
+                return json({ status: 'ok', timestamp: new Date().toISOString() }, corsHeaders);
+            }
+
+            return notFound(corsHeaders);
+
+        } catch (error) {
+            console.error('API Error:', error);
+            return new Response(JSON.stringify({ error: error.message }), {
+                status: 500,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
         }
+    }
 };
 
-    // Helper functions
-    function json(data, corsHeaders) {
+// Helper functions
+function json(data, options = {}) {
+    const corsHeaders = options.headers || options;
+    const status = options.status || 200;
+
+    // Clean up status if it leaked into headers
+    const cleanHeaders = { ...corsHeaders };
+    if (cleanHeaders.status) delete cleanHeaders.status;
+
     return new Response(JSON.stringify(data), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        status,
+        headers: {
+            // ============================================
+            // MUSIC LIBRARY ENDPOINTS
+            // ============================================
+            if(path === '/api/music' && method === 'GET') {
+        return await smart_cache(request, 3600, async () => {
+            const { results } = await env.DB.prepare(
+                'SELECT * FROM music_library ORDER BY category, title ASC'
+            ).all();
+            return results;
+        });
+    }
+
+    // Admin: Upload new music
+    if (path === '/api/admin/music' && method === 'POST') {
+        try {
+            const formData = await request.formData();
+            const title = formData.get('title');
+            const artist = formData.get('artist');
+            const category = formData.get('category') || 'Instrumental';
+            const duration = formData.get('duration') || '0:00';
+            const file = formData.get('file');
+
+            if (!title || !artist || !file) {
+                return json({ error: 'Title, artist, and file are required' }, { ...corsHeaders, status: 400 });
+            }
+
+            // Validate file type
+            if (!file.type.includes('audio/')) {
+                return json({ error: 'File must be an audio file (MP3)' }, { ...corsHeaders, status: 400 });
+            }
+
+            // Validate file size (max 10MB)
+            const MAX_SIZE = 10 * 1024 * 1024;
+            if (file.size > MAX_SIZE) {
+                return json({ error: 'File size must be less than 10MB' }, { ...corsHeaders, status: 400 });
+            }
+
+            // Generate unique ID and filename
+            const id = crypto.randomUUID().replace(/-/g, '').substring(0, 16);
+            const sanitizedTitle = title.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 30);
+            const filename = `music/${id}-${sanitizedTitle}.mp3`;
+            const url = `https://api.tamuu.id/assets/${filename}`;
+
+            // Upload to R2
+            await env.ASSETS.put(filename, file.stream(), {
+                httpMetadata: {
+                    contentType: 'audio/mpeg',
+                }
+            });
+
+            // Insert into D1
+            await env.DB.prepare(
+                `INSERT INTO music_library (id, title, artist, url, category, duration, is_premium, source_type, created_at) 
+                         VALUES (?, ?, ?, ?, ?, ?, 0, 'library', datetime('now'))`
+            ).bind(id, title, artist, url, category, duration).run();
+
+            return json({
+                success: true,
+                id,
+                title,
+                artist,
+                url,
+                category,
+                message: 'Music uploaded successfully'
+            }, corsHeaders);
+        } catch (e) {
+            console.error('Music upload error:', e);
+            return json({ error: 'Upload failed: ' + e.message }, { ...corsHeaders, status: 500 });
+        }
+    }
+
+    // Admin: Delete music
+    if (path.startsWith('/api/admin/music/') && method === 'DELETE') {
+        const id = path.split('/')[4];
+        if (!id) {
+            return json({ error: 'Music ID required' }, { ...corsHeaders, status: 400 });
+        }
+
+        try {
+            // Get the music record to find the R2 key
+            const { results } = await env.DB.prepare(
+                'SELECT url FROM music_library WHERE id = ?'
+            ).bind(id).all();
+
+            if (results.length === 0) {
+                return json({ error: 'Music not found' }, { ...corsHeaders, status: 404 });
+            }
+
+            // Extract R2 key from URL
+            const url = results[0].url;
+            const r2Key = url.replace('https://api.tamuu.id/assets/', '');
+
+            // Delete from R2
+            await env.ASSETS.delete(r2Key);
+
+            // Delete from D1
+            await env.DB.prepare('DELETE FROM music_library WHERE id = ?').bind(id).run();
+
+            return json({ success: true, id, message: 'Music deleted successfully' }, corsHeaders);
+        } catch (e) {
+            console.error('Music delete error:', e);
+            return json({ error: 'Delete failed: ' + e.message }, { ...corsHeaders, status: 500 });
+        }
+    }
+
+    // ============================================
+    // ASSETS SERVING (R2)
+    // ============================================
+    if (path.startsWith('/assets/')) {
+        const key = path.slice(8); // Remove '/assets/' prefix ('/assets/music/foo.mp3' -> 'music/foo.mp3')
+        const object = await env.ASSETS.get(key);
+
+        if (!object) {
+            return notFound(corsHeaders);
+        }
+
+        const headers = new Headers();
+        object.writeHttpMetadata(headers);
+        headers.set('etag', object.httpEtag);
+
+        // Add CORS and Cache headers
+        for (const [k, v] of Object.entries(corsHeaders)) {
+            headers.set(k, v);
+        }
+        headers.set('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+        headers.set('X-Tamuu-Cache', 'R2-HIT');
+
+        return new Response(object.body, {
+            headers
+        });
+    }
+
+    return notFound(corsHeaders);
+} catch (e) {
+    return json({ error: e.message }, { ...corsHeaders, status: 500 });
+}
+    }
+};
+
+function json(data, options = {}) {
+    const headers = options.headers || {};
+    return new Response(JSON.stringify(data), {
+        status: options.status || 200,
+        headers: {
+            'Content-Type': 'application/json',
+            ...headers
+        }
     });
 }
 
 function notFound(corsHeaders) {
-    return new Response(JSON.stringify({ error: 'Not found' }), {
-        status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
+    return json({ error: 'Not found' }, { headers: corsHeaders, status: 404 });
 }
 
 function parseJsonFields(row) {
