@@ -282,19 +282,35 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
     }, []);
 
     // Audio Handling
-    const { play, pause, isPlaying: isGlobalPlaying } = useAudioController();
+    const { play, pause, isPlaying: isGlobalPlaying, currentUrl } = useAudioController();
     const music = useStore(state => state.music);
+    const autoplayTriedRef = useRef(false);
 
+    // Robust Autoplay: Attempt immediately and on first interaction
     useEffect(() => {
-        if (!isOpen || !music?.url) return;
+        if (!isOpen) return;
 
-        // Force Autoplay Logic for Public View
-        // We attempt to play as soon as the preview is open
-        // The controller handles the interaction fallback if blocked
-        play(music.url);
+        const musicUrl = music?.url || 'https://api.tamuu.id/assets/music/tr-01.mp3';
+
+        // Immediately attempt to play
+        if (!autoplayTriedRef.current) {
+            autoplayTriedRef.current = true;
+            play(musicUrl);
+        }
+
+        // Fallback: Play on first user interaction
+        const unlock = () => {
+            play(musicUrl);
+            window.removeEventListener('click', unlock);
+            window.removeEventListener('touchstart', unlock);
+        };
+        window.addEventListener('click', unlock);
+        window.addEventListener('touchstart', unlock);
 
         return () => {
             pause();
+            window.removeEventListener('click', unlock);
+            window.removeEventListener('touchstart', unlock);
         };
     }, [isOpen, music?.url]);
 
@@ -1092,9 +1108,13 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                         transformOrigin: 'top right'
                     }}
                 >
-                    {music?.url && (
+                    {/* Music Button - Always visible for invitation templates */}
+                    {!isDisplay && (
                         <button
-                            onClick={() => isGlobalPlaying ? pause() : play()}
+                            onClick={() => {
+                                const url = music?.url || currentUrl || 'https://api.tamuu.id/assets/music/tr-01.mp3';
+                                isGlobalPlaying ? pause() : play(url);
+                            }}
                             className="p-3 bg-premium-accent/20 backdrop-blur-md rounded-2xl text-premium-accent hover:bg-premium-accent/40 transition-all border border-premium-accent/30 shadow-[0_0_20px_rgba(191,161,129,0.2)]"
                             title={isGlobalPlaying ? 'Stop Music' : 'Play Music'}
                         >
