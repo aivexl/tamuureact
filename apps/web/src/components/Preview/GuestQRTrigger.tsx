@@ -14,7 +14,7 @@ export const GuestQRTrigger: React.FC<GuestQRTriggerProps> = ({ onClick, isVisib
             animate={isVisible ? { x: 0, opacity: 1 } : { x: -100, opacity: 0 }}
             transition={{ type: "spring", damping: 20, stiffness: 100 }}
             onClick={onClick}
-            className="fixed left-0 top-1/2 -translate-y-1/2 z-[9999] group"
+            className="fixed left-0 top-1/2 -translate-y-1/2 z-[60001] group"
         >
             <div className="relative flex items-center">
                 {/* Main Tab */}
