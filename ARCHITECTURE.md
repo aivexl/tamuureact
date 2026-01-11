@@ -92,7 +92,7 @@ tamuureact/
 - **Framework**: React 18 + TypeScript
 - **Build Tool**: Vite
 - **Styling**: TailwindCSS + Custom CSS
-- **State Management**: Zustand
+- **State Management**: Zustand (UI state) + TanStack Query (server state)
 - **Animation**: Framer Motion
 - **Canvas**: Konva.js (react-konva)
 
