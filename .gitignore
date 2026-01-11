@@ -39,3 +39,7 @@ apps/**/public/imgly/
 .wrangler/
 tamuu-legacy/
 node_modules/
+
+# Private Documentation (do not upload to GitHub)
+ARCHITECTURE.md
+ENTERPRISE_OPTIMIZATION_REPORT.md
