@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { useProfileStore } from '../store/useProfileStore';
+import { invitations } from '../lib/api';
 
 // ============================================
 // DATA & TYPES
@@ -114,6 +115,8 @@ export const OnboardingPage: React.FC = () => {
     const [slug, setSlug] = useState('');
     const [invitationName, setInvitationName] = useState('');
     const [templateId] = useState(initialTemplateId);
+    const [isCheckingSlug, setIsCheckingSlug] = useState(false);
+    const [isSlugAvailable, setIsSlugAvailable] = useState<boolean | null>(null);
 
     // ============================================
     // PERSISTENT STATE - Save/Restore from localStorage
@@ -174,6 +177,29 @@ export const OnboardingPage: React.FC = () => {
         bank2Name, bank2Number, bank2Holder, emoneyType, emoneyNumber, giftAddress,
         slug, invitationName]);
 
+    // Slug Availability Check (Debounced)
+    useEffect(() => {
+        if (slug.length < 3) {
+            setIsSlugAvailable(null);
+            return;
+        }
+
+        const timer = setTimeout(async () => {
+            setIsCheckingSlug(true);
+            try {
+                const { available } = await invitations.checkSlug(slug);
+                setIsSlugAvailable(available);
+            } catch (error) {
+                console.error('Slug check failed:', error);
+                setIsSlugAvailable(null);
+            } finally {
+                setIsCheckingSlug(false);
+            }
+        }, 600); // 600ms debounce
+
+        return () => clearTimeout(timer);
+    }, [slug]);
+
     useSEO({
         title: 'Magic Form Onboarding - Tamuu',
         description: 'Cara paling manusiawi untuk membuat undangan digital.',
@@ -189,7 +215,7 @@ export const OnboardingPage: React.FC = () => {
             case 4: return true; // Gallery is optional
             case 5: return !!eventDate;
             case 6: return true; // Gift is optional
-            case 7: return slug.length >= 3;
+            case 7: return slug.length >= 3 && isSlugAvailable === true;
             default: return false;
         }
     };
@@ -624,7 +650,28 @@ export const OnboardingPage: React.FC = () => {
                                             />
                                         </div>
                                     </label>
-                                    <p className="text-left text-[10px] text-slate-400 font-black uppercase tracking-widest ml-4 mt-2">Gunakan huruf kecil, angka, dan tanda hubung (-).</p>
+                                    <div className="flex items-center gap-2 ml-4 mt-2">
+                                        {isCheckingSlug ? (
+                                            <div className="flex items-center gap-1.5 text-slate-400">
+                                                <div className="w-3 h-3 border-2 border-slate-300 border-t-slate-500 rounded-full animate-spin" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest">Checking availability...</span>
+                                            </div>
+                                        ) : slug.length > 0 && slug.length < 3 ? (
+                                            <span className="text-[10px] text-amber-500 font-black uppercase tracking-widest">Minimal 3 karakter ya kak</span>
+                                        ) : isSlugAvailable === true ? (
+                                            <div className="flex items-center gap-1.5 text-teal-600">
+                                                <Check className="w-3.5 h-3.5" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest font-mono">Link tersedia!</span>
+                                            </div>
+                                        ) : isSlugAvailable === false ? (
+                                            <div className="flex items-center gap-1.5 text-rose-500">
+                                                <X className="w-3.5 h-3.5" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest font-mono">Waduh, link sudah meledak/terpakai!</span>
+                                            </div>
+                                        ) : (
+                                            <p className="text-left text-[10px] text-slate-400 font-black uppercase tracking-widest">Gunakan huruf kecil, angka, dan tanda hubung (-).</p>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="block text-left">

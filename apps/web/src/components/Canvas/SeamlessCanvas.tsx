@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import Moveable, { OnDrag, OnDragEnd, OnScale, OnScaleEnd, OnRotate, OnRotateEnd, OnDragGroup, OnScaleGroup, OnRotateGroup, OnDragGroupEnd, OnScaleGroupEnd, OnRotateGroupEnd } from 'react-moveable';
 import { useStore, SECTION_ICONS } from '@/store/useStore';
 import { CanvasElement } from './CanvasElement';
@@ -21,7 +21,7 @@ const ToolbarButton: React.FC<{
     disabled?: boolean;
     variant?: 'default' | 'danger' | 'premium';
 }> = ({ onClick, icon, title, disabled, variant = 'default' }) => (
-    <motion.button
+    <m.button
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onPointerDown={(e) => e.stopPropagation()}
@@ -45,7 +45,7 @@ const ToolbarButton: React.FC<{
         <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-black/90 text-[10px] text-white font-bold rounded opacity-0 group-hover/btn:opacity-100 pointer-events-none transition-opacity whitespace-nowrap border border-white/10 shadow-xl z-[100]">
             {title}
         </div>
-    </motion.button>
+    </m.button>
 );
 
 const CANVAS_WIDTH = 414;
@@ -541,7 +541,7 @@ export const SeamlessCanvas: React.FC = () => {
             {/* Enterprise Floating Toolbar (Figma/Canva inspired) */}
             <AnimatePresence>
                 {selectedLayerIds.length > 0 && (activeCanvas === 'main' ? !!activeSectionId : true) && (
-                    <motion.div
+                    <m.div
                         initial={{ opacity: 0, y: 20, x: '-50%' }}
                         animate={{ opacity: 1, y: 0, x: '-50%' }}
                         exit={{ opacity: 0, y: 20, x: '-50%' }}
@@ -706,14 +706,14 @@ export const SeamlessCanvas: React.FC = () => {
                                 variant="danger"
                             />
                         </div>
-                    </motion.div>
+                    </m.div>
                 )}
             </AnimatePresence>
 
             {/* Feature 4: Enterprise Context Menu */}
             <AnimatePresence>
                 {contextMenu && (
-                    <motion.div
+                    <m.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
@@ -738,7 +738,7 @@ export const SeamlessCanvas: React.FC = () => {
 
                         <div className="h-px bg-white/5 my-1" />
                         <ContextItem icon={<Trash2 className="w-3.5 h-3.5 text-red-400" />} label="Delete" shortcut="Del" variant="danger" onClick={() => handleAction('delete')} />
-                    </motion.div>
+                    </m.div>
                 )}
             </AnimatePresence>
 
@@ -755,7 +755,7 @@ export const SeamlessCanvas: React.FC = () => {
             <AnimatePresence>
                 {showCopyModal && (
                     <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-                        <motion.div
+                        <m.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -797,7 +797,7 @@ export const SeamlessCanvas: React.FC = () => {
                                     Cancel
                                 </button>
                             </div>
-                        </motion.div>
+                        </m.div>
                     </div>
                 )}
             </AnimatePresence>
@@ -809,7 +809,7 @@ export const SeamlessCanvas: React.FC = () => {
                         className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
                         onClick={() => { setShowOrbitCopyModal(false); setOrbitCopySource(null); }}
                     >
-                        <motion.div
+                        <m.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -857,7 +857,7 @@ export const SeamlessCanvas: React.FC = () => {
                                     Copy Elements
                                 </button>
                             </div>
-                        </motion.div>
+                        </m.div>
                     </div>
                 )}
             </AnimatePresence>
@@ -936,7 +936,7 @@ const SectionFrame: React.FC<{
         };
 
         return (
-            <motion.div layout className="relative group" initial={false} animate={{ opacity: 1 }}>
+            <m.div layout className="relative group" initial={false} animate={{ opacity: 1 }}>
                 {/* Header */}
                 <div className={`absolute -top-10 left-0 right-0 flex items-center justify-between px-1 h-8 z-50 group-header`}>
                     <div className="flex items-center gap-3 text-[11px]">
@@ -954,7 +954,7 @@ const SectionFrame: React.FC<{
                     </div>
                 </div>
 
-                <motion.div
+                <m.div
                     onMouseDown={(e) => {
                         if (e.target === e.currentTarget) {
                             const rect = e.currentTarget.getBoundingClientRect();
@@ -1063,8 +1063,8 @@ const SectionFrame: React.FC<{
                             className="custom-moveable"
                         />
                     )}
-                </motion.div>
-            </motion.div>
+                </m.div>
+            </m.div>
         );
     };
 const SideCanvas: React.FC<{

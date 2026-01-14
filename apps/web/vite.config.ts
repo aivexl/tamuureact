@@ -14,10 +14,18 @@ export default defineConfig({
     },
   },
   server: {
+    proxy: {
+      // Proxy /api requests to production API to bypass CORS during development
+      '/api': {
+        target: 'https://api.tamuu.id',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
     headers: {
       // Enable Cross-Origin Isolation for WASM multi-threading
       'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Embedder-Policy': 'credentialless',
     },
   },
 })

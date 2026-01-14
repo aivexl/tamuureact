@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { useStore } from '@/store/useStore';
 import { CanvasElement } from './CanvasElement';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 
 const CANVAS_WIDTH = 414;
 const CANVAS_HEIGHT = 896;
@@ -199,7 +199,7 @@ export const SectionCanvas: React.FC = () => {
                         onClick={handleCanvasClick}
                     > {/* Large padding for handles at edges */}
                         {/* Zoom Engine Wrapper */}
-                        <motion.div
+                        <m.div
                             animate={selectedZoomPoint ? {
                                 scale: CANVAS_WIDTH / selectedZoomPoint.targetRegion.width,
                                 x: -((selectedZoomPoint.targetRegion.x + selectedZoomPoint.targetRegion.width / 2) - CANVAS_WIDTH / 2) * (CANVAS_WIDTH / selectedZoomPoint.targetRegion.width),
@@ -255,11 +255,11 @@ export const SectionCanvas: React.FC = () => {
                                     </svg>
                                 )}
                             </div>
-                        </motion.div>
+                        </m.div>
 
                         {/* Path Handles (Rendered outside overflow:hidden frame) */}
                         {editingLayer && editingLayer.motionPathConfig?.points.map((p: any, i: number) => (
-                            <motion.div
+                            <m.div
                                 key={`${editingLayer.id}-point-${i}`}
                                 drag
                                 dragMomentum={false}
@@ -292,12 +292,12 @@ export const SectionCanvas: React.FC = () => {
                                 >
                                     ×
                                 </button>
-                            </motion.div>
+                            </m.div>
                         ))}
 
                         {/* Zoom Region Editor */}
                         {selectedZoomPoint && (
-                            <motion.div
+                            <m.div
                                 className="absolute border-2 border-premium-accent bg-premium-accent/5 z-50 pointer-events-auto"
                                 style={{
                                     left: selectedZoomPoint.targetRegion.x + 200,
@@ -318,7 +318,7 @@ export const SectionCanvas: React.FC = () => {
                                     ZOOM TARGET: {selectedZoomPoint.label}
                                 </div>
                                 {/* Resize Handle (Bottom Right) */}
-                                <motion.div
+                                <m.div
                                     drag
                                     dragMomentum={false}
                                     onDrag={(e, info) => {
@@ -330,7 +330,7 @@ export const SectionCanvas: React.FC = () => {
                                     }}
                                     className="absolute bottom-0 right-0 w-4 h-4 bg-premium-accent cursor-nwse-resize"
                                 />
-                            </motion.div>
+                            </m.div>
                         )}
                     </div>
                 </TransformComponent>

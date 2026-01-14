@@ -10,8 +10,8 @@ import {
     Waves, Zap, Component, Share2, Layers
 } from 'lucide-react';
 import { LayerType } from '@/store/useStore';
-import { storage, music as musicApi } from '@/lib/api';
-import { useEffect } from 'react';
+import { storage } from '@/lib/api';
+import { useMusicLibrary, Song } from '@/hooks/queries';
 
 interface AssetSelectionModalProps {
     type: LayerType | null;
@@ -361,25 +361,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [dragActive, setDragActive] = useState(false);
     const [uploading, setUploading] = useState(false);
-    const [songs, setSongs] = useState<any[]>([]);
-    const [isLoadingSongs, setIsLoadingSongs] = useState(false);
-
-    useEffect(() => {
-        if (type === 'music_player') {
-            const fetchMusic = async () => {
-                setIsLoadingSongs(true);
-                try {
-                    const data = await musicApi.list();
-                    setSongs(data);
-                } catch (error) {
-                    console.error('Failed to fetch music:', error);
-                } finally {
-                    setIsLoadingSongs(false);
-                }
-            };
-            fetchMusic();
-        }
-    }, [type]);
+    const { data: songs = [], isLoading: isLoadingSongs } = useMusicLibrary();
 
     if (!type) return null;
 
@@ -781,7 +763,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                                 <p className="text-[10px] uppercase tracking-widest">Loading Library...</p>
                             </div>
                         ) : songs.length > 0 ? (
-                            songs.map((track, i) => (
+                            songs.map((track: Song, i: number) => (
                                 <button
                                     key={i}
                                     onClick={() => onSelect({

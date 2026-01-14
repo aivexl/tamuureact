@@ -64,9 +64,9 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
                 <div className="absolute bottom-12 left-16 z-20">
                     <div className="backdrop-blur-xl bg-white/5 border border-white/10 p-6 rounded-3xl flex items-center gap-6 max-w-xs shadow-2xl">
                         <div className="flex -space-x-3">
-                            {[1, 2, 3, 4].map(i => (
-                                <div key={i} className="w-10 h-10 rounded-full border-2 border-white/10 overflow-hidden bg-slate-800">
-                                    <img src={`https://i.pravatar.cc/100?u=${i}`} alt="User" />
+                            {['A', 'B', 'C', 'D'].map((initial, i) => (
+                                <div key={i} className="w-10 h-10 rounded-full border-2 border-white/10 overflow-hidden bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center">
+                                    <span className="text-white text-sm font-bold">{initial}</span>
                                 </div>
                             ))}
                         </div>

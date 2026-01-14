@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { useEffect } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 
 interface AudioState {
     isPlaying: boolean;
@@ -20,9 +20,26 @@ const useAudioStore = create<AudioState>((set) => ({
 }));
 
 let globalAudio: HTMLAudioElement | null = null;
+let fadeInterval: any = null;
 
 export const useAudioController = () => {
-    const { isPlaying, currentUrl, volume, setPlaying, setUrl, setVolume } = useAudioStore();
+    const isPlaying = useAudioStore(state => state.isPlaying);
+    const currentUrl = useAudioStore(state => state.currentUrl);
+    const volume = useAudioStore(state => state.volume);
+    const setPlaying = useAudioStore(state => state.setPlaying);
+    const setUrlStore = useAudioStore(state => state.setUrl);
+    const setVolumeStore = useAudioStore(state => state.setVolume);
+
+    // Use refs to avoid dependency loops in useEffect
+    const isPlayingRef = useRef(isPlaying);
+    const currentUrlRef = useRef(currentUrl);
+    const volumeRef = useRef(volume);
+
+    useEffect(() => {
+        isPlayingRef.current = isPlaying;
+        currentUrlRef.current = currentUrl;
+        volumeRef.current = volume;
+    }, [isPlaying, currentUrl, volume]);
 
     useEffect(() => {
         if (!currentUrl) {
@@ -37,84 +54,97 @@ export const useAudioController = () => {
             if (globalAudio) globalAudio.pause();
             globalAudio = new Audio(currentUrl);
             globalAudio.loop = true;
-            globalAudio.volume = 0; // Start for fade-in
+            globalAudio.volume = 0;
         }
+
+        const audio = globalAudio;
 
         if (isPlaying) {
-            const playPromise = globalAudio.play();
+            const playPromise = audio.play();
             if (playPromise !== undefined) {
-                playPromise.catch((error) => {
-                    console.warn('[AudioController] Autoplay blocked, waiting for interaction:', error);
-                    // CRITICAL: Do NOT set isPlaying to false here.
-                    // Instead, keep the intent and unlock on first interaction.
-
-                    // Store the URL for the unlock callback (stable reference)
-                    const urlToPlay = currentUrl;
-
-                    const unlock = () => {
-                        console.log('[AudioController] Unlocking audio on user interaction');
-                        if (globalAudio) {
-                            globalAudio.src = urlToPlay; // Ensure URL is set
-                            globalAudio.play().then(() => {
-                                setPlaying(true);
-                                console.log('[AudioController] Audio unlocked and playing');
-                            }).catch(e => console.error('[AudioController] Unlock play failed:', e));
+                playPromise.then(() => {
+                    if (fadeInterval) clearInterval(fadeInterval);
+                    let vol = audio.volume;
+                    fadeInterval = setInterval(() => {
+                        if (vol < volumeRef.current) {
+                            vol = Math.min(volumeRef.current, vol + 0.05);
+                            if (audio) audio.volume = vol;
+                        } else {
+                            clearInterval(fadeInterval);
+                            fadeInterval = null;
                         }
-                        window.removeEventListener('click', unlock);
-                        window.removeEventListener('touchstart', unlock);
-                        window.removeEventListener('scroll', unlock);
-                        window.removeEventListener('keydown', unlock);
-                    };
-                    window.addEventListener('click', unlock, { once: true });
-                    window.addEventListener('touchstart', unlock, { once: true });
-                    window.addEventListener('scroll', unlock, { once: true });
-                    window.addEventListener('keydown', unlock, { once: true });
+                    }, 100);
+                }).catch((error) => {
+                    if (error.name === 'NotAllowedError') {
+                        // Silent unlock mechanism
+                        const urlToPlay = currentUrl;
+                        const unlock = () => {
+                            if (globalAudio && globalAudio.src === urlToPlay) {
+                                globalAudio.play().then(() => {
+                                    setPlaying(true);
+                                }).catch(() => { });
+                            }
+                            ['mousedown', 'touchstart', 'scroll', 'keydown'].forEach(evt =>
+                                window.removeEventListener(evt, unlock, { capture: true })
+                            );
+                        };
+                        ['mousedown', 'touchstart', 'scroll', 'keydown'].forEach(evt =>
+                            window.addEventListener(evt, unlock, { once: true, capture: true })
+                        );
+                    }
                 });
             }
-
-            // Fade-in logic
-            let vol = 0;
-            const fadeIn = setInterval(() => {
-                if (vol < volume) {
-                    vol = Math.min(volume, vol + 0.05);
-                    if (globalAudio) globalAudio.volume = vol;
-                } else {
-                    clearInterval(fadeIn);
-                }
-            }, 100);
         } else {
-            globalAudio.pause();
+            audio.pause();
+            if (fadeInterval) {
+                clearInterval(fadeInterval);
+                fadeInterval = null;
+            }
         }
-
-    }, [currentUrl, isPlaying]);
+        // Minimal dependencies to prevent loops
+    }, [currentUrl, isPlaying, setPlaying]);
 
     useEffect(() => {
         if (globalAudio) globalAudio.volume = volume;
     }, [volume]);
 
-    // Helper to extract Direct Link from Google Drive
-    const getGDriveStreamUrl = (url: string) => {
+    const getGDriveStreamUrl = useCallback((url: string) => {
         if (!url.includes('drive.google.com')) return url;
         const idMatch = url.match(/\/d\/(.+?)\//) || url.match(/id=(.+?)(&|$)/);
         if (idMatch && idMatch[1]) {
             return `https://drive.google.com/uc?export=download&id=${idMatch[1]}`;
         }
         return url;
-    };
+    }, []);
+
+    const play = useCallback((url?: string) => {
+        if (url) {
+            const streamUrl = getGDriveStreamUrl(url);
+            setUrlStore(streamUrl);
+        }
+        setPlaying(true);
+    }, [getGDriveStreamUrl, setPlaying, setUrlStore]);
+
+    const pause = useCallback(() => {
+        setPlaying(false);
+    }, [setPlaying]);
+
+    const stop = useCallback(() => {
+        setPlaying(false);
+        setUrlStore(null);
+    }, [setPlaying, setUrlStore]);
+
+    const setVolume = useCallback((v: number) => {
+        setVolumeStore(v);
+    }, [setVolumeStore]);
 
     return {
         isPlaying,
         currentUrl,
         volume,
-        play: (url?: string) => {
-            if (url) setUrl(getGDriveStreamUrl(url));
-            setPlaying(true);
-        },
-        pause: () => setPlaying(false),
-        stop: () => {
-            setPlaying(false);
-            setUrl(null);
-        },
+        play,
+        pause,
+        stop,
         setVolume,
         getGDriveStreamUrl
     };

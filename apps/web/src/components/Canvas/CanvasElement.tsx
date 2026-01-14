@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Layer } from '@/store/layersSlice';
 import { AnimatedLayer } from '../Preview/AnimatedLayer';
 import { Lock, Edit3 } from 'lucide-react';
@@ -160,7 +160,7 @@ export const CanvasElement: React.FC<CanvasElementProps> = ({
             {/* Lock indicator */}
             <AnimatePresence>
                 {isSelected && layer.isLocked && (
-                    <motion.div
+                    <m.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -168,7 +168,7 @@ export const CanvasElement: React.FC<CanvasElementProps> = ({
                     >
                         <Lock className="w-3 h-3" />
                         Locked
-                    </motion.div>
+                    </m.div>
                 )}
             </AnimatePresence>
 

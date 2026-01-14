@@ -31,10 +31,12 @@ type TransitionEffect = 'none' | 'slide-up' | 'slide-down' | 'fade' | 'zoom-reve
 interface PreviewViewProps {
     isOpen: boolean;
     onClose: () => void;
+    id?: string;
+    isTemplate?: boolean;
 }
 
-export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => {
-    const { sections, orbit, templateType, id: templateId, triggerGlobalEffect, triggerBatchInteractions,
+export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: propId, isTemplate: propIsTemplate }) => {
+    const { sections, orbit, templateType, triggerGlobalEffect, triggerBatchInteractions,
         resetInteractions
     } = useStore();
     const lastTriggerRef = useRef<{ effect: string, timestamp: number } | null>(null);
@@ -199,16 +201,14 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
 
     // Live Trigger Polling (Remote Control)
     useEffect(() => {
-        if (!isOpen || !templateId) return;
+        if (!isOpen || !propId || propIsTemplate) return;
 
         const pollTriggers = async () => {
-            if (useStore.getState().isTemplate) return;
-
             try {
                 const baseUrl = import.meta.env.VITE_API_URL || 'https://api.tamuu.id';
                 const endpoint = templateType === 'display'
-                    ? `/api/user-display-designs/${templateId}`
-                    : `/api/invitations/${templateId}`;
+                    ? `/api/user-display-designs/${propId}`
+                    : `/api/invitations/${propId}`;
 
                 const response = await fetch(`${baseUrl}${endpoint}`);
                 if (!response.ok) return;
@@ -235,7 +235,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
         pollTriggers(); // Initial check
 
         return () => clearInterval(interval);
-    }, [isOpen, templateId, templateType, triggerGlobalEffect]);
+    }, [isOpen, propId, propIsTemplate, templateType, triggerGlobalEffect]);
 
     // Reset state when opening
     useEffect(() => {
@@ -298,26 +298,13 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
         const musicUrl = music?.url || 'https://api.tamuu.id/assets/music/tr-01.mp3';
 
         // Immediately attempt to play
-        if (!autoplayTriedRef.current) {
-            autoplayTriedRef.current = true;
-            play(musicUrl);
-        }
-
-        // Fallback: Play on first user interaction
-        const unlock = () => {
-            play(musicUrl);
-            window.removeEventListener('click', unlock);
-            window.removeEventListener('touchstart', unlock);
-        };
-        window.addEventListener('click', unlock);
-        window.addEventListener('touchstart', unlock);
+        play(musicUrl);
 
         return () => {
+            clearTimeout(timer);
             pause();
-            window.removeEventListener('click', unlock);
-            window.removeEventListener('touchstart', unlock);
         };
-    }, [isOpen, music?.url]);
+    }, [isOpen, music?.url, play, pause]);
 
     // Extra cleanup on actual component unmount
     useEffect(() => {
@@ -879,6 +866,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                                 config={orbit.left}
                                 scaleFactor={scaleFactor}
                                 isOpened={isOpened}
+                                transitionStage={transitionStage}
                                 coverHeight={coverHeight}
                                 isPortrait={isPortrait}
                                 overrideStyle={{
@@ -1063,7 +1051,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                                                                     onOpenInvitation={handleOpenInvitation}
                                                                     scrollContainerRef={scrollContainerRef}
                                                                     forceTrigger={forceTrigger}
-                                                                    isSectionActive={visibleSections.includes(index)}
+                                                                    isSectionActive={index === 0 ? visibleSections.includes(index) : (visibleSections.includes(index) && transitionStage === 'DONE')}
                                                                 />
                                                             );
                                                         })}
@@ -1091,6 +1079,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                                 config={orbit.right}
                                 scaleFactor={scaleFactor}
                                 isOpened={isOpened}
+                                transitionStage={transitionStage}
                                 coverHeight={coverHeight}
                                 isPortrait={isPortrait}
                                 overrideStyle={{
@@ -1132,20 +1121,22 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose }) => 
                             style={{ width: 48, height: 48 }}
                             title={isGlobalPlaying ? 'Stop Music' : 'Play Music'}
                         >
-                            {/* Rotating Indicator (Liquid Calc Centering) */}
+                            {/* Rotating Indicator - Grid centering for perfect symmetry */}
                             {isGlobalPlaying && (
-                                <m.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1, rotate: 360 }}
-                                    transition={{ rotate: { duration: 4, repeat: Infinity, ease: "linear" }, opacity: { duration: 0.3 } }}
-                                    className="absolute border-2 border-dashed border-premium-accent/60 rounded-full pointer-events-none"
-                                    style={{
-                                        width: 36,
-                                        height: 36,
-                                        top: 'calc(50% - 18px)',
-                                        left: 'calc(50% - 18px)',
-                                    }}
-                                />
+                                <div
+                                    className="absolute inset-0 grid place-items-center pointer-events-none"
+                                >
+                                    <m.div
+                                        initial={{ opacity: 0, rotate: 0 }}
+                                        animate={{ opacity: 1, rotate: 360 }}
+                                        transition={{
+                                            rotate: { duration: 4, repeat: Infinity, ease: "linear" },
+                                            opacity: { duration: 0.3 }
+                                        }}
+                                        className="border-2 border-dashed border-premium-accent/60 rounded-full"
+                                        style={{ width: 36, height: 36 }}
+                                    />
+                                </div>
                             )}
                             <div className="relative z-10 transition-transform active:scale-95">
                                 {!isGlobalPlaying ? <Play className="w-5 h-5 fill-current" /> : <Square className="w-5 h-5 fill-current" />}
@@ -1264,10 +1255,11 @@ const PreviewOrbitStage: React.FC<{
     config: any,
     scaleFactor: number,
     isOpened: boolean,
+    transitionStage: string,
     overrideStyle?: React.CSSProperties,
     coverHeight: number,
     isPortrait: boolean
-}> = ({ type, config, scaleFactor, isOpened, overrideStyle, coverHeight, isPortrait }) => {
+}> = ({ type, config, scaleFactor, isOpened, transitionStage, overrideStyle, coverHeight, isPortrait }) => {
     if (!config || !config.isVisible) return null;
 
     return (
@@ -1324,6 +1316,7 @@ const PreviewOrbitStage: React.FC<{
                             isOpened={isOpened}
                             isEditor={false}
                             forceTrigger={isOpened}
+                            isSectionActive={isOpened && transitionStage === 'DONE'}
                         />
                     );
                 })}

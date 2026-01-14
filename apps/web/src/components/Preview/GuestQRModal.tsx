@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { X, User, Ticket } from 'lucide-react';
 import QRCode from 'react-qr-code';
 
@@ -16,7 +16,7 @@ export const GuestQRModal: React.FC<GuestQRModalProps> = ({ isOpen, onClose, gue
             {isOpen && (
                 <div className="fixed inset-0 z-[10001] flex items-center justify-center p-6">
                     {/* Backdrop */}
-                    <motion.div
+                    <m.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -25,7 +25,7 @@ export const GuestQRModal: React.FC<GuestQRModalProps> = ({ isOpen, onClose, gue
                     />
 
                     {/* Modal Card */}
-                    <motion.div
+                    <m.div
                         initial={{ scale: 0.9, opacity: 0, y: 20 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -100,7 +100,7 @@ export const GuestQRModal: React.FC<GuestQRModalProps> = ({ isOpen, onClose, gue
                                 Powered by Tamuu Intelligence
                             </span>
                         </div>
-                    </motion.div>
+                    </m.div>
                 </div>
             )}
         </AnimatePresence>

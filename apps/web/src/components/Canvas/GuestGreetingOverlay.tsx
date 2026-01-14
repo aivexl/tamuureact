@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 
 export const GuestGreetingOverlay: React.FC = () => {
@@ -24,7 +24,7 @@ export const GuestGreetingOverlay: React.FC = () => {
     return (
         <AnimatePresence>
             {isVisible && greetingStyle !== 'none' && (
-                <motion.div
+                <m.div
                     className="fixed inset-0 z-[10001] flex items-center justify-center pointer-events-none"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -32,7 +32,7 @@ export const GuestGreetingOverlay: React.FC = () => {
                 >
                     <div className="relative text-center px-12 py-8">
                         {/* Background Glow */}
-                        <motion.div
+                        <m.div
                             className="absolute inset-0 bg-white/5 backdrop-blur-xl rounded-[40px] border border-white/10 shadow-[0_0_100px_rgba(255,255,255,0.1)]"
                             initial={{ scale: 0.8, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
@@ -40,17 +40,17 @@ export const GuestGreetingOverlay: React.FC = () => {
                         />
 
                         {/* Welcome Label */}
-                        <motion.div
+                        <m.div
                             className="relative mb-2 tracking-[0.3em] uppercase text-white/50 text-sm font-medium"
                             initial={{ y: 20, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ delay: 0.2 }}
                         >
                             Selamat Datang
-                        </motion.div>
+                        </m.div>
 
                         {/* Guest Name */}
-                        <motion.h1
+                        <m.h1
                             className={`relative text-6xl md:text-8xl font-serif text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.3)] ${greetingStyle === 'simple' ? 'font-sans font-bold' : ''}`}
                             style={{ fontFamily: greetingStyle === 'simple' ? 'Outfit, sans-serif' : 'Playfair Display, serif' }}
                             initial={{ y: 40, opacity: 0, scale: 0.9 }}
@@ -63,17 +63,17 @@ export const GuestGreetingOverlay: React.FC = () => {
                             }}
                         >
                             {displayName}
-                        </motion.h1>
+                        </m.h1>
 
                         {/* Bottom Decoration */}
-                        <motion.div
+                        <m.div
                             className="relative mt-8 h-[1px] w-24 mx-auto bg-gradient-to-r from-transparent via-white/40 to-transparent"
                             initial={{ scaleX: 0 }}
                             animate={{ scaleX: 1 }}
                             transition={{ delay: 0.6, duration: 1 }}
                         />
                     </div>
-                </motion.div>
+                </m.div>
             )}
         </AnimatePresence>
     );

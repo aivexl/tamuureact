@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { m, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { useSEO } from '../hooks/useSEO';
+import { useInvitations } from '../hooks/queries';
 import { WelcomeDisplaysTab } from '../components/Dashboard/WelcomeDisplaysTab';
 
 // ============================================
@@ -153,10 +154,9 @@ export const DashboardPage: React.FC = () => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // In production, these would be fetched from the API
-    const invitations: any[] = []; // Fallback to empty for now
+    const { data: invitations = [] } = useInvitations(user?.id);
     const stats = {
-        invitations: user?.invitationCount || 0,
+        invitations: invitations.length || user?.invitationCount || 0,
         guests: 0,
         views: 0,
         rsvp: 0,
@@ -316,7 +316,7 @@ export const DashboardPage: React.FC = () => {
                                                                 <button className="p-2 bg-white/90 backdrop-blur-md rounded-xl hover:bg-white text-slate-900 transition-all">
                                                                     <EyeIcon className="w-5 h-5" />
                                                                 </button>
-                                                                <Link to={`/editor/${inv.id}`} className="p-2 bg-white/90 backdrop-blur-md rounded-xl hover:bg-white text-slate-900 transition-all">
+                                                                <Link to={`/user/editor/${inv.id}`} className="p-2 bg-white/90 backdrop-blur-md rounded-xl hover:bg-white text-slate-900 transition-all">
                                                                     <Edit3Icon className="w-5 h-5" />
                                                                 </Link>
                                                             </div>
@@ -402,7 +402,7 @@ export const DashboardPage: React.FC = () => {
                                                         <button className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center hover:scale-110 transition-transform active:scale-90" title="Preview">
                                                             <EyeIcon className="w-6 h-6 text-slate-900" />
                                                         </button>
-                                                        <Link to={`/editor/${inv.id}`} className="w-14 h-14 bg-teal-500 rounded-2xl flex items-center justify-center hover:scale-110 transition-transform active:scale-90" title="Edit">
+                                                        <Link to={`/user/editor/${inv.id}`} className="w-14 h-14 bg-teal-500 rounded-2xl flex items-center justify-center hover:scale-110 transition-transform active:scale-90" title="Edit">
                                                             <Edit3Icon className="w-6 h-6 text-slate-900" />
                                                         </Link>
                                                     </div>

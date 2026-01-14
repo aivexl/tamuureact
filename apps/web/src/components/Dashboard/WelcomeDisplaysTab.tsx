@@ -1,57 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { m } from 'framer-motion';
-import { userDisplayDesigns } from '@/lib/api';
 import { useStore } from '@/store/useStore';
+import { useDisplayDesigns, useCreateDisplayDesign, useDeleteDisplayDesign } from '@/hooks/queries';
 import { Loader2, Plus, Monitor, Edit3, Trash2, ExternalLink } from 'lucide-react';
 
 export const WelcomeDisplaysTab: React.FC = () => {
     const { user } = useStore();
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
-    const [designs, setDesigns] = useState<any[]>([]);
-    const [creating, setCreating] = useState(false);
-
-    useEffect(() => {
-        if (user?.id) {
-            loadDesigns();
-        }
-    }, [user?.id]);
-
-    const loadDesigns = async () => {
-        try {
-            setLoading(true);
-            const res = await userDisplayDesigns.list(user?.id);
-            if (Array.isArray(res)) {
-                setDesigns(res);
-            }
-        } catch (error) {
-            console.error('Failed to load designs:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const { data: designs = [], isLoading: loading } = useDisplayDesigns(user?.id);
+    const createMutation = useCreateDisplayDesign();
+    const deleteMutation = useDeleteDisplayDesign();
 
     const handleCreateNew = async () => {
         if (!user?.id) return;
-        try {
-            setCreating(true);
-            const newDesign = await userDisplayDesigns.create({
-                user_id: user.id,
-                name: 'Desain Layar Baru',
-                thumbnail_url: undefined,
-                sections: [], // Empty initially
-                orbit_layers: [],
-            });
-            if (newDesign && newDesign.id) {
-                navigate(`/user/display-editor/${newDesign.id}`);
+        createMutation.mutate({
+            user_id: user.id,
+            name: 'Desain Layar Baru',
+            thumbnail_url: undefined,
+            sections: [],
+            orbit_layers: [],
+        }, {
+            onSuccess: (newDesign) => {
+                if (newDesign && newDesign.id) {
+                    navigate(`/user/display-editor/${newDesign.id}`);
+                }
+            },
+            onError: (error) => {
+                console.error('Failed to create design:', error);
+                alert('Gagal membuat desain baru.');
             }
-        } catch (error) {
-            console.error('Failed to create design:', error);
-            alert('Gagal membuat desain baru.');
-        } finally {
-            setCreating(false);
-        }
+        });
     };
 
     const handleDelete = async (id: string, e: React.MouseEvent) => {
@@ -59,13 +38,12 @@ export const WelcomeDisplaysTab: React.FC = () => {
         e.stopPropagation();
         if (!confirm('Apakah Anda yakin ingin menghapus desain ini?')) return;
 
-        try {
-            await userDisplayDesigns.delete(id);
-            setDesigns(prev => prev.filter(d => d.id !== id));
-        } catch (error) {
-            console.error('Failed to delete:', error);
-            alert('Gagal menghapus desain.');
-        }
+        deleteMutation.mutate(id, {
+            onError: (error) => {
+                console.error('Failed to delete:', error);
+                alert('Gagal menghapus desain.');
+            }
+        });
     };
 
     return (
@@ -86,10 +64,10 @@ export const WelcomeDisplaysTab: React.FC = () => {
                 </div>
                 <button
                     onClick={handleCreateNew}
-                    disabled={creating}
+                    disabled={createMutation.isPending}
                     className="flex items-center justify-center gap-2 px-6 py-4 bg-indigo-600 text-white font-semibold rounded-2xl shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 hover:shadow-2xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    {creating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
+                    {createMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
                     Buat Desain Baru
                 </button>
             </div>

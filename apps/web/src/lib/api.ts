@@ -3,7 +3,9 @@
  * Replaces Supabase client with Cloudflare-based API
  */
 
-const API_BASE = import.meta.env.PROD ? 'https://api.tamuu.id' : (import.meta.env.VITE_API_URL || 'https://api.tamuu.id');
+const API_BASE = import.meta.env.PROD
+    ? 'https://api.tamuu.id'
+    : ''; // Dev: use Vite proxy at /api
 // const API_BASE = 'https://tamuu-api.shafania57.workers.dev';
 
 // ============================================
@@ -154,6 +156,12 @@ export const invitations = {
     async get(idOrSlug: string) {
         const res = await fetch(`${API_BASE}/api/invitations/${idOrSlug}`);
         if (!res.ok) throw new Error('Invitation not found');
+        return res.json();
+    },
+
+    async checkSlug(slug: string): Promise<{ available: boolean; slug: string }> {
+        const res = await fetch(`${API_BASE}/api/invitations/check-slug/${slug}`);
+        if (!res.ok) return { available: false, slug };
         return res.json();
     },
 

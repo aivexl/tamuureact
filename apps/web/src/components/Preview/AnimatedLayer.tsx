@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useMemo, useCallback } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { m, useInView } from 'framer-motion';
 import { Layer } from '@/store/layersSlice';
 import { ElementRenderer } from '../Canvas/ElementRenderer';
 import { useStore } from '@/store/useStore';
@@ -98,15 +98,19 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             : "hidden"
     );
 
+    // Use ref to track animationState inside callbacks to avoid infinite loop
+    const animationStateRef = useRef(animationState);
+    animationStateRef.current = animationState;
+
     const tryTriggerAnimation = useCallback(() => {
-        if (animationState === "visible") return;
+        if (animationStateRef.current === "visible") return;
         if (!isContentReadyRef.current) {
             pendingTriggerRef.current = true;
             return;
         }
         setAnimationState("visible");
         if (layer.id) globalAnimatedState.set(layer.id, true);
-    }, [animationState, layer.id]);
+    }, [layer.id]);
 
     const handleContentLoad = useCallback(() => {
         if (isContentReadyRef.current) return;
@@ -187,8 +191,8 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             setAnimationState("visible");
             return;
         }
-        if (isImmediate) tryTriggerAnimation();
-    }, [isImmediate, tryTriggerAnimation, animationState, layer.id]);
+        if (isImmediate && isSectionActive) tryTriggerAnimation();
+    }, [isImmediate, isSectionActive, tryTriggerAnimation, animationState, layer.id]);
 
     useEffect(() => {
         if (isEditor || !hasEntranceAnimation || isImmediate || entranceTrigger !== 'scroll') return;
@@ -200,25 +204,25 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         if (!inView && ref.current) {
             const rect = ref.current.getBoundingClientRect();
             if (rect.top >= window.innerHeight - 100) {
-                if (animationState === "visible") {
+                if (animationStateRef.current === "visible") {
                     setAnimationState("hidden");
                     if (layer.id) globalAnimatedState.set(layer.id, false);
                 }
             }
         }
-    }, [inView, animationState, layer.id, isEditor, hasEntranceAnimation, isImmediate, entranceTrigger]);
+    }, [inView, layer.id, isEditor, hasEntranceAnimation, isImmediate, entranceTrigger]);
 
     useEffect(() => {
         if (isEditor || !hasEntranceAnimation) return;
         const wasForced = prevForceTriggerRef.current;
         prevForceTriggerRef.current = forceTrigger;
-        if (forceTrigger && (!wasForced || animationState !== "visible")) {
+        if (forceTrigger && (!wasForced || animationStateRef.current !== "visible")) {
             if (!isSectionActive) return;
             if (entranceTrigger === 'click' || entranceTrigger === 'open_btn') {
                 if (isVisibleRef.current || isImmediate) tryTriggerAnimation();
             } else tryTriggerAnimation();
         }
-    }, [forceTrigger, entranceTrigger, isEditor, hasEntranceAnimation, isImmediate, isSectionActive, tryTriggerAnimation, animationState]);
+    }, [forceTrigger, entranceTrigger, isEditor, hasEntranceAnimation, isImmediate, isSectionActive, tryTriggerAnimation]);
 
     useEffect(() => {
         if (isEditor || !hasEntranceAnimation) return;
@@ -299,7 +303,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     }, [shouldAnimate, animationState, marqueeAnimation, elegantSpinAnimation, pathAnimation, loopingConfig]);
 
     return (
-        <motion.div
+        <m.div
             ref={ref} initial="hidden" animate={animationState} variants={variants}
             className={isEditor ? "w-full h-full" : "absolute origin-center"}
             style={isEditor ? { opacity: layer.opacity ?? 1 } : { left: `${layer.x}px`, top: `${adjustedY}px`, width: `${layer.width}px`, height: `${layer.height}px`, zIndex: layer.zIndex, willChange: 'transform, opacity' }}
@@ -323,11 +327,11 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                     );
                 })()
             ) : (
-                <motion.div className="w-full h-full" {...loopingProps} style={{ ...(isMarqueeTileMode ? { backgroundImage: `url(${layer.imageUrl})`, backgroundRepeat: 'repeat', backgroundSize: 'auto', backgroundColor: 'transparent' } : {}) }}>
+                <m.div className="w-full h-full" {...loopingProps} style={{ ...(isMarqueeTileMode ? { backgroundImage: `url(${layer.imageUrl})`, backgroundRepeat: 'repeat', backgroundSize: 'auto', backgroundColor: 'transparent' } : {}) }}>
                     {!isMarqueeTileMode && <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={isEditor} onContentLoad={handleContentLoad} onDimensionsDetected={onDimensionsDetected} />}
-                </motion.div>
+                </m.div>
             )}
-        </motion.div>
+        </m.div>
     );
 };
 

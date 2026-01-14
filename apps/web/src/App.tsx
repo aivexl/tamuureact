@@ -1,5 +1,6 @@
 import React, { useEffect, Suspense, lazy, useMemo } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { ProtectedRoute } from './components/Auth/ProtectedRoute';
 import { CORE_FONTS, getGoogleFontsUrl } from './lib/fonts';
 import { MainLayout } from './components/Layout/MainLayout';
 import { Loader2 } from 'lucide-react';
@@ -46,15 +47,7 @@ const GuestScannerPage = lazy(() => import('./pages/GuestScannerPage').then(m =>
 const UpgradePage = lazy(() => import('./pages/UpgradePage').then(m => ({ default: m.UpgradePage })));
 const BillingPage = lazy(() => import('./pages/BillingPage').then(m => ({ default: m.BillingPage })));
 const TermsPage = lazy(() => import('./pages/TermsPage').then(m => ({ default: m.TermsPage })));
-const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then(m => ({ default: m.PrivacyPage })));
-
-
-const LoadingFallback = () => (
-    <div className="min-h-screen bg-[#0A1128] flex flex-col items-center justify-center gap-4">
-        <Loader2 className="w-8 h-8 text-[#FFBF00] animate-spin" />
-        <p className="text-white/20 uppercase tracking-widest text-xs font-bold">Loading Tamuu...</p>
-    </div>
-);
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then(m => ({ default: m.PrivacyPage }))); import { PremiumLoader } from './components/ui/PremiumLoader';
 
 const App: React.FC = () => {
     // Memoize domain check to avoid recalculation
@@ -85,7 +78,7 @@ const App: React.FC = () => {
     return (
         <BrowserRouter>
             <LazyMotion features={domMax} strict>
-                <Suspense fallback={<LoadingFallback />}>
+                <Suspense fallback={<PremiumLoader />}>
                     <Routes>
                         {/* ============================================ */}
                         {/* PUBLIC ROUTES - Available on tamuu.id */}
@@ -110,16 +103,16 @@ const App: React.FC = () => {
                         <Route path="/privacy" element={<MainLayout><PrivacyPage /></MainLayout>} />
 
                         {/* ============================================ */}
-                        {/* APP ROUTES - Only on app.tamuu.id */}
+                        {/* APP ROUTES - Protected */}
                         {/* ============================================ */}
-                        <Route path="/onboarding" element={<MainLayout><OnboardingPage /></MainLayout>} />
-                        <Route path="/dashboard" element={<MainLayout><DashboardPage /></MainLayout>} />
-                        <Route path="/profile" element={<MainLayout><ProfilePage /></MainLayout>} />
-                        <Route path="/billing" element={<MainLayout><BillingPage /></MainLayout>} />
-                        <Route path="/upgrade" element={<MainLayout><UpgradePage /></MainLayout>} />
-                        <Route path="/guests" element={<MainLayout><GuestManagementPage /></MainLayout>} />
-                        <Route path="/guests/:invitationId" element={<MainLayout><GuestManagementPage /></MainLayout>} />
-                        <Route path="/wishes" element={<MainLayout><GuestWishesPage /></MainLayout>} />
+                        <Route path="/onboarding" element={<ProtectedRoute><MainLayout><OnboardingPage /></MainLayout></ProtectedRoute>} />
+                        <Route path="/dashboard" element={<ProtectedRoute><MainLayout><DashboardPage /></MainLayout></ProtectedRoute>} />
+                        <Route path="/profile" element={<ProtectedRoute><MainLayout><ProfilePage /></MainLayout></ProtectedRoute>} />
+                        <Route path="/billing" element={<ProtectedRoute><MainLayout><BillingPage /></MainLayout></ProtectedRoute>} />
+                        <Route path="/upgrade" element={<ProtectedRoute><MainLayout><UpgradePage /></MainLayout></ProtectedRoute>} />
+                        <Route path="/guests" element={<ProtectedRoute><MainLayout><GuestManagementPage /></MainLayout></ProtectedRoute>} />
+                        <Route path="/guests/:invitationId" element={<ProtectedRoute><MainLayout><GuestManagementPage /></MainLayout></ProtectedRoute>} />
+                        <Route path="/wishes" element={<ProtectedRoute><MainLayout><GuestWishesPage /></MainLayout></ProtectedRoute>} />
 
                         {/* ============================================ */}
                         {/* APP ROUTES - Guarded by Domain/Auth logic in components if needed */}
@@ -127,16 +120,16 @@ const App: React.FC = () => {
                         {isAppDomain ? (
                             <>
                                 {/* Admin Routes */}
-                                <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-                                <Route path="/admin/music" element={<AdminMusicPage />} />
-                                <Route path="/admin/templates" element={<AdminTemplatesPage />} />
+                                <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="admin"><AdminDashboardPage /></ProtectedRoute>} />
+                                <Route path="/admin/music" element={<ProtectedRoute requiredRole="admin"><AdminMusicPage /></ProtectedRoute>} />
+                                <Route path="/admin/templates" element={<ProtectedRoute requiredRole="admin"><AdminTemplatesPage /></ProtectedRoute>} />
 
                                 {/* Editor Routes */}
-                                <Route path="/editor" element={<EditorPage />} />
-                                <Route path="/editor/:id" element={<EditorPage />} />
-                                <Route path="/admin/editor/:slug" element={<EditorPage isTemplate={true} />} />
-                                <Route path="/admin/display-editor/:slug" element={<DisplayEditorPage />} />
-                                <Route path="/admin/display/:slug" element={<AdminDisplayPreviewPage />} />
+                                <Route path="/editor" element={<ProtectedRoute><EditorPage /></ProtectedRoute>} />
+                                <Route path="/editor/:id" element={<ProtectedRoute><EditorPage /></ProtectedRoute>} />
+                                <Route path="/admin/editor/:slug" element={<ProtectedRoute requiredRole="admin"><EditorPage isTemplate={true} /></ProtectedRoute>} />
+                                <Route path="/admin/display-editor/:slug" element={<ProtectedRoute requiredRole="admin"><DisplayEditorPage /></ProtectedRoute>} />
+                                <Route path="/admin/display/:slug" element={<ProtectedRoute requiredRole="admin"><AdminDisplayPreviewPage /></ProtectedRoute>} />
                                 <Route path="/user/editor/:id" element={<UserEditorPage />} />
                                 <Route path="/user/display-editor/:id" element={<UserEditorPage mode="welcome" />} />
 

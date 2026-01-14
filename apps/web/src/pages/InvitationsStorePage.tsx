@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useMemo, Suspense, lazy, useCallback } from 'react';
+import React, { useState, useMemo, Suspense, lazy, useCallback } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { templates as templatesApi, invitations as invitationsApi, wishlist as wishlistApi, categories as categoriesApi, Category } from '@/lib/api';
+import { templates as templatesApi, invitations as invitationsApi, Category } from '@/lib/api';
 import { useStore } from '@/store/useStore';
+import { useTemplates, useCategories, useWishlist, useToggleWishlist } from '@/hooks/queries';
 
 import {
     Search,
@@ -41,90 +42,46 @@ const getIsAppDomain = (): boolean => {
 
 export const InvitationsStorePage: React.FC = () => {
     const { search } = useLocation();
-    const { isAuthenticated } = useStore();
+    const { isAuthenticated, user } = useStore();
     const queryParams = useMemo(() => new URLSearchParams(search), [search]);
     const isOnboarding = queryParams.get('onboarding') === 'true';
     const onboardingSlug = queryParams.get('slug');
     const onboardingName = queryParams.get('name');
     const onboardingTemplateId = queryParams.get('templateId');
 
-    const [templates, setTemplates] = useState<Template[]>([]);
-    const [wishlist, setWishlist] = useState<string[]>([]);
-    const [categoryList, setCategoryList] = useState<Category[]>([]);
+    // TanStack Query hooks - replacing manual useState + useEffect
+    const { data: templates = [], isLoading: isLoadingTemplates } = useTemplates();
+    const { data: categoryList = [] } = useCategories();
+    const { data: wishlistData = [] } = useWishlist(user?.id);
+    const toggleWishlistMutation = useToggleWishlist();
 
-    const [isLoading, setIsLoading] = useState(true);
+    // UI-only state
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+    const [isCreating, setIsCreating] = useState(false); // For invitation creation loading
     const navigate = useNavigate();
-    const { user } = useStore();
+
+    // Derive wishlist as array of IDs for compatibility
+    const wishlist = useMemo(() => wishlistData as string[], [wishlistData]);
 
     useSEO({
         title: 'Koleksi Desain Undangan Digital Premium',
         description: 'Jelajahi ratusan desain undangan digital premium dari Tamuu. Pilih tema terbaik untuk pernikahan, ulang tahun, dan acara spesial Anda.'
     });
 
-    useEffect(() => {
-        fetchTemplates();
-        fetchCategories();
-        if (user?.id) {
-            fetchWishlist();
-        }
-    }, [user?.id]);
-
-    const fetchCategories = async () => {
-        try {
-            const data = await categoriesApi.list();
-            setCategoryList(data);
-        } catch (err) {
-            console.error('Failed to fetch categories:', err);
-        }
-    };
-
-    const fetchTemplates = async () => {
-        setIsLoading(true);
-        try {
-            const data = await templatesApi.list();
-            setTemplates(data || []);
-        } catch (err) {
-            console.error('Failed to fetch store templates:', err);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const fetchWishlist = async () => {
-        if (!user?.id) return;
-        try {
-            const data = await wishlistApi.list(user.id);
-            setWishlist(data || []);
-        } catch (err) {
-            console.error('Failed to fetch wishlist:', err);
-        }
-    };
-
     const handleToggleWishlist = useCallback(async (templateId: string, isWishlisted: boolean) => {
         if (!user?.id) {
             navigate('/login');
             return;
         }
-        // Optimistic update
-        setWishlist(prev =>
+        // Use mutation with optimistic update handled by TanStack Query
+        toggleWishlistMutation.mutate({
+            userId: user.id,
+            templateId,
             isWishlisted
-                ? prev.filter(id => id !== templateId)
-                : [...prev, templateId]
-        );
-        try {
-            await wishlistApi.toggle(user.id, templateId, isWishlisted);
-        } catch (err) {
-            // Rollback on error
-            setWishlist(prev =>
-                isWishlisted
-                    ? [...prev, templateId]
-                    : prev.filter(id => id !== templateId)
-            );
-        }
-    }, [user?.id, navigate]);
+        });
+    }, [user?.id, navigate, toggleWishlistMutation]);
 
     const filteredTemplates = useMemo(() => {
         return templates.filter(t => {
@@ -148,7 +105,7 @@ export const InvitationsStorePage: React.FC = () => {
 
         if (isOnboarding) {
             // Flow C: Already in onboarding on app domain
-            setIsLoading(true);
+            setIsCreating(true);
             try {
                 // 1. Get the full template data
                 const templateData = await templatesApi.get(templateId);
@@ -230,7 +187,7 @@ export const InvitationsStorePage: React.FC = () => {
                 console.error('Failed to create invitation:', error);
                 alert('Gagal membuat undangan. Silakan coba lagi.');
             } finally {
-                setIsLoading(false);
+                setIsCreating(false);
             }
         } else if (!isAppDomain) {
             // Flow A: On public domain, redirect to onboarding on app domain
@@ -370,7 +327,7 @@ export const InvitationsStorePage: React.FC = () => {
                 <main className="max-w-7xl mx-auto px-6 pb-32">
                     <Suspense fallback={<GridLoader />}>
                         <InvitationsGrid
-                            isLoading={isLoading}
+                            isLoading={isLoadingTemplates || isCreating}
                             filteredTemplates={filteredTemplates}
                             onUseTemplate={handleUseTemplate}
                             onPreviewTemplate={previewTemplate}

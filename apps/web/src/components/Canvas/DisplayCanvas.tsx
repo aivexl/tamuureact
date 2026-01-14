@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import Moveable from 'react-moveable';
 import { useStore } from '@/store/useStore';
 import { CanvasElement } from './CanvasElement';
@@ -27,7 +27,7 @@ const ToolbarButton: React.FC<{
     disabled?: boolean;
     variant?: 'default' | 'danger' | 'premium';
 }> = ({ onClick, icon, title, disabled, variant = 'default' }) => (
-    <motion.button
+    <m.button
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onPointerDown={(e) => e.stopPropagation()}
@@ -47,7 +47,7 @@ const ToolbarButton: React.FC<{
         title={title}
     >
         {icon}
-    </motion.button>
+    </m.button>
 );
 
 export const DisplayCanvas: React.FC = () => {
@@ -222,7 +222,7 @@ export const DisplayCanvas: React.FC = () => {
                         }}
                     >
                         {/* Canvas - uses transform:scale to maintain 1:1 coordinate system */}
-                        <motion.div
+                        <m.div
                             ref={canvasRef}
                             className="absolute top-0 left-0 shadow-2xl ring-1 ring-white/10 overflow-hidden"
                             style={{
@@ -283,7 +283,7 @@ export const DisplayCanvas: React.FC = () => {
                                     className="custom-moveable"
                                 />
                             )}
-                        </motion.div>
+                        </m.div>
                     </div>
                 </div>
             </div>
@@ -291,7 +291,7 @@ export const DisplayCanvas: React.FC = () => {
             {/* Context Menu */}
             <AnimatePresence>
                 {contextMenu && (
-                    <motion.div
+                    <m.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
@@ -340,7 +340,7 @@ export const DisplayCanvas: React.FC = () => {
                             <Trash2 className="w-4 h-4" />
                             Delete
                         </button>
-                    </motion.div>
+                    </m.div>
                 )}
             </AnimatePresence>
 

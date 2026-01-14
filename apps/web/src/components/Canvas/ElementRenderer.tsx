@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { Layer } from '@/store/layersSlice';
 import { X, Upload, Play, MailOpen, MapPin, Clock, ExternalLink, MessageSquare, Heart, Star, Image as ImageIcon } from 'lucide-react';
@@ -418,7 +418,7 @@ const ButtonElement: React.FC<{ layer: Layer, onOpenInvitation?: () => void, onC
     };
 
     return (
-        <motion.button
+        <m.button
             onClick={(e) => {
                 e.stopPropagation();
                 onOpenInvitation?.();
@@ -435,7 +435,7 @@ const ButtonElement: React.FC<{ layer: Layer, onOpenInvitation?: () => void, onC
             {config.subText && (
                 <span className="text-xs opacity-70 font-normal">{config.subText}</span>
             )}
-        </motion.button>
+        </m.button>
     );
 };
 
@@ -588,7 +588,7 @@ const FlyingBirdElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentL
     return (
         <div className="w-full h-full flex items-center justify-center pointer-events-none" style={{ transform: config?.direction === 'right' ? 'scaleX(-1)' : 'none' }}>
             <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible" style={{ fill: config?.birdColor || '#1a1a1a' }}>
-                <motion.path
+                <m.path
                     d="M20,50 Q40,30 60,50 Q40,70 20,50"
                     animate={shouldAnimate ? { d: ["M20,50 Q40,10 60,50 Q40,90 20,50", "M20,50 Q40,40 60,50 Q40,60 20,50"] } : undefined}
                     transition={{ duration: config?.flapSpeed || 0.3, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}

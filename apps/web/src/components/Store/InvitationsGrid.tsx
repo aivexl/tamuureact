@@ -141,10 +141,10 @@ export const InvitationsGrid: React.FC<InvitationsGridProps> = ({
                         <div className="p-6">
                             <div className="mb-6">
                                 <h3 className="text-base font-bold text-slate-900 mb-1 group-hover:text-[#FFBF00] transition-colors">{template.name}</h3>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-2">
-                                    <div className="w-1.5 h-1.5 bg-[#FFBF00] rounded-full" />
+                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 bg-[#FFBF00] rounded-full" />
                                     High-Quality Template
-                                </p>
+                                </span>
                             </div>
 
                             <div className="grid grid-cols-1 gap-3">

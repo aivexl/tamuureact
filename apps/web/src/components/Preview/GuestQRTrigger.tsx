@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { QrCode } from 'lucide-react';
 
 interface GuestQRTriggerProps {
@@ -9,7 +9,7 @@ interface GuestQRTriggerProps {
 
 export const GuestQRTrigger: React.FC<GuestQRTriggerProps> = ({ onClick, isVisible }) => {
     return (
-        <motion.button
+        <m.button
             initial={{ x: -100, opacity: 0 }}
             animate={isVisible ? { x: 0, opacity: 1 } : { x: -100, opacity: 0 }}
             transition={{ type: "spring", damping: 20, stiffness: 100 }}
@@ -30,6 +30,6 @@ export const GuestQRTrigger: React.FC<GuestQRTriggerProps> = ({ onClick, isVisib
                 {/* Pulse Effect */}
                 <div className="absolute inset-0 bg-white/20 rounded-r-2xl animate-pulse -z-10 group-hover:scale-110" />
             </div>
-        </motion.button>
+        </m.button>
     );
 };

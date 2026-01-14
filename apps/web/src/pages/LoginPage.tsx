@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAuth } from '../hooks/useAuth';
 import { AuthLayout } from '../components/Layout/AuthLayout';
 import { AuthForm } from '../components/Auth/AuthForm';
 import { Link, useNavigate } from 'react-router-dom';
@@ -7,7 +8,7 @@ import { useSEO } from '../hooks/useSEO';
 
 export const LoginPage: React.FC = () => {
     const navigate = useNavigate();
-    const { setLoading, isLoading, setUser, setError } = useStore();
+    const { signIn, isLoading } = useAuth();
 
     useSEO({
         title: 'Masuk ke Tamuu - Platform Undangan Digital Premium',
@@ -15,34 +16,13 @@ export const LoginPage: React.FC = () => {
     });
 
     const handleLogin = async (data: any) => {
-        setLoading(true);
-        setError(null);
+        const { error } = await signIn(data.email, data.password);
 
-        try {
-            // Mock authentication for demonstration
-            // In production, this would call your backend API
-            console.log('[Auth] Attempting login for:', data.email);
-
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            setUser({
-                id: 'user-new',
-                email: data.email,
-                name: data.name,
-                role: 'user',
-                tier: 'free',
-                maxInvitations: 1,
-                invitationCount: 0
-            });
-
+        if (!error) {
             // Handle redirect if present
             const searchParams = new URLSearchParams(window.location.search);
             const redirect = searchParams.get('redirect') || '/dashboard';
             navigate(redirect);
-        } catch (err) {
-            setError('Email atau password salah. Silakan coba lagi.');
-        } finally {
-            setLoading(false);
         }
     };
 

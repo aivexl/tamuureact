@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Layer, RSVPWishesConfig } from '@/store/layersSlice';
 import { getVariantStyle, DEFAULT_RSVP_WISHES_CONFIG, VariantStyle } from '@/lib/rsvp-variants';
 import { rsvp } from '@/lib/api';
@@ -110,7 +110,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isPreview, invitat
 
     if (isSubmitted) {
         return (
-            <motion.div
+            <m.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="text-center py-6"
@@ -121,7 +121,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isPreview, invitat
                 <h3 className="text-base font-semibold" style={{ color: config.textColor }}>
                     {config.thankYouMessage}
                 </h3>
-            </motion.div>
+            </m.div>
         );
     }
 
@@ -338,7 +338,7 @@ const WishCard: React.FC<WishCardProps> = ({ wish, config, variant, index }) => 
     };
 
     return (
-        <motion.div
+        <m.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
@@ -368,7 +368,7 @@ const WishCard: React.FC<WishCardProps> = ({ wish, config, variant, index }) => 
                     <div className="text-[8px] sm:text-[9px] opacity-40 mt-1 sm:mt-2 font-bold" style={{ color: config.textColor }}>{wish.submittedAt}</div>
                 )}
             </div>
-        </motion.div>
+        </m.div>
     );
 };
 

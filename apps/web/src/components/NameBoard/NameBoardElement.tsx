@@ -11,7 +11,7 @@
  */
 
 import React, { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Layer } from '@/store/layersSlice';
 import { useStore } from '@/store/useStore';
 
@@ -203,7 +203,7 @@ export const NameBoardElement: React.FC<NameBoardElementProps> = ({ layer, isEdi
     };
 
     return (
-        <motion.div
+        <m.div
             initial={isEditor ? false : { opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ type: 'spring', damping: 20, stiffness: 100 }}
@@ -219,7 +219,7 @@ export const NameBoardElement: React.FC<NameBoardElementProps> = ({ layer, isEdi
             }}
         >
             <AnimatePresence mode="wait">
-                <motion.div
+                <m.div
                     key={displayedName || 'empty'}
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -228,7 +228,7 @@ export const NameBoardElement: React.FC<NameBoardElementProps> = ({ layer, isEdi
                     style={getTextStyle()}
                 >
                     {displayedName}
-                </motion.div>
+                </m.div>
             </AnimatePresence>
 
             {/* Editor indicator */}
@@ -237,7 +237,7 @@ export const NameBoardElement: React.FC<NameBoardElementProps> = ({ layer, isEdi
                     Name Board
                 </div>
             )}
-        </motion.div>
+        </m.div>
     );
 };
 

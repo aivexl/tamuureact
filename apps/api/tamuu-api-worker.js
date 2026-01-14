@@ -877,6 +877,26 @@ export default {
             }
 
 
+            if (path.startsWith('/api/invitations/check-slug/') && method === 'GET') {
+                const slug = path.split('/').pop();
+                if (!slug) return json({ error: 'Slug required' }, { ...corsHeaders, status: 400 });
+
+                // Check invitations table
+                const { results: invResults } = await env.DB.prepare(
+                    'SELECT id FROM invitations WHERE slug = ?'
+                ).bind(slug).all();
+
+                // Check templates table to avoid collisions with system slugs
+                const { results: tempResults } = await env.DB.prepare(
+                    'SELECT id FROM templates WHERE slug = ?'
+                ).bind(slug).all();
+
+                return json({
+                    available: invResults.length === 0 && tempResults.length === 0,
+                    slug
+                }, corsHeaders);
+            }
+
             if (path.match(/^\/api\/invitations\/(public\/)?[^/]+$/) && method === 'GET') {
                 // Short cache (60s) for high traffic public pages
                 return await smart_cache(request, 60, async () => {
@@ -1063,6 +1083,10 @@ export default {
                 headers.set('etag', object.httpEtag);
                 headers.set('Cache-Control', 'public, max-age=31536000, immutable');
 
+                // CORS & COEP/CORP Headers - Required for cross-origin embedding
+                headers.set('Access-Control-Allow-Origin', '*');
+                headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
+
                 return new Response(object.body, { headers });
             }
 
@@ -1083,158 +1107,7 @@ export default {
             });
         }
     }
-};
-
-// Helper functions
-function json(data, options = {}) {
-    const corsHeaders = options.headers || options;
-    const status = options.status || 200;
-
-    // Clean up status if it leaked into headers
-    const cleanHeaders = { ...corsHeaders };
-    if (cleanHeaders.status) delete cleanHeaders.status;
-
-    return new Response(JSON.stringify(data), {
-        status,
-        headers: {
-            // ============================================
-            // MUSIC LIBRARY ENDPOINTS
-            // ============================================
-            if(path === '/api/music' && method === 'GET') {
-        return await smart_cache(request, 3600, async () => {
-            const { results } = await env.DB.prepare(
-                'SELECT * FROM music_library ORDER BY category, title ASC'
-            ).all();
-            return results;
-        });
-    }
-
-    // Admin: Upload new music
-    if (path === '/api/admin/music' && method === 'POST') {
-        try {
-            const formData = await request.formData();
-            const title = formData.get('title');
-            const artist = formData.get('artist');
-            const category = formData.get('category') || 'Instrumental';
-            const duration = formData.get('duration') || '0:00';
-            const file = formData.get('file');
-
-            if (!title || !artist || !file) {
-                return json({ error: 'Title, artist, and file are required' }, { ...corsHeaders, status: 400 });
-            }
-
-            // Validate file type
-            if (!file.type.includes('audio/')) {
-                return json({ error: 'File must be an audio file (MP3)' }, { ...corsHeaders, status: 400 });
-            }
-
-            // Validate file size (max 10MB)
-            const MAX_SIZE = 10 * 1024 * 1024;
-            if (file.size > MAX_SIZE) {
-                return json({ error: 'File size must be less than 10MB' }, { ...corsHeaders, status: 400 });
-            }
-
-            // Generate unique ID and filename
-            const id = crypto.randomUUID().replace(/-/g, '').substring(0, 16);
-            const sanitizedTitle = title.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 30);
-            const filename = `music/${id}-${sanitizedTitle}.mp3`;
-            const url = `https://api.tamuu.id/assets/${filename}`;
-
-            // Upload to R2
-            await env.ASSETS.put(filename, file.stream(), {
-                httpMetadata: {
-                    contentType: 'audio/mpeg',
-                }
-            });
-
-            // Insert into D1
-            await env.DB.prepare(
-                `INSERT INTO music_library (id, title, artist, url, category, duration, is_premium, source_type, created_at) 
-                         VALUES (?, ?, ?, ?, ?, ?, 0, 'library', datetime('now'))`
-            ).bind(id, title, artist, url, category, duration).run();
-
-            return json({
-                success: true,
-                id,
-                title,
-                artist,
-                url,
-                category,
-                message: 'Music uploaded successfully'
-            }, corsHeaders);
-        } catch (e) {
-            console.error('Music upload error:', e);
-            return json({ error: 'Upload failed: ' + e.message }, { ...corsHeaders, status: 500 });
-        }
-    }
-
-    // Admin: Delete music
-    if (path.startsWith('/api/admin/music/') && method === 'DELETE') {
-        const id = path.split('/')[4];
-        if (!id) {
-            return json({ error: 'Music ID required' }, { ...corsHeaders, status: 400 });
-        }
-
-        try {
-            // Get the music record to find the R2 key
-            const { results } = await env.DB.prepare(
-                'SELECT url FROM music_library WHERE id = ?'
-            ).bind(id).all();
-
-            if (results.length === 0) {
-                return json({ error: 'Music not found' }, { ...corsHeaders, status: 404 });
-            }
-
-            // Extract R2 key from URL
-            const url = results[0].url;
-            const r2Key = url.replace('https://api.tamuu.id/assets/', '');
-
-            // Delete from R2
-            await env.ASSETS.delete(r2Key);
-
-            // Delete from D1
-            await env.DB.prepare('DELETE FROM music_library WHERE id = ?').bind(id).run();
-
-            return json({ success: true, id, message: 'Music deleted successfully' }, corsHeaders);
-        } catch (e) {
-            console.error('Music delete error:', e);
-            return json({ error: 'Delete failed: ' + e.message }, { ...corsHeaders, status: 500 });
-        }
-    }
-
-    // ============================================
-    // ASSETS SERVING (R2)
-    // ============================================
-    if (path.startsWith('/assets/')) {
-        const key = path.slice(8); // Remove '/assets/' prefix ('/assets/music/foo.mp3' -> 'music/foo.mp3')
-        const object = await env.ASSETS.get(key);
-
-        if (!object) {
-            return notFound(corsHeaders);
-        }
-
-        const headers = new Headers();
-        object.writeHttpMetadata(headers);
-        headers.set('etag', object.httpEtag);
-
-        // Add CORS and Cache headers
-        for (const [k, v] of Object.entries(corsHeaders)) {
-            headers.set(k, v);
-        }
-        headers.set('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
-        headers.set('X-Tamuu-Cache', 'R2-HIT');
-
-        return new Response(object.body, {
-            headers
-        });
-    }
-
-    return notFound(corsHeaders);
-} catch (e) {
-    return json({ error: e.message }, { ...corsHeaders, status: 500 });
 }
-    }
-};
 
 function json(data, options = {}) {
     const headers = options.headers || {};

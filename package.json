@@ -2,7 +2,7 @@
   "name": "tamuu",
   "private": true,
   "version": "0.1.0",
-  "packageManager": "pnpm@9.0.0",
+  "packageManager": "npm@11.6.4",
   "scripts": {
     "dev": "turbo run dev",
     "dev:web": "turbo run dev --filter=@tamuu/web",

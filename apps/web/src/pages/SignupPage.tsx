@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAuth } from '../hooks/useAuth';
 import { AuthLayout } from '../components/Layout/AuthLayout';
 import { AuthForm } from '../components/Auth/AuthForm';
 import { Link, useNavigate } from 'react-router-dom';
@@ -7,7 +8,7 @@ import { useSEO } from '../hooks/useSEO';
 
 export const SignupPage: React.FC = () => {
     const navigate = useNavigate();
-    const { setLoading, isLoading, setUser, setError } = useStore();
+    const { signUp, isLoading } = useAuth();
 
     useSEO({
         title: 'Daftar Tamuu - Ciptakan Undangan Digital Eksklusif',
@@ -15,30 +16,10 @@ export const SignupPage: React.FC = () => {
     });
 
     const handleSignup = async (data: any) => {
-        setLoading(true);
-        setError(null);
+        const { error } = await signUp(data.email, data.password, data.name);
 
-        try {
-            // Mock registration for demonstration
-            console.log('[Auth] Attempting signup for:', data.email);
-
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            setUser({
-                id: 'user-new',
-                email: data.email,
-                name: data.name,
-                role: 'user',
-                tier: 'free',
-                maxInvitations: 1,
-                invitationCount: 0
-            });
-
+        if (!error) {
             navigate('/onboarding');
-        } catch (err) {
-            setError('Terjadi kesalahan saat mendaftar. Silakan coba lagi.');
-        } finally {
-            setLoading(false);
         }
     };
 

@@ -4,17 +4,13 @@ import { m, AnimatePresence } from 'framer-motion';
 import { Mail, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSEO } from '../hooks/useSEO';
+import { useAuth } from '../hooks/useAuth';
 
 export const ForgotPasswordPage: React.FC = () => {
     const [email, setEmail] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
     const [isSent, setIsSent] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
-    useSEO({
-        title: 'Lupa Password - Tamuu Platform',
-        description: 'Pulihkan akses ke akun Tamuu Anda dengan mudah dan aman.'
-    });
+    const { resetPassword, isLoading } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -27,18 +23,12 @@ export const ForgotPasswordPage: React.FC = () => {
             return;
         }
 
-        setIsLoading(true);
-        setError(null);
+        const { success, error } = await resetPassword(email);
 
-        try {
-            // Mock API Call
-            console.log('[Auth] Password reset requested for:', email);
-            await new Promise(resolve => setTimeout(resolve, 1800));
+        if (success) {
             setIsSent(true);
-        } catch (err) {
-            setError('Gagal mengirim email pemulihan. Silakan coba lagi nanti.');
-        } finally {
-            setIsLoading(false);
+        } else {
+            setError(error || 'Gagal mengirim email pemulihan. Silakan coba lagi nanti.');
         }
     };
 

@@ -5,7 +5,7 @@ import {
     Disc, Volume2, SearchIcon, Radio, Globe,
     Check, ArrowRight, Loader2, Music2
 } from 'lucide-react';
-import { music as musicApi } from '@/lib/api';
+import { useMusicLibrary, Song } from '@/hooks/queries';
 import { useAudioController } from '@/hooks/useAudioController';
 
 interface MusicDrawerProps {
@@ -18,8 +18,7 @@ interface MusicDrawerProps {
 const CATEGORIES = ['Semua', 'Traditional', 'Instrumental', 'Classic', 'Modern', 'Acoustic'];
 
 export const MusicDrawer: React.FC<MusicDrawerProps> = ({ isOpen, onClose, onSelect, selectedSongId }) => {
-    const [songs, setSongs] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const { data: songs = [], isLoading } = useMusicLibrary();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('library'); // 'library' or 'gdrive'
     const [activeCategory, setActiveCategory] = useState('Semua');
@@ -27,25 +26,7 @@ export const MusicDrawer: React.FC<MusicDrawerProps> = ({ isOpen, onClose, onSel
 
     const { play, pause, isPlaying, currentUrl, stop } = useAudioController();
 
-    useEffect(() => {
-        if (isOpen) {
-            fetchMusic();
-        }
-    }, [isOpen]);
-
-    const fetchMusic = async () => {
-        setIsLoading(true);
-        try {
-            const data = await musicApi.list();
-            setSongs(data);
-        } catch (error) {
-            console.error('Failed to fetch music:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const filteredSongs = songs.filter(song => {
+    const filteredSongs = (songs as Song[]).filter((song: Song) => {
         const matchesCategory = activeCategory === 'Semua' || song.category === activeCategory;
         const matchesSearch = song.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             song.artist?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -114,8 +95,8 @@ export const MusicDrawer: React.FC<MusicDrawerProps> = ({ isOpen, onClose, onSel
                             <button
                                 onClick={() => setActiveTab('library')}
                                 className={`flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === 'library'
-                                        ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/20'
-                                        : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                                    ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/20'
+                                    : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
                                     }`}
                             >
                                 <Disc className="w-4 h-4" />
@@ -124,8 +105,8 @@ export const MusicDrawer: React.FC<MusicDrawerProps> = ({ isOpen, onClose, onSel
                             <button
                                 onClick={() => setActiveTab('gdrive')}
                                 className={`flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === 'gdrive'
-                                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                                        : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                                    : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
                                     }`}
                             >
                                 <Globe className="w-4 h-4" />
@@ -152,8 +133,8 @@ export const MusicDrawer: React.FC<MusicDrawerProps> = ({ isOpen, onClose, onSel
                                             key={cat}
                                             onClick={() => setActiveCategory(cat)}
                                             className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all whitespace-nowrap ${activeCategory === cat
-                                                    ? 'bg-pink-100 text-pink-600 border-pink-200'
-                                                    : 'bg-white text-slate-400 border-slate-100 hover:border-slate-200'
+                                                ? 'bg-pink-100 text-pink-600 border-pink-200'
+                                                : 'bg-white text-slate-400 border-slate-100 hover:border-slate-200'
                                                 }`}
                                         >
                                             {cat}
@@ -187,8 +168,8 @@ export const MusicDrawer: React.FC<MusicDrawerProps> = ({ isOpen, onClose, onSel
                                                     onClose();
                                                 }}
                                                 className={`group flex items-center gap-4 p-4 rounded-3xl border cursor-pointer transition-all ${selectedSongId === song.id
-                                                        ? 'bg-pink-50 border-pink-200 ring-4 ring-pink-500/5'
-                                                        : 'bg-white/50 border-slate-100 hover:border-pink-200 hover:bg-white hover:shadow-xl hover:shadow-pink-500/5'
+                                                    ? 'bg-pink-50 border-pink-200 ring-4 ring-pink-500/5'
+                                                    : 'bg-white/50 border-slate-100 hover:border-pink-200 hover:bg-white hover:shadow-xl hover:shadow-pink-500/5'
                                                     }`}
                                             >
                                                 <div
@@ -201,8 +182,8 @@ export const MusicDrawer: React.FC<MusicDrawerProps> = ({ isOpen, onClose, onSel
                                                         }
                                                     }}
                                                     className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${currentUrl === song.url && isPlaying
-                                                            ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/30'
-                                                            : 'bg-pink-50 text-pink-500 group-hover:scale-110'
+                                                        ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/30'
+                                                        : 'bg-pink-50 text-pink-500 group-hover:scale-110'
                                                         }`}
                                                 >
                                                     {currentUrl === song.url && isPlaying ? <Pause className="fill-current" /> : <Play className="fill-current" />}

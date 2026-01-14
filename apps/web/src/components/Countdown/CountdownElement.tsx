@@ -13,7 +13,7 @@
  */
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Layer, CountdownConfig, CountdownVariant, DEFAULT_COUNTDOWN_CONFIG } from '@/store/layersSlice';
 import { getVariantPreset, mergeWithPreset } from './countdown-variants';
 
@@ -165,7 +165,7 @@ const ClassicVariantRenderer: React.FC<{ config: CountdownConfig; units: TimeUni
                 <React.Fragment key={unit.key}>
                     <div className="flex flex-col items-center flex-shrink min-w-0">
                         <AnimatePresence mode="popLayout">
-                            <motion.span
+                            <m.span
                                 key={unit.value}
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -181,7 +181,7 @@ const ClassicVariantRenderer: React.FC<{ config: CountdownConfig; units: TimeUni
                                 }}
                             >
                                 {String(unit.value).padStart(2, '0')}
-                            </motion.span>
+                            </m.span>
                         </AnimatePresence>
                         {config.showLabels !== false && (
                             <span
@@ -262,7 +262,7 @@ const FlipVariantRenderer: React.FC<{ config: CountdownConfig; units: TimeUnit[]
                             {/* Top Half */}
                             <div className="relative">
                                 <AnimatePresence mode="popLayout">
-                                    <motion.div
+                                    <m.div
                                         key={unit.value}
                                         initial={{ rotateX: -90, opacity: 0 }}
                                         animate={{ rotateX: 0, opacity: 1 }}
@@ -278,7 +278,7 @@ const FlipVariantRenderer: React.FC<{ config: CountdownConfig; units: TimeUnit[]
                                         }}
                                     >
                                         {String(unit.value).padStart(2, '0')}
-                                    </motion.div>
+                                    </m.div>
                                 </AnimatePresence>
                             </div>
 
@@ -410,7 +410,7 @@ const BoxVariantRenderer: React.FC<{ config: CountdownConfig; units: TimeUnit[];
                     }}
                 >
                     <AnimatePresence mode="popLayout">
-                        <motion.span
+                        <m.span
                             key={unit.value}
                             initial={{ scale: 0.8, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
@@ -425,7 +425,7 @@ const BoxVariantRenderer: React.FC<{ config: CountdownConfig; units: TimeUnit[];
                             }}
                         >
                             {String(unit.value).padStart(2, '0')}
-                        </motion.span>
+                        </m.span>
                     </AnimatePresence>
                     {config.showLabels !== false && (
                         <span
@@ -507,7 +507,7 @@ const CircleVariantRenderer: React.FC<{
                                 />
                                 {/* Progress Ring */}
                                 {isProgress && (
-                                    <motion.circle
+                                    <m.circle
                                         cx={size / 2}
                                         cy={size / 2}
                                         r={radius}
@@ -539,7 +539,7 @@ const CircleVariantRenderer: React.FC<{
                         {/* Number */}
                         <div className="relative z-10 flex flex-col items-center">
                             <AnimatePresence mode="popLayout">
-                                <motion.span
+                                <m.span
                                     key={unit.value}
                                     initial={{ scale: 0.9, opacity: 0 }}
                                     animate={{ scale: 1, opacity: 1 }}
@@ -553,7 +553,7 @@ const CircleVariantRenderer: React.FC<{
                                     }}
                                 >
                                     {String(unit.value).padStart(2, '0')}
-                                </motion.span>
+                                </m.span>
                             </AnimatePresence>
                             {config.showLabels !== false && (
                                 <span
@@ -618,7 +618,7 @@ const NeonVariantRenderer: React.FC<{ config: CountdownConfig; units: TimeUnit[]
                 <React.Fragment key={unit.key}>
                     <div className="flex flex-col items-center">
                         <AnimatePresence mode="popLayout">
-                            <motion.span
+                            <m.span
                                 key={unit.value}
                                 initial={{ opacity: 0, filter: 'blur(4px)' }}
                                 animate={{ opacity: 1, filter: 'blur(0px)' }}
@@ -633,7 +633,7 @@ const NeonVariantRenderer: React.FC<{ config: CountdownConfig; units: TimeUnit[]
                                 }}
                             >
                                 {String(unit.value).padStart(2, '0')}
-                            </motion.span>
+                            </m.span>
                         </AnimatePresence>
                         {config.showLabels !== false && (
                             <span
@@ -709,7 +709,7 @@ const LuxuryVariantRenderer: React.FC<{ config: CountdownConfig; units: TimeUnit
             {units.map((unit, i) => (
                 <React.Fragment key={unit.key}>
                     <div className="flex flex-col items-center">
-                        <motion.span
+                        <m.span
                             key={unit.value}
                             initial={{ opacity: 0.5 }}
                             animate={{ opacity: 1 }}
@@ -723,7 +723,7 @@ const LuxuryVariantRenderer: React.FC<{ config: CountdownConfig; units: TimeUnit
                             }}
                         >
                             {String(unit.value).padStart(2, '0')}
-                        </motion.span>
+                        </m.span>
                         {config.showLabels !== false && (
                             <span
                                 className="uppercase tracking-widest"
@@ -792,7 +792,7 @@ const TypewriterVariantRenderer: React.FC<{ config: CountdownConfig; units: Time
         >
             <div className="flex items-center">
                 <span style={{ color: config.accentColor, opacity: 0.5 }}>[</span>
-                <motion.span
+                <m.span
                     style={{
                         fontSize: config.fontSize || 28,
                         fontWeight: config.fontWeight || 'bold',
@@ -802,7 +802,7 @@ const TypewriterVariantRenderer: React.FC<{ config: CountdownConfig; units: Time
                     }}
                 >
                     {timeString}
-                </motion.span>
+                </m.span>
                 <span
                     style={{
                         color: config.textColor || '#00ff00',

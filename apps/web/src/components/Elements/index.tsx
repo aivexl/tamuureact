@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Layer } from '@/store/layersSlice';
 import { useStore } from '@/store/useStore';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Music, MessageSquare, Share2, Sun, Image as ImageIcon, Heart, Clock, MapPin, Star, Play, Pause } from 'lucide-react';
 import { useAudioController } from '@/hooks/useAudioController';
 
@@ -167,7 +167,7 @@ export const DigitalGiftElement: React.FC<{ layer: Layer, isEditor?: boolean, on
     };
 
     return (
-        <motion.div
+        <m.div
             className="w-full h-full glass-panel p-4 flex flex-col items-center justify-center text-center gap-3 border border-premium-accent/20"
             style={{ borderRadius: 20 }}
             whileHover={!isEditor ? { scale: 1.02 } : {}}
@@ -185,14 +185,14 @@ export const DigitalGiftElement: React.FC<{ layer: Layer, isEditor?: boolean, on
             </div>
 
             {!isEditor && (
-                <motion.button
+                <m.button
                     whileTap={{ scale: 0.95 }}
                     className="mt-2 text-[10px] bg-premium-accent text-black font-bold py-2 px-6 rounded-full uppercase tracking-widest shadow-lg shadow-premium-accent/20"
                 >
                     {config.buttonText}
-                </motion.button>
+                </m.button>
             )}
-        </motion.div>
+        </m.div>
     );
 };
 
@@ -229,7 +229,7 @@ export const MusicPlayerElement: React.FC<{ layer: Layer, isEditor?: boolean, on
     const isThisPlaying = currentUrl === config.audioUrl && isPlaying;
 
     return (
-        <motion.div
+        <m.div
             className="w-full h-full glass-panel flex items-center p-3 gap-3 border border-white/10 cursor-pointer hover:bg-white/5 transition-colors"
             style={{ borderRadius: 16 }}
             onClick={handleToggle}
@@ -241,7 +241,7 @@ export const MusicPlayerElement: React.FC<{ layer: Layer, isEditor?: boolean, on
                     <Music className="w-5 h-5 text-premium-accent" />
                 )}
                 {isThisPlaying && (
-                    <motion.div
+                    <m.div
                         animate={{ rotate: 360 }}
                         transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
                         className="absolute inset-0 border-2 border-dashed border-premium-accent/40 rounded-full"
@@ -254,7 +254,7 @@ export const MusicPlayerElement: React.FC<{ layer: Layer, isEditor?: boolean, on
             </div>
             <div className="flex gap-1.5 items-center">
                 {[0.4, 0.7, 0.3, 0.9, 0.5].map((h, i) => (
-                    <motion.div
+                    <m.div
                         key={i}
                         animate={isThisPlaying ? { height: [h * 20, (1 - h) * 20, h * 20] } : { height: 4 }}
                         transition={{ duration: 1, repeat: Infinity, delay: i * 0.1 }}
@@ -262,7 +262,7 @@ export const MusicPlayerElement: React.FC<{ layer: Layer, isEditor?: boolean, on
                     />
                 ))}
             </div>
-        </motion.div>
+        </m.div>
     );
 };
 
@@ -289,7 +289,7 @@ export const QRCodeElement: React.FC<{ layer: Layer, isEditor?: boolean, onConte
     };
 
     return (
-        <motion.div
+        <m.div
             className="w-full h-full relative"
             whileTap={config.interactiveEnabled && !isEditor ? { scale: 0.95 } : {}}
             onClick={handleTrigger}
@@ -332,7 +332,7 @@ export const QRCodeElement: React.FC<{ layer: Layer, isEditor?: boolean, onConte
                     </button>
                 </div>
             )}
-        </motion.div>
+        </m.div>
     );
 };
 
@@ -348,7 +348,7 @@ export const AtmosphericVectorElement: React.FC<{ layer: Layer, onContentLoad?: 
         return (
             <div className="w-full h-full flex items-center justify-center">
                 <svg viewBox="0 0 200 200" className="w-full h-full">
-                    <motion.path
+                    <m.path
                         animate={{
                             d: [
                                 "M150,100c0,27.6-22.4,50-50,50s-50-22.4-50-50s22.4-50,50-50S150,72.4,150,100z",
@@ -367,7 +367,7 @@ export const AtmosphericVectorElement: React.FC<{ layer: Layer, onContentLoad?: 
     return (
         <div className="w-full h-full relative overflow-hidden">
             <svg viewBox={`0 0 ${layer.width} ${layer.height}`} preserveAspectRatio="none" className="w-full h-full">
-                <motion.path
+                <m.path
                     d={`M 0 ${layer.height / 2} Q ${layer.width / 4} ${layer.height / 2 - config.amplitude} ${layer.width / 2} ${layer.height / 2} T ${layer.width} ${layer.height / 2} L ${layer.width} ${layer.height} L 0 ${layer.height} Z`}
                     fill={config.color || 'rgba(191, 161, 129, 0.2)'}
                     animate={{
@@ -463,7 +463,7 @@ export const MarqueeElement: React.FC<{ layer: Layer, onContentLoad?: () => void
 
     return (
         <div className="w-full h-full flex items-center overflow-hidden bg-premium-accent/10 border-y border-premium-accent/30 backdrop-blur-sm">
-            <motion.div
+            <m.div
                 animate={{ x: [0, -400] }}
                 transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
                 className="flex whitespace-nowrap gap-8"
@@ -471,7 +471,7 @@ export const MarqueeElement: React.FC<{ layer: Layer, onContentLoad?: () => void
                 {[...Array(6)].map((_, i) => (
                     <span key={i} className="text-[12px] font-black text-premium-accent tracking-[0.3em] uppercase">{text}</span>
                 ))}
-            </motion.div>
+            </m.div>
         </div>
     );
 };
@@ -483,7 +483,7 @@ export const TiltCardElement: React.FC<{ layer: Layer, onContentLoad?: () => voi
     useEffect(() => { onContentLoad?.(); }, []);
 
     return (
-        <motion.div
+        <m.div
             className="w-full h-full relative"
             style={{ perspective: 1000 }}
             whileHover={{ rotateY: 20, rotateX: -15 }}
@@ -505,7 +505,7 @@ export const TiltCardElement: React.FC<{ layer: Layer, onContentLoad?: () => voi
                     </div>
                 </div>
             </div>
-        </motion.div>
+        </m.div>
     );
 };
 // ============================================
@@ -514,7 +514,7 @@ export const TiltCardElement: React.FC<{ layer: Layer, onContentLoad?: () => voi
 export const CalendarSyncElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ layer, onContentLoad }) => {
     useEffect(() => { onContentLoad?.(); }, []);
     return (
-        <motion.button
+        <m.button
             whileHover={{ scale: 1.05, backgroundColor: 'rgba(59, 130, 246, 0.3)' }}
             whileTap={{ scale: 0.95 }}
             className="w-full h-full bg-blue-600/20 backdrop-blur-xl border border-blue-400/30 flex items-center justify-center gap-3 text-white font-black text-[12px] uppercase tracking-[0.2em] shadow-lg shadow-blue-500/10"
@@ -522,7 +522,7 @@ export const CalendarSyncElement: React.FC<{ layer: Layer, onContentLoad?: () =>
         >
             <Clock className="w-5 h-5 text-blue-400" />
             SAVE THE DATE
-        </motion.button>
+        </m.button>
     );
 };
 
@@ -543,8 +543,8 @@ export const DirectionsHubElement: React.FC<{ layer: Layer, onContentLoad?: () =
                 </div>
             </div>
             <div className="grid grid-cols-2 gap-3 mt-auto">
-                <motion.div whileHover={{ y: -2 }} className="bg-white/5 hover:bg-white/10 p-3 rounded-xl text-[10px] font-black text-white/80 text-center border border-white/10 transition-colors uppercase cursor-pointer tracking-widest">Google Maps</motion.div>
-                <motion.div whileHover={{ y: -2 }} className="bg-white/5 hover:bg-white/10 p-3 rounded-xl text-[10px] font-black text-white/80 text-center border border-white/10 transition-colors uppercase cursor-pointer tracking-widest">Waze Hub</motion.div>
+                <m.div whileHover={{ y: -2 }} className="bg-white/5 hover:bg-white/10 p-3 rounded-xl text-[10px] font-black text-white/80 text-center border border-white/10 transition-colors uppercase cursor-pointer tracking-widest">Google Maps</m.div>
+                <m.div whileHover={{ y: -2 }} className="bg-white/5 hover:bg-white/10 p-3 rounded-xl text-[10px] font-black text-white/80 text-center border border-white/10 transition-colors uppercase cursor-pointer tracking-widest">Waze Hub</m.div>
             </div>
         </div>
     );
@@ -556,7 +556,7 @@ export const DirectionsHubElement: React.FC<{ layer: Layer, onContentLoad?: () =
 export const ShareContextElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ layer, onContentLoad }) => {
     useEffect(() => { onContentLoad?.(); }, []);
     return (
-        <motion.button
+        <m.button
             whileHover={{ scale: 1.05, backgroundColor: 'rgba(16, 185, 129, 0.3)' }}
             whileTap={{ scale: 0.95 }}
             className="w-full h-full bg-emerald-600/20 backdrop-blur-xl border border-emerald-400/30 flex items-center justify-center gap-3 text-white font-black text-[12px] uppercase tracking-[0.2em] shadow-lg shadow-emerald-500/10"
@@ -564,6 +564,6 @@ export const ShareContextElement: React.FC<{ layer: Layer, onContentLoad?: () =>
         >
             <Share2 className="w-5 h-5 text-emerald-400" />
             SPREAD THE JOY
-        </motion.button>
+        </m.button>
     );
 };
