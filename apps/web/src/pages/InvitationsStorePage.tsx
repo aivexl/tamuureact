@@ -184,9 +184,9 @@ export const InvitationsStorePage: React.FC = () => {
 
                 // 5. Navigate to the user editor with the new ID
                 navigate(`/user/editor/${newInvitation.id}`);
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to create invitation:', error);
-                alert('Gagal membuat undangan. Silakan coba lagi.');
+                alert(error.message || 'Gagal membuat undangan. Silakan coba lagi.');
             } finally {
                 setIsCreating(false);
             }

@@ -171,7 +171,10 @@ export const invitations = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
-        if (!res.ok) throw new Error('Failed to create invitation');
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.message || errorData.error || 'Failed to create invitation');
+        }
         return res.json();
     },
 
@@ -320,9 +323,6 @@ export const storage = {
 
         const formData = new FormData();
         formData.append('file', fileToUpload);
-
-        // Send BlurHash in header or metadata if backend supports it (optional for now)
-        // For now, we return it to the UI for immediate display
 
         const res = await fetch(`${API_BASE}/api/upload`, {
             method: 'POST',
