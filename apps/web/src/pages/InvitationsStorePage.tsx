@@ -170,6 +170,7 @@ export const InvitationsStorePage: React.FC = () => {
                 // 4. Create the invitation using synced data
                 const newInvitation = await invitationsApi.create({
                     ...templateData,
+                    user_id: user?.id, // CTO FIX: Explicitly send user_id to link invitation to account
                     id: undefined, // Let the backend generate a new UUID
                     template_id: templateId,
                     name: onboardingName || magic?.invitationName || `Undangan ${onboardingSlug}`,

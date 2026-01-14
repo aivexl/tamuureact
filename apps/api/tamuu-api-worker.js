@@ -601,8 +601,8 @@ export default {
                 const body = await request.json();
                 const id = crypto.randomUUID();
                 await env.DB.prepare(
-                    `INSERT INTO templates(id, name, slug, category, sections, layers, type, thumbnail, music) 
-                     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                    `INSERT INTO templates(id, name, slug, category, sections, layers, orbit, type, thumbnail, music) 
+                     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
                 ).bind(
                     id,
                     body.name || 'Untitled Template',
@@ -610,6 +610,7 @@ export default {
                     body.category || 'Wedding',
                     JSON.stringify(body.sections || []),
                     JSON.stringify(body.layers || []),
+                    JSON.stringify(body.orbit || {}),
                     body.type || 'invitation',
                     body.thumbnail_url || null,
                     body.music ? JSON.stringify(body.music) : null
@@ -651,6 +652,7 @@ export default {
                         pan = COALESCE(?, pan),
                         sections = COALESCE(?, sections),
                         layers = COALESCE(?, layers),
+                        orbit = COALESCE(?, orbit),
                         music = COALESCE(?, music),
                         updated_at = datetime('now')
                          WHERE id = ? `
@@ -663,6 +665,7 @@ export default {
                         body.pan ? JSON.stringify(body.pan) : null,
                         body.sections ? JSON.stringify(body.sections) : null,
                         body.layers ? JSON.stringify(body.layers) : null,
+                        body.orbit ? JSON.stringify(body.orbit) : null,
                         body.music ? JSON.stringify(body.music) : null,
                         id
                     ).run();
@@ -839,6 +842,20 @@ export default {
                         }
                     }
 
+                    // CTO FIX: Check for slug availability before inserting to prevent unique constraint violation (500)
+                    if (body.slug) {
+                        const existing = await env.DB.prepare(
+                            'SELECT id FROM invitations WHERE slug = ?'
+                        ).bind(body.slug.toLowerCase()).first();
+
+                        if (existing) {
+                            return json({
+                                error: 'Slug conflict',
+                                message: `The slug "${body.slug}" is already taken. Please choose another one.`
+                            }, { headers: corsHeaders, status: 409 });
+                        }
+                    }
+
                     const id = crypto.randomUUID();
 
                     // If template_id provided, fetch template data for cloning
@@ -851,28 +868,30 @@ export default {
                     }
 
                     // Merge template data with request body (request body takes priority)
-                    const sections = body.sections || (templateData?.sections ? JSON.parse(templateData.sections) : []);
-                    const layers = body.layers || (templateData?.layers ? JSON.parse(templateData.layers) : []);
-                    const orbit = body.orbit || body.orbit_layers || (templateData?.orbit ? JSON.parse(templateData.orbit) : {});
+                    const sections = body.sections || (templateData?.sections ? (typeof templateData.sections === 'string' ? JSON.parse(templateData.sections) : templateData.sections) : []);
+                    const layers = body.layers || (templateData?.layers ? (typeof templateData.layers === 'string' ? JSON.parse(templateData.layers) : templateData.layers) : []);
+                    const orbit = body.orbit || body.orbit_layers || (templateData?.orbit ? (typeof templateData.orbit === 'string' ? JSON.parse(templateData.orbit) : templateData.orbit) : {});
+                    const music = body.music || (templateData?.music ? (typeof templateData.music === 'string' ? JSON.parse(templateData.music) : templateData.music) : null);
                     const zoom = body.zoom ?? templateData?.zoom ?? 1;
-                    const pan = body.pan || (templateData?.pan ? JSON.parse(templateData.pan) : { x: 0, y: 0 });
+                    const pan = body.pan || (templateData?.pan ? (typeof templateData.pan === 'string' ? JSON.parse(templateData.pan) : templateData.pan) : { x: 0, y: 0 });
                     const category = body.category || templateData?.category || 'Wedding';
                     const thumbnailUrl = body.thumbnail_url || templateData?.thumbnail || null;
 
                     await env.DB.prepare(
-                        `INSERT INTO invitations(id, user_id, name, slug, category, zoom, pan, sections, layers, orbit_layers, thumbnail_url, template_id, is_published, display_design_id) 
-                         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                        `INSERT INTO invitations(id, user_id, name, slug, category, zoom, pan, sections, layers, orbit, music, thumbnail_url, template_id, is_published, display_design_id) 
+                         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
                     ).bind(
                         id,
                         userId || null,
                         body.name || 'Untitled Invitation',
-                        body.slug || null,
+                        body.slug ? body.slug.toLowerCase() : null,
                         category,
                         zoom,
                         JSON.stringify(pan),
                         JSON.stringify(sections),
                         JSON.stringify(layers),
                         JSON.stringify(orbit),
+                        music ? JSON.stringify(music) : null,
                         thumbnailUrl,
                         body.template_id || null,
                         body.is_published ? 1 : 0,
@@ -896,12 +915,18 @@ export default {
                         sections,
                         layers,
                         orbit_layers: orbit,
+                        music,
                         thumbnail_url: thumbnailUrl,
                         template_id: body.template_id
                     }, corsHeaders);
                 } catch (error) {
                     console.error('Create invitation error:', error);
-                    return json({ error: 'Failed to create invitation', details: error.message }, { headers: corsHeaders, status: 500 });
+                    return json({
+                        error: 'Failed to create invitation',
+                        details: error.message,
+                        stack: error.stack,
+                        context: 'POST /api/invitations'
+                    }, { headers: corsHeaders, status: 500 });
                 }
             }
 
@@ -954,7 +979,7 @@ export default {
                         pan = COALESCE(?, pan),
                         sections = COALESCE(?, sections),
                         layers = COALESCE(?, layers),
-                        orbit_layers = COALESCE(?, orbit_layers),
+                        orbit = COALESCE(?, orbit),
                         is_published = COALESCE(?, is_published),
                         display_design_id = COALESCE(?, display_design_id),
                         music = COALESCE(?, music),
@@ -964,7 +989,7 @@ export default {
                     body.name, body.slug, body.thumbnail_url, body.category,
                     body.zoom, JSON.stringify(body.pan),
                     JSON.stringify(body.sections), JSON.stringify(body.layers),
-                    JSON.stringify(body.orbit_layers), body.is_published !== undefined ? (body.is_published ? 1 : 0) : null,
+                    JSON.stringify(body.orbit || body.orbit_layers), body.is_published !== undefined ? (body.is_published ? 1 : 0) : null,
                     body.display_design_id !== undefined ? body.display_design_id : null,
                     body.music ? JSON.stringify(body.music) : null,
                     id
@@ -1139,11 +1164,26 @@ export default {
 }
 
 function json(data, options = {}) {
-    const headers = options.headers || {};
+    // Handle both json(data, corsHeaders) and json(data, { headers: corsHeaders, status: 200 })
+    let headers = {};
+    let status = 200;
+
+    if (options['Access-Control-Allow-Origin']) {
+        // corsHeaders was passed directly
+        headers = options;
+    } else {
+        // Options object was passed
+        headers = options.headers || {};
+        status = options.status || 200;
+    }
+
     return new Response(JSON.stringify(data), {
-        status: options.status || 200,
+        status: status,
         headers: {
             'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
             ...headers
         }
     });
@@ -1154,7 +1194,7 @@ function notFound(corsHeaders) {
 }
 
 function parseJsonFields(row) {
-    const jsonFields = ['pan', 'sections', 'layers', 'orbit_layers', 'orbit', 'music'];
+    const jsonFields = ['pan', 'sections', 'layers', 'orbit', 'orbit_layers', 'music'];
 
     const result = { ...row };
     for (const field of jsonFields) {
@@ -1166,5 +1206,13 @@ function parseJsonFields(row) {
             }
         }
     }
+
+    // Aliasing logic for backward compatibility
+    if (result.orbit && !result.orbit_layers) {
+        result.orbit_layers = result.orbit;
+    } else if (result.orbit_layers && !result.orbit) {
+        result.orbit = result.orbit_layers;
+    }
+
     return result;
 }
