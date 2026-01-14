@@ -58,32 +58,56 @@ export default {
             // ============================================
             if (path === '/api/auth/me' && method === 'GET') {
                 const email = url.searchParams.get('email');
-                if (!email) return json({ error: 'Email required' }, { ...corsHeaders, status: 400 });
+                if (!email) return json({ error: 'Email required' }, { headers: corsHeaders, status: 400 });
 
-                const { results } = await env.DB.prepare(
-                    'SELECT * FROM users WHERE email = ?'
-                ).bind(email).all();
+                try {
+                    const { results } = await env.DB.prepare(
+                        'SELECT * FROM users WHERE email = ?'
+                    ).bind(email).all();
 
-                if (results.length === 0) return notFound(corsHeaders);
+                    let user = results[0];
 
-                const user = results[0];
-                return json({
-                    ...user,
-                    maxInvitations: user.max_invitations || 1,
-                    invitationCount: user.invitation_count || 0,
-                    tier: user.tier || 'free',
-                    tamuuId: user.tamuu_id || `TAMUU-USER-${user.id.substring(0, 8)}`,
-                    birthDate: user.birth_date,
-                    bank1Name: user.bank1_name,
-                    bank1Number: user.bank1_number,
-                    bank1Holder: user.bank1_holder,
-                    bank2Name: user.bank2_name,
-                    bank2Number: user.bank2_number,
-                    bank2Holder: user.bank2_holder,
-                    emoneyType: user.emoney_type,
-                    emoneyNumber: user.emoney_number,
-                    giftAddress: user.gift_address
-                }, corsHeaders);
+                    // Auto-create user if not found (for Supabase auth sync)
+                    if (!user) {
+                        const userId = crypto.randomUUID();
+                        const tamuuId = `TAMUU-USER-${userId.substring(0, 8).toUpperCase()}`;
+
+                        await env.DB.prepare(
+                            `INSERT INTO users (id, email, tamuu_id, tier, max_invitations, invitation_count) 
+                             VALUES (?, ?, ?, 'free', 1, 0)`
+                        ).bind(userId, email, tamuuId).run();
+
+                        user = {
+                            id: userId,
+                            email: email,
+                            tamuu_id: tamuuId,
+                            tier: 'free',
+                            max_invitations: 1,
+                            invitation_count: 0
+                        };
+                    }
+
+                    return json({
+                        ...user,
+                        maxInvitations: user.max_invitations || 1,
+                        invitationCount: user.invitation_count || 0,
+                        tier: user.tier || 'free',
+                        tamuuId: user.tamuu_id || `TAMUU-USER-${user.id.substring(0, 8)}`,
+                        birthDate: user.birth_date,
+                        bank1Name: user.bank1_name,
+                        bank1Number: user.bank1_number,
+                        bank1Holder: user.bank1_holder,
+                        bank2Name: user.bank2_name,
+                        bank2Number: user.bank2_number,
+                        bank2Holder: user.bank2_holder,
+                        emoneyType: user.emoney_type,
+                        emoneyNumber: user.emoney_number,
+                        giftAddress: user.gift_address
+                    }, corsHeaders);
+                } catch (error) {
+                    console.error('Auth/me error:', error);
+                    return json({ error: 'Failed to fetch user', details: error.message }, { headers: corsHeaders, status: 500 });
+                }
             }
 
             if (path === '/api/user/profile' && method === 'PATCH') {
@@ -799,81 +823,86 @@ export default {
             }
 
             if (path === '/api/invitations' && method === 'POST') {
-                const body = await request.json();
-                const userId = body.user_id;
+                try {
+                    const body = await request.json();
+                    const userId = body.user_id;
 
-                // Check Gating: Invitation Limit
-                if (userId) {
-                    const { results } = await env.DB.prepare(
-                        'SELECT tier, max_invitations, invitation_count FROM users WHERE id = ?'
-                    ).bind(userId).all();
+                    // Check Gating: Invitation Limit
+                    if (userId) {
+                        const { results } = await env.DB.prepare(
+                            'SELECT tier, max_invitations, invitation_count FROM users WHERE id = ?'
+                        ).bind(userId).all();
 
-                    const user = results[0];
-                    if (user && user.invitation_count >= (user.max_invitations || 1)) {
-                        return json({ error: 'Invitation limit reached. Please upgrade your plan.' }, { ...corsHeaders, status: 403 });
+                        const user = results[0];
+                        if (user && user.invitation_count >= (user.max_invitations || 1)) {
+                            return json({ error: 'Invitation limit reached. Please upgrade your plan.' }, { headers: corsHeaders, status: 403 });
+                        }
                     }
-                }
 
-                const id = crypto.randomUUID();
+                    const id = crypto.randomUUID();
 
-                // If template_id provided, fetch template data for cloning
-                let templateData = null;
-                if (body.template_id) {
-                    const { results } = await env.DB.prepare(
-                        'SELECT * FROM templates WHERE id = ?'
-                    ).bind(body.template_id).all();
-                    templateData = results?.[0];
-                }
+                    // If template_id provided, fetch template data for cloning
+                    let templateData = null;
+                    if (body.template_id) {
+                        const { results } = await env.DB.prepare(
+                            'SELECT * FROM templates WHERE id = ?'
+                        ).bind(body.template_id).all();
+                        templateData = results?.[0];
+                    }
 
-                // Merge template data with request body (request body takes priority)
-                const sections = body.sections || (templateData?.sections ? JSON.parse(templateData.sections) : []);
-                const layers = body.layers || (templateData?.layers ? JSON.parse(templateData.layers) : []);
-                const orbit = body.orbit || body.orbit_layers || (templateData?.orbit ? JSON.parse(templateData.orbit) : {});
-                const zoom = body.zoom ?? templateData?.zoom ?? 1;
-                const pan = body.pan || (templateData?.pan ? JSON.parse(templateData.pan) : { x: 0, y: 0 });
-                const category = body.category || templateData?.category || 'Wedding';
-                const thumbnailUrl = body.thumbnail_url || templateData?.thumbnail || null;
+                    // Merge template data with request body (request body takes priority)
+                    const sections = body.sections || (templateData?.sections ? JSON.parse(templateData.sections) : []);
+                    const layers = body.layers || (templateData?.layers ? JSON.parse(templateData.layers) : []);
+                    const orbit = body.orbit || body.orbit_layers || (templateData?.orbit ? JSON.parse(templateData.orbit) : {});
+                    const zoom = body.zoom ?? templateData?.zoom ?? 1;
+                    const pan = body.pan || (templateData?.pan ? JSON.parse(templateData.pan) : { x: 0, y: 0 });
+                    const category = body.category || templateData?.category || 'Wedding';
+                    const thumbnailUrl = body.thumbnail_url || templateData?.thumbnail || null;
 
-                await env.DB.prepare(
-                    `INSERT INTO invitations(id, user_id, name, slug, category, zoom, pan, sections, layers, orbit_layers, thumbnail_url, template_id, is_published, display_design_id) 
-                     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-                ).bind(
-                    id,
-                    userId || null,
-                    body.name || 'Untitled Invitation',
-                    body.slug || null,
-                    category,
-                    zoom,
-                    JSON.stringify(pan),
-                    JSON.stringify(sections),
-                    JSON.stringify(layers),
-                    JSON.stringify(orbit),
-                    thumbnailUrl,
-                    body.template_id || null,
-                    body.is_published ? 1 : 0,
-                    body.display_design_id || null
-                ).run();
-
-                // Update User's Invitation Count
-                if (body.user_id) {
                     await env.DB.prepare(
-                        'UPDATE users SET invitation_count = invitation_count + 1 WHERE id = ?'
-                    ).bind(body.user_id).run();
-                }
+                        `INSERT INTO invitations(id, user_id, name, slug, category, zoom, pan, sections, layers, orbit_layers, thumbnail_url, template_id, is_published, display_design_id) 
+                         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                    ).bind(
+                        id,
+                        userId || null,
+                        body.name || 'Untitled Invitation',
+                        body.slug || null,
+                        category,
+                        zoom,
+                        JSON.stringify(pan),
+                        JSON.stringify(sections),
+                        JSON.stringify(layers),
+                        JSON.stringify(orbit),
+                        thumbnailUrl,
+                        body.template_id || null,
+                        body.is_published ? 1 : 0,
+                        body.display_design_id || null
+                    ).run();
 
-                return json({
-                    id,
-                    name: body.name,
-                    slug: body.slug,
-                    category,
-                    zoom,
-                    pan,
-                    sections,
-                    layers,
-                    orbit_layers: orbit,
-                    thumbnail_url: thumbnailUrl,
-                    template_id: body.template_id
-                }, corsHeaders);
+                    // Update User's Invitation Count
+                    if (userId) {
+                        await env.DB.prepare(
+                            'UPDATE users SET invitation_count = invitation_count + 1 WHERE id = ?'
+                        ).bind(userId).run();
+                    }
+
+                    return json({
+                        id,
+                        name: body.name,
+                        slug: body.slug,
+                        category,
+                        zoom,
+                        pan,
+                        sections,
+                        layers,
+                        orbit_layers: orbit,
+                        thumbnail_url: thumbnailUrl,
+                        template_id: body.template_id
+                    }, corsHeaders);
+                } catch (error) {
+                    console.error('Create invitation error:', error);
+                    return json({ error: 'Failed to create invitation', details: error.message }, { headers: corsHeaders, status: 500 });
+                }
             }
 
 
