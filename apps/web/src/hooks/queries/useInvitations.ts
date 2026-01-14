@@ -6,6 +6,35 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invitations, templates, userDisplayDesigns } from '@/lib/api';
 import { queryKeys, STALE_TIMES } from '@/lib/queryClient';
+// ============================================
+// TYPES
+// ============================================
+
+export interface Invitation {
+    id: string;
+    name: string;
+    slug?: string;
+    thumbnail?: string;
+    thumbnail_url?: string;
+    category?: string;
+    sections?: any[];
+    layers?: any[];
+    is_published?: boolean;
+    status?: 'draft' | 'published';
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface DisplayDesign {
+    id: string;
+    user_id: string;
+    name: string;
+    thumbnail_url?: string;
+    sections?: any[];
+    orbit_layers?: any[];
+    created_at?: string;
+    updated_at?: string;
+}
 
 // ============================================
 // INVITATION QUERIES

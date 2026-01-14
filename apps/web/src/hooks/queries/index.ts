@@ -32,6 +32,7 @@ export {
     useDeleteDisplayDesign,
     usePreviewData,
 } from './useInvitations';
+export type { Invitation, DisplayDesign } from './useInvitations';
 
 // Guests & RSVP
 export {
@@ -50,6 +51,7 @@ export {
 
 // Music
 export { useMusicLibrary } from './useMusic';
+export type { Song } from './useMusic';
 
 // Billing & User
 export {

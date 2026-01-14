@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { m } from 'framer-motion';
 import { useStore } from '@/store/useStore';
-import { useDisplayDesigns, useCreateDisplayDesign, useDeleteDisplayDesign } from '@/hooks/queries';
+import { useDisplayDesigns, useCreateDisplayDesign, useDeleteDisplayDesign, DisplayDesign } from '@/hooks/queries';
 import { Loader2, Plus, Monitor, Edit3, Trash2, ExternalLink } from 'lucide-react';
 
 export const WelcomeDisplaysTab: React.FC = () => {
@@ -93,7 +93,7 @@ export const WelcomeDisplaysTab: React.FC = () => {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {designs.map(design => (
+                    {designs.map((design: DisplayDesign) => (
                         <div key={design.id} className="group bg-white rounded-2xl border border-slate-200/60 overflow-hidden hover:shadow-2xl hover:border-indigo-400/30 transition-all duration-500">
                             {/* Thumbnail Area */}
                             <div className="aspect-video relative bg-slate-100 overflow-hidden">
@@ -140,7 +140,7 @@ export const WelcomeDisplaysTab: React.FC = () => {
                                         Last Edited
                                     </span>
                                     <span className="text-xs font-mono text-slate-500">
-                                        {new Date(design.updated_at).toLocaleDateString()}
+                                        {new Date(design.updated_at || Date.now()).toLocaleDateString()}
                                     </span>
                                 </div>
                             </div>

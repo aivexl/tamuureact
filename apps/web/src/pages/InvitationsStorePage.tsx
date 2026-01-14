@@ -84,7 +84,7 @@ export const InvitationsStorePage: React.FC = () => {
     }, [user?.id, navigate, toggleWishlistMutation]);
 
     const filteredTemplates = useMemo(() => {
-        return templates.filter(t => {
+        return templates.filter((t: Template) => {
             const matchesCategory = selectedCategory === 'All' || t.category === selectedCategory;
             const matchesSearch = t.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 t.category?.toLowerCase().includes(searchQuery.toLowerCase());

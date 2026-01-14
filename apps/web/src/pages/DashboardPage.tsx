@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { m, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { useSEO } from '../hooks/useSEO';
-import { useInvitations } from '../hooks/queries';
+import { useInvitations, Invitation } from '../hooks/queries';
 import { WelcomeDisplaysTab } from '../components/Dashboard/WelcomeDisplaysTab';
 
 // ============================================
@@ -167,9 +167,9 @@ export const DashboardPage: React.FC = () => {
         description: 'Kelola undangan digital Anda dengan mudah.',
     });
 
-    const filteredInvitations = invitations.filter((inv: any) =>
-        inv.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        inv.slug.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredInvitations = invitations.filter((inv: Invitation) =>
+        inv.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        inv.slug?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
@@ -307,10 +307,10 @@ export const DashboardPage: React.FC = () => {
                                         </div>
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                                            {invitations.slice(0, 3).map((inv: any) => (
+                                            {invitations.slice(0, 3).map((inv: Invitation) => (
                                                 <div key={inv.id} className="group bg-white rounded-2xl border border-slate-200/60 overflow-hidden hover:shadow-xl hover:border-teal-400/30 transition-all duration-500">
                                                     <div className="aspect-video relative overflow-hidden">
-                                                        <img src={inv.thumbnail} alt={inv.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                                        <img src={inv.thumbnail || inv.thumbnail_url || ''} alt={inv.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4">
                                                             <div className="flex gap-2">
                                                                 <button className="p-2 bg-white/90 backdrop-blur-md rounded-xl hover:bg-white text-slate-900 transition-all">
@@ -326,7 +326,7 @@ export const DashboardPage: React.FC = () => {
                                                         <h5 className="font-bold text-slate-900 truncate mb-1 text-xs md:text-sm">{inv.name}</h5>
                                                         <p className="text-[10px] text-slate-400 truncate mb-3 lowercase">tamuu.id/{inv.slug}</p>
                                                         <div className="flex items-center justify-between mt-auto">
-                                                            <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${inv.status === 'published' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>{inv.status}</span>
+                                                            <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${(inv.status || 'draft') === 'published' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>{inv.status || 'draft'}</span>
                                                             <button className="text-[10px] font-black text-slate-900 hover:text-teal-600 transition-colors flex items-center gap-1.5">
                                                                 <UsersIcon className="w-3.5 h-3.5" /> Tamu
                                                             </button>
@@ -393,10 +393,10 @@ export const DashboardPage: React.FC = () => {
 
                                 {/* Grid */}
                                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                                    {filteredInvitations.map(inv => (
+                                    {filteredInvitations.map((inv: Invitation) => (
                                         <div key={inv.id} className="group bg-white rounded-2xl border border-slate-200/60 overflow-hidden hover:shadow-2xl hover:border-teal-400/30 transition-all duration-700">
                                             <div className="aspect-[4/3] relative overflow-hidden">
-                                                <img src={inv.thumbnail} alt={inv.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
+                                                <img src={inv.thumbnail || inv.thumbnail_url || ''} alt={inv.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
                                                 <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-center gap-4">
                                                     <div className="flex gap-4">
                                                         <button className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center hover:scale-110 transition-transform active:scale-90" title="Preview">
@@ -425,7 +425,7 @@ export const DashboardPage: React.FC = () => {
                                                 </div>
                                                 <p className="text-slate-400 text-[10px] font-medium mb-4 uppercase tracking-[0.1em] truncate">tamuu.id/{inv.slug}</p>
                                                 <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                                                    <span className={`text-[9px] font-black uppercase tracking-[0.1em] px-2 py-1 rounded-md ${inv.status === 'published' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>{inv.status}</span>
+                                                    <span className={`text-[9px] font-black uppercase tracking-[0.1em] px-2 py-1 rounded-md ${(inv.status || 'draft') === 'published' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>{inv.status || 'draft'}</span>
                                                     <button className="text-[10px] font-black text-slate-400 hover:text-teal-600 flex items-center gap-1.5 transition-colors">
                                                         <UsersIcon className="w-3.5 h-3.5" /> Tamu
                                                     </button>
@@ -452,7 +452,7 @@ export const DashboardPage: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {invitations.map((inv: any) => (
+                                    {invitations.map((inv: Invitation) => (
                                         <div key={inv.id} className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-lg transition-all flex flex-col gap-4">
                                             <div className="flex items-center gap-4">
                                                 <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center">
@@ -460,7 +460,7 @@ export const DashboardPage: React.FC = () => {
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <h3 className="font-bold text-slate-800 truncate">{inv.name}</h3>
-                                                    <p className="text-xs text-slate-400">{inv.status.toUpperCase()}</p>
+                                                    <p className="text-xs text-slate-400">{(inv.status || 'DRAFT').toUpperCase()}</p>
                                                 </div>
                                             </div>
                                             <button
@@ -486,7 +486,7 @@ export const DashboardPage: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {invitations.map((inv: any, i: number) => (
+                                    {invitations.map((inv: Invitation, i: number) => (
                                         <m.div
                                             key={inv.id}
                                             initial={{ opacity: 0, y: 20 }}
