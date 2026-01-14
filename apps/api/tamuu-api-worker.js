@@ -842,17 +842,20 @@ export default {
                         }
                     }
 
-                    // CTO FIX: Check for slug availability before inserting to prevent unique constraint violation (500)
-                    if (body.slug) {
+                    // CTO UNICORN FIX: Smart Slug Resolver
+                    // Instead of failing with 409, we auto-resolve collisions to ensure zero-friction onboarding
+                    let slug = body.slug ? body.slug.toLowerCase().replace(/\s+/g, '-') : null;
+                    if (slug) {
+                        // Check for collision
                         const existing = await env.DB.prepare(
                             'SELECT id FROM invitations WHERE slug = ?'
-                        ).bind(body.slug.toLowerCase()).first();
+                        ).bind(slug).first();
 
                         if (existing) {
-                            return json({
-                                error: 'Slug conflict',
-                                message: `The slug "${body.slug}" is already taken. Please choose another one.`
-                            }, { headers: corsHeaders, status: 409 });
+                            // Collision detected! Append a random suffix to make it unique
+                            // In a high-traffic env, we might loop, but for now a 4-char hash is statistically safe
+                            const suffix = Math.random().toString(36).substring(2, 6);
+                            slug = `${slug}-${suffix}`;
                         }
                     }
 
@@ -884,7 +887,7 @@ export default {
                         id,
                         userId || null,
                         body.name || 'Untitled Invitation',
-                        body.slug ? body.slug.toLowerCase() : null,
+                        slug,
                         category,
                         zoom,
                         JSON.stringify(pan),
@@ -908,7 +911,7 @@ export default {
                     return json({
                         id,
                         name: body.name,
-                        slug: body.slug,
+                        slug: slug,
                         category,
                         zoom,
                         pan,
