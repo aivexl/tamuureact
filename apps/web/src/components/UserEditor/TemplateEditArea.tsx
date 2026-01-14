@@ -110,8 +110,8 @@ export const TemplateEditArea: React.FC = () => {
                         <Sparkles className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                        <h3 className="text-xl font-black text-slate-900 tracking-tight font-outfit">Struktur Undangan</h3>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Urutkan dan edit konten halaman</p>
+                        <h3 className="text-xl font-black text-slate-900 tracking-tight font-outfit">Konten Undangan</h3>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Edit bagian yang diizinkan admin</p>
                     </div>
                 </div>
 
@@ -123,12 +123,12 @@ export const TemplateEditArea: React.FC = () => {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         className={`flex items-center gap-2 px-5 py-2.5 font-bold text-xs rounded-xl shadow-lg transition-all uppercase tracking-widest ${saveStatus === 'saving'
-                                ? 'bg-amber-500 text-white cursor-wait'
-                                : saveStatus === 'saved'
-                                    ? 'bg-emerald-500 text-white'
-                                    : saveStatus === 'error'
-                                        ? 'bg-red-500 text-white'
-                                        : 'bg-teal-500 text-white hover:bg-teal-600 shadow-teal-500/30'
+                            ? 'bg-amber-500 text-white cursor-wait'
+                            : saveStatus === 'saved'
+                                ? 'bg-emerald-500 text-white'
+                                : saveStatus === 'error'
+                                    ? 'bg-red-500 text-white'
+                                    : 'bg-teal-500 text-white hover:bg-teal-600 shadow-teal-500/30'
                             }`}
                     >
                         {saveStatus === 'saving' && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -236,9 +236,9 @@ export const TemplateEditArea: React.FC = () => {
                                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Edit Konten</span>
                                                 </div>
                                                 <div className="space-y-4">
-                                                    {section.elements && section.elements.length > 0 ? (
+                                                    {section.elements && section.elements.filter(el => el.canEditContent).length > 0 ? (
                                                         section.elements
-                                                            .filter(el => el.type === 'text' || el.type === 'countdown')
+                                                            .filter(el => el.canEditContent)
                                                             .map(element => (
                                                                 <UserElementEditor
                                                                     key={element.id}
@@ -248,7 +248,10 @@ export const TemplateEditArea: React.FC = () => {
                                                             ))
                                                     ) : (
                                                         <div className="p-8 text-center bg-white rounded-2xl border border-dashed border-slate-200">
-                                                            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Tidak ada konten editable</p>
+                                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
+                                                                Konten ini sudah diatur oleh Admin <br />
+                                                                <span className="text-[8px] opacity-70">Tidak ada bagian yang diizinkan untuk diubah</span>
+                                                            </p>
                                                         </div>
                                                     )}
                                                 </div>

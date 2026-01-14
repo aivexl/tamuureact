@@ -2,18 +2,17 @@ import React from 'react';
 import { useStore } from '@/store/useStore';
 
 interface UserKonvaPreviewProps {
-    sectionId: string;
+    sectionId?: string;
+    canvasType?: 'main' | 'orbit-left' | 'orbit-right';
 }
 
 /**
  * UserKonvaPreview
- * High-fidelity preview of a section.
- * NOTE: Since react-konva might not be installed yet, 
- * this component handles a fallback gracefully.
+ * High-fidelity preview of a section or cinematic stage.
  */
-export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId }) => {
+export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, canvasType = 'main' }) => {
     const { sections } = useStore();
-    const section = sections.find(s => s.id === sectionId);
+    const section = sectionId ? sections.find(s => s.id === sectionId) : null;
 
     // Dynamic import simulation / Check if Konva is available
     // In a real build, we'd use standard imports.
@@ -25,20 +24,22 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId })
         setIsKonvaLoaded(false);
     }, []);
 
-    if (!section) return null;
+    if (!section && canvasType === 'main') return null;
+
+    const title = section ? section.title : (canvasType === 'orbit-left' ? 'Stage Kiri' : 'Stage Kanan');
 
     return (
         <div className="relative w-full h-full bg-white overflow-hidden flex flex-col items-center justify-center p-4">
             {/* Fallback Rendering (High Fidelity CSS) */}
-            <div className="absolute inset-0 pointer-events-none p-6 flex flex-col items-center">
+            <div className="absolute inset-0 pointer-events-none p-6 flex flex-col items-center text-slate-800">
                 <div className="w-full h-full border-2 border-slate-50 rounded-xl flex flex-col items-center justify-between py-12 text-center">
                     <div className="space-y-4 px-4 w-full">
                         <div className="w-12 h-1 bg-teal-500/20 mx-auto rounded-full" />
                         <h5 className="text-xl font-black text-slate-900 font-outfit leading-tight">
-                            {sectionId === 'opening' ? 'Walimatul Urs' : section.title}
+                            {sectionId === 'opening' ? 'Walimatul Urs' : title}
                         </h5>
                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                            Preview {(section as any).type}
+                            Preview {section ? (section as any).type : 'Cinematic Stage'}
                         </p>
                     </div>
 

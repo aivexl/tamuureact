@@ -197,13 +197,14 @@ VITE_API_URL=https://api.tamuu.id
 ---
 
 ## 🔐 Testing Accounts
-
-| Role | Email | Password |
-|------|-------|----------|
-| **User** | `test.user@tamuu.id` | `TamuuTest123!` |
-| **Admin** | `test.admin@tamuu.id` | `TamuuAdmin123!` |
-
-> ⚠️ **Note**: Akun ini untuk development/testing saja. Jangan gunakan di production.
+👤 Akun User (Pengguna Biasa)
+Email: user@tamuu.id
+Password: Testing123!
+Role: user
+🔑 Akun Admin
+Email: admin@tamuu.id
+Password: Admin123!
+Role: admin
 
 ---
 
@@ -315,4 +316,18 @@ Invitations are organized into multiple **Sections** (e.g., Opening, Bride & Gro
 - Independent background color/image
 - Own set of elements
 - Transition animations between sections
+
+---
+
+## 🦄 Unicorn Level Stability
+
+### Smart Slug Resolver
+- **Policy**: Zero-friction onboarding.
+- **Implementation**: API secara otomatis mendeteksi konflik slug. Jika slug sudah ada, sistem akan menambahkan suffix unik (e.g., `test` -> `test-a9b2`) daripada mengembalikan error `409 Conflict`.
+- **UX Impact**: Pengguna tidak akan pernah melihat error "Slug sudah digunakan" saat pertama kali membuat undangan.
+
+### Seamless Cross-Domain Navigation
+- **Architecture**: Bridge antara `tamuu.id` (Landing) dan `app.tamuu.id` (Editor).
+- **Mechanism**: Deteksi domain otomatis di level client. Jika undangan berhasil dibuat di domain publik, sistem melakukan hard redirect ke subdomain `app` untuk mem-bypass route protection di domain publik.
+- **UX Impact**: Transisi instan dari pemilihan template ke editor tanpa redirect loop ke home page.
 

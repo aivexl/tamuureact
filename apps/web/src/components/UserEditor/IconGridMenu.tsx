@@ -19,6 +19,7 @@ const MENU_ITEMS = [
     { id: 'template', label: 'Template', icon: LayoutTemplate, color: 'text-blue-600', bg: 'bg-blue-50', gradient: 'from-blue-500/20 to-indigo-500/20' },
     { id: 'guests', label: 'Tamu', icon: Users, color: 'text-green-600', bg: 'bg-green-50', gradient: 'from-green-500/20 to-emerald-500/20' },
     { id: 'wishes', label: 'Ucapan', icon: MessageSquare, color: 'text-orange-600', bg: 'bg-orange-50', gradient: 'from-orange-500/20 to-amber-500/20' },
+    { id: 'orbit', label: 'Orbit', icon: Sparkles, color: 'text-teal-600', bg: 'bg-teal-50', gradient: 'from-teal-500/20 to-emerald-500/20' },
     { id: 'analytics', label: 'Analitik', icon: BarChart3, color: 'text-indigo-600', bg: 'bg-indigo-50', gradient: 'from-indigo-500/20 to-blue-500/20' },
     { id: 'share', label: 'Bagikan', icon: Share2, color: 'text-teal-600', bg: 'bg-teal-50', gradient: 'from-teal-500/20 to-emerald-500/20' },
     { id: 'download', label: 'Download', icon: Download, color: 'text-rose-600', bg: 'bg-rose-50', gradient: 'from-rose-500/20 to-pink-500/20', isNew: true },
