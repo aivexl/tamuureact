@@ -183,7 +183,12 @@ export const InvitationsStorePage: React.FC = () => {
                 localStorage.removeItem('tamuu_onboarding_data');
 
                 // 5. Navigate to the user editor with the new ID
-                navigate(`/user/editor/${newInvitation.id}`);
+                const isAppDomain = getIsAppDomain();
+                if (isAppDomain) {
+                    navigate(`/user/editor/${newInvitation.id}`);
+                } else {
+                    window.location.href = `https://app.tamuu.id/user/editor/${newInvitation.id}`;
+                }
             } catch (error: any) {
                 console.error('Failed to create invitation:', error);
                 alert(error.message || 'Gagal membuat undangan. Silakan coba lagi.');
