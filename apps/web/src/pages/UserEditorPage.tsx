@@ -38,6 +38,7 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
         setActiveSection,
         setSections,
         setOrbitLayers,
+        setIsTemplate,
     } = useStore();
 
     const [loading, setLoading] = useState(true);
@@ -80,6 +81,7 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                 if (data.orbit_layers) {
                     setOrbitLayers(data.orbit_layers);
                 }
+                setIsTemplate(false);
 
             } catch (err) {
                 console.error('[UserEditor] Failed to load invitation:', err);

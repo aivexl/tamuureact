@@ -1,6 +1,7 @@
 import React from 'react';
 import { m } from 'framer-motion';
 import { Navbar } from '@/components/Layout/Navbar';
+import { useStore } from '@/store/useStore';
 
 interface UserEditorLayoutProps {
     children: React.ReactNode;
@@ -22,6 +23,14 @@ export const UserEditorLayout: React.FC<UserEditorLayoutProps> = ({ children }) 
                 <m.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                        const state = useStore.getState();
+                        if (state.slug) {
+                            window.open(`https://tamuu.id/v/${state.slug}`, '_blank');
+                        } else {
+                            alert('Slug belum diatur.');
+                        }
+                    }}
                     className="flex items-center gap-2 px-6 py-3.5 bg-slate-900 text-white font-bold rounded-2xl shadow-2xl shadow-slate-900/20 hover:shadow-slate-900/30 transition-all"
                 >
                     Lihat Preview

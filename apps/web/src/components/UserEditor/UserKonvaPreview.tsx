@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
+import { ElementRenderer } from '../Canvas/ElementRenderer';
 
 interface UserKonvaPreviewProps {
     sectionId?: string;
@@ -9,59 +10,94 @@ interface UserKonvaPreviewProps {
 /**
  * UserKonvaPreview
  * High-fidelity preview of a section or cinematic stage.
+ * CTO ENTERPRISE LEVEL: Pure DOM-based high-performance rendering for previews.
  */
 export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, canvasType = 'main' }) => {
-    const { sections } = useStore();
+    const { sections, orbit } = useStore();
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [scale, setScale] = useState(1);
+
     const section = sectionId ? sections.find(s => s.id === sectionId) : null;
+    const orbitCanvas = canvasType === 'orbit-left' ? orbit.left : (canvasType === 'orbit-right' ? orbit.right : null);
 
-    // Dynamic import simulation / Check if Konva is available
-    // In a real build, we'd use standard imports.
-    const [isKonvaLoaded, setIsKonvaLoaded] = React.useState(false);
+    const CANVAS_WIDTH = 414;
+    const SECTION_HEIGHT = 896;
 
-    React.useEffect(() => {
-        // This is where we'd normally initialize or check Konva
-        // For now, we'll provide a high-quality CSS/DOM fallback
-        setIsKonvaLoaded(false);
+    // CTO FIX: Dynamic scaling based on container width
+    useEffect(() => {
+        const updateScale = () => {
+            if (containerRef.current) {
+                const { width } = containerRef.current.getBoundingClientRect();
+                setScale(width / CANVAS_WIDTH);
+            }
+        };
+
+        updateScale();
+        const resizeObserver = new ResizeObserver(updateScale);
+        if (containerRef.current) resizeObserver.observe(containerRef.current);
+
+        return () => resizeObserver.disconnect();
     }, []);
 
     if (!section && canvasType === 'main') return null;
 
-    const title = section ? section.title : (canvasType === 'orbit-left' ? 'Stage Kiri' : 'Stage Kanan');
+    const elements = canvasType === 'main' ? (section?.elements || []) : (orbitCanvas?.elements || []);
+    const backgroundColor = canvasType === 'main' ? (section?.backgroundColor || '#0a0a0a') : (orbitCanvas?.backgroundColor || 'transparent');
+    const backgroundUrl = canvasType === 'main' ? section?.backgroundUrl : orbitCanvas?.backgroundUrl;
 
     return (
-        <div className="relative w-full h-full bg-white overflow-hidden flex flex-col items-center justify-center p-4">
-            {/* Fallback Rendering (High Fidelity CSS) */}
-            <div className="absolute inset-0 pointer-events-none p-6 flex flex-col items-center text-slate-800">
-                <div className="w-full h-full border-2 border-slate-50 rounded-xl flex flex-col items-center justify-between py-12 text-center">
-                    <div className="space-y-4 px-4 w-full">
-                        <div className="w-12 h-1 bg-teal-500/20 mx-auto rounded-full" />
-                        <h5 className="text-xl font-black text-slate-900 font-outfit leading-tight">
-                            {sectionId === 'opening' ? 'Walimatul Urs' : title}
-                        </h5>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                            Preview {section ? (section as any).type : 'Cinematic Stage'}
-                        </p>
-                    </div>
-
-                    <div className="w-full px-6 space-y-3">
-                        <div className="h-6 w-3/4 bg-slate-50 mx-auto rounded-lg animate-pulse" />
-                        <div className="h-6 w-1/2 bg-slate-50 mx-auto rounded-lg animate-pulse delay-75" />
-                        <div className="h-40 w-full bg-slate-50 rounded-2xl animate-pulse delay-150 flex items-center justify-center">
-                            <div className="w-8 h-8 border-2 border-white rounded-full border-t-transparent animate-spin opacity-20" />
+        <div ref={containerRef} className="relative w-full h-full overflow-hidden bg-slate-950 flex items-start justify-center">
+            {/* The scaled viewport */}
+            <div
+                style={{
+                    width: CANVAS_WIDTH,
+                    height: SECTION_HEIGHT,
+                    backgroundColor: backgroundColor,
+                    backgroundImage: backgroundUrl ? `url(${backgroundUrl})` : 'none',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    transform: `scale(${scale})`,
+                    transformOrigin: 'top left',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0
+                }}
+            >
+                {/* Element Mapper */}
+                {elements
+                    .filter(el => el.isVisible !== false)
+                    .sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0))
+                    .map((element) => (
+                        <div
+                            key={element.id}
+                            style={{
+                                position: 'absolute',
+                                left: element.x,
+                                top: element.y,
+                                width: element.width,
+                                height: element.height,
+                                transform: `rotate(${element.rotation || 0}deg) scale(${element.scale || 1})`,
+                                opacity: element.opacity ?? 1,
+                                zIndex: element.zIndex
+                            }}
+                        >
+                            <ElementRenderer layer={element} isEditor={false} />
                         </div>
-                    </div>
+                    ))}
 
-                    <div className="w-full px-8">
-                        <div className="h-10 w-full bg-teal-500 rounded-xl shadow-lg shadow-teal-500/20" />
-                    </div>
-                </div>
+                {/* Section Overlay (if any) */}
+                {section?.overlayOpacity ? (
+                    <div
+                        className="absolute inset-0 pointer-events-none"
+                        style={{ backgroundColor: `rgba(0,0,0,${section.overlayOpacity / 100})` }}
+                    />
+                ) : null}
             </div>
 
-            {/* Hint for developers */}
-            <div className="absolute bottom-4 left-4 right-4 text-center">
-                <p className="text-[8px] font-black text-slate-300 uppercase tracking-[0.2em] leading-relaxed">
-                    High Fidelity Renderer<br />
-                    <span className="text-teal-500/50">Ready to activate Konva</span>
+            {/* Hint for developers (minimalist) */}
+            <div className="absolute bottom-2 right-2 pointer-events-none">
+                <p className="text-[6px] font-black text-white/10 uppercase tracking-[0.2em]">
+                    TAMUU V3 ENGINE
                 </p>
             </div>
         </div>
