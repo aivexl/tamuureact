@@ -58,8 +58,7 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
     return (
         <div
             ref={containerRef}
-            className={`relative w-full h-full flex justify-center overflow-visible bg-transparent transition-all duration-1000 ${canvasType === 'main' ? 'items-start' : 'items-center'
-                }`}
+            className="relative w-full h-full flex items-center justify-center overflow-hidden bg-transparent transition-all duration-1000"
         >
             {/* The Scaled Render Viewport */}
             <div
@@ -71,9 +70,9 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     transform: `scale(${scale})`,
-                    transformOrigin: canvasType === 'main' ? 'top center' : 'center center', // Top-anchored for invitation
+                    transformOrigin: canvasType === 'main' ? 'top center' : 'center center',
                     position: 'relative',
-                    overflow: 'hidden', // Clip elements at canvas boundary
+                    overflow: 'visible', // Allow design bleed WITHIN the scaled area
                     transition: 'all 0.5s cubic-bezier(0.22, 1, 0.36, 1)',
                     boxShadow: canvasType === 'main' ? 'none' : '0 20px 50px rgba(0,0,0,0.3)',
                     borderRadius: canvasType === 'main' ? 0 : '2rem',
