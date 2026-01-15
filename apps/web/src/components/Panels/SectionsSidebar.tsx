@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, Reorder, AnimatePresence, useDragControls } from 'framer-motion';
 import { useStore, SECTION_ICONS, SECTION_LABELS, PREDEFINED_SECTION_TYPES } from '@/store/useStore';
 import {
@@ -9,32 +9,40 @@ import {
 import { OrbitSidebar } from './OrbitSidebar';
 
 // ============================================
-// SECTIONS SIDEBAR (Director's View V3)
+// SECTIONS SIDEBAR (Director's View V4)
 // ============================================
 export const SectionsSidebar: React.FC = () => {
     const {
         sections,
-        activeSectionId,
-        setActiveSection,
-        addSection,
-        removeSection,
-        updateSection,
-        duplicateSection,
-        updateSectionsBatch,
-        // Orbit Context
+        setActiveCanvas,
         activeCanvas,
-        setActiveCanvas
+        updateSectionsBatch,
+        addSection
     } = useStore();
 
     const [showAddMenu, setShowAddMenu] = useState(false);
 
-    // Sort sections by order
-    const sortedSections = [...sections].sort((a, b) => a.order - b.order);
+    // FORTRESS: Local State Buffering
+    const [localSections, setLocalSections] = useState(sections);
+    const isInternalUpdate = useRef(false);
 
-    const handleReorder = (reorderedSections: typeof sections) => {
-        // Atomic batch update for 100% fluidity
-        const updated = reorderedSections.map((s, idx) => ({ ...s, order: idx }));
-        updateSectionsBatch(updated);
+    // Sync store -> local
+    useEffect(() => {
+        if (!isInternalUpdate.current) {
+            setLocalSections([...sections].sort((a, b) => a.order - b.order));
+        }
+    }, [sections]);
+
+    const handleReorder = (reordered: typeof localSections) => {
+        isInternalUpdate.current = true;
+        setLocalSections(reordered);
+
+        const normalized = reordered.map((s, idx) => ({ ...s, order: idx }));
+        updateSectionsBatch(normalized);
+
+        setTimeout(() => {
+            isInternalUpdate.current = false;
+        }, 100);
     };
 
     const handleAddSection = (type: string) => {
@@ -58,7 +66,7 @@ export const SectionsSidebar: React.FC = () => {
                     <span className="text-[10px] font-bold uppercase tracking-tight">Content</span>
                 </button>
                 <button
-                    onClick={() => setActiveCanvas('left')} // Default to left stage
+                    onClick={() => setActiveCanvas('left')}
                     className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md transition-all ${activeCanvas !== 'main' ? 'bg-purple-500/10 border border-purple-500/20 text-purple-400' : 'text-white/40 hover:text-white/60'}`}
                 >
                     <Layers className="w-3.5 h-3.5" />
@@ -87,7 +95,7 @@ export const SectionsSidebar: React.FC = () => {
             <div className="flex-1 overflow-y-auto custom-scrollbar">
                 {activeCanvas === 'main' ? (
                     <>
-                        {/* Add Section Menu (Only for Main Content) */}
+                        {/* Add Section Menu */}
                         <AnimatePresence>
                             {showAddMenu && (
                                 <motion.div
@@ -127,14 +135,11 @@ export const SectionsSidebar: React.FC = () => {
                         <div className="p-2">
                             <Reorder.Group
                                 axis="y"
-                                values={sortedSections}
-                                onReorder={(newOrder) => {
-                                    const normalized = newOrder.map((s, idx) => ({ ...s, order: idx }));
-                                    updateSectionsBatch(normalized);
-                                }}
+                                values={localSections}
+                                onReorder={handleReorder}
                                 className="space-y-1"
                             >
-                                {sortedSections.map((section) => (
+                                {localSections.map((section) => (
                                     <SectionItem key={section.id} section={section} />
                                 ))}
                             </Reorder.Group>
@@ -162,6 +167,7 @@ function SectionItem({ section }: { section: any }) {
     } = useStore();
 
     const controls = useDragControls();
+    const [isDragging, setIsDragging] = useState(false);
     const [expandedMenuId, setExpandedMenuId] = useState<string | null>(null);
     const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
     const [editName, setEditName] = useState('');
@@ -185,6 +191,10 @@ function SectionItem({ section }: { section: any }) {
             className="list-none"
             dragListener={false}
             dragControls={controls}
+            onDragStart={() => setIsDragging(true)}
+            onDragEnd={() => {
+                setTimeout(() => setIsDragging(false), 100);
+            }}
             whileDrag={{
                 scale: 1.02,
                 boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
@@ -192,12 +202,12 @@ function SectionItem({ section }: { section: any }) {
             }}
         >
             <div
-                className={`group flex items-center gap-2 px-2 py-2 rounded-lg transition-all pointer-events-none relative ${activeSectionId === section.id
+                className={`group flex items-center rounded-lg transition-all overflow-hidden ${activeSectionId === section.id
                     ? 'bg-premium-accent/20 ring-1 ring-premium-accent/30'
                     : 'hover:bg-white/5'
                     }`}
             >
-                {/* Drag Handle - EXPANDED SIDE COLUMN ISOLATION */}
+                {/* 1. THE FORTRESS DRAG STRIP - PHYSICALLY DISTINCT */}
                 <div
                     onPointerDown={(e) => {
                         e.preventDefault();
@@ -208,86 +218,89 @@ function SectionItem({ section }: { section: any }) {
                         e.preventDefault();
                         e.stopPropagation();
                     }}
-                    className="cursor-grab active:cursor-grabbing text-white/20 hover:text-premium-accent/60 p-2.5 px-3 -ml-2 hover:bg-white/5 rounded-l-lg touch-none relative z-[75] pointer-events-auto select-none border-r border-white/5 transition-all"
+                    className="w-10 bg-white/5 border-r border-white/5 flex items-center justify-center cursor-grab active:cursor-grabbing text-white/20 hover:text-premium-accent transition-all touch-none relative z-[75] pointer-events-auto select-none py-3"
                 >
                     <GripVertical className="w-3.5 h-3.5" />
                 </div>
 
-                {/* Content Area - Isolated */}
-                <div
-                    onClick={() => setActiveSection(section.id)}
-                    onDoubleClick={() => startRename(section.id, section.title)}
-                    className="flex-1 flex items-center gap-2 cursor-pointer pointer-events-auto select-none"
-                >
-                    {/* Icon */}
-                    <span className="text-sm flex-shrink-0">
-                        {SECTION_ICONS[section.key as keyof typeof SECTION_ICONS] || SECTION_ICONS.custom}
-                    </span>
+                {/* 2. MAIN CONTENT AREA */}
+                <div className="flex-1 flex items-center gap-2 pointer-events-none px-2 py-2">
+                    {/* Content Area - Isolated */}
+                    <div
+                        onClick={() => {
+                            if (isDragging) return;
+                            setActiveSection(section.id);
+                        }}
+                        onDoubleClick={() => {
+                            if (isDragging) return;
+                            startRename(section.id, section.title);
+                        }}
+                        className="flex-1 flex items-center gap-2 cursor-pointer pointer-events-auto select-none"
+                    >
+                        {/* Icon */}
+                        <span className="text-sm flex-shrink-0">
+                            {SECTION_ICONS[section.key as keyof typeof SECTION_ICONS] || SECTION_ICONS.custom}
+                        </span>
 
-                    {/* Title - Editable */}
-                    <div className="flex-1 min-w-0">
-                        {editingSectionId === section.id ? (
-                            <input
-                                type="text"
-                                value={editName}
-                                onChange={(e) => setEditName(e.target.value)}
-                                onBlur={() => finishRename(section.id)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') finishRename(section.id);
-                                    if (e.key === 'Escape') setEditingSectionId(null);
-                                }}
-                                autoFocus
-                                className="w-full bg-white/10 border border-premium-accent/50 rounded px-1 py-0.5 text-xs focus:outline-none"
-                                onClick={(e) => e.stopPropagation()}
-                            />
-                        ) : (
-                            <span className={`text-xs font-medium truncate block ${activeSectionId === section.id ? 'text-premium-accent' : 'text-white/70'
-                                }`}>
-                                {section.title}
-                            </span>
-                        )}
+                        {/* Title - Editable */}
+                        <div className="flex-1 min-w-0">
+                            {editingSectionId === section.id ? (
+                                <input
+                                    type="text"
+                                    value={editName}
+                                    onChange={(e) => setEditName(e.target.value)}
+                                    onBlur={() => finishRename(section.id)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') finishRename(section.id);
+                                        if (e.key === 'Escape') setEditingSectionId(null);
+                                    }}
+                                    autoFocus
+                                    className="w-full bg-white/10 border border-premium-accent/50 rounded px-1 py-0.5 text-xs focus:outline-none"
+                                    onClick={(e) => e.stopPropagation()}
+                                />
+                            ) : (
+                                <span className={`text-xs font-medium truncate block ${activeSectionId === section.id ? 'text-premium-accent' : 'text-white/70'
+                                    }`}>
+                                    {section.title}
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Element Count */}
+                        <span className="text-[10px] text-white/30 tabular-nums">
+                            {(section.elements || []).length}
+                        </span>
                     </div>
 
-                    {/* Element Count */}
-                    <span className="text-[10px] text-white/30 tabular-nums">
-                        {(section.elements || []).length}
-                    </span>
-                </div>
+                    {/* Actions - Isolated */}
+                    <div className="flex items-center gap-1.5 pointer-events-auto">
+                        <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                updateSection(section.id, { isVisible: !section.isVisible });
+                            }}
+                            className={`p-1 rounded transition-colors ${section.isVisible
+                                ? 'text-white/40 hover:text-white'
+                                : 'text-red-400/60'
+                                }`}
+                        >
+                            {section.isVisible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                        </motion.button>
 
-                {/* Actions - Isolated */}
-                <div className="flex items-center gap-1.5 pointer-events-auto">
-                    {/* Visibility Toggle */}
-                    <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            updateSection(section.id, { isVisible: !section.isVisible });
-                        }}
-                        className={`p-1 rounded transition-colors ${section.isVisible
-                            ? 'text-white/40 hover:text-white'
-                            : 'text-red-400/60'
-                            }`}
-                    >
-                        {section.isVisible ? (
-                            <Eye className="w-3 h-3" />
-                        ) : (
-                            <EyeOff className="w-3 h-3" />
-                        )}
-                    </motion.button>
-
-                    {/* Menu Toggle */}
-                    <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setExpandedMenuId(expandedMenuId === section.id ? null : section.id);
-                        }}
-                        className={`p-1 rounded hover:bg-white/10 ${expandedMenuId === section.id ? 'text-white' : 'text-white/20'}`}
-                    >
-                        <MoreVertical className="w-3 h-3" />
-                    </motion.button>
+                        <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setExpandedMenuId(expandedMenuId === section.id ? null : section.id);
+                            }}
+                            className={`p-1 rounded hover:bg-white/10 ${expandedMenuId === section.id ? 'text-white' : 'text-white/20'}`}
+                        >
+                            <MoreVertical className="w-3 h-3" />
+                        </motion.button>
+                    </div>
                 </div>
             </div>
 
@@ -300,7 +313,7 @@ function SectionItem({ section }: { section: any }) {
                         exit={{ height: 0, opacity: 0 }}
                         className="overflow-hidden"
                     >
-                        <div className="ml-7 my-1 p-1 bg-black/20 rounded-lg border border-white/5 space-y-0.5">
+                        <div className="ml-10 my-1 p-1 bg-black/20 rounded-lg border border-white/5 space-y-0.5">
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
