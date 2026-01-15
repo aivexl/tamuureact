@@ -221,6 +221,7 @@ Platform Tamuu mengadopsi arsitektur **Tabbed Editor** kelas dunia untuk memberi
 
 The Tamuu V3 Engine uses a modular, DOM-based rendering approach:
 - **Zero-Cutoff Guarantee**: `overflow: visible` is applied to all design viewports, allowing elegant bleeding for decorative elements.
+- **Top-Anchored Scaling (v2)**: Core invitation rendering uses `transform-origin: top center` to ensure 1:1 parity with mobile browser behavior, keeping header elements and corner decorations perfectly aligned.
 - **Multi-Baseline Scaling**: Dynamic scaling engine in `UserKonvaPreview.tsx` that adapts to both 414px and 800px design baselines without visual distortion.
 
 ### Page & Layout Structure

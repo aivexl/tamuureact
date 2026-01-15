@@ -266,7 +266,7 @@ export const TemplateEditArea: React.FC = () => {
                                                             <div className="flex items-center justify-between px-2">
                                                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Real-time Render</span>
                                                             </div>
-                                                            <div className="relative group/preview flex items-center justify-center p-8 bg-slate-50/50 rounded-[3rem] border border-slate-100">
+                                                            <div className="relative group/preview flex items-center justify-center p-0 bg-slate-50/50 rounded-[3rem] border border-slate-100 overflow-hidden min-h-[500px]">
                                                                 {/* LEFT ORBIT PREVIEW (MUTED) */}
                                                                 <div className="absolute left-4 top-1/2 -translate-y-1/2 w-[18%] h-[60%] opacity-20 group-hover/preview:opacity-100 transition-all duration-1000 rounded-r-[2rem] overflow-hidden border border-slate-200/50 shadow-2xl scale-90 group-hover/preview:scale-100 blur-[2px] group-hover/preview:blur-0">
                                                                     <UserKonvaPreview canvasType="orbit-left" />
@@ -346,21 +346,21 @@ export const TemplateEditArea: React.FC = () => {
                         <div className="grid grid-cols-1 gap-8">
                             {/* ORBIT LEFT CARD */}
                             <div className="bg-white/90 backdrop-blur-3xl rounded-[4rem] border border-slate-200 shadow-2xl overflow-hidden group/orbit transition-all duration-1000 hover:shadow-indigo-500/10">
-                                <div className="p-12 grid grid-cols-1 xl:grid-cols-2 gap-16">
-                                    <div className="space-y-8">
-                                        <div className="flex items-center justify-between px-2">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-16 h-16 bg-indigo-50 text-indigo-500 rounded-[2rem] flex items-center justify-center transition-all duration-700 group-hover/orbit:rotate-[15deg] group-hover/orbit:scale-110 shadow-inner">
-                                                    <Layout className="w-8 h-8" />
+                                <div className="p-0 grid grid-cols-1 xl:grid-cols-2 gap-0">
+                                    <div className="space-y-0 relative">
+                                        <div className="absolute top-8 left-8 right-8 flex items-center justify-between z-30 pointer-events-none">
+                                            <div className="flex items-center gap-4 pointer-events-auto bg-white/80 backdrop-blur-xl p-3 rounded-2xl shadow-xl border border-white">
+                                                <div className="w-12 h-12 bg-indigo-50 text-indigo-500 rounded-xl flex items-center justify-center transition-all duration-700 group-hover/orbit:rotate-[15deg] group-hover/orbit:scale-110 shadow-inner">
+                                                    <Layout className="w-6 h-6" />
                                                 </div>
                                                 <div>
-                                                    <h4 className="font-black text-slate-900 tracking-tight text-2xl uppercase">Stage Kiri</h4>
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">Cinematic Left Wing</p>
+                                                    <h4 className="font-black text-slate-900 tracking-tight text-lg uppercase">Stage Kiri</h4>
+                                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mt-0.5">Cinematic Master Stage</p>
                                                 </div>
                                             </div>
                                             <button
                                                 onClick={() => toggleOrbitVisibility('left')}
-                                                className={`p-4 rounded-[2rem] border transition-all duration-700 ${orbit.left.isVisible
+                                                className={`p-4 rounded-[2rem] border transition-all duration-700 pointer-events-auto ${orbit.left.isVisible
                                                     ? 'bg-white text-slate-400 border-slate-100 hover:text-indigo-500 shadow-xl'
                                                     : 'bg-slate-50 text-slate-300 shadow-inner'
                                                     }`}
@@ -368,14 +368,11 @@ export const TemplateEditArea: React.FC = () => {
                                                 {orbit.left.isVisible ? <Eye className="w-7 h-7" /> : <EyeOff className="w-7 h-7" />}
                                             </button>
                                         </div>
-                                        <div className="aspect-[800/896] bg-slate-950 rounded-[3.5rem] overflow-visible shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] relative border-[1px] border-white/10 ring-8 ring-slate-900 transition-transform duration-1000 group-hover/orbit:scale-[1.02]">
+                                        <div className="aspect-[800/896] bg-slate-950 rounded-none overflow-visible shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] relative border-r border-white/10 transition-transform duration-1000 group-hover/orbit:scale-[1.01]">
                                             <UserKonvaPreview canvasType="orbit-left" />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 to-transparent opacity-0 group-hover/orbit:opacity-100 transition-opacity flex items-end justify-center pb-8 pointer-events-none">
-                                                <span className="px-8 py-3 bg-white/10 backdrop-blur-3xl rounded-full text-[10px] font-black text-white uppercase tracking-[0.3em] border border-white/20 shadow-2xl">Desktop View Component</span>
-                                            </div>
                                         </div>
                                     </div>
-                                    <div className="space-y-8 pt-6">
+                                    <div className="space-y-8 p-12 overflow-y-auto max-h-[896px]">
                                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-4">Orbit Layer Matrix</span>
                                         <div className="space-y-5">
                                             {orbit.left.elements && orbit.left.elements.filter(el => el.canEditContent).length > 0 ? (
@@ -404,21 +401,21 @@ export const TemplateEditArea: React.FC = () => {
 
                             {/* ORBIT RIGHT CARD */}
                             <div className="bg-white/90 backdrop-blur-3xl rounded-[4rem] border border-slate-200 shadow-2xl overflow-hidden group/orbit transition-all duration-1000 hover:shadow-teal-500/10">
-                                <div className="p-12 grid grid-cols-1 xl:grid-cols-2 gap-16">
-                                    <div className="space-y-8">
-                                        <div className="flex items-center justify-between px-2">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-16 h-16 bg-teal-50 text-teal-500 rounded-[2rem] flex items-center justify-center transition-all duration-700 group-hover/orbit:rotate-[15deg] group-hover/orbit:scale-110 shadow-inner">
-                                                    <Layout className="w-8 h-8" />
+                                <div className="p-0 grid grid-cols-1 xl:grid-cols-2 gap-0">
+                                    <div className="space-y-0 relative">
+                                        <div className="absolute top-8 left-8 right-8 flex items-center justify-between z-30 pointer-events-none">
+                                            <div className="flex items-center gap-4 pointer-events-auto bg-white/80 backdrop-blur-xl p-3 rounded-2xl shadow-xl border border-white">
+                                                <div className="w-12 h-12 bg-teal-50 text-teal-500 rounded-xl flex items-center justify-center transition-all duration-700 group-hover/orbit:rotate-[15deg] group-hover/orbit:scale-110 shadow-inner">
+                                                    <Layout className="w-6 h-6" />
                                                 </div>
                                                 <div>
-                                                    <h4 className="font-black text-slate-900 tracking-tight text-2xl uppercase">Stage Kanan</h4>
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">Cinematic Right Wing</p>
+                                                    <h4 className="font-black text-slate-900 tracking-tight text-lg uppercase">Stage Kanan</h4>
+                                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mt-0.5">Cinematic Master Stage</p>
                                                 </div>
                                             </div>
                                             <button
                                                 onClick={() => toggleOrbitVisibility('right')}
-                                                className={`p-4 rounded-[2rem] border transition-all duration-700 ${orbit.right.isVisible
+                                                className={`p-4 rounded-[2rem] border transition-all duration-700 pointer-events-auto ${orbit.right.isVisible
                                                     ? 'bg-white text-slate-400 border-slate-100 hover:text-teal-500 shadow-xl'
                                                     : 'bg-slate-50 text-slate-300 shadow-inner'
                                                     }`}
@@ -426,14 +423,11 @@ export const TemplateEditArea: React.FC = () => {
                                                 {orbit.right.isVisible ? <Eye className="w-7 h-7" /> : <EyeOff className="w-7 h-7" />}
                                             </button>
                                         </div>
-                                        <div className="aspect-[800/896] bg-slate-950 rounded-[3.5rem] overflow-visible shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] relative border-[1px] border-white/10 ring-8 ring-slate-900 transition-transform duration-1000 group-hover/orbit:scale-[1.02]">
+                                        <div className="aspect-[800/896] bg-slate-950 rounded-none overflow-visible shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] relative border-r border-white/10 transition-transform duration-1000 group-hover/orbit:scale-[1.01]">
                                             <UserKonvaPreview canvasType="orbit-right" />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 to-transparent opacity-0 group-hover/orbit:opacity-100 transition-opacity flex items-end justify-center pb-8 pointer-events-none">
-                                                <span className="px-8 py-3 bg-white/10 backdrop-blur-3xl rounded-full text-[10px] font-black text-white uppercase tracking-[0.3em] border border-white/20 shadow-2xl">Desktop View Component</span>
-                                            </div>
                                         </div>
                                     </div>
-                                    <div className="space-y-8 pt-6">
+                                    <div className="space-y-8 p-12 overflow-y-auto max-h-[896px]">
                                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-4">Orbit Layer Matrix</span>
                                         <div className="space-y-5">
                                             {orbit.right.elements && orbit.right.elements.filter(el => el.canEditContent).length > 0 ? (
