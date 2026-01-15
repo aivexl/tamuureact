@@ -59,44 +59,52 @@ const SectionItem: React.FC<SectionItemProps> = ({
                     }`}
             >
                 {/* Section Header */}
-                <div
-                    onClick={() => toggleExpand(section.id)}
-                    className="p-8 flex items-center gap-6 cursor-pointer"
-                >
+                {/* Section Header */}
+                <div className="p-8 flex items-center gap-6">
+                    {/* 1. Drag Handle - ISOLATED TARGET */}
                     <div
-                        onPointerDown={(e) => controls.start(e)}
-                        className="cursor-grab active:cursor-grabbing p-3 hover:bg-slate-50 rounded-2xl text-slate-300 group-hover:text-slate-400 transition-all touch-none"
+                        onPointerDown={(e) => {
+                            e.preventDefault();
+                            controls.start(e);
+                        }}
+                        className="cursor-grab active:cursor-grabbing p-3 hover:bg-slate-50 rounded-2xl text-slate-300 group-hover:text-slate-400 transition-all touch-none relative z-50 pointer-events-auto"
                     >
                         <GripVertical className="w-6 h-6" />
                     </div>
 
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-700 shadow-inner ${section.isVisible ? 'bg-slate-50 text-slate-600' : 'bg-slate-100 text-slate-400 grayscale'
-                        }`}>
-                        <Layout className="w-7 h-7" />
-                    </div>
+                    {/* 2. Clickable Content - ISOLATED TARGET */}
+                    <div
+                        onClick={() => toggleExpand(section.id)}
+                        className="flex-1 flex items-center gap-6 cursor-pointer"
+                    >
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-700 shadow-inner ${section.isVisible ? 'bg-slate-50 text-slate-600' : 'bg-slate-100 text-slate-400 grayscale'
+                            }`}>
+                            <Layout className="w-7 h-7" />
+                        </div>
 
-                    <div className="flex-1">
-                        <h4 className={`text-xl font-black tracking-tight font-outfit transition-all duration-500 ${section.isVisible ? 'text-slate-900' : 'text-slate-400 line-through'}`}>
-                            {section.title}
-                        </h4>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">
-                            {section.elements?.length || 0} Dynamic Layers
-                        </p>
-                    </div>
+                        <div className="flex-1">
+                            <h4 className={`text-xl font-black tracking-tight font-outfit transition-all duration-500 ${section.isVisible ? 'text-slate-900' : 'text-slate-400 line-through'}`}>
+                                {section.title}
+                            </h4>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">
+                                {section.elements?.length || 0} Dynamic Layers
+                            </p>
+                        </div>
 
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={(e) => toggleVisibility(e, section.id)}
-                            className={`p-3.5 rounded-2xl border transition-all duration-500 ${section.isVisible
-                                ? 'bg-white text-slate-400 border-slate-100 hover:text-indigo-500 hover:border-indigo-100'
-                                : 'bg-slate-50 text-slate-300 border-transparent hover:text-slate-400'
-                                }`}
-                        >
-                            {section.isVisible ? <Eye className="w-6 h-6" /> : <EyeOff className="w-6 h-6" />}
-                        </button>
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={(e) => toggleVisibility(e, section.id)}
+                                className={`p-3.5 rounded-2xl border transition-all duration-500 ${section.isVisible
+                                    ? 'bg-white text-slate-400 border-slate-100 hover:text-indigo-500 hover:border-indigo-100'
+                                    : 'bg-slate-50 text-slate-300 border-transparent hover:text-slate-400'
+                                    }`}
+                            >
+                                {section.isVisible ? <Eye className="w-6 h-6" /> : <EyeOff className="w-6 h-6" />}
+                            </button>
 
-                        <div className={`p-3.5 rounded-2xl border border-transparent transition-all duration-700 ${expandedSection === section.id ? 'rotate-180 bg-indigo-50 text-indigo-500' : 'text-slate-300'}`}>
-                            <ChevronDown className="w-6 h-6" />
+                            <div className={`p-3.5 rounded-2xl border border-transparent transition-all duration-700 ${expandedSection === section.id ? 'rotate-180 bg-indigo-50 text-indigo-500' : 'text-slate-300'}`}>
+                                <ChevronDown className="w-6 h-6" />
+                            </div>
                         </div>
                     </div>
                 </div>

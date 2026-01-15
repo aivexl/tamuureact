@@ -326,8 +326,13 @@ function LayerItem({ layer }: { layer: Layer }) {
             >
                 {/* Drag Handle - Restricted */}
                 <div
-                    onPointerDown={(e) => controls.start(e)}
-                    className="cursor-grab active:cursor-grabbing text-white/30 hover:text-white/50 p-1 -m-1"
+                    onPointerDown={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        controls.start(e);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="cursor-grab active:cursor-grabbing text-white/30 hover:text-white/50 p-1 -m-1 touch-none relative z-50 pointer-events-auto"
                 >
                     <GripVertical className="w-3.5 h-3.5" />
                 </div>
