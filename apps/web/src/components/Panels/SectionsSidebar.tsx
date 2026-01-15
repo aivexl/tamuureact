@@ -127,11 +127,14 @@ export const SectionsSidebar: React.FC = () => {
                         <div className="p-2">
                             <Reorder.Group
                                 axis="y"
-                                values={sortedSections}
-                                onReorder={handleReorder}
+                                values={sections}
+                                onReorder={(newOrder) => {
+                                    const normalized = newOrder.map((s, idx) => ({ ...s, order: idx }));
+                                    updateSectionsBatch(normalized);
+                                }}
                                 className="space-y-1"
                             >
-                                {sortedSections.map((section) => (
+                                {[...sections].sort((a, b) => a.order - b.order).map((section) => (
                                     <SectionItem key={section.id} section={section} />
                                 ))}
                             </Reorder.Group>
@@ -189,9 +192,7 @@ function SectionItem({ section }: { section: any }) {
             }}
         >
             <div
-                onClick={() => setActiveSection(section.id)}
-                onDoubleClick={() => startRename(section.id, section.title)}
-                className={`group flex items-center gap-2 px-2 py-2 rounded-lg transition-all ${activeSectionId === section.id
+                className={`group flex items-center gap-2 px-2 py-2 rounded-lg transition-all pointer-events-none relative ${activeSectionId === section.id
                     ? 'bg-premium-accent/20 ring-1 ring-premium-accent/30'
                     : 'hover:bg-white/5'
                     }`}
@@ -203,78 +204,91 @@ function SectionItem({ section }: { section: any }) {
                         e.stopPropagation();
                         controls.start(e);
                     }}
-                    onClick={(e) => e.stopPropagation()}
-                    className="cursor-grab active:cursor-grabbing text-white/30 hover:text-white/50 p-1 -m-1 touch-none relative z-50 pointer-events-auto"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }}
+                    className="cursor-grab active:cursor-grabbing text-white/30 hover:text-white/50 p-1 -m-1 touch-none relative z-[70] pointer-events-auto select-none"
                 >
                     <GripVertical className="w-3.5 h-3.5" />
                 </div>
 
-                {/* Icon */}
-                <span className="text-sm flex-shrink-0">
-                    {SECTION_ICONS[section.key as keyof typeof SECTION_ICONS] || SECTION_ICONS.custom}
-                </span>
+                {/* Content Area - Isolated */}
+                <div
+                    onClick={() => setActiveSection(section.id)}
+                    onDoubleClick={() => startRename(section.id, section.title)}
+                    className="flex-1 flex items-center gap-2 cursor-pointer pointer-events-auto select-none"
+                >
+                    {/* Icon */}
+                    <span className="text-sm flex-shrink-0">
+                        {SECTION_ICONS[section.key as keyof typeof SECTION_ICONS] || SECTION_ICONS.custom}
+                    </span>
 
-                {/* Title - Editable */}
-                <div className="flex-1 min-w-0">
-                    {editingSectionId === section.id ? (
-                        <input
-                            type="text"
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                            onBlur={() => finishRename(section.id)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') finishRename(section.id);
-                                if (e.key === 'Escape') setEditingSectionId(null);
-                            }}
-                            autoFocus
-                            className="w-full bg-white/10 border border-premium-accent/50 rounded px-1 py-0.5 text-xs focus:outline-none"
-                            onClick={(e) => e.stopPropagation()}
-                        />
-                    ) : (
-                        <span className={`text-xs font-medium truncate block ${activeSectionId === section.id ? 'text-premium-accent' : 'text-white/70'
-                            }`}>
-                            {section.title}
-                        </span>
-                    )}
+                    {/* Title - Editable */}
+                    <div className="flex-1 min-w-0">
+                        {editingSectionId === section.id ? (
+                            <input
+                                type="text"
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                onBlur={() => finishRename(section.id)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') finishRename(section.id);
+                                    if (e.key === 'Escape') setEditingSectionId(null);
+                                }}
+                                autoFocus
+                                className="w-full bg-white/10 border border-premium-accent/50 rounded px-1 py-0.5 text-xs focus:outline-none"
+                                onClick={(e) => e.stopPropagation()}
+                            />
+                        ) : (
+                            <span className={`text-xs font-medium truncate block ${activeSectionId === section.id ? 'text-premium-accent' : 'text-white/70'
+                                }`}>
+                                {section.title}
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Element Count */}
+                    <span className="text-[10px] text-white/30 tabular-nums">
+                        {(section.elements || []).length}
+                    </span>
                 </div>
 
-                {/* Element Count */}
-                <span className="text-[10px] text-white/30 tabular-nums">
-                    {(section.elements || []).length}
-                </span>
+                {/* Actions - Isolated */}
+                <div className="flex items-center gap-1.5 pointer-events-auto">
+                    {/* Visibility Toggle */}
+                    <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            updateSection(section.id, { isVisible: !section.isVisible });
+                        }}
+                        className={`p-1 rounded transition-colors ${section.isVisible
+                            ? 'text-white/40 hover:text-white'
+                            : 'text-red-400/60'
+                            }`}
+                    >
+                        {section.isVisible ? (
+                            <Eye className="w-3 h-3" />
+                        ) : (
+                            <EyeOff className="w-3 h-3" />
+                        )}
+                    </motion.button>
 
-                {/* Visibility Toggle */}
-                <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        updateSection(section.id, { isVisible: !section.isVisible });
-                    }}
-                    className={`p-1 rounded transition-colors ${section.isVisible
-                        ? 'text-white/40 hover:text-white'
-                        : 'text-red-400/60'
-                        }`}
-                >
-                    {section.isVisible ? (
-                        <Eye className="w-3 h-3" />
-                    ) : (
-                        <EyeOff className="w-3 h-3" />
-                    )}
-                </motion.button>
-
-                {/* Menu Toggle */}
-                <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setExpandedMenuId(expandedMenuId === section.id ? null : section.id);
-                    }}
-                    className={`p-1 rounded hover:bg-white/10 ${expandedMenuId === section.id ? 'text-white' : 'text-white/20'}`}
-                >
-                    <MoreVertical className="w-3 h-3" />
-                </motion.button>
+                    {/* Menu Toggle */}
+                    <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setExpandedMenuId(expandedMenuId === section.id ? null : section.id);
+                        }}
+                        className={`p-1 rounded hover:bg-white/10 ${expandedMenuId === section.id ? 'text-white' : 'text-white/20'}`}
+                    >
+                        <MoreVertical className="w-3 h-3" />
+                    </motion.button>
+                </div>
             </div>
 
             {/* Dropdown Menu */}

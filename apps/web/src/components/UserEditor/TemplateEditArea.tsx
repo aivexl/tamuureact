@@ -58,24 +58,31 @@ const SectionItem: React.FC<SectionItemProps> = ({
                     : 'border-white/80 shadow-sm hover:shadow-2xl hover:shadow-slate-200/50'
                     }`}
             >
-                {/* Section Header */}
-                {/* Section Header */}
-                <div className="p-8 flex items-center gap-6">
-                    {/* 1. Drag Handle - ISOLATED TARGET */}
+                {/* Section Header - Absolute Isolation Pattern */}
+                <div className="p-8 flex items-center gap-6 pointer-events-none relative">
+                    {/* 1. Drag Handle - ISOLATED LAYER */}
                     <div
                         onPointerDown={(e) => {
                             e.preventDefault();
+                            e.stopPropagation();
                             controls.start(e);
                         }}
-                        className="cursor-grab active:cursor-grabbing p-3 hover:bg-slate-50 rounded-2xl text-slate-300 group-hover:text-slate-400 transition-all touch-none relative z-50 pointer-events-auto"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }}
+                        className="cursor-grab active:cursor-grabbing p-3 hover:bg-slate-50 rounded-2xl text-slate-300 group-hover:text-slate-400 transition-all touch-none relative z-[70] pointer-events-auto select-none"
                     >
                         <GripVertical className="w-6 h-6" />
                     </div>
 
-                    {/* 2. Clickable Content - ISOLATED TARGET */}
+                    {/* 2. Clickable Content Area - ISOLATED LAYER */}
                     <div
-                        onClick={() => toggleExpand(section.id)}
-                        className="flex-1 flex items-center gap-6 cursor-pointer"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            toggleExpand(section.id);
+                        }}
+                        className="flex-1 flex items-center gap-6 cursor-pointer pointer-events-auto relative z-10"
                     >
                         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-700 shadow-inner ${section.isVisible ? 'bg-slate-50 text-slate-600' : 'bg-slate-100 text-slate-400 grayscale'
                             }`}>
@@ -93,8 +100,11 @@ const SectionItem: React.FC<SectionItemProps> = ({
 
                         <div className="flex items-center gap-3">
                             <button
-                                onClick={(e) => toggleVisibility(e, section.id)}
-                                className={`p-3.5 rounded-2xl border transition-all duration-500 ${section.isVisible
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleVisibility(e, section.id);
+                                }}
+                                className={`p-3.5 rounded-2xl border transition-all duration-500 pointer-events-auto ${section.isVisible
                                     ? 'bg-white text-slate-400 border-slate-100 hover:text-indigo-500 hover:border-indigo-100'
                                     : 'bg-slate-50 text-slate-300 border-transparent hover:text-slate-400'
                                     }`}
@@ -102,7 +112,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
                                 {section.isVisible ? <Eye className="w-6 h-6" /> : <EyeOff className="w-6 h-6" />}
                             </button>
 
-                            <div className={`p-3.5 rounded-2xl border border-transparent transition-all duration-700 ${expandedSection === section.id ? 'rotate-180 bg-indigo-50 text-indigo-500' : 'text-slate-300'}`}>
+                            <div className={`p-3.5 rounded-2xl border border-transparent transition-all duration-700 pointer-events-none ${expandedSection === section.id ? 'rotate-180 bg-indigo-50 text-indigo-500' : 'text-slate-300'}`}>
                                 <ChevronDown className="w-6 h-6" />
                             </div>
                         </div>
@@ -254,8 +264,6 @@ export const TemplateEditArea: React.FC = () => {
         updateSectionsBatch(updated);
     };
 
-    // Sort sections by order
-    const sortedSections = [...sections].sort((a, b) => a.order - b.order);
 
     return (
         <div className="space-y-8 pb-32 font-outfit">
@@ -345,8 +353,16 @@ export const TemplateEditArea: React.FC = () => {
                         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                         className="space-y-6"
                     >
-                        <Reorder.Group axis="y" values={sortedSections} onReorder={handleReorder} className="space-y-6">
-                            {sortedSections.map((section) => (
+                        <Reorder.Group
+                            axis="y"
+                            values={sections}
+                            onReorder={(newOrder) => {
+                                const normalized = newOrder.map((s, idx) => ({ ...s, order: idx }));
+                                updateSectionsBatch(normalized);
+                            }}
+                            className="space-y-6"
+                        >
+                            {[...sections].sort((a, b) => a.order - b.order).map((section) => (
                                 <SectionItem
                                     key={section.id}
                                     section={section}
