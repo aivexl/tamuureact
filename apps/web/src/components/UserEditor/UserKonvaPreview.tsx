@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
-import { ElementRenderer } from '../Canvas/ElementRenderer';
+import { AnimatedLayer } from '../Preview/AnimatedLayer';
 
 interface UserKonvaPreviewProps {
     sectionId?: string;
@@ -16,36 +16,34 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
     const { sections, orbit } = useStore();
     const containerRef = useRef<HTMLDivElement>(null);
     const [scale, setScale] = useState(1);
+    const [containerHeight, setContainerHeight] = useState(896);
 
     const section = sectionId ? sections.find(s => s.id === sectionId) : null;
     const orbitCanvas = canvasType === 'orbit-left' ? orbit.left : (canvasType === 'orbit-right' ? orbit.right : null);
 
-    // CTO ENTERPRISE DIMENSIONS (Matches engine standard)
+    // CTO ENTERPRISE DIMENSIONS
     const DESIGN_WIDTH = canvasType === 'main' ? 414 : 800;
     const DESIGN_HEIGHT = 896;
 
-    // CTO FIX: Multi-canvas Scaling Engine
+    // CTO FIX: Multi-canvas Scaling Engine with Liquid Parity
     useEffect(() => {
         const updateScale = () => {
             if (containerRef.current) {
                 const { width, height } = containerRef.current.getBoundingClientRect();
-
-                // Calculate scale to fit width while maintaining aspect ratio
                 const scaleW = width / DESIGN_WIDTH;
                 const scaleH = height / DESIGN_HEIGHT;
 
-                // For main, we usually scale to width. 
-                // For orbit wings, we scale to fit whichever is tighter to ensure NO CUTOFF.
+                // For main, we follow width (Liquid). For orbit, we fit.
                 const newScale = canvasType === 'main' ? scaleW : Math.min(scaleW, scaleH);
 
                 setScale(newScale);
+                setContainerHeight(height);
             }
         };
 
         updateScale();
         const resizeObserver = new ResizeObserver(updateScale);
         if (containerRef.current) resizeObserver.observe(containerRef.current);
-
         return () => resizeObserver.disconnect();
     }, [canvasType, DESIGN_WIDTH, DESIGN_HEIGHT]);
 
@@ -55,52 +53,63 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
     const backgroundColor = canvasType === 'main' ? (section?.backgroundColor || '#0a0a0a') : (orbitCanvas?.backgroundColor || 'transparent');
     const backgroundUrl = canvasType === 'main' ? section?.backgroundUrl : orbitCanvas?.backgroundUrl;
 
+    // LIQUID MATH: Calculate viewport expansion (Design Units)
+    const coverHeight = containerHeight / (scale || 1);
+    const extraHeight = coverHeight - DESIGN_HEIGHT;
+
     return (
         <div
             ref={containerRef}
-            className="relative w-full h-full flex items-center justify-center overflow-hidden bg-transparent transition-all duration-1000"
+            className="relative w-full h-full flex items-start justify-start overflow-hidden bg-[#0a0a0a] transition-all duration-1000"
         >
             {/* The Scaled Render Viewport */}
             <div
                 style={{
                     width: DESIGN_WIDTH,
-                    height: DESIGN_HEIGHT,
+                    height: coverHeight, // DESIGN UNITS VP HEIGHT
                     backgroundColor: backgroundColor,
                     backgroundImage: backgroundUrl ? `url(${backgroundUrl})` : 'none',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     transform: `scale(${scale})`,
-                    transformOrigin: canvasType === 'main' ? 'top center' : 'center center',
+                    transformOrigin: 'top left', // PURE SYNC
                     position: 'relative',
-                    overflow: 'visible', // Allow design bleed WITHIN the scaled area
+                    overflow: 'visible',
                     transition: 'all 0.5s cubic-bezier(0.22, 1, 0.36, 1)',
                     boxShadow: canvasType === 'main' ? 'none' : '0 20px 50px rgba(0,0,0,0.3)',
                     borderRadius: canvasType === 'main' ? 0 : '2rem',
                     flexShrink: 0
                 }}
             >
-                {/* Element Mapper */}
-                {elements
+                {/* Element Mapper - LIQUID STRETCHING ENGINE V3.4 */}
+                {(elements || [])
                     .filter(el => el.isVisible !== false)
                     .sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0))
-                    .map((element) => (
-                        <div
-                            key={element.id}
-                            style={{
-                                position: 'absolute',
-                                left: element.x,
-                                top: element.y,
-                                width: element.width,
-                                height: element.height,
-                                transform: `rotate(${element.rotation || 0}deg) scale(${element.scale || 1})`,
-                                opacity: element.opacity ?? 1,
-                                zIndex: element.zIndex,
-                                pointerEvents: 'none' // Previews are non-interactive
-                            }}
-                        >
-                            <ElementRenderer layer={element} isEditor={false} />
-                        </div>
-                    ))}
+                    .map((element) => {
+                        // PORTED FROM PreviewView.tsx (LIVE ENGINE)
+                        // Robust height detection for interpolation
+                        const elAny = element as any;
+                        const elementHeight = element.height || elAny.size?.height || (elAny.textStyle?.fontSize) || 0;
+                        const maxTop = DESIGN_HEIGHT - elementHeight;
+
+                        // Progress determines if the element is near the top (0) or bottom (1)
+                        let progress = maxTop > 0 ? element.y / maxTop : 0;
+                        progress = Math.max(0, Math.min(1, progress));
+
+                        // Apply linear interpolation (LIQUID STRETCH)
+                        const adjustedY = element.y + (extraHeight * progress);
+
+                        return (
+                            <AnimatedLayer
+                                key={element.id}
+                                layer={element}
+                                adjustedY={adjustedY} // THE MAGIC PARITY FIX
+                                isOpened={true}
+                                isEditor={false}
+                                forceTrigger={true}
+                            />
+                        );
+                    })}
 
                 {/* Section Overlay (if any) */}
                 {section?.overlayOpacity ? (

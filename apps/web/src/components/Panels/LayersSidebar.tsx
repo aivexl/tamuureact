@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, Reorder } from 'framer-motion';
+import { motion, Reorder, useDragControls } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import {
     Layers, Eye, EyeOff, GripVertical, Trash2, Lock, Unlock,
@@ -7,7 +7,7 @@ import {
     Settings, Palette, Zap, Wind, Upload, Loader2, Link as LinkIcon, Grid, MessageSquare,
     Sparkles, Circle, Gift, Music, Waves, Component, Hash, QrCode, Monitor, Sun, Share2, Users
 } from 'lucide-react';
-import { LayerType } from '@/store/layersSlice';
+import { LayerType, Layer } from '@/store/layersSlice';
 
 const layerIcons: Record<LayerType, React.ReactNode> = {
     text: <Type className="w-4 h-4" />,
@@ -87,7 +87,10 @@ function LayersTab() {
         activeSectionId,
         sections,
         updateElementInSection,
-        removeElementFromSection
+        removeElementFromSection,
+        updateLayersBatch,
+        updateSectionElementsBatch,
+        updateOrbitElementsBatch
     } = useStore();
 
     const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
@@ -125,16 +128,19 @@ function LayersTab() {
     });
 
     const handleReorder = (reorderedLayers: typeof sortedLayers) => {
-        reorderedLayers.forEach((layer, index) => {
+        // Normalize Z-Indices based on new order
+        const updated = reorderedLayers.map((layer, index) => {
             const newZIndex = reorderedLayers.length - index;
-            if (activeCanvas === 'main' && activeSectionId) {
-                updateElementInSection(activeSectionId, layer.id, { zIndex: newZIndex });
-            } else if (activeCanvas === 'left' || activeCanvas === 'right') {
-                updateOrbitElement(activeCanvas, layer.id, { zIndex: newZIndex });
-            } else {
-                updateLayer(layer.id, { zIndex: newZIndex });
-            }
+            return { ...layer, zIndex: newZIndex };
         });
+
+        if (activeCanvas === 'main' && activeSectionId) {
+            updateSectionElementsBatch(activeSectionId, updated);
+        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+            updateOrbitElementsBatch(activeCanvas, updated);
+        } else {
+            updateLayersBatch(updated);
+        }
     };
 
     const startRename = (layerId: string, currentName: string) => {
@@ -211,98 +217,7 @@ function LayersTab() {
                 className="space-y-1"
             >
                 {sortedLayers.map((layer) => (
-                    <Reorder.Item
-                        key={layer.id}
-                        value={layer}
-                        className="list-none"
-                        whileDrag={{
-                            scale: 1.02,
-                            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-                            zIndex: 50
-                        }}
-                    >
-                        <motion.div
-                            layout
-                            onClick={() => selectLayer(layer.id)}
-                            onDoubleClick={() => startRename(layer.id, layer.name)}
-                            className={`group p-2 rounded-lg flex items-center gap-2 transition-all cursor-grab active:cursor-grabbing ${selectedLayerId === layer.id
-                                ? 'bg-premium-accent/10 ring-1 ring-premium-accent/30 text-premium-accent'
-                                : 'bg-white/[0.02] text-white/60 hover:bg-white/5'
-                                }`}
-                        >
-                            {/* Drag Handle */}
-                            <div className="cursor-grab active:cursor-grabbing text-white/30 hover:text-white/50">
-                                <GripVertical className="w-3 h-3" />
-                            </div>
-
-                            {/* Icon */}
-                            <div className={`w-6 h-6 rounded flex items-center justify-center flex-shrink-0 ${selectedLayerId === layer.id ? 'bg-premium-accent/20' : 'bg-white/5'
-                                }`}>
-                                {layerIcons[layer.type] || <Layers className="w-3 h-3" />}
-                            </div>
-
-                            {/* Name - Editable */}
-                            <div className="flex-1 min-w-0">
-                                {editingLayerId === layer.id ? (
-                                    <input
-                                        type="text"
-                                        value={editName}
-                                        onChange={(e) => setEditName(e.target.value)}
-                                        onBlur={() => finishRename(layer.id)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') finishRename(layer.id);
-                                            if (e.key === 'Escape') setEditingLayerId(null);
-                                        }}
-                                        autoFocus
-                                        className="w-full bg-white/10 border border-premium-accent/50 rounded px-1 py-0.5 text-xs focus:outline-none"
-                                        onClick={(e) => e.stopPropagation()}
-                                    />
-                                ) : (
-                                    <p className="text-xs font-medium truncate">{layer.name}</p>
-                                )}
-                            </div>
-
-                            {/* Action Buttons - Always visible */}
-                            <div className="flex items-center gap-0.5">
-                                <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        toggleVisibility(layer.id, layer.isVisible ?? true);
-                                    }}
-                                    className={`p-1 rounded ${!layer.isVisible ? 'text-red-400' : 'text-white/30 hover:text-white/60'}`}
-                                    title={layer.isVisible ? 'Hide' : 'Show'}
-                                >
-                                    {layer.isVisible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                                </motion.button>
-                                <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        toggleLock(layer.id, layer.isLocked ?? false);
-                                    }}
-                                    className={`p-1 rounded ${layer.isLocked ? 'text-yellow-400' : 'text-white/30 hover:text-white/60'}`}
-                                    title={layer.isLocked ? 'Unlock' : 'Lock'}
-                                >
-                                    {layer.isLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
-                                </motion.button>
-                                <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        removeItem(layer.id);
-                                    }}
-                                    className="p-1 rounded text-white/30 hover:text-red-400"
-                                    title="Delete"
-                                >
-                                    <Trash2 className="w-3 h-3" />
-                                </motion.button>
-                            </div>
-                        </motion.div>
-                    </Reorder.Item>
+                    <LayerItem key={layer.id} layer={layer} />
                 ))}
             </Reorder.Group>
 
@@ -316,3 +231,174 @@ function LayersTab() {
         </div>
     );
 };
+
+// ============================================
+// LAYER ITEM COMPONENT
+// ============================================
+function LayerItem({ layer }: { layer: Layer }) {
+    const {
+        selectedLayerId,
+        selectLayer,
+        updateLayer,
+        removeLayer,
+        activeCanvas,
+        activeSectionId,
+        updateElementInSection,
+        removeElementFromSection,
+        updateOrbitElement,
+        removeOrbitElement
+    } = useStore();
+
+    const controls = useDragControls();
+    const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
+    const [editName, setEditName] = useState('');
+
+    const startRename = (layerId: string, currentName: string) => {
+        setEditingLayerId(layerId);
+        setEditName(currentName);
+    };
+
+    const finishRename = (layerId: string) => {
+        if (editName.trim()) {
+            if (activeCanvas === 'main' && activeSectionId) {
+                updateElementInSection(activeSectionId, layerId, { name: editName.trim() });
+            } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                updateOrbitElement(activeCanvas, layerId, { name: editName.trim() });
+            } else {
+                updateLayer(layerId, { name: editName.trim() });
+            }
+        }
+        setEditingLayerId(null);
+        setEditName('');
+    };
+
+    const toggleVisibility = (layerId: string, current: boolean) => {
+        if (activeCanvas === 'main' && activeSectionId) {
+            updateElementInSection(activeSectionId, layerId, { isVisible: !current });
+        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+            updateOrbitElement(activeCanvas, layerId, { isVisible: !current });
+        } else {
+            updateLayer(layerId, { isVisible: !current });
+        }
+    };
+
+    const toggleLock = (layerId: string, current: boolean) => {
+        if (activeCanvas === 'main' && activeSectionId) {
+            updateElementInSection(activeSectionId, layerId, { isLocked: !current });
+        } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+            updateOrbitElement(activeCanvas, layerId, { isLocked: !current });
+        } else {
+            updateLayer(layerId, { isLocked: !current });
+        }
+    };
+
+    const removeItem = (layerId: string) => {
+        if (confirm('Delete this layer?')) {
+            if (activeCanvas === 'main' && activeSectionId) {
+                removeElementFromSection(activeSectionId, layerId);
+            } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                removeOrbitElement(activeCanvas, layerId);
+            } else {
+                removeLayer(layerId);
+            }
+        }
+    };
+
+    return (
+        <Reorder.Item
+            value={layer}
+            className="list-none"
+            dragListener={false}
+            dragControls={controls}
+            whileDrag={{
+                scale: 1.02,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                zIndex: 50
+            }}
+        >
+            <div
+                onClick={() => selectLayer(layer.id)}
+                onDoubleClick={() => startRename(layer.id, layer.name)}
+                className={`group p-2 rounded-lg flex items-center gap-2 transition-all cursor-pointer ${selectedLayerId === layer.id
+                    ? 'bg-premium-accent/10 ring-1 ring-premium-accent/30 text-premium-accent'
+                    : 'bg-white/[0.02] text-white/60 hover:bg-white/5'
+                    }`}
+            >
+                {/* Drag Handle - Restricted */}
+                <div
+                    onPointerDown={(e) => controls.start(e)}
+                    className="cursor-grab active:cursor-grabbing text-white/30 hover:text-white/50 p-1 -m-1"
+                >
+                    <GripVertical className="w-3.5 h-3.5" />
+                </div>
+
+                {/* Icon */}
+                <div className={`w-6 h-6 rounded flex items-center justify-center flex-shrink-0 ${selectedLayerId === layer.id ? 'bg-premium-accent/20' : 'bg-white/5'
+                    }`}>
+                    {layerIcons[layer.type] || <Layers className="w-3 h-3" />}
+                </div>
+
+                {/* Name - Editable */}
+                <div className="flex-1 min-w-0">
+                    {editingLayerId === layer.id ? (
+                        <input
+                            type="text"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            onBlur={() => finishRename(layer.id)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') finishRename(layer.id);
+                                if (e.key === 'Escape') setEditingLayerId(null);
+                            }}
+                            autoFocus
+                            className="w-full bg-white/10 border border-premium-accent/50 rounded px-1 py-0.5 text-xs focus:outline-none"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    ) : (
+                        <p className="text-xs font-medium truncate">{layer.name}</p>
+                    )}
+                </div>
+
+                {/* Action Buttons - Always visible */}
+                <div className="flex items-center gap-0.5">
+                    <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            toggleVisibility(layer.id, layer.isVisible ?? true);
+                        }}
+                        className={`p-1 rounded ${!layer.isVisible ? 'text-red-400' : 'text-white/30 hover:text-white/60'}`}
+                        title={layer.isVisible ? 'Hide' : 'Show'}
+                    >
+                        {layer.isVisible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                    </motion.button>
+                    <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            toggleLock(layer.id, layer.isLocked ?? false);
+                        }}
+                        className={`p-1 rounded ${layer.isLocked ? 'text-yellow-400' : 'text-white/30 hover:text-white/60'}`}
+                        title={layer.isLocked ? 'Unlock' : 'Lock'}
+                    >
+                        {layer.isLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                    </motion.button>
+                    <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            removeItem(layer.id);
+                        }}
+                        className="p-1 rounded text-white/30 hover:text-red-400"
+                        title="Delete"
+                    >
+                        <Trash2 className="w-3 h-3" />
+                    </motion.button>
+                </div>
+            </div>
+        </Reorder.Item>
+    );
+}

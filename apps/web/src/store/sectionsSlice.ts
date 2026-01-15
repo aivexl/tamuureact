@@ -129,6 +129,7 @@ export interface SectionsState {
     addOrbitElement: (canvas: 'left' | 'right', element: Layer) => void;
     removeOrbitElement: (canvas: 'left' | 'right', elementId: string) => void;
     updateOrbitElement: (canvas: 'left' | 'right', elementId: string, updates: Partial<Layer>) => void;
+    updateOrbitElementsBatch: (canvas: 'left' | 'right', elements: Layer[]) => void;
     duplicateOrbitElement: (canvas: 'left' | 'right', elementId: string) => void;
     bringOrbitElementToFront: (canvas: 'left' | 'right', elementId: string) => void;
     sendOrbitElementToBack: (canvas: 'left' | 'right', elementId: string) => void;
@@ -143,6 +144,8 @@ export interface SectionsState {
     reorderSections: (startIndex: number, endIndex: number) => void;
     setActiveSection: (id: string | null) => void;
     duplicateSection: (id: string) => void;
+    updateSectionsBatch: (sections: Section[]) => void;
+    updateSectionElementsBatch: (sectionId: string, elements: Layer[]) => void;
     copySectionElementsTo: (sourceSectionId: string, targetSectionId: string) => void;
     clearSectionContent: (sectionId: string) => void;
 
@@ -398,6 +401,16 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
         }
     })),
 
+    updateOrbitElementsBatch: (canvas, elements) => set((state) => ({
+        orbit: {
+            ...state.orbit,
+            [canvas]: {
+                ...state.orbit[canvas],
+                elements: elements.map(el => sanitizeLayer(el))
+            }
+        }
+    })),
+
     duplicateOrbitElement: (canvas, elementId) => set((state) => {
         const orbitCanvas = state.orbit[canvas];
         const element = orbitCanvas.elements.find(el => el.id === elementId);
@@ -578,6 +591,14 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
             activeSectionId: newId
         };
     }),
+
+    updateSectionsBatch: (sections) => set({ sections }),
+
+    updateSectionElementsBatch: (sectionId, elements) => set((state) => ({
+        sections: state.sections.map((s) =>
+            s.id === sectionId ? { ...s, elements } : s
+        )
+    })),
 
     copySectionElementsTo: (sourceId, targetId) => set((state) => {
         const sourceSection = state.sections.find(s => s.id === sourceId);

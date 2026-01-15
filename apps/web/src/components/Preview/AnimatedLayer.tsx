@@ -305,8 +305,16 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     return (
         <m.div
             ref={ref} initial="hidden" animate={animationState} variants={variants}
-            className={isEditor ? "w-full h-full" : "absolute origin-center"}
-            style={isEditor ? { opacity: layer.opacity ?? 1 } : { left: `${layer.x}px`, top: `${adjustedY}px`, width: `${layer.width}px`, height: `${layer.height}px`, zIndex: layer.zIndex, willChange: 'transform, opacity' }}
+            className="absolute origin-center"
+            style={{
+                left: `${layer.x}px`,
+                top: `${adjustedY}px`,
+                width: `${layer.width}px`,
+                height: `${layer.height}px`,
+                zIndex: layer.zIndex,
+                willChange: 'transform, opacity',
+                opacity: layer.opacity ?? 1
+            }}
         >
             {isMarqueeEnabled && (marqueeConfig?.mode || 'seamless') === 'seamless' ? (
                 (() => {
@@ -327,7 +335,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                     );
                 })()
             ) : (
-                <m.div className="w-full h-full" {...loopingProps} style={{ ...(isMarqueeTileMode ? { backgroundImage: `url(${layer.imageUrl})`, backgroundRepeat: 'repeat', backgroundSize: 'auto', backgroundColor: 'transparent' } : {}) }}>
+                <m.div className="w-full h-full relative" {...loopingProps} style={{ ...(isMarqueeTileMode ? { backgroundImage: `url(${layer.imageUrl})`, backgroundRepeat: 'repeat', backgroundSize: 'auto', backgroundColor: 'transparent' } : {}) }}>
                     {!isMarqueeTileMode && <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={isEditor} onContentLoad={handleContentLoad} onDimensionsDetected={onDimensionsDetected} />}
                 </m.div>
             )}

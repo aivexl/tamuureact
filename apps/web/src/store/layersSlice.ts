@@ -743,6 +743,7 @@ export interface LayersState {
     sendToBack: (id: string) => void;
     clipboard: Layer | null;
     copyLayer: (layer: Layer) => void;
+    updateLayersBatch: (layers: Layer[]) => void;
     sanitizeAllLayers: () => void;
 
     // Feature 7: Global Theme
@@ -985,7 +986,9 @@ export const createLayersSlice: StateCreator<LayersState> = (set, get) => ({
         };
     }),
 
-    copyLayer: (layer) => set({ clipboard: layer }),
+    copyLayer: (layer: Layer) => set({ clipboard: layer }),
+
+    updateLayersBatch: (layers) => set({ layers }),
 
     sanitizeAllLayers: () => set((state) => ({
         layers: state.layers.map(sanitizeLayer)
