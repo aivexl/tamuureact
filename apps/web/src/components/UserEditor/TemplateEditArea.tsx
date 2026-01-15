@@ -27,10 +27,12 @@ export const TemplateEditArea: React.FC = () => {
         sections,
         reorderSections,
         updateSection,
-        orbit
+        orbit,
+        updateOrbitCanvas
     } = useStore();
 
     const [expandedSection, setExpandedSection] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState<'invitation' | 'orbit'>('invitation');
     const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
 
 
@@ -68,6 +70,10 @@ export const TemplateEditArea: React.FC = () => {
         setExpandedSection(expandedSection === id ? null : id);
     };
 
+    const toggleOrbitVisibility = (side: 'left' | 'right') => {
+        updateOrbitCanvas(side, { isVisible: !orbit[side].isVisible });
+    };
+
     const toggleVisibility = (e: React.MouseEvent, id: string) => {
         e.stopPropagation();
         const section = sections.find(s => s.id === id);
@@ -103,32 +109,62 @@ export const TemplateEditArea: React.FC = () => {
     const sortedSections = [...sections].sort((a, b) => a.order - b.order);
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between px-2">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-teal-500 rounded-xl flex items-center justify-center shadow-lg shadow-teal-500/20">
-                        <Sparkles className="w-5 h-5 text-white" />
+        <div className="space-y-8 pb-32 font-outfit">
+            {/* PREMIUM TAB SWITCHER */}
+            <div className="flex justify-center mb-12">
+                <div className="bg-white/50 backdrop-blur-3xl p-2 rounded-[3rem] border border-slate-200/50 shadow-2xl flex items-center gap-1.5 ring-1 ring-slate-950/5">
+                    <button
+                        onClick={() => setActiveTab('invitation')}
+                        className={`px-10 py-4 rounded-[2.5rem] text-xs font-black uppercase tracking-[0.2em] transition-all duration-700 flex items-center gap-2 ${activeTab === 'invitation'
+                            ? 'bg-slate-900 text-white shadow-2xl shadow-slate-900/40 ring-4 ring-slate-900/10'
+                            : 'text-slate-400 hover:text-slate-600 hover:bg-white/80'
+                            }`}
+                    >
+                        <Layout className="w-4 h-4" />
+                        Tampilan Undangan
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('orbit')}
+                        className={`px-10 py-4 rounded-[2.5rem] text-xs font-black uppercase tracking-[0.2em] transition-all duration-700 flex items-center gap-2 ${activeTab === 'orbit'
+                            ? 'bg-slate-900 text-white shadow-2xl shadow-slate-900/40 ring-4 ring-slate-900/10'
+                            : 'text-slate-400 hover:text-slate-600 hover:bg-white/80'
+                            }`}
+                    >
+                        <Sparkles className="w-4 h-4" />
+                        Stage Cinematic
+                    </button>
+                </div>
+            </div>
+
+            <div className="flex items-center justify-between px-4">
+                <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-teal-500 rounded-[1.5rem] flex items-center justify-center shadow-2xl shadow-indigo-500/30 group transition-transform duration-700 hover:rotate-[15deg]">
+                        <Sparkles className="w-7 h-7 text-white" />
                     </div>
                     <div>
-                        <h3 className="text-xl font-black text-slate-900 tracking-tight font-outfit">Konten Undangan</h3>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Edit bagian yang diizinkan admin</p>
+                        <h3 className="text-2xl font-black text-slate-900 tracking-tight">
+                            {activeTab === 'invitation' ? 'Konten Undangan' : 'Stage Cinematic'}
+                        </h3>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.25em]">
+                            {activeTab === 'invitation' ? 'Edit bagian yang diizinkan admin' : 'Konfigurasi sayap cinematic desktop'}
+                        </p>
                     </div>
                 </div>
 
                 {/* Save Button */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                     <m.button
                         onClick={handleSave}
                         disabled={saveStatus === 'saving'}
-                        whileHover={{ scale: 1.05 }}
+                        whileHover={{ scale: 1.05, y: -2 }}
                         whileTap={{ scale: 0.95 }}
-                        className={`flex items-center gap-2 px-5 py-2.5 font-bold text-xs rounded-xl shadow-lg transition-all uppercase tracking-widest ${saveStatus === 'saving'
+                        className={`flex items-center gap-2 px-8 py-4 font-black text-xs rounded-2xl shadow-2xl transition-all uppercase tracking-widest ${saveStatus === 'saving'
                             ? 'bg-amber-500 text-white cursor-wait'
                             : saveStatus === 'saved'
                                 ? 'bg-emerald-500 text-white'
                                 : saveStatus === 'error'
                                     ? 'bg-red-500 text-white'
-                                    : 'bg-teal-500 text-white hover:bg-teal-600 shadow-teal-500/30'
+                                    : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-900/30'
                             }`}
                     >
                         {saveStatus === 'saving' && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -136,134 +172,297 @@ export const TemplateEditArea: React.FC = () => {
                         {(saveStatus === 'idle' || saveStatus === 'error') && <Save className="w-4 h-4" />}
                         {saveStatus === 'saving' ? 'Menyimpan...' :
                             saveStatus === 'saved' ? 'Tersimpan!' :
-                                saveStatus === 'error' ? 'Coba Lagi' : 'Simpan'}
+                                saveStatus === 'error' ? 'Gagal' : 'Simpan Perubahan'}
                     </m.button>
 
                     <m.button
-                        whileHover={{ scale: 1.05 }}
+                        whileHover={{ scale: 1.05, y: -2 }}
                         whileTap={{ scale: 0.95 }}
-                        className="flex items-center gap-2 px-4 py-2 bg-white text-slate-700 font-bold text-xs rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all uppercase tracking-widest"
+                        className="flex items-center gap-2 px-6 py-4 bg-white text-slate-700 font-black text-xs rounded-2xl border border-slate-200 shadow-xl hover:shadow-2xl transition-all uppercase tracking-widest ring-1 ring-slate-100"
                     >
                         <Plus className="w-4 h-4" />
-                        Tambah Halaman
+                        Halaman Baru
                     </m.button>
                 </div>
-
             </div>
 
-            <Reorder.Group axis="y" values={sortedSections} onReorder={handleReorder} className="space-y-4">
-                {sortedSections.map((section) => (
-                    <Reorder.Item
-                        key={section.id}
-                        value={section}
-                        className="relative group"
+            <AnimatePresence mode="wait">
+                {activeTab === 'invitation' ? (
+                    <m.div
+                        key="invitation-list"
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -30 }}
+                        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                        className="space-y-6"
                     >
-                        <m.div
-                            layout
-                            className={`bg-white/80 backdrop-blur-xl rounded-[2rem] border transition-all duration-500 overflow-hidden ${expandedSection === section.id
-                                ? 'border-teal-200 shadow-2xl shadow-teal-500/5 ring-1 ring-teal-500/10'
-                                : 'border-white/60 shadow-sm hover:shadow-xl hover:shadow-slate-200/50'
-                                }`}
-                        >
-                            {/* Section Header */}
-                            <div
-                                onClick={() => toggleExpand(section.id)}
-                                className="p-6 flex items-center gap-4 cursor-pointer"
-                            >
-                                <div className="cursor-grab active:cursor-grabbing p-2 hover:bg-slate-50 rounded-lg text-slate-300 group-hover:text-slate-400 transition-colors">
-                                    <GripVertical className="w-5 h-5" />
-                                </div>
-
-                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${section.isVisible ? 'bg-slate-50 text-slate-600' : 'bg-slate-100 text-slate-400 grayscale'
-                                    }`}>
-                                    <Layout className="w-6 h-6" />
-                                </div>
-
-                                <div className="flex-1">
-                                    <h4 className={`font-black tracking-tight font-outfit ${section.isVisible ? 'text-slate-800' : 'text-slate-400 line-through'}`}>
-                                        {section.title}
-                                    </h4>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                        {section.elements?.length || 0} elements
-                                    </p>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={(e) => toggleVisibility(e, section.id)}
-                                        className={`p-2.5 rounded-xl border transition-all ${section.isVisible
-                                            ? 'bg-white text-slate-400 border-slate-100 hover:text-teal-500 hover:border-teal-100'
-                                            : 'bg-slate-50 text-slate-300 border-transparent hover:text-slate-400 shadow-inner'
+                        <Reorder.Group axis="y" values={sortedSections} onReorder={handleReorder} className="space-y-6">
+                            {sortedSections.map((section) => (
+                                <Reorder.Item
+                                    key={section.id}
+                                    value={section}
+                                    className="relative group h-full"
+                                >
+                                    <m.div
+                                        layout
+                                        className={`bg-white/90 backdrop-blur-3xl rounded-[3rem] border transition-all duration-700 overflow-hidden ${expandedSection === section.id
+                                            ? 'border-indigo-100 shadow-2xl shadow-indigo-500/10 ring-1 ring-indigo-500/10'
+                                            : 'border-white/80 shadow-sm hover:shadow-2xl hover:shadow-slate-200/50'
                                             }`}
                                     >
-                                        {section.isVisible ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
-                                    </button>
+                                        {/* Section Header */}
+                                        <div
+                                            onClick={() => toggleExpand(section.id)}
+                                            className="p-8 flex items-center gap-6 cursor-pointer"
+                                        >
+                                            <div className="cursor-grab active:cursor-grabbing p-3 hover:bg-slate-50 rounded-2xl text-slate-300 group-hover:text-slate-400 transition-all">
+                                                <GripVertical className="w-6 h-6" />
+                                            </div>
 
-                                    <div className={`p-2.5 rounded-xl border border-transparent transition-transform duration-500 ${expandedSection === section.id ? 'rotate-180 bg-teal-50 text-teal-500' : 'text-slate-300'}`}>
-                                        <ChevronDown className="w-5 h-5" />
+                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-700 shadow-inner ${section.isVisible ? 'bg-slate-50 text-slate-600' : 'bg-slate-100 text-slate-400 grayscale'
+                                                }`}>
+                                                <Layout className="w-7 h-7" />
+                                            </div>
+
+                                            <div className="flex-1">
+                                                <h4 className={`text-xl font-black tracking-tight font-outfit transition-all duration-500 ${section.isVisible ? 'text-slate-900' : 'text-slate-400 line-through'}`}>
+                                                    {section.title}
+                                                </h4>
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">
+                                                    {section.elements?.length || 0} Dynamic Layers
+                                                </p>
+                                            </div>
+
+                                            <div className="flex items-center gap-3">
+                                                <button
+                                                    onClick={(e) => toggleVisibility(e, section.id)}
+                                                    className={`p-3.5 rounded-2xl border transition-all duration-500 ${section.isVisible
+                                                        ? 'bg-white text-slate-400 border-slate-100 hover:text-indigo-500 hover:border-indigo-100'
+                                                        : 'bg-slate-50 text-slate-300 border-transparent hover:text-slate-400'
+                                                        }`}
+                                                >
+                                                    {section.isVisible ? <Eye className="w-6 h-6" /> : <EyeOff className="w-6 h-6" />}
+                                                </button>
+
+                                                <div className={`p-3.5 rounded-2xl border border-transparent transition-all duration-700 ${expandedSection === section.id ? 'rotate-180 bg-indigo-50 text-indigo-500' : 'text-slate-300'}`}>
+                                                    <ChevronDown className="w-6 h-6" />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Section Body */}
+                                        <AnimatePresence>
+                                            {expandedSection === section.id && (
+                                                <m.div
+                                                    initial={{ height: 0, opacity: 0 }}
+                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                    exit={{ height: 0, opacity: 0 }}
+                                                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                                                    className="border-t border-slate-50/50 overflow-hidden"
+                                                >
+                                                    <div className="p-10 grid grid-cols-1 lg:grid-cols-2 gap-12 bg-gradient-to-b from-white to-slate-50/20">
+                                                        {/* Left: Preview */}
+                                                        <div className="space-y-6">
+                                                            <div className="flex items-center justify-between px-2">
+                                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Real-time Render</span>
+                                                            </div>
+                                                            <div className="relative group/preview flex items-center justify-center p-8 bg-slate-50/50 rounded-[3rem] border border-slate-100">
+                                                                {/* LEFT ORBIT PREVIEW (MUTED) */}
+                                                                <div className="absolute left-4 top-1/2 -translate-y-1/2 w-[18%] h-[60%] opacity-20 group-hover/preview:opacity-100 transition-all duration-1000 rounded-r-[2rem] overflow-hidden border border-slate-200/50 shadow-2xl scale-90 group-hover/preview:scale-100 blur-[2px] group-hover/preview:blur-0">
+                                                                    <UserKonvaPreview canvasType="orbit-left" />
+                                                                </div>
+
+                                                                {/* PHONE FRAME */}
+                                                                <div className="relative aspect-[9/16] w-full max-w-[280px] mx-auto bg-white rounded-[4rem] shadow-[0_40px_100px_-15px_rgba(0,0,0,0.1)] border-[12px] border-slate-900 ring-4 ring-slate-100/50 z-10 transition-transform duration-700 group-hover/preview:scale-[1.02]">
+                                                                    <div className="absolute inset-0 rounded-[3rem] overflow-visible">
+                                                                        <UserKonvaPreview sectionId={section.id} />
+                                                                    </div>
+
+                                                                    {/* iPhone Notch Style */}
+                                                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-900 rounded-b-3xl z-20 flex items-center justify-center">
+                                                                        <div className="w-10 h-1 bg-white/10 rounded-full" />
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* RIGHT ORBIT PREVIEW (MUTED) */}
+                                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-[18%] h-[60%] opacity-20 group-hover/preview:opacity-100 transition-all duration-1000 rounded-l-[2rem] overflow-hidden border border-slate-200/50 shadow-2xl scale-90 group-hover/preview:scale-100 blur-[2px] group-hover/preview:blur-0">
+                                                                    <UserKonvaPreview canvasType="orbit-right" />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Right: Content Editors */}
+                                                        <div className="space-y-6">
+                                                            <div className="px-2 flex items-center justify-between">
+                                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Layer Configuration</span>
+                                                                <button className="flex items-center gap-1.5 text-indigo-600 hover:text-indigo-700 text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:gap-2">
+                                                                    <Settings2 className="w-4 h-4" />
+                                                                    Pro Designer
+                                                                </button>
+                                                            </div>
+                                                            <div className="space-y-5">
+                                                                {section.elements && section.elements.filter(el => el.canEditContent).length > 0 ? (
+                                                                    section.elements
+                                                                        .filter(el => el.canEditContent)
+                                                                        .map(element => (
+                                                                            <UserElementEditor
+                                                                                key={element.id}
+                                                                                element={element}
+                                                                                sectionId={section.id}
+                                                                            />
+                                                                        ))
+                                                                ) : (
+                                                                    <div className="p-16 text-center bg-white rounded-[2.5rem] border-2 border-dashed border-slate-100 shadow-inner">
+                                                                        <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                                                            <Settings2 className="w-8 h-8 text-slate-200" />
+                                                                        </div>
+                                                                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] leading-relaxed">
+                                                                            Locked by Admin System <br />
+                                                                            <span className="text-[8px] opacity-70 font-bold">Safe-mode active for this section</span>
+                                                                        </p>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </m.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </m.div>
+                                </Reorder.Item>
+                            ))}
+                        </Reorder.Group>
+                    </m.div>
+                ) : (
+                    <m.div
+                        key="orbit-list"
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -30 }}
+                        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                        className="space-y-8"
+                    >
+                        {/* ORBIT CARDS GRID */}
+                        <div className="grid grid-cols-1 gap-8">
+                            {/* ORBIT LEFT CARD */}
+                            <div className="bg-white/90 backdrop-blur-3xl rounded-[4rem] border border-slate-200 shadow-2xl overflow-hidden group/orbit transition-all duration-1000 hover:shadow-indigo-500/10">
+                                <div className="p-12 grid grid-cols-1 xl:grid-cols-2 gap-16">
+                                    <div className="space-y-8">
+                                        <div className="flex items-center justify-between px-2">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-16 h-16 bg-indigo-50 text-indigo-500 rounded-[2rem] flex items-center justify-center transition-all duration-700 group-hover/orbit:rotate-[15deg] group-hover/orbit:scale-110 shadow-inner">
+                                                    <Layout className="w-8 h-8" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-black text-slate-900 tracking-tight text-2xl uppercase">Stage Kiri</h4>
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">Cinematic Left Wing</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => toggleOrbitVisibility('left')}
+                                                className={`p-4 rounded-[2rem] border transition-all duration-700 ${orbit.left.isVisible
+                                                    ? 'bg-white text-slate-400 border-slate-100 hover:text-indigo-500 shadow-xl'
+                                                    : 'bg-slate-50 text-slate-300 shadow-inner'
+                                                    }`}
+                                            >
+                                                {orbit.left.isVisible ? <Eye className="w-7 h-7" /> : <EyeOff className="w-7 h-7" />}
+                                            </button>
+                                        </div>
+                                        <div className="aspect-[16/10] bg-slate-950 rounded-[3rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] relative border-[12px] border-white/5 ring-1 ring-slate-200 transition-transform duration-1000 group-hover/orbit:scale-[1.02]">
+                                            <UserKonvaPreview canvasType="orbit-left" />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 to-transparent opacity-0 group-hover/orbit:opacity-100 transition-opacity flex items-end justify-center pb-8 pointer-events-none">
+                                                <span className="px-8 py-3 bg-white/10 backdrop-blur-3xl rounded-full text-[10px] font-black text-white uppercase tracking-[0.3em] border border-white/20 shadow-2xl">Desktop View Component</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-8 pt-6">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-4">Orbit Layer Matrix</span>
+                                        <div className="space-y-5">
+                                            {orbit.left.elements && orbit.left.elements.filter(el => el.canEditContent).length > 0 ? (
+                                                orbit.left.elements
+                                                    .filter(el => el.canEditContent)
+                                                    .map(element => (
+                                                        <UserElementEditor
+                                                            key={`orbit-left-${element.id}`}
+                                                            element={element}
+                                                            sectionId="orbit-left"
+                                                        />
+                                                    ))
+                                            ) : (
+                                                <div className="p-20 text-center bg-slate-50/50 rounded-[3rem] border-2 border-dashed border-indigo-100/50 shadow-inner">
+                                                    <Layout className="w-12 h-12 text-slate-200 mx-auto mb-4" />
+                                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] leading-relaxed">
+                                                        Immutable Orbit Stage <br />
+                                                        <span className="text-[8px] opacity-70 font-bold">This section uses system-locked assets</span>
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Section Body */}
-                            <AnimatePresence>
-                                {expandedSection === section.id && (
-                                    <m.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: 'auto', opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        transition={{ duration: 0.4, ease: [0.04, 0.62, 0.23, 0.98] }}
-                                        className="border-t border-slate-50 overflow-hidden"
-                                    >
-                                        <div className="p-8 grid grid-cols-1 lg:grid-cols-2 gap-8 bg-gradient-to-b from-white to-slate-50/30">
-                                            {/* Left: Preview */}
-                                            <div className="space-y-4">
-                                                <div className="flex items-center justify-between px-1">
-                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Live Preview</span>
-                                                    <button className="flex items-center gap-1.5 text-teal-600 hover:text-teal-700 text-[10px] font-black uppercase tracking-widest">
-                                                        <Settings2 className="w-3.5 h-3.5" />
-                                                        Advanced Editor
-                                                    </button>
+                            {/* ORBIT RIGHT CARD */}
+                            <div className="bg-white/90 backdrop-blur-3xl rounded-[4rem] border border-slate-200 shadow-2xl overflow-hidden group/orbit transition-all duration-1000 hover:shadow-teal-500/10">
+                                <div className="p-12 grid grid-cols-1 xl:grid-cols-2 gap-16">
+                                    <div className="space-y-8">
+                                        <div className="flex items-center justify-between px-2">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-16 h-16 bg-teal-50 text-teal-500 rounded-[2rem] flex items-center justify-center transition-all duration-700 group-hover/orbit:rotate-[15deg] group-hover/orbit:scale-110 shadow-inner">
+                                                    <Layout className="w-8 h-8" />
                                                 </div>
-                                                <div className="aspect-[9/16] max-w-[280px] mx-auto bg-white rounded-3xl shadow-2xl shadow-slate-200 border-8 border-slate-900 overflow-hidden ring-4 ring-slate-100">
-                                                    <UserKonvaPreview sectionId={section.id} />
+                                                <div>
+                                                    <h4 className="font-black text-slate-900 tracking-tight text-2xl uppercase">Stage Kanan</h4>
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">Cinematic Right Wing</p>
                                                 </div>
                                             </div>
-
-                                            {/* Right: Content Editors */}
-                                            <div className="space-y-4">
-                                                <div className="px-1 mb-4">
-                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Edit Konten</span>
-                                                </div>
-                                                <div className="space-y-4">
-                                                    {section.elements && section.elements.filter(el => el.canEditContent).length > 0 ? (
-                                                        section.elements
-                                                            .filter(el => el.canEditContent)
-                                                            .map(element => (
-                                                                <UserElementEditor
-                                                                    key={element.id}
-                                                                    element={element}
-                                                                    sectionId={section.id}
-                                                                />
-                                                            ))
-                                                    ) : (
-                                                        <div className="p-8 text-center bg-white rounded-2xl border border-dashed border-slate-200">
-                                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
-                                                                Konten ini sudah diatur oleh Admin <br />
-                                                                <span className="text-[8px] opacity-70">Tidak ada bagian yang diizinkan untuk diubah</span>
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                </div>
+                                            <button
+                                                onClick={() => toggleOrbitVisibility('right')}
+                                                className={`p-4 rounded-[2rem] border transition-all duration-700 ${orbit.right.isVisible
+                                                    ? 'bg-white text-slate-400 border-slate-100 hover:text-teal-500 shadow-xl'
+                                                    : 'bg-slate-50 text-slate-300 shadow-inner'
+                                                    }`}
+                                            >
+                                                {orbit.right.isVisible ? <Eye className="w-7 h-7" /> : <EyeOff className="w-7 h-7" />}
+                                            </button>
+                                        </div>
+                                        <div className="aspect-[16/10] bg-slate-950 rounded-[3rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] relative border-[12px] border-white/5 ring-1 ring-slate-200 transition-transform duration-1000 group-hover/orbit:scale-[1.02]">
+                                            <UserKonvaPreview canvasType="orbit-right" />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 to-transparent opacity-0 group-hover/orbit:opacity-100 transition-opacity flex items-end justify-center pb-8 pointer-events-none">
+                                                <span className="px-8 py-3 bg-white/10 backdrop-blur-3xl rounded-full text-[10px] font-black text-white uppercase tracking-[0.3em] border border-white/20 shadow-2xl">Desktop View Component</span>
                                             </div>
                                         </div>
-                                    </m.div>
-                                )}
-                            </AnimatePresence>
-                        </m.div>
-                    </Reorder.Item>
-                ))}
-            </Reorder.Group>
+                                    </div>
+                                    <div className="space-y-8 pt-6">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-4">Orbit Layer Matrix</span>
+                                        <div className="space-y-5">
+                                            {orbit.right.elements && orbit.right.elements.filter(el => el.canEditContent).length > 0 ? (
+                                                orbit.right.elements
+                                                    .filter(el => el.canEditContent)
+                                                    .map(element => (
+                                                        <UserElementEditor
+                                                            key={`orbit-right-${element.id}`}
+                                                            element={element}
+                                                            sectionId="orbit-right"
+                                                        />
+                                                    ))
+                                            ) : (
+                                                <div className="p-20 text-center bg-slate-50/50 rounded-[3rem] border-2 border-dashed border-teal-100/50 shadow-inner">
+                                                    <Layout className="w-12 h-12 text-slate-200 mx-auto mb-4" />
+                                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] leading-relaxed">
+                                                        Immutable Orbit Stage <br />
+                                                        <span className="text-[8px] opacity-70 font-bold">This section uses system-locked assets</span>
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </m.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

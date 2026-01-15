@@ -46,21 +46,20 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
     const backgroundUrl = canvasType === 'main' ? section?.backgroundUrl : orbitCanvas?.backgroundUrl;
 
     return (
-        <div ref={containerRef} className="relative w-full h-full overflow-hidden bg-slate-950 flex items-start justify-center">
+        <div ref={containerRef} className={`relative w-full h-full flex items-start justify-center overflow-visible ${canvasType === 'main' ? 'bg-slate-950' : 'bg-transparent'}`}>
             {/* The scaled viewport */}
             <div
                 style={{
-                    width: CANVAS_WIDTH,
-                    height: SECTION_HEIGHT,
+                    width: canvasType === 'main' ? CANVAS_WIDTH : '100%',
+                    height: canvasType === 'main' ? SECTION_HEIGHT : '100%',
                     backgroundColor: backgroundColor,
                     backgroundImage: backgroundUrl ? `url(${backgroundUrl})` : 'none',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
-                    transform: `scale(${scale})`,
-                    transformOrigin: 'top left',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0
+                    transform: canvasType === 'main' ? `scale(${scale})` : 'none',
+                    transformOrigin: 'top center', // Changed to center to allow symmetrical bleed
+                    position: 'relative',
+                    overflow: 'visible' // CRITICAL: Allow elements to bleed out
                 }}
             >
                 {/* Element Mapper */}

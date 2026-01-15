@@ -208,52 +208,45 @@ Role: admin
 
 ---
 
-##  User Editor Architecture
+##  User Editor Architecture (Enterprise Premium)
 
 ### Overview
 
-Platform Tamuu memiliki dua mode editor untuk pengguna:
-1. **Invitation Editor** - Editor vertikal untuk undangan digital (mode mobile-first)
-2. **Display Editor** - Editor landscape (1920x1080) untuk TV/Welcome Display
+Platform Tamuu mengadopsi arsitektur **Tabbed Editor** kelas dunia untuk memberikan pengalaman editing yang intuitif namun powerful:
+
+1. **Invitation Editor (Tab 1)** - Editor vertikal mobile-first untuk konten inti undangan.
+2. **Cinematic Stage (Tab 2)** - Editor "Orbit" untuk elemen sayap kiri/kanan yang mempercantik tampilan desktop.
 
 ### Page & Layout Structure
 
-`
+```
 UserEditorPage.tsx              # Entry point, handles mode switching
  mode='invitation'
-    UserEditorLayout.tsx    # Light-themed layout untuk mobile editing
-        InvitationInfoCard  # Info undangan (title, slug, status)
-        IconGridMenu        # Quick-action buttons (music, theme, share, download)
-        StatusToggles       # Publish/RSVP toggles
-        TemplateEditArea    # Main canvas preview + edit
-
- mode='welcome'
-     EditorLayout.tsx        # Dark-themed layout untuk display editing
-         DisplayCanvas       # Landscape Konva.js canvas
-`
+    UserEditorLayout.tsx        # Premium light-themed layout
+        TemplateEditArea        # Main canvas preview + Tabbed Edit flow
+            Invitation Tab      # Section reordering & content editing
+            Orbit Tab           # Cinematic Wing configuration
+```
 
 ### Component Tree
 
 | Component | File | Description |
 |-----------|------|-------------|
-| UserEditorPage | `pages/UserEditorPage.tsx` | Mode router (invitation/welcome) |
-| UserEditorLayout | `Layout/UserEditorLayout.tsx` | Light wrapper layout |
-| TemplateEditArea | `UserEditor/TemplateEditArea.tsx` | Preview container with Konva canvas |
-| SeamlessCanvas | `Canvas/SeamlessCanvas.tsx` | Main invitation canvas (multi-section) |
-| DisplayCanvas | `Canvas/DisplayCanvas.tsx` | Welcome display canvas (landscape) |
-| ElementRenderer | `Canvas/ElementRenderer.tsx` | Renders all element types on canvas |
-| IconGridMenu | `UserEditor/IconGridMenu.tsx` | Feature buttons grid |
+| UserEditorPage | `pages/UserEditorPage.tsx` | High-level router & state initialization |
+| TemplateEditArea | `UserEditor/TemplateEditArea.tsx` | Central logic for tab switching & reordering |
+| UserKonvaPreview | `UserEditor/UserKonvaPreview.tsx` | DOM-based render engine (Zero-Cutoff) |
+| UserElementEditor | `UserEditor/UserElementEditor.tsx` | Dynamic content editor for elements |
 
 ### Feature Panels
 
 | Panel | File | Function |
 |-------|------|----------|
-| **MusicPanel** | `Panels/MusicPanel.tsx` | Background music selection |
-| **ThemePanel** | `Panels/ThemePanel.tsx` | Color theme customization |
-| **SharePanel** | `Panels/SharePanel.tsx` | Share link generator |
-| **ExportPanel** | `Panels/ExportPanel.tsx` | PDF/Video export (tier-gated) |
+| **MusicPanel** | `Panels/MusicPanel.tsx` | Advanced background music controller |
+| **ThemePanel** | `Panels/ThemePanel.tsx` | Global design system customization |
+| **ExportPanel** | `Panels/ExportPanel.tsx` | Tier-gated HD export engine |
 
 ---
+
 
 ##  State Management (Zustand)
 
