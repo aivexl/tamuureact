@@ -273,14 +273,9 @@ export const TemplateEditArea: React.FC = () => {
                                                                 </div>
 
                                                                 {/* PHONE FRAME */}
-                                                                <div className="relative aspect-[414/896] w-full max-w-[320px] mx-auto bg-white rounded-[4rem] shadow-[0_40px_100px_-15px_rgba(0,0,0,0.15)] border-[14px] border-slate-900 ring-4 ring-slate-100/50 z-10 transition-transform duration-700 group-hover/preview:scale-[1.02]">
+                                                                <div className="relative aspect-[414/896] w-full max-w-[320px] mx-auto bg-white rounded-[4rem] shadow-[0_40px_100px_-15px_rgba(0,0,0,0.15)] border-[14px] border-slate-900 ring-4 ring-slate-100/50 z-10">
                                                                     <div className="absolute inset-0 rounded-[3rem] overflow-visible">
                                                                         <UserKonvaPreview sectionId={section.id} />
-                                                                    </div>
-
-                                                                    {/* iPhone Notch Style */}
-                                                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-900 rounded-b-3xl z-20 flex items-center justify-center">
-                                                                        <div className="w-10 h-1 bg-white/10 rounded-full" />
                                                                     </div>
                                                                 </div>
 
@@ -345,7 +340,7 @@ export const TemplateEditArea: React.FC = () => {
                         {/* ORBIT CARDS GRID */}
                         <div className="grid grid-cols-1 gap-8">
                             {/* ORBIT LEFT CARD */}
-                            <div className="bg-white/90 backdrop-blur-3xl rounded-[4rem] border border-slate-200 shadow-2xl overflow-hidden group/orbit transition-all duration-1000 hover:shadow-indigo-500/10">
+                            <div className="bg-white/90 backdrop-blur-3xl rounded-none border border-slate-200 shadow-2xl overflow-hidden group/orbit transition-all duration-1000">
                                 <div className="p-0 grid grid-cols-1 xl:grid-cols-2 gap-0">
                                     <div className="space-y-0 relative">
                                         <div className="absolute top-8 left-8 right-8 flex items-center justify-between z-30 pointer-events-none">
@@ -400,7 +395,7 @@ export const TemplateEditArea: React.FC = () => {
                             </div>
 
                             {/* ORBIT RIGHT CARD */}
-                            <div className="bg-white/90 backdrop-blur-3xl rounded-[4rem] border border-slate-200 shadow-2xl overflow-hidden group/orbit transition-all duration-1000 hover:shadow-teal-500/10">
+                            <div className="bg-white/90 backdrop-blur-3xl rounded-none border border-slate-200 shadow-2xl overflow-hidden group/orbit transition-all duration-1000">
                                 <div className="p-0 grid grid-cols-1 xl:grid-cols-2 gap-0">
                                     <div className="space-y-0 relative">
                                         <div className="absolute top-8 left-8 right-8 flex items-center justify-between z-30 pointer-events-none">
