@@ -60,7 +60,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
             >
                 {/* Section Header - Absolute Isolation Pattern */}
                 <div className="p-8 flex items-center gap-6 pointer-events-none relative">
-                    {/* 1. Drag Handle - ISOLATED LAYER */}
+                    {/* 1. Drag Handle - EXPANDED SIDE COLUMN ISOLATION */}
                     <div
                         onPointerDown={(e) => {
                             e.preventDefault();
@@ -71,7 +71,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
                             e.preventDefault();
                             e.stopPropagation();
                         }}
-                        className="cursor-grab active:cursor-grabbing p-3 hover:bg-slate-50 rounded-2xl text-slate-300 group-hover:text-slate-400 transition-all touch-none relative z-[70] pointer-events-auto select-none"
+                        className="cursor-grab active:cursor-grabbing p-6 px-4 -ml-4 hover:bg-slate-50/80 rounded-l-[3rem] text-slate-300 group-hover:text-slate-400 transition-all touch-none relative z-[75] pointer-events-auto select-none border-r border-slate-50/50"
                     >
                         <GripVertical className="w-6 h-6" />
                     </div>
@@ -258,12 +258,8 @@ export const TemplateEditArea: React.FC = () => {
         }
     };
 
-    const handleReorder = (newSections: typeof sections) => {
-        // Atomic batch update for 100% fluidity
-        const updated = newSections.map((s, idx) => ({ ...s, order: idx }));
-        updateSectionsBatch(updated);
-    };
-
+    // Calculate pre-sorted array for synchronization
+    const sortedSections = [...sections].sort((a, b) => a.order - b.order);
 
     return (
         <div className="space-y-8 pb-32 font-outfit">
@@ -355,14 +351,14 @@ export const TemplateEditArea: React.FC = () => {
                     >
                         <Reorder.Group
                             axis="y"
-                            values={sections}
-                            onReorder={(newOrder) => {
-                                const normalized = newOrder.map((s, idx) => ({ ...s, order: idx }));
+                            values={sortedSections}
+                            onReorder={(reordered) => {
+                                const normalized = reordered.map((s, idx) => ({ ...s, order: idx }));
                                 updateSectionsBatch(normalized);
                             }}
                             className="space-y-6"
                         >
-                            {[...sections].sort((a, b) => a.order - b.order).map((section) => (
+                            {sortedSections.map((section) => (
                                 <SectionItem
                                     key={section.id}
                                     section={section}

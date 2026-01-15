@@ -127,14 +127,14 @@ export const SectionsSidebar: React.FC = () => {
                         <div className="p-2">
                             <Reorder.Group
                                 axis="y"
-                                values={sections}
+                                values={sortedSections}
                                 onReorder={(newOrder) => {
                                     const normalized = newOrder.map((s, idx) => ({ ...s, order: idx }));
                                     updateSectionsBatch(normalized);
                                 }}
                                 className="space-y-1"
                             >
-                                {[...sections].sort((a, b) => a.order - b.order).map((section) => (
+                                {sortedSections.map((section) => (
                                     <SectionItem key={section.id} section={section} />
                                 ))}
                             </Reorder.Group>
@@ -197,7 +197,7 @@ function SectionItem({ section }: { section: any }) {
                     : 'hover:bg-white/5'
                     }`}
             >
-                {/* Drag Handle - Restricted Area */}
+                {/* Drag Handle - EXPANDED SIDE COLUMN ISOLATION */}
                 <div
                     onPointerDown={(e) => {
                         e.preventDefault();
@@ -208,7 +208,7 @@ function SectionItem({ section }: { section: any }) {
                         e.preventDefault();
                         e.stopPropagation();
                     }}
-                    className="cursor-grab active:cursor-grabbing text-white/30 hover:text-white/50 p-1 -m-1 touch-none relative z-[70] pointer-events-auto select-none"
+                    className="cursor-grab active:cursor-grabbing text-white/20 hover:text-premium-accent/60 p-2.5 px-3 -ml-2 hover:bg-white/5 rounded-l-lg touch-none relative z-[75] pointer-events-auto select-none border-r border-white/5 transition-all"
                 >
                     <GripVertical className="w-3.5 h-3.5" />
                 </div>
