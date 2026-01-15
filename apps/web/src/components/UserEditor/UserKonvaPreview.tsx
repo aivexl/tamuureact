@@ -73,7 +73,7 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
                     transform: `scale(${scale})`,
                     transformOrigin: canvasType === 'main' ? 'top center' : 'center center', // Top-anchored for invitation
                     position: 'relative',
-                    overflow: 'visible', // CRITICAL: Zero-Cutoff Bleed
+                    overflow: 'hidden', // Clip elements at canvas boundary
                     transition: 'all 0.5s cubic-bezier(0.22, 1, 0.36, 1)',
                     boxShadow: canvasType === 'main' ? 'none' : '0 20px 50px rgba(0,0,0,0.3)',
                     borderRadius: canvasType === 'main' ? 0 : '2rem',

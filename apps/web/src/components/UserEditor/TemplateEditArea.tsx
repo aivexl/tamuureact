@@ -273,8 +273,8 @@ export const TemplateEditArea: React.FC = () => {
                                                                 </div>
 
                                                                 {/* PHONE FRAME */}
-                                                                <div className="relative aspect-[414/896] w-full max-w-[320px] mx-auto bg-white rounded-[4rem] shadow-[0_40px_100px_-15px_rgba(0,0,0,0.15)] border-[14px] border-slate-900 ring-4 ring-slate-100/50 z-10">
-                                                                    <div className="absolute inset-0 rounded-[3rem] overflow-visible">
+                                                                <div className="relative aspect-[414/896] w-full max-w-[320px] mx-auto bg-white rounded-[4rem] shadow-[0_40px_100px_-15px_rgba(0,0,0,0.15)] border-[14px] border-slate-900 ring-4 ring-slate-100/50 z-10 overflow-hidden">
+                                                                    <div className="absolute inset-0 rounded-[3rem] overflow-hidden">
                                                                         <UserKonvaPreview sectionId={section.id} />
                                                                     </div>
                                                                 </div>
