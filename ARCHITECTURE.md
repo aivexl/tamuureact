@@ -105,7 +105,7 @@ tamuureact/
 - **Hosting**: Cloudflare Pages & Workers
 - **Database**: Cloudflare D1 (`tamuu-db`)
 - **Storage**: Cloudflare R2 (`tamuu-assets`)
-- **Package Manager**: pnpm (workspace)
+- **Package Manager**: npm (workspace)
 - **Build System**: Turborepo
 - **Payment Gateway**: Xendit (Invoice API)
 
@@ -133,18 +133,18 @@ tamuureact/
 
 ```bash
 # Development
-pnpm dev           # Run all apps
-pnpm dev:web       # Run web only
-pnpm dev:api       # Run API only
+npm run dev           # Run all apps (Turbo)
+npm run dev:web       # Run web only
+npm run dev:api       # Run API only
 
 # Build
-pnpm build         # Build all
-pnpm build:web     # Build web only
+npm run build         # Build all
+npm run build:web     # Build web only
 
 # Deploy
-pnpm deploy        # Deploy all
-pnpm deploy:web    # Deploy web to Cloudflare Pages
-pnpm deploy:api    # Deploy API to Cloudflare Workers
+npm run deploy:web:app     # Deploy Editor to Cloudflare Pages
+npm run deploy:web:landing # Deploy Landing to Cloudflare Pages
+npm run deploy:api         # Deploy API to Cloudflare Workers
 ```
 
 ---
@@ -214,8 +214,14 @@ Role: admin
 
 Platform Tamuu mengadopsi arsitektur **Tabbed Editor** kelas dunia untuk memberikan pengalaman editing yang intuitif namun powerful:
 
-1. **Invitation Editor (Tab 1)** - Editor vertikal mobile-first untuk konten inti undangan.
-2. **Cinematic Stage (Tab 2)** - Editor "Orbit" untuk elemen sayap kiri/kanan yang mempercantik tampilan desktop.
+1. **Invitation Editor (Tab 1)** - Mobile-first canvas (414x896) for core invitation content.
+2. **Cinematic Stage (Tab 2)** - Desktop master stage (800x896) for cinematic wings and wide-screen visuals.
+
+### Render Engine (Zero-Cutoff)
+
+The Tamuu V3 Engine uses a modular, DOM-based rendering approach:
+- **Zero-Cutoff Guarantee**: `overflow: visible` is applied to all design viewports, allowing elegant bleeding for decorative elements.
+- **Multi-Baseline Scaling**: Dynamic scaling engine in `UserKonvaPreview.tsx` that adapts to both 414px and 800px design baselines without visual distortion.
 
 ### Page & Layout Structure
 

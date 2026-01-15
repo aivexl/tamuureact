@@ -20,15 +20,25 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
     const section = sectionId ? sections.find(s => s.id === sectionId) : null;
     const orbitCanvas = canvasType === 'orbit-left' ? orbit.left : (canvasType === 'orbit-right' ? orbit.right : null);
 
-    const CANVAS_WIDTH = 414;
-    const SECTION_HEIGHT = 896;
+    // CTO ENTERPRISE DIMENSIONS (Matches engine standard)
+    const DESIGN_WIDTH = canvasType === 'main' ? 414 : 800;
+    const DESIGN_HEIGHT = 896;
 
-    // CTO FIX: Dynamic scaling based on container width
+    // CTO FIX: Multi-canvas Scaling Engine
     useEffect(() => {
         const updateScale = () => {
             if (containerRef.current) {
-                const { width } = containerRef.current.getBoundingClientRect();
-                setScale(width / CANVAS_WIDTH);
+                const { width, height } = containerRef.current.getBoundingClientRect();
+
+                // Calculate scale to fit width while maintaining aspect ratio
+                const scaleW = width / DESIGN_WIDTH;
+                const scaleH = height / DESIGN_HEIGHT;
+
+                // For main, we usually scale to width. 
+                // For orbit wings, we scale to fit whichever is tighter to ensure NO CUTOFF.
+                const newScale = canvasType === 'main' ? scaleW : Math.min(scaleW, scaleH);
+
+                setScale(newScale);
             }
         };
 
@@ -37,7 +47,7 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
         if (containerRef.current) resizeObserver.observe(containerRef.current);
 
         return () => resizeObserver.disconnect();
-    }, []);
+    }, [canvasType, DESIGN_WIDTH, DESIGN_HEIGHT]);
 
     if (!section && canvasType === 'main') return null;
 
@@ -46,20 +56,27 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
     const backgroundUrl = canvasType === 'main' ? section?.backgroundUrl : orbitCanvas?.backgroundUrl;
 
     return (
-        <div ref={containerRef} className={`relative w-full h-full flex items-start justify-center overflow-visible ${canvasType === 'main' ? 'bg-slate-950' : 'bg-transparent'}`}>
-            {/* The scaled viewport */}
+        <div
+            ref={containerRef}
+            className="relative w-full h-full flex items-center justify-center overflow-visible bg-transparent transition-all duration-1000"
+        >
+            {/* The Scaled Render Viewport */}
             <div
                 style={{
-                    width: canvasType === 'main' ? CANVAS_WIDTH : '100%',
-                    height: canvasType === 'main' ? SECTION_HEIGHT : '100%',
+                    width: DESIGN_WIDTH,
+                    height: DESIGN_HEIGHT,
                     backgroundColor: backgroundColor,
                     backgroundImage: backgroundUrl ? `url(${backgroundUrl})` : 'none',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
-                    transform: canvasType === 'main' ? `scale(${scale})` : 'none',
-                    transformOrigin: 'top center', // Changed to center to allow symmetrical bleed
+                    transform: `scale(${scale})`,
+                    transformOrigin: 'center center', // Perfectly centered scaling
                     position: 'relative',
-                    overflow: 'visible' // CRITICAL: Allow elements to bleed out
+                    overflow: 'visible', // CRITICAL: Zero-Cutoff Bleed
+                    transition: 'all 0.5s cubic-bezier(0.22, 1, 0.36, 1)',
+                    boxShadow: canvasType === 'main' ? 'none' : '0 20px 50px rgba(0,0,0,0.3)',
+                    borderRadius: canvasType === 'main' ? 0 : '2rem',
+                    flexShrink: 0
                 }}
             >
                 {/* Element Mapper */}
@@ -77,7 +94,8 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
                                 height: element.height,
                                 transform: `rotate(${element.rotation || 0}deg) scale(${element.scale || 1})`,
                                 opacity: element.opacity ?? 1,
-                                zIndex: element.zIndex
+                                zIndex: element.zIndex,
+                                pointerEvents: 'none' // Previews are non-interactive
                             }}
                         >
                             <ElementRenderer layer={element} isEditor={false} />
@@ -94,8 +112,8 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
             </div>
 
             {/* Hint for developers (minimalist) */}
-            <div className="absolute bottom-2 right-2 pointer-events-none">
-                <p className="text-[6px] font-black text-white/10 uppercase tracking-[0.2em]">
+            <div className="absolute bottom-2 right-2 pointer-events-none opacity-20">
+                <p className="text-[6px] font-black text-white uppercase tracking-[0.2em]">
                     TAMUU V3 ENGINE
                 </p>
             </div>

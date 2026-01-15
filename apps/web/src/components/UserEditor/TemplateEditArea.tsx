@@ -273,7 +273,7 @@ export const TemplateEditArea: React.FC = () => {
                                                                 </div>
 
                                                                 {/* PHONE FRAME */}
-                                                                <div className="relative aspect-[9/16] w-full max-w-[280px] mx-auto bg-white rounded-[4rem] shadow-[0_40px_100px_-15px_rgba(0,0,0,0.1)] border-[12px] border-slate-900 ring-4 ring-slate-100/50 z-10 transition-transform duration-700 group-hover/preview:scale-[1.02]">
+                                                                <div className="relative aspect-[414/896] w-full max-w-[320px] mx-auto bg-white rounded-[4rem] shadow-[0_40px_100px_-15px_rgba(0,0,0,0.15)] border-[14px] border-slate-900 ring-4 ring-slate-100/50 z-10 transition-transform duration-700 group-hover/preview:scale-[1.02]">
                                                                     <div className="absolute inset-0 rounded-[3rem] overflow-visible">
                                                                         <UserKonvaPreview sectionId={section.id} />
                                                                     </div>
@@ -368,7 +368,7 @@ export const TemplateEditArea: React.FC = () => {
                                                 {orbit.left.isVisible ? <Eye className="w-7 h-7" /> : <EyeOff className="w-7 h-7" />}
                                             </button>
                                         </div>
-                                        <div className="aspect-[16/10] bg-slate-950 rounded-[3rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] relative border-[12px] border-white/5 ring-1 ring-slate-200 transition-transform duration-1000 group-hover/orbit:scale-[1.02]">
+                                        <div className="aspect-[800/896] bg-slate-950 rounded-[3.5rem] overflow-visible shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] relative border-[1px] border-white/10 ring-8 ring-slate-900 transition-transform duration-1000 group-hover/orbit:scale-[1.02]">
                                             <UserKonvaPreview canvasType="orbit-left" />
                                             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 to-transparent opacity-0 group-hover/orbit:opacity-100 transition-opacity flex items-end justify-center pb-8 pointer-events-none">
                                                 <span className="px-8 py-3 bg-white/10 backdrop-blur-3xl rounded-full text-[10px] font-black text-white uppercase tracking-[0.3em] border border-white/20 shadow-2xl">Desktop View Component</span>
@@ -426,7 +426,7 @@ export const TemplateEditArea: React.FC = () => {
                                                 {orbit.right.isVisible ? <Eye className="w-7 h-7" /> : <EyeOff className="w-7 h-7" />}
                                             </button>
                                         </div>
-                                        <div className="aspect-[16/10] bg-slate-950 rounded-[3rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] relative border-[12px] border-white/5 ring-1 ring-slate-200 transition-transform duration-1000 group-hover/orbit:scale-[1.02]">
+                                        <div className="aspect-[800/896] bg-slate-950 rounded-[3.5rem] overflow-visible shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] relative border-[1px] border-white/10 ring-8 ring-slate-900 transition-transform duration-1000 group-hover/orbit:scale-[1.02]">
                                             <UserKonvaPreview canvasType="orbit-right" />
                                             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 to-transparent opacity-0 group-hover/orbit:opacity-100 transition-opacity flex items-end justify-center pb-8 pointer-events-none">
                                                 <span className="px-8 py-3 bg-white/10 backdrop-blur-3xl rounded-full text-[10px] font-black text-white uppercase tracking-[0.3em] border border-white/20 shadow-2xl">Desktop View Component</span>
