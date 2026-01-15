@@ -76,11 +76,10 @@ const ToggleCard: React.FC<ToggleCardProps> = ({ icon: Icon, label, description,
     };
 
     const activeBg = {
-        teal: 'bg-teal-500 shadow-[0_0_15px_rgba(20,184,166,0.3)]',
-        indigo: 'bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.3)]',
-        purple: 'bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.3)]',
+        teal: 'bg-teal-500',
+        indigo: 'bg-indigo-500',
+        purple: 'bg-purple-500',
     };
-
     const glowColors = {
         teal: 'bg-teal-500',
         indigo: 'bg-indigo-500',
@@ -104,10 +103,9 @@ const ToggleCard: React.FC<ToggleCardProps> = ({ icon: Icon, label, description,
             whileHover={{ y: -4, scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onChange(!value)}
-            className="group relative flex items-center justify-between p-6 bg-white/70 backdrop-blur-xl rounded-[2.5rem] border border-white/60 shadow-[0_15px_35px_-10px_rgba(0,0,0,0.02)] hover:shadow-[0_25px_50px_-15px_rgba(0,0,0,0.05)] transition-all duration-500 text-left w-full overflow-hidden"
+            className="group relative flex items-center justify-between p-6 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-500 text-left w-full overflow-hidden"
         >
-            {/* Background Glow */}
-            <div className={`absolute -right-4 -bottom-4 w-24 h-24 rounded-full blur-3xl opacity-0 group-hover:opacity-10 transition-opacity duration-700 ${glowColors[color]}`} />
+            {/* Background Glow removed */}
 
             <div className="relative z-10 flex items-center gap-4">
                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm ${colors[color]}`}>

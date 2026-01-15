@@ -9,7 +9,7 @@ interface UserEditorLayoutProps {
 
 export const UserEditorLayout: React.FC<UserEditorLayoutProps> = ({ children }) => {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-teal-50/30 flex flex-col">
+        <div className="min-h-screen bg-slate-50 flex flex-col">
             {/* Header / Navbar */}
             <Navbar />
 

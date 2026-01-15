@@ -32,15 +32,15 @@ export const InvitationInfoCard: React.FC<InvitationInfoCardProps> = ({ invitati
         <m.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white/70 backdrop-blur-xl rounded-[2.5rem] border border-white/60 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)] p-8 overflow-hidden relative group/card"
+            className="bg-white rounded-[2.5rem] border border-slate-100 shadow-lg p-8 overflow-hidden relative group/card"
         >
             {/* Subtle background decoration */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover/card:bg-teal-500/10 transition-colors duration-700" />
+            {/* Subtle background decoration removed */}
 
             <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
                 {/* Thumbnail / Avatar */}
                 <div className="relative group">
-                    <div className="w-28 h-28 bg-gradient-to-br from-slate-50 to-slate-100 rounded-[2rem] border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden transition-all duration-500 group-hover:border-teal-400 group-hover:shadow-[0_20px_40px_-15px_rgba(20,184,166,0.2)] ring-4 ring-white shadow-inner">
+                    <div className="w-28 h-28 bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden transition-all duration-500 group-hover:border-slate-400 group-hover:shadow-lg ring-4 ring-white shadow-inner">
                         {invitation.thumbnailUrl ? (
                             <img src={invitation.thumbnailUrl} alt="Thumbnail" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                         ) : (
@@ -77,7 +77,7 @@ export const InvitationInfoCard: React.FC<InvitationInfoCardProps> = ({ invitati
                     <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-6">
                         <h2 className="text-3xl font-black text-slate-900 font-outfit tracking-tighter">{invitation.title}</h2>
                         <span className="px-4 py-1.5 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-[0.2em] rounded-full border border-emerald-100 flex items-center gap-2 shadow-sm">
-                            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+                            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
                             {invitation.status}
                         </span>
                     </div>
@@ -130,7 +130,7 @@ export const InvitationInfoCard: React.FC<InvitationInfoCardProps> = ({ invitati
                     <m.button
                         whileHover={{ scale: 1.05, y: -2 }}
                         whileTap={{ scale: 0.95 }}
-                        className="px-8 py-4 bg-slate-900 text-white font-black rounded-2xl shadow-[0_10px_30px_-10px_rgba(15,23,42,0.3)] hover:shadow-[0_20px_40px_-15px_rgba(15,23,42,0.4)] transition-all font-outfit text-xs uppercase tracking-[0.2em] whitespace-nowrap bg-gradient-to-br from-slate-800 to-slate-900"
+                        className="px-8 py-4 bg-slate-900 text-white font-black rounded-2xl shadow-lg hover:shadow-xl transition-all font-outfit text-xs uppercase tracking-[0.2em] whitespace-nowrap"
                     >
                         Perpanjang Masa Aktif
                     </m.button>

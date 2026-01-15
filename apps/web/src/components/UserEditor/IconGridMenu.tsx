@@ -50,16 +50,15 @@ export const IconGridMenu: React.FC<IconGridMenuProps> = ({ onOpenPanel }) => {
                     }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => onOpenPanel(item.id)}
-                    className="group relative bg-white/60 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/60 shadow-[0_15px_35px_-10px_rgba(0,0,0,0.03)] hover:shadow-[0_25px_50px_-15px_rgba(0,0,0,0.05)] transition-all duration-500 overflow-hidden"
+                    className="group relative bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-500 overflow-hidden"
                 >
-                    {/* Hover Glow Effect */}
-                    <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-700`} />
+                    {/* Hover Glow Effect removed */}
 
                     {/* Inner Content */}
                     <div className="relative z-10 flex flex-col items-center gap-4">
                         <m.div
                             whileHover={{ rotate: [0, -10, 10, 0], transition: { duration: 0.5 } }}
-                            className={`w-16 h-16 ${item.bg} rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:bg-white group-hover:shadow-lg group-hover:scale-110`}
+                            className={`w-16 h-16 ${item.bg} rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:bg-slate-50 group-hover:scale-105`}
                         >
                             <item.icon className={`w-8 h-8 ${item.color} transition-all duration-500`} />
                         </m.div>
@@ -71,8 +70,7 @@ export const IconGridMenu: React.FC<IconGridMenuProps> = ({ onOpenPanel }) => {
                         </div>
                     </div>
 
-                    {/* Corner Decoration */}
-                    <div className="absolute -bottom-4 -right-4 w-12 h-12 bg-slate-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-2xl" />
+                    {/* Corner Decoration removed */}
 
                     {/* Special Sparkle for Theme */}
                     {item.id === 'theme' && (

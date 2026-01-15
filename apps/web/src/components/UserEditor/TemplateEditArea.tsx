@@ -39,11 +39,13 @@ const SectionItem: React.FC<SectionItemProps> = ({
     toggleVisibility
 }) => {
     const controls = useDragControls();
-    const [isDragging, setIsDragging] = useState(false);
+    // Use REF for instant state checking in same event loop
+    const wasDraggingRef = useRef(false);
 
-    // Fortress Toggle: Explicitly block expansion if we are or were just dragging
-    const handleExpandToggle = (id: string) => {
-        if (isDragging) return;
+    // Citadel Toggle: Explicitly block expansion if we just dragged
+    const handleExpandToggle = (e: React.MouseEvent, id: string) => {
+        e.stopPropagation();
+        if (wasDraggingRef.current) return;
         toggleExpand(id);
     };
 
@@ -52,10 +54,14 @@ const SectionItem: React.FC<SectionItemProps> = ({
             value={section}
             dragListener={false}
             dragControls={controls}
-            onDragStart={() => setIsDragging(true)}
+            onDragStart={() => {
+                wasDraggingRef.current = true;
+            }}
             onDragEnd={() => {
-                // Short delay before unlocking expansion to prevent accidental clicks at the end of a drag
-                setTimeout(() => setIsDragging(false), 100);
+                // Keep true long enough to consume the trailing click event
+                setTimeout(() => {
+                    wasDraggingRef.current = false;
+                }, 10);
             }}
             className="relative group h-full list-none"
             whileDrag={{
@@ -65,9 +71,9 @@ const SectionItem: React.FC<SectionItemProps> = ({
             }}
         >
             <div
-                className={`bg-white/90 backdrop-blur-3xl rounded-[3rem] border transition-all duration-700 overflow-hidden flex ${expandedSection === section.id
-                    ? 'border-indigo-100 shadow-2xl shadow-indigo-500/10 ring-1 ring-indigo-500/10'
-                    : 'border-white/80 shadow-sm hover:shadow-2xl hover:shadow-slate-200/50'
+                className={`bg-white rounded-[3rem] border transition-all duration-700 overflow-hidden flex ${expandedSection === section.id
+                    ? 'border-indigo-100 shadow-xl'
+                    : 'border-slate-100 shadow-sm hover:shadow-md'
                     }`}
             >
                 {/* 1. THE FORTRESS DRAG STRIP - PHYSICALLY DISTINCT COLUMN */}
@@ -81,7 +87,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
                         e.preventDefault();
                         e.stopPropagation();
                     }}
-                    className="w-16 md:w-20 bg-slate-50/50 border-r border-slate-100 flex items-center justify-center cursor-grab active:cursor-grabbing text-slate-300 group-hover:text-indigo-400 transition-all touch-none relative z-[80] pointer-events-auto select-none hover:bg-slate-100/80"
+                    className="w-16 md:w-20 bg-slate-50 border-r border-slate-100 flex items-center justify-center cursor-grab active:cursor-grabbing text-slate-300 group-hover:text-indigo-600 transition-all touch-none relative z-[80] pointer-events-auto select-none hover:bg-slate-100"
                 >
                     <GripVertical className="w-6 h-6" />
                 </div>
@@ -90,46 +96,48 @@ const SectionItem: React.FC<SectionItemProps> = ({
                 <div className="flex-1 flex flex-col pointer-events-none relative">
                     {/* Header Area */}
                     <div className="p-8 flex items-center gap-6">
-                        {/* Clickable Content Area - ISOLATED LAYER */}
+                        {/* THE CITADEL: TRIGGER REDUCTION */}
+                        {/* Thumbnail Icon Area - PRIMARY TRIGGER */}
                         <div
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleExpandToggle(section.id);
-                            }}
-                            className="flex-1 flex items-center gap-6 cursor-pointer pointer-events-auto relative z-10"
+                            onClick={(e) => handleExpandToggle(e, section.id)}
+                            className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-700 shadow-inner cursor-pointer pointer-events-auto z-20 hover:scale-110 active:scale-95 ${section.isVisible ? 'bg-slate-50 text-slate-600' : 'bg-slate-100 text-slate-400 grayscale'
+                                }`}
                         >
-                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-700 shadow-inner ${section.isVisible ? 'bg-slate-50 text-slate-600' : 'bg-slate-100 text-slate-400 grayscale'
-                                }`}>
-                                <Layout className="w-7 h-7" />
-                            </div>
+                            <Layout className="w-7 h-7" />
+                        </div>
 
-                            <div className="flex-1">
-                                <h4 className={`text-xl font-black tracking-tight font-outfit transition-all duration-500 ${section.isVisible ? 'text-slate-900' : 'text-slate-400 line-through'}`}>
-                                    {section.title}
-                                </h4>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">
-                                    {section.elements?.length || 0} Dynamic Layers
-                                </p>
-                            </div>
+                        {/* Title Info - NO TRIGGER (Display Only) */}
+                        <div className="flex-1">
+                            <h4 className={`text-xl font-black tracking-tight font-outfit transition-all duration-500 ${section.isVisible ? 'text-slate-900' : 'text-slate-400 line-through'}`}>
+                                {section.title}
+                            </h4>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">
+                                {section.elements?.length || 0} Dynamic Layers
+                            </p>
+                        </div>
 
-                            <div className="flex items-center gap-3">
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        toggleVisibility(e, section.id);
-                                    }}
-                                    className={`p-3.5 rounded-2xl border transition-all duration-500 pointer-events-auto ${section.isVisible
-                                        ? 'bg-white text-slate-400 border-slate-100 hover:text-indigo-500 hover:border-indigo-100'
-                                        : 'bg-slate-50 text-slate-300 border-transparent hover:text-slate-400'
-                                        }`}
-                                >
-                                    {section.isVisible ? <Eye className="w-6 h-6" /> : <EyeOff className="w-6 h-6" />}
-                                </button>
+                        <div className="flex items-center gap-3">
+                            {/* Visibility Toggle */}
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleVisibility(e, section.id);
+                                }}
+                                className={`p-3.5 rounded-2xl border transition-all duration-500 pointer-events-auto z-20 ${section.isVisible
+                                    ? 'bg-white text-slate-400 border-slate-100 hover:text-indigo-500 hover:border-indigo-100'
+                                    : 'bg-slate-50 text-slate-300 border-transparent hover:text-slate-400'
+                                    }`}
+                            >
+                                {section.isVisible ? <Eye className="w-6 h-6" /> : <EyeOff className="w-6 h-6" />}
+                            </button>
 
-                                <div className={`p-3.5 rounded-2xl border border-transparent transition-all duration-700 pointer-events-none ${expandedSection === section.id ? 'rotate-180 bg-indigo-50 text-indigo-500' : 'text-slate-300'}`}>
-                                    <ChevronDown className="w-6 h-6" />
-                                </div>
-                            </div>
+                            {/* Chevron Toggle - SECONDARY TRIGGER */}
+                            <button
+                                onClick={(e) => handleExpandToggle(e, section.id)}
+                                className={`p-3.5 rounded-2xl border border-transparent transition-all duration-700 pointer-events-auto z-20 hover:bg-slate-50 active:scale-95 ${expandedSection === section.id ? 'rotate-180 bg-indigo-50 text-indigo-500' : 'text-slate-300'}`}
+                            >
+                                <ChevronDown className="w-6 h-6" />
+                            </button>
                         </div>
                     </div>
 
@@ -143,7 +151,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
                                 transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                                 className="border-t border-slate-50/50 overflow-hidden pointer-events-auto"
                             >
-                                <div className="p-10 grid grid-cols-1 lg:grid-cols-2 gap-12 bg-gradient-to-b from-white to-slate-50/20">
+                                <div className="p-10 grid grid-cols-1 lg:grid-cols-2 gap-12 bg-white">
                                     {/* Left: Preview */}
                                     <div className="space-y-6">
                                         <div className="flex items-center justify-between px-2">
@@ -226,9 +234,10 @@ export const TemplateEditArea: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'invitation' | 'orbit'>('invitation');
     const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
 
+    // CITADEL: Strict Init Protection
+    const hasInitializedRef = useRef(false);
+
     // FORTRESS: Local State Buffering
-    // This decoupled state handles Framer Motion reordering smoothly
-    // while the store is updated in the background.
     const [localSections, setLocalSections] = useState(sections);
     const isInternalUpdate = useRef(false);
 
@@ -239,10 +248,11 @@ export const TemplateEditArea: React.FC = () => {
         }
     }, [sections]);
 
-    // Set first section as expanded on mount
+    // Set first section as expanded ONLY ON INITIAL MOUNT
     useEffect(() => {
-        if (localSections.length > 0 && !expandedSection) {
+        if (localSections.length > 0 && !hasInitializedRef.current) {
             setExpandedSection(localSections[0].id);
+            hasInitializedRef.current = true;
         }
     }, [localSections]);
 
@@ -303,11 +313,11 @@ export const TemplateEditArea: React.FC = () => {
         <div className="space-y-8 pb-32 font-outfit">
             {/* PREMIUM TAB SWITCHER */}
             <div className="flex justify-center mb-12">
-                <div className="bg-white/50 backdrop-blur-3xl p-2 rounded-[3rem] border border-slate-200/50 shadow-2xl flex items-center gap-1.5 ring-1 ring-slate-950/5">
+                <div className="bg-white p-2 rounded-[3rem] border border-slate-200 shadow-lg flex items-center gap-1.5">
                     <button
                         onClick={() => setActiveTab('invitation')}
                         className={`px-10 py-4 rounded-[2.5rem] text-xs font-black uppercase tracking-[0.2em] transition-all duration-700 flex items-center gap-2 ${activeTab === 'invitation'
-                            ? 'bg-slate-900 text-white shadow-2xl shadow-slate-900/40 ring-4 ring-slate-900/10'
+                            ? 'bg-slate-900 text-white shadow-xl'
                             : 'text-slate-400 hover:text-slate-600 hover:bg-white/80'
                             }`}
                     >
@@ -317,7 +327,7 @@ export const TemplateEditArea: React.FC = () => {
                     <button
                         onClick={() => setActiveTab('orbit')}
                         className={`px-10 py-4 rounded-[2.5rem] text-xs font-black uppercase tracking-[0.2em] transition-all duration-700 flex items-center gap-2 ${activeTab === 'orbit'
-                            ? 'bg-slate-900 text-white shadow-2xl shadow-slate-900/40 ring-4 ring-slate-900/10'
+                            ? 'bg-slate-900 text-white shadow-xl'
                             : 'text-slate-400 hover:text-slate-600 hover:bg-white/80'
                             }`}
                     >
@@ -329,7 +339,7 @@ export const TemplateEditArea: React.FC = () => {
 
             <div className="flex items-center justify-between px-4">
                 <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-teal-500 rounded-[1.5rem] flex items-center justify-center shadow-2xl shadow-indigo-500/30 group transition-transform duration-700 hover:rotate-[15deg]">
+                    <div className="w-14 h-14 bg-indigo-600 rounded-[1.5rem] flex items-center justify-center shadow-lg group transition-transform duration-700 hover:rotate-[15deg]">
                         <Sparkles className="w-7 h-7 text-white" />
                     </div>
                     <div>
@@ -355,7 +365,7 @@ export const TemplateEditArea: React.FC = () => {
                                 ? 'bg-emerald-500 text-white'
                                 : saveStatus === 'error'
                                     ? 'bg-red-500 text-white'
-                                    : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-900/30'
+                                    : 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg'
                             }`}
                     >
                         {saveStatus === 'saving' && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -369,7 +379,7 @@ export const TemplateEditArea: React.FC = () => {
                     <m.button
                         whileHover={{ scale: 1.05, y: -2 }}
                         whileTap={{ scale: 0.95 }}
-                        className="flex items-center gap-2 px-6 py-4 bg-white text-slate-700 font-black text-xs rounded-2xl border border-slate-200 shadow-xl hover:shadow-2xl transition-all uppercase tracking-widest ring-1 ring-slate-100"
+                        className="flex items-center gap-2 px-6 py-4 bg-white text-slate-700 font-black text-xs rounded-2xl border border-slate-200 shadow-lg hover:shadow-xl transition-all uppercase tracking-widest"
                     >
                         <Plus className="w-4 h-4" />
                         Halaman Baru
