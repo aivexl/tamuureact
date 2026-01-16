@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { PreviewView } from '@/components/Preview/PreviewView';
 import { useStore, type Layer } from '@/store/useStore';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
@@ -8,12 +8,27 @@ import { usePreviewData } from '@/hooks/queries';
 
 export const PreviewPage: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
-    const { data: previewResponse, isLoading: isQueryLoading } = usePreviewData(slug);
+    const navigate = useNavigate();
+    const { data: previewResponse, isLoading: isQueryLoading, isError } = usePreviewData(slug);
 
     useEffect(() => {
+        // GHOST V4.0: UNICORN REDIRECT GUARD
+        // If query definitively failed, bounce to homepage to prevent "Redirection Flash" loop
+        if (isError) {
+            console.error('[PreviewPage] Failed to resolve slug:', slug);
+            navigate('/', { replace: true });
+            return;
+        }
+
         if (slug === 'draft' || !previewResponse) return;
 
         const { data, source } = previewResponse;
+
+        // Safety check to ensure we have actual invitation/template data
+        if (!data) return;
+
+        console.log(`[PreviewPage] Hydrating from ${source}:`, data.id);
+
         useStore.setState({ templateType: 'invitation' });
 
         const rawSections = Array.isArray(data.sections) ? (data.sections as any[]) : [];
@@ -47,7 +62,7 @@ export const PreviewPage: React.FC = () => {
             isTemplate: source === 'templates',
             templateType: data.type === 'display' ? 'display' : 'invitation'
         });
-    }, [slug, previewResponse]);
+    }, [slug, previewResponse, isError, navigate]);
 
     const isLoading = slug !== 'draft' && isQueryLoading;
 
@@ -55,11 +70,15 @@ export const PreviewPage: React.FC = () => {
         return <PremiumLoader />;
     }
 
+    if (!previewResponse && slug !== 'draft') {
+        return <div className="min-h-screen bg-black flex items-center justify-center text-white/20 uppercase tracking-widest text-xs">Resolving Invitation...</div>;
+    }
+
     return (
         <div className="w-full h-screen bg-black">
             <PreviewView
                 isOpen={true}
-                onClose={() => window.close()}
+                onClose={() => (window.opener ? window.close() : navigate('/'))}
                 id={slug === 'draft' ? useStore.getState().id : previewResponse?.data?.id}
                 isTemplate={previewResponse?.source === 'templates'}
             />

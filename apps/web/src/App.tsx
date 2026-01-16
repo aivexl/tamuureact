@@ -98,6 +98,7 @@ const App: React.FC = () => {
                         {/* Preview Routes - Public for sharing */}
                         <Route path="/preview/:slug" element={<PreviewPage />} />
                         <Route path="/v/:slug" element={<PreviewPage />} />
+
                         <Route path="/upgrade" element={<MainLayout><UpgradePage /></MainLayout>} />
                         <Route path="/billing" element={<MainLayout><BillingPage /></MainLayout>} />
                         <Route path="/terms" element={<MainLayout><TermsPage /></MainLayout>} />
@@ -114,6 +115,12 @@ const App: React.FC = () => {
                         <Route path="/guests" element={<ProtectedRoute><MainLayout><GuestManagementPage /></MainLayout></ProtectedRoute>} />
                         <Route path="/guests/:invitationId" element={<ProtectedRoute><MainLayout><GuestManagementPage /></MainLayout></ProtectedRoute>} />
                         <Route path="/wishes" element={<ProtectedRoute><MainLayout><GuestWishesPage /></MainLayout></ProtectedRoute>} />
+
+                        {/* 
+                            GHOST V4.0: Catch-all Slug Route 
+                            MUST be after all specific routes to avoid collisions.
+                        */}
+                        <Route path="/:slug" element={<PreviewPage />} />
 
                         {/* ============================================ */}
                         {/* APP ROUTES - Guarded by Domain/Auth logic in components if needed */}

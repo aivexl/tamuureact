@@ -370,7 +370,7 @@ export const TemplateEditArea: React.FC = () => {
                             // BILLIONAIRE PATHING: Fallback to UUID if slug is missing
                             const previewSlug = slug || invitationId;
                             if (previewSlug) {
-                                const targetUrl = `https://tamuu.id/v/${previewSlug}`;
+                                const targetUrl = `https://tamuu.id/${previewSlug}`;
                                 console.log('[Preview] Opening:', targetUrl);
                                 window.open(targetUrl, '_blank');
                             } else {
