@@ -36,15 +36,10 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
     const {
         activeSectionId,
         setActiveSection,
-        setSections,
-        setOrbitLayers,
-        setIsTemplate,
-        setSlug,
-        setId,
-        setProjectName,
-        setCategory,
         setThumbnailUrl,
         setMusic,
+        isPublished,
+        setIsPublished,
     } = useStore();
 
     const [loading, setLoading] = useState(true);
@@ -97,6 +92,7 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                 setCategory(data.category || 'Wedding');
                 setThumbnailUrl(data.thumbnail_url);
                 if (data.music) setMusic(data.music);
+                setIsPublished(!!data.is_published);
 
                 setIsTemplate(false);
 
@@ -105,6 +101,7 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                     id: data.id,
                     title: data.name,
                     slug: data.slug,
+                    is_published: !!data.is_published, // RAW VALUE FOR TOGGLES
                     status: data.is_published ? "Published" : "Draft",
                     thumbnailUrl: data.thumbnail_url,
                     category: data.category

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { Power, MousePointer2, Layout, Check, Sparkles } from 'lucide-react';
 import { invitations as invitationsApi } from '@/lib/api';
+import { useStore } from '@/store/useStore';
 
 interface StatusTogglesProps {
     invitation: any;
@@ -10,6 +11,7 @@ interface StatusTogglesProps {
 
 export const StatusToggles: React.FC<StatusTogglesProps> = ({ invitation, onUpdate }) => {
     const [isUpdating, setIsUpdating] = useState(false);
+    const { setIsPublished } = useStore();
 
     // Mock states for other toggles for now
     const [isScroll, setIsScroll] = useState(true);
@@ -21,6 +23,7 @@ export const StatusToggles: React.FC<StatusTogglesProps> = ({ invitation, onUpda
         try {
             console.log('[StatusToggles] Updating is_published to:', val);
             await invitationsApi.update(invitation.id, { is_published: val });
+            setIsPublished(val);
             onUpdate({ ...invitation, is_published: val, status: val ? "Published" : "Draft" });
         } catch (err: any) {
             console.error('[StatusToggles] Failed to update status:', err);

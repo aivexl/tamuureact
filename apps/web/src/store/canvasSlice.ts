@@ -11,25 +11,23 @@ export interface CanvasState {
     category?: string; // Template category
     templateType: 'invitation' | 'display';
     isTemplate: boolean;
-    music?: {
-        id: string;
-        url: string;
-        title: string;
-        artist: string;
-        source_type: 'library' | 'gdrive';
-    };
-    setId: (id: string) => void;
-    setThumbnailUrl: (url: string) => void;
-    setProjectName: (name: string) => void;
-    setZoom: (zoom: number) => void;
-    setPan: (pan: { x: number; y: number }) => void;
-    setBackgroundColor: (color: string) => void;
-    setSlug: (slug: string) => void;
-    setCanvasTransform: (transform: { x: number; y: number; zoom: number }) => void;
-    setTemplateType: (type: 'invitation' | 'display') => void;
-    setIsTemplate: (isTemplate: boolean) => void;
-    setCategory: (category: string) => void;
-    setMusic: (music: CanvasState['music']) => void;
+    artist: string;
+    source_type: 'library' | 'gdrive';
+};
+isPublished: boolean;
+setId: (id: string) => void;
+setThumbnailUrl: (url: string) => void;
+setProjectName: (name: string) => void;
+setZoom: (zoom: number) => void;
+setPan: (pan: { x: number; y: number }) => void;
+setBackgroundColor: (color: string) => void;
+setSlug: (slug: string) => void;
+setCanvasTransform: (transform: { x: number; y: number; zoom: number }) => void;
+setTemplateType: (type: 'invitation' | 'display') => void;
+setIsTemplate: (isTemplate: boolean) => void;
+setCategory: (category: string) => void;
+setMusic: (music: CanvasState['music']) => void;
+setIsPublished: (isPublished: boolean) => void;
 }
 
 export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
@@ -44,6 +42,7 @@ export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
     isTemplate: false,
     category: undefined,
     music: undefined,
+    isPublished: false,
     setZoom: (zoom) => set({ zoom }),
     setPan: (pan) => set({ pan }),
     setBackgroundColor: (backgroundColor) => set({ backgroundColor }),
@@ -56,4 +55,5 @@ export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
     setIsTemplate: (isTemplate) => set({ isTemplate }),
     setCategory: (category) => set({ category }),
     setMusic: (music) => set({ music }),
+    setIsPublished: (isPublished) => set({ isPublished }),
 });

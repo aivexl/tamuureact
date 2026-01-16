@@ -37,7 +37,8 @@ export const useStore = create<StoreState>()(
                     pan: state.pan,
                     projectName: state.projectName,
                     orbit: state.orbit,
-                    music: state.music
+                    music: state.music,
+                    isPublished: state.isPublished
                 })
             }
         ),
@@ -53,6 +54,7 @@ export const useStore = create<StoreState>()(
                 id: state.id,
                 orbit: state.orbit,
                 music: state.music,
+                isPublished: state.isPublished,
                 user: state.user,
                 token: state.token
             }),
@@ -110,6 +112,7 @@ export const useStore = create<StoreState>()(
                         projectName: state.projectName || 'Untitled Design',
                         id: state.id,
                         orbit,
+                        isPublished: state.isPublished ?? false,
                         activeSectionId: state.activeSectionId || sections[0]?.id || null,
                         activeCanvas: state.activeCanvas || 'main'
                     });
