@@ -435,9 +435,11 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
             case 'svg_wave': return 'Wave & Blob Presets';
             case 'digital_gift': return 'Angpao Theme';
             case 'social_mockup': return 'Social Platform';
-            case 'social_mockup': return 'Social Platform';
             case 'interaction': return 'Select Cinematic Effect';
-            default: return `Add ${type?.replace('_', ' ').charAt(0).toUpperCase() + type?.replace('_', ' ').slice(1)}`;
+            default: {
+                const label = type?.replace('_', ' ') || '';
+                return `Add ${label.charAt(0).toUpperCase() + label.slice(1)}`;
+            }
         }
     };
 

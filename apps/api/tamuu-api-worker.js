@@ -111,6 +111,7 @@ export default {
             }
 
             if (path === '/api/user/profile' && method === 'PATCH') {
+                const body = await request.json();
                 const {
                     id, name, phone, gender, birthDate,
                     bank1Name, bank1Number, bank1Holder,
@@ -138,10 +139,10 @@ export default {
                         updated_at = datetime('now')
                     WHERE id = ?
                 `).bind(
-                    name, phone, gender, birthDate,
-                    bank1Name, bank1Number, bank1Holder,
-                    bank2Name, bank2Number, bank2Holder,
-                    emoneyType, emoneyNumber, giftAddress,
+                    name ?? null, phone ?? null, gender ?? null, birthDate ?? null,
+                    bank1Name ?? null, bank1Number ?? null, bank1Holder ?? null,
+                    bank2Name ?? null, bank2Number ?? null, bank2Holder ?? null,
+                    emoneyType ?? null, emoneyNumber ?? null, giftAddress ?? null,
                     id
                 ).run();
 
@@ -202,7 +203,7 @@ export default {
                     // 1. Update Transaction
                     await env.DB.prepare(
                         'UPDATE billing_transactions SET status = ?, paid_at = datetime("now"), payment_method = ?, payment_channel = ? WHERE external_id = ?'
-                    ).bind('PAID', body.payment_method, body.payment_channel, id).run();
+                    ).bind('PAID', body.payment_method ?? null, body.payment_channel ?? null, id).run();
 
                     // 2. Provision User
                     await env.DB.prepare(
@@ -299,15 +300,15 @@ export default {
                         checked_out_at = COALESCE(?, checked_out_at)
                      WHERE id = ?`
                 ).bind(
-                    body.name || null,
-                    body.phone || null,
-                    body.address || null,
-                    body.table_number || null,
-                    body.tier || null,
-                    body.guest_count || null,
-                    body.shared_at || null,
-                    body.checked_in_at || null,
-                    body.checked_out_at || null,
+                    body.name ?? null,
+                    body.phone ?? null,
+                    body.address ?? null,
+                    body.table_number ?? null,
+                    body.tier ?? null,
+                    body.guest_count ?? null,
+                    body.shared_at ?? null,
+                    body.checked_in_at ?? null,
+                    body.checked_out_at ?? null,
                     id
                 ).run();
                 return json({ success: true }, corsHeaders);
@@ -557,7 +558,7 @@ export default {
                         display_order = COALESCE(?, display_order),
                         updated_at = datetime('now')
                      WHERE id = ?`
-                ).bind(body.name, body.icon, body.color, body.display_order, id).run();
+                ).bind(body.name ?? null, body.icon ?? null, body.color ?? null, body.display_order ?? null, id).run();
 
                 return json({ id, updated: true }, corsHeaders);
             }
@@ -736,9 +737,9 @@ export default {
                         updated_at = datetime('now')
                       WHERE id = ? `
                 ).bind(
-                    body.name,
-                    JSON.stringify(body.content),
-                    body.thumbnail_url,
+                    body.name ?? null,
+                    body.content ? JSON.stringify(body.content) : null,
+                    body.thumbnail_url ?? null,
                     id
                 ).run();
                 return json({ id, updated: true }, corsHeaders);
@@ -881,8 +882,8 @@ export default {
                     const thumbnailUrl = body.thumbnail_url || templateData?.thumbnail || null;
 
                     await env.DB.prepare(
-                        `INSERT INTO invitations(id, user_id, name, slug, category, zoom, pan, sections, layers, orbit, music, thumbnail_url, template_id, is_published, display_design_id) 
-                         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                        `INSERT INTO invitations(id, user_id, name, slug, category, zoom, pan, sections, layers, orbit_layers, music, thumbnail_url, template_id, is_published) 
+                         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
                     ).bind(
                         id,
                         userId || null,
@@ -897,8 +898,7 @@ export default {
                         music ? JSON.stringify(music) : null,
                         thumbnailUrl,
                         body.template_id || null,
-                        body.is_published ? 1 : 0,
-                        body.display_design_id || null
+                        body.is_published ? 1 : 0
                     ).run();
 
                     // Update User's Invitation Count
@@ -972,8 +972,24 @@ export default {
             if (path.match(/^\/api\/invitations\/[^/]+$/) && method === 'PUT') {
                 const id = path.split('/')[3];
                 const body = await request.json();
-                await env.DB.prepare(
-                    `UPDATE invitations SET 
+                console.log(`[API] PUT /invitations/${id}`, body);
+
+                // CTO FIX: Handle partial updates by only stringifying if field is present
+                const pan = body.pan !== undefined ? JSON.stringify(body.pan) : null;
+                const sections = body.sections !== undefined ? JSON.stringify(body.sections) : null;
+                const layers = body.layers !== undefined ? JSON.stringify(body.layers) : null;
+                const orbitRaw = body.orbit !== undefined ? body.orbit : body.orbit_layers;
+                const orbit = orbitRaw !== undefined ? JSON.stringify(orbitRaw) : null;
+                const music = body.music !== undefined ? JSON.stringify(body.music) : null;
+
+                try {
+                    console.log(`[DB] Updating invitation ${id} with:`, {
+                        name: body.name,
+                        is_published: body.is_published,
+                        has_sections: !!body.sections
+                    });
+                    await env.DB.prepare(
+                        `UPDATE invitations SET 
                         name = COALESCE(?, name),
                         slug = COALESCE(?, slug),
                         thumbnail_url = COALESCE(?, thumbnail_url),
@@ -982,22 +998,34 @@ export default {
                         pan = COALESCE(?, pan),
                         sections = COALESCE(?, sections),
                         layers = COALESCE(?, layers),
-                        orbit = COALESCE(?, orbit),
+                        orbit_layers = COALESCE(?, orbit_layers),
                         is_published = COALESCE(?, is_published),
-                        display_design_id = COALESCE(?, display_design_id),
                         music = COALESCE(?, music),
                         updated_at = datetime('now')
                      WHERE id = ? `
-                ).bind(
-                    body.name, body.slug, body.thumbnail_url, body.category,
-                    body.zoom, JSON.stringify(body.pan),
-                    JSON.stringify(body.sections), JSON.stringify(body.layers),
-                    JSON.stringify(body.orbit || body.orbit_layers), body.is_published !== undefined ? (body.is_published ? 1 : 0) : null,
-                    body.display_design_id !== undefined ? body.display_design_id : null,
-                    body.music ? JSON.stringify(body.music) : null,
-                    id
-                ).run();
-                return json({ id, updated: true }, corsHeaders);
+                    ).bind(
+                        body.name ?? null,
+                        body.slug ?? null,
+                        body.thumbnail_url ?? null,
+                        body.category ?? null,
+                        body.zoom ?? null,
+                        pan,
+                        sections,
+                        layers,
+                        orbit,
+                        body.is_published !== undefined ? (body.is_published ? 1 : 0) : null,
+                        music,
+                        id
+                    ).run();
+                    return json({ id, updated: true }, corsHeaders);
+                } catch (dbError) {
+                    console.error('[DB Error] Update invitation failed:', dbError.message);
+                    return json({
+                        error: 'Database update failed',
+                        details: dbError.message,
+                        code: 'DB_ERROR'
+                    }, { headers: corsHeaders, status: 500 });
+                }
             }
 
             if (path.match(/^\/api\/invitations\/[^/]+$/) && method === 'DELETE') {
@@ -1084,8 +1112,8 @@ export default {
                      WHERE id = ? `
                 ).bind(
                     body.is_visible !== undefined ? (body.is_visible ? 1 : 0) : null,
-                    body.attendance,
-                    body.message,
+                    body.attendance ?? null,
+                    body.message ?? null,
                     id
                 ).run();
                 return json({ id, updated: true }, corsHeaders);

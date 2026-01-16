@@ -184,7 +184,10 @@ export const invitations = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
-        if (!res.ok) throw new Error('Failed to update invitation');
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.details || errorData.error || 'Failed to update invitation');
+        }
         return res.json();
     },
 

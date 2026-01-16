@@ -11,7 +11,8 @@ import {
     Check,
     Loader2,
     Save,
-    Layout
+    Layout,
+    AlertCircle
 } from 'lucide-react';
 import { UserKonvaPreview } from './UserKonvaPreview';
 import { UserElementEditor } from './UserElementEditor';
@@ -227,7 +228,8 @@ export const TemplateEditArea: React.FC = () => {
         updateSectionsBatch,
         updateSection,
         orbit,
-        updateOrbitCanvas
+        updateOrbitCanvas,
+        slug
     } = useStore();
 
     const [expandedSection, setExpandedSection] = useState<string | null>(null);
@@ -352,37 +354,41 @@ export const TemplateEditArea: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Save Button */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                    <m.button
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => {
+                            if (slug) {
+                                window.open(`https://tamuu.id/v/${slug}`, '_blank');
+                            } else {
+                                alert('Link belum tersedia. Pastikan undangan sudah disimpan.');
+                            }
+                        }}
+                        className="flex items-center gap-2 px-6 py-4 bg-white text-slate-700 font-black text-xs rounded-2xl border border-slate-200 shadow-lg hover:shadow-xl transition-all uppercase tracking-widest"
+                    >
+                        <Eye className="w-4 h-4" />
+                        Preview
+                    </m.button>
+
                     <m.button
                         onClick={handleSave}
                         disabled={saveStatus === 'saving'}
                         whileHover={{ scale: 1.05, y: -2 }}
                         whileTap={{ scale: 0.95 }}
-                        className={`flex items-center gap-2 px-8 py-4 font-black text-xs rounded-2xl shadow-2xl transition-all uppercase tracking-widest ${saveStatus === 'saving'
-                            ? 'bg-amber-500 text-white cursor-wait'
+                        className={`flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all duration-500 shadow-lg hover:shadow-xl ${saveStatus === 'saving'
+                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                             : saveStatus === 'saved'
                                 ? 'bg-emerald-500 text-white'
                                 : saveStatus === 'error'
                                     ? 'bg-red-500 text-white'
-                                    : 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg'
+                                    : 'bg-slate-900 text-white hover:bg-slate-800'
                             }`}
                     >
                         {saveStatus === 'saving' && <Loader2 className="w-4 h-4 animate-spin" />}
                         {saveStatus === 'saved' && <Check className="w-4 h-4" />}
-                        {(saveStatus === 'idle' || saveStatus === 'error') && <Save className="w-4 h-4" />}
-                        {saveStatus === 'saving' ? 'Menyimpan...' :
-                            saveStatus === 'saved' ? 'Tersimpan!' :
-                                saveStatus === 'error' ? 'Gagal' : 'Simpan Perubahan'}
-                    </m.button>
-
-                    <m.button
-                        whileHover={{ scale: 1.05, y: -2 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="flex items-center gap-2 px-6 py-4 bg-white text-slate-700 font-black text-xs rounded-2xl border border-slate-200 shadow-lg hover:shadow-xl transition-all uppercase tracking-widest"
-                    >
-                        <Plus className="w-4 h-4" />
-                        Halaman Baru
+                        {saveStatus === 'error' && <AlertCircle className="w-4 h-4" />}
+                        {saveStatus === 'saving' ? 'Menyimpan...' : 'Simpan'}
                     </m.button>
                 </div>
             </div>
