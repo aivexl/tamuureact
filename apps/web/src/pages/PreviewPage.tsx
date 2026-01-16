@@ -59,13 +59,7 @@ export const PreviewPage: React.FC = () => {
             projectName: data.name || '',
             activeSectionId: validSections[0]?.id || null,
             orbit: data.orbit || useStore.getState().orbit,
-            music: data.music || {
-                url: 'https://api.tamuu.id/assets/music/tr-01.mp3',
-                title: 'Sabilulungan',
-                artist: 'Traditional',
-                volume: 0.5,
-                isMuted: false
-            },
+            music: data.music || null,
             id: data.id,
             selectedLayerId: null,
             hasHydrated: true,

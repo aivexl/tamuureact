@@ -11,11 +11,15 @@ import { MusicDrawer } from '../../Modals/MusicDrawer';
 import { useAudioController } from '@/hooks/useAudioController';
 
 export const MusicPanel: React.FC = () => {
-    const { user, music, setMusic } = useStore();
+    const { music, setMusic } = useStore();
     const navigate = useNavigate();
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-    const { play, pause, isPlaying, currentUrl } = useAudioController();
+    const { play, pause, stop, currentUrl, isPlaying } = useAudioController();
+
+    // TAMUU V3 CIADEL: We can't rely just on music from store for UI labels
+    // as it might be null. 
+    const currentSong = music;
 
     const handleSelectSong = (song: any) => {
         setMusic({

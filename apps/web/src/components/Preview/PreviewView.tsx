@@ -291,19 +291,14 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
     useEffect(() => {
         if (!isOpen) return;
 
-        // Show music title for 5 seconds on load for premium discovery effect
-        setShowMusicTitle(true);
-        const timer = setTimeout(() => setShowMusicTitle(false), 5000);
+        if (isOpen && music?.url) {
+            // Immediately attempt to play
+            play(music.url);
 
-        const musicUrl = music?.url || 'https://api.tamuu.id/assets/music/tr-01.mp3';
-
-        // Immediately attempt to play
-        play(musicUrl);
-
-        return () => {
-            clearTimeout(timer);
-            pause();
-        };
+            // Brief delay before showing title for cinematic entrance
+            const timer = setTimeout(() => setShowMusicTitle(true), 2500);
+            return () => clearTimeout(timer);
+        }
     }, [isOpen, music?.url, play, pause]);
 
     // Extra cleanup on actual component unmount

@@ -276,7 +276,8 @@ export const TemplateEditArea: React.FC = () => {
             console.log('[Save] Saving invitation changes...');
             await invitationsApi.update(invitationId, {
                 sections,
-                orbit_layers: orbit
+                orbit_layers: orbit,
+                music: useStore.getState().music
             });
             setSaveStatus('saved');
             console.log('[Save] Changes saved successfully');
