@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
+import { API_BASE } from '@/lib/api'; // Added API_BASE import
 import { X, Maximize2, Minimize2, Play, Square } from 'lucide-react';
 import { ElementRenderer } from '../Canvas/ElementRenderer';
 import { AnimatedLayer, clearAnimationCache } from './AnimatedLayer';
@@ -205,7 +206,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
 
         const pollTriggers = async () => {
             try {
-                const baseUrl = import.meta.env.VITE_API_URL || 'https://api.tamuu.id';
+                const baseUrl = API_BASE;
                 const endpoint = templateType === 'display'
                     ? `/api/user-display-designs/${propId}`
                     : `/api/invitations/${propId}`;
@@ -523,7 +524,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
             // This maintains visual continuity without a jump or scroll animation
             if (scrollContainerRef.current) {
                 scrollContainerRef.current.scrollTo({
-                    // BUT, the previous code had `const scrollTarget = coverHeight * scaleFactor;` commented out?
+                    // BUT, the previous code had `const scrollTarget = coverHeight * scaleFactor; ` commented out?
                     // No, line 223 in original code had `coverHeight * scaleFactor`.
                     // But in my previous fix I used `top: coverHeight`.
                     // The user said "Masih ada bug".
@@ -1109,7 +1110,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                const url = music?.url || currentUrl || 'https://api.tamuu.id/assets/music/tr-01.mp3';
+                                const url = music?.url || currentUrl || `${API_BASE}/assets/music/tr-01.mp3`;
                                 isGlobalPlaying ? pause() : play(url);
                             }}
                             className="relative flex items-center justify-center text-premium-accent hover:bg-white/10 transition-all cursor-pointer flex-shrink-0"
@@ -1201,14 +1202,14 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
 
                 <style dangerouslySetInnerHTML={{
                     __html: `
-                    @keyframes ken-burns {
-                        0% { transform: scale(1); }
-                        100% { transform: scale(1.15); }
-                    }
-                    .animate-ken-burns {
-                        animation: ken-burns 20s ease-in-out infinite alternate;
-                    }
-                `}} />
+@keyframes ken - burns {
+    0 % { transform: scale(1); }
+    100 % { transform: scale(1.15); }
+}
+                    .animate - ken - burns {
+    animation: ken - burns 20s ease -in -out infinite alternate;
+}
+`}} />
 
                 {/* GLOBAL VISUAL ENGINE (Background/Foreground) - INSIDE FULLSCREEN CONTAINER */}
                 <VisualEffectsCanvas mode="global" className="z-[70000]" />
@@ -1259,8 +1260,8 @@ const PreviewOrbitStage: React.FC<{
 
     return (
         <div
-            className={`absolute inset-0 pointer-events-none transition-all duration-1000 ${isOpened ? 'opacity-100' : 'opacity-100'
-                }`}
+            className={`absolute inset - 0 pointer - events - none transition - all duration - 1000 ${isOpened ? 'opacity-100' : 'opacity-100'
+                } `}
             style={{
                 [type]: 0,
                 backgroundColor: isPortrait ? 'transparent' : 'transparent', // Background moves to inner design container

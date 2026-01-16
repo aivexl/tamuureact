@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Sparkles, Zap, Heart, Wind, Star, Sun, Cloud, Moon, Terminal, Palette, Wand2, PartyPopper } from 'lucide-react';
+import { admin } from '@/lib/api';
 
 const CATEGORIES = [
     {
@@ -55,12 +56,9 @@ export const RemoteTriggerPage: React.FC = () => {
         if (!id) return;
         setLoading(effect);
         try {
-            const baseUrl = import.meta.env.VITE_API_URL || 'https://api.tamuu.id';
-            const response = await fetch(`${baseUrl}/api/trigger/${id}/${effect}`);
-            if (response.ok) {
-                setStatus(`Triggered ${effect}!`);
-                setTimeout(() => setStatus(null), 2000);
-            }
+            await admin.triggerDisplay(id, effect);
+            setStatus(`Triggered ${effect}!`);
+            setTimeout(() => setStatus(null), 2000);
         } catch (err) {
             console.error('Trigger failed:', err);
         } finally {
@@ -110,8 +108,8 @@ export const RemoteTriggerPage: React.FC = () => {
                                     onClick={() => triggerEffect(eff.id)}
                                     disabled={loading !== null}
                                     className={`relative flex flex-col items-center justify-center gap-3 p-5 rounded-2xl border transition-all active:scale-95 ${loading === eff.id
-                                            ? 'bg-premium-accent border-premium-accent text-premium-dark'
-                                            : 'bg-white/5 border-white/5 active:border-premium-accent/50'
+                                        ? 'bg-premium-accent border-premium-accent text-premium-dark'
+                                        : 'bg-white/5 border-white/5 active:border-premium-accent/50'
                                         }`}
                                 >
                                     <span className="text-3xl">{eff.icon}</span>

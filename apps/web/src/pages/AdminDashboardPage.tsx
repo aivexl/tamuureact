@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { AdminLayout } from '../components/Layout/AdminLayout';
 import {
     Users,
@@ -10,6 +10,7 @@ import {
     MessageSquare
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { admin } from '@/lib/api';
 
 // Initial state for real statistics
 const INITIAL_STATS = [
@@ -48,15 +49,14 @@ const StatCard = ({ stat, index }: { stat: any, index: number }) => (
 );
 
 export const AdminDashboardPage: React.FC = () => {
-    const [stats, setStats] = React.useState(INITIAL_STATS);
-    const [systemHealth, setSystemHealth] = React.useState<any>(null);
-    const [isLoading, setIsLoading] = React.useState(true);
+    const [stats, setStats] = useState(INITIAL_STATS);
+    const [systemHealth, setSystemHealth] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const fetchStats = async () => {
             try {
-                const res = await fetch('https://api.tamuu.id/api/admin/stats');
-                const data = await res.json();
+                const data = await admin.getStats();
 
                 setStats(prev => prev.map(s => ({
                     ...s,

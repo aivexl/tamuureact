@@ -3,10 +3,10 @@
  * Replaces Supabase client with Cloudflare-based API
  */
 
-const API_BASE = import.meta.env.PROD
+export const API_BASE = import.meta.env.PROD
     ? 'https://tamuu-api.shafania57.workers.dev'
     : ''; // Dev: use Vite proxy at /api
-// const API_BASE = 'https://api.tamuu.id';
+// export const API_BASE = 'https://api.tamuu.id';
 
 // ============================================
 // TEMPLATES API
