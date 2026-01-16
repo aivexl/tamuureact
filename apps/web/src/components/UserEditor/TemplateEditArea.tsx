@@ -235,6 +235,7 @@ export const TemplateEditArea: React.FC = () => {
     const [expandedSection, setExpandedSection] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'invitation' | 'orbit'>('invitation');
     const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+    const [isReordering, setIsReordering] = useState(false);
 
     // CITADEL: Strict Init Protection
     const hasInitializedRef = useRef(false);
@@ -246,7 +247,14 @@ export const TemplateEditArea: React.FC = () => {
     // Sync store -> local
     useEffect(() => {
         if (!isInternalUpdate.current) {
-            setLocalSections([...sections].sort((a, b) => a.order - b.order));
+            console.log('[Editor] Syncing store sections to local state:', sections.length);
+            const sorted = [...sections].sort((a, b) => a.order - b.order);
+            setLocalSections(sorted);
+
+            // Auto-expand first section if nothing is expanded and we have data
+            if (sorted.length > 0 && !expandedSection) {
+                setExpandedSection(sorted[0].id);
+            }
         }
     }, [sections]);
 
@@ -359,10 +367,12 @@ export const TemplateEditArea: React.FC = () => {
                         whileHover={{ scale: 1.05, y: -2 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => {
-                            if (slug) {
-                                window.open(`https://tamuu.id/v/${slug}`, '_blank');
+                            const activeSlug = slug;
+                            if (activeSlug) {
+                                window.open(`https://tamuu.id/v/${activeSlug}`, '_blank');
                             } else {
-                                alert('Link belum tersedia. Pastikan undangan sudah disimpan.');
+                                console.error('[Preview] Slug is missing in store');
+                                alert('Link belum tersedia. Pastikan undangan memiliki slug (URL) yang valid.');
                             }
                         }}
                         className="flex items-center gap-2 px-6 py-4 bg-white text-slate-700 font-black text-xs rounded-2xl border border-slate-200 shadow-lg hover:shadow-xl transition-all uppercase tracking-widest"

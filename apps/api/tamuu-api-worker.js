@@ -1249,15 +1249,23 @@ function parseJsonFields(row) {
             try {
                 result[field] = JSON.parse(result[field]);
             } catch (e) {
-                // keep as string if parse fails
+                console.error(`[API] Failed to parse JSON for field ${field}:`, e);
+                // Fallback to defaults for critical fields
+                if (field === 'sections' || field === 'layers' || field === 'orbit_layers') {
+                    result[field] = field === 'orbit_layers' ? {} : [];
+                }
             }
+        } else if (!result[field]) {
+            // Provide defaults if field is null/missing
+            if (field === 'sections' || field === 'layers') result[field] = [];
+            else if (field === 'orbit' || field === 'orbit_layers') result[field] = {};
         }
     }
 
     // Aliasing logic for backward compatibility
-    if (result.orbit && !result.orbit_layers) {
+    if (result.orbit && (Object.keys(result.orbit).length > 0) && (!result.orbit_layers || Object.keys(result.orbit_layers).length === 0)) {
         result.orbit_layers = result.orbit;
-    } else if (result.orbit_layers && !result.orbit) {
+    } else if (result.orbit_layers && (Object.keys(result.orbit_layers).length > 0) && (!result.orbit || Object.keys(result.orbit).length === 0)) {
         result.orbit = result.orbit_layers;
     }
 

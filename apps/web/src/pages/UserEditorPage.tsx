@@ -88,7 +88,9 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                     setOrbitLayers(data.orbit_layers);
                 }
 
-                // Global Parity Hydration: Sync all metadata to store
+                // CTO MISSION CRITICAL: Force immediate store hydration
+                // We use a serial approach to ensure all subscribers catch the update
+                console.log('[UserEditor] Hydrating store with slug:', data.slug);
                 setSlug(data.slug || '');
                 setId(data.id);
                 setProjectName(data.name || 'Untitled Design');
@@ -97,6 +99,18 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                 if (data.music) setMusic(data.music);
 
                 setIsTemplate(false);
+
+                // Final guard: Ensure local state reflects the store's new reality
+                setInvitation({
+                    id: data.id,
+                    title: data.name,
+                    slug: data.slug,
+                    status: data.is_published ? "Published" : "Draft",
+                    thumbnailUrl: data.thumbnail_url,
+                    category: data.category
+                });
+
+                console.log('[UserEditor] Store hydration complete, lifting loader.');
 
             } catch (err) {
                 console.error('[UserEditor] Failed to load invitation:', err);

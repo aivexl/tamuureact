@@ -47,7 +47,14 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
         return () => resizeObserver.disconnect();
     }, [canvasType, DESIGN_WIDTH, DESIGN_HEIGHT]);
 
-    if (!section && canvasType === 'main') return null;
+    if (!section && canvasType === 'main') {
+        return (
+            <div className="w-full h-full bg-slate-900/50 flex flex-col items-center justify-center p-8 text-center gap-4 animate-pulse">
+                <div className="w-12 h-12 rounded-full border-2 border-slate-800 border-t-slate-500 animate-spin" />
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Initializing Engine...</p>
+            </div>
+        );
+    }
 
     const elements = canvasType === 'main' ? (section?.elements || []) : (orbitCanvas?.elements || []);
     const backgroundColor = canvasType === 'main' ? (section?.backgroundColor || '#0a0a0a') : (orbitCanvas?.backgroundColor || 'transparent');
