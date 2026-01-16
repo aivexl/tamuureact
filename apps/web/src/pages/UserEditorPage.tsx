@@ -64,6 +64,7 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
     useEffect(() => {
         const loadInvitation = async () => {
             if (!id) return;
+            console.log('[UserEditor] [v3.7-ULTRA] Starting load sequence for:', id);
 
             setLoading(true);
             setError(null);

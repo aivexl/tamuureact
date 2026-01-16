@@ -986,7 +986,8 @@ export default {
             if (path.match(/^\/api\/invitations\/[^/]+$/) && method === 'PUT') {
                 const id = path.split('/')[3];
                 const body = await request.json();
-                console.log(`[API] PUT /invitations/${id}`, body);
+                const traceId = Math.random().toString(36).substring(7);
+                console.log(`[PUT Invitations] [${traceId}] Updating invitation ${id}, published: ${body.is_published}`);
 
                 // CTO FIX: Handle partial updates by only stringifying if field is present
                 const pan = body.pan !== undefined ? JSON.stringify(body.pan) : null;
