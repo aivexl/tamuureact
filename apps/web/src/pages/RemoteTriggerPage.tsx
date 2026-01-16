@@ -56,7 +56,7 @@ export const RemoteTriggerPage: React.FC = () => {
         if (!id) return;
         setLoading(effect);
         try {
-            await admin.triggerDisplay(id, effect);
+            await admin.triggerDisplay(id, { name: 'Remote Control', effect, timestamp: Date.now() });
             setStatus(`Triggered ${effect}!`);
             setTimeout(() => setStatus(null), 2000);
         } catch (err) {
