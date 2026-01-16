@@ -97,6 +97,7 @@ const App: React.FC = () => {
 
                         {/* Preview Routes - Public for sharing */}
                         <Route path="/preview/:slug" element={<PreviewPage />} />
+                        <Route path="/v/:slug" element={<PreviewPage />} />
                         <Route path="/upgrade" element={<MainLayout><UpgradePage /></MainLayout>} />
                         <Route path="/billing" element={<MainLayout><BillingPage /></MainLayout>} />
                         <Route path="/terms" element={<MainLayout><TermsPage /></MainLayout>} />
