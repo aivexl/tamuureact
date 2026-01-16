@@ -1001,7 +1001,8 @@ export default {
                     console.log(`[DB] Updating invitation ${id} with:`, {
                         name: body.name,
                         is_published: body.is_published,
-                        has_sections: !!body.sections
+                        has_sections: !!body.sections,
+                        has_music: !!music
                     });
                     await env.DB.prepare(
                         `UPDATE invitations SET 

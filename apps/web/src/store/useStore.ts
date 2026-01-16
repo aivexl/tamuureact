@@ -112,6 +112,7 @@ export const useStore = create<StoreState>()(
                         projectName: state.projectName || 'Untitled Design',
                         id: state.id,
                         orbit,
+                        music: state.music,
                         isPublished: state.isPublished ?? false,
                         activeSectionId: state.activeSectionId || sections[0]?.id || null,
                         activeCanvas: state.activeCanvas || 'main'

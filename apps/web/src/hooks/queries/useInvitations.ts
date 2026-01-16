@@ -73,12 +73,14 @@ export function usePreviewData(slug: string | undefined) {
         queryKey: ['preview', slug],
         queryFn: async () => {
             if (!slug) return null;
+            const timestamp = Date.now();
             try {
-                const data = await templates.get(slug);
+                // UNICORN: Bypass edge cache for fresh preview data
+                const data = await templates.get(`${slug}?t=${timestamp}`);
                 return { data, source: 'templates' };
             } catch (e) {
                 try {
-                    const data = await invitations.get(slug);
+                    const data = await invitations.get(`${slug}?t=${timestamp}`);
                     return { data, source: 'invitations' };
                 } catch (e2) {
                     throw new Error('Data not found');
