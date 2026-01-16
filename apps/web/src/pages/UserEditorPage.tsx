@@ -60,42 +60,34 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
     const [invitation, setInvitation] = useState<any>(null);
     const [activePanel, setActivePanel] = useState<string | null>(null);
     const previewRef = useRef<HTMLDivElement>(null);
+    const hasAttemptedRef = useRef<string | null>(null);
 
     useEffect(() => {
         const loadInvitation = async () => {
-            if (!id) return;
-            console.log('[UserEditor] [v3.7-ULTRA] Starting load sequence for:', id);
+            if (!id || hasAttemptedRef.current === id) return;
+            hasAttemptedRef.current = id;
+
+            console.log('[UserEditor] [v3.8-BILLIONAIRE] Starting atomic load for:', id);
 
             setLoading(true);
             setError(null);
 
-            // SUPER-ULTRA ID GUARD: If the store belongs to another invitation, WIPE it immediately
-            // This prevents the 'Invite A data appearing in Invite B' persistence bug.
+            // 1. ID GUARD: Atomic check before any state changes
             if (hasHydrated && currentStoredId !== id) {
-                console.log('[UserEditor] ID Mismatch (Store:', currentStoredId, '!= URL:', id, '). Wiping store for clean slate.');
+                console.log('[UserEditor] ID Sync: Wiping stale data (', currentStoredId, '->', id, ')');
                 resetStore();
                 resetSections();
                 clearLayers();
             }
 
             try {
-                console.log('[UserEditor] Loading invitation:', id);
                 const data = await invitationsApi.get(id);
-                console.log('[UserEditor] Invitation data received from API');
 
-                // TRANSACTIONAL HYDRATION: Ensure all store updates are atomic before UI mount
-                // We do this BEFORE setting the local invitation state to avoid race conditions.
-
-                // 1. Content
-                if (data.sections && Array.isArray(data.sections)) {
-                    setSections(data.sections);
-                    if (data.sections.length > 0 && !activeSectionId) {
-                        setActiveSection(data.sections[0].id);
-                    }
-                }
+                // 2. TRANSACTIONAL HYDRATION: Update store in one go where possible
+                // We use the setters, but don't include them in deps because they are stable.
+                setSections(data.sections || []);
                 if (data.orbit_layers) setOrbitLayers(data.orbit_layers);
 
-                // 2. Metadata (Parity)
                 setSlug(data.slug || '');
                 setId(data.id);
                 setProjectName(data.name || 'Untitled Design');
@@ -105,7 +97,7 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                 setIsPublished(!!data.is_published);
                 setIsTemplate(false);
 
-                // 3. Local State UI Parity
+                // 3. UI Sync
                 setInvitation({
                     id: data.id,
                     title: data.name,
@@ -116,21 +108,24 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                     category: data.category
                 });
 
-                console.log('[UserEditor] Store fully synchronized with API. UI Unlocked.');
+                if (data.sections?.length > 0 && !activeSectionId) {
+                    setActiveSection(data.sections[0].id);
+                }
 
+                console.log('[UserEditor] Hydration Successful. Engine Online.');
             } catch (err) {
-                console.error('[UserEditor] Failed to load invitation:', err);
+                console.error('[UserEditor] Hydration Failed:', err);
                 setError('Undangan tidak ditemukan atau terjadi kesalahan.');
+                hasAttemptedRef.current = null; // Allow retry
             } finally {
                 setLoading(false);
             }
         };
 
-        // Only start loading after localStorage rehydration is confirmed
         if (hasHydrated) {
             loadInvitation();
         }
-    }, [id, hasHydrated, currentStoredId, activeSectionId, clearLayers, resetSections, resetStore, setActiveSection, setCategory, setId, setIsPublished, setIsTemplate, setMusic, setOrbitLayers, setProjectName, setSections, setSlug, setThumbnailUrl]);
+    }, [id, hasHydrated]); // MINIMAL DEPS: Only ID and Hydration status matter. Setters are stable.
 
 
     if (loading) {

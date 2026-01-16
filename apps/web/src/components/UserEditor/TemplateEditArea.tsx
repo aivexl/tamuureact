@@ -367,12 +367,15 @@ export const TemplateEditArea: React.FC = () => {
                         whileHover={{ scale: 1.05, y: -2 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => {
-                            const activeSlug = slug;
-                            if (activeSlug) {
-                                window.open(`https://tamuu.id/v/${activeSlug}`, '_blank');
+                            // BILLIONAIRE PATHING: Fallback to UUID if slug is missing
+                            const previewSlug = slug || invitationId;
+                            if (previewSlug) {
+                                const targetUrl = `https://tamuu.id/v/${previewSlug}`;
+                                console.log('[Preview] Opening:', targetUrl);
+                                window.open(targetUrl, '_blank');
                             } else {
-                                console.error('[Preview] Slug is missing in store');
-                                alert('Link belum tersedia. Pastikan undangan memiliki slug (URL) yang valid.');
+                                console.error('[Preview] Critical Error: Both Slug and ID are missing');
+                                alert('Maaf, link preview tidak bisa dibuat. Hubungi admin.');
                             }
                         }}
                         className="flex items-center gap-2 px-6 py-4 bg-white text-slate-700 font-black text-xs rounded-2xl border border-slate-200 shadow-lg hover:shadow-xl transition-all uppercase tracking-widest"
