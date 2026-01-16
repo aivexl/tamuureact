@@ -8,7 +8,8 @@ interface SharePanelProps {
 
 export const SharePanel: React.FC<SharePanelProps> = ({ slug }) => {
     const [copied, setCopied] = useState(false);
-    const url = `tamuu.id/preview/${slug}`;
+    const host = typeof window !== 'undefined' ? window.location.host : 'tamuu.id';
+    const url = `${host}/preview/${slug}`;
 
 
     const handleCopy = () => {

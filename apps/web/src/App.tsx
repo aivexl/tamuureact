@@ -116,12 +116,6 @@ const App: React.FC = () => {
                         <Route path="/guests/:invitationId" element={<ProtectedRoute><MainLayout><GuestManagementPage /></MainLayout></ProtectedRoute>} />
                         <Route path="/wishes" element={<ProtectedRoute><MainLayout><GuestWishesPage /></MainLayout></ProtectedRoute>} />
 
-                        {/* 
-                            GHOST V4.0: Catch-all Slug Route 
-                            MUST be after all specific routes to avoid collisions.
-                        */}
-                        <Route path="/:slug" element={<PreviewPage />} />
-
                         {/* ============================================ */}
                         {/* APP ROUTES - Guarded by Domain/Auth logic in components if needed */}
                         {/* ============================================ */}
@@ -155,6 +149,12 @@ const App: React.FC = () => {
                                 <Route path="/user/*" element={<Navigate to="/" replace />} />
                             </>
                         )}
+
+                        {/* 
+                            GHOST V4.0: Catch-all Slug Route 
+                            MUST be after specific routes to avoid collisions.
+                        */}
+                        <Route path="/:slug" element={<PreviewPage />} />
 
                         <Route path="/display/:slug" element={<GuestWelcomeDisplay />} />
                         <Route path="/remote/:id" element={<RemoteTriggerPage />} />

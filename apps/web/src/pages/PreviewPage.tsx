@@ -9,15 +9,25 @@ import { usePreviewData } from '@/hooks/queries';
 export const PreviewPage: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
-    const { data: previewResponse, isLoading: isQueryLoading, isError } = usePreviewData(slug);
+    const { data: previewResponse, isLoading: isQueryLoading, isError, error } = usePreviewData(slug);
 
     useEffect(() => {
         // GHOST V4.0: UNICORN REDIRECT GUARD
-        // If query definitively failed, bounce to homepage to prevent "Redirection Flash" loop
+        // If query definitively failed, provide a grace period then bounce
         if (isError) {
-            console.error('[PreviewPage] Failed to resolve slug:', slug);
-            navigate('/', { replace: true });
-            return;
+            console.error('[PreviewPage] Failed to resolve slug:', slug, {
+                error,
+                timestamp: new Date().toISOString()
+            });
+
+            // Only redirect if not in development to allow debugging
+            if (import.meta.env.PROD) {
+                const timer = setTimeout(() => {
+                    navigate('/', { replace: true });
+                }, 3000); // 3 second grace period
+                return () => clearTimeout(timer);
+            }
+            return; // Added return here to prevent further execution if there's an error
         }
 
         if (slug === 'draft' || !previewResponse) return;

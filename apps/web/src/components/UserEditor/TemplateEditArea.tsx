@@ -319,6 +319,20 @@ export const TemplateEditArea: React.FC = () => {
         }, 100);
     };
 
+    const handlePreview = () => {
+        // BILLIONAIRE PATHING: Fallback to UUID if slug is missing
+        const previewSlug = slug || invitationId;
+        if (previewSlug) {
+            // Dynamic Origin: Ensures compatibility with localhost and custom domains
+            const targetUrl = `${window.location.origin}/${previewSlug}`;
+            console.log('[Preview] Opening:', targetUrl);
+            window.open(targetUrl, '_blank');
+        } else {
+            console.error('[Preview] Critical Error: Both Slug and ID are missing');
+            alert('Maaf, link preview tidak bisa dibuat. Hubungi admin.');
+        }
+    };
+
     return (
         <div className="space-y-8 pb-32 font-outfit">
             {/* PREMIUM TAB SWITCHER */}
@@ -366,18 +380,7 @@ export const TemplateEditArea: React.FC = () => {
                     <m.button
                         whileHover={{ scale: 1.05, y: -2 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => {
-                            // BILLIONAIRE PATHING: Fallback to UUID if slug is missing
-                            const previewSlug = slug || invitationId;
-                            if (previewSlug) {
-                                const targetUrl = `https://tamuu.id/${previewSlug}`;
-                                console.log('[Preview] Opening:', targetUrl);
-                                window.open(targetUrl, '_blank');
-                            } else {
-                                console.error('[Preview] Critical Error: Both Slug and ID are missing');
-                                alert('Maaf, link preview tidak bisa dibuat. Hubungi admin.');
-                            }
-                        }}
+                        onClick={handlePreview}
                         className="flex items-center gap-2 px-6 py-4 bg-white text-slate-700 font-black text-xs rounded-2xl border border-slate-200 shadow-lg hover:shadow-xl transition-all uppercase tracking-widest"
                     >
                         <Eye className="w-4 h-4" />
