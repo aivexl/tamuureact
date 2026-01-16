@@ -601,19 +601,23 @@ export default {
             if (path === '/api/templates' && method === 'POST') {
                 const body = await request.json();
                 const id = crypto.randomUUID();
+                const orbitRaw = body.orbit !== undefined ? body.orbit : body.orbit_layers;
+                const orbit = orbitRaw !== undefined ? JSON.stringify(orbitRaw) : '{}';
+
                 await env.DB.prepare(
-                    `INSERT INTO templates(id, name, slug, category, sections, layers, orbit, type, thumbnail, music) 
-                     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                    `INSERT INTO templates(id, name, slug, category, sections, layers, orbit, orbit_layers, type, thumbnail, music) 
+                     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
                 ).bind(
                     id,
                     body.name || 'Untitled Template',
-                    body.slug || null,
+                    body.slug ?? null,
                     body.category || 'Wedding',
                     JSON.stringify(body.sections || []),
                     JSON.stringify(body.layers || []),
-                    JSON.stringify(body.orbit || {}),
+                    orbit, // orbit
+                    orbit, // orbit_layers
                     body.type || 'invitation',
-                    body.thumbnail_url || null,
+                    body.thumbnail ?? null,
                     body.music ? JSON.stringify(body.music) : null
                 ).run();
                 return json({ id, ...body }, corsHeaders);
@@ -643,30 +647,37 @@ export default {
                 const id = path.split('/')[3];
                 try {
                     const body = await request.json();
+                    const orbitRaw = body.orbit !== undefined ? body.orbit : body.orbit_layers;
+                    const orbit = orbitRaw !== undefined ? JSON.stringify(orbitRaw) : null;
+
                     await env.DB.prepare(
                         `UPDATE templates SET 
                             name = COALESCE(?, name),
-                        slug = COALESCE(?, slug),
-                        thumbnail = COALESCE(?, thumbnail),
-                        category = COALESCE(?, category),
-                        zoom = COALESCE(?, zoom),
-                        pan = COALESCE(?, pan),
-                        sections = COALESCE(?, sections),
-                        layers = COALESCE(?, layers),
-                        orbit = COALESCE(?, orbit),
-                        music = COALESCE(?, music),
-                        updated_at = datetime('now')
-                         WHERE id = ? `
+                            slug = COALESCE(?, slug),
+                            thumbnail = COALESCE(?, thumbnail),
+                            category = COALESCE(?, category),
+                            type = COALESCE(?, type),
+                            zoom = COALESCE(?, zoom),
+                            pan = COALESCE(?, pan),
+                            sections = COALESCE(?, sections),
+                            layers = COALESCE(?, layers),
+                            orbit = COALESCE(?, orbit),
+                            orbit_layers = COALESCE(?, orbit_layers),
+                            music = COALESCE(?, music),
+                            updated_at = datetime('now')
+                         WHERE id = ?`
                     ).bind(
-                        body.name || null,
-                        body.slug || null,
-                        body.thumbnail || null,
-                        body.category || null,
+                        body.name ?? null,
+                        body.slug ?? null,
+                        body.thumbnail ?? null,
+                        body.category ?? null,
+                        body.type ?? null,
                         body.zoom ?? null,
                         body.pan ? JSON.stringify(body.pan) : null,
                         body.sections ? JSON.stringify(body.sections) : null,
                         body.layers ? JSON.stringify(body.layers) : null,
-                        body.orbit ? JSON.stringify(body.orbit) : null,
+                        orbit, // Update orbit
+                        orbit, // Update orbit_layers (redundancy)
                         body.music ? JSON.stringify(body.music) : null,
                         id
                     ).run();
@@ -881,9 +892,11 @@ export default {
                     const category = body.category || templateData?.category || 'Wedding';
                     const thumbnailUrl = body.thumbnail_url || templateData?.thumbnail || null;
 
+                    const orbitStr = JSON.stringify(orbit);
+
                     await env.DB.prepare(
-                        `INSERT INTO invitations(id, user_id, name, slug, category, zoom, pan, sections, layers, orbit_layers, music, thumbnail_url, template_id, is_published) 
-                         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                        `INSERT INTO invitations(id, user_id, name, slug, category, zoom, pan, sections, layers, orbit_layers, orbit, music, thumbnail_url, template_id, is_published) 
+                         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
                     ).bind(
                         id,
                         userId || null,
@@ -894,7 +907,8 @@ export default {
                         JSON.stringify(pan),
                         JSON.stringify(sections),
                         JSON.stringify(layers),
-                        JSON.stringify(orbit),
+                        orbitStr, // orbit_layers
+                        orbitStr, // orbit (alias)
                         music ? JSON.stringify(music) : null,
                         thumbnailUrl,
                         body.template_id || null,
@@ -999,6 +1013,7 @@ export default {
                         sections = COALESCE(?, sections),
                         layers = COALESCE(?, layers),
                         orbit_layers = COALESCE(?, orbit_layers),
+                        orbit = COALESCE(?, orbit),
                         is_published = COALESCE(?, is_published),
                         music = COALESCE(?, music),
                         updated_at = datetime('now')
@@ -1012,7 +1027,8 @@ export default {
                         pan,
                         sections,
                         layers,
-                        orbit,
+                        orbit, // orbit_layers
+                        orbit, // orbit (alias)
                         body.is_published !== undefined ? (body.is_published ? 1 : 0) : null,
                         music,
                         id

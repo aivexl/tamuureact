@@ -1,0 +1,160 @@
+﻿
+ Ôøà´©Å wrangler 4.54.0 (update available 4.59.1)
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+Resource location: remote 
+
+­ƒîÇ Executing on remote database tamuu-db (cb0a336d-c070-49e6-80d4-c198a2df141d):
+­ƒîÇ To execute on your local development database, remove the --remote flag from your wrangler command.
+­ƒÜú Executed 1 command in 0.12ms
+[
+  {
+    "results": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": "lower(hex(randomblob(16)))",
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "user_id",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "template_id",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "name",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "'Untitled Invitation'",
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "slug",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "thumbnail_url",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "category",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": "'Wedding'",
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "zoom",
+        "type": "REAL",
+        "notnull": 0,
+        "dflt_value": "1",
+        "pk": 0
+      },
+      {
+        "cid": 8,
+        "name": "pan",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": "'{\"x\": 0, \"y\": 0}'",
+        "pk": 0
+      },
+      {
+        "cid": 9,
+        "name": "sections",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": "'[]'",
+        "pk": 0
+      },
+      {
+        "cid": 10,
+        "name": "layers",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": "'[]'",
+        "pk": 0
+      },
+      {
+        "cid": 11,
+        "name": "orbit_layers",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": "'[]'",
+        "pk": 0
+      },
+      {
+        "cid": 12,
+        "name": "is_published",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 13,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": "datetime('now')",
+        "pk": 0
+      },
+      {
+        "cid": 14,
+        "name": "updated_at",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": "datetime('now')",
+        "pk": 0
+      },
+      {
+        "cid": 15,
+        "name": "music",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.1205
+      },
+      "duration": 0.1205,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 266240,
+      "rows_read": 0,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

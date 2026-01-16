@@ -330,4 +330,11 @@ Invitations are organized into multiple **Sections** (e.g., Opening, Bride & Gro
 - **Architecture**: Bridge antara `tamuu.id` (Landing) dan `app.tamuu.id` (Editor).
 - **Mechanism**: Deteksi domain otomatis di level client. Jika undangan berhasil dibuat di domain publik, sistem melakukan hard redirect ke subdomain `app` untuk mem-bypass route protection di domain publik.
 - **UX Impact**: Transisi instan dari pemilihan template ke editor tanpa redirect loop ke home page.
+ 
++ ### Dual-Column Stabilization (Architecture v3.5)
++ - **Context**: Menangani inkonsistensi penamaan antara `orbit` (legacy/templates) dan `orbit_layers` (editor/invitations).
++ - **Implementation**: Database menyuplai kedua kolom (`orbit` & `orbit_layers`) secara redundan.
++ - **Redundancy**: Backend API secara otomatis menulis data ke kedua kolom secara bersamaan dan melakukan auto-sync saat pembacaan (`parseJsonFields`).
++ - **Stability**: Menghilangkan `D1_TYPE_ERROR` dan `SQLITE_ERROR: no such column` secara permanen, menjamin kompatibilitas ke belakang (backwards compatibility) di semua level aplikasi.
++
 

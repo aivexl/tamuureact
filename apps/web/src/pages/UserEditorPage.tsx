@@ -39,6 +39,12 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
         setSections,
         setOrbitLayers,
         setIsTemplate,
+        setSlug,
+        setId,
+        setProjectName,
+        setCategory,
+        setThumbnailUrl,
+        setMusic,
     } = useStore();
 
     const [loading, setLoading] = useState(true);
@@ -81,6 +87,15 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                 if (data.orbit_layers) {
                     setOrbitLayers(data.orbit_layers);
                 }
+
+                // Global Parity Hydration: Sync all metadata to store
+                setSlug(data.slug || '');
+                setId(data.id);
+                setProjectName(data.name || 'Untitled Design');
+                setCategory(data.category || 'Wedding');
+                setThumbnailUrl(data.thumbnail_url);
+                if (data.music) setMusic(data.music);
+
                 setIsTemplate(false);
 
             } catch (err) {
