@@ -11,24 +11,28 @@ export interface CanvasState {
     category?: string; // Template category
     templateType: 'invitation' | 'display';
     isTemplate: boolean;
-    artist: string;
-    source_type: 'library' | 'gdrive';
-};
-isPublished: boolean;
-setId: (id: string) => void;
-setThumbnailUrl: (url: string) => void;
-setProjectName: (name: string) => void;
-setZoom: (zoom: number) => void;
-setPan: (pan: { x: number; y: number }) => void;
-setBackgroundColor: (color: string) => void;
-setSlug: (slug: string) => void;
-setCanvasTransform: (transform: { x: number; y: number; zoom: number }) => void;
-setTemplateType: (type: 'invitation' | 'display') => void;
-setIsTemplate: (isTemplate: boolean) => void;
-setCategory: (category: string) => void;
-setMusic: (music: CanvasState['music']) => void;
-setIsPublished: (isPublished: boolean) => void;
-resetStore: () => void;
+    music?: {
+        id: string;
+        url: string;
+        title: string;
+        artist: string;
+        source_type: 'library' | 'gdrive';
+    };
+    isPublished: boolean;
+    setId: (id: string) => void;
+    setThumbnailUrl: (url: string) => void;
+    setProjectName: (name: string) => void;
+    setZoom: (zoom: number) => void;
+    setPan: (pan: { x: number; y: number }) => void;
+    setBackgroundColor: (color: string) => void;
+    setSlug: (slug: string) => void;
+    setCanvasTransform: (transform: { x: number; y: number; zoom: number }) => void;
+    setTemplateType: (type: 'invitation' | 'display') => void;
+    setIsTemplate: (isTemplate: boolean) => void;
+    setCategory: (category: string) => void;
+    setMusic: (music: CanvasState['music']) => void;
+    setIsPublished: (isPublished: boolean) => void;
+    resetStore: () => void;
 }
 
 export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
