@@ -13,6 +13,7 @@ import {
     QrCode,
     RefreshCw
 } from 'lucide-react';
+import { guests as guestsApi, admin as adminApi } from '../lib/api';
 
 /**
  * GuestScannerPage - Professional QR Scanning Interface
@@ -129,11 +130,7 @@ export const GuestScannerPage: React.FC = () => {
 
         try {
             // Call Check-In API
-            const response = await fetch(`https://api.tamuu.id/api/guests/${guestIdOrCode}/checkin`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            const result = await response.json();
+            const result = await guestsApi.checkIn(guestIdOrCode);
 
             if (result.success) {
                 // SUCCESS: Guest checked in
@@ -166,15 +163,11 @@ export const GuestScannerPage: React.FC = () => {
     const triggerBlast = async (name: string) => {
         try {
             // CTO: Use the standardized Command Bus API for display sync
-            await fetch(`https://api.tamuu.id/api/trigger/${id}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: name,
-                    effect: 'confetti',
-                    style: 'cinematic',
-                    timestamp: Date.now()
-                })
+            await adminApi.triggerDisplay(id!, {
+                name: name,
+                effect: 'confetti',
+                style: 'cinematic',
+                timestamp: Date.now()
             });
             console.log(`[Scanner] Blast triggered for ${name}`);
         } catch (err: any) {

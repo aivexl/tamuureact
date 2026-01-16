@@ -61,3 +61,19 @@ export const sanitizeValue = (value: any): any => {
 
     return value;
 };
+
+/**
+ * Resolves the primary public domain for invitations.
+ * Steering Logic:
+ * - app.tamuu.id -> tamuu.id
+ * - localhost:xxxx -> localhost:xxxx
+ * - else -> current host
+ */
+export const getPublicDomain = (): string => {
+    if (typeof window === 'undefined') return 'tamuu.id';
+    const host = window.location.host;
+    if (host.startsWith('app.tamuu.id')) {
+        return 'tamuu.id';
+    }
+    return host;
+};

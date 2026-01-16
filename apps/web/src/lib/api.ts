@@ -470,6 +470,23 @@ export const music = {
         const res = await fetch(`${API_BASE}/api/music`);
         if (!res.ok) throw new Error('Failed to fetch music library');
         return res.json();
+    },
+
+    async upload(formData: FormData) {
+        const res = await fetch(`${API_BASE}/api/admin/music`, {
+            method: 'POST',
+            body: formData
+        });
+        if (!res.ok) throw new Error('Upload failed');
+        return res.json();
+    },
+
+    async delete(id: string) {
+        const res = await fetch(`${API_BASE}/api/admin/music/${id}`, {
+            method: 'DELETE'
+        });
+        if (!res.ok) throw new Error('Delete failed');
+        return res.json();
     }
 };
 
@@ -480,6 +497,16 @@ export const admin = {
     async getStats() {
         const res = await fetch(`${API_BASE}/api/admin/stats`);
         if (!res.ok) throw new Error('Failed to fetch admin stats');
+        return res.json();
+    },
+
+    async triggerDisplay(displayId: string, data: { name: string; effect?: string; style?: string; timestamp: number }) {
+        const res = await fetch(`${API_BASE}/api/trigger/${displayId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error('Failed to trigger display');
         return res.json();
     }
 };

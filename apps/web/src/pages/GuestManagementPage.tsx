@@ -8,6 +8,7 @@ import { QRModal } from '../components/Modals/QRModal';
 import * as XLSX from 'xlsx';
 import { guests as guestsApi, invitations as invitationsApi } from '../lib/api';
 import { Loader2 } from 'lucide-react';
+import { getPublicDomain } from '../lib/utils';
 
 // ============================================
 // INLINE SVG ICONS
@@ -202,20 +203,23 @@ export const GuestManagementPage: React.FC = () => {
 
     const copyGeneralLink = () => {
         if (!invitation) return;
-        navigator.clipboard.writeText(`https://tamuu.id/${invitation.slug}`);
+        const publicDomain = getPublicDomain();
+        navigator.clipboard.writeText(`https://${publicDomain}/${invitation.slug}`);
         showToast('Link umum disalin!');
     };
 
     const copyGuestLink = (guest: Guest) => {
         if (!invitation) return;
-        navigator.clipboard.writeText(`https://tamuu.id/${invitation.slug}?to=${encodeURIComponent(guest.name)}`);
+        const publicDomain = getPublicDomain();
+        navigator.clipboard.writeText(`https://${publicDomain}/${invitation.slug}?to=${encodeURIComponent(guest.name)}`);
         showToast(`Link untuk ${guest.name} disalin!`);
     };
 
     const shareWhatsApp = async (guest: Guest) => {
         if (!invitation) return;
         const phone = guest.phone || '';
-        const message = `${invitationMessage}\n\nLink Undangan: https://tamuu.id/${invitation.slug}?to=${encodeURIComponent(guest.name)}`;
+        const publicDomain = getPublicDomain();
+        const message = `${invitationMessage}\n\nLink Undangan: https://${publicDomain}/${invitation.slug}?to=${encodeURIComponent(guest.name)}`;
         window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
 
         // Mark as shared in DB
@@ -769,7 +773,7 @@ export const GuestManagementPage: React.FC = () => {
                 isOpen={showQRModal}
                 onClose={() => setShowQRModal(false)}
                 guestName={selectedQRGuest?.name || 'Tamu'}
-                url={`https://app.tamuu.id/welcome/${invitationId || 'preview'}/${selectedQRGuest?.id || ''}`}
+                url={`${window.location.origin}/welcome/${invitationId || 'preview'}/${selectedQRGuest?.id || ''}`}
                 tier={selectedQRGuest?.tier}
             />
 

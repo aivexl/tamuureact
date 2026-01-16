@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { m } from 'framer-motion';
 import { Copy, Share2, MessageCircle, Send, Globe, Check } from 'lucide-react';
+import { getPublicDomain } from '@/lib/utils';
 
 interface SharePanelProps {
     slug: string;
@@ -8,7 +9,7 @@ interface SharePanelProps {
 
 export const SharePanel: React.FC<SharePanelProps> = ({ slug }) => {
     const [copied, setCopied] = useState(false);
-    const host = typeof window !== 'undefined' ? window.location.host : 'tamuu.id';
+    const host = getPublicDomain();
     const url = `${host}/preview/${slug}`;
 
 

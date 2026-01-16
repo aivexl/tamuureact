@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { AdminLayout } from '../components/Layout/AdminLayout';
 import { Music, Upload, Trash2, Play, Pause, Search, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { music as musicApi } from '../lib/api';
 
 interface MusicTrack {
     id: string;
@@ -35,8 +36,7 @@ export const AdminMusicPage: React.FC = () => {
     // Fetch music list
     const fetchTracks = useCallback(async () => {
         try {
-            const res = await fetch('https://api.tamuu.id/api/music');
-            const data = await res.json();
+            const data = await musicApi.list();
             setTracks(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error('Failed to fetch music:', err);
@@ -83,24 +83,15 @@ export const AdminMusicPage: React.FC = () => {
             formData.append('category', uploadCategory);
             formData.append('file', uploadFile);
 
-            const res = await fetch('https://api.tamuu.id/api/admin/music', {
-                method: 'POST',
-                body: formData
-            });
+            await musicApi.upload(formData);
 
-            const result = await res.json();
+            setUploadSuccess(`"${uploadTitle}" uploaded successfully!`);
+            setUploadTitle('');
+            setUploadArtist('');
+            setUploadFile(null);
+            fetchTracks();
 
-            if (res.ok) {
-                setUploadSuccess(`"${uploadTitle}" uploaded successfully!`);
-                setUploadTitle('');
-                setUploadArtist('');
-                setUploadFile(null);
-                fetchTracks();
-
-                setTimeout(() => setUploadSuccess(''), 3000);
-            } else {
-                setUploadError(result.error || 'Upload failed');
-            }
+            setTimeout(() => setUploadSuccess(''), 3000);
         } catch (err: any) {
             setUploadError(err.message || 'Upload failed');
         } finally {
@@ -113,13 +104,8 @@ export const AdminMusicPage: React.FC = () => {
         if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
 
         try {
-            const res = await fetch(`https://api.tamuu.id/api/admin/music/${id}`, {
-                method: 'DELETE'
-            });
-
-            if (res.ok) {
-                setTracks(prev => prev.filter(t => t.id !== id));
-            }
+            await musicApi.delete(id);
+            setTracks(prev => prev.filter(t => t.id !== id));
         } catch (err) {
             console.error('Delete failed:', err);
         }
@@ -276,8 +262,8 @@ export const AdminMusicPage: React.FC = () => {
                     <button
                         onClick={() => setSelectedCategory('all')}
                         className={`px-4 py-2 rounded-xl text-sm font-bold transition-colors ${selectedCategory === 'all'
-                                ? 'bg-teal-500 text-slate-900'
-                                : 'bg-white/5 text-slate-400 hover:text-white'
+                            ? 'bg-teal-500 text-slate-900'
+                            : 'bg-white/5 text-slate-400 hover:text-white'
                             }`}
                     >
                         All ({tracks.length})
@@ -287,8 +273,8 @@ export const AdminMusicPage: React.FC = () => {
                             key={cat}
                             onClick={() => setSelectedCategory(cat)}
                             className={`px-4 py-2 rounded-xl text-sm font-bold transition-colors ${selectedCategory === cat
-                                    ? 'bg-teal-500 text-slate-900'
-                                    : 'bg-white/5 text-slate-400 hover:text-white'
+                                ? 'bg-teal-500 text-slate-900'
+                                : 'bg-white/5 text-slate-400 hover:text-white'
                                 }`}
                         >
                             {cat} ({categoryCounts[cat] || 0})
@@ -347,8 +333,8 @@ export const AdminMusicPage: React.FC = () => {
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${track.category === 'Traditional' ? 'bg-amber-500/10 text-amber-400' :
-                                                track.category === 'Instrumental' ? 'bg-blue-500/10 text-blue-400' :
-                                                    'bg-purple-500/10 text-purple-400'
+                                            track.category === 'Instrumental' ? 'bg-blue-500/10 text-blue-400' :
+                                                'bg-purple-500/10 text-purple-400'
                                             }`}>
                                             {track.category}
                                         </span>

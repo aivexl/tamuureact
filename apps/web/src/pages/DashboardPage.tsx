@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-
 import { m, AnimatePresence } from 'framer-motion';
+import { getPublicDomain } from '../lib/utils';
+import { invitations as invitationsApi, billing } from '../lib/api';
 import { useStore } from '../store/useStore';
 import { useSEO } from '../hooks/useSEO';
 import { useInvitations, Invitation } from '../hooks/queries';
@@ -175,7 +176,7 @@ export const DashboardPage: React.FC = () => {
     return (
         <div className="min-h-screen bg-white md:bg-slate-50 flex flex-col md:flex-row pt-14 pb-24 md:pb-0">
             {/* Sidebar (Desktop Only) */}
-            <aside className={`hidden md:flex fixed md:sticky top-14 left-0 z-40 flex-col bg-white border-r border-slate-200 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'} h-[calc(100vh-3.5rem)] overflow-hidden`}>
+            <aside className={`hidden md:flex fixed md:sticky top - 14 left - 0 z - 40 flex - col bg - white border - r border - slate - 200 transition - all duration - 300 ${sidebarOpen ? 'w-64' : 'w-20'} h - [calc(100vh - 3.5rem)] overflow - hidden`}>
                 {/* User Profile Card */}
                 {sidebarOpen && (
                     <div className="p-6">
@@ -204,9 +205,9 @@ export const DashboardPage: React.FC = () => {
                                     setActiveTab(item.id);
                                 }
                             }}
-                            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${activeTab === item.id ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
+                            className={`w - full flex items - center gap - 3 px - 4 py - 3.5 rounded - 2xl transition - all duration - 300 group ${activeTab === item.id ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'} `}
                         >
-                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${activeTab === item.id ? 'bg-teal-500 text-slate-900' : 'bg-slate-100 text-slate-400'}`}>
+                            <div className={`w - 8 h - 8 rounded - xl flex items - center justify - center transition - all duration - 300 group - hover: scale - 110 ${activeTab === item.id ? 'bg-teal-500 text-slate-900' : 'bg-slate-100 text-slate-400'} `}>
                                 <item.icon className="w-4 h-4" />
                             </div>
                             {sidebarOpen && <span className="text-sm font-bold tracking-tight">{item.label}</span>}
@@ -240,10 +241,10 @@ export const DashboardPage: React.FC = () => {
                     <button
                         key={item.id}
                         onClick={() => setActiveTab(item.id)}
-                        className={`flex flex-col items-center gap-1 transition-all ${activeTab === item.id ? 'text-teal-400' : 'text-slate-400'}`}
+                        className={`flex flex - col items - center gap - 1 transition - all ${activeTab === item.id ? 'text-teal-400' : 'text-slate-400'} `}
                     >
-                        <div className={`w-11 h-11 rounded-[1.25rem] flex items-center justify-center transition-all ${activeTab === item.id ? 'bg-teal-400/20 shadow-[0_0_20px_rgba(45,212,191,0.2)]' : 'bg-transparent'}`}>
-                            <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-teal-400' : 'text-slate-400'}`} />
+                        <div className={`w - 11 h - 11 rounded - [1.25rem] flex items - center justify - center transition - all ${activeTab === item.id ? 'bg-teal-400/20 shadow-[0_0_20px_rgba(45,212,191,0.2)]' : 'bg-transparent'} `}>
+                            <item.icon className={`w - 5 h - 5 ${activeTab === item.id ? 'text-teal-400' : 'text-slate-400'} `} />
                         </div>
                         <span className="text-[9px] font-black uppercase tracking-widest">{item.label}</span>
                     </button>
@@ -285,10 +286,10 @@ export const DashboardPage: React.FC = () => {
                                             className="group bg-white rounded-2xl md:rounded-3xl p-4 md:p-7 border border-slate-100 md:border-white/60 shadow-sm md:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.03)] hover:-translate-y-1 transition-all duration-500"
                                         >
                                             <div className="flex items-center justify-between mb-3 md:mb-4">
-                                                <div className={`w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-${stat.color}-500/10 flex items-center justify-center`}>
-                                                    <stat.icon className={`w-5 h-5 md:w-7 md:h-7 text-${stat.color}-600`} />
+                                                <div className={`w - 10 h - 10 md: w - 14 md: h - 14 rounded - xl md: rounded - 2xl bg - ${stat.color} -500 / 10 flex items - center justify - center`}>
+                                                    <stat.icon className={`w - 5 h - 5 md: w - 7 md: h - 7 text - ${stat.color} -600`} />
                                                 </div>
-                                                <span className={`text-[8px] md:text-xs font-black text-${stat.color}-600 px-2 py-0.5 bg-${stat.color}-50 rounded-full uppercase tracking-wider`}>{stat.badge}</span>
+                                                <span className={`text - [8px] md: text - xs font - black text - ${stat.color} -600 px - 2 py - 0.5 bg - ${stat.color} -50 rounded - full uppercase tracking - wider`}>{stat.badge}</span>
                                             </div>
                                             <div>
                                                 <p className="text-[10px] md:text-sm font-black text-slate-400 uppercase tracking-widest mb-0.5 md:mb-1">{stat.label}</p>
@@ -316,7 +317,7 @@ export const DashboardPage: React.FC = () => {
                                                                 <button className="p-2 bg-white/90 backdrop-blur-md rounded-xl hover:bg-white text-slate-900 transition-all">
                                                                     <EyeIcon className="w-5 h-5" />
                                                                 </button>
-                                                                <Link to={`/user/editor/${inv.id}`} className="p-2 bg-white/90 backdrop-blur-md rounded-xl hover:bg-white text-slate-900 transition-all">
+                                                                <Link to={`/ user / editor / ${inv.id} `} className="p-2 bg-white/90 backdrop-blur-md rounded-xl hover:bg-white text-slate-900 transition-all">
                                                                     <Edit3Icon className="w-5 h-5" />
                                                                 </Link>
                                                             </div>
@@ -324,9 +325,9 @@ export const DashboardPage: React.FC = () => {
                                                     </div>
                                                     <div className="p-4 md:p-5">
                                                         <h5 className="font-bold text-slate-900 truncate mb-1 text-xs md:text-sm">{inv.name}</h5>
-                                                        <p className="text-[10px] text-slate-400 truncate mb-3 lowercase">tamuu.id/{inv.slug}</p>
+                                                        <p className="text-[10px] text-slate-400 truncate mb-3 lowercase">{getPublicDomain()}/{inv.slug}</p>
                                                         <div className="flex items-center justify-between mt-auto">
-                                                            <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${(inv.status || 'draft') === 'published' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>{inv.status || 'draft'}</span>
+                                                            <span className={`text - [9px] font - black uppercase tracking - widest px - 2 py - 0.5 rounded - md ${(inv.status || 'draft') === 'published' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'} `}>{inv.status || 'draft'}</span>
                                                             <button className="text-[10px] font-black text-slate-900 hover:text-teal-600 transition-colors flex items-center gap-1.5">
                                                                 <UsersIcon className="w-3.5 h-3.5" /> Tamu
                                                             </button>
@@ -402,7 +403,7 @@ export const DashboardPage: React.FC = () => {
                                                         <button className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center hover:scale-110 transition-transform active:scale-90" title="Preview">
                                                             <EyeIcon className="w-6 h-6 text-slate-900" />
                                                         </button>
-                                                        <Link to={`/user/editor/${inv.id}`} className="w-14 h-14 bg-teal-500 rounded-2xl flex items-center justify-center hover:scale-110 transition-transform active:scale-90" title="Edit">
+                                                        <Link to={`/ user / editor / ${inv.id} `} className="w-14 h-14 bg-teal-500 rounded-2xl flex items-center justify-center hover:scale-110 transition-transform active:scale-90" title="Edit">
                                                             <Edit3Icon className="w-6 h-6 text-slate-900" />
                                                         </Link>
                                                     </div>
@@ -423,9 +424,9 @@ export const DashboardPage: React.FC = () => {
                                                         <Trash2Icon className="w-3.5 h-3.5" />
                                                     </button>
                                                 </div>
-                                                <p className="text-slate-400 text-[10px] font-medium mb-4 uppercase tracking-[0.1em] truncate">tamuu.id/{inv.slug}</p>
+                                                <p className="text-slate-400 text-[10px] font-medium mb-4 uppercase tracking-[0.1em] truncate">{getPublicDomain()}/{inv.slug}</p>
                                                 <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                                                    <span className={`text-[9px] font-black uppercase tracking-[0.1em] px-2 py-1 rounded-md ${(inv.status || 'draft') === 'published' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>{inv.status || 'draft'}</span>
+                                                    <span className={`text - [9px] font - black uppercase tracking - [0.1em] px - 2 py - 1 rounded - md ${(inv.status || 'draft') === 'published' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'} `}>{inv.status || 'draft'}</span>
                                                     <button className="text-[10px] font-black text-slate-400 hover:text-teal-600 flex items-center gap-1.5 transition-colors">
                                                         <UsersIcon className="w-3.5 h-3.5" /> Tamu
                                                     </button>
@@ -464,7 +465,7 @@ export const DashboardPage: React.FC = () => {
                                                 </div>
                                             </div>
                                             <button
-                                                onClick={() => navigate(`/guests/${inv.id}`)}
+                                                onClick={() => navigate(`/ guests / ${inv.id} `)}
                                                 className="w-full py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-slate-800 transition-all"
                                             >
                                                 Buka Buku Tamu
@@ -512,7 +513,7 @@ export const DashboardPage: React.FC = () => {
                                             </div>
 
                                             <button
-                                                onClick={() => navigate(`/guests/scan/${inv.id}`)}
+                                                onClick={() => navigate(`/ guests / scan / ${inv.id} `)}
                                                 className="w-full py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-teal-500 hover:text-slate-900 transition-all active:scale-95 flex items-center justify-center gap-2"
                                             >
                                                 <ScanIcon className="w-5 h-5" />

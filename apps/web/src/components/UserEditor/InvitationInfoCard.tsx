@@ -1,6 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { Calendar, Clock, Upload, ExternalLink, Copy, Check } from 'lucide-react';
+import { getPublicDomain } from '@/lib/utils';
+import { useParams } from 'react-router-dom';
 
 interface InvitationInfoCardProps {
     invitation: {
@@ -22,7 +24,8 @@ export const InvitationInfoCard: React.FC<InvitationInfoCardProps> = ({ invitati
     };
 
     const handleCopyLink = () => {
-        const url = `tamuu.id/${invitation.slug}`;
+        const publicDomain = getPublicDomain();
+        const url = `${publicDomain}/${invitation.slug}`;
         navigator.clipboard.writeText(`https://${url}`);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);

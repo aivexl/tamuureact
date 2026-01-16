@@ -18,6 +18,7 @@ import { UserKonvaPreview } from './UserKonvaPreview';
 import { UserElementEditor } from './UserElementEditor';
 import { useStore } from '@/store/useStore';
 import { useParams } from 'react-router-dom';
+import { getPublicDomain } from '@/lib/utils';
 import { invitations as invitationsApi } from '@/lib/api';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
@@ -323,8 +324,10 @@ export const TemplateEditArea: React.FC = () => {
         // BILLIONAIRE PATHING: Fallback to UUID if slug is missing
         const previewSlug = slug || invitationId;
         if (previewSlug) {
-            // Dynamic Origin: Ensures compatibility with localhost and custom domains
-            const targetUrl = `${window.location.origin}/${previewSlug}`;
+            // UNICORN STEERING: Force use of root domain (tamuu.id) instead of app subdomain
+            const publicDomain = getPublicDomain();
+            const targetUrl = `${window.location.protocol}//${publicDomain}/${previewSlug}`;
+
             console.log('[Preview] Opening:', targetUrl);
             window.open(targetUrl, '_blank');
         } else {
