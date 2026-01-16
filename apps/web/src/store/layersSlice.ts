@@ -733,6 +733,7 @@ export interface LayersState {
     selectedLayerIds: string[];
     addLayer: (layer: Layer) => void;
     removeLayer: (id: string) => void;
+    clearLayers: () => void;
     updateLayer: (id: string, updates: Partial<Layer>) => void;
     selectLayer: (id: string | null, isMulti?: boolean) => void;
     selectLayers: (ids: string[]) => void;
@@ -917,6 +918,8 @@ export const createLayersSlice: StateCreator<LayersState> = (set, get) => ({
         layers: state.layers.filter((l) => l.id !== id),
         selectedLayerId: state.selectedLayerId === id ? null : state.selectedLayerId
     })),
+
+    clearLayers: () => set({ layers: [], selectedLayerId: null }),
 
     updateLayer: (id, updates) => set((state) => ({
         layers: state.layers.map((l) => l.id === id ? sanitizeLayer({ ...l, ...updates }) : l)

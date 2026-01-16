@@ -28,6 +28,7 @@ setIsTemplate: (isTemplate: boolean) => void;
 setCategory: (category: string) => void;
 setMusic: (music: CanvasState['music']) => void;
 setIsPublished: (isPublished: boolean) => void;
+resetStore: () => void;
 }
 
 export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
@@ -56,4 +57,15 @@ export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
     setCategory: (category) => set({ category }),
     setMusic: (music) => set({ music }),
     setIsPublished: (isPublished) => set({ isPublished }),
+    resetStore: () => set({
+        zoom: 1,
+        pan: { x: 0, y: 0 },
+        slug: '',
+        projectName: 'New Project',
+        id: undefined,
+        category: undefined,
+        music: undefined,
+        isPublished: false,
+        thumbnailUrl: undefined
+    })
 });

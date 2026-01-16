@@ -140,11 +140,12 @@ export interface SectionsState {
     // Actions
     addSection: (section: Partial<Section>) => void;
     removeSection: (id: string) => void;
-    updateSection: (id: string, updates: Partial<Section>) => void;
+    updateSection: (id: string, data: Partial<Section>) => void;
     reorderSections: (startIndex: number, endIndex: number) => void;
     setActiveSection: (id: string | null) => void;
     duplicateSection: (id: string) => void;
     updateSectionsBatch: (sections: Section[]) => void;
+    resetSections: () => void;
     updateSectionElementsBatch: (sectionId: string, elements: Layer[]) => void;
     copySectionElementsTo: (sourceSectionId: string, targetSectionId: string) => void;
     clearSectionContent: (sectionId: string) => void;
@@ -593,6 +594,8 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
     }),
 
     updateSectionsBatch: (sections) => set({ sections }),
+
+    resetSections: () => set({ sections: [], activeSectionId: null }),
 
     updateSectionElementsBatch: (sectionId, elements) => set((state) => ({
         sections: state.sections.map((s) =>
