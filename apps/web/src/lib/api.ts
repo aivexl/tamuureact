@@ -4,9 +4,9 @@
  */
 
 const API_BASE = import.meta.env.PROD
-    ? 'https://api.tamuu.id'
+    ? 'https://tamuu-api.shafania57.workers.dev'
     : ''; // Dev: use Vite proxy at /api
-// const API_BASE = 'https://tamuu-api.shafania57.workers.dev';
+// const API_BASE = 'https://api.tamuu.id';
 
 // ============================================
 // TEMPLATES API

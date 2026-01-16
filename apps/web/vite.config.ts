@@ -17,7 +17,7 @@ export default defineConfig({
     proxy: {
       // Proxy /api requests to production API to bypass CORS during development
       '/api': {
-        target: 'https://api.tamuu.id',
+        target: 'https://tamuu-api.shafania57.workers.dev',
         changeOrigin: true,
         secure: true,
       },
