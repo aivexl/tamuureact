@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { AnimatePresence, m } from 'framer-motion';
 import { useSEO } from '../hooks/useSEO';
 import { ImportModal } from '../components/Modals/ImportModal';
@@ -101,6 +101,7 @@ const DEFAULT_MESSAGE = "Tanpa mengurangi rasa hormat, kami bermaksud mengundang
 // ============================================
 export const GuestManagementPage: React.FC = () => {
     const { invitationId } = useParams<{ invitationId: string }>();
+    const navigate = useNavigate();
     const [invitation, setInvitation] = useState<any>(null);
     const [guests, setGuests] = useState<Guest[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -433,9 +434,9 @@ export const GuestManagementPage: React.FC = () => {
             <div className="bg-white border-b border-slate-200 px-4 lg:px-8 py-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="space-y-1">
-                        <Link to="/dashboard" className="flex items-center text-sm text-slate-500 hover:text-teal-600 transition-colors mb-2">
-                            <ArrowLeftIcon className="w-4 h-4 mr-1" /> Kembali ke Dashboard
-                        </Link>
+                        <button onClick={() => navigate(-1)} className="flex items-center text-sm text-slate-500 hover:text-teal-600 transition-colors mb-2">
+                            <ArrowLeftIcon className="w-4 h-4 mr-1" /> Kembali
+                        </button>
                         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Buku Tamu Digital</h1>
                         <p className="text-slate-500">Kelola tamu dan kirim undangan personal dengan mudah.</p>
                     </div>
