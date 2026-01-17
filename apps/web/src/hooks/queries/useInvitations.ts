@@ -150,7 +150,7 @@ export function useDeleteInvitation() {
 export function useDisplayDesigns(userId?: string) {
     return useQuery({
         queryKey: queryKeys.displayDesigns.list(userId),
-        queryFn: () => userDisplayDesigns.list(userId),
+        queryFn: () => userDisplayDesigns.list(userId ? { userId } : undefined),
         staleTime: STALE_TIMES.invitations,
     });
 }
