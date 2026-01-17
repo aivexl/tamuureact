@@ -14,6 +14,7 @@ import { ExportPanel } from '@/components/UserEditor/Panels/ExportPanel';
 import { OrbitPanel } from '@/components/UserEditor/Panels/OrbitPanel';
 import { TemplateStorePanel } from '@/components/UserEditor/Panels/TemplateStorePanel';
 import { DisplayStorePanel } from '@/components/UserEditor/Panels/DisplayStorePanel';
+import { WishesPanel } from '@/components/UserEditor/Panels/WishesPanel';
 import { useStore } from '@/store/useStore';
 import { invitations as invitationsApi } from '@/lib/api';
 import { Loader2, Sparkles, AlertCircle } from 'lucide-react';
@@ -189,9 +190,10 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                     {activePanel === 'theme' && <ThemePanel />}
                     {activePanel === 'display' && <DisplayStorePanel invitationId={id} />}
                     {activePanel === 'template' && <TemplateStorePanel invitationId={id} />}
+                    {activePanel === 'wishes' && <WishesPanel />}
                     {activePanel === 'share' && <SharePanel slug={invitation.slug} />}
                     {activePanel === 'download' && <ExportPanel previewRef={previewRef as React.RefObject<HTMLElement>} />}
-                    {!['music', 'theme', 'display', 'template', 'share', 'download'].includes(activePanel || '') && (
+                    {!['music', 'theme', 'display', 'template', 'share', 'download', 'wishes'].includes(activePanel || '') && (
                         <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
                             <div className="w-20 h-20 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-slate-300">
                                 <Sparkles className="w-10 h-10" />
