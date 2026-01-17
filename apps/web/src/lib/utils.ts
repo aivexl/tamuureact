@@ -42,7 +42,7 @@ export const sanitizeValue = (value: any): any => {
             console.debug('[Sanitization] Stripping stale temporary URL:', value.substring(0, 50) + '...');
             return '';
         }
-        return value;
+        return patchLegacyUrl(value);
     }
 
     if (Array.isArray(value)) {
@@ -76,4 +76,25 @@ export const getPublicDomain = (): string => {
         return 'tamuu.id';
     }
     return host;
+};
+
+/**
+ * Patches legacy or unresolvable domains in URLs.
+ * Enterprise Guard: Intercepts 'api.tamuu.id' and redirects to the active worker.
+ */
+export const patchLegacyUrl = (url: string | null | undefined): string => {
+    if (!url) return '';
+    if (typeof url !== 'string') return '';
+
+    // Fix unresolvable API domain
+    if (url.includes('api.tamuu.id')) {
+        return url.replace('api.tamuu.id', 'tamuu-api.shafania57.workers.dev');
+    }
+
+    // Fix R2 assets if they are still using the legacy bucket domain
+    if (url.includes('tamuu-assets.r2.cloudflarestorage.com')) {
+        return url.replace(/https?:\/\/.*?\.r2\.cloudflarestorage\.com/, 'https://tamuu-api.shafania57.workers.dev/assets');
+    }
+
+    return url;
 };

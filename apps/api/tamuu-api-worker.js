@@ -590,7 +590,7 @@ export default {
                     return response.results.map(t => ({
                         ...t,
                         thumbnail_url: t.thumbnail && !t.thumbnail.startsWith('http')
-                            ? `https://api.tamuu.id/assets/${t.thumbnail}`
+                            ? `https://tamuu-api.shafania57.workers.dev/assets/${t.thumbnail}`
                             : t.thumbnail
                     }));
                 });
@@ -1158,7 +1158,7 @@ export default {
                     httpMetadata: { contentType: file.type }
                 });
 
-                const publicUrl = `https://api.tamuu.id/assets/${key}`;
+                const publicUrl = `https://tamuu-api.shafania57.workers.dev/assets/${key}`;
 
                 // Get user_id from form data if provided
                 const userId = formData.get('user_id');

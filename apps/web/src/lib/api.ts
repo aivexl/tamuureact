@@ -2,53 +2,70 @@
  * Tamuu API Client
  * Replaces Supabase client with Cloudflare-based API
  */
+import { patchLegacyUrl, sanitizeValue } from './utils';
 
 export const API_BASE = import.meta.env.PROD
     ? 'https://tamuu-api.shafania57.workers.dev'
     : ''; // Dev: use Vite proxy at /api
+
+/**
+ * Enterprise Safe Fetch
+ * Automatically intercepts and fixes legacy/unresolvable domains.
+ */
+export const safeFetch = async (url: string, options?: RequestInit) => {
+    const patchedUrl = patchLegacyUrl(url);
+    if (patchedUrl !== url) {
+        console.warn(`[SafeFetch] Intercepted legacy domain: ${url} -> ${patchedUrl}`);
+    }
+    return fetch(patchedUrl, options);
+};
 
 // ============================================
 // TEMPLATES API
 // ============================================
 export const templates = {
     async list() {
-        const res = await fetch(`${API_BASE}/api/templates`);
+        const res = await safeFetch(`${API_BASE}/api/templates`);
         if (!res.ok) throw new Error('Failed to fetch templates');
-        return res.json();
+        const data = await res.json();
+        return sanitizeValue(data);
     },
 
     async get(id: string) {
-        const res = await fetch(`${API_BASE}/api/templates/${id}`);
+        const res = await safeFetch(`${API_BASE}/api/templates/${id}`);
         if (!res.ok) throw new Error('Template not found');
-        return res.json();
+        const data = await res.json();
+        return sanitizeValue(data);
     },
 
     async create(data: any) {
-        const res = await fetch(`${API_BASE}/api/templates`, {
+        const res = await safeFetch(`${API_BASE}/api/templates`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify(sanitizeValue(data))
         });
         if (!res.ok) throw new Error('Failed to create template');
-        return res.json();
+        const updatedData = await res.json();
+        return sanitizeValue(updatedData);
     },
 
     async update(id: string, data: any) {
-        const res = await fetch(`${API_BASE}/api/templates/${id}`, {
+        const res = await safeFetch(`${API_BASE}/api/templates/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify(sanitizeValue(data))
         });
         if (!res.ok) throw new Error('Failed to update template');
-        return res.json();
+        const updatedData = await res.json();
+        return sanitizeValue(updatedData);
     },
 
     async delete(id: string) {
-        const res = await fetch(`${API_BASE}/api/templates/${id}`, {
+        const res = await safeFetch(`${API_BASE}/api/templates/${id}`, {
             method: 'DELETE'
         });
         if (!res.ok) throw new Error('Failed to delete template');
-        return res.json();
+        return true;
     }
 };
 
@@ -66,37 +83,40 @@ export interface Category {
 
 export const categories = {
     async list(): Promise<Category[]> {
-        const res = await fetch(`${API_BASE}/api/categories`);
+        const res = await safeFetch(`${API_BASE}/api/categories`);
         if (!res.ok) throw new Error('Failed to fetch categories');
-        return res.json();
+        const data = await res.json();
+        return sanitizeValue(data);
     },
 
     async create(data: { name: string; icon?: string; color?: string }) {
-        const res = await fetch(`${API_BASE}/api/categories`, {
+        const res = await safeFetch(`${API_BASE}/api/categories`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify(sanitizeValue(data))
         });
         if (!res.ok) throw new Error('Failed to create category');
-        return res.json();
+        const updatedData = await res.json();
+        return sanitizeValue(updatedData);
     },
 
     async update(id: string, data: Partial<Category>) {
-        const res = await fetch(`${API_BASE}/api/categories/${id}`, {
+        const res = await safeFetch(`${API_BASE}/api/categories/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify(sanitizeValue(data))
         });
         if (!res.ok) throw new Error('Failed to update category');
-        return res.json();
+        const updatedData = await res.json();
+        return sanitizeValue(updatedData);
     },
 
     async delete(id: string) {
-        const res = await fetch(`${API_BASE}/api/categories/${id}`, {
+        const res = await safeFetch(`${API_BASE}/api/categories/${id}`, {
             method: 'DELETE'
         });
         if (!res.ok) throw new Error('Failed to delete category');
-        return res.json();
+        return true;
     }
 };
 
@@ -147,55 +167,59 @@ export const invitations = {
         const url = userId
             ? `${API_BASE}/api/invitations?user_id=${userId}`
             : `${API_BASE}/api/invitations`;
-        const res = await fetch(url);
+        const res = await safeFetch(url);
         if (!res.ok) throw new Error('Failed to fetch invitations');
-        return res.json();
+        const data = await res.json();
+        return sanitizeValue(data);
     },
 
     async get(idOrSlug: string) {
-        const res = await fetch(`${API_BASE}/api/invitations/${idOrSlug}`);
+        const res = await safeFetch(`${API_BASE}/api/invitations/${idOrSlug}`);
         if (!res.ok) throw new Error('Invitation not found');
-        return res.json();
+        const data = await res.json();
+        return sanitizeValue(data);
     },
 
     async checkSlug(slug: string): Promise<{ available: boolean; slug: string }> {
-        const res = await fetch(`${API_BASE}/api/invitations/check-slug/${slug}`);
+        const res = await safeFetch(`${API_BASE}/api/invitations/check-slug/${slug}`);
         if (!res.ok) return { available: false, slug };
         return res.json();
     },
 
     async create(data: any) {
-        const res = await fetch(`${API_BASE}/api/invitations`, {
+        const res = await safeFetch(`${API_BASE}/api/invitations`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify(sanitizeValue(data))
         });
         if (!res.ok) {
             const errorData = await res.json().catch(() => ({}));
             throw new Error(errorData.message || errorData.error || 'Failed to create invitation');
         }
-        return res.json();
+        const updatedData = await res.json();
+        return sanitizeValue(updatedData);
     },
 
     async update(id: string, data: any) {
-        const res = await fetch(`${API_BASE}/api/invitations/${id}`, {
+        const res = await safeFetch(`${API_BASE}/api/invitations/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify(sanitizeValue(data))
         });
         if (!res.ok) {
             const errorData = await res.json().catch(() => ({}));
             throw new Error(errorData.details || errorData.error || 'Failed to update invitation');
         }
-        return res.json();
+        const updatedData = await res.json();
+        return sanitizeValue(updatedData);
     },
 
     async delete(id: string) {
-        const res = await fetch(`${API_BASE}/api/invitations/${id}`, {
+        const res = await safeFetch(`${API_BASE}/api/invitations/${id}`, {
             method: 'DELETE'
         });
         if (!res.ok) throw new Error('Failed to delete invitation');
-        return res.json();
+        return true;
     }
 };
 
@@ -204,15 +228,17 @@ export const invitations = {
 // ============================================
 export const rsvp = {
     async list(invitationId: string) {
-        const res = await fetch(`${API_BASE}/api/invitations/${invitationId}/rsvp`);
+        const res = await safeFetch(`${API_BASE}/api/invitations/${invitationId}/rsvp`);
         if (!res.ok) throw new Error('Failed to fetch RSVP responses');
-        return res.json();
+        const data = await res.json();
+        return sanitizeValue(data);
     },
 
     async listAll() {
-        const res = await fetch(`${API_BASE}/api/wishes`);
+        const res = await safeFetch(`${API_BASE}/api/wishes`);
         if (!res.ok) throw new Error('Failed to fetch all wishes');
-        return res.json();
+        const data = await res.json();
+        return sanitizeValue(data);
     },
 
     async submit(invitationId: string, data: {
@@ -223,31 +249,33 @@ export const rsvp = {
         guest_count?: number;
         message?: string;
     }) {
-        const res = await fetch(`${API_BASE}/api/invitations/${invitationId}/rsvp`, {
+        const res = await safeFetch(`${API_BASE}/api/invitations/${invitationId}/rsvp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify(sanitizeValue(data))
         });
         if (!res.ok) throw new Error('Failed to submit RSVP');
-        return res.json();
+        const updatedData = await res.json();
+        return sanitizeValue(updatedData);
     },
 
     async updateStatus(id: string, updates: { is_visible?: boolean; attendance?: string; message?: string }) {
-        const res = await fetch(`${API_BASE}/api/rsvp/${id}`, {
+        const res = await safeFetch(`${API_BASE}/api/rsvp/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updates)
+            body: JSON.stringify(sanitizeValue(updates))
         });
         if (!res.ok) throw new Error('Failed to update RSVP');
-        return res.json();
+        const updatedData = await res.json();
+        return sanitizeValue(updatedData);
     },
 
     async delete(id: string) {
-        const res = await fetch(`${API_BASE}/api/rsvp/${id}`, {
+        const res = await safeFetch(`${API_BASE}/api/rsvp/${id}`, {
             method: 'DELETE'
         });
         if (!res.ok) throw new Error('Failed to delete RSVP');
-        return res.json();
+        return true;
     }
 
 };
@@ -260,43 +288,47 @@ export const userDisplayDesigns = {
         const url = userId
             ? `${API_BASE}/api/user-display-designs?user_id=${userId}`
             : `${API_BASE}/api/user-display-designs`;
-        const res = await fetch(url);
+        const res = await safeFetch(url);
         if (!res.ok) throw new Error('Failed to fetch display designs');
-        return res.json();
+        const data = await res.json();
+        return sanitizeValue(data);
     },
 
     async get(id: string) {
-        const res = await fetch(`${API_BASE}/api/user-display-designs/${id}`);
+        const res = await safeFetch(`${API_BASE}/api/user-display-designs/${id}`);
         if (!res.ok) throw new Error('Display design not found');
-        return res.json();
+        const data = await res.json();
+        return sanitizeValue(data);
     },
 
     async create(data: any) {
-        const res = await fetch(`${API_BASE}/api/user-display-designs`, {
+        const res = await safeFetch(`${API_BASE}/api/user-display-designs`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify(sanitizeValue(data))
         });
         if (!res.ok) throw new Error('Failed to create display design');
-        return res.json();
+        const updatedData = await res.json();
+        return sanitizeValue(updatedData);
     },
 
     async update(id: string, data: { name?: string; content?: any; thumbnail_url?: string }) {
-        const res = await fetch(`${API_BASE}/api/user-display-designs/${id}`, {
+        const res = await safeFetch(`${API_BASE}/api/user-display-designs/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify(sanitizeValue(data))
         });
         if (!res.ok) throw new Error('Failed to update display design');
-        return res.json();
+        const updatedData = await res.json();
+        return sanitizeValue(updatedData);
     },
 
     async delete(id: string) {
-        const res = await fetch(`${API_BASE}/api/user-display-designs/${id}`, {
+        const res = await safeFetch(`${API_BASE}/api/user-display-designs/${id}`, {
             method: 'DELETE'
         });
         if (!res.ok) throw new Error('Failed to delete display design');
-        return res.json();
+        return true;
     }
 };
 
@@ -326,7 +358,7 @@ export const storage = {
         const formData = new FormData();
         formData.append('file', fileToUpload);
 
-        const res = await fetch(`${API_BASE}/api/upload`, {
+        const res = await safeFetch(`${API_BASE}/api/upload`, {
             method: 'POST',
             body: formData
         });
@@ -335,11 +367,11 @@ export const storage = {
         const data = await res.json();
 
         // Attach generated blurHash to response so UI can use it
-        return { ...data, blurHash };
+        return sanitizeValue({ ...data, blurHash });
     },
 
     getPublicUrl(key: string): string {
-        return `${API_BASE}/assets/${key}`;
+        return patchLegacyUrl(`${API_BASE}/assets/${key}`);
     }
 };
 
@@ -348,19 +380,21 @@ export const storage = {
 // ============================================
 export const billing = {
     async createInvoice(data: { userId: string; tier: string; amount: number; email: string }) {
-        const res = await fetch(`${API_BASE}/api/billing/create-invoice`, {
+        const res = await safeFetch(`${API_BASE}/api/billing/create-invoice`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify(sanitizeValue(data))
         });
         if (!res.ok) throw new Error('Failed to create invoice');
-        return res.json();
+        const updatedData = await res.json();
+        return sanitizeValue(updatedData);
     },
 
     async listTransactions(userId: string) {
-        const res = await fetch(`${API_BASE}/api/billing/transactions?userId=${userId}`);
+        const res = await safeFetch(`${API_BASE}/api/billing/transactions?userId=${userId}`);
         if (!res.ok) throw new Error('Failed to fetch transactions');
-        return res.json();
+        const data = await res.json();
+        return sanitizeValue(data);
     }
 };
 
@@ -369,9 +403,10 @@ export const billing = {
 // ============================================
 export const users = {
     async getMe(email: string) {
-        const res = await fetch(`${API_BASE}/api/auth/me?email=${email}`);
+        const res = await safeFetch(`${API_BASE}/api/auth/me?email=${email}`);
         if (!res.ok) throw new Error('Failed to fetch user data');
-        return res.json();
+        const data = await res.json();
+        return sanitizeValue(data);
     },
 
     async updateProfile(data: {
@@ -390,13 +425,14 @@ export const users = {
         emoneyNumber?: string;
         giftAddress?: string;
     }) {
-        const res = await fetch(`${API_BASE}/api/user/profile`, {
+        const res = await safeFetch(`${API_BASE}/api/user/profile`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify(sanitizeValue(data))
         });
         if (!res.ok) throw new Error('Failed to update profile');
-        return res.json();
+        const updatedData = await res.json();
+        return sanitizeValue(updatedData);
     }
 };
 
@@ -405,59 +441,65 @@ export const users = {
 // ============================================
 export const guests = {
     async list(invitationId: string) {
-        const res = await fetch(`${API_BASE}/api/guests?invitationId=${invitationId}`);
+        const res = await safeFetch(`${API_BASE}/api/guests?invitationId=${invitationId}`);
         if (!res.ok) throw new Error('Failed to fetch guests');
-        return res.json();
+        const data = await res.json();
+        return sanitizeValue(data);
     },
 
     async get(id: string) {
-        const res = await fetch(`${API_BASE}/api/guests/${id}`);
+        const res = await safeFetch(`${API_BASE}/api/guests/${id}`);
         if (!res.ok) throw new Error('Failed to fetch guest');
-        return res.json();
+        const data = await res.json();
+        return sanitizeValue(data);
     },
 
     async create(data: { invitation_id: string; name: string; phone?: string; address?: string; table_number?: string; tier?: string; guest_count?: number; check_in_code?: string }) {
-        const res = await fetch(`${API_BASE}/api/guests`, {
+        const res = await safeFetch(`${API_BASE}/api/guests`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify(sanitizeValue(data))
         });
         if (!res.ok) throw new Error('Failed to create guest');
-        return res.json();
+        const updatedData = await res.json();
+        return sanitizeValue(updatedData);
     },
 
     async update(id: string, data: any) {
-        const res = await fetch(`${API_BASE}/api/guests/${id}`, {
+        const res = await safeFetch(`${API_BASE}/api/guests/${id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify(sanitizeValue(data))
         });
         if (!res.ok) throw new Error('Failed to update guest');
-        return res.json();
+        const updatedData = await res.json();
+        return sanitizeValue(updatedData);
     },
 
     async delete(id: string) {
-        const res = await fetch(`${API_BASE}/api/guests/${id}`, {
+        const res = await safeFetch(`${API_BASE}/api/guests/${id}`, {
             method: 'DELETE'
         });
         if (!res.ok) throw new Error('Failed to delete guest');
-        return res.json();
+        return true;
     },
 
     async checkIn(idOrCode: string) {
-        const res = await fetch(`${API_BASE}/api/guests/${idOrCode}/checkin`, {
+        const res = await safeFetch(`${API_BASE}/api/guests/${idOrCode}/checkin`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
-        return res.json(); // Returns { success, code, guest, error }
+        const data = await res.json();
+        return sanitizeValue(data);
     },
 
     async checkOut(idOrCode: string) {
-        const res = await fetch(`${API_BASE}/api/guests/${idOrCode}/checkout`, {
+        const res = await safeFetch(`${API_BASE}/api/guests/${idOrCode}/checkout`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
-        return res.json(); // Returns { success, code, guest, error }
+        const data = await res.json();
+        return sanitizeValue(data);
     }
 };
 
@@ -468,24 +510,30 @@ export const music = {
     async list() {
         const res = await fetch(`${API_BASE}/api/music`);
         if (!res.ok) throw new Error('Failed to fetch music library');
-        return res.json();
+        const data = await res.json();
+        // Patch legacy domains in music URLs from DB
+        return (data || []).map((song: any) => ({
+            ...song,
+            url: patchLegacyUrl(song.url)
+        }));
     },
 
     async upload(formData: FormData) {
-        const res = await fetch(`${API_BASE}/api/admin/music`, {
+        const res = await safeFetch(`${API_BASE}/api/admin/music`, {
             method: 'POST',
             body: formData
         });
         if (!res.ok) throw new Error('Upload failed');
-        return res.json();
+        const data = await res.json();
+        return sanitizeValue(data);
     },
 
     async delete(id: string) {
-        const res = await fetch(`${API_BASE}/api/admin/music/${id}`, {
+        const res = await safeFetch(`${API_BASE}/api/admin/music/${id}`, {
             method: 'DELETE'
         });
         if (!res.ok) throw new Error('Delete failed');
-        return res.json();
+        return true;
     }
 };
 
@@ -494,24 +542,27 @@ export const music = {
 // ============================================
 export const admin = {
     async getStats() {
-        const res = await fetch(`${API_BASE}/api/admin/stats`);
+        const res = await safeFetch(`${API_BASE}/api/admin/stats`);
         if (!res.ok) throw new Error('Failed to fetch admin stats');
-        return res.json();
+        const data = await res.json();
+        return sanitizeValue(data);
     },
 
     async triggerDisplay(displayId: string, data: { name: string; effect?: string; style?: string; timestamp: number }) {
-        const res = await fetch(`${API_BASE}/api/trigger/${displayId}`, {
+        const res = await safeFetch(`${API_BASE}/api/trigger/${displayId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify(sanitizeValue(data))
         });
         if (!res.ok) throw new Error('Failed to trigger display');
-        return res.json();
+        const updatedData = await res.json();
+        return sanitizeValue(updatedData);
     }
 };
 export async function healthCheck() {
-    const res = await fetch(`${API_BASE}/api/health`);
-    return res.json();
+    const res = await safeFetch(`${API_BASE}/api/health`);
+    const data = await res.json();
+    return sanitizeValue(data);
 }
 
 // Default export for easy migration

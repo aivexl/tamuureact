@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
-import { API_BASE } from '@/lib/api'; // Added API_BASE import
+import { API_BASE, safeFetch } from '@/lib/api'; // Added API_BASE and safeFetch import
 import { X, Maximize2, Minimize2, Play, Square } from 'lucide-react';
 import { ElementRenderer } from '../Canvas/ElementRenderer';
 import { AnimatedLayer, clearAnimationCache } from './AnimatedLayer';
@@ -211,7 +211,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                     ? `/api/user-display-designs/${propId}`
                     : `/api/invitations/${propId}`;
 
-                const response = await fetch(`${baseUrl}${endpoint}`);
+                const response = await safeFetch(`${baseUrl}${endpoint}`);
                 if (!response.ok) return;
 
                 const data = await response.json();

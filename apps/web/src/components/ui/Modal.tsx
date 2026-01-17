@@ -1,5 +1,5 @@
 import React from 'react';
-import { m, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
 interface ModalProps {
@@ -29,7 +29,7 @@ export const Modal: React.FC<ModalProps> = ({
             {isOpen && (
                 <>
                     {/* Backdrop */}
-                    <m.div
+                    <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -39,7 +39,7 @@ export const Modal: React.FC<ModalProps> = ({
 
                     {/* Content */}
                     <div className="fixed inset-0 z-[1001] flex items-center justify-center p-4 pointer-events-none">
-                        <m.div
+                        <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -61,7 +61,7 @@ export const Modal: React.FC<ModalProps> = ({
                             <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
                                 {children}
                             </div>
-                        </m.div>
+                        </motion.div>
                     </div>
                 </>
             )}

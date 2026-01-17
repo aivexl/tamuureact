@@ -481,16 +481,21 @@ const LottieElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?
             onContentLoad?.(); // Reveal placeholders
             return;
         }
-        fetch(config.url)
-            .then(res => res.json())
-            .then(json => {
-                setData(json);
-                onContentLoad?.();
-            })
-            .catch(err => {
-                console.error('Lottie Load Failed:', err);
-                onContentLoad?.(); // Still reveal on error
-            });
+
+        // CTO FIX: Patch legacy domains in Lottie URLs
+        import('@/lib/utils').then(({ patchLegacyUrl }) => {
+            const patchedUrl = patchLegacyUrl(config.url!);
+            fetch(patchedUrl)
+                .then(res => res.json())
+                .then(json => {
+                    setData(json);
+                    onContentLoad?.();
+                })
+                .catch(err => {
+                    console.error('Lottie Load Failed:', err);
+                    onContentLoad?.(); // Still reveal on error
+                });
+        });
     }, [config?.url]);
 
     if (!config?.url) return <div className="w-full h-full bg-indigo-500/10 rounded flex items-center justify-center text-indigo-400 text-[10px] font-bold">LOTTIE</div>;

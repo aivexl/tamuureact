@@ -9,6 +9,7 @@ import { useStore } from '@/store/useStore';
 import { useNavigate } from 'react-router-dom';
 import { MusicDrawer } from '../../Modals/MusicDrawer';
 import { useAudioController } from '@/hooks/useAudioController';
+import { patchLegacyUrl } from '@/lib/utils';
 
 export const MusicPanel: React.FC = () => {
     const { music, setMusic } = useStore();
@@ -22,16 +23,18 @@ export const MusicPanel: React.FC = () => {
     const currentSong = music;
 
     const handleSelectSong = (song: any) => {
+        const patchedUrl = patchLegacyUrl(song.url);
+
         setMusic({
             id: song.id,
-            url: song.url,
+            url: patchedUrl,
             title: song.title,
             artist: song.artist,
             source_type: song.source_type || 'library'
         });
 
         // Auto-play the selection
-        play(song.url);
+        play(patchedUrl);
     };
 
     return (
