@@ -50,6 +50,7 @@ export const WishesPanel: React.FC = () => {
     }, [invitationId]);
 
     const fetchWishes = async () => {
+        if (!invitationId) return;
         setIsLoading(true);
         try {
             const data = await rsvpApi.list(invitationId);
