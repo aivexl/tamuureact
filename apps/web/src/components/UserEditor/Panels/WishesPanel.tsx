@@ -161,11 +161,11 @@ export const WishesPanel: React.FC = () => {
                                             <div className="flex items-center gap-2">
                                                 <h4 className="font-black text-slate-800 tracking-tight">{wish.name}</h4>
                                                 {wish.attendance === 'attending' ? (
-                                                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500" title="Hadir" />
+                                                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
                                                 ) : wish.attendance === 'not_attending' ? (
-                                                    <XCircle className="w-3.5 h-3.5 text-rose-500" title="Tidak Hadir" />
+                                                    <XCircle className="w-3.5 h-3.5 text-rose-500" />
                                                 ) : (
-                                                    <Clock className="w-3.5 h-3.5 text-amber-500" title="Mungkin" />
+                                                    <Clock className="w-3.5 h-3.5 text-amber-500" />
                                                 )}
                                             </div>
                                             <p className="text-sm text-slate-600 leading-relaxed italic">
