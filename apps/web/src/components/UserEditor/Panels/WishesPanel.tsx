@@ -12,8 +12,8 @@ import {
     EyeOff,
     Search,
     Loader2,
-    CheckCircle2,
-    XCircle2,
+    CheckCircle,
+    XCircle,
     Clock,
     User,
     Filter
@@ -123,8 +123,8 @@ export const WishesPanel: React.FC = () => {
                             key={f}
                             onClick={() => setFilter(f)}
                             className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${filter === f
-                                    ? 'bg-white text-orange-600 shadow-sm'
-                                    : 'text-slate-400 hover:text-slate-600'
+                                ? 'bg-white text-orange-600 shadow-sm'
+                                : 'text-slate-400 hover:text-slate-600'
                                 }`}
                         >
                             {f === 'all' ? 'Semua' : f === 'visible' ? 'Tampil' : 'Sembunyi'}
@@ -151,8 +151,8 @@ export const WishesPanel: React.FC = () => {
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="flex gap-4">
                                         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${wish.attendance === 'attending' ? 'bg-emerald-50 text-emerald-600' :
-                                                wish.attendance === 'not_attending' ? 'bg-rose-50 text-rose-600' :
-                                                    'bg-amber-50 text-amber-600'
+                                            wish.attendance === 'not_attending' ? 'bg-rose-50 text-rose-600' :
+                                                'bg-amber-50 text-amber-600'
                                             }`}>
                                             <User className="w-6 h-6" />
                                         </div>
@@ -160,9 +160,9 @@ export const WishesPanel: React.FC = () => {
                                             <div className="flex items-center gap-2">
                                                 <h4 className="font-black text-slate-800 tracking-tight">{wish.name}</h4>
                                                 {wish.attendance === 'attending' ? (
-                                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" title="Hadir" />
+                                                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500" title="Hadir" />
                                                 ) : wish.attendance === 'not_attending' ? (
-                                                    <XCircle2 className="w-3.5 h-3.5 text-rose-500" title="Tidak Hadir" />
+                                                    <XCircle className="w-3.5 h-3.5 text-rose-500" title="Tidak Hadir" />
                                                 ) : (
                                                     <Clock className="w-3.5 h-3.5 text-amber-500" title="Mungkin" />
                                                 )}
@@ -188,8 +188,8 @@ export const WishesPanel: React.FC = () => {
                                         <button
                                             onClick={() => handleToggleVisibility(wish)}
                                             className={`p-2 rounded-xl transition-all ${wish.is_visible
-                                                    ? 'bg-slate-50 text-slate-400 hover:bg-orange-50 hover:text-orange-600'
-                                                    : 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
+                                                ? 'bg-slate-50 text-slate-400 hover:bg-orange-50 hover:text-orange-600'
+                                                : 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
                                                 }`}
                                             title={wish.is_visible ? 'Sembunyikan' : 'Tampilkan'}
                                         >
