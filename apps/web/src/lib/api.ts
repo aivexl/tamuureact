@@ -284,10 +284,13 @@ export const rsvp = {
 // USER DISPLAY DESIGNS API
 // ============================================
 export const userDisplayDesigns = {
-    async list(userId?: string) {
-        const url = userId
-            ? `${API_BASE}/api/user-display-designs?user_id=${userId}`
-            : `${API_BASE}/api/user-display-designs`;
+    async list(options?: { userId?: string; invitationId?: string }) {
+        let url = `${API_BASE}/api/user-display-designs`;
+        const params = new URLSearchParams();
+        if (options?.userId) params.append('user_id', options.userId);
+        if (options?.invitationId) params.append('invitation_id', options.invitationId);
+        if (params.toString()) url += `?${params.toString()}`;
+
         const res = await safeFetch(url);
         if (!res.ok) throw new Error('Failed to fetch display designs');
         const data = await res.json();

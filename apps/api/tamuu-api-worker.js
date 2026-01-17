@@ -698,14 +698,10 @@ export default {
             // USER DISPLAY DESIGNS ENDPOINTS (NEW)
             // ============================================
             if (path === '/api/user-display-designs' && method === 'GET') {
-                // In a real app, strict User ID filtering happens here via auth token.
-                // For this worker prototype, we assume the frontend sends a query param or header,
-                // BUT current architecture is open. We'll simply list all for now or filter by user_id if passed.
-                // Assuming RLS usually handles this, but since this worker interacts with D1 directly with service role, 
-                // we should filter.
-
+                // Filter by user_id or invitation_id (for editor panel use case)
                 const urlObj = new URL(request.url);
                 const userId = urlObj.searchParams.get('user_id');
+                const invitationId = urlObj.searchParams.get('invitation_id');
 
                 let query = 'SELECT * FROM user_display_designs ORDER BY updated_at DESC';
                 let params = [];
@@ -713,10 +709,18 @@ export default {
                 if (userId) {
                     query = 'SELECT * FROM user_display_designs WHERE user_id = ? ORDER BY updated_at DESC';
                     params = [userId];
+                } else if (invitationId) {
+                    query = 'SELECT * FROM user_display_designs WHERE invitation_id = ? ORDER BY updated_at DESC';
+                    params = [invitationId];
                 }
 
-                const { results } = await env.DB.prepare(query).bind(...params).all();
-                return json(results, corsHeaders);
+                try {
+                    const { results } = await env.DB.prepare(query).bind(...params).all();
+                    return json(results || [], corsHeaders);
+                } catch (dbError) {
+                    console.error('DB Error fetching display designs:', dbError);
+                    return json([], corsHeaders); // Return empty array instead of 500
+                }
             }
 
             if (path === '/api/user-display-designs' && method === 'POST') {

@@ -56,7 +56,7 @@ export const DisplayStorePanel: React.FC<DisplayStorePanelProps> = ({
             try {
                 // List available display designs for the current invitation
                 if (currentInvitationId) {
-                    const data = await displayDesignsApi.list(currentInvitationId);
+                    const data = await displayDesignsApi.list({ invitationId: currentInvitationId });
                     setDisplays(data || []);
                     // Check if there's currently an active display
                     const activeDisplay = data?.find((d: DisplayDesign) => d.is_published);
@@ -165,8 +165,8 @@ export const DisplayStorePanel: React.FC<DisplayStorePanelProps> = ({
                         whileHover={{ y: -4 }}
                         onClick={() => handleSelectDisplay(display)}
                         className={`group relative h-48 bg-white border rounded-[2rem] overflow-hidden transition-all hover:shadow-2xl hover:shadow-cyan-500/10 text-left ${currentDisplayId === display.id
-                                ? 'border-cyan-400 ring-2 ring-cyan-400/20'
-                                : 'border-slate-100 hover:border-cyan-300'
+                            ? 'border-cyan-400 ring-2 ring-cyan-400/20'
+                            : 'border-slate-100 hover:border-cyan-300'
                             }`}
                     >
                         {/* Thumbnail or Gradient Background */}
@@ -202,8 +202,8 @@ export const DisplayStorePanel: React.FC<DisplayStorePanelProps> = ({
                             </div>
 
                             <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${currentDisplayId === display.id
-                                    ? 'bg-cyan-500 text-white'
-                                    : 'bg-white/20 backdrop-blur-sm text-white group-hover:bg-cyan-500 group-hover:scale-110'
+                                ? 'bg-cyan-500 text-white'
+                                : 'bg-white/20 backdrop-blur-sm text-white group-hover:bg-cyan-500 group-hover:scale-110'
                                 }`}>
                                 <Check className="w-5 h-5" />
                             </div>
@@ -264,8 +264,8 @@ export const DisplayStorePanel: React.FC<DisplayStorePanelProps> = ({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 50 }}
                     className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-6 py-3 font-medium rounded-2xl shadow-xl ${toast.type === 'success'
-                            ? 'bg-emerald-500 text-white'
-                            : 'bg-red-500 text-white'
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-red-500 text-white'
                         }`}
                 >
                     {toast.message}
