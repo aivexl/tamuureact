@@ -5,7 +5,7 @@
 import { patchLegacyUrl, sanitizeValue } from './utils';
 
 export const API_BASE = import.meta.env.PROD
-    ? 'https://tamuu-api.shafania57.workers.dev'
+    ? 'https://api.tamuu.id'
     : ''; // Dev: use Vite proxy at /api
 
 /**

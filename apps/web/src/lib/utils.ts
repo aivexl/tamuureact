@@ -80,20 +80,21 @@ export const getPublicDomain = (): string => {
 
 /**
  * Patches legacy or unresolvable domains in URLs.
- * Enterprise Guard: Intercepts 'api.tamuu.id' and redirects to the active worker.
+ * Enterprise Guard: Handles legacy R2 bucket domains.
+ * NOTE: api.tamuu.id is the CORRECT production domain and should NOT be patched.
  */
 export const patchLegacyUrl = (url: string | null | undefined): string => {
     if (!url) return '';
     if (typeof url !== 'string') return '';
 
-    // Fix unresolvable API domain
-    if (url.includes('api.tamuu.id')) {
-        return url.replace('api.tamuu.id', 'tamuu-api.shafania57.workers.dev');
-    }
-
     // Fix R2 assets if they are still using the legacy bucket domain
     if (url.includes('tamuu-assets.r2.cloudflarestorage.com')) {
-        return url.replace(/https?:\/\/.*?\.r2\.cloudflarestorage\.com/, 'https://tamuu-api.shafania57.workers.dev/assets');
+        return url.replace(/https?:\/\/.*?\.r2\.cloudflarestorage\.com/, 'https://api.tamuu.id/assets');
+    }
+
+    // Redirect legacy workers.dev subdomain to custom domain (if any old references exist)
+    if (url.includes('tamuu-api.shafania57.workers.dev')) {
+        return url.replace('tamuu-api.shafania57.workers.dev', 'api.tamuu.id');
     }
 
     return url;
