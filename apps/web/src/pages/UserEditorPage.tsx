@@ -160,9 +160,13 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                 <InvitationInfoCard invitation={invitation} />
 
                 {/* 2. Feature Menu */}
-                <IconGridMenu onOpenPanel={(id: string) => setActivePanel(id)} />
-
-                {/* 3. Global Toggles */}
+                <IconGridMenu onOpenPanel={(panelId: string) => {
+                    if (panelId === 'guests') {
+                        navigate(`/guests/${id}`);
+                    } else {
+                        setActivePanel(panelId);
+                    }
+                }} />
                 <StatusToggles
                     invitation={invitation}
                     onUpdate={(updates) => setInvitation(updates)}
