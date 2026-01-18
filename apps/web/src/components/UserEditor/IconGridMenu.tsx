@@ -11,7 +11,9 @@ import {
     Settings,
     Sparkles,
     Download,
-    Monitor
+    Monitor,
+    Calendar,
+    MapPin
 } from 'lucide-react';
 
 const MENU_ITEMS = [
@@ -23,6 +25,8 @@ const MENU_ITEMS = [
     { id: 'display', label: 'Display', icon: Monitor, color: 'text-cyan-600', bg: 'bg-cyan-50', gradient: 'from-cyan-500/20 to-teal-500/20' },
     { id: 'analytics', label: 'Analitik', icon: BarChart3, color: 'text-indigo-600', bg: 'bg-indigo-50', gradient: 'from-indigo-500/20 to-blue-500/20' },
     { id: 'share', label: 'Bagikan', icon: Share2, color: 'text-teal-600', bg: 'bg-teal-50', gradient: 'from-teal-500/20 to-emerald-500/20' },
+    { id: 'eventDate', label: 'Tanggal', icon: Calendar, color: 'text-amber-600', bg: 'bg-amber-50', gradient: 'from-amber-500/20 to-yellow-500/20' },
+    { id: 'location', label: 'Lokasi', icon: MapPin, color: 'text-red-600', bg: 'bg-red-50', gradient: 'from-red-500/20 to-rose-500/20' },
     { id: 'download', label: 'Download', icon: Download, color: 'text-rose-600', bg: 'bg-rose-50', gradient: 'from-rose-500/20 to-pink-500/20', isNew: true },
     { id: 'settings', label: 'Pengaturan', icon: Settings, color: 'text-gray-600', bg: 'bg-gray-50', gradient: 'from-slate-500/20 to-gray-500/20' },
 ];

@@ -16,6 +16,8 @@ import { TemplateStorePanel } from '@/components/UserEditor/Panels/TemplateStore
 import { DisplayStorePanel } from '@/components/UserEditor/Panels/DisplayStorePanel';
 import { WishesPanel } from '@/components/UserEditor/Panels/WishesPanel';
 import { AnalyticsPanel } from '@/components/UserEditor/Panels/AnalyticsPanel';
+import { EventDatePanel } from '@/components/UserEditor/Panels/EventDatePanel';
+import { LocationPanel } from '@/components/UserEditor/Panels/LocationPanel';
 import { AnimatedLayer } from '@/components/Preview/AnimatedLayer';
 import { useStore } from '@/store/useStore';
 import { invitations as invitationsApi } from '@/lib/api';
@@ -201,7 +203,9 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                     {activePanel === 'analytics' && <AnalyticsPanel />}
                     {activePanel === 'share' && <SharePanel slug={invitation.slug} />}
                     {activePanel === 'download' && <ExportPanel previewRef={previewRef as React.RefObject<HTMLElement>} />}
-                    {!['music', 'theme', 'display', 'template', 'share', 'download', 'wishes', 'analytics'].includes(activePanel || '') && (
+                    {activePanel === 'eventDate' && <EventDatePanel invitationId={id!} onClose={() => setActivePanel(null)} />}
+                    {activePanel === 'location' && <LocationPanel invitationId={id!} onClose={() => setActivePanel(null)} />}
+                    {!['music', 'theme', 'display', 'template', 'share', 'download', 'wishes', 'analytics', 'eventDate', 'location'].includes(activePanel || '') && (
                         <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
                             <div className="w-20 h-20 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-slate-300">
                                 <Sparkles className="w-10 h-10" />

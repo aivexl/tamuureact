@@ -176,7 +176,7 @@ export const DashboardPage: React.FC = () => {
     return (
         <div className="min-h-screen bg-white md:bg-slate-50 flex flex-col md:flex-row pt-14 pb-24 md:pb-0">
             {/* Sidebar (Desktop Only) */}
-            <aside className={`hidden md:flex fixed md:sticky top - 14 left - 0 z - 40 flex - col bg - white border - r border - slate - 200 transition - all duration - 300 ${sidebarOpen ? 'w-64' : 'w-20'} h - [calc(100vh - 3.5rem)] overflow - hidden`}>
+            <aside className={`hidden md:flex fixed md:sticky top-14 left-0 z-40 flex-col bg-white border-r border-slate-200 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'} h-[calc(100vh-3.5rem)] overflow-hidden`}>
                 {/* User Profile Card */}
                 {sidebarOpen && (
                     <div className="p-6">
@@ -205,9 +205,9 @@ export const DashboardPage: React.FC = () => {
                                     setActiveTab(item.id);
                                 }
                             }}
-                            className={`w - full flex items - center gap - 3 px - 4 py - 3.5 rounded - 2xl transition - all duration - 300 group ${activeTab === item.id ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'} `}
+                            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${activeTab === item.id ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
                         >
-                            <div className={`w - 8 h - 8 rounded - xl flex items - center justify - center transition - all duration - 300 group - hover: scale - 110 ${activeTab === item.id ? 'bg-teal-500 text-slate-900' : 'bg-slate-100 text-slate-400'} `}>
+                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${activeTab === item.id ? 'bg-teal-500 text-slate-900' : 'bg-slate-100 text-slate-400'}`}>
                                 <item.icon className="w-4 h-4" />
                             </div>
                             {sidebarOpen && <span className="text-sm font-bold tracking-tight">{item.label}</span>}
@@ -241,10 +241,10 @@ export const DashboardPage: React.FC = () => {
                     <button
                         key={item.id}
                         onClick={() => setActiveTab(item.id)}
-                        className={`flex flex - col items - center gap - 1 transition - all ${activeTab === item.id ? 'text-teal-400' : 'text-slate-400'} `}
+                        className={`flex flex-col items-center gap-1 transition-all ${activeTab === item.id ? 'text-teal-400' : 'text-slate-400'}`}
                     >
-                        <div className={`w - 11 h - 11 rounded - [1.25rem] flex items - center justify - center transition - all ${activeTab === item.id ? 'bg-teal-400/20 shadow-[0_0_20px_rgba(45,212,191,0.2)]' : 'bg-transparent'} `}>
-                            <item.icon className={`w - 5 h - 5 ${activeTab === item.id ? 'text-teal-400' : 'text-slate-400'} `} />
+                        <div className={`w-11 h-11 rounded-[1.25rem] flex items-center justify-center transition-all ${activeTab === item.id ? 'bg-teal-400/20 shadow-[0_0_20px_rgba(45,212,191,0.2)]' : 'bg-transparent'}`}>
+                            <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-teal-400' : 'text-slate-400'}`} />
                         </div>
                         <span className="text-[9px] font-black uppercase tracking-widest">{item.label}</span>
                     </button>
