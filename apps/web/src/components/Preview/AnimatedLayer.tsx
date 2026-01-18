@@ -28,6 +28,7 @@ interface AnimatedLayerProps {
     forceTrigger?: boolean;
     isSectionActive?: boolean;
     onDimensionsDetected?: (width: number, height: number) => void;
+    isExportMode?: boolean;
 }
 
 const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
@@ -39,7 +40,8 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     isEditor = false,
     forceTrigger = false,
     isSectionActive = true,
-    onDimensionsDetected
+    onDimensionsDetected,
+    isExportMode = false
 }) => {
     const ref = useRef<HTMLDivElement>(null);
     const isAnimationPlaying = useStore(state => state.isAnimationPlaying);
@@ -298,9 +300,43 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     }, [layer.motionPathConfig, layer.x, adjustedY, layer.width, layer.height]);
 
     const loopingProps = useMemo(() => {
-        if (!shouldAnimate || animationState !== "visible") return {};
+        if (isExportMode || !shouldAnimate || animationState !== "visible") return {};
         return marqueeAnimation || elegantSpinAnimation || pathAnimation || loopingConfig || {};
-    }, [shouldAnimate, animationState, marqueeAnimation, elegantSpinAnimation, pathAnimation, loopingConfig]);
+    }, [isExportMode, shouldAnimate, animationState, marqueeAnimation, elegantSpinAnimation, pathAnimation, loopingConfig]);
+
+    if (isExportMode) {
+        // PURE STATIC RENDER: No Framer Motion, No Animations, just pixel-perfect CSS
+        const rotation = baseRotate || 0;
+        const scaleX = baseScale * flipX;
+        const scaleY = baseScale * flipY;
+
+        return (
+            <div
+                className="absolute origin-center"
+                style={{
+                    left: `${layer.x}px`,
+                    top: `${adjustedY}px`,
+                    width: `${layer.width}px`,
+                    height: `${layer.height}px`,
+                    zIndex: layer.zIndex,
+                    opacity: layer.opacity ?? 1,
+                    transform: `rotate(${rotation}deg) scale(${scaleX}, ${scaleY})`,
+                }}
+            >
+                {isMarqueeEnabled && (marqueeConfig?.mode || 'seamless') === 'seamless' ? (
+                    <div className="seamless-marquee-container">
+                        <div style={{ width: layer.width, height: layer.height }}>
+                            <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={false} />
+                        </div>
+                    </div>
+                ) : (
+                    <div className="w-full h-full relative" style={{ ...(isMarqueeTileMode ? { backgroundImage: `url(${layer.imageUrl})`, backgroundRepeat: 'repeat', backgroundSize: 'auto', backgroundColor: 'transparent' } : {}) }}>
+                        {!isMarqueeTileMode && <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={false} onContentLoad={handleContentLoad} onDimensionsDetected={onDimensionsDetected} />}
+                    </div>
+                )}
+            </div>
+        );
+    }
 
     return (
         <m.div

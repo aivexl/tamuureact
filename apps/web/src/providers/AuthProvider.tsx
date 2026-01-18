@@ -51,23 +51,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     /**
      * Syncs Supabase Auth user with our Zustand store
-     * Uses user_metadata only (no external profiles table required)
+     * Uses user_metadata initially, then fetches D1 data
      */
-    const syncUserProfile = (supabaseUser: any) => {
-        // Build user object directly from Supabase auth metadata
-        const user: User = {
+    const syncUserProfile = async (supabaseUser: any) => {
+        // Build initial user object from Supabase auth metadata
+        const initialUser: User = {
             id: supabaseUser.id,
             email: supabaseUser.email || '',
             name: supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || '',
             avatar_url: supabaseUser.user_metadata?.avatar_url || '',
             role: (supabaseUser.user_metadata?.role as 'user' | 'admin') || 'user',
-            tier: 'free', // Default tier, can be updated later from billing system
+            tier: 'free', // Initial default
             maxInvitations: 1,
             invitationCount: 0,
             expiresAt: undefined,
         };
 
-        setUser(user);
+        // Set initial state for responsiveness
+        setUser(initialUser);
+
+        try {
+            console.log(`[Auth Sync] Fetching D1 profile for ${supabaseUser.email}...`);
+            // Fetch real tier and quotas from D1 via our API
+            const { users: usersApi } = await import('../lib/api');
+            const d1User = await usersApi.getMe(supabaseUser.email);
+
+            console.log('[Auth Sync] D1 Profile received:', d1User);
+
+            if (d1User) {
+                const updatedUser: User = {
+                    ...initialUser,
+                    tier: d1User.tier || 'free',
+                    maxInvitations: d1User.maxInvitations || 1,
+                    invitationCount: d1User.invitationCount || 0,
+                    expiresAt: d1User.expires_at
+                };
+
+                console.log('[Auth Sync] Updating store with:', updatedUser.tier);
+                setUser(updatedUser);
+            }
+        } catch (error) {
+            console.error('[Auth Sync] Failed to sync profile with D1:', error);
+        }
     };
 
     return (

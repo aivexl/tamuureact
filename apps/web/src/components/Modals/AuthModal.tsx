@@ -23,18 +23,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode = 'l
         setLoading(true);
         setError(null);
         try {
-            // Mock auth logic
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            setUser({
-                id: '1',
-                email: data.email,
-                name: 'Demo User',
-                role: 'user',
-                tier: 'free',
-                maxInvitations: 1,
-                invitationCount: 0
-            });
-            onClose();
+            // NOTE: This modal is deprecated. All auth should go through 
+            // LoginPage/SignupPage which uses Supabase + AuthProvider sync.
+            // The AuthProvider.tsx handles fetching the real tier from D1.
+            console.warn('[AuthModal] This modal uses deprecated mock auth. Redirecting to proper auth flow.');
+            window.location.href = '/login';
         } catch (err) {
             setError('Autentikasi gagal. Silakan coba lagi.');
         } finally {

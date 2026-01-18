@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
+import { patchLegacyUrl } from '@/lib/utils';
 import { Layer } from '@/store/layersSlice';
 import { X, Upload, Play, MailOpen, MapPin, Clock, ExternalLink, MessageSquare, Heart, Star, Image as ImageIcon } from 'lucide-react';
 import Lottie from 'lottie-react';
@@ -304,7 +305,8 @@ const ImageElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?:
     return (
         <div className={`w-full h-full relative ${loaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-700`} style={getMaskStyle()}>
             <img
-                src={layer.imageUrl}
+                src={patchLegacyUrl(layer.imageUrl)}
+                crossOrigin="anonymous"
                 alt={layer.name}
                 onLoad={(e) => {
                     const img = e.currentTarget;
@@ -729,8 +731,8 @@ const PhotoGridElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLo
                     <div className="grid grid-cols-4 grid-rows-2 h-full w-full" style={{ gap }}>
                         <div className="col-span-2 row-span-2">{renderSlot(0)}</div>
                         <div className="col-span-2">{renderSlot(1)}</div>
-                        <div>{renderSlot(2)}</div>
-                        <div>{renderSlot(3)}</div>
+                        <div style={{ position: 'relative' }}>{renderSlot(2)}</div>
+                        <div style={{ position: 'relative' }}>{renderSlot(3)}</div>
                     </div>
                 );
             case 'featured':

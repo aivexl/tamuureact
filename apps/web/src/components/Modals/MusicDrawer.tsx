@@ -15,7 +15,7 @@ interface MusicDrawerProps {
     selectedSongId?: string;
 }
 
-const CATEGORIES = ['Semua', 'Traditional', 'Instrumental', 'Classic', 'Modern', 'Acoustic'];
+const CATEGORIES = ['Semua', 'Instrumental', 'Piano', 'Classical'];
 
 export const MusicDrawer: React.FC<MusicDrawerProps> = ({ isOpen, onClose, onSelect, selectedSongId }) => {
     const { data: songs = [], isLoading } = useMusicLibrary();

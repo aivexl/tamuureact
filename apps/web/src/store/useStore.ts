@@ -55,8 +55,9 @@ export const useStore = create<StoreState>()(
                 orbit: state.orbit,
                 music: state.music,
                 isPublished: state.isPublished,
-                user: state.user,
-                token: state.token
+                // NOTE: user and token are intentionally NOT persisted here.
+                // AuthProvider.tsx is the sole source of truth for auth state.
+                // This prevents stale tier data from localStorage overriding fresh D1 data.
             }),
             onRehydrateStorage: () => (state) => {
                 if (state) {
@@ -119,9 +120,10 @@ export const useStore = create<StoreState>()(
                     });
 
                     // Update state with sanitized values
-                    Object.assign(state, sanitizedPayload);
-
-                    state.setHasHydrated(true);
+                    if (state.setHasHydrated) {
+                        Object.assign(state, sanitizedPayload);
+                        state.setHasHydrated(true);
+                    }
                     console.log('[Store] Rehydration complete with recursive sanitization.');
                 }
             }

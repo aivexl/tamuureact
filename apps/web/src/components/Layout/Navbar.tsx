@@ -178,21 +178,33 @@ export const Navbar: React.FC = () => {
                     {!isLoggedIn ? (
                         !isAppRoute && (
                             <div className="hidden lg:flex items-center gap-4">
-                                <Link
-                                    to="/login"
-                                    className={`text-sm font-bold transition-colors px-4 py-2 ${isDarkTheme
-                                        ? 'text-slate-700 hover:text-rose-600'
-                                        : 'text-white hover:text-white'
-                                        }`}
-                                >
-                                    Masuk
-                                </Link>
+                                {isAppDomain ? (
+                                    <Link
+                                        to="/login"
+                                        className={`text-sm font-bold transition-colors px-4 py-2 ${isDarkTheme
+                                            ? 'text-slate-700 hover:text-rose-600'
+                                            : 'text-white hover:text-white'
+                                            }`}
+                                    >
+                                        Masuk
+                                    </Link>
+                                ) : (
+                                    <a
+                                        href="https://app.tamuu.id/login"
+                                        className={`text-sm font-bold transition-colors px-4 py-2 ${isDarkTheme
+                                            ? 'text-slate-700 hover:text-rose-600'
+                                            : 'text-white hover:text-white'
+                                            }`}
+                                    >
+                                        Masuk
+                                    </a>
+                                )}
                                 <button
                                     onClick={() => {
-                                        if (isAuthenticated) {
-                                            navigate('/onboarding');
+                                        if (isAppDomain) {
+                                            navigate(isAuthenticated ? '/onboarding' : '/login?redirect=/onboarding');
                                         } else {
-                                            navigate('/login?redirect=/onboarding');
+                                            window.location.href = 'https://app.tamuu.id/signup';
                                         }
                                     }}
                                     className={`group relative inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${isDarkTheme
@@ -373,7 +385,7 @@ export const Navbar: React.FC = () => {
                                     ) : (
                                         <div className={`p-4 rounded-2xl flex items-center gap-4 ${isDarkTheme ? 'bg-slate-50' : 'bg-white/5'}`}>
                                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white font-black shadow-lg">
-                                                A
+                                                {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
                                             </div>
                                             <div>
                                                 <p className={`font-bold ${isDarkTheme ? 'text-slate-900' : 'text-white'}`}>{user?.name || 'User'}</p>

@@ -11,7 +11,7 @@ interface VideoConfig {
 
 const VIDEO_CONFIG: Record<VideoFormat, VideoConfig> = {
     mobile: { width: 1080, height: 1920, label: 'Mobile (9:16)' },
-    desktop: { width: 1920, height: 1080, label: 'Desktop (16:9)' }
+    desktop: { width: 1080, height: 1920, label: 'Desktop (Portrait HD)' }
 };
 
 interface UseExportVideoResult {
@@ -109,7 +109,8 @@ export const useExportVideo = (): UseExportVideoResult => {
             // Animation loop to capture frames
             let startTime = Date.now();
             const captureFrame = async () => {
-                if (!isRecording) return;
+                const currentIsRecording = mediaRecorderRef.current?.state === 'recording';
+                if (!currentIsRecording) return;
 
                 const elapsed = Date.now() - startTime;
                 const progressPercent = Math.min((elapsed / durationMs) * 100, 99);
@@ -118,18 +119,37 @@ export const useExportVideo = (): UseExportVideoResult => {
                 // Use html2canvas-like capture
                 try {
                     const { default: html2canvas } = await import('html2canvas');
+
+                    const designWidth = 1080;
+                    const targetScale = config.width / designWidth;
+                    const actualHeight = targetElement.scrollHeight;
+
+                    const originalStyle = targetElement.style.cssText;
+                    targetElement.style.display = 'block';
+                    targetElement.style.height = 'auto';
+                    targetElement.style.width = '1080px';
+
                     const capturedCanvas = await html2canvas(targetElement, {
-                        scale: 1,
+                        scale: targetScale,
                         useCORS: true,
                         allowTaint: true,
                         backgroundColor: '#0a0a0a',
-                        width: config.width,
-                        height: config.height,
-                        windowWidth: config.width,
-                        windowHeight: config.height,
+                        width: designWidth,
+                        height: actualHeight,
+                        windowWidth: designWidth,
+                        windowHeight: actualHeight,
+                        logging: false
                     });
 
-                    ctx.drawImage(capturedCanvas, 0, 0, config.width, config.height);
+                    targetElement.style.cssText = originalStyle;
+
+                    // Clear and draw to main recording canvas
+                    ctx.fillStyle = '#0a0a0a';
+                    ctx.fillRect(0, 0, config.width, config.height);
+
+                    // Draw captured frame centered or from top
+                    // We draw the full width and whatever height fits
+                    ctx.drawImage(capturedCanvas, 0, 0);
                 } catch (err) {
                     console.warn('[VideoExport] Frame capture failed:', err);
                 }

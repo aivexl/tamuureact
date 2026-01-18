@@ -11,12 +11,13 @@ export interface CanvasState {
     category?: string; // Template category
     templateType: 'invitation' | 'display';
     isTemplate: boolean;
+    exportFormat?: 'mobile' | 'desktop' | 'print' | null;
     music?: {
         id: string;
         url: string;
         title: string;
         artist: string;
-        source_type: 'library' | 'gdrive';
+        source_type: 'library' | 'gdrive' | 'user';
     };
     isPublished: boolean;
     setId: (id: string) => void;
@@ -32,6 +33,7 @@ export interface CanvasState {
     setCategory: (category: string) => void;
     setMusic: (music: CanvasState['music']) => void;
     setIsPublished: (isPublished: boolean) => void;
+    setExportFormat: (format: 'mobile' | 'desktop' | 'print' | null) => void;
     resetStore: () => void;
 }
 
@@ -48,6 +50,7 @@ export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
     category: undefined,
     music: undefined,
     isPublished: false,
+    exportFormat: null,
     setZoom: (zoom) => set({ zoom }),
     setPan: (pan) => set({ pan }),
     setBackgroundColor: (backgroundColor) => set({ backgroundColor }),
@@ -61,6 +64,7 @@ export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
     setCategory: (category) => set({ category }),
     setMusic: (music) => set({ music }),
     setIsPublished: (isPublished) => set({ isPublished }),
+    setExportFormat: (exportFormat) => set({ exportFormat }),
     resetStore: () => set({
         zoom: 1,
         pan: { x: 0, y: 0 },

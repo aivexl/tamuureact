@@ -1,6 +1,7 @@
 import React, { useEffect, Suspense, lazy, useMemo } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './components/Auth/ProtectedRoute';
+import { ExternalRedirect } from './components/Auth/ExternalRedirect';
 import { CORE_FONTS, getGoogleFontsUrl } from './lib/fonts';
 import { MainLayout } from './components/Layout/MainLayout';
 import { Loader2 } from 'lucide-react';
@@ -81,46 +82,51 @@ const App: React.FC = () => {
                 <Suspense fallback={<PremiumLoader />}>
                     <Routes>
                         {/* ============================================ */}
-                        {/* PUBLIC ROUTES - Available on tamuu.id */}
+                        {/* DOMAIN-AWARE ROOT PATH */}
                         {/* ============================================ */}
+                        {isAppDomain ? (
+                            // App domain: Root redirects to dashboard
+                            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                        ) : (
+                            // Public domain: Show landing page
+                            <Route path="/" element={<MainLayout><LandingPage /></MainLayout>} />
+                        )}
 
-                        {/* Public Landing */}
-                        <Route path="/" element={<MainLayout><LandingPage /></MainLayout>} />
+                        {/* ============================================ */}
+                        {/* PUBLIC ROUTES - Available on both domains */}
+                        {/* ============================================ */}
 
                         {/* Public Store */}
                         <Route path="/invitations" element={<MainLayout><InvitationsStorePage /></MainLayout>} />
-
-                        {/* Public Auth */}
-                        <Route path="/login" element={<LoginPage />} />
-                        <Route path="/signup" element={<SignupPage />} />
-                        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
                         {/* Preview Routes - Public for sharing */}
                         <Route path="/preview/:slug" element={<PreviewPage />} />
                         <Route path="/v/:slug" element={<PreviewPage />} />
 
-                        <Route path="/upgrade" element={<MainLayout><UpgradePage /></MainLayout>} />
-                        <Route path="/billing" element={<MainLayout><BillingPage /></MainLayout>} />
+                        {/* Help / Legal (Public) */}
                         <Route path="/terms" element={<MainLayout><TermsPage /></MainLayout>} />
                         <Route path="/privacy" element={<MainLayout><PrivacyPage /></MainLayout>} />
 
                         {/* ============================================ */}
-                        {/* APP ROUTES - Protected */}
-                        {/* ============================================ */}
-                        <Route path="/onboarding" element={<ProtectedRoute><MainLayout><OnboardingPage /></MainLayout></ProtectedRoute>} />
-                        <Route path="/dashboard" element={<ProtectedRoute><MainLayout><DashboardPage /></MainLayout></ProtectedRoute>} />
-                        <Route path="/profile" element={<ProtectedRoute><MainLayout><ProfilePage /></MainLayout></ProtectedRoute>} />
-                        <Route path="/billing" element={<ProtectedRoute><MainLayout><BillingPage /></MainLayout></ProtectedRoute>} />
-                        <Route path="/upgrade" element={<ProtectedRoute><MainLayout><UpgradePage /></MainLayout></ProtectedRoute>} />
-                        <Route path="/guests" element={<ProtectedRoute><MainLayout><GuestManagementPage /></MainLayout></ProtectedRoute>} />
-                        <Route path="/guests/:invitationId" element={<ProtectedRoute><MainLayout><GuestManagementPage /></MainLayout></ProtectedRoute>} />
-                        <Route path="/wishes" element={<ProtectedRoute><MainLayout><GuestWishesPage /></MainLayout></ProtectedRoute>} />
-
-                        {/* ============================================ */}
-                        {/* APP ROUTES - Guarded by Domain/Auth logic in components if needed */}
+                        {/* APP ROUTES - Domain Aware Routing */}
                         {/* ============================================ */}
                         {isAppDomain ? (
                             <>
+                                {/* Auth Pages (App Domain Only) */}
+                                <Route path="/login" element={<LoginPage />} />
+                                <Route path="/signup" element={<SignupPage />} />
+                                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+
+                                {/* App Core Pages */}
+                                <Route path="/onboarding" element={<ProtectedRoute><MainLayout><OnboardingPage /></MainLayout></ProtectedRoute>} />
+                                <Route path="/dashboard" element={<ProtectedRoute><MainLayout><DashboardPage /></MainLayout></ProtectedRoute>} />
+                                <Route path="/profile" element={<ProtectedRoute><MainLayout><ProfilePage /></MainLayout></ProtectedRoute>} />
+                                <Route path="/billing" element={<ProtectedRoute><MainLayout><BillingPage /></MainLayout></ProtectedRoute>} />
+                                <Route path="/upgrade" element={<ProtectedRoute><MainLayout><UpgradePage /></MainLayout></ProtectedRoute>} />
+                                <Route path="/guests" element={<ProtectedRoute><MainLayout><GuestManagementPage /></MainLayout></ProtectedRoute>} />
+                                <Route path="/guests/:invitationId" element={<ProtectedRoute><MainLayout><GuestManagementPage /></MainLayout></ProtectedRoute>} />
+                                <Route path="/wishes" element={<ProtectedRoute><MainLayout><GuestWishesPage /></MainLayout></ProtectedRoute>} />
+
                                 {/* Admin Routes */}
                                 <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="admin"><AdminDashboardPage /></ProtectedRoute>} />
                                 <Route path="/admin/music" element={<ProtectedRoute requiredRole="admin"><AdminMusicPage /></ProtectedRoute>} />
@@ -132,21 +138,32 @@ const App: React.FC = () => {
                                 <Route path="/admin/editor/:slug" element={<ProtectedRoute requiredRole="admin"><EditorPage isTemplate={true} /></ProtectedRoute>} />
                                 <Route path="/admin/display-editor/:slug" element={<ProtectedRoute requiredRole="admin"><DisplayEditorPage /></ProtectedRoute>} />
                                 <Route path="/admin/display/:slug" element={<ProtectedRoute requiredRole="admin"><AdminDisplayPreviewPage /></ProtectedRoute>} />
-                                <Route path="/user/editor/:id" element={<UserEditorPage />} />
-                                <Route path="/user/display-editor/:id" element={<UserEditorPage mode="welcome" />} />
+                                <Route path="/user/editor/:id" element={<ProtectedRoute><UserEditorPage /></ProtectedRoute>} />
+                                <Route path="/user/display-editor/:id" element={<ProtectedRoute><UserEditorPage mode="welcome" /></ProtectedRoute>} />
 
-                                {/* Onboarding & Guest Management */}
+                                {/* Guest Experience */}
                                 <Route path="/welcome/:invitationId/:guestId" element={<GuestWelcomePage />} />
                                 <Route path="/display/:slug" element={<GuestWelcomeDisplay />} />
                                 <Route path="/guests/scan/:id" element={<GuestScannerPage />} />
                             </>
-
                         ) : (
-                            // Public domain specific fallbacks/redirects
+                            // Public domain (tamuu.id): Redirect all app paths to app.tamuu.id
                             <>
-                                <Route path="/admin/*" element={<Navigate to="/" replace />} />
-                                <Route path="/editor/*" element={<Navigate to="/" replace />} />
-                                <Route path="/user/*" element={<Navigate to="/" replace />} />
+                                {/* Auth Redirects */}
+                                <Route path="/login" element={<ExternalRedirect to="https://app.tamuu.id/login" />} />
+                                <Route path="/signup" element={<ExternalRedirect to="https://app.tamuu.id/signup" />} />
+                                <Route path="/forgot-password" element={<ExternalRedirect to="https://app.tamuu.id/forgot-password" />} />
+
+                                {/* App Page Redirects */}
+                                <Route path="/dashboard" element={<ExternalRedirect to="https://app.tamuu.id/dashboard" />} />
+                                <Route path="/onboarding" element={<ExternalRedirect to="https://app.tamuu.id/onboarding" />} />
+                                <Route path="/profile" element={<ExternalRedirect to="https://app.tamuu.id/profile" />} />
+                                <Route path="/billing" element={<ExternalRedirect to="https://app.tamuu.id/billing" />} />
+                                <Route path="/upgrade" element={<ExternalRedirect to="https://app.tamuu.id/upgrade" />} />
+                                <Route path="/guests/*" element={<ExternalRedirect to="https://app.tamuu.id/guests" />} />
+                                <Route path="/admin/*" element={<ExternalRedirect to="https://app.tamuu.id/admin/dashboard" />} />
+                                <Route path="/editor/*" element={<ExternalRedirect to="https://app.tamuu.id/dashboard" />} />
+                                <Route path="/user/*" element={<ExternalRedirect to="https://app.tamuu.id/dashboard" />} />
                             </>
                         )}
 

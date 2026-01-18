@@ -87,8 +87,9 @@ export default {
                         };
                     }
 
-                    return json({
+                    const normalizedUser = {
                         ...user,
+                        id: user.id || user.uid, // Handle both naming conventions
                         maxInvitations: user.max_invitations || 1,
                         invitationCount: user.invitation_count || 0,
                         tier: user.tier || 'free',
@@ -103,7 +104,16 @@ export default {
                         emoneyType: user.emoney_type,
                         emoneyNumber: user.emoney_number,
                         giftAddress: user.gift_address
-                    }, corsHeaders);
+                    };
+
+                    return json(normalizedUser, {
+                        headers: {
+                            ...corsHeaders,
+                            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                            'Pragma': 'no-cache',
+                            'Expires': '0',
+                        }
+                    });
                 } catch (error) {
                     console.error('Auth/me error:', error);
                     return json({ error: 'Failed to fetch user', details: error.message }, { headers: corsHeaders, status: 500 });
@@ -453,6 +463,56 @@ export default {
                     return results;
                 });
             }
+
+            // [NEW] Generate Presigned URL for User Music Upload
+            if (path === '/api/music/presigned-url' && method === 'POST') {
+                const body = await request.json();
+                const { userId, fileName, contentType } = body;
+
+                if (!userId || !fileName) {
+                    return json({ error: 'User ID and File Name required' }, { ...corsHeaders, status: 400 });
+                }
+
+                // Verify VVIP tier (Enterprise Security)
+                const user = await env.DB.prepare('SELECT tier FROM users WHERE id = ?').bind(userId).first();
+                if (!user || user.tier !== 'vvip') {
+                    return json({ error: 'VVIP tier required for custom music' }, { ...corsHeaders, status: 403 });
+                }
+
+                const fileId = crypto.randomUUID();
+                const extension = fileName.split('.').pop() || 'm4a';
+                const key = `user-content/${userId}/music/${fileId}.${extension}`;
+
+                // For R2, we can't easily generate a presigned URL *inside* a worker without the aws-sdk or a custom signer.
+                // Alternative: Use a "Upload Proxy" endpoint in the worker that pipes the request to R2, 
+                // but for "Unicorn" scale, we use Pre-signed. 
+                // I will implement a simple "Direct Upload" endpoint via Worker that enforces the key structure.
+
+                return json({
+                    uploadUrl: `https://api.tamuu.id/api/music/upload?key=${encodeURIComponent(key)}`,
+                    publicUrl: `https://api.tamuu.id/assets/${key}`,
+                    key: key
+                }, corsHeaders);
+            }
+
+            // [NEW] Direct Upload Handle (Secured Proxy to R2)
+            if (path === '/api/music/upload' && method === 'PUT') {
+                const key = url.searchParams.get('key');
+                if (!key || !key.startsWith('user-content/')) {
+                    return json({ error: 'Invalid upload key' }, { ...corsHeaders, status: 400 });
+                }
+
+                // Stream the body directly to R2
+                await env.ASSETS.put(key, request.body, {
+                    httpMetadata: {
+                        contentType: request.headers.get('Content-Type') || 'audio/mp4',
+                        cacheControl: 'public, max-age=31536000, immutable'
+                    }
+                });
+
+                return json({ success: true, key }, corsHeaders);
+            }
+
 
             // ============================================
             // WISHLIST ENDPOINTS
@@ -1139,6 +1199,49 @@ export default {
                     id
                 ).run();
                 return json({ id, updated: true }, corsHeaders);
+            }
+
+            // INVITIATION ANALYTICS
+            if (path.match(/^\/api\/invitations\/[^/]+\/analytics$/) && method === 'GET') {
+                const invitationId = path.split('/')[3];
+
+                // 1. Fetch RSVP stats
+                const rsvpStats = await env.DB.prepare(`
+                    SELECT 
+                        COUNT(*) as total_rsvp,
+                        SUM(CASE WHEN attendance = 'attending' THEN 1 ELSE 0 END) as attending_count,
+                        SUM(CASE WHEN attendance = 'not_attending' THEN 1 ELSE 0 END) as not_attending_count,
+                        SUM(CASE WHEN attendance = 'maybe' THEN 1 ELSE 0 END) as maybe_count,
+                        SUM(CASE WHEN attendance = 'attending' THEN guest_count ELSE 0 END) as total_pax
+                    FROM rsvp_responses 
+                    WHERE invitation_id = ? AND deleted_at IS NULL
+                `).bind(invitationId).first();
+
+                // 2. Fetch Guest stats
+                const guestStats = await env.DB.prepare(`
+                    SELECT 
+                        COUNT(*) as total_guests,
+                        SUM(CASE WHEN checked_in_at IS NOT NULL THEN 1 ELSE 0 END) as checked_in_count
+                    FROM guests 
+                    WHERE invitation_id = ?
+                `).bind(invitationId).first();
+
+                return json({
+                    rsvp: {
+                        total: rsvpStats.total_rsvp || 0,
+                        attending: rsvpStats.attending_count || 0,
+                        notAttending: rsvpStats.not_attending_count || 0,
+                        maybe: rsvpStats.maybe_count || 0,
+                        totalPax: rsvpStats.total_pax || 0
+                    },
+                    guests: {
+                        total: guestStats.total_guests || 0,
+                        checkedIn: guestStats.checked_in_count || 0,
+                        presenceRatio: guestStats.total_guests > 0
+                            ? Math.round((guestStats.checked_in_count / guestStats.total_guests) * 100)
+                            : 0
+                    }
+                }, corsHeaders);
             }
 
 

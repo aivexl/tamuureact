@@ -38,13 +38,29 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ previewRef }) => {
     const error = pdfError || videoError;
 
     const handleExport = async (type: 'pdf' | 'image') => {
-        if (!previewRef.current) return;
         setExportSuccess(false);
+
+        // Sync with store so hidden preview can adjust layout
+        useStore.getState().setExportFormat(selectedFormat);
+
+        // Allow layout shifts and mounting for a moment
+        await new Promise(r => setTimeout(r, 300));
+
+        if (!previewRef.current) {
+            console.error('[Export] Ref is still null after mounting attempt');
+            useStore.getState().setExportFormat(null);
+            return;
+        }
+
         if (type === 'pdf') {
             await exportToPDF(selectedFormat, previewRef.current);
         } else {
             await exportToImage(selectedFormat, previewRef.current);
         }
+
+        // Reset
+        useStore.getState().setExportFormat(null);
+
         if (!error) {
             setExportSuccess(true);
             setTimeout(() => setExportSuccess(false), 3000);
@@ -52,10 +68,23 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ previewRef }) => {
     };
 
     const handleVideoRecord = async () => {
-        if (!previewRef.current) return;
         setExportSuccess(false);
         const videoFormat: VideoFormat = selectedFormat === 'print' ? 'mobile' : selectedFormat as VideoFormat;
+
+        // Sync with store
+        useStore.getState().setExportFormat(videoFormat);
+        await new Promise(r => setTimeout(r, 300));
+
+        if (!previewRef.current) {
+            console.error('[Export] Ref is still null for video record');
+            useStore.getState().setExportFormat(null);
+            return;
+        }
+
         await startRecording(videoFormat, previewRef.current, selectedDuration);
+
+        useStore.getState().setExportFormat(null);
+
         if (!error) {
             setExportSuccess(true);
             setTimeout(() => setExportSuccess(false), 3000);
@@ -151,9 +180,9 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ previewRef }) => {
                             whileTap={user?.tier === 'vvip' ? { scale: 0.99 } : {}}
                             onClick={user?.tier === 'vvip' ? (isRecording ? stopRecording : handleVideoRecord) : () => navigate('/upgrade')}
                             className={`w-full flex items-center justify-center gap-3 px-6 py-4 font-bold rounded-2xl transition-all shadow-lg ${user?.tier !== 'vvip'
-                                    ? 'bg-slate-800 text-white opacity-90'
-                                    : isRecording ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-500/20'
-                                        : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-purple-500/20'
+                                ? 'bg-slate-800 text-white opacity-90'
+                                : isRecording ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-500/20'
+                                    : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-purple-500/20'
                                 }`}
                         >
                             {user?.tier !== 'vvip' ? (

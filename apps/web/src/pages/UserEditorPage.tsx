@@ -15,6 +15,8 @@ import { OrbitPanel } from '@/components/UserEditor/Panels/OrbitPanel';
 import { TemplateStorePanel } from '@/components/UserEditor/Panels/TemplateStorePanel';
 import { DisplayStorePanel } from '@/components/UserEditor/Panels/DisplayStorePanel';
 import { WishesPanel } from '@/components/UserEditor/Panels/WishesPanel';
+import { AnalyticsPanel } from '@/components/UserEditor/Panels/AnalyticsPanel';
+import { AnimatedLayer } from '@/components/Preview/AnimatedLayer';
 import { useStore } from '@/store/useStore';
 import { invitations as invitationsApi } from '@/lib/api';
 import { Loader2, Sparkles, AlertCircle } from 'lucide-react';
@@ -26,15 +28,6 @@ interface UserEditorPageProps {
 
 export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitation' }) => {
     const { id } = useParams<{ id: string }>();
-
-    if (mode === 'welcome') {
-        return (
-            <div className="w-full h-screen bg-[#050505] text-white selection:bg-premium-accent selection:text-premium-dark overflow-hidden font-outfit">
-                <EditorLayout templateId={id} isTemplate={false} isDisplayDesign={true} />
-            </div>
-        );
-    }
-
     const navigate = useNavigate();
     const {
         activeSectionId,
@@ -50,13 +43,25 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
         setMusic,
         isPublished,
         setIsPublished,
+        sections,
+        exportFormat,
+        setExportFormat,
         // Resetters
         resetStore,
         resetSections,
         clearLayers,
         hasHydrated,
+        orbit,
         id: currentStoredId
     } = useStore();
+
+    if (mode === 'welcome') {
+        return (
+            <div className="w-full h-screen bg-[#050505] text-white selection:bg-premium-accent selection:text-premium-dark overflow-hidden font-outfit">
+                <EditorLayout templateId={id} isTemplate={false} isDisplayDesign={true} />
+            </div>
+        );
+    }
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -131,6 +136,7 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
     }, [id, hasHydrated]); // MINIMAL DEPS: Only ID and Hydration status matter. Setters are stable.
 
 
+
     if (loading) {
         return (
             <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4">
@@ -154,6 +160,7 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
             </div>
         );
     }
+
 
 
     return (
@@ -191,9 +198,10 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                     {activePanel === 'display' && <DisplayStorePanel invitationId={id} />}
                     {activePanel === 'template' && <TemplateStorePanel invitationId={id} />}
                     {activePanel === 'wishes' && <WishesPanel />}
+                    {activePanel === 'analytics' && <AnalyticsPanel />}
                     {activePanel === 'share' && <SharePanel slug={invitation.slug} />}
                     {activePanel === 'download' && <ExportPanel previewRef={previewRef as React.RefObject<HTMLElement>} />}
-                    {!['music', 'theme', 'display', 'template', 'share', 'download', 'wishes'].includes(activePanel || '') && (
+                    {!['music', 'theme', 'display', 'template', 'share', 'download', 'wishes', 'analytics'].includes(activePanel || '') && (
                         <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
                             <div className="w-20 h-20 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-slate-300">
                                 <Sparkles className="w-10 h-10" />
@@ -209,6 +217,133 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                     )}
                 </Modal>
             </div>
+
+            {/* HIDDEN EXPORT PREVIEW (Liquid Parity Engine) */}
+            {exportFormat && (() => {
+
+                // DESIGN SETTINGS
+                const isDesktop = exportFormat === 'desktop';
+                const EXPORT_WIDTH = isDesktop ? 1080 : 414;
+                const DESIGN_HEIGHT = 896;
+                const DESIGN_WIDTH = 414;
+
+                // DYNAMIC COVER HEIGHT (Matches PreviewView logic)
+                // For Mobile export, we use a fixed 960 design units ratio (approx 9:21)
+                // to match modern "Tall" screens and avoid squishing.
+                let formatRatio = 2500 / 1080; // 9:20.8 (approx 960 design units)
+                if (exportFormat === 'desktop') formatRatio = 720 / 1280;
+                else if (exportFormat === 'print') formatRatio = 1123 / 794;
+
+                const exportCoverHeight = DESIGN_WIDTH * formatRatio;
+
+                let cumulativeTop = 0;
+
+                return (
+                    <div className="fixed -left-[20000px] top-0 pointer-events-none overflow-hidden bg-black flex justify-start items-start" style={{ width: EXPORT_WIDTH, textAlign: 'left' }}>
+                        <div
+                            ref={previewRef}
+                            className="relative bg-[#0a0a0a]"
+                            style={{
+                                width: EXPORT_WIDTH,
+                                height: 'auto',
+                                textAlign: 'left'
+                            }}
+                        >
+                            {sections.map((section, sectionIdx) => {
+                                const isPortrait = exportFormat === 'mobile' || exportFormat === 'print';
+                                const currentSectionHeight = isPortrait ? exportCoverHeight : DESIGN_HEIGHT;
+                                const sectionTop = cumulativeTop;
+                                cumulativeTop += currentSectionHeight;
+
+                                const extraHeight = currentSectionHeight - DESIGN_HEIGHT;
+
+                                return (
+                                    <div
+                                        key={`export-section-${section.id}`}
+                                        className="relative overflow-hidden"
+                                        style={{
+                                            width: EXPORT_WIDTH,
+                                            height: currentSectionHeight,
+                                            top: 0, // Natural stacking is fine as we use a wrapper, or we can use absolute
+                                            backgroundColor: section.backgroundColor || '#0a0a0a',
+                                            backgroundImage: section.backgroundUrl ? `url(${section.backgroundUrl})` : 'none',
+                                            backgroundSize: 'cover',
+                                            backgroundPosition: 'center',
+                                        }}
+                                    >
+                                        {/* ORBIT WINGS (Desktop Only) */}
+                                        {isDesktop && (
+                                            <>
+                                                {orbit?.left?.isVisible && orbit.left.elements?.map(element => (
+                                                    <AnimatedLayer
+                                                        key={`export-orbit-l-${element.id}-${sectionIdx}`}
+                                                        layer={element}
+                                                        adjustedY={element.y}
+                                                        isOpened={true}
+                                                        isExportMode={true}
+                                                        forceTrigger={true}
+                                                    />
+                                                ))}
+
+                                                {orbit?.right?.isVisible && orbit.right.elements?.map(element => (
+                                                    <div
+                                                        key={`export-orbit-r-wrap-${element.id}-${sectionIdx}`}
+                                                        className="absolute top-0 right-0 h-full"
+                                                        style={{ width: 800 }}
+                                                    >
+                                                        <AnimatedLayer
+                                                            layer={element}
+                                                            adjustedY={element.y}
+                                                            isOpened={true}
+                                                            isExportMode={true}
+                                                            forceTrigger={true}
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </>
+                                        )}
+
+                                        {/* CORE INVITATION CONTENT (Centered in 1080px if Desktop, Full in 414px if Mobile) */}
+                                        <div
+                                            className="absolute"
+                                            style={{
+                                                left: isDesktop ? '50%' : 0,
+                                                marginLeft: isDesktop ? -207 : 0,
+                                                width: 414,
+                                                height: currentSectionHeight,
+                                                top: 0
+                                            }}
+                                        >
+                                            {section.elements?.map(element => {
+                                                // LIQUID STRETCH PARITY ENGINE
+                                                const elAny = element as any;
+                                                const elementHeight = element.height || elAny.size?.height || (elAny.textStyle?.fontSize) || 0;
+                                                const maxTop = DESIGN_HEIGHT - elementHeight;
+
+                                                let progress = maxTop > 0 ? element.y / maxTop : 0;
+                                                progress = Math.max(0, Math.min(1, progress));
+
+                                                const adjustedY = element.y + (extraHeight * progress);
+
+                                                return (
+                                                    <AnimatedLayer
+                                                        key={`export-el-${element.id}`}
+                                                        layer={element}
+                                                        adjustedY={adjustedY}
+                                                        isOpened={true}
+                                                        isExportMode={true}
+                                                        forceTrigger={true}
+                                                    />
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                );
+            })()}
         </UserEditorLayout>
     );
 };

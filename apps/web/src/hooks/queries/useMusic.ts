@@ -18,7 +18,7 @@ export interface Song {
     url: string;
     category: string;
     thumbnail?: string;
-    source_type?: 'internal' | 'gdrive';
+    source_type?: 'library' | 'gdrive' | 'user';
 }
 
 // ============================================

@@ -160,6 +160,18 @@ export const wishlist = {
 };
 
 // ============================================
+// ANALYTICS API
+// ============================================
+export const analytics = {
+    async get(invitationId: string) {
+        const res = await safeFetch(`${API_BASE}/api/invitations/${invitationId}/analytics`);
+        if (!res.ok) throw new Error('Failed to fetch analytics');
+        const data = await res.json();
+        return sanitizeValue(data);
+    }
+};
+
+// ============================================
 // INVITATIONS API
 // ============================================
 export const invitations = {
@@ -537,6 +549,26 @@ export const music = {
         });
         if (!res.ok) throw new Error('Delete failed');
         return true;
+    },
+
+    async getPresignedUrl(userId: string, fileName: string) {
+        const res = await safeFetch(`${API_BASE}/api/music/presigned-url`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, fileName })
+        });
+        if (!res.ok) throw new Error('Failed to get presigned URL');
+        return res.json();
+    },
+
+    async uploadToR2(uploadUrl: string, blob: Blob) {
+        const res = await fetch(uploadUrl, {
+            method: 'PUT',
+            body: blob,
+            headers: { 'Content-Type': 'audio/mp4' }
+        });
+        if (!res.ok) throw new Error('Failed to upload to storage');
+        return res.json();
     }
 };
 
