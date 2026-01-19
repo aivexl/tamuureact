@@ -7,6 +7,7 @@ import { TemplateEditArea } from '../components/UserEditor/TemplateEditArea';
 import { InvitationInfoCard } from '../components/UserEditor/InvitationInfoCard';
 import { Modal } from '@/components/ui/Modal';
 import { MusicPanel } from '@/components/UserEditor/Panels/MusicPanel';
+import { PremiumLoader } from '../components/ui/PremiumLoader';
 
 import { SharePanel } from '@/components/UserEditor/Panels/SharePanel';
 import { ExportPanel } from '@/components/UserEditor/Panels/ExportPanel';
@@ -146,12 +147,7 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
 
 
     if (loading) {
-        return (
-            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4">
-                <Loader2 className="w-10 h-10 text-teal-500 animate-spin" />
-                <p className="text-slate-400 font-medium animate-pulse">Menyiapkan Editor Anda...</p>
-            </div>
-        );
+        return <PremiumLoader showLabel label="Menyiapkan Editor Anda..." />;
     }
 
     if (error || !invitation) {

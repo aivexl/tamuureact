@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, Loader2, ArrowRight, User, Mail, Lock } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, User, Mail, Lock } from 'lucide-react';
+import { PremiumLoader } from '../ui/PremiumLoader';
 import { Link } from 'react-router-dom';
 
 interface AuthFormProps {
@@ -139,7 +140,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit, isLoading = 
                 className="w-full bg-white text-slate-950 font-black py-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl hover:bg-slate-50 transition-all disabled:opacity-50 group mt-6"
             >
                 {isLoading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <PremiumLoader variant="inline" color="#0f172a" />
                 ) : (
                     <>
                         {mode === 'login' ? 'Masuk Sekarang' : 'Daftar Akun'}

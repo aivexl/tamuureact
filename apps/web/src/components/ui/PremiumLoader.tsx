@@ -2,15 +2,32 @@ import React from 'react';
 import { m } from 'framer-motion';
 
 /**
- * PremiumLoader - The Monolith Edition
+ * PremiumLoader - The Monolith Edition v3.0
  * 
  * A world-class, ultra-minimalist loading sequence designed for 
- * Fortune 500 / Unicorn Startup aesthetics. Zero noise, absolute precision.
+ * Fortune 500 / Unicorn Startup aesthetics.
  * 
- * @version 2.0.0
- * @author Tamuu Architecture Team
+ * Supports:
+ * - Fullscreen Overlay (Page transitions)
+ * - Inline (Inside buttons/cards)
+ * - Custom Scale & Proportions
  */
-export const PremiumLoader: React.FC = () => {
+
+interface PremiumLoaderProps {
+    variant?: 'full' | 'inline' | 'skeleton';
+    showLabel?: boolean;
+    label?: string;
+    className?: string;
+    color?: string;
+}
+
+export const PremiumLoader: React.FC<PremiumLoaderProps> = ({
+    variant = 'full',
+    showLabel = false,
+    label = 'Memuat...',
+    className = '',
+    color = 'white'
+}) => {
     // Advanced staggered timing for the diagonal wave
     const blockVariants = {
         animate: (i: number) => ({
@@ -25,32 +42,30 @@ export const PremiumLoader: React.FC = () => {
         })
     };
 
-    return (
-        <div className="fixed inset-0 z-[9999] bg-[#000000] flex items-center justify-center select-none overflow-hidden">
-            {/* 
-                Subtle Volumetric Background Light
-                Designed to provide depth without distracting from the core element.
-            */}
-            <m.div
-                animate={{
-                    opacity: [0.2, 0.4, 0.2],
-                    scale: [1, 1.1, 1]
-                }}
-                transition={{
-                    duration: 5,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                }}
-                className="absolute w-[600px] h-[600px] bg-white/[0.03] blur-[150px] rounded-full"
-            />
+    const isInline = variant === 'inline';
 
-            {/* 
-                The Core Grid Matrix
-                Reduced scale by 50% for high-density elegance.
-                Using a 4x4 grid with optimized proportions.
-            */}
-            <div className="relative">
-                <div className="grid grid-cols-4 gap-2.5 p-2">
+    return (
+        <div className={`
+            ${variant === 'full' ? 'fixed inset-0 z-[9999] bg-[#000000] flex flex-col items-center justify-center' : 'inline-flex items-center justify-center'}
+            select-none overflow-hidden ${className}
+        `}>
+            {variant === 'full' && (
+                <m.div
+                    animate={{
+                        opacity: [0.2, 0.4, 0.2],
+                        scale: [1, 1.1, 1]
+                    }}
+                    transition={{
+                        duration: 5,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                    }}
+                    className="absolute w-[600px] h-[600px] bg-white/[0.03] blur-[150px] rounded-full"
+                />
+            )}
+
+            <div className="flex flex-col items-center gap-6 relative">
+                <div className={`grid grid-cols-4 ${isInline ? 'gap-1' : 'gap-2.5'} p-2`}>
                     {[...Array(16)].map((_, i) => {
                         const x = i % 4;
                         const y = Math.floor(i / 4);
@@ -60,11 +75,25 @@ export const PremiumLoader: React.FC = () => {
                                 custom={x + y}
                                 variants={blockVariants}
                                 animate="animate"
-                                className="w-[6px] h-[6px] rounded-[1.5px] bg-white shadow-[0_0_12px_rgba(255,255,255,0.15)]"
+                                style={{ backgroundColor: color }}
+                                className={`
+                                    ${isInline ? 'w-[4px] h-[4px] rounded-[1px]' : 'w-[6px] h-[6px] rounded-[1.5px]'}
+                                    shadow-[0_0_12px_rgba(255,255,255,0.15)]
+                                `}
                             />
                         );
                     })}
                 </div>
+
+                {showLabel && variant === 'full' && (
+                    <m.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 ml-[0.4em]"
+                    >
+                        {label}
+                    </m.p>
+                )}
             </div>
         </div>
     );

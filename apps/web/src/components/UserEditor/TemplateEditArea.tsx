@@ -15,6 +15,7 @@ import {
     AlertCircle,
     Power
 } from 'lucide-react';
+import { PremiumLoader } from '../ui/PremiumLoader';
 import { UserKonvaPreview } from './UserKonvaPreview';
 import { UserElementEditor } from './UserElementEditor';
 import { useStore } from '@/store/useStore';
@@ -408,7 +409,7 @@ export const TemplateEditArea: React.FC = () => {
                         className={`group relative flex items-center gap-3 p-1.5 pr-4 bg-white rounded-2xl border transition-all duration-300 w-full lg:w-auto h-[52px] sm:h-[56px] ${isPublished ? 'border-teal-100 shadow-sm' : 'border-slate-100 shadow-sm'} ${isUpdatingStatus ? 'opacity-50' : ''} order-first lg:order-last`}
                     >
                         <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-all duration-500 shadow-sm ${isPublished ? 'text-teal-600 bg-teal-50' : 'text-slate-400 bg-slate-50'}`}>
-                            {isUpdatingStatus ? <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" /> : <Power className="w-4 h-4 sm:w-5 sm:h-5" />}
+                            {isUpdatingStatus ? <PremiumLoader variant="inline" color={isPublished ? '#0d9488' : '#94a3b8'} /> : <Power className="w-4 h-4 sm:w-5 sm:h-5" />}
                         </div>
                         <div className="text-left min-w-[100px]">
                             <p className="text-[9px] sm:text-[10px] font-black text-slate-800 uppercase tracking-tight">Status Undangan</p>
@@ -455,9 +456,9 @@ export const TemplateEditArea: React.FC = () => {
                                         : 'bg-slate-900 text-white hover:bg-slate-800'
                                 }`}
                         >
-                            {saveStatus === 'saving' && <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />}
-                            {saveStatus === 'saved' && <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-                            {saveStatus === 'error' && <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                            {saveStatus === 'saving' && <PremiumLoader variant="inline" color="white" />}
+                            {saveStatus === 'saved' && <Check className="w-4 h-4" />}
+                            {saveStatus === 'error' && <AlertCircle className="w-4 h-4" />}
                             {saveStatus === 'saving' ? 'Menyimpan...' : 'Simpan'}
                         </m.button>
                     </div>
