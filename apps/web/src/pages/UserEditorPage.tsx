@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { UserEditorLayout } from '../components/Layout/UserEditorLayout';
 import { EditorLayout } from '@/components/Layout/EditorLayout';
 import { IconGridMenu } from '../components/UserEditor/IconGridMenu';
-import { StatusToggles } from '../components/UserEditor/StatusToggles';
 import { TemplateEditArea } from '../components/UserEditor/TemplateEditArea';
 import { InvitationInfoCard } from '../components/UserEditor/InvitationInfoCard';
 import { Modal } from '@/components/ui/Modal';
@@ -190,10 +189,6 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                         setActivePanel(panelId);
                     }
                 }} />
-                <StatusToggles
-                    invitation={invitation}
-                    onUpdate={(updates) => setInvitation(updates)}
-                />
 
 
                 {/* 4. Main Edit Area */}

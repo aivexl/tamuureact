@@ -12,7 +12,8 @@ import {
     Loader2,
     Save,
     Layout,
-    AlertCircle
+    AlertCircle,
+    Power
 } from 'lucide-react';
 import { UserKonvaPreview } from './UserKonvaPreview';
 import { UserElementEditor } from './UserElementEditor';
@@ -230,13 +231,16 @@ export const TemplateEditArea: React.FC = () => {
         updateSection,
         orbit,
         updateOrbitCanvas,
-        slug
+        slug,
+        isPublished,
+        setIsPublished
     } = useStore();
 
     const [expandedSection, setExpandedSection] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'invitation' | 'orbit'>('invitation');
     const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
     const [isReordering, setIsReordering] = useState(false);
+    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
     // CITADEL: Strict Init Protection
     const hasInitializedRef = useRef(false);
@@ -337,6 +341,20 @@ export const TemplateEditArea: React.FC = () => {
         }
     };
 
+    const handleTogglePublished = async (val: boolean) => {
+        if (isUpdatingStatus || !invitationId) return;
+        setIsUpdatingStatus(true);
+        try {
+            await invitationsApi.update(invitationId, { is_published: val });
+            setIsPublished(val);
+        } catch (err: any) {
+            console.error('[TemplateEditArea] Failed to update status:', err);
+            alert(`Gagal memperbarui status: ${err.message}`);
+        } finally {
+            setIsUpdatingStatus(false);
+        }
+    };
+
     return (
         <div className="space-y-8 pb-32 font-outfit">
             {/* PREMIUM TAB SWITCHER */}
@@ -380,36 +398,69 @@ export const TemplateEditArea: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2 sm:gap-3 w-full lg:w-auto">
+                <div className="flex flex-col lg:flex-row items-center gap-4 w-full lg:w-auto">
+                    {/* Status Toggle - Mobile: Top / Desktop: Last */}
                     <m.button
-                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={handlePreview}
-                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-3.5 sm:py-4 bg-white text-slate-700 font-black text-[10px] sm:text-xs rounded-2xl border border-slate-200 shadow-lg hover:shadow-xl transition-all uppercase tracking-widest"
+                        onClick={() => handleTogglePublished(!isPublished)}
+                        disabled={isUpdatingStatus}
+                        className={`group relative flex items-center gap-3 p-1.5 pr-4 bg-white rounded-2xl border transition-all duration-300 w-full lg:w-auto h-[52px] sm:h-[56px] ${isPublished ? 'border-teal-100 shadow-sm' : 'border-slate-100 shadow-sm'} ${isUpdatingStatus ? 'opacity-50' : ''} order-first lg:order-last`}
                     >
-                        <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        Preview
+                        <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-all duration-500 shadow-sm ${isPublished ? 'text-teal-600 bg-teal-50' : 'text-slate-400 bg-slate-50'}`}>
+                            {isUpdatingStatus ? <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" /> : <Power className="w-4 h-4 sm:w-5 sm:h-5" />}
+                        </div>
+                        <div className="text-left min-w-[100px]">
+                            <p className="text-[9px] sm:text-[10px] font-black text-slate-800 uppercase tracking-tight">Status Undangan</p>
+                            <div className="flex items-center gap-1">
+                                <p className={`text-[8px] sm:text-[9px] font-bold uppercase tracking-widest ${isPublished ? 'text-teal-500' : 'text-slate-400'}`}>
+                                    {isPublished ? 'Online & Publik' : 'Mode Draft'}
+                                </p>
+                                {isPublished && <Sparkles className="w-2.5 h-2.5 text-teal-400" />}
+                            </div>
+                        </div>
+                        <div className={`w-10 h-5 sm:w-11 sm:h-6 rounded-full p-1 transition-all duration-500 relative ${isPublished ? 'bg-teal-500' : 'bg-slate-100'}`}>
+                            <m.div
+                                animate={{ x: isPublished ? (window.innerWidth < 640 ? 20 : 20) : 0 }}
+                                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                                className="w-3 h-3 sm:w-4 sm:h-4 bg-white rounded-full shadow-md flex items-center justify-center"
+                            >
+                                {isPublished && <div className="w-1 h-1 rounded-full bg-teal-500" />}
+                            </m.div>
+                        </div>
                     </m.button>
 
-                    <m.button
-                        onClick={handleSave}
-                        disabled={saveStatus === 'saving'}
-                        whileHover={{ scale: 1.02, y: -2 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-widest transition-all duration-500 shadow-lg hover:shadow-xl ${saveStatus === 'saving'
-                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                            : saveStatus === 'saved'
-                                ? 'bg-emerald-500 text-white'
-                                : saveStatus === 'error'
-                                    ? 'bg-red-500 text-white'
-                                    : 'bg-slate-900 text-white hover:bg-slate-800'
-                            }`}
-                    >
-                        {saveStatus === 'saving' && <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />}
-                        {saveStatus === 'saved' && <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-                        {saveStatus === 'error' && <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-                        {saveStatus === 'saving' ? 'Menyimpan...' : 'Simpan'}
-                    </m.button>
+                    <div className="flex items-center gap-2 sm:gap-3 w-full lg:w-auto">
+                        <m.button
+                            whileHover={{ scale: 1.02, y: -2 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={handlePreview}
+                            className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-3.5 sm:py-4 bg-white text-slate-700 font-black text-[10px] sm:text-xs rounded-2xl border border-slate-200 shadow-lg hover:shadow-xl transition-all uppercase tracking-widest h-[52px] sm:h-[56px]"
+                        >
+                            <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            Preview
+                        </m.button>
+
+                        <m.button
+                            onClick={handleSave}
+                            disabled={saveStatus === 'saving'}
+                            whileHover={{ scale: 1.02, y: -2 }}
+                            whileTap={{ scale: 0.98 }}
+                            className={`flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-widest transition-all duration-500 shadow-lg hover:shadow-xl h-[52px] sm:h-[56px] ${saveStatus === 'saving'
+                                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                : saveStatus === 'saved'
+                                    ? 'bg-emerald-500 text-white'
+                                    : saveStatus === 'error'
+                                        ? 'bg-red-500 text-white'
+                                        : 'bg-slate-900 text-white hover:bg-slate-800'
+                                }`}
+                        >
+                            {saveStatus === 'saving' && <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />}
+                            {saveStatus === 'saved' && <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                            {saveStatus === 'error' && <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                            {saveStatus === 'saving' ? 'Menyimpan...' : 'Simpan'}
+                        </m.button>
+                    </div>
                 </div>
             </div>
 
