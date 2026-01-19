@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { PreviewView } from '@/components/Preview/PreviewView';
 import { useStore, type Layer } from '@/store/useStore';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { generateId } from '@/lib/utils';
 import { usePreviewData } from '@/hooks/queries';
+import { useSEO } from '@/hooks/useSEO';
 
 export const PreviewPage: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
@@ -78,13 +79,31 @@ export const PreviewPage: React.FC = () => {
         return <div className="min-h-screen bg-black flex items-center justify-center text-white/20 uppercase tracking-widest text-xs">Resolving Invitation...</div>;
     }
 
+    // SEO & Bot Blocking Logic
+    // Only allow indexing for templates (Public Library), block all user invitations
+    const isTemplate = previewResponse?.source === 'templates';
+    const invitationData = previewResponse?.data;
+
+    // Respect user-defined Sosmed Preview title/description
+    const seoTitle = (invitationData?.seo_title || invitationData?.name || slug || 'Invitation').toUpperCase();
+    const seoDescription = invitationData?.seo_description || (isTemplate
+        ? 'Premium Wedding Invitation Templates by Tamuu'
+        : 'Exclusive Digital Invitation - Private Access');
+
+    useSEO({
+        title: seoTitle,
+        description: seoDescription,
+        image: invitationData?.og_image || invitationData?.thumbnail_url,
+        noindex: !isTemplate // Block if not a template
+    });
+
     return (
         <div className="w-full h-screen bg-black">
             <PreviewView
                 isOpen={true}
                 onClose={() => (window.opener ? window.close() : navigate('/'))}
                 id={slug === 'draft' ? useStore.getState().id : previewResponse?.data?.id}
-                isTemplate={previewResponse?.source === 'templates'}
+                isTemplate={isTemplate}
             />
         </div>
     );

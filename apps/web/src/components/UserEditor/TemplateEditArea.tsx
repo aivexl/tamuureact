@@ -340,63 +340,63 @@ export const TemplateEditArea: React.FC = () => {
     return (
         <div className="space-y-8 pb-32 font-outfit">
             {/* PREMIUM TAB SWITCHER */}
-            <div className="flex justify-center mb-12">
-                <div className="bg-white p-2 rounded-[3rem] border border-slate-200 shadow-lg flex items-center gap-1.5">
+            <div className="flex justify-center mb-8 sm:mb-12 px-4">
+                <div className="bg-white/80 backdrop-blur-xl p-1.5 sm:p-2 rounded-[2rem] sm:rounded-[3rem] border border-slate-200 shadow-xl flex items-center gap-1 sm:gap-1.5 w-full sm:w-auto overflow-x-auto no-scrollbar">
                     <button
                         onClick={() => setActiveTab('invitation')}
-                        className={`px-10 py-4 rounded-[2.5rem] text-xs font-black uppercase tracking-[0.2em] transition-all duration-700 flex items-center gap-2 ${activeTab === 'invitation'
+                        className={`flex-1 sm:flex-none px-4 sm:px-10 py-3 sm:py-4 rounded-[1.5rem] sm:rounded-[2.5rem] text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] transition-all duration-700 flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === 'invitation'
                             ? 'bg-slate-900 text-white shadow-xl'
                             : 'text-slate-400 hover:text-slate-600 hover:bg-white/80'
                             }`}
                     >
-                        <Layout className="w-4 h-4" />
-                        Tampilan Undangan
+                        <Layout className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        Tampilan
                     </button>
                     <button
                         onClick={() => setActiveTab('orbit')}
-                        className={`px-10 py-4 rounded-[2.5rem] text-xs font-black uppercase tracking-[0.2em] transition-all duration-700 flex items-center gap-2 ${activeTab === 'orbit'
+                        className={`flex-1 sm:flex-none px-4 sm:px-10 py-3 sm:py-4 rounded-[1.5rem] sm:rounded-[2.5rem] text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] transition-all duration-700 flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === 'orbit'
                             ? 'bg-slate-900 text-white shadow-xl'
                             : 'text-slate-400 hover:text-slate-600 hover:bg-white/80'
                             }`}
                     >
-                        <Sparkles className="w-4 h-4" />
-                        Stage Cinematic
+                        <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        Stage
                     </button>
                 </div>
             </div>
 
-            <div className="flex items-center justify-between px-4">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-4">
                 <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-indigo-600 rounded-[1.5rem] flex items-center justify-center shadow-lg group transition-transform duration-700 hover:rotate-[15deg]">
-                        <Sparkles className="w-7 h-7 text-white" />
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-indigo-600 rounded-[1.2rem] sm:rounded-[1.5rem] flex items-center justify-center shadow-lg group transition-transform duration-700 hover:rotate-[15deg] shrink-0">
+                        <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                     </div>
-                    <div>
-                        <h3 className="text-2xl font-black text-slate-900 tracking-tight">
+                    <div className="min-w-0">
+                        <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight truncate">
                             {activeTab === 'invitation' ? 'Konten Undangan' : 'Stage Cinematic'}
                         </h3>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.25em]">
-                            {activeTab === 'invitation' ? 'Edit bagian yang diizinkan admin' : 'Konfigurasi sayap cinematic desktop'}
+                        <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] sm:tracking-[0.25em] truncate">
+                            {activeTab === 'invitation' ? 'Edit bagian yang diizinkan admin' : 'Konfigurasi sayap cinematic'}
                         </p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 w-full lg:w-auto">
                     <m.button
-                        whileHover={{ scale: 1.05, y: -2 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={handlePreview}
-                        className="flex items-center gap-2 px-6 py-4 bg-white text-slate-700 font-black text-xs rounded-2xl border border-slate-200 shadow-lg hover:shadow-xl transition-all uppercase tracking-widest"
+                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-3.5 sm:py-4 bg-white text-slate-700 font-black text-[10px] sm:text-xs rounded-2xl border border-slate-200 shadow-lg hover:shadow-xl transition-all uppercase tracking-widest"
                     >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         Preview
                     </m.button>
 
                     <m.button
                         onClick={handleSave}
                         disabled={saveStatus === 'saving'}
-                        whileHover={{ scale: 1.05, y: -2 }}
-                        whileTap={{ scale: 0.95 }}
-                        className={`flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all duration-500 shadow-lg hover:shadow-xl ${saveStatus === 'saving'
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                        className={`flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-widest transition-all duration-500 shadow-lg hover:shadow-xl ${saveStatus === 'saving'
                             ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                             : saveStatus === 'saved'
                                 ? 'bg-emerald-500 text-white'
@@ -405,9 +405,9 @@ export const TemplateEditArea: React.FC = () => {
                                     : 'bg-slate-900 text-white hover:bg-slate-800'
                             }`}
                     >
-                        {saveStatus === 'saving' && <Loader2 className="w-4 h-4 animate-spin" />}
-                        {saveStatus === 'saved' && <Check className="w-4 h-4" />}
-                        {saveStatus === 'error' && <AlertCircle className="w-4 h-4" />}
+                        {saveStatus === 'saving' && <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />}
+                        {saveStatus === 'saved' && <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                        {saveStatus === 'error' && <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                         {saveStatus === 'saving' ? 'Menyimpan...' : 'Simpan'}
                     </m.button>
                 </div>

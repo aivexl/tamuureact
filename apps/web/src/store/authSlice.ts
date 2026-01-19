@@ -34,7 +34,7 @@ export const createAuthSlice: StateCreator<AuthState> = (set) => ({
     user: null,
     isAuthenticated: false,
     token: null,
-    isLoading: false,
+    isLoading: true, // Initialized to true to handle session rehydration gracefully
     error: null,
 
     setUser: (user) => set({ user, isAuthenticated: !!user }),

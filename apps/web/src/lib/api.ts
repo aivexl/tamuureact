@@ -594,6 +594,33 @@ export const admin = {
         return sanitizeValue(updatedData);
     }
 };
+
+// ============================================
+// ASSETS API (R2 Storage)
+// ============================================
+export const assets = {
+    async upload(formData: FormData) {
+        const res = await safeFetch(`${API_BASE}/api/assets/upload`, {
+            method: 'POST',
+            body: formData
+        });
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Failed to upload asset');
+        }
+        const data = await res.json();
+        return sanitizeValue(data);
+    },
+
+    async delete(assetId: string) {
+        const res = await safeFetch(`${API_BASE}/api/assets/${assetId}`, {
+            method: 'DELETE'
+        });
+        if (!res.ok) throw new Error('Failed to delete asset');
+        return true;
+    }
+};
+
 export async function healthCheck() {
     const res = await safeFetch(`${API_BASE}/api/health`);
     const data = await res.json();
@@ -612,5 +639,6 @@ export default {
     guests,
     music,
     admin,
+    assets,
     healthCheck
 };

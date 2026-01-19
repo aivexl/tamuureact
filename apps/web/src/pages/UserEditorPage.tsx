@@ -8,7 +8,7 @@ import { TemplateEditArea } from '../components/UserEditor/TemplateEditArea';
 import { InvitationInfoCard } from '../components/UserEditor/InvitationInfoCard';
 import { Modal } from '@/components/ui/Modal';
 import { MusicPanel } from '@/components/UserEditor/Panels/MusicPanel';
-import { ThemePanel } from '@/components/UserEditor/Panels/ThemePanel';
+
 import { SharePanel } from '@/components/UserEditor/Panels/SharePanel';
 import { ExportPanel } from '@/components/UserEditor/Panels/ExportPanel';
 import { OrbitPanel } from '@/components/UserEditor/Panels/OrbitPanel';
@@ -18,6 +18,13 @@ import { WishesPanel } from '@/components/UserEditor/Panels/WishesPanel';
 import { AnalyticsPanel } from '@/components/UserEditor/Panels/AnalyticsPanel';
 import { EventDatePanel } from '@/components/UserEditor/Panels/EventDatePanel';
 import { LocationPanel } from '@/components/UserEditor/Panels/LocationPanel';
+import { GiftPanel } from '@/components/UserEditor/Panels/GiftPanel';
+import { SEOPanel } from '@/components/UserEditor/Panels/SEOPanel';
+import { GalleryPanel } from '@/components/UserEditor/Panels/GalleryPanel';
+import { LiveStreamPanel } from '@/components/UserEditor/Panels/LiveStreamPanel';
+import { LoveStoryPanel } from '@/components/UserEditor/Panels/LoveStoryPanel';
+import { QuotesPanel } from '@/components/UserEditor/Panels/QuotesPanel';
+import { LuckyDrawPanel } from '@/components/UserEditor/Panels/LuckyDrawPanel';
 import { AnimatedLayer } from '@/components/Preview/AnimatedLayer';
 import { useStore } from '@/store/useStore';
 import { invitations as invitationsApi } from '@/lib/api';
@@ -167,9 +174,13 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
 
     return (
         <UserEditorLayout>
-            <div className="max-w-4xl mx-auto p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {/* 1. Information Card */}
-                <InvitationInfoCard invitation={invitation} />
+                <InvitationInfoCard
+                    invitation={invitation}
+                    onShare={() => setActivePanel('share')}
+                    onSettings={() => setActivePanel('settings')}
+                />
 
                 {/* 2. Feature Menu */}
                 <IconGridMenu onOpenPanel={(panelId: string) => {
@@ -192,20 +203,49 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                 <Modal
                     isOpen={activePanel !== null}
                     onClose={() => setActivePanel(null)}
-                    title={activePanel ? activePanel : ''}
+                    title={(() => {
+                        const titles: Record<string, string> = {
+                            theme: 'Tema Undangan',
+                            music: 'Musik Latar',
+                            template: 'Koleksi Template',
+                            wishes: 'Ucapan & Doa',
+                            display: 'Display Desain',
+                            analytics: 'Statistik & Analitik',
+                            share: 'Bagikan Undangan',
+                            download: 'Download Assets',
+                            eventDate: 'Tanggal Acara',
+                            location: 'Lokasi Acara',
+                            gift: 'Kado Digital',
+                            seo: 'Sosmed Preview',
+                            gallery: 'Galeri Foto',
+                            livestream: 'Live Streaming',
+                            lovestory: 'Kisah Cinta',
+                            quotes: 'Quote Undangan',
+                            luckydraw: 'Lucky Draw',
+                            settings: 'Pengaturan Undangan'
+                        };
+                        return titles[activePanel || ''] || (activePanel ? activePanel.charAt(0).toUpperCase() + activePanel.slice(1) : '');
+                    })()}
                     size="lg"
                 >
                     {activePanel === 'music' && <MusicPanel />}
-                    {activePanel === 'theme' && <ThemePanel />}
-                    {activePanel === 'display' && <DisplayStorePanel invitationId={id} />}
-                    {activePanel === 'template' && <TemplateStorePanel invitationId={id} />}
+
+                    {activePanel === 'display' && <DisplayStorePanel invitationId={invitation?.id} />}
+                    {activePanel === 'template' && <TemplateStorePanel invitationId={invitation?.id} />}
                     {activePanel === 'wishes' && <WishesPanel />}
                     {activePanel === 'analytics' && <AnalyticsPanel />}
-                    {activePanel === 'share' && <SharePanel slug={invitation.slug} />}
+                    {activePanel === 'share' && <SharePanel slug={invitation?.slug} />}
                     {activePanel === 'download' && <ExportPanel previewRef={previewRef as React.RefObject<HTMLElement>} />}
-                    {activePanel === 'eventDate' && <EventDatePanel invitationId={id!} onClose={() => setActivePanel(null)} />}
-                    {activePanel === 'location' && <LocationPanel invitationId={id!} onClose={() => setActivePanel(null)} />}
-                    {!['music', 'theme', 'display', 'template', 'share', 'download', 'wishes', 'analytics', 'eventDate', 'location'].includes(activePanel || '') && (
+                    {activePanel === 'eventDate' && <EventDatePanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                    {activePanel === 'location' && <LocationPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                    {activePanel === 'gift' && <GiftPanel onClose={() => setActivePanel(null)} />}
+                    {activePanel === 'seo' && <SEOPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                    {activePanel === 'gallery' && <GalleryPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                    {activePanel === 'livestream' && <LiveStreamPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                    {activePanel === 'lovestory' && <LoveStoryPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                    {activePanel === 'quotes' && <QuotesPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                    {activePanel === 'luckydraw' && <LuckyDrawPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                    {!['music', 'theme', 'display', 'template', 'share', 'download', 'wishes', 'analytics', 'eventDate', 'location', 'gift', 'seo', 'gallery', 'livestream', 'lovestory', 'quotes', 'luckydraw', 'settings', 'guests'].includes(activePanel || '') && (
                         <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
                             <div className="w-20 h-20 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-slate-300">
                                 <Sparkles className="w-10 h-10" />

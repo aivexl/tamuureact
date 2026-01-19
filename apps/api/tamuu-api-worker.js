@@ -513,6 +513,55 @@ export default {
                 return json({ success: true, key }, corsHeaders);
             }
 
+            // ============================================
+            // ASSETS UPLOAD ENDPOINT (Gallery Photos)
+            // POST /api/assets/upload - Multipart form upload
+            // ============================================
+            if (path === '/api/assets/upload' && method === 'POST') {
+                try {
+                    const formData = await request.formData();
+                    const file = formData.get('file');
+                    const invitationId = formData.get('invitationId');
+                    const assetType = formData.get('type') || 'gallery';
+
+                    if (!file) {
+                        return json({ error: 'No file provided' }, { ...corsHeaders, status: 400 });
+                    }
+
+                    // Generate unique key
+                    const fileId = crypto.randomUUID();
+                    const extension = file.name?.split('.').pop() || 'png';
+                    const key = `gallery/${invitationId || 'unknown'}/${fileId}.${extension}`;
+
+                    // Optimize: Convert to WebP if image and compress
+                    // For now, just upload directly (client-side cropping already handles optimization)
+                    const arrayBuffer = await file.arrayBuffer();
+
+                    await env.ASSETS.put(key, arrayBuffer, {
+                        httpMetadata: {
+                            contentType: file.type || 'image/png',
+                            cacheControl: 'public, max-age=31536000, immutable'
+                        },
+                        customMetadata: {
+                            invitationId: invitationId || '',
+                            uploadedAt: new Date().toISOString(),
+                            type: assetType
+                        }
+                    });
+
+                    const publicUrl = `https://api.tamuu.id/assets/${key}`;
+
+                    return json({
+                        success: true,
+                        url: publicUrl,
+                        key: key,
+                        id: fileId
+                    }, corsHeaders);
+                } catch (err) {
+                    console.error('[Assets Upload] Error:', err);
+                    return json({ error: 'Upload failed', details: err.message }, { ...corsHeaders, status: 500 });
+                }
+            }
 
             // ============================================
             // WISHLIST ENDPOINTS
@@ -959,8 +1008,8 @@ export default {
                     const orbitStr = JSON.stringify(orbit);
 
                     await env.DB.prepare(
-                        `INSERT INTO invitations(id, user_id, name, slug, category, zoom, pan, sections, layers, orbit_layers, orbit, music, thumbnail_url, template_id, is_published) 
-                         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                        `INSERT INTO invitations(id, user_id, name, slug, category, zoom, pan, sections, layers, orbit_layers, orbit, music, thumbnail_url, template_id, is_published, event_date, event_location, venue_name, address, google_maps_url, seo_title, seo_description, og_image) 
+                         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
                     ).bind(
                         id,
                         userId || null,
@@ -976,7 +1025,15 @@ export default {
                         music ? JSON.stringify(music) : null,
                         thumbnailUrl,
                         body.template_id || null,
-                        body.is_published ? 1 : 0
+                        body.is_published ? 1 : 0,
+                        body.event_date || null,
+                        body.event_location || null,
+                        body.venue_name || null,
+                        body.address || null,
+                        body.google_maps_url || null,
+                        body.seo_title || null,
+                        body.seo_description || null,
+                        body.og_image || null
                     ).run();
 
                     // Update User's Invitation Count
@@ -1082,8 +1139,22 @@ export default {
                         orbit = COALESCE(?, orbit),
                         is_published = COALESCE(?, is_published),
                         music = COALESCE(?, music),
+                        event_date = COALESCE(?, event_date),
+                        event_location = COALESCE(?, event_location),
+                        venue_name = COALESCE(?, venue_name),
+                        address = COALESCE(?, address),
+                        google_maps_url = COALESCE(?, google_maps_url),
+                        seo_title = COALESCE(?, seo_title),
+                        seo_description = COALESCE(?, seo_description),
+                        og_image = COALESCE(?, og_image),
+                        gallery_photos = COALESCE(?, gallery_photos),
+                        livestream_url = COALESCE(?, livestream_url),
+                        love_story = COALESCE(?, love_story),
+                        quote_text = COALESCE(?, quote_text),
+                        quote_author = COALESCE(?, quote_author),
+                        lucky_draw_settings = COALESCE(?, lucky_draw_settings),
                         updated_at = datetime('now')
-                     WHERE id = ? `
+                     WHERE id = ? OR slug = ?`
                     ).bind(
                         body.name ?? null,
                         body.slug ?? null,
@@ -1097,7 +1168,22 @@ export default {
                         orbit, // orbit (alias)
                         body.is_published !== undefined ? (body.is_published ? 1 : 0) : null,
                         music,
-                        id
+                        body.event_date ?? null,
+                        body.event_location ?? null,
+                        body.venue_name ?? null,
+                        body.address ?? null,
+                        body.google_maps_url ?? null,
+                        body.seo_title ?? null,
+                        body.seo_description ?? null,
+                        body.og_image ?? null,
+                        body.gallery_photos ?? null,
+                        body.livestream_url ?? null,
+                        body.love_story ?? null,
+                        body.quote_text ?? null,
+                        body.quote_author ?? null,
+                        body.lucky_draw_settings ?? null,
+                        id, // WHERE id = ?
+                        id  // OR slug = ?
                     ).run();
                     return json({ id, updated: true }, corsHeaders);
                 } catch (dbError) {
@@ -1117,7 +1203,7 @@ export default {
                 const { results } = await env.DB.prepare('SELECT user_id FROM invitations WHERE id = ?').bind(id).all();
                 const invitation = results[0];
 
-                await env.DB.prepare('DELETE FROM invitations WHERE id = ?').bind(id).run();
+                await env.DB.prepare('DELETE FROM invitations WHERE id = ? OR slug = ?').bind(id, id).run();
 
                 // If deleted by user, decrement count
                 if (invitation && invitation.user_id) {

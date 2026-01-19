@@ -1,0 +1,220 @@
+import React, { useState, useEffect } from 'react';
+import { m, AnimatePresence } from 'framer-motion';
+import { Landmark, Smartphone, MapPin, Save, Check, Loader2, AlertCircle, Plus, X } from 'lucide-react';
+import { users } from '@/lib/api';
+import { useStore } from '@/store/useStore';
+
+interface GiftPanelProps {
+    onClose: () => void;
+}
+
+export const GiftPanel: React.FC<GiftPanelProps> = ({ onClose }) => {
+    const { user } = useStore();
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [success, setSuccess] = useState(false);
+
+    // Bank 1
+    const [bank1Name, setBank1Name] = useState('');
+    const [bank1Number, setBank1Number] = useState('');
+    const [bank1Holder, setBank1Holder] = useState('');
+
+    // Bank 2
+    const [bank2Name, setBank2Name] = useState('');
+    const [bank2Number, setBank2Number] = useState('');
+    const [bank2Holder, setBank2Holder] = useState('');
+    const [showBank2, setShowBank2] = useState(false);
+
+    // E-Money
+    const [emoneyType, setEmoneyType] = useState('');
+    const [emoneyNumber, setEmoneyNumber] = useState('');
+
+    // Address
+    const [giftAddress, setGiftAddress] = useState('');
+
+    useEffect(() => {
+        const loadProfile = async () => {
+            if (!user?.email) return;
+            try {
+                setLoading(true);
+                const data = await users.getMe(user.email);
+                if (data) {
+                    setBank1Name(data.bank1Name || '');
+                    setBank1Number(data.bank1Number || '');
+                    setBank1Holder(data.bank1Holder || '');
+
+                    if (data.bank2Name || data.bank2Number) {
+                        setBank2Name(data.bank2Name || '');
+                        setBank2Number(data.bank2Number || '');
+                        setBank2Holder(data.bank2Holder || '');
+                        setShowBank2(true);
+                    }
+
+                    setEmoneyType(data.emoneyType || '');
+                    setEmoneyNumber(data.emoneyNumber || '');
+                    setGiftAddress(data.giftAddress || '');
+                }
+            } catch (error) {
+                console.error('Failed to load profile for gift info:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadProfile();
+    }, [user?.email]);
+
+    const handleSave = async () => {
+        if (!user?.id) return;
+
+        try {
+            setSaving(true);
+            await users.updateProfile({
+                id: user.id,
+                bank1Name,
+                bank1Number,
+                bank1Holder,
+                bank2Name: showBank2 ? bank2Name : '',
+                bank2Number: showBank2 ? bank2Number : '',
+                bank2Holder: showBank2 ? bank2Holder : '',
+                emoneyType,
+                emoneyNumber,
+                giftAddress
+            });
+
+            setSuccess(true);
+            setTimeout(() => {
+                setSuccess(false);
+                onClose();
+            }, 1500);
+        } catch (error) {
+            console.error('Failed to update gift info:', error);
+            alert('Gagal menyimpan perubahan. Silakan coba lagi.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                <Loader2 className="w-8 h-8 animate-spin mb-4" />
+                <p className="font-bold uppercase tracking-widest text-xs">Memuat Data Kado...</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-8 p-1">
+            <div className="bg-slate-50/50 rounded-[2rem] p-6 space-y-6">
+                {/* Bank 1 */}
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2 px-2">
+                        <Landmark className="w-5 h-5 text-emerald-600" />
+                        <h4 className="font-black text-slate-800 uppercase tracking-widest text-xs">Rekening Utama</h4>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Nama Bank</label>
+                            <input value={bank1Name} onChange={e => setBank1Name(e.target.value)} type="text" placeholder="BCA, Mandiri, dll" className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 outline-none font-bold text-slate-700" />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Nomor Rekening</label>
+                            <input value={bank1Number} onChange={e => setBank1Number(e.target.value)} type="text" placeholder="Masukkan nomor" className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 outline-none font-bold text-slate-700" />
+                        </div>
+                        <div className="md:col-span-2 space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Atas Nama</label>
+                            <input value={bank1Holder} onChange={e => setBank1Holder(e.target.value)} type="text" placeholder="Nama pemilik rekening" className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 outline-none font-bold text-slate-700" />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Bank 2 Toggle */}
+                {!showBank2 ? (
+                    <button onClick={() => setShowBank2(true)} className="w-full py-4 border-2 border-dashed border-emerald-100 rounded-2xl text-emerald-600 font-bold text-xs uppercase tracking-widest hover:bg-emerald-50 transition-all flex items-center justify-center gap-2">
+                        <Plus className="w-4 h-4" />
+                        Tambah Rekening Kedua
+                    </button>
+                ) : (
+                    <div className="space-y-4 pt-4 border-t border-slate-200/50 relative">
+                        <button onClick={() => setShowBank2(false)} className="absolute top-4 right-0 text-slate-300 hover:text-rose-500 transition-colors">
+                            <X className="w-5 h-5" />
+                        </button>
+                        <div className="flex items-center gap-2 px-2">
+                            <Landmark className="w-5 h-5 text-teal-600" />
+                            <h4 className="font-black text-slate-800 uppercase tracking-widest text-xs">Rekening Kedua</h4>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Nama Bank</label>
+                                <input value={bank2Name} onChange={e => setBank2Name(e.target.value)} type="text" placeholder="BSI, CIMB, dll" className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 outline-none font-bold text-slate-700" />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Nomor Rekening</label>
+                                <input value={bank2Number} onChange={e => setBank2Number(e.target.value)} type="text" placeholder="Masukkan nomor" className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 outline-none font-bold text-slate-700" />
+                            </div>
+                            <div className="md:col-span-2 space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Atas Nama</label>
+                                <input value={bank2Holder} onChange={e => setBank2Holder(e.target.value)} type="text" placeholder="Nama pemilik rekening" className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 outline-none font-bold text-slate-700" />
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* E-Money & Address */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-slate-50/50 rounded-[2rem] p-6 space-y-4">
+                    <div className="flex items-center gap-2">
+                        <Smartphone className="w-5 h-5 text-blue-600" />
+                        <h4 className="font-black text-slate-800 uppercase tracking-widest text-xs">E-Wallet</h4>
+                    </div>
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Jenis (GoPay/OVO/DANA)</label>
+                            <input value={emoneyType} onChange={e => setEmoneyType(e.target.value)} type="text" placeholder="Contoh: OVO" className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-blue-500/10 outline-none font-bold text-slate-700" />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Nomor HP</label>
+                            <input value={emoneyNumber} onChange={e => setEmoneyNumber(e.target.value)} type="text" placeholder="08xxxxxxxxxx" className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-blue-500/10 outline-none font-bold text-slate-700" />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-slate-50/50 rounded-[2rem] p-6 space-y-4">
+                    <div className="flex items-center gap-2">
+                        <MapPin className="w-5 h-5 text-rose-600" />
+                        <h4 className="font-black text-slate-800 uppercase tracking-widest text-xs">Alamat Kado Fisik</h4>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Alamat Lengkap</label>
+                        <textarea value={giftAddress} onChange={e => setGiftAddress(e.target.value)} rows={4} placeholder="Masukkan alamat untuk pengiriman kado..." className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-rose-500/10 outline-none font-bold text-slate-700 resize-none" />
+                    </div>
+                </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-4 pt-4">
+                <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className={`flex-1 h-14 rounded-2xl flex items-center justify-center gap-2 font-black uppercase tracking-widest text-xs transition-all shadow-xl active:scale-95 ${success ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-slate-900 text-white hover:bg-emerald-600 shadow-slate-900/20'}`}
+                >
+                    {saving ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : success ? (
+                        <>
+                            <Check className="w-5 h-5" />
+                            Tersimpan
+                        </>
+                    ) : (
+                        <>
+                            <Save className="w-5 h-5" />
+                            Simpan Perubahan
+                        </>
+                    )}
+                </button>
+            </div>
+        </div>
+    );
+};
