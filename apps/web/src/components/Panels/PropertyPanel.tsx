@@ -936,14 +936,20 @@ export const PropertyPanel: React.FC = () => {
                                             <select
                                                 value={layer.anchoring?.targetId || ''}
                                                 onChange={(e) => handleUpdate({ anchoring: { ...layer.anchoring!, targetId: e.target.value } })}
-                                                className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white/80 focus:outline-none focus:border-premium-accent/50"
+                                                className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white/80 focus:outline-none focus:border-premium-accent/50 appearance-none cursor-pointer"
                                             >
-                                                <option value="">Select Element...</option>
+                                                <option value="" className="bg-[#1a1a1a] text-white">Select Element...</option>
                                                 {/* Filter elements in the same context that are NOT the current element */}
                                                 {(activeCanvas === 'main' ? activeSection?.elements : orbit[activeCanvas as 'left' | 'right'].elements)
                                                     ?.filter(l => l.id !== layer.id)
                                                     .map(l => (
-                                                        <option key={l.id} value={l.id}>{l.name || l.type}</option>
+                                                        <option key={l.id} value={l.id} className="bg-[#1a1a1a] text-white">
+                                                            {l.name ? l.name : (
+                                                                l.type === 'text'
+                                                                    ? `Text: "${l.content?.substring(0, 20)}..."`
+                                                                    : `${l.type.charAt(0).toUpperCase() + l.type.slice(1)}${l.imageUrl ? ` (${l.imageUrl.split('/').pop()?.substring(0, 10)})` : ''}`
+                                                            )}
+                                                        </option>
                                                     ))
                                                 }
                                             </select>
@@ -955,10 +961,10 @@ export const PropertyPanel: React.FC = () => {
                                                 <select
                                                     value={layer.anchoring?.edge || 'bottom'}
                                                     onChange={(e) => handleUpdate({ anchoring: { ...layer.anchoring!, edge: e.target.value as any } })}
-                                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white/80"
+                                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white/80 appearance-none cursor-pointer"
                                                 >
-                                                    <option value="top">Top</option>
-                                                    <option value="bottom">Bottom</option>
+                                                    <option value="top" className="bg-[#1a1a1a] text-white">Top</option>
+                                                    <option value="bottom" className="bg-[#1a1a1a] text-white">Bottom</option>
                                                 </select>
                                             </div>
                                             <div className="space-y-1">
