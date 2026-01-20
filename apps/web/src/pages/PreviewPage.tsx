@@ -38,7 +38,8 @@ export const PreviewPage: React.FC = () => {
         // Safety check to ensure we have actual invitation/template data
         if (!data) return;
 
-        console.log(`[PreviewPage] [VERSION 5.2 - ORBIT DESKTOP ONLY] Hydrating from ${source}:`, data.id);
+        console.log("%c[TAMUU-CORE] [VERSION 5.3 - ORBIT REMOVAL VERIFIED]", "background: #ff0000; color: #fff; font-size: 20px; font-weight: bold; padding: 10px;");
+        console.log(`[PreviewPage] Hydrating from ${source}:`, data.id);
 
         useStore.setState({ templateType: 'invitation' });
 

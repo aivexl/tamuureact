@@ -1202,6 +1202,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                 {/* Branding Footer - High z-index but below interactive controls */}
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/50 text-base z-[89999] pointer-events-none tracking-[0.4em] uppercase" style={{ fontFamily: "'Poiret One', cursive", fontWeight: 400 }}>
                     TAMUU.ID
+                    <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[8px] opacity-20 tracking-normal">CORE - 5.3</span>
                 </div>
 
                 <style dangerouslySetInnerHTML={{
