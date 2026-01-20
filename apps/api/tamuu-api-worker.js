@@ -687,8 +687,14 @@ export default {
             // TEMPLATES ENDPOINTS
             // ============================================
             if (path === '/api/templates' && method === 'GET') {
-                // Cache templates for 5 minutes (300s)
-                return await smart_cache(request, 300, async () => {
+                // No cache for templates list to ensure real-time admin updates
+                const fetcher = async () => {
+                    // [MIGRATION] Auto-correct Display templates from early V5.1
+                    // This fixes templates created before the type separation was fully enforced
+                    await env.DB.prepare(
+                        "UPDATE templates SET type = 'display' WHERE (name LIKE '%Display%' OR name LIKE '%Layar%') AND type = 'invitation'"
+                    ).run();
+
                     const response = await env.DB.prepare(
                         'SELECT * FROM templates ORDER BY updated_at DESC LIMIT 100'
                     ).all();
@@ -702,7 +708,8 @@ export default {
                             ? `https://tamuu-api.shafania57.workers.dev/assets/${t.thumbnail}`
                             : t.thumbnail
                     }));
-                });
+                };
+                return json(await fetcher(), corsHeaders);
             }
 
 

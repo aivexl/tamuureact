@@ -112,6 +112,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
             id: upsertId,
             name: state.projectName || state.sections[0]?.title || 'Invitation',
             slug: state.slug,
+            type: state.templateType || 'invitation', // Explicitly preserve type
             thumbnail_url: state.thumbnailUrl,
             sections: state.sections,
             layers: state.layers,

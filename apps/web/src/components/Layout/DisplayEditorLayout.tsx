@@ -58,6 +58,7 @@ export const DisplayEditorLayout: React.FC<DisplayEditorLayoutProps> = ({ templa
         const payload = {
             name: state.projectName || 'Untitled Display',
             slug: state.slug || null,
+            type: 'display', // Explicitly preserve type
             sections: state.sections,
             layers: state.layers,
             zoom: state.zoom,
