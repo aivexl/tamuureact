@@ -38,7 +38,7 @@ export const PreviewPage: React.FC = () => {
         // Safety check to ensure we have actual invitation/template data
         if (!data) return;
 
-        console.log("%c[TAMUU-CORE] [VERSION 5.3 - ORBIT REMOVAL VERIFIED]", "background: #ff0000; color: #fff; font-size: 20px; font-weight: bold; padding: 10px;");
+        console.log("%c[TAMUU-CORE] [VERSION 5.4 - DEFINITIVE OVERLAP FIX]", "background: #ff0000; color: #fff; font-size: 20px; font-weight: bold; padding: 10px;");
         console.log(`[PreviewPage] Hydrating from ${source}:`, data.id);
 
         useStore.setState({ templateType: 'invitation' });
