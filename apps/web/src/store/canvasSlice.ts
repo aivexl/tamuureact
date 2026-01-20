@@ -11,6 +11,7 @@ export interface CanvasState {
     category?: string; // Template category
     templateType: 'invitation' | 'display';
     isTemplate: boolean;
+    isSimulationMode: boolean;
     exportFormat?: 'mobile' | 'desktop' | 'print' | null;
     music?: {
         id: string;
@@ -30,6 +31,7 @@ export interface CanvasState {
     setCanvasTransform: (transform: { x: number; y: number; zoom: number }) => void;
     setTemplateType: (type: 'invitation' | 'display') => void;
     setIsTemplate: (isTemplate: boolean) => void;
+    setIsSimulationMode: (isSimulationMode: boolean) => void;
     setCategory: (category: string) => void;
     setMusic: (music: CanvasState['music']) => void;
     setIsPublished: (isPublished: boolean) => void;
@@ -47,6 +49,7 @@ export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
     id: undefined,
     templateType: 'invitation',
     isTemplate: false,
+    isSimulationMode: false,
     category: undefined,
     music: undefined,
     isPublished: false,
@@ -61,6 +64,7 @@ export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
     setCanvasTransform: ({ x, y, zoom }) => set({ pan: { x, y }, zoom }),
     setTemplateType: (templateType) => set({ templateType }),
     setIsTemplate: (isTemplate) => set({ isTemplate }),
+    setIsSimulationMode: (isSimulationMode) => set({ isSimulationMode }),
     setCategory: (category) => set({ category }),
     setMusic: (music) => set({ music }),
     setIsPublished: (isPublished) => set({ isPublished }),
@@ -74,6 +78,7 @@ export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
         category: undefined,
         music: undefined,
         isPublished: false,
+        isSimulationMode: false,
         thumbnailUrl: undefined
     })
 });

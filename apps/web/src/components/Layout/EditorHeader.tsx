@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useStore, useTemporalStore } from '@/store/useStore';
 import {
     ArrowLeft, Play, Save, Sparkles, Check,
-    Undo2, Redo2, Edit2, X, ExternalLink, Zap, Link, Wand2
+    Undo2, Redo2, Edit2, X, ExternalLink, Zap, Link, Wand2, Shield, Monitor
 } from 'lucide-react';
 import { PremiumLoader } from '../ui/PremiumLoader';
 
@@ -41,7 +41,10 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
         setAnimationPlaying,
         slug,
         sanitizeAllLayers,
-        sanitizeAllSectionElements
+        sanitizeAllSectionElements,
+        isSimulationMode,
+        setIsSimulationMode,
+        isTemplate
     } = useStore();
     const { undo, redo } = useTemporalStore();
 
@@ -381,6 +384,23 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
                     <span>Live Preview</span>
                     <ExternalLink className="w-3 h-3 opacity-30" />
                 </motion.button>
+
+                {/* Simulation Mode Toggle (Admin Only) */}
+                {isTemplate && (
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setIsSimulationMode(!isSimulationMode)}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all ${isSimulationMode
+                            ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-lg shadow-amber-500/10'
+                            : 'hover:bg-white/5 text-white/40 hover:text-white border border-transparent'
+                            }`}
+                        title={isSimulationMode ? "Exit Simulation" : "Enter Simulation Mode (User View)"}
+                    >
+                        <Monitor className={`w-4 h-4 ${isSimulationMode ? 'animate-pulse' : ''}`} />
+                        <span>{isSimulationMode ? 'Simulation ON' : 'Simulation'}</span>
+                    </motion.button>
+                )}
 
                 {/* Simulation Toggle */}
                 <motion.button

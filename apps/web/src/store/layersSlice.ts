@@ -461,6 +461,28 @@ export interface CurvedTextConfig {
 }
 
 // ============================================
+// ENTERPRISE V4 PERMISSIONS & ANCHORING
+// ============================================
+export interface LayerPermissions {
+    canEditText?: boolean;      // Can change text content
+    canEditImage?: boolean;     // Can change image/media
+    canEditStyle?: boolean;     // Can change colors/fonts (color, size, weight)
+    canEditPosition?: boolean;  // Can move the element via drag/inputs
+    canDelete?: boolean;        // Can remove the element from the section
+    isVisibleInUserEditor?: boolean; // If false, element is hidden from User's Layer Panel
+    isContentProtected?: boolean;   // Advanced: protects against even indirect changes
+    canEditContent?: boolean;       // Legacy support
+    showCopyButton?: boolean;       // Legacy support
+}
+
+export interface LayerAnchoring {
+    targetId?: string;          // ID of the target element to anchor to
+    edge?: 'top' | 'bottom' | 'left' | 'right'; // Edge of target to follow
+    offset?: number;            // Distance in pixels from the target edge
+    isRelative?: boolean;       // Enable dynamic shifting behavior (Liquid Layout)
+}
+
+// ============================================
 // ENTERPRISE V3 CONFIGS (Unicorn Grade)
 // ============================================
 
@@ -696,11 +718,9 @@ export interface Layer {
         looping?: boolean | string; // Root level animation looping status
     };
 
-    // Enterprise Permissions & Context
-    canEditPosition?: boolean;
-    canEditContent?: boolean;
-    isContentProtected?: boolean;
-    showCopyButton?: boolean;
+    // ENTERPRISE V4: PERMISSIONS & ANCHORING
+    permissions?: LayerPermissions;
+    anchoring?: LayerAnchoring;
 
     // Animation Backwards Compatibility
     animationType?: AnimationType;
@@ -762,6 +782,10 @@ export interface LayersState {
     triggerInteraction: (name: string, effect: string, style?: 'cinematic' | 'simple' | 'none', origin?: { x: number, y: number }, customResetDuration?: number) => void;
     triggerBatchInteractions: (name: string, interactions: { effect: string, style?: 'cinematic' | 'simple' | 'none', origin?: { x: number, y: number }, resetDuration?: number }[]) => void;
     removeActiveEffect: (id: string) => void;
+    // ENTERPRISE V5: Dimension Tracking for Smart Position
+    elementDimensions: Record<string, { width: number, height: number }>;
+    updateElementDimensions: (id: string, width: number, height: number) => void;
+
     resetInteractions: () => void; // CTO: Clear all interaction states synchronously
 }
 
@@ -908,6 +932,13 @@ export const createLayersSlice: StateCreator<LayersState> = (set, get) => ({
     selectedLayerId: null,
     selectedLayerIds: [],
     clipboard: null,
+    elementDimensions: {},
+    updateElementDimensions: (id, width, height) => set((state) => ({
+        elementDimensions: {
+            ...state.elementDimensions,
+            [id]: { width, height }
+        }
+    })),
 
     addLayer: (layer) => set((state) => ({
         layers: [...state.layers, layer],

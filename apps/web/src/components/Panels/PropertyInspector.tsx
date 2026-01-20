@@ -625,8 +625,10 @@ export const PropertyInspector: React.FC = () => {
                         </div>
                         <input
                             type="checkbox"
-                            checked={layer.canEditPosition || false}
-                            onChange={(e) => handleUpdate({ canEditPosition: e.target.checked })}
+                            checked={layer.permissions?.canEditPosition ?? true}
+                            onChange={(e) => handleUpdate({
+                                permissions: { ...(layer.permissions || {}), canEditPosition: e.target.checked }
+                            })}
                             className="w-4 h-4 accent-premium-accent bg-white/5 border-white/10 rounded cursor-pointer"
                         />
                     </div>
@@ -644,8 +646,10 @@ export const PropertyInspector: React.FC = () => {
                         </div>
                         <input
                             type="checkbox"
-                            checked={layer.canEditContent || false}
-                            onChange={(e) => handleUpdate({ canEditContent: e.target.checked })}
+                            checked={layer.permissions?.canEditContent ?? true}
+                            onChange={(e) => handleUpdate({
+                                permissions: { ...(layer.permissions || {}), canEditContent: e.target.checked }
+                            })}
                             className="w-4 h-4 accent-premium-accent bg-white/5 border-white/10 rounded cursor-pointer"
                         />
                     </div>
@@ -667,8 +671,10 @@ export const PropertyInspector: React.FC = () => {
                                 </div>
                                 <input
                                     type="checkbox"
-                                    checked={layer.isContentProtected || false}
-                                    onChange={(e) => handleUpdate({ isContentProtected: e.target.checked })}
+                                    checked={layer.permissions?.isContentProtected || false}
+                                    onChange={(e) => handleUpdate({
+                                        permissions: { ...(layer.permissions || {}), isContentProtected: e.target.checked }
+                                    })}
                                     className="w-4 h-4 accent-premium-accent bg-white/5 border-white/10 rounded cursor-pointer"
                                 />
                             </div>
@@ -685,8 +691,10 @@ export const PropertyInspector: React.FC = () => {
                                 </div>
                                 <input
                                     type="checkbox"
-                                    checked={layer.showCopyButton || false}
-                                    onChange={(e) => handleUpdate({ showCopyButton: e.target.checked })}
+                                    checked={layer.permissions?.showCopyButton || false}
+                                    onChange={(e) => handleUpdate({
+                                        permissions: { ...(layer.permissions || {}), showCopyButton: e.target.checked }
+                                    })}
                                     className="w-4 h-4 accent-premium-accent bg-white/5 border-white/10 rounded cursor-pointer"
                                 />
                             </div>

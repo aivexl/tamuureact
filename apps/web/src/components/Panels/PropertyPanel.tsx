@@ -14,14 +14,15 @@ import {
     Eye, EyeOff, FlipHorizontal, FlipVertical,
     FlipHorizontal2, FlipVertical2,
     Heart, ImageIcon, Layout, Layers,
-    Lock, Unlock, MailOpen, MapPin, MessageSquare,
-    Maximize2, MousePointer2, Move, MoveHorizontal,
+    Shield, Anchor, UserCheck, Lock, Unlock, MailOpen, MapPin, MessageSquare,
+    Maximize2, Monitor, MousePointer2, Move, MoveHorizontal,
     Palette, Plane, Settings2, Sliders,
     Sparkles, Square, Star, Trash2,
     Type, Users, Video, Wind, Zap
 } from 'lucide-react';
 
 import { ElementToolbar } from '@/components/Layout/ElementToolbar';
+import { UserElementEditor } from '@/components/UserEditor/UserElementEditor';
 
 export const PropertyPanel: React.FC = () => {
     const {
@@ -60,7 +61,9 @@ export const PropertyPanel: React.FC = () => {
         setPathEditingId,
 
         // Image Crop Modal
-        openImageCropModal
+        openImageCropModal,
+        isTemplate,
+        isSimulationMode
     } = useStore();
 
     // 1. Context-Aware Discovery
@@ -153,6 +156,29 @@ export const PropertyPanel: React.FC = () => {
             if (direction === 'down') moveOrbitElementDown(activeCanvas, layer.id);
         }
     };
+
+    // ============================================
+    // SIMULATION MODE: SHOW USER VIEW
+    // ============================================
+    if (isTemplate && isSimulationMode && layer) {
+        return (
+            <div className="h-full flex flex-col bg-slate-50">
+                <div className="p-4 border-b border-slate-200 bg-amber-500/10 flex items-center gap-2">
+                    <Monitor className="w-4 h-4 text-amber-600" />
+                    <span className="text-xs font-black text-amber-700 uppercase tracking-widest">Simulation: User View</span>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                    <UserElementEditor element={layer} sectionId={activeSectionId || ''} />
+
+                    <div className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                        <p className="text-[10px] text-slate-400 font-medium italic">
+                            In Simulation Mode, you are seeing what the end-user sees. Admin controls are hidden, and permissions are enforced.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     // Check if we have a layer to show
     if (!layer) {
@@ -826,6 +852,134 @@ export const PropertyPanel: React.FC = () => {
                         </div>
                     </div>
                 </SectionComponent>
+
+                {/* ============================================ */}
+                {/* ADMIN - USER PERMISSIONS & ANCHORING */}
+                {/* ============================================ */}
+                {isTemplate && !isSimulationMode && (
+                    <SectionComponent title="User Permissions & Anchoring" icon={<Shield className="w-4 h-4 text-premium-accent" />}>
+                        <div className="space-y-4 p-3 bg-premium-accent/5 rounded-xl border border-premium-accent/10">
+                            {/* Granular Permissions */}
+                            <div className="space-y-3">
+                                <label className="text-[10px] text-premium-accent font-bold uppercase tracking-wider flex items-center gap-2">
+                                    <Lock className="w-3 h-3" /> User Can Edit:
+                                </label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {[
+                                        { key: 'canEditText', label: 'Text', type: 'text' },
+                                        { key: 'canEditImage', label: 'Image', type: 'image' },
+                                        { key: 'canEditStyle', label: 'Style', any: true },
+                                        { key: 'canEditPosition', label: 'Position', any: true },
+                                        { key: 'canDelete', label: 'Delete', any: true },
+                                        { key: 'isVisibleInUserEditor', label: 'Visible', any: true },
+                                    ].map((perm) => {
+                                        if (perm.type && layer.type !== perm.type && !perm.any) return null;
+                                        const isChecked = layer.permissions?.[perm.key as keyof typeof layer.permissions] ?? true;
+                                        return (
+                                            <button
+                                                key={perm.key}
+                                                onClick={() => handleUpdate({
+                                                    permissions: {
+                                                        ...(layer.permissions || {
+                                                            canEditText: true,
+                                                            canEditImage: true,
+                                                            canEditStyle: true,
+                                                            canEditPosition: true,
+                                                            canDelete: true,
+                                                            isVisibleInUserEditor: true,
+                                                            isContentProtected: false
+                                                        }),
+                                                        [perm.key]: !isChecked
+                                                    }
+                                                })}
+                                                className={`flex items-center justify-between px-2 py-1.5 rounded-lg border transition-all ${isChecked ? 'bg-premium-accent/10 border-premium-accent/30 text-premium-accent' : 'bg-white/5 border-white/5 text-white/40'}`}
+                                            >
+                                                <span className="text-[10px] font-medium">{perm.label}</span>
+                                                <div className={`w-3 h-3 rounded-sm border flex items-center justify-center ${isChecked ? 'bg-premium-accent border-premium-accent' : 'border-white/20'}`}>
+                                                    {isChecked && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className="h-[1px] bg-premium-accent/10 my-2" />
+
+                            {/* Anchoring / Smart Position */}
+                            <div className="space-y-3">
+                                <label className="text-[10px] text-premium-accent font-bold uppercase tracking-wider flex items-center gap-2">
+                                    <Anchor className="w-3 h-3" /> Smart Anchoring:
+                                </label>
+
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-[9px] text-white/40">Enable Relative Shifting</span>
+                                    <button
+                                        onClick={() => handleUpdate({
+                                            anchoring: {
+                                                targetId: layer.anchoring?.targetId || '',
+                                                edge: layer.anchoring?.edge || 'bottom',
+                                                offset: layer.anchoring?.offset || 20,
+                                                isRelative: !layer.anchoring?.isRelative
+                                            }
+                                        })}
+                                        className={`w-8 h-4 rounded-full transition-colors relative ${layer.anchoring?.isRelative ? 'bg-premium-accent' : 'bg-white/10'}`}
+                                    >
+                                        <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${layer.anchoring?.isRelative ? 'left-[18px]' : 'left-0.5'}`} />
+                                    </button>
+                                </div>
+
+                                {layer.anchoring?.isRelative && (
+                                    <div className="space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
+                                        <div className="space-y-1">
+                                            <label className="text-[8px] text-white/30 uppercase font-bold">Anchor Target</label>
+                                            <select
+                                                value={layer.anchoring?.targetId || ''}
+                                                onChange={(e) => handleUpdate({ anchoring: { ...layer.anchoring!, targetId: e.target.value } })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white/80 focus:outline-none focus:border-premium-accent/50"
+                                            >
+                                                <option value="">Select Element...</option>
+                                                {/* Filter elements in the same context that are NOT the current element */}
+                                                {(activeCanvas === 'main' ? activeSection?.elements : orbit[activeCanvas as 'left' | 'right'].elements)
+                                                    ?.filter(l => l.id !== layer.id)
+                                                    .map(l => (
+                                                        <option key={l.id} value={l.id}>{l.name || l.type}</option>
+                                                    ))
+                                                }
+                                            </select>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div className="space-y-1">
+                                                <label className="text-[8px] text-white/30 uppercase font-bold">Edge</label>
+                                                <select
+                                                    value={layer.anchoring?.edge || 'bottom'}
+                                                    onChange={(e) => handleUpdate({ anchoring: { ...layer.anchoring!, edge: e.target.value as any } })}
+                                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white/80"
+                                                >
+                                                    <option value="top">Top</option>
+                                                    <option value="bottom">Bottom</option>
+                                                </select>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[8px] text-white/30 uppercase font-bold">Offset</label>
+                                                <input
+                                                    type="number"
+                                                    value={layer.anchoring?.offset || 0}
+                                                    onChange={(e) => handleUpdate({ anchoring: { ...layer.anchoring!, offset: Number(e.target.value) } })}
+                                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white"
+                                                />
+                                            </div>
+                                        </div>
+                                        <p className="text-[8px] text-white/20 italic">
+                                            {layer.name} will maintain this distance from the target even if the target grows.
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </SectionComponent>
+                )}
 
                 {/* Image/GIF Config - Only for image and gif elements */}
                 {(layer.type === 'image' || layer.type === 'gif' || layer.type === 'sticker') && (

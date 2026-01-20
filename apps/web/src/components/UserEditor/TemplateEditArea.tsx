@@ -533,9 +533,9 @@ export const TemplateEditArea: React.FC = () => {
                                     <div className="space-y-8 p-12 overflow-y-auto max-h-[896px]">
                                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-4">Orbit Layer Matrix</span>
                                         <div className="space-y-5">
-                                            {orbit.left.elements && orbit.left.elements.filter(el => el.canEditContent).length > 0 ? (
+                                            {orbit.left.elements && orbit.left.elements.filter(el => el.permissions?.canEditContent !== false && el.permissions?.isVisibleInUserEditor !== false).length > 0 ? (
                                                 orbit.left.elements
-                                                    .filter(el => el.canEditContent)
+                                                    .filter(el => el.permissions?.canEditContent !== false && el.permissions?.isVisibleInUserEditor !== false)
                                                     .map(element => (
                                                         <UserElementEditor
                                                             key={`orbit-left-${element.id}`}
@@ -588,9 +588,9 @@ export const TemplateEditArea: React.FC = () => {
                                     <div className="space-y-8 p-12 overflow-y-auto max-h-[896px]">
                                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-4">Orbit Layer Matrix</span>
                                         <div className="space-y-5">
-                                            {orbit.right.elements && orbit.right.elements.filter(el => el.canEditContent).length > 0 ? (
+                                            {orbit.right.elements && orbit.right.elements.filter(el => el.permissions?.canEditContent !== false && el.permissions?.isVisibleInUserEditor !== false).length > 0 ? (
                                                 orbit.right.elements
-                                                    .filter(el => el.canEditContent)
+                                                    .filter(el => el.permissions?.canEditContent !== false && el.permissions?.isVisibleInUserEditor !== false)
                                                     .map(element => (
                                                         <UserElementEditor
                                                             key={`orbit-right-${element.id}`}

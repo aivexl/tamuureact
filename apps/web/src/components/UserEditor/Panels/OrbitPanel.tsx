@@ -41,9 +41,9 @@ export const OrbitPanel: React.FC = () => {
                         </div>
 
                         <div className="space-y-4">
-                            {orbit.left.elements && orbit.left.elements.filter(el => el.canEditContent).length > 0 ? (
+                            {orbit.left.elements && orbit.left.elements.filter(el => el.permissions?.canEditContent !== false && el.permissions?.isVisibleInUserEditor !== false).length > 0 ? (
                                 orbit.left.elements
-                                    .filter(el => el.canEditContent)
+                                    .filter(el => el.permissions?.canEditContent !== false && el.permissions?.isVisibleInUserEditor !== false)
                                     .map(element => (
                                         <UserElementEditor
                                             key={element.id}
@@ -83,9 +83,9 @@ export const OrbitPanel: React.FC = () => {
                         </div>
 
                         <div className="space-y-4">
-                            {orbit.right.elements && orbit.right.elements.filter(el => el.canEditContent).length > 0 ? (
+                            {orbit.right.elements && orbit.right.elements.filter(el => el.permissions?.canEditContent !== false && el.permissions?.isVisibleInUserEditor !== false).length > 0 ? (
                                 orbit.right.elements
-                                    .filter(el => el.canEditContent)
+                                    .filter(el => el.permissions?.canEditContent !== false && el.permissions?.isVisibleInUserEditor !== false)
                                     .map(element => (
                                         <UserElementEditor
                                             key={element.id}

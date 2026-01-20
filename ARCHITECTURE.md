@@ -44,7 +44,8 @@ Platform undangan digital dengan arsitektur multi-domain dan monorepo.
 - `/guests/:id` - Guest List Management, RSVP, & QR Generator
 - `/wishes` - Management of Guest Wishes/Comments
 - `/admin/dashboard` - System Metrics & Admin Overview
-- `/admin/templates` - System Template Management
+- `/admin/templates/invitation` - Mobile Template Management
+- `/admin/templates/display` - TV Display Template Management
 - `/admin/editor/:slug` - Template Builder (System Level)
 
 ### 📡 API & Services
@@ -166,6 +167,8 @@ npm run deploy:api         # Deploy API to Cloudflare Workers
   - Xendit payment link integration
   - Auto-provisioning system
   - Usage tracking (invitation counts)
+- **Liquid Auto-Layout Engine**: Dynamic vertical shifting based on real-time content height.
+- **Granular Admin Permissions**: Per-element control over user editability and visibility.
 
 ---
 
@@ -273,8 +276,8 @@ store/useStore.ts               # Combined store with undo/redo (zundo)
 
 | Slice | Key States | Actions |
 |-------|------------|---------|
-| **canvasSlice** | `zoom`, `pan`, `projectName` | `setZoom`, `setPan` |
-| **layersSlice** | `layers`, `selectedLayerId` | `addLayer`, `updateLayer`, `deleteLayer` |
+| **canvasSlice** | `zoom`, `pan`, `isSimulationMode` | `setZoom`, `setIsSimulationMode` |
+| **layersSlice** | `layers`, `elementDimensions` | `addLayer`, `updateElementDimensions` |
 | **sectionsSlice** | `sections`, `activeSectionId`, `orbit` | `addSection`, `setActiveSection`, `setOrbitLayers` |
 | **uiSlice** | `showLayerPanel`, `showSidebar` | `toggleLayerPanel`, `toggleSidebar` |
 | **authSlice** | `user`, `token` | `setUser`, `logout` |
@@ -355,3 +358,9 @@ Invitations are organized into multiple **Sections** (e.g., Opening, Bride & Gro
 - **Implementation**: Centralized `/api/preview/:slug` endpoint that resolves both templates and invitations.
 - **Optimization**: Server-side resolution eliminates the "Dual-Fetch" pattern, reducing latency and console error logs.
 - **Robust Hydration**: Preview pages now use deep-merge hydration to ensure `orbit` and `layers` structure is preserved even with sparse API responses.
+
+### 🌊 Liquid Position Engine (Architecture v5.0)
+- **Concept**: Dynamic vertical layout that reacts to user content height (e.g. long names).
+- **Implementation**: Real-time dimension tracking via `ResizeObserver` reported to the Zustand store.
+- **Mechanism**: `AnimatedLayer.tsx` calculates a `relativeShift` based on the targeted anchor's height, preventing element overlaps automatically.
+- **Admin Control**: Granular permissions (Text, Style, Image, Position) enforced in `UserElementEditor.tsx` and previewed via **Simulation Mode**.

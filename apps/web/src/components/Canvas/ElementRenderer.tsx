@@ -45,7 +45,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenI
     const renderContent = () => {
         switch (layer.type) {
             case 'text':
-                return <TextElement layer={layer} onContentLoad={onContentLoad} />;
+                return <TextElement layer={layer} onContentLoad={onContentLoad} onDimensionsDetected={onDimensionsDetected} />;
             case 'image':
             case 'gif':
             case 'sticker':
@@ -168,13 +168,28 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenI
 };
 
 
-// ============================================
-// TEXT ELEMENT
-// ============================================
-const TextElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ layer, onContentLoad }) => {
+// CTO ENTERPRISE FIX: Professional text rendering
+const TextElement: React.FC<{ layer: Layer, onContentLoad?: () => void, onDimensionsDetected?: (w: number, h: number) => void }> = ({ layer, onContentLoad, onDimensionsDetected }) => {
+    const textRef = React.useRef<HTMLDivElement>(null);
+
     useEffect(() => {
         onContentLoad?.();
     }, []);
+
+    // Detect dimensions for Liquid Layout
+    useEffect(() => {
+        if (!textRef.current || !onDimensionsDetected) return;
+
+        const observer = new ResizeObserver((entries) => {
+            for (let entry of entries) {
+                const { width, height } = entry.contentRect;
+                onDimensionsDetected(width, height);
+            }
+        });
+
+        observer.observe(textRef.current);
+        return () => observer.disconnect();
+    }, [onDimensionsDetected]);
 
     const style = layer.textStyle;
     const curved = layer.curvedTextConfig;
@@ -187,9 +202,9 @@ const TextElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ l
         const centerY = height / 2;
         const startAngle = curved.angle || 0;
 
-        // Feature 9: Curved Text SVG
         return (
             <svg
+                ref={textRef as any}
                 viewBox={`0 0 ${width} ${height}`}
                 className="w-full h-full overflow-visible"
                 style={{ filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.3))' }}
@@ -218,13 +233,12 @@ const TextElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ l
         );
     }
 
-    // CTO ENTERPRISE FIX: Professional text rendering
-    // Text should fit within bounding box on single line (unless multiline is explicitly set)
     const isMultiline = style?.multiline === true;
 
     return (
         <div
-            className="w-full h-full flex items-center justify-center select-none"
+            ref={textRef}
+            className="w-full h-fit flex items-center justify-center select-none"
             style={{
                 fontFamily: style?.fontFamily || 'Outfit',
                 fontSize: `${style?.fontSize || 24}px`,
@@ -234,11 +248,11 @@ const TextElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ l
                 color: style?.color || '#ffffff',
                 lineHeight: style?.lineHeight || 1.2,
                 letterSpacing: style?.letterSpacing || 0,
-                // CTO FIX: Single line by default, proper overflow handling
                 whiteSpace: isMultiline ? 'pre-wrap' : 'nowrap',
                 wordBreak: isMultiline ? 'break-word' : 'normal',
                 overflow: 'visible',
-                padding: '4px'
+                padding: '4px',
+                minHeight: '100%'
             }}
         >
             {layer.content || 'Text'}

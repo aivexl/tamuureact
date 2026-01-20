@@ -1,6 +1,6 @@
 import React from 'react';
 import { m } from 'framer-motion';
-import { Type, Image as ImageIcon, MapPin, Copy, Shield, Clock } from 'lucide-react';
+import { Type, Image as ImageIcon, MapPin, Copy, Shield, Clock, Lock } from 'lucide-react';
 import { useStore, Layer } from '@/store/useStore';
 
 interface UserElementEditorProps {
@@ -10,21 +10,37 @@ interface UserElementEditorProps {
 
 export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, sectionId }) => {
     const { updateElementInSection } = useStore();
-    const isProtected = element.isContentProtected || false;
+    const permissions = element.permissions || {
+        canEditText: true,
+        canEditImage: true,
+        canEditStyle: true,
+        canEditPosition: true,
+        canDelete: true,
+        isVisibleInUserEditor: true,
+        isContentProtected: false
+    };
 
+    const isProtected = permissions.isContentProtected === true;
+
+    // Handle updates: forward changes to Zustand store
     const handleUpdate = (updates: Partial<Layer>) => {
+        if (!sectionId) return;
         updateElementInSection(sectionId, element.id, updates);
     };
 
-    // Get icon based on element type
+    // Helper to get icon based on element type
     const getIcon = () => {
         switch (element.type) {
             case 'text': return <Type className="w-4 h-4" />;
-            case 'countdown': return <Clock className="w-4 h-4" />;
             case 'image': return <ImageIcon className="w-4 h-4" />;
+            case 'gif': return <ImageIcon className="w-4 h-4" />;
+            case 'maps_point': return <MapPin className="w-4 h-4" />;
+            case 'countdown': return <Clock className="w-4 h-4" />;
             default: return <Type className="w-4 h-4" />;
         }
     };
+
+    if (permissions.isVisibleInUserEditor === false) return null;
 
     return (
         <m.div
@@ -41,10 +57,10 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                         <span className="text-xs font-black text-slate-800 tracking-tight uppercase tracking-widest">
                             {element.name || 'Element'}
                         </span>
-                        {isProtected && (
+                        {(isProtected || !permissions.canEditText || !permissions.canEditImage || !permissions.canEditStyle) && (
                             <div className="flex items-center gap-1 text-[8px] font-black text-amber-500 uppercase tracking-widest mt-0.5">
                                 <Shield className="w-2.5 h-2.5" />
-                                Protected
+                                {isProtected ? 'Protected' : 'Locked by Admin'}
                             </div>
                         )}
                     </div>
@@ -62,22 +78,28 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
             {/* Text Field */}
             {element.type === 'text' && (
                 <div className="space-y-2">
-                    {element.content && element.content.length > 50 ? (
-                        <textarea
-                            value={element.content || ''}
-                            onChange={(e) => handleUpdate({ content: e.target.value })}
-                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none resize-none"
-                            rows={3}
-                            placeholder="Mulai mengetik..."
-                        />
+                    {permissions.canEditText ? (
+                        element.content && element.content.length > 50 ? (
+                            <textarea
+                                value={element.content || ''}
+                                onChange={(e) => handleUpdate({ content: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none resize-none"
+                                rows={3}
+                                placeholder="Mulai mengetik..."
+                            />
+                        ) : (
+                            <input
+                                type="text"
+                                value={element.content || ''}
+                                onChange={(e) => handleUpdate({ content: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
+                                placeholder="Mulai mengetik..."
+                            />
+                        )
                     ) : (
-                        <input
-                            type="text"
-                            value={element.content || ''}
-                            onChange={(e) => handleUpdate({ content: e.target.value })}
-                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
-                            placeholder="Mulai mengetik..."
-                        />
+                        <div className="px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-xl text-sm font-medium text-slate-400 italic">
+                            {element.content || 'Konten dikunci oleh admin'}
+                        </div>
                     )}
                 </div>
             )}
@@ -90,6 +112,7 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                     </label>
                     <input
                         type="datetime-local"
+                        disabled={!permissions.canEditText}
                         value={element.countdownConfig.targetDate?.slice(0, 16) || ''}
                         onChange={(e) => handleUpdate({
                             countdownConfig: {
@@ -97,8 +120,7 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                                 targetDate: new Date(e.target.value).toISOString()
                             } as typeof element.countdownConfig
                         })}
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
-
+                        className={`w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none ${!permissions.canEditText ? 'opacity-50 cursor-not-allowed' : ''}`}
                     />
                 </div>
             )}
@@ -106,19 +128,32 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
             {/* Image Field */}
             {(element.type === 'image' || element.type === 'gif') && (
                 <div className="space-y-3">
-                    <div className="relative group/upload h-32 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-teal-300 hover:bg-teal-50/30 transition-all">
-                        {element.imageUrl ? (
-                            <img src={element.imageUrl} alt="Preview" className="w-full h-full object-cover rounded-[calc(1rem-2px)] opacity-50 group-hover/upload:opacity-30 transition-opacity" />
-                        ) : (
-                            <ImageIcon className="w-8 h-8 text-slate-300 mb-2" />
-                        )}
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <button className="flex items-center gap-2 px-4 py-2 bg-white text-slate-700 text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-slate-200/50 hover:shadow-xl transition-all">
-                                <ImageIcon className="w-3.5 h-3.5 text-teal-500" />
-                                Pilih Foto
-                            </button>
+                    {permissions.canEditImage ? (
+                        <div className="relative group/upload h-32 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-teal-300 hover:bg-teal-50/30 transition-all">
+                            {element.imageUrl ? (
+                                <img src={element.imageUrl} alt="Preview" className="w-full h-full object-cover rounded-[calc(1rem-2px)] opacity-50 group-hover/upload:opacity-30 transition-opacity" />
+                            ) : (
+                                <ImageIcon className="w-8 h-8 text-slate-300 mb-2" />
+                            )}
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                <button className="flex items-center gap-2 px-4 py-2 bg-white text-slate-700 text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-slate-200/50 hover:shadow-xl transition-all">
+                                    <ImageIcon className="w-3.5 h-3.5 text-teal-500" />
+                                    Pilih Foto
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="h-32 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center">
+                            {element.imageUrl ? (
+                                <img src={element.imageUrl} alt="Preview" className="w-full h-full object-cover rounded-2xl opacity-40 grayscale" />
+                            ) : (
+                                <ImageIcon className="w-8 h-8 text-slate-200" />
+                            )}
+                            <div className="absolute flex items-center gap-2 px-3 py-1.5 bg-white/80 backdrop-blur-sm rounded-full text-[9px] font-black text-slate-400 uppercase tracking-widest border border-slate-100">
+                                <Lock className="w-3 h-3" /> Foto Dikunci
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 

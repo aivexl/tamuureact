@@ -46,6 +46,10 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     const ref = useRef<HTMLDivElement>(null);
     const isAnimationPlaying = useStore(state => state.isAnimationPlaying);
     const interactionNonce = useStore(state => state.interactionNonce);
+    const sections = useStore(state => state.sections);
+    const orbit = useStore(state => state.orbit);
+    const elementDimensions = useStore(state => state.elementDimensions);
+    const updateElementDimensions = useStore(state => state.updateElementDimensions);
 
     const prevForceTriggerRef = useRef(forceTrigger);
     const isVisibleRef = useRef(false);
@@ -89,6 +93,52 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     const flipY = layer.flipVertical ? -1 : 1;
     const baseScale = layer.scale || 1;
     const baseRotate = layer.rotation || 0;
+
+    // ============================================
+    // LIQUID AUTO-LAYOUT (SMART POSITION)
+    // ============================================
+    const target = useMemo((): Layer | null => {
+        const anchoring = layer.anchoring;
+        if (!anchoring?.isRelative || !anchoring.targetId) return null;
+
+        let found: Layer | null = null;
+        // Search in sections
+        sections.forEach(s => {
+            s.elements.forEach(l => {
+                if (l.id === anchoring.targetId) found = l;
+            });
+        });
+
+        // Search in orbits
+        if (!found && orbit) {
+            if (orbit.left?.elements) {
+                orbit.left.elements.forEach(l => { if (l.id === anchoring.targetId) found = l; });
+            }
+            if (!found && orbit.right?.elements) {
+                orbit.right.elements.forEach(l => { if (l.id === anchoring.targetId) found = l; });
+            }
+        }
+        return found;
+    }, [layer.anchoring, sections, orbit]);
+
+    const relativeShift = useMemo(() => {
+        const anchoring = layer.anchoring;
+        if (!target || !anchoring?.isRelative) return 0;
+
+        // Get target's current detected height (or fallback to design height)
+        const targetDim = elementDimensions[target.id] || { height: target.height || 0 };
+        const targetHeight = targetDim.height;
+
+        if (anchoring.edge === 'bottom') {
+            // New Y = Target Base Y + Target Real Height + Offset
+            // Shift = New Y - My Base Y
+            return (target.y + targetHeight + (anchoring.offset || 0)) - layer.y;
+        }
+
+        return 0;
+    }, [target, elementDimensions, layer.y, layer.anchoring]);
+
+    const finalY = adjustedY + relativeShift;
 
     const needsLoadSignal = ['image', 'gif', 'sticker', 'lottie', 'flying_bird'].includes(layer.type);
     const isContentReadyRef = useRef(!needsLoadSignal || isEditor);
@@ -315,7 +365,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                 className="absolute origin-center"
                 style={{
                     left: `${layer.x}px`,
-                    top: `${adjustedY}px`,
+                    top: `${finalY}px`,
                     width: `${layer.width}px`,
                     height: `${layer.height}px`,
                     zIndex: layer.zIndex,
@@ -338,13 +388,18 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         );
     }
 
+    const handleDimensions = useCallback((w: number, h: number) => {
+        if (onDimensionsDetected) onDimensionsDetected(w, h);
+        updateElementDimensions(layer.id, w, h);
+    }, [layer.id, onDimensionsDetected, updateElementDimensions]);
+
     return (
         <m.div
             ref={ref} initial="hidden" animate={animationState} variants={variants}
             className="absolute origin-center"
             style={{
                 left: `${layer.x}px`,
-                top: `${adjustedY}px`,
+                top: `${finalY}px`,
                 width: `${layer.width}px`,
                 height: `${layer.height}px`,
                 zIndex: layer.zIndex,
@@ -361,10 +416,10 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                         <div className="seamless-marquee-container">
                             <div className={`seamless-marquee-track${isVertical ? '-vertical' : ''} animate-seamless-${direction}`} style={{ '--marquee-duration': `${duration}s`, ...(isVertical ? { height: 'fit-content' } : { width: 'fit-content' }) } as any}>
                                 <div className="flex-shrink-0" style={isVertical ? { height: layer.height } : { width: layer.width }}>
-                                    <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={isEditor} onContentLoad={handleContentLoad} onDimensionsDetected={onDimensionsDetected} />
+                                    <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={isEditor} onContentLoad={handleContentLoad} onDimensionsDetected={handleDimensions} />
                                 </div>
                                 <div className="flex-shrink-0" style={isVertical ? { height: layer.height } : { width: layer.width }}>
-                                    <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={isEditor} onContentLoad={handleContentLoad} onDimensionsDetected={onDimensionsDetected} />
+                                    <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={isEditor} onContentLoad={handleContentLoad} onDimensionsDetected={handleDimensions} />
                                 </div>
                             </div>
                         </div>
@@ -372,7 +427,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                 })()
             ) : (
                 <m.div className="w-full h-full relative" {...loopingProps} style={{ ...(isMarqueeTileMode ? { backgroundImage: `url(${layer.imageUrl})`, backgroundRepeat: 'repeat', backgroundSize: 'auto', backgroundColor: 'transparent' } : {}) }}>
-                    {!isMarqueeTileMode && <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={isEditor} onContentLoad={handleContentLoad} onDimensionsDetected={onDimensionsDetected} />}
+                    {!isMarqueeTileMode && <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={isEditor} onContentLoad={handleContentLoad} onDimensionsDetected={handleDimensions} />}
                 </m.div>
             )}
         </m.div>

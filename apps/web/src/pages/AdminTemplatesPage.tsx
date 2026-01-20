@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { templates as templatesApi } from '@/lib/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
     Smartphone,
     Monitor,
@@ -28,12 +28,13 @@ interface Template {
 
 export const AdminTemplatesPage: React.FC = () => {
     const navigate = useNavigate();
+    const { type } = useParams<{ type: string }>();
 
     // State
     const [templates, setTemplates] = useState<Template[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [activeTab, setActiveTab] = useState<'invitation' | 'display'>('invitation');
+    const activeTab = (type === 'display' ? 'display' : 'invitation') as 'invitation' | 'display';
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
 
@@ -59,12 +60,12 @@ export const AdminTemplatesPage: React.FC = () => {
         }
     };
 
-    const handleCreateTemplate = async (type: 'invitation' | 'display') => {
+    const handleCreateTemplate = async (createType: 'invitation' | 'display') => {
         setIsCreating(true);
         try {
             const newTemplate = {
-                name: type === 'display' ? 'New Display Template' : 'New Invitation Template',
-                type: type, // KEY DIFFERENCE
+                name: createType === 'display' ? 'New Display Template' : 'New Invitation Template',
+                type: createType, // KEY DIFFERENCE
                 category: 'Premium',
                 sections: [],
             };
@@ -72,7 +73,7 @@ export const AdminTemplatesPage: React.FC = () => {
             const data = await templatesApi.create(newTemplate);
             if (data) {
                 // Navigate to the correct editor based on type
-                const editorPath = type === 'display'
+                const editorPath = createType === 'display'
                     ? `/admin/display-editor/${data.slug || data.id}`
                     : `/admin/editor/${data.slug || data.id}`;
                 navigate(editorPath);
@@ -111,19 +112,17 @@ export const AdminTemplatesPage: React.FC = () => {
                 {/* Header Action Area */}
                 <div className="flex flex-col md:flex-row items-end md:items-center justify-between gap-6 mb-10">
                     <div>
-                        <div className="flex items-center gap-4 mb-4">
-                            <button
-                                onClick={() => setActiveTab('invitation')}
-                                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'invitation' ? 'bg-teal-500 text-slate-900' : 'bg-white/5 text-slate-400 hover:text-white'}`}
-                            >
-                                Mobile Invitations
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('display')}
-                                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'display' ? 'bg-purple-500 text-white' : 'bg-white/5 text-slate-400 hover:text-white'}`}
-                            >
-                                TV Displays
-                            </button>
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${activeTab === 'invitation' ? 'bg-teal-500 shadow-teal-500/20' : 'bg-purple-500 shadow-purple-500/20'}`}>
+                                {activeTab === 'invitation' ? (
+                                    <Smartphone className="w-6 h-6 text-slate-900" />
+                                ) : (
+                                    <Monitor className="w-6 h-6 text-white" />
+                                )}
+                            </div>
+                            <h2 className="text-3xl font-bold text-white tracking-tight font-outfit">
+                                {activeTab === 'invitation' ? 'Template Undangan' : 'Template Display'}
+                            </h2>
                         </div>
                         <p className="text-slate-400 text-lg">
                             {activeTab === 'invitation'
