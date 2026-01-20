@@ -169,6 +169,7 @@ export interface SectionsState {
     matchSize: (sectionId: string, elementIds: string[], dimension: 'width' | 'height' | 'both') => void;
 
     sanitizeAllSectionElements: () => void;
+    autoAnchorElement: (sectionId: string, elementId: string) => void;
 
     // Bulk setters for API hydration
     setSections: (sections: Section[]) => void;
@@ -1024,5 +1025,67 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
             ...s,
             elements: s.elements.map(sanitizeLayer)
         }))
-    }))
+    })),
+
+    autoAnchorElement: (sectionId, elementId) => set((state) => {
+        const section = state.sections.find(s => s.id === sectionId);
+        if (!section) return state;
+        const current = section.elements.find(el => el.id === elementId);
+        if (!current) return state;
+
+        // Spatial Heuristic: Find the best target above this element
+        const candidates = section.elements.filter(el => {
+            if (el.id === elementId) return false;
+
+            // Must be above the current element (bottom of candidate < top of current + small buffer)
+            const isAbove = (el.y + (el.height || 0)) <= (current.y + 10);
+            if (!isAbove) return false;
+
+            // Must have significant horizontal overlap
+            const currentLeft = current.x;
+            const currentRight = current.x + (current.width || 100);
+            const elLeft = el.x;
+            const elRight = el.x + (el.width || 100);
+
+            const overlap = Math.min(currentRight, elRight) - Math.max(currentLeft, elLeft);
+            const minWidth = Math.min(current.width || 100, el.width || 100);
+
+            return overlap > (minWidth * 0.2); // At least 20% overlap
+        });
+
+        if (candidates.length === 0) return state;
+
+        // Sort by visual distance (closeness of bottom of target to top of current)
+        candidates.sort((a, b) => {
+            const distA = current.y - (a.y + (a.height || 0));
+            const distB = current.y - (b.y + (b.height || 0));
+            return distA - distB;
+        });
+
+        const target = candidates[0];
+        const offset = current.y - (target.y + (target.height || 0));
+
+        return {
+            sections: state.sections.map(s =>
+                s.id === sectionId
+                    ? {
+                        ...s,
+                        elements: s.elements.map(el =>
+                            el.id === elementId
+                                ? {
+                                    ...el,
+                                    anchoring: {
+                                        isRelative: true,
+                                        targetId: target.id,
+                                        edge: 'bottom',
+                                        offset
+                                    }
+                                }
+                                : el
+                        )
+                    }
+                    : s
+            )
+        };
+    })
 });

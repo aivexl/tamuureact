@@ -56,6 +56,7 @@ export const PropertyPanel: React.FC = () => {
         moveElementUp,
         moveElementDown,
         setActiveCanvas,
+        autoAnchorElement,
 
         pathEditingId,
         setPathEditingId,
@@ -931,6 +932,19 @@ export const PropertyPanel: React.FC = () => {
 
                                 {layer.anchoring?.isRelative && (
                                     <div className="space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
+                                        {/* Magic Button */}
+                                        <button
+                                            onClick={() => {
+                                                if (activeCanvas === 'main' && activeSectionId) {
+                                                    autoAnchorElement(activeSectionId, layer.id);
+                                                }
+                                            }}
+                                            className="w-full flex items-center justify-center gap-2 bg-premium-accent/20 hover:bg-premium-accent/30 text-premium-accent rounded-lg py-2 text-[10px] font-bold uppercase tracking-wider transition-all border border-premium-accent/20"
+                                        >
+                                            <Sparkles className="w-3 h-3" />
+                                            Sudah Memilih? Pakai Magic Auto-Anchor
+                                        </button>
+
                                         <div className="space-y-1">
                                             <label className="text-[8px] text-white/30 uppercase font-bold">Anchor Target</label>
                                             <select

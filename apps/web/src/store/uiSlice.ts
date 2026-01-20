@@ -16,6 +16,8 @@ export interface UIState {
     isAnimationPlaying: boolean;
     hasHydrated: boolean;
     imageCropModal: ImageCropModalState;
+    pickingAnchorForId: string | null;
+    setPickingAnchorForId: (id: string | null) => void;
     setActiveTab: (tab: 'layers' | 'settings') => void;
     setSidebarOpen: (isOpen: boolean) => void;
     setToolbarExpanded: (isExpanded: boolean) => void;
@@ -40,6 +42,8 @@ export const createUISlice: StateCreator<UIState> = (set) => ({
         targetSlotIndex: null,
         aspectRatio: 1
     },
+    pickingAnchorForId: null,
+    setPickingAnchorForId: (id) => set({ pickingAnchorForId: id }),
     setActiveTab: (activeTab) => set({ activeTab }),
     setSidebarOpen: (isSidebarOpen) => set({ isSidebarOpen }),
     setToolbarExpanded: (isToolbarExpanded) => set({ isToolbarExpanded }),
