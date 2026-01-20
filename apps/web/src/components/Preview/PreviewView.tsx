@@ -1260,15 +1260,13 @@ const PreviewOrbitStage: React.FC<{
 
     return (
         <div
-            className={`absolute inset-0 pointer-events-none transition-all duration-1000 ${isOpened ? 'opacity-100' : 'opacity-100'
-                } `}
+            className="absolute inset-0 pointer-events-none transition-all duration-1000 opacity-100"
             style={{
                 [type]: 0,
-                backgroundColor: isPortrait ? 'transparent' : 'transparent', // Background moves to inner design container
+                backgroundColor: 'transparent',
                 backgroundImage: 'none',
-                zIndex: isPortrait ? 100 : 5,
-                // On mobile, we want overflow visible so framing elements can overlap the central area
-                overflow: isPortrait ? 'visible' : 'hidden',
+                zIndex: 100, // CTO: Framing elements must always be above the background
+                overflow: 'visible', // CTO: Allow ornaments to overlap slightly
                 ...overrideStyle
             }}
         >
@@ -1276,29 +1274,23 @@ const PreviewOrbitStage: React.FC<{
             <div
                 className="absolute"
                 style={{
-                    // CTO FIX: Use TOP-anchored positioning for consistent y-coordinates
                     top: 0,
                     width: DESIGN_ORBIT_WIDTH,
                     height: isPortrait ? coverHeight : DESIGN_ORBIT_HEIGHT,
-                    // Background styling moved here for 1:1 Editor parity
                     backgroundColor: isPortrait ? 'transparent' : (config.backgroundColor || '#050505'),
                     backgroundImage: isPortrait ? 'none' : (config.backgroundUrl ? `url(${config.backgroundUrl})` : 'none'),
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
-                    // Anchor to VIEWPORT edge
                     [type]: 0,
-                    // Scale from top corner
                     transform: `scale(${scaleFactor})`,
                     transformOrigin: type === 'left' ? 'left top' : 'right top'
                 }}
             >
                 {(config.elements || []).map((element: any) => {
-                    // Apply Liquid Layout for Orbit Stages (Enterprise standard)
-                    // This ensures framing elements distribute correctly on tall viewports
                     let adjustedY = element.y;
                     if (isPortrait) {
-                        const extraHeight = Math.max(0, coverHeight - 896); // Capped to prevent compression artifacts
-                        const elementHeight = element.height || element.size?.height || (element.textStyle?.fontSize) || 0;
+                        const extraHeight = Math.max(0, coverHeight - 896);
+                        const elementHeight = element.height || 0;
                         const maxTop = Math.max(1, 896 - elementHeight);
                         const progress = Math.max(0, Math.min(1, element.y / maxTop));
                         adjustedY = element.y + (extraHeight * progress);
@@ -1311,8 +1303,8 @@ const PreviewOrbitStage: React.FC<{
                             adjustedY={adjustedY}
                             isOpened={isOpened}
                             isEditor={false}
-                            forceTrigger={isOpened}
-                            isSectionActive={isOpened && transitionStage === 'DONE'}
+                            forceTrigger={true} // CTO: Always trigger entrance for orbit ornaments
+                            isSectionActive={true} // CTO: Orbit is always active once loaded
                         />
                     );
                 })}
