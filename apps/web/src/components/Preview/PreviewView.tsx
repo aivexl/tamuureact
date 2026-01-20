@@ -1090,6 +1090,43 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                     )}
                 </div>
 
+                {/* MOBILE ORBIT OVERLAY - Portrait Only */}
+                {/* This renders orbit elements as absolute overlays for mobile devices */}
+                {isPortrait && (
+                    <div className="absolute inset-0 pointer-events-none z-[100] overflow-visible">
+                        {/* Left Orbit Elements (Merged into single overlay) */}
+                        {orbit.left?.isVisible && (orbit.left?.elements || []).map((element: any) => {
+                            const adjustedY = element.y;
+                            return (
+                                <AnimatedLayer
+                                    key={`mobile-left-${element.id}`}
+                                    layer={element}
+                                    adjustedY={adjustedY}
+                                    isOpened={isOpened}
+                                    isEditor={false}
+                                    forceTrigger={true}
+                                    isSectionActive={true}
+                                />
+                            );
+                        })}
+                        {/* Right Orbit Elements (Merged into single overlay) */}
+                        {orbit.right?.isVisible && (orbit.right?.elements || []).map((element: any) => {
+                            const adjustedY = element.y;
+                            return (
+                                <AnimatedLayer
+                                    key={`mobile-right-${element.id}`}
+                                    layer={element}
+                                    adjustedY={adjustedY}
+                                    isOpened={isOpened}
+                                    isEditor={false}
+                                    forceTrigger={true}
+                                    isSectionActive={true}
+                                />
+                            );
+                        })}
+                    </div>
+                )}
+
                 {/* Controls Overlay - Highest z-index (Level 90000) to ensure clickability above all effects */}
                 <div
                     className="absolute top-4 right-4 z-[90000] flex items-center gap-2"
