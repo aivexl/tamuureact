@@ -1091,12 +1091,26 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                 </div>
 
                 {/* MOBILE ORBIT OVERLAY - Portrait Only */}
-                {/* This renders orbit elements as absolute overlays for mobile devices */}
+                {/* This renders orbit elements as scaled overlays for mobile devices */}
                 {isPortrait && (
-                    <div className="absolute inset-0 pointer-events-none z-[100] overflow-visible">
-                        {/* Left Orbit Elements (Merged into single overlay) */}
+                    <div
+                        className="absolute inset-0 pointer-events-none z-[100] overflow-visible"
+                        style={{
+                            width: CANVAS_WIDTH,
+                            height: coverHeight,
+                            transform: `scale(${scaleFactor})`,
+                            transformOrigin: 'top left'
+                        }}
+                    >
+                        {/* Left Orbit Elements */}
                         {orbit.left?.isVisible && (orbit.left?.elements || []).map((element: any) => {
-                            const adjustedY = element.y;
+                            // Apply Liquid Layout for orbit elements on mobile
+                            const extraHeight = Math.max(0, coverHeight - CANVAS_HEIGHT);
+                            const elementHeight = element.height || 0;
+                            const maxTop = Math.max(1, CANVAS_HEIGHT - elementHeight);
+                            const progress = Math.max(0, Math.min(1, element.y / maxTop));
+                            const adjustedY = element.y + (extraHeight * progress);
+
                             return (
                                 <AnimatedLayer
                                     key={`mobile-left-${element.id}`}
@@ -1109,9 +1123,15 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                                 />
                             );
                         })}
-                        {/* Right Orbit Elements (Merged into single overlay) */}
+                        {/* Right Orbit Elements */}
                         {orbit.right?.isVisible && (orbit.right?.elements || []).map((element: any) => {
-                            const adjustedY = element.y;
+                            // Apply Liquid Layout for orbit elements on mobile
+                            const extraHeight = Math.max(0, coverHeight - CANVAS_HEIGHT);
+                            const elementHeight = element.height || 0;
+                            const maxTop = Math.max(1, CANVAS_HEIGHT - elementHeight);
+                            const progress = Math.max(0, Math.min(1, element.y / maxTop));
+                            const adjustedY = element.y + (extraHeight * progress);
+
                             return (
                                 <AnimatedLayer
                                     key={`mobile-right-${element.id}`}
