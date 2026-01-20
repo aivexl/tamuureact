@@ -850,7 +850,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                     {/* LEFT STAGE (Grid Column 1) - Desktop Only */}
                     {!isPortrait && (
                         <div
-                            className="h-screen sticky top-0 pointer-events-none overflow-hidden"
+                            className="h-screen sticky top-0 pointer-events-none overflow-visible"
                             style={{
                                 gridColumn: 1,
                                 position: 'sticky',
@@ -1063,7 +1063,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                     {/* RIGHT STAGE (Grid Column 3) - Desktop Only */}
                     {!isPortrait && (
                         <div
-                            className="h-screen sticky top-0 pointer-events-none overflow-hidden"
+                            className="h-screen sticky top-0 pointer-events-none overflow-visible"
                             style={{
                                 gridColumn: 3,
                                 position: 'sticky',

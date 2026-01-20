@@ -38,7 +38,7 @@ export const PreviewPage: React.FC = () => {
         // Safety check to ensure we have actual invitation/template data
         if (!data) return;
 
-        console.log(`[PreviewPage] Hydrating from ${source}:`, data.id);
+        console.log(`[PreviewPage] [VERSION 4.6] Hydrating from ${source}:`, data.id);
 
         useStore.setState({ templateType: 'invitation' });
 
@@ -51,6 +51,28 @@ export const PreviewPage: React.FC = () => {
             elements: s.elements || rawLayers.filter((l: any) => l.sectionId === s.id) || []
         }));
 
+        // CTO ROBUST HYDRATION: Check both orbit and orbit_layers for actual elements
+        const currentOrbit = useStore.getState().orbit;
+        const hasOrbit = data.orbit?.left?.elements?.length > 0 || data.orbit?.right?.elements?.length > 0;
+        const hasOrbitLayers = data.orbit_layers?.left?.elements?.length > 0 || data.orbit_layers?.right?.elements?.length > 0;
+
+        const apiOrbit = hasOrbit ? data.orbit : (hasOrbitLayers ? data.orbit_layers : (data.orbit || data.orbit_layers));
+
+        const robustOrbit = {
+            left: {
+                backgroundColor: apiOrbit?.left?.backgroundColor || currentOrbit.left.backgroundColor || 'transparent',
+                backgroundUrl: apiOrbit?.left?.backgroundUrl || currentOrbit.left.backgroundUrl,
+                isVisible: apiOrbit?.left?.isVisible ?? currentOrbit.left.isVisible,
+                elements: Array.isArray(apiOrbit?.left?.elements) ? apiOrbit.left.elements : []
+            },
+            right: {
+                backgroundColor: apiOrbit?.right?.backgroundColor || currentOrbit.right.backgroundColor || 'transparent',
+                backgroundUrl: apiOrbit?.right?.backgroundUrl || currentOrbit.right.backgroundUrl,
+                isVisible: apiOrbit?.right?.isVisible ?? currentOrbit.right.isVisible,
+                elements: Array.isArray(apiOrbit?.right?.elements) ? apiOrbit.right.elements : []
+            }
+        };
+
         useStore.setState({
             sections: validSections,
             layers: rawLayers,
@@ -59,20 +81,7 @@ export const PreviewPage: React.FC = () => {
             slug: data.slug || '',
             projectName: data.name || '',
             activeSectionId: validSections[0]?.id || null,
-            orbit: {
-                left: {
-                    backgroundColor: data.orbit?.left?.backgroundColor || useStore.getState().orbit.left.backgroundColor || 'transparent',
-                    backgroundUrl: data.orbit?.left?.backgroundUrl || useStore.getState().orbit.left.backgroundUrl,
-                    isVisible: data.orbit?.left?.isVisible ?? useStore.getState().orbit.left.isVisible,
-                    elements: Array.isArray(data.orbit?.left?.elements) ? data.orbit?.left?.elements : []
-                },
-                right: {
-                    backgroundColor: data.orbit?.right?.backgroundColor || useStore.getState().orbit.right.backgroundColor || 'transparent',
-                    backgroundUrl: data.orbit?.right?.backgroundUrl || useStore.getState().orbit.right.backgroundUrl,
-                    isVisible: data.orbit?.right?.isVisible ?? useStore.getState().orbit.right.isVisible,
-                    elements: Array.isArray(data.orbit?.right?.elements) ? data.orbit?.right?.elements : []
-                }
-            },
+            orbit: robustOrbit,
             music: data.music || null,
             id: data.id,
             selectedLayerId: null,
