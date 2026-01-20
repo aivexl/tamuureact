@@ -6,7 +6,8 @@
 
 import React, { useState } from 'react';
 import { m } from 'framer-motion';
-import { LayoutTemplate, Check, Loader2, RefreshCw, Eye, Sparkles } from 'lucide-react';
+import { LayoutTemplate, Check, RefreshCw, Eye, Sparkles } from 'lucide-react';
+import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { useTemplates } from '@/hooks/queries/useTemplates';
 import { useStore } from '@/store/useStore';
 import { invitations as invitationsApi, templates as templatesApi } from '@/lib/api';
@@ -89,9 +90,8 @@ export const TemplateStorePanel: React.FC<TemplateStorePanelProps> = ({
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center py-16 gap-4">
-                <Loader2 className="w-8 h-8 text-teal-500 animate-spin" />
-                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Memuat Template...</p>
+            <div className="flex flex-col items-center justify-center py-16">
+                <PremiumLoader variant="inline" showLabel label="Memuat Template..." color="#14b8a6" />
             </div>
         );
     }
@@ -212,8 +212,8 @@ export const TemplateStorePanel: React.FC<TemplateStorePanelProps> = ({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 50 }}
                     className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-6 py-3 font-medium rounded-2xl shadow-xl ${toast.type === 'success'
-                            ? 'bg-emerald-500 text-white'
-                            : 'bg-red-500 text-white'
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-red-500 text-white'
                         }`}
                 >
                     {toast.message}

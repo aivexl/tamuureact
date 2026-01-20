@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { m } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { useDisplayDesigns, useCreateDisplayDesign, useDeleteDisplayDesign, DisplayDesign } from '@/hooks/queries';
-import { Loader2, Plus, Monitor, Edit3, Trash2, ExternalLink } from 'lucide-react';
+import { Plus, Monitor, Edit3, Trash2, ExternalLink } from 'lucide-react';
+import { PremiumLoader } from '@/components/ui/PremiumLoader';
 
 export const WelcomeDisplaysTab: React.FC = () => {
     const { user } = useStore();
@@ -67,7 +68,7 @@ export const WelcomeDisplaysTab: React.FC = () => {
                     disabled={createMutation.isPending}
                     className="flex items-center justify-center gap-2 px-6 py-4 bg-indigo-600 text-white font-semibold rounded-2xl shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 hover:shadow-2xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    {createMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
+                    {createMutation.isPending ? <PremiumLoader variant="inline" color="white" /> : <Plus className="w-5 h-5" />}
                     Buat Desain Baru
                 </button>
             </div>
@@ -75,7 +76,7 @@ export const WelcomeDisplaysTab: React.FC = () => {
             {/* Content */}
             {loading ? (
                 <div className="flex items-center justify-center py-20">
-                    <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
+                    <PremiumLoader variant="inline" showLabel label="Memuat Desain..." color="#6366f1" />
                 </div>
             ) : designs.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-slate-200 border-dashed">

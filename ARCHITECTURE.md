@@ -338,3 +338,14 @@ Invitations are organized into multiple **Sections** (e.g., Opening, Bride & Gro
 + - **Stability**: Menghilangkan `D1_TYPE_ERROR` dan `SQLITE_ERROR: no such column` secara permanen, menjamin kompatibilitas ke belakang (backwards compatibility) di semua level aplikasi.
 +
 
+### Unified Terminal Loading System (UX v1.2)
+- **Concept**: Mechanical, low-latency visual feedback.
+- **Implementation**: Replaced all legacy `Loader2` instances with the custom `PremiumLoader`.
+- **Aesthetic**: 4x4 discrete matrix dots with a "Snake" mechanical animation, zero glow, and strict grid alignment.
+- **UX Impact**: Eliminates "Flicker" and provides a high-end, responsive feel during asynchronous operations.
+
+### Hook Order Stability (Architecture v3.6)
+- **Context**: Ensuring consistent React render cycles.
+- **Implementation**: Strict enforcement of Hook Rules in public/preview pages (e.g., `PreviewPage.tsx`).
+- **Mechanism**: Moving `useSEO` and data fetching hooks to the top level, before any conditional returns.
+- **Impact**: Resolves `Minified React error #310` and ensures robust rendering across all network conditions.

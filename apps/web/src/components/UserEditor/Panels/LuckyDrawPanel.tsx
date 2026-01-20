@@ -7,7 +7,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import {
     Dice6,
-    Loader2,
     Check,
     AlertCircle,
     Plus,
@@ -20,6 +19,7 @@ import {
     UserPlus,
     X
 } from 'lucide-react';
+import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { invitations as invitationsApi, guests as guestsApi } from '@/lib/api';
 import SpinWheel from '@/components/ui/SpinWheel';
 
@@ -245,9 +245,8 @@ export const LuckyDrawPanel: React.FC<LuckyDrawPanelProps> = ({ invitationId, on
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
-                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest animate-pulse">Memuat Lucky Draw...</p>
+            <div className="flex flex-col items-center justify-center py-20">
+                <PremiumLoader variant="inline" showLabel label="Memuat Lucky Draw..." color="#9333ea" />
             </div>
         );
     }
@@ -277,7 +276,7 @@ export const LuckyDrawPanel: React.FC<LuckyDrawPanelProps> = ({ invitationId, on
                             : 'bg-slate-900 text-white hover:bg-slate-800'
                         }`}
                 >
-                    {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {saving && <PremiumLoader variant="inline" color="white" />}
                     {success && <Check className="w-4 h-4" />}
                     {saving ? 'Menyimpan...' : success ? 'Tersimpan!' : 'Simpan'}
                 </button>

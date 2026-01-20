@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { AdminLayout } from '../components/Layout/AdminLayout';
-import { Music, Upload, Trash2, Play, Pause, Search, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { Music, Upload, Trash2, Play, Pause, Search, AlertCircle, CheckCircle } from 'lucide-react';
+import { PremiumLoader } from '../components/ui/PremiumLoader';
 import { motion, AnimatePresence } from 'framer-motion';
 import { music as musicApi } from '../lib/api';
 
@@ -234,7 +235,7 @@ export const AdminMusicPage: React.FC = () => {
                 >
                     {isUploading ? (
                         <>
-                            <Loader2 className="w-5 h-5 animate-spin" />
+                            <PremiumLoader variant="inline" color="#0f172a" />
                             Uploading...
                         </>
                     ) : (
@@ -287,7 +288,7 @@ export const AdminMusicPage: React.FC = () => {
             <div className="bg-[#111] border border-white/5 rounded-3xl overflow-hidden">
                 {isLoading ? (
                     <div className="flex items-center justify-center py-20">
-                        <Loader2 className="w-8 h-8 text-teal-400 animate-spin" />
+                        <PremiumLoader variant="inline" color="#2dd4bf" />
                     </div>
                 ) : filteredTracks.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-slate-500">

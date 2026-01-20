@@ -1,6 +1,7 @@
 import React from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { Loader2, Search, Sparkles, Heart, Eye, Lock, Crown, Star } from 'lucide-react';
+import { Search, Sparkles, Heart, Eye, Lock, Crown, Star } from 'lucide-react';
+import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { useStore } from '@/store/useStore';
 import { useNavigate } from 'react-router-dom';
 import { SubscriptionTier } from '@/store/authSlice';
@@ -49,8 +50,7 @@ export const InvitationsGrid: React.FC<InvitationsGridProps> = ({
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center py-32">
-                <Loader2 className="w-12 h-12 text-[#FFBF00] animate-spin mb-6" />
-                <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Menyiapkan Galeri Digital...</p>
+                <PremiumLoader variant="inline" showLabel label="Menyiapkan Galeri Digital..." color="#FFBF00" />
             </div>
         );
     }

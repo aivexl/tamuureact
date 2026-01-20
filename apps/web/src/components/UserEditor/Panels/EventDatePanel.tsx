@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { m } from 'framer-motion';
-import { Calendar, Save, Loader2, Check } from 'lucide-react';
+import { Calendar, Save, Check } from 'lucide-react';
+import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { invitations } from '../../../lib/api';
 
 interface EventDatePanelProps {
@@ -67,9 +68,8 @@ export const EventDatePanel: React.FC<EventDatePanelProps> = ({ invitationId, on
     return (
         <div className="space-y-6">
             {loading ? (
-                <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-                    <Loader2 className="w-8 h-8 animate-spin mb-4" />
-                    <p className="font-bold uppercase tracking-widest text-xs">Memuat Data Tanggal...</p>
+                <div className="flex flex-col items-center justify-center py-20">
+                    <PremiumLoader variant="inline" showLabel label="Memuat Data Tanggal..." color="#d97706" />
                 </div>
             ) : (
                 <>
@@ -128,7 +128,7 @@ export const EventDatePanel: React.FC<EventDatePanelProps> = ({ invitationId, on
                             className={`flex-1 h-16 rounded-3xl flex items-center justify-center gap-3 font-black uppercase tracking-widest text-xs transition-all shadow-2xl active:scale-95 ${success ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-slate-900 text-white hover:bg-amber-600 shadow-slate-900/20'}`}
                         >
                             {saving ? (
-                                <Loader2 className="w-6 h-6 animate-spin" />
+                                <PremiumLoader variant="inline" color="white" />
                             ) : success ? (
                                 <>
                                     <Check className="w-6 h-6" />

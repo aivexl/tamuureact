@@ -3,11 +3,12 @@ import { useParams } from 'react-router-dom';
 import { templates } from '@/lib/api';
 import { AnimatedLayer } from '@/components/Preview/AnimatedLayer';
 import { VisualEffectsCanvas } from '@/components/Canvas/VisualEffectsCanvas';
-import { Loader2, AlertCircle, Play, Square, Maximize2 } from 'lucide-react';
-import { useAudioController } from '@/hooks/useAudioController';
 import { useStore } from '@/store/useStore';
 import { Layer } from '@/store/layersSlice';
 import { Section } from '@/store/sectionsSlice';
+import { useAudioController } from '@/hooks/useAudioController';
+import { AlertCircle, Play, Square, Maximize2 } from 'lucide-react';
+import { PremiumLoader } from '@/components/ui/PremiumLoader';
 
 /**
  * ADMIN DISPLAY PREVIEW PAGE
@@ -156,9 +157,7 @@ export const AdminDisplayPreviewPage: React.FC = () => {
     };
 
     if (loading) return (
-        <div className="w-screen h-screen bg-black flex items-center justify-center text-white">
-            <Loader2 className="w-10 h-10 animate-spin text-premium-accent" />
-        </div>
+        <PremiumLoader showLabel label="Launching Preview..." />
     );
 
     if (error || !design) return (

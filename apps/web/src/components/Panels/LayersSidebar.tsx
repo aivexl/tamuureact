@@ -4,7 +4,7 @@ import { useStore } from '@/store/useStore';
 import {
     Layers, Eye, EyeOff, GripVertical, Trash2, Lock, Unlock,
     Type, Image, Clock, MailOpen, Heart, Square, MapPin, Film, Video,
-    Settings, Palette, Zap, Wind, Upload, Loader2, Link as LinkIcon, Grid, MessageSquare,
+    Settings, Palette, Zap, Wind, Upload, Link as LinkIcon, Grid, MessageSquare,
     Sparkles, Circle, Gift, Music, Waves, Component, Hash, QrCode, Monitor, Sun, Share2, Users
 } from 'lucide-react';
 import { LayerType, Layer } from '@/store/layersSlice';
@@ -55,7 +55,7 @@ const layerIcons: Record<LayerType, React.ReactNode> = {
 };
 
 // Placeholder for missing Palette import usage in layerIcons
-// Wait, I removed Settings, Palette, Upload, Loader2, LinkIcon but Palette is used in layerIcons.
+// Wait, I removed Settings, Palette, Upload but Palette is used in layerIcons.
 // I must Re-add Palette to imports.
 
 export const LayersSidebar: React.FC = () => {

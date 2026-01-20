@@ -2,7 +2,8 @@ import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Cropper from 'react-easy-crop';
 import type { Area, Point } from 'react-easy-crop';
-import { X, Crop, Check, Loader2, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
+import { X, Crop, Check, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
+import { PremiumLoader } from '../ui/PremiumLoader';
 
 // ============================================
 // IMAGE CROP MODAL
@@ -292,7 +293,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
                                 >
                                     {isSaving ? (
                                         <>
-                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            <PremiumLoader variant="inline" color="#bfa181" />
                                             Processing...
                                         </>
                                     ) : (

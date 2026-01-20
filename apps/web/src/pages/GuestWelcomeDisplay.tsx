@@ -2,7 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { userDisplayDesigns } from '@/lib/api';
 import { AnimatedLayer } from '@/components/Preview/AnimatedLayer';
-import { Loader2, AlertCircle, Play, Square, Maximize2 } from 'lucide-react';
+import { AlertCircle, Play, Square, Maximize2 } from 'lucide-react';
+import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { useAudioController } from '@/hooks/useAudioController';
 import { useStore } from '@/store/useStore';
 import { Layer } from '@/store/layersSlice';
@@ -175,9 +176,7 @@ export const GuestWelcomeDisplay: React.FC = () => {
     };
 
     if (loading) return (
-        <div className="w-screen h-screen bg-black flex items-center justify-center text-white">
-            <Loader2 className="w-10 h-10 animate-spin text-teal-500" />
-        </div>
+        <PremiumLoader showLabel label="Launching Experience..." />
     );
 
     if (error || !design) return (

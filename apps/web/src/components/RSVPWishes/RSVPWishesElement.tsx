@@ -2,8 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { m } from 'framer-motion';
 import { Layer, RSVPWishesConfig } from '@/store/layersSlice';
 import { getVariantStyle, DEFAULT_RSVP_WISHES_CONFIG, VariantStyle } from '@/lib/rsvp-variants';
+import { Send, Check, Heart, Users } from 'lucide-react';
 import { rsvp } from '@/lib/api';
-import { Send, Check, Loader2, Heart, Users } from 'lucide-react';
+import { PremiumLoader } from '@/components/ui/PremiumLoader';
 
 // ============================================
 // TYPES
@@ -306,7 +307,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isPreview, invitat
             >
                 {isSubmitting ? (
                     <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <PremiumLoader variant="inline" color="white" />
                         Mengirim...
                     </>
                 ) : (
@@ -444,7 +445,7 @@ const GuestWishesSection: React.FC<GuestWishesSectionProps & { variant: VariantS
     }, [invitationId, isPreview, config.wishesMaxDisplay, refreshKey]);
 
     if (loading) {
-        return <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin opacity-20" /></div>;
+        return <div className="flex justify-center py-8"><PremiumLoader variant="inline" color={config.textColor} /></div>;
     }
 
     if (wishes.length === 0) {

@@ -28,7 +28,7 @@ import { LuckyDrawPanel } from '@/components/UserEditor/Panels/LuckyDrawPanel';
 import { AnimatedLayer } from '@/components/Preview/AnimatedLayer';
 import { useStore } from '@/store/useStore';
 import { invitations as invitationsApi } from '@/lib/api';
-import { Loader2, Sparkles, AlertCircle } from 'lucide-react';
+import { Sparkles, AlertCircle } from 'lucide-react';
 import { useRef } from 'react';
 
 interface UserEditorPageProps {

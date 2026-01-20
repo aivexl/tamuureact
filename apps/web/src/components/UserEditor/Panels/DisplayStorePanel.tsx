@@ -6,7 +6,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { m } from 'framer-motion';
-import { Monitor, Check, Loader2, RefreshCw, Sparkles, Tv } from 'lucide-react';
+import { Monitor, Check, RefreshCw, Sparkles, Tv } from 'lucide-react';
+import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { templates as templatesApi, invitations as invitationsApi } from '@/lib/api';
 import { useStore } from '@/store/useStore';
 import { ConfirmationModal } from '@/components/Modals/ConfirmationModal';
@@ -117,9 +118,8 @@ export const DisplayStorePanel: React.FC<DisplayStorePanelProps> = ({
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center py-16 gap-4">
-                <Loader2 className="w-8 h-8 text-cyan-500 animate-spin" />
-                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Memuat Display Template...</p>
+            <div className="flex flex-col items-center justify-center py-16">
+                <PremiumLoader variant="inline" showLabel label="Memuat Display Template..." color="#06b6d4" />
             </div>
         );
     }
@@ -164,8 +164,8 @@ export const DisplayStorePanel: React.FC<DisplayStorePanelProps> = ({
                             whileHover={{ y: -4 }}
                             onClick={() => handleSelectDisplay(display)}
                             className={`group relative h-48 bg-white border rounded-[2rem] overflow-hidden transition-all hover:shadow-2xl hover:shadow-cyan-500/10 text-left ${currentDisplayId === display.id
-                                    ? 'border-cyan-400 ring-2 ring-cyan-400/20'
-                                    : 'border-slate-100 hover:border-cyan-300'
+                                ? 'border-cyan-400 ring-2 ring-cyan-400/20'
+                                : 'border-slate-100 hover:border-cyan-300'
                                 }`}
                         >
                             {/* Thumbnail or Gradient Background */}
@@ -201,8 +201,8 @@ export const DisplayStorePanel: React.FC<DisplayStorePanelProps> = ({
                                 </div>
 
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${currentDisplayId === display.id
-                                        ? 'bg-cyan-500 text-white'
-                                        : 'bg-white/20 backdrop-blur-sm text-white group-hover:bg-cyan-500 group-hover:scale-110'
+                                    ? 'bg-cyan-500 text-white'
+                                    : 'bg-white/20 backdrop-blur-sm text-white group-hover:bg-cyan-500 group-hover:scale-110'
                                     }`}>
                                     <Check className="w-5 h-5" />
                                 </div>
@@ -264,8 +264,8 @@ export const DisplayStorePanel: React.FC<DisplayStorePanelProps> = ({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 50 }}
                     className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-6 py-3 font-medium rounded-2xl shadow-xl ${toast.type === 'success'
-                            ? 'bg-emerald-500 text-white'
-                            : 'bg-red-500 text-white'
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-red-500 text-white'
                         }`}
                 >
                     {toast.message}

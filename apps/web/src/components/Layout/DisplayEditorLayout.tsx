@@ -8,7 +8,8 @@ import { SectionsSidebar } from '../Panels/SectionsSidebar';
 import { ElementToolbar } from './ElementToolbar';
 import { PropertyPanel } from '../Panels/PropertyPanel';
 import { PreviewView } from '../Preview/PreviewView';
-import { PanelLeftClose, PanelRightClose, Loader2, Monitor, Save, Eye, ArrowLeft } from 'lucide-react';
+import { PanelLeftClose, PanelRightClose, Monitor, Save, Eye, ArrowLeft } from 'lucide-react';
+import { PremiumLoader } from '../ui/PremiumLoader';
 import { templates as templatesApi } from '@/lib/api';
 import { generateId, sanitizeValue } from '@/lib/utils';
 import { Layers, List, Settings } from 'lucide-react';
@@ -157,7 +158,9 @@ export const DisplayEditorLayout: React.FC<DisplayEditorLayoutProps> = ({ templa
                 <div className="flex flex-col items-center gap-4">
                     <div className="relative">
                         <Monitor className="w-16 h-16 text-purple-400 animate-pulse" />
-                        <Loader2 className="w-8 h-8 text-white absolute -bottom-2 -right-2 animate-spin" />
+                        <div className="absolute -bottom-2 -right-2">
+                            <PremiumLoader variant="inline" color="white" />
+                        </div>
                     </div>
                     <p className="text-white/60 font-medium">Loading Display Editor...</p>
                 </div>
@@ -193,7 +196,7 @@ export const DisplayEditorLayout: React.FC<DisplayEditorLayoutProps> = ({ templa
                 <div className="flex items-center gap-2">
                     {isSyncing && (
                         <div className="flex items-center gap-2 text-xs text-white/40">
-                            <Loader2 className="w-3 h-3 animate-spin" />
+                            <PremiumLoader variant="inline" color="rgba(255, 255, 255, 0.4)" />
                             Syncing...
                         </div>
                     )}

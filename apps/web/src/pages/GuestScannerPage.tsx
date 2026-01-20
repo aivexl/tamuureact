@@ -6,13 +6,12 @@ import {
     Camera,
     CheckCircle2,
     XCircle,
-    Loader2,
-    Zap,
     ArrowLeft,
     User,
     QrCode,
     RefreshCw
 } from 'lucide-react';
+import { PremiumLoader } from '../components/ui/PremiumLoader';
 import { guests as guestsApi, admin as adminApi } from '../lib/api';
 
 /**
@@ -260,7 +259,7 @@ export const GuestScannerPage: React.FC = () => {
                                     disabled={isLoading}
                                     className="flex-1 py-3.5 bg-white/10 hover:bg-white/20 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
                                 >
-                                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                                    {isLoading ? <PremiumLoader variant="inline" color="#FFBF00" /> : <RefreshCw className="w-4 h-4" />}
                                     Resend Blast
                                 </button>
                                 <button

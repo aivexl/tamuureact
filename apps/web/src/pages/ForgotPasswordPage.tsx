@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { AuthLayout } from '../components/Layout/AuthLayout';
 import { m, AnimatePresence } from 'framer-motion';
-import { Mail, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
+import { Mail, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { PremiumLoader } from '../components/ui/PremiumLoader';
 import { Link } from 'react-router-dom';
 import { useSEO } from '../hooks/useSEO';
 import { useAuth } from '../hooks/useAuth';
@@ -67,7 +68,7 @@ export const ForgotPasswordPage: React.FC = () => {
                             className="w-full bg-white text-slate-950 font-black py-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl hover:bg-slate-50 transition-all disabled:opacity-50 group"
                         >
                             {isLoading ? (
-                                <Loader2 className="w-5 h-5 animate-spin" />
+                                <PremiumLoader variant="inline" color="white" />
                             ) : (
                                 <>
                                     Kirim Instruksi Pemulihan

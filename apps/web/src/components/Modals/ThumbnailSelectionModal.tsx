@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Crop, Upload, Check, Loader2, Image as ImageIcon } from 'lucide-react';
+import { X, Crop, Upload, Check, Image as ImageIcon } from 'lucide-react';
+import { PremiumLoader } from '../ui/PremiumLoader';
 import html2canvas from 'html2canvas';
 
 interface ThumbnailSelectionModalProps {
@@ -219,8 +220,7 @@ export const ThumbnailSelectionModal: React.FC<ThumbnailSelectionModalProps> = (
                         <div className="p-6 flex flex-col items-center gap-4">
                             {step === 'capture' ? (
                                 <div className="h-64 w-full flex flex-col items-center justify-center gap-3 text-white/40">
-                                    <Loader2 className="w-8 h-8 animate-spin text-premium-accent" />
-                                    <span className="text-sm font-medium">Capturing Canvas...</span>
+                                    <PremiumLoader variant="inline" showLabel label="Capturing Canvas..." color="#bfa181" />
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center gap-4 w-full">
@@ -326,7 +326,7 @@ export const ThumbnailSelectionModal: React.FC<ThumbnailSelectionModalProps> = (
                             >
                                 {isSaving ? (
                                     <>
-                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        <PremiumLoader variant="inline" color="#050505" />
                                         Processing...
                                     </>
                                 ) : (

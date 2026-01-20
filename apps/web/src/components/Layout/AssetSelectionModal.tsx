@@ -6,9 +6,10 @@ import {
     Heart, Square, Film, MapPin, Video, Sparkles, X,
     MessageSquare, Users, Circle, Triangle, Diamond, Star,
     Music, Camera, Gift, Flower2, Bell, Check, Cloud,
-    Sun, Moon, Smile, ThumbsUp, Upload, Monitor, Loader2,
+    Sun, Moon, Smile, ThumbsUp, Upload, Monitor,
     Waves, Zap, Component, Share2, Layers
 } from 'lucide-react';
+import { PremiumLoader } from '../ui/PremiumLoader';
 import { LayerType } from '@/store/useStore';
 import { storage } from '@/lib/api';
 import { useMusicLibrary, Song } from '@/hooks/queries';
@@ -760,9 +761,8 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                 {type === 'music_player' && (
                     <div className="space-y-3">
                         {isLoadingSongs ? (
-                            <div className="flex flex-col items-center justify-center p-8 text-white/20 gap-3">
-                                <Loader2 className="w-8 h-8 animate-spin" />
-                                <p className="text-[10px] uppercase tracking-widest">Loading Library...</p>
+                            <div className="flex flex-col items-center justify-center p-8 gap-3">
+                                <PremiumLoader variant="inline" showLabel label="Loading Library..." />
                             </div>
                         ) : songs.length > 0 ? (
                             songs.map((track: Song, i: number) => (
@@ -1067,9 +1067,8 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
 
                             {uploading ? (
                                 <>
-                                    <Loader2 className="w-8 h-8 text-premium-accent animate-spin mb-3" />
-                                    <p className="text-sm font-medium text-white mb-1">Uploading...</p>
-                                    <p className="text-xs text-white/40">Please wait</p>
+                                    <PremiumLoader variant="inline" showLabel label="Uploading..." labelColor="white" />
+                                    <p className="text-[10px] text-white/40 mt-1 uppercase tracking-widest">Please wait</p>
                                 </>
                             ) : (
                                 <>
@@ -1244,7 +1243,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                 )}
 
             </div>
-        </motion.div>,
+        </motion.div >,
         document.body
     );
 };

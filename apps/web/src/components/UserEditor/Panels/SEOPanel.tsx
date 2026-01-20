@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { m } from 'framer-motion';
-import { Search, Save, Check, Loader2, Image as ImageIcon, Globe, MessageCircle } from 'lucide-react';
+import { Search, Save, Check, Image as ImageIcon, Globe, MessageCircle } from 'lucide-react';
+import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { invitations } from '@/lib/api';
 
 interface SEOPanelProps {
@@ -63,9 +64,8 @@ export const SEOPanel: React.FC<SEOPanelProps> = ({ invitationId, onClose }) => 
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-                <Loader2 className="w-8 h-8 animate-spin mb-4" />
-                <p className="font-bold uppercase tracking-widest text-xs">Memuat Pengaturan Sosmed Preview...</p>
+            <div className="flex flex-col items-center justify-center py-20">
+                <PremiumLoader variant="inline" showLabel label="Memuat Pengaturan Sosmed Preview..." />
             </div>
         );
     }
@@ -165,7 +165,7 @@ export const SEOPanel: React.FC<SEOPanelProps> = ({ invitationId, onClose }) => 
                     className={`flex-1 h-16 rounded-3xl flex items-center justify-center gap-3 font-black uppercase tracking-widest text-xs transition-all shadow-2xl active:scale-95 ${success ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-slate-900 text-white hover:bg-indigo-600 shadow-slate-900/20'}`}
                 >
                     {saving ? (
-                        <Loader2 className="w-6 h-6 animate-spin" />
+                        <PremiumLoader variant="inline" color="white" />
                     ) : success ? (
                         <>
                             <Check className="w-6 h-6" />

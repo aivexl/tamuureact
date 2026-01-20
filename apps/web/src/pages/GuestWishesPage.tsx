@@ -11,13 +11,13 @@ import {
     User,
     ExternalLink,
     ArrowLeft,
-    Loader2,
     CheckCircle2,
     AlertCircle,
     Hash
 } from 'lucide-react';
 import { rsvp as rsvpApi } from '@/lib/api';
 import { useSEO } from '@/hooks/useSEO';
+import { PremiumLoader } from '@/components/ui/PremiumLoader';
 
 interface WishData {
     id: string;
@@ -102,10 +102,7 @@ export const GuestWishesPage: React.FC = () => {
 
     if (loading && wishes.length === 0) {
         return (
-            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4">
-                <Loader2 className="w-10 h-10 text-teal-500 animate-spin" />
-                <p className="text-slate-400 font-medium animate-pulse">Memuat ucapan tamu...</p>
-            </div>
+            <PremiumLoader showLabel label="Memuat ucapan tamu..." />
         );
     }
 
@@ -235,7 +232,7 @@ export const GuestWishesPage: React.FC = () => {
                                         <div className="flex items-center gap-2">
                                             <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Kehadiran:</span>
                                             <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${wish.attendance === 'attending' ? 'bg-emerald-50 text-emerald-600' :
-                                                    wish.attendance === 'maybe' ? 'bg-amber-50 text-amber-600' : 'bg-slate-50 text-slate-400'
+                                                wish.attendance === 'maybe' ? 'bg-amber-50 text-amber-600' : 'bg-slate-50 text-slate-400'
                                                 }`}>
                                                 {wish.attendance === 'attending' ? 'Hadir' : wish.attendance === 'maybe' ? 'Mungkin' : 'Tidak Hadir'}
                                             </span>
@@ -247,8 +244,8 @@ export const GuestWishesPage: React.FC = () => {
                                         <button
                                             onClick={() => handleToggleVisibility(wish)}
                                             className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${wish.is_visible === 1
-                                                    ? 'bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-500'
-                                                    : 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 hover:bg-emerald-600'
+                                                ? 'bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-500'
+                                                : 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 hover:bg-emerald-600'
                                                 }`}
                                         >
                                             {wish.is_visible === 1 ? (
@@ -279,8 +276,8 @@ export const GuestWishesPage: React.FC = () => {
                         animate={{ opacity: 1, y: 0, x: '-50%' }}
                         exit={{ opacity: 0, y: 50, x: '-50%' }}
                         className={`fixed bottom-8 left-1/2 z-50 px-6 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-sm font-bold border ${notification.type === 'success'
-                                ? 'bg-emerald-500 text-white border-emerald-400'
-                                : 'bg-rose-500 text-white border-rose-400'
+                            ? 'bg-emerald-500 text-white border-emerald-400'
+                            : 'bg-rose-500 text-white border-rose-400'
                             }`}
                     >
                         {notification.type === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}

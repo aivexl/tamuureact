@@ -8,13 +8,13 @@ import { m, AnimatePresence } from 'framer-motion';
 import {
     Quote,
     Save,
-    Loader2,
     Check,
     AlertCircle,
     BookOpen,
     Pen,
     Sparkles
 } from 'lucide-react';
+import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { invitations as invitationsApi } from '@/lib/api';
 
 interface QuotesPanelProps {
@@ -199,9 +199,8 @@ export const QuotesPanel: React.FC<QuotesPanelProps> = ({ invitationId, onClose 
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
-                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest animate-pulse">Memuat Quote...</p>
+            <div className="flex flex-col items-center justify-center py-20">
+                <PremiumLoader variant="inline" showLabel label="Memuat Quote..." color="#d97706" />
             </div>
         );
     }
@@ -225,13 +224,13 @@ export const QuotesPanel: React.FC<QuotesPanelProps> = ({ invitationId, onClose 
                     onClick={handleSave}
                     disabled={saving}
                     className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all ${saving
-                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                            : success
-                                ? 'bg-emerald-500 text-white'
-                                : 'bg-slate-900 text-white hover:bg-slate-800'
+                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                        : success
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-slate-900 text-white hover:bg-slate-800'
                         }`}
                 >
-                    {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {saving && <PremiumLoader variant="inline" color="white" />}
                     {success && <Check className="w-4 h-4" />}
                     {saving ? 'Menyimpan...' : success ? 'Tersimpan!' : 'Simpan'}
                 </button>
@@ -250,8 +249,8 @@ export const QuotesPanel: React.FC<QuotesPanelProps> = ({ invitationId, onClose 
                 <button
                     onClick={() => setActiveTab('custom')}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'custom'
-                            ? 'bg-white text-slate-800 shadow-sm'
-                            : 'text-slate-400 hover:text-slate-600'
+                        ? 'bg-white text-slate-800 shadow-sm'
+                        : 'text-slate-400 hover:text-slate-600'
                         }`}
                 >
                     <Pen className="w-4 h-4" />
@@ -260,8 +259,8 @@ export const QuotesPanel: React.FC<QuotesPanelProps> = ({ invitationId, onClose 
                 <button
                     onClick={() => setActiveTab('quran')}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'quran'
-                            ? 'bg-white text-slate-800 shadow-sm'
-                            : 'text-slate-400 hover:text-slate-600'
+                        ? 'bg-white text-slate-800 shadow-sm'
+                        : 'text-slate-400 hover:text-slate-600'
                         }`}
                 >
                     <BookOpen className="w-4 h-4" />
@@ -270,8 +269,8 @@ export const QuotesPanel: React.FC<QuotesPanelProps> = ({ invitationId, onClose 
                 <button
                     onClick={() => setActiveTab('international')}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'international'
-                            ? 'bg-white text-slate-800 shadow-sm'
-                            : 'text-slate-400 hover:text-slate-600'
+                        ? 'bg-white text-slate-800 shadow-sm'
+                        : 'text-slate-400 hover:text-slate-600'
                         }`}
                 >
                     <Sparkles className="w-4 h-4" />
@@ -397,7 +396,7 @@ export const QuotesPanel: React.FC<QuotesPanelProps> = ({ invitationId, onClose 
                     </m.div>
                 )}
             </AnimatePresence>
-        </div>
+        </div >
     );
 };
 

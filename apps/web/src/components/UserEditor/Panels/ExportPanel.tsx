@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { m } from 'framer-motion';
-import { Smartphone, FileImage, FileText, Loader2, CheckCircle2 } from 'lucide-react';
+import { Smartphone, FileImage, FileText, CheckCircle2 } from 'lucide-react';
+import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { useStore } from '@/store/useStore';
 import { useExportPDF } from '@/hooks/useExportPDF';
 
@@ -73,7 +74,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ previewRef }) => {
                             <p className="text-[10px] text-slate-400 font-medium">Format PNG (High Quality)</p>
                         </div>
                     </div>
-                    {isExporting && !exportSuccess ? <Loader2 className="w-5 h-5 animate-spin text-teal-600" /> : <div className="text-xs font-black text-slate-300 uppercase tracking-widest">PNG</div>}
+                    {isExporting && !exportSuccess ? <PremiumLoader variant="inline" color="#0d9488" /> : <div className="text-xs font-black text-slate-300 uppercase tracking-widest">PNG</div>}
                 </m.button>
 
                 <m.button
@@ -92,7 +93,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ previewRef }) => {
                             <p className="text-[10px] text-teal-100/70 font-medium">Format PDF Dokumen HD</p>
                         </div>
                     </div>
-                    {isExporting && !exportSuccess ? <Loader2 className="w-5 h-5 animate-spin text-white" /> : <div className="text-xs font-black text-teal-400 uppercase tracking-widest">PDF</div>}
+                    {isExporting && !exportSuccess ? <PremiumLoader variant="inline" color="white" /> : <div className="text-xs font-black text-teal-400 uppercase tracking-widest">PDF</div>}
                 </m.button>
             </div>
 

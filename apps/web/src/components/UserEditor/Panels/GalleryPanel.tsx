@@ -12,11 +12,11 @@ import {
     Crop,
     Trash2,
     Save,
-    Loader2,
     Check,
     AlertCircle,
     Camera
 } from 'lucide-react';
+import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { invitations as invitationsApi, assets as assetsApi } from '@/lib/api';
 import { ImageCropModal } from '@/components/Modals/ImageCropModal';
 import { dataURLtoBlob } from '@/lib/utils';
@@ -183,9 +183,8 @@ export const GalleryPanel: React.FC<GalleryPanelProps> = ({ invitationId, onClos
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <Loader2 className="w-8 h-8 text-teal-500 animate-spin" />
-                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest animate-pulse">Memuat Galeri...</p>
+            <div className="flex flex-col items-center justify-center py-20">
+                <PremiumLoader variant="inline" showLabel label="Memuat Galeri..." color="#14b8a6" />
             </div>
         );
     }
@@ -209,13 +208,13 @@ export const GalleryPanel: React.FC<GalleryPanelProps> = ({ invitationId, onClos
                     onClick={handleSave}
                     disabled={saving}
                     className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all ${saving
-                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                            : success
-                                ? 'bg-emerald-500 text-white'
-                                : 'bg-slate-900 text-white hover:bg-slate-800'
+                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                        : success
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-slate-900 text-white hover:bg-slate-800'
                         }`}
                 >
-                    {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {saving && <PremiumLoader variant="inline" color="white" />}
                     {success && <Check className="w-4 h-4" />}
                     {saving ? 'Menyimpan...' : success ? 'Tersimpan!' : 'Simpan'}
                 </button>
@@ -277,7 +276,7 @@ export const GalleryPanel: React.FC<GalleryPanelProps> = ({ invitationId, onClos
                         className="aspect-square rounded-2xl border-2 border-dashed border-slate-200 hover:border-violet-400 hover:bg-violet-50/30 flex flex-col items-center justify-center gap-2 text-slate-400 hover:text-violet-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {uploading ? (
-                            <Loader2 className="w-6 h-6 animate-spin" />
+                            <PremiumLoader variant="inline" color="#8b5cf6" />
                         ) : (
                             <Camera className="w-6 h-6" />
                         )}

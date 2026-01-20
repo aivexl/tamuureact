@@ -11,7 +11,7 @@ import { EditorHeader } from './EditorHeader';
 import { PreviewView } from '../Preview/PreviewView';
 import { ImageCropModal } from '../Modals/ImageCropModal';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
-import { PanelLeftClose, PanelRightClose, Loader2 } from 'lucide-react';
+import { PanelLeftClose, PanelRightClose } from 'lucide-react';
 import { templates as templatesApi, invitations as invitationsApi, userDisplayDesigns, storage } from '@/lib/api';
 import { generateId, dataURLtoBlob, sanitizeValue } from '@/lib/utils';
 import { Layers, List, Settings } from 'lucide-react';

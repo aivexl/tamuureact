@@ -3,8 +3,9 @@ import { m, AnimatePresence } from 'framer-motion';
 import {
     X, Music, Search, Play, Pause, ExternalLink,
     Disc, Volume2, SearchIcon, Radio, Globe,
-    Check, ArrowRight, Loader2, Music2
+    Check, ArrowRight, Music2
 } from 'lucide-react';
+import { PremiumLoader } from '../ui/PremiumLoader';
 import { useMusicLibrary, Song } from '@/hooks/queries';
 import { useAudioController } from '@/hooks/useAudioController';
 
@@ -150,8 +151,7 @@ export const MusicDrawer: React.FC<MusicDrawerProps> = ({ isOpen, onClose, onSel
                                 <div className="space-y-3">
                                     {isLoading ? (
                                         <div className="flex flex-col items-center justify-center py-20 gap-3">
-                                            <Loader2 className="w-8 h-8 text-pink-500 animate-spin" />
-                                            <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Symphony Loading...</p>
+                                            <PremiumLoader variant="inline" showLabel label="Symphony Loading..." color="#ec4899" />
                                         </div>
                                     ) : filteredSongs.length === 0 ? (
                                         <div className="text-center py-20">

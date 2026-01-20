@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { m } from 'framer-motion';
 import {
     Music, Play, Pause, Search, Plus, Radio, Crown,
-    Loader2, Disc, Settings, ExternalLink, Music2,
+    Disc, Settings, ExternalLink, Music2,
     ChevronRight, Volume2
 } from 'lucide-react';
+import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { useStore } from '@/store/useStore';
 import { useNavigate } from 'react-router-dom';
 import { MusicDrawer } from '../../Modals/MusicDrawer';
@@ -176,7 +177,7 @@ export const MusicPanel: React.FC = () => {
                     <div className="flex items-center justify-between mb-4">
                         <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-pink-500 shadow-sm group-hover:scale-110 transition-transform">
                             {isUploading ? (
-                                <Loader2 className="w-6 h-6 animate-spin" />
+                                <PremiumLoader variant="inline" color="#ec4899" />
                             ) : (
                                 <Upload className="w-6 h-6" />
                             )}

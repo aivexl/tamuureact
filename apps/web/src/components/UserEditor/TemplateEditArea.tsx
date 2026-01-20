@@ -9,7 +9,6 @@ import {
     Sparkles,
     Settings2,
     Check,
-    Loader2,
     Save,
     Layout,
     AlertCircle,

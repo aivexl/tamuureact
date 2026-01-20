@@ -11,13 +11,13 @@ import {
     Eye,
     EyeOff,
     Search,
-    Loader2,
     CheckCircle,
     XCircle,
     Clock,
     User,
     Filter
 } from 'lucide-react';
+import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { rsvp as rsvpApi } from '@/lib/api';
 import { useStore } from '@/store/useStore';
 import { ConfirmationModal } from '@/components/Modals/ConfirmationModal';
@@ -97,9 +97,8 @@ export const WishesPanel: React.FC = () => {
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
-                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest animate-pulse">Memuat Ucapan...</p>
+            <div className="flex flex-col items-center justify-center py-20">
+                <PremiumLoader showLabel label="Memuat Ucapan..." color="#f97316" />
             </div>
         );
     }

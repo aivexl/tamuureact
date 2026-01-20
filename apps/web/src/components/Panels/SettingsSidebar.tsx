@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import {
-    Settings, Palette, Image, Upload, Loader2, Link as LinkIcon,
+    Settings, Palette, Image, Upload, Link as LinkIcon,
     Trash2, Zap, Tag, Plus, ChevronDown, Pencil, X, Check
 } from 'lucide-react';
+import { PremiumLoader } from '../ui/PremiumLoader';
 import { storage, categories as categoriesApi, Category } from '@/lib/api';
 import { ThumbnailSelectionModal } from '../Modals/ThumbnailSelectionModal';
 
@@ -380,8 +381,7 @@ export const SettingsSidebar: React.FC = () => {
                             <div className="flex flex-col items-center gap-1 text-center">
                                 {uploading ? (
                                     <>
-                                        <Loader2 className="w-4 h-4 text-premium-accent animate-spin" />
-                                        <span className="text-[10px] text-premium-accent">Uploading...</span>
+                                        <PremiumLoader variant="inline" showLabel label="Uploading..." color="#bfa181" />
                                     </>
                                 ) : (
                                     <>
@@ -552,7 +552,7 @@ function ThumbnailControl() {
                     ) : (
                         <>
                             {uploading ? (
-                                <Loader2 className="w-5 h-5 text-premium-accent animate-spin" />
+                                <PremiumLoader variant="inline" color="#bfa181" />
                             ) : (
                                 <Image className="w-5 h-5 text-white/20 group-hover:text-premium-accent" />
                             )}

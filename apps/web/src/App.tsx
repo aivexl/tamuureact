@@ -4,8 +4,8 @@ import { ProtectedRoute } from './components/Auth/ProtectedRoute';
 import { ExternalRedirect } from './components/Auth/ExternalRedirect';
 import { CORE_FONTS, getGoogleFontsUrl } from './lib/fonts';
 import { MainLayout } from './components/Layout/MainLayout';
-import { Loader2 } from 'lucide-react';
 import { LazyMotion, domMax } from 'framer-motion';
+import { PremiumLoader } from './components/ui/PremiumLoader';
 
 // ============================================
 // DOMAIN DETECTION
@@ -48,7 +48,7 @@ const GuestScannerPage = lazy(() => import('./pages/GuestScannerPage').then(m =>
 const UpgradePage = lazy(() => import('./pages/UpgradePage').then(m => ({ default: m.UpgradePage })));
 const BillingPage = lazy(() => import('./pages/BillingPage').then(m => ({ default: m.BillingPage })));
 const TermsPage = lazy(() => import('./pages/TermsPage').then(m => ({ default: m.TermsPage })));
-const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then(m => ({ default: m.PrivacyPage }))); import { PremiumLoader } from './components/ui/PremiumLoader';
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then(m => ({ default: m.PrivacyPage })));
 
 const App: React.FC = () => {
     // Memoize domain check to avoid recalculation

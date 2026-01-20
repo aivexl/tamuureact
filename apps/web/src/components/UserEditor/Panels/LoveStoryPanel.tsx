@@ -8,7 +8,6 @@ import { m, AnimatePresence, Reorder } from 'framer-motion';
 import {
     Heart,
     Save,
-    Loader2,
     Check,
     AlertCircle,
     Plus,
@@ -16,6 +15,7 @@ import {
     GripVertical,
     Calendar
 } from 'lucide-react';
+import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { invitations as invitationsApi } from '@/lib/api';
 
 interface LoveStoryPanelProps {
@@ -104,9 +104,8 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ invitationId, on
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <Loader2 className="w-8 h-8 text-pink-500 animate-spin" />
-                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest animate-pulse">Memuat Kisah Cinta...</p>
+            <div className="flex flex-col items-center justify-center py-20">
+                <PremiumLoader variant="inline" showLabel label="Memuat Kisah Cinta..." color="#db2777" />
             </div>
         );
     }
@@ -130,13 +129,13 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ invitationId, on
                     onClick={handleSave}
                     disabled={saving}
                     className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all ${saving
-                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                            : success
-                                ? 'bg-emerald-500 text-white'
-                                : 'bg-slate-900 text-white hover:bg-slate-800'
+                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                        : success
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-slate-900 text-white hover:bg-slate-800'
                         }`}
                 >
-                    {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {saving && <PremiumLoader variant="inline" color="white" />}
                     {success && <Check className="w-4 h-4" />}
                     {saving ? 'Menyimpan...' : success ? 'Tersimpan!' : 'Simpan'}
                 </button>

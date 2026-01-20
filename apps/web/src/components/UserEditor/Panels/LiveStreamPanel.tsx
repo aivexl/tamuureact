@@ -8,13 +8,13 @@ import { m } from 'framer-motion';
 import {
     Video,
     Save,
-    Loader2,
     Check,
     AlertCircle,
     ExternalLink,
     Youtube,
     Link2
 } from 'lucide-react';
+import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { invitations as invitationsApi } from '@/lib/api';
 
 interface LiveStreamPanelProps {
@@ -83,9 +83,8 @@ export const LiveStreamPanel: React.FC<LiveStreamPanelProps> = ({ invitationId, 
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <Loader2 className="w-8 h-8 text-rose-500 animate-spin" />
-                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest animate-pulse">Memuat Data...</p>
+            <div className="flex flex-col items-center justify-center py-20">
+                <PremiumLoader variant="inline" showLabel label="Memuat Data..." color="#e11d48" />
             </div>
         );
     }
@@ -109,13 +108,13 @@ export const LiveStreamPanel: React.FC<LiveStreamPanelProps> = ({ invitationId, 
                     onClick={handleSave}
                     disabled={saving}
                     className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all ${saving
-                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                            : success
-                                ? 'bg-emerald-500 text-white'
-                                : 'bg-slate-900 text-white hover:bg-slate-800'
+                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                        : success
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-slate-900 text-white hover:bg-slate-800'
                         }`}
                 >
-                    {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {saving && <PremiumLoader variant="inline" color="white" />}
                     {success && <Check className="w-4 h-4" />}
                     {saving ? 'Menyimpan...' : success ? 'Tersimpan!' : 'Simpan'}
                 </button>
@@ -170,10 +169,10 @@ export const LiveStreamPanel: React.FC<LiveStreamPanelProps> = ({ invitationId, 
                         className="flex items-center gap-2 ml-4"
                     >
                         <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${platform === 'youtube' ? 'bg-red-100 text-red-600' :
-                                platform === 'zoom' ? 'bg-blue-100 text-blue-600' :
-                                    platform === 'google-meet' ? 'bg-green-100 text-green-600' :
-                                        platform === 'teams' ? 'bg-purple-100 text-purple-600' :
-                                            'bg-slate-100 text-slate-600'
+                            platform === 'zoom' ? 'bg-blue-100 text-blue-600' :
+                                platform === 'google-meet' ? 'bg-green-100 text-green-600' :
+                                    platform === 'teams' ? 'bg-purple-100 text-purple-600' :
+                                        'bg-slate-100 text-slate-600'
                             }`}>
                             <Video className="w-3.5 h-3.5" />
                         </div>

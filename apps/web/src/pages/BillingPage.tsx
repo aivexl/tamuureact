@@ -2,7 +2,8 @@ import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { billing as billingApi } from '../lib/api';
-import { Loader2, Zap, History, ExternalLink, CreditCard, Shield } from 'lucide-react';
+import { Zap, History, ExternalLink, CreditCard, Shield } from 'lucide-react';
+import { PremiumLoader } from '../components/ui/PremiumLoader';
 import { motion } from 'framer-motion';
 
 export const BillingPage: React.FC = () => {
@@ -133,8 +134,8 @@ export const BillingPage: React.FC = () => {
                     <div className="p-0">
                         {isLoading ? (
                             <div className="py-20 flex flex-col items-center justify-center">
-                                <Loader2 className="w-8 h-8 text-indigo-500 animate-spin mb-4" />
-                                <p className="text-slate-400 text-sm font-medium">Memuat riwayat transaksi...</p>
+                                <PremiumLoader variant="inline" color="#6366f1" />
+                                <p className="text-slate-400 text-sm font-medium mt-4">Memuat riwayat transaksi...</p>
                             </div>
                         ) : transactions.length > 0 ? (
                             <div className="overflow-x-auto">

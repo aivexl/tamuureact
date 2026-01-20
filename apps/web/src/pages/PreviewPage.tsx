@@ -69,16 +69,6 @@ export const PreviewPage: React.FC = () => {
         });
     }, [slug, previewResponse, isError, navigate]);
 
-    const isLoading = slug !== 'draft' && isQueryLoading;
-
-    if (isLoading) {
-        return <PremiumLoader />;
-    }
-
-    if (!previewResponse && slug !== 'draft') {
-        return <div className="min-h-screen bg-black flex items-center justify-center text-white/20 uppercase tracking-widest text-xs">Resolving Invitation...</div>;
-    }
-
     // SEO & Bot Blocking Logic
     // Only allow indexing for templates (Public Library), block all user invitations
     const isTemplate = previewResponse?.source === 'templates';
@@ -96,6 +86,16 @@ export const PreviewPage: React.FC = () => {
         image: invitationData?.og_image || invitationData?.thumbnail_url,
         noindex: !isTemplate // Block if not a template
     });
+
+    const isLoading = slug !== 'draft' && isQueryLoading;
+
+    if (isLoading) {
+        return <PremiumLoader />;
+    }
+
+    if (!previewResponse && slug !== 'draft') {
+        return <div className="min-h-screen bg-black flex items-center justify-center text-white/20 uppercase tracking-widest text-xs">Resolving Invitation...</div>;
+    }
 
     return (
         <div className="w-full h-screen bg-black">

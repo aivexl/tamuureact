@@ -10,10 +10,10 @@ import {
     Edit3,
     Trash2,
     X,
-    FolderOpen,
-    Loader2
+    FolderOpen
 } from 'lucide-react';
 import { AdminLayout } from '../components/Layout/AdminLayout';
+import { PremiumLoader } from '../components/ui/PremiumLoader';
 
 interface Template {
     id: string;
@@ -154,10 +154,7 @@ export const AdminTemplatesPage: React.FC = () => {
 
                 {/* Content Grid */}
                 {isLoading ? (
-                    <div className="h-64 flex flex-col items-center justify-center gap-4">
-                        <Loader2 className="w-8 h-8 text-teal-500 animate-spin" />
-                        <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Memuat Template...</p>
-                    </div>
+                    <PremiumLoader showLabel label="Memuat Template..." />
                 ) : filteredTemplates.length === 0 ? (
                     <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-3xl bg-white/5">
                         <FolderOpen className="w-12 h-12 text-slate-500 mb-4" />
@@ -289,10 +286,7 @@ export const AdminTemplatesPage: React.FC = () => {
 
                             {isCreating && (
                                 <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10">
-                                    <div className="flex flex-col items-center gap-4">
-                                        <Loader2 className="w-10 h-10 text-slate-900 animate-spin" />
-                                        <p className="font-bold text-slate-900 animate-pulse">Sedang Membuat Template...</p>
-                                    </div>
+                                    <PremiumLoader showLabel label="Sedang Membuat Template..." color="#0f172a" />
                                 </div>
                             )}
 

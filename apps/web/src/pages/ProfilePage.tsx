@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useStore } from '../store/useStore';
 import { useProfileStore } from '../store/useProfileStore';
 import { useNavigate } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { PremiumLoader } from '../components/ui/PremiumLoader';
 import { motion as m } from 'framer-motion';
 import { useSEO } from '../hooks/useSEO';
 
@@ -195,10 +195,7 @@ export const ProfilePage: React.FC = () => {
 
     if (isStoreLoading && !profile) {
         return (
-            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4">
-                <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
-                <p className="text-slate-400 font-medium animate-pulse">Synchronizing Identity...</p>
-            </div>
+            <PremiumLoader showLabel label="Synchronizing Identity..." />
         );
     }
 
@@ -591,7 +588,7 @@ export const ProfilePage: React.FC = () => {
                             disabled={isSaving}
                             className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl shadow-md shadow-indigo-200 transition-all active:scale-95"
                         >
-                            {isSaving ? <LoaderIcon className="w-4 h-4" /> : <SaveIcon className="w-4 h-4" />}
+                            {isSaving ? <PremiumLoader variant="inline" color="white" /> : <SaveIcon className="w-4 h-4" />}
                             Save Changes
                         </button>
                     </div>

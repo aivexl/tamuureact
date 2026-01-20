@@ -11,12 +11,12 @@ import {
     CheckCircle,
     XCircle,
     Clock,
-    Loader2,
     TrendingUp,
     UserCheck,
     PieChart as PieChartIcon,
     ArrowUpRight
 } from 'lucide-react';
+import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { analytics as analyticsApi } from '@/lib/api';
 import { useStore } from '@/store/useStore';
 
@@ -61,9 +61,8 @@ export const AnalyticsPanel: React.FC = () => {
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <Loader2 className="w-8 h-8 text-teal-500 animate-spin" />
-                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest animate-pulse">Menganalisis Data...</p>
+            <div className="flex flex-col items-center justify-center py-20">
+                <PremiumLoader variant="inline" showLabel label="Menganalisis Data..." color="#0d9488" />
             </div>
         );
     }

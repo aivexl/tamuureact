@@ -7,7 +7,7 @@ import { ConfirmationModal } from '../components/Modals/ConfirmationModal';
 import { QRModal } from '../components/Modals/QRModal';
 import * as XLSX from 'xlsx';
 import { guests as guestsApi, invitations as invitationsApi } from '../lib/api';
-import { Loader2 } from 'lucide-react';
+import { PremiumLoader } from '../components/ui/PremiumLoader';
 import { getPublicDomain } from '../lib/utils';
 
 // ============================================
@@ -421,10 +421,7 @@ export const GuestManagementPage: React.FC = () => {
 
     if (isLoading && !guests.length) {
         return (
-            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4">
-                <Loader2 className="w-10 h-10 text-teal-600 animate-spin" />
-                <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Memuat Data Tamu...</p>
-            </div>
+            <PremiumLoader showLabel label="Memuat Data Tamu..." />
         );
     }
 

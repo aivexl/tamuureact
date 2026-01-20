@@ -2,9 +2,10 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore, useTemporalStore } from '@/store/useStore';
 import {
-    ArrowLeft, Play, Save, Sparkles, Check, Loader2,
+    ArrowLeft, Play, Save, Sparkles, Check,
     Undo2, Redo2, Edit2, X, ExternalLink, Zap, Link, Wand2
 } from 'lucide-react';
+import { PremiumLoader } from '../ui/PremiumLoader';
 
 // ============================================
 // TYPES
@@ -187,7 +188,7 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
             case 'saving':
                 return (
                     <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <PremiumLoader variant="inline" color="white" />
                         <span>Saving...</span>
                     </>
                 );
@@ -220,7 +221,7 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
             case 'publishing':
                 return (
                     <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <PremiumLoader variant="inline" color="white" />
                         <span>Publishing...</span>
                     </>
                 );
@@ -294,7 +295,7 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
                             <>
                                 <span className="text-white/20">•</span>
                                 <div className="flex items-center gap-1.5 animate-pulse">
-                                    <Loader2 className="w-2.5 h-2.5 text-premium-accent animate-spin" />
+                                    <PremiumLoader variant="inline" color="#bfa181" />
                                     <p className="text-[10px] text-premium-accent font-bold uppercase tracking-tighter">Syncing Cloud...</p>
                                 </div>
                             </>
@@ -367,7 +368,7 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
                     title="Fix Global Scaling (Auto-Sanitize)"
                     disabled={isFixing}
                 >
-                    {isFixing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                    {isFixing ? <PremiumLoader variant="inline" color="white" /> : <Wand2 className="w-4 h-4" />}
                 </motion.button>
 
                 <motion.button
