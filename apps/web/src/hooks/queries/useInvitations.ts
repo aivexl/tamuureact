@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { invitations, templates, userDisplayDesigns } from '@/lib/api';
+import { invitations, templates, userDisplayDesigns, preview } from '@/lib/api';
 import { queryKeys, STALE_TIMES } from '@/lib/queryClient';
 // ============================================
 // TYPES
@@ -66,7 +66,7 @@ export function useInvitation(idOrSlug: string | undefined) {
 }
 
 /**
- * Fetch data for PreviewPage (tries template, then invitation)
+ * Fetch data for PreviewPage (Server-side resolves template vs invitation)
  */
 export function usePreviewData(slug: string | undefined) {
     return useQuery({
@@ -74,18 +74,8 @@ export function usePreviewData(slug: string | undefined) {
         queryFn: async () => {
             if (!slug) return null;
             const timestamp = Date.now();
-            try {
-                // UNICORN: Bypass edge cache for fresh preview data
-                const data = await templates.get(`${slug}?t=${timestamp}`);
-                return { data, source: 'templates' };
-            } catch (e) {
-                try {
-                    const data = await invitations.get(`${slug}?t=${timestamp}`);
-                    return { data, source: 'invitations' };
-                } catch (e2) {
-                    throw new Error('Data not found');
-                }
-            }
+            // UNICORN: Single request resolves template OR invitation
+            return preview.get(`${slug}?t=${timestamp}`);
         },
         enabled: !!slug && slug !== 'draft',
         staleTime: STALE_TIMES.invitations,

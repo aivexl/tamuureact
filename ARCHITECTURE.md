@@ -349,3 +349,9 @@ Invitations are organized into multiple **Sections** (e.g., Opening, Bride & Gro
 - **Implementation**: Strict enforcement of Hook Rules in public/preview pages (e.g., `PreviewPage.tsx`).
 - **Mechanism**: Moving `useSEO` and data fetching hooks to the top level, before any conditional returns.
 - **Impact**: Resolves `Minified React error #310` and ensures robust rendering across all network conditions.
+
+### Smart Preview Resolver (Performance v4.0)
+- **Context**: Avoiding client-side 404 noise and redundant network round-trips.
+- **Implementation**: Centralized `/api/preview/:slug` endpoint that resolves both templates and invitations.
+- **Optimization**: Server-side resolution eliminates the "Dual-Fetch" pattern, reducing latency and console error logs.
+- **Robust Hydration**: Preview pages now use deep-merge hydration to ensure `orbit` and `layers` structure is preserved even with sparse API responses.

@@ -621,6 +621,18 @@ export const assets = {
     }
 };
 
+// ============================================
+// PREVIEW RESOLVER API
+// ============================================
+export const preview = {
+    async get(slug: string) {
+        const res = await safeFetch(`${API_BASE}/api/preview/${slug}`);
+        if (!res.ok) throw new Error('Preview data not found');
+        const data = await res.json();
+        return sanitizeValue(data);
+    }
+};
+
 export async function healthCheck() {
     const res = await safeFetch(`${API_BASE}/api/health`);
     const data = await res.json();
@@ -640,5 +652,6 @@ export default {
     music,
     admin,
     assets,
+    preview,
     healthCheck
 };

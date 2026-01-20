@@ -931,6 +931,37 @@ export default {
             }
 
             // ============================================
+            // SMART PREVIEW RESOLVER (Universal)
+            // Tries template first, then invitation
+            // ============================================
+            if (path.startsWith('/api/preview/') && method === 'GET') {
+                return await smart_cache(request, 60, async () => {
+                    const slug = path.split('/')[3];
+                    if (!slug) return null;
+
+                    // 1. Try Template
+                    let { results: templateResults } = await env.DB.prepare(
+                        'SELECT * FROM templates WHERE slug = ? OR id = ?'
+                    ).bind(slug, slug).all();
+
+                    if (templateResults && templateResults.length > 0) {
+                        return { data: parseJsonFields(templateResults[0]), source: 'templates' };
+                    }
+
+                    // 2. Try Invitation
+                    let { results: invitationResults } = await env.DB.prepare(
+                        'SELECT * FROM invitations WHERE slug = ? OR id = ?'
+                    ).bind(slug, slug).all();
+
+                    if (invitationResults && invitationResults.length > 0) {
+                        return { data: parseJsonFields(invitationResults[0]), source: 'invitations' };
+                    }
+
+                    return null;
+                });
+            }
+
+            // ============================================
             // INVITATIONS ENDPOINTS
             // ============================================
             if (path === '/api/invitations' && method === 'GET') {

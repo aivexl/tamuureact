@@ -59,7 +59,20 @@ export const PreviewPage: React.FC = () => {
             slug: data.slug || '',
             projectName: data.name || '',
             activeSectionId: validSections[0]?.id || null,
-            orbit: data.orbit || useStore.getState().orbit,
+            orbit: {
+                left: {
+                    backgroundColor: data.orbit?.left?.backgroundColor || useStore.getState().orbit.left.backgroundColor || 'transparent',
+                    backgroundUrl: data.orbit?.left?.backgroundUrl || useStore.getState().orbit.left.backgroundUrl,
+                    isVisible: data.orbit?.left?.isVisible ?? useStore.getState().orbit.left.isVisible,
+                    elements: Array.isArray(data.orbit?.left?.elements) ? data.orbit?.left?.elements : []
+                },
+                right: {
+                    backgroundColor: data.orbit?.right?.backgroundColor || useStore.getState().orbit.right.backgroundColor || 'transparent',
+                    backgroundUrl: data.orbit?.right?.backgroundUrl || useStore.getState().orbit.right.backgroundUrl,
+                    isVisible: data.orbit?.right?.isVisible ?? useStore.getState().orbit.right.isVisible,
+                    elements: Array.isArray(data.orbit?.right?.elements) ? data.orbit?.right?.elements : []
+                }
+            },
             music: data.music || null,
             id: data.id,
             selectedLayerId: null,

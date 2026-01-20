@@ -1260,7 +1260,7 @@ const PreviewOrbitStage: React.FC<{
 
     return (
         <div
-            className={`absolute inset - 0 pointer - events - none transition - all duration - 1000 ${isOpened ? 'opacity-100' : 'opacity-100'
+            className={`absolute inset-0 pointer-events-none transition-all duration-1000 ${isOpened ? 'opacity-100' : 'opacity-100'
                 } `}
             style={{
                 [type]: 0,
