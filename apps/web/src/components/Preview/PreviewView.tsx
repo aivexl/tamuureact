@@ -1090,62 +1090,9 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                     )}
                 </div>
 
-                {/* MOBILE ORBIT OVERLAY - Portrait Only */}
-                {/* This renders orbit elements as scaled overlays for mobile devices */}
-                {isPortrait && (
-                    <div
-                        className="absolute inset-0 pointer-events-none z-[100] overflow-visible"
-                        style={{
-                            width: CANVAS_WIDTH,
-                            height: coverHeight,
-                            transform: `scale(${scaleFactor})`,
-                            transformOrigin: 'top left'
-                        }}
-                    >
-                        {/* Left Orbit Elements */}
-                        {orbit.left?.isVisible && (orbit.left?.elements || []).map((element: any) => {
-                            // Apply Liquid Layout for orbit elements on mobile
-                            const extraHeight = Math.max(0, coverHeight - CANVAS_HEIGHT);
-                            const elementHeight = element.height || 0;
-                            const maxTop = Math.max(1, CANVAS_HEIGHT - elementHeight);
-                            const progress = Math.max(0, Math.min(1, element.y / maxTop));
-                            const adjustedY = element.y + (extraHeight * progress);
-
-                            return (
-                                <AnimatedLayer
-                                    key={`mobile-left-${element.id}`}
-                                    layer={element}
-                                    adjustedY={adjustedY}
-                                    isOpened={isOpened}
-                                    isEditor={false}
-                                    forceTrigger={true}
-                                    isSectionActive={true}
-                                />
-                            );
-                        })}
-                        {/* Right Orbit Elements */}
-                        {orbit.right?.isVisible && (orbit.right?.elements || []).map((element: any) => {
-                            // Apply Liquid Layout for orbit elements on mobile
-                            const extraHeight = Math.max(0, coverHeight - CANVAS_HEIGHT);
-                            const elementHeight = element.height || 0;
-                            const maxTop = Math.max(1, CANVAS_HEIGHT - elementHeight);
-                            const progress = Math.max(0, Math.min(1, element.y / maxTop));
-                            const adjustedY = element.y + (extraHeight * progress);
-
-                            return (
-                                <AnimatedLayer
-                                    key={`mobile-right-${element.id}`}
-                                    layer={element}
-                                    adjustedY={adjustedY}
-                                    isOpened={isOpened}
-                                    isEditor={false}
-                                    forceTrigger={true}
-                                    isSectionActive={true}
-                                />
-                            );
-                        })}
-                    </div>
-                )}
+                {/* NOTE: Orbit elements are designed for desktop's 3-column layout (left/center/right panels).
+                    On mobile (portrait), there are no side panels, so orbit elements are intentionally not rendered.
+                    If mobile framing is needed, elements should be added directly to sections or as separate mobile-specific overlays. */}
 
                 {/* Controls Overlay - Highest z-index (Level 90000) to ensure clickability above all effects */}
                 <div

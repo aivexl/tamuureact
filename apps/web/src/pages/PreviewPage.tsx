@@ -38,7 +38,7 @@ export const PreviewPage: React.FC = () => {
         // Safety check to ensure we have actual invitation/template data
         if (!data) return;
 
-        console.log(`[PreviewPage] [VERSION 5.1 - PROPORTIONAL ORBIT] Hydrating from ${source}:`, data.id);
+        console.log(`[PreviewPage] [VERSION 5.2 - ORBIT DESKTOP ONLY] Hydrating from ${source}:`, data.id);
 
         useStore.setState({ templateType: 'invitation' });
 
