@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { useStore, Section, Layer } from '@/store/useStore';
 import { SeamlessCanvas } from '../Canvas/SeamlessCanvas';
 import { SectionCanvas } from '../Canvas/SectionCanvas';
@@ -50,11 +51,10 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
     // HEADER HANDLERS
     // ============================================
 
+    const navigate = useNavigate();
     const handleBack = useCallback(() => {
-        // Navigate back to dashboard
-        // For now, just log - will integrate with router later
-        console.log('Navigate back to dashboard');
-    }, []);
+        navigate('/dashboard');
+    }, [navigate]);
 
     const handlePreview = useCallback(() => {
         const targetId = templateId || 'draft';
@@ -219,6 +219,20 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                         elements: []
                     }];
 
+                    // Deep guard for Orbit (TV Stage) to prevent crashes on old/incomplete data
+                    const validOrbit = {
+                        left: {
+                            backgroundColor: sanitizedData.orbit?.left?.backgroundColor || 'transparent',
+                            isVisible: sanitizedData.orbit?.left?.isVisible ?? true,
+                            elements: Array.isArray(sanitizedData.orbit?.left?.elements) ? sanitizedData.orbit?.left?.elements : []
+                        },
+                        right: {
+                            backgroundColor: sanitizedData.orbit?.right?.backgroundColor || 'transparent',
+                            isVisible: sanitizedData.orbit?.right?.isVisible ?? true,
+                            elements: Array.isArray(sanitizedData.orbit?.right?.elements) ? sanitizedData.orbit?.right?.elements : []
+                        }
+                    };
+
                     useStore.setState({
                         sections: finalSections,
                         layers: validLayers,
@@ -229,7 +243,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                         id: sanitizedData.id, // Set the real ID
                         projectName: sanitizedData.name || '',
                         activeSectionId: finalSections[0]?.id || null,
-                        orbit: sanitizedData.orbit || useStore.getState().orbit,
+                        orbit: validOrbit,
                         music: sanitizedData.music || null,
                         selectedLayerId: null,
                         templateType: sanitizedData.type || 'invitation',

@@ -207,7 +207,10 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         const hidden: any = { opacity: 0, x: targetX, y: targetY, scaleX: targetScaleX, scaleY: targetScaleY, rotate: targetRotate };
         const visible: any = {
             opacity: layer.opacity ?? 1,
-            x: targetX, y: targetY, scaleX: targetScaleX, scaleY: targetScaleY, rotate: targetRotate,
+            x: targetX, y: targetY,
+            scaleX: isEditor ? 1 : targetScaleX,
+            scaleY: isEditor ? 1 : targetScaleY,
+            rotate: isEditor ? 0 : targetRotate,
             transition: { duration: entranceDuration, delay: entranceDelay, ease: [0.22, 1, 0.36, 1] }
         };
 
@@ -398,8 +401,8 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             ref={ref} initial="hidden" animate={animationState} variants={variants}
             className="absolute origin-center"
             style={{
-                left: `${layer.x}px`,
-                top: `${finalY}px`,
+                left: isEditor ? 0 : `${layer.x}px`,
+                top: isEditor ? relativeShift : `${finalY}px`,
                 width: `${layer.width}px`,
                 height: `${layer.height}px`,
                 zIndex: layer.zIndex,

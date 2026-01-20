@@ -1191,6 +1191,7 @@ export default {
                         quote_text = COALESCE(?, quote_text),
                         quote_author = COALESCE(?, quote_author),
                         lucky_draw_settings = COALESCE(?, lucky_draw_settings),
+                        display_design_id = COALESCE(?, display_design_id),
                         updated_at = datetime('now')
                      WHERE id = ? OR slug = ?`
                     ).bind(
@@ -1214,12 +1215,13 @@ export default {
                         body.seo_title ?? null,
                         body.seo_description ?? null,
                         body.og_image ?? null,
-                        body.gallery_photos ?? null,
+                        body.gallery_photos ? JSON.stringify(body.gallery_photos) : null,
                         body.livestream_url ?? null,
-                        body.love_story ?? null,
+                        body.love_story ? JSON.stringify(body.love_story) : null,
                         body.quote_text ?? null,
                         body.quote_author ?? null,
-                        body.lucky_draw_settings ?? null,
+                        body.lucky_draw_settings ? JSON.stringify(body.lucky_draw_settings) : null,
+                        body.display_design_id ?? null,
                         id, // WHERE id = ?
                         id  // OR slug = ?
                     ).run();

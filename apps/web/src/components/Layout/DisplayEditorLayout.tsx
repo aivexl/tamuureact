@@ -121,6 +121,20 @@ export const DisplayEditorLayout: React.FC<DisplayEditorLayoutProps> = ({ templa
                         elements: []
                     }];
 
+                    // Deep guard for Orbit (TV Stage)
+                    const validOrbit = {
+                        left: {
+                            backgroundColor: sanitizedData.orbit?.left?.backgroundColor || 'transparent',
+                            isVisible: sanitizedData.orbit?.left?.isVisible ?? true,
+                            elements: Array.isArray(sanitizedData.orbit?.left?.elements) ? sanitizedData.orbit?.left?.elements : []
+                        },
+                        right: {
+                            backgroundColor: sanitizedData.orbit?.right?.backgroundColor || 'transparent',
+                            isVisible: sanitizedData.orbit?.right?.isVisible ?? true,
+                            elements: Array.isArray(sanitizedData.orbit?.right?.elements) ? sanitizedData.orbit?.right?.elements : []
+                        }
+                    };
+
                     useStore.setState({
                         sections: finalSections,
                         layers: sanitizedData.layers || [],
@@ -131,7 +145,7 @@ export const DisplayEditorLayout: React.FC<DisplayEditorLayoutProps> = ({ templa
                         id: sanitizedData.id,
                         projectName: sanitizedData.name || 'Untitled Display',
                         activeSectionId: finalSections[0]?.id || null,
-                        orbit: sanitizedData.orbit || useStore.getState().orbit,
+                        orbit: validOrbit,
                         selectedLayerId: null,
                         templateType: 'display', // Force display type
                         isTemplate: true
