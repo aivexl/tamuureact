@@ -195,7 +195,7 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                                                             <button
                                                                 onClick={() => handleUpdate({ x: SAFE_MARGIN })}
                                                                 className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-white transition-all shadow-sm shadow-transparent hover:shadow-slate-200/50"
-                                                                title="Align Canvas Left (Safe Area)"
+                                                                title="Align Canvas Left"
                                                             >
                                                                 <AlignStartVertical className="w-4 h-4" />
                                                             </button>
@@ -213,7 +213,7 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                                                                     handleUpdate({ x: CANVAS_WIDTH - currentWidth - SAFE_MARGIN });
                                                                 }}
                                                                 className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-white transition-all shadow-sm shadow-transparent hover:shadow-slate-200/50"
-                                                                title="Align Canvas Right (Safe Area)"
+                                                                title="Align Canvas Right"
                                                             >
                                                                 <AlignEndVertical className="w-4 h-4" />
                                                             </button>
