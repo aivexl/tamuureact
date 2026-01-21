@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { Type, Image as ImageIcon, MapPin, Copy, Shield, Clock, Lock, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal, Plus, Minus, Palette, ChevronDown, Settings2, Type as FontIcon } from 'lucide-react';
+import { Type, Image as ImageIcon, MapPin, Copy, Shield, Clock, Lock, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignStartVertical, AlignCenterVertical, AlignEndVertical, Plus, Minus, Palette, ChevronDown, Settings2, Type as FontIcon } from 'lucide-react';
 import { useStore, Layer } from '@/store/useStore';
 import { SUPPORTED_FONTS } from '@/lib/fonts';
 
@@ -197,7 +197,7 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                                                                 className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-white transition-all shadow-sm shadow-transparent hover:shadow-slate-200/50"
                                                                 title="Align Canvas Left (Safe Area)"
                                                             >
-                                                                <AlignStartHorizontal className="w-4 h-4" />
+                                                                <AlignStartVertical className="w-4 h-4" />
                                                             </button>
                                                             <button
                                                                 onClick={() => {
@@ -206,7 +206,7 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                                                                 className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-white transition-all shadow-sm shadow-transparent hover:shadow-slate-200/50"
                                                                 title="Align Canvas Center"
                                                             >
-                                                                <AlignCenterHorizontal className="w-4 h-4" />
+                                                                <AlignCenterVertical className="w-4 h-4" />
                                                             </button>
                                                             <button
                                                                 onClick={() => {
@@ -215,7 +215,7 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                                                                 className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-white transition-all shadow-sm shadow-transparent hover:shadow-slate-200/50"
                                                                 title="Align Canvas Right (Safe Area)"
                                                             >
-                                                                <AlignEndHorizontal className="w-4 h-4" />
+                                                                <AlignEndVertical className="w-4 h-4" />
                                                             </button>
                                                         </div>
                                                     );
