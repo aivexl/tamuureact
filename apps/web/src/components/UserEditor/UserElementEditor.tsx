@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { Type, Image as ImageIcon, MapPin, Copy, Shield, Clock, Lock, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Plus, Minus, Palette, ChevronDown, Settings2, Type as FontIcon } from 'lucide-react';
+import { Type, Image as ImageIcon, MapPin, Copy, Shield, Clock, Lock, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal, Plus, Minus, Palette, ChevronDown, Settings2, Type as FontIcon } from 'lucide-react';
 import { useStore, Layer } from '@/store/useStore';
 import { SUPPORTED_FONTS } from '@/lib/fonts';
 
@@ -194,37 +194,28 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                                                         <div className="flex bg-slate-50 p-1 rounded-xl">
                                                             <button
                                                                 onClick={() => handleUpdate({ x: SAFE_MARGIN })}
-                                                                className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 transition-all"
+                                                                className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-white transition-all shadow-sm shadow-transparent hover:shadow-slate-200/50"
                                                                 title="Align Canvas Left (Safe Area)"
                                                             >
-                                                                <div className="relative">
-                                                                    <AlignLeft className="w-4 h-4" />
-                                                                    <div className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-indigo-500 rounded-full border border-white" />
-                                                                </div>
+                                                                <AlignStartHorizontal className="w-4 h-4" />
                                                             </button>
                                                             <button
                                                                 onClick={() => {
                                                                     handleUpdate({ x: (CANVAS_WIDTH - currentWidth) / 2 });
                                                                 }}
-                                                                className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 transition-all"
+                                                                className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-white transition-all shadow-sm shadow-transparent hover:shadow-slate-200/50"
                                                                 title="Align Canvas Center"
                                                             >
-                                                                <div className="relative">
-                                                                    <AlignCenter className="w-4 h-4" />
-                                                                    <div className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-indigo-500 rounded-full border border-white" />
-                                                                </div>
+                                                                <AlignCenterHorizontal className="w-4 h-4" />
                                                             </button>
                                                             <button
                                                                 onClick={() => {
                                                                     handleUpdate({ x: CANVAS_WIDTH - currentWidth - SAFE_MARGIN });
                                                                 }}
-                                                                className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 transition-all"
+                                                                className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-white transition-all shadow-sm shadow-transparent hover:shadow-slate-200/50"
                                                                 title="Align Canvas Right (Safe Area)"
                                                             >
-                                                                <div className="relative">
-                                                                    <AlignRight className="w-4 h-4" />
-                                                                    <div className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-indigo-500 rounded-full border border-white" />
-                                                                </div>
+                                                                <AlignEndHorizontal className="w-4 h-4" />
                                                             </button>
                                                         </div>
                                                     );
