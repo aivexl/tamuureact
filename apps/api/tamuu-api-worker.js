@@ -1127,19 +1127,29 @@ export default {
                 }, corsHeaders);
             }
 
-            if (path.match(/^\/api\/invitations\/(public\/)?[^/]+$/) && method === 'GET') {
-                // Short cache (60s) for high traffic public pages
+            // Public Invitation Fetch (Cached for 60s)
+            if (path.match(/^\/api\/invitations\/public\/[^/]+$/) && method === 'GET') {
                 return await smart_cache(request, 60, async () => {
                     const parts = path.split('/');
-                    const id = parts[parts.length - 1]; // Handles /api/invitations/slug and /api/invitations/public/slug
-
-                    // Try by ID first, then by slug
+                    const id = parts[parts.length - 1];
                     let { results } = await env.DB.prepare(
                         'SELECT * FROM invitations WHERE id = ? OR slug = ?'
                     ).bind(id, id).all();
                     if (results.length === 0) return null;
                     return parseJsonFields(results[0]);
                 });
+            }
+
+            // Private Invitation Fetch (For Editor - Never Cached)
+            if (path.match(/^\/api\/invitations\/[^/]+$/) && method === 'GET' && !path.includes('/public/')) {
+                const parts = path.split('/');
+                const id = parts[parts.length - 1];
+                let { results } = await env.DB.prepare(
+                    'SELECT * FROM invitations WHERE id = ? OR slug = ?'
+                ).bind(id, id).all();
+
+                if (results.length === 0) return notFound(corsHeaders);
+                return json(parseJsonFields(results[0]), corsHeaders);
             }
 
             if (path.match(/^\/api\/invitations\/[^/]+$/) && method === 'PUT') {

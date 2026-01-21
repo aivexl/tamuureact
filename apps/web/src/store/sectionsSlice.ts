@@ -1027,11 +1027,11 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
         }))
     })),
 
-    autoAnchorElement: (sectionId, elementId) => set((state) => {
+    autoAnchorElement: (sectionId, elementId) => set((state: SectionsState) => {
         const section = state.sections.find(s => s.id === sectionId);
-        if (!section) return state;
+        if (!section) return {};
         const current = section.elements.find(el => el.id === elementId);
-        if (!current) return state;
+        if (!current) return {};
 
         // Spatial Heuristic: Find the best target above this element
         const candidates = section.elements.filter(el => {
@@ -1053,7 +1053,7 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
             return overlap > (minWidth * 0.2); // At least 20% overlap
         });
 
-        if (candidates.length === 0) return state;
+        if (candidates.length === 0) return {};
 
         // Sort by visual distance (closeness of bottom of target to top of current)
         candidates.sort((a, b) => {
@@ -1074,6 +1074,12 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
                             el.id === elementId
                                 ? {
                                     ...el,
+                                    // AUTO-UX: Text should wrap to grow vertically for smart relative shifting
+                                    ...(el.type === 'text' ? {
+                                        width: 380,
+                                        x: 17, // (414 - 380) / 2 Center
+                                        ...(el.textStyle ? { textStyle: { ...el.textStyle, multiline: true } } : {})
+                                    } : {}),
                                     anchoring: {
                                         isRelative: true,
                                         targetId: target.id,

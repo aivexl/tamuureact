@@ -875,24 +875,37 @@ export const PropertyPanel: React.FC = () => {
                                         { key: 'isVisibleInUserEditor', label: 'Visible', any: true },
                                     ].map((perm) => {
                                         if (perm.type && layer.type !== perm.type && !perm.any) return null;
-                                        const isChecked = layer.permissions?.[perm.key as keyof typeof layer.permissions] ?? true;
+                                        const isChecked = layer.permissions?.[perm.key as keyof typeof layer.permissions] ?? false;
                                         return (
                                             <button
                                                 key={perm.key}
-                                                onClick={() => handleUpdate({
-                                                    permissions: {
+                                                onClick={() => {
+                                                    const nextChecked = !isChecked;
+                                                    const newPermissions = {
                                                         ...(layer.permissions || {
-                                                            canEditText: true,
-                                                            canEditImage: true,
-                                                            canEditStyle: true,
-                                                            canEditPosition: true,
-                                                            canDelete: true,
-                                                            isVisibleInUserEditor: true,
+                                                            canEditText: false,
+                                                            canEditImage: false,
+                                                            canEditStyle: false,
+                                                            canEditPosition: false,
+                                                            canDelete: false,
+                                                            isVisibleInUserEditor: false,
                                                             isContentProtected: false
                                                         }),
-                                                        [perm.key]: !isChecked
+                                                        [perm.key]: nextChecked
+                                                    };
+
+                                                    // AUTO-UX: If any edit permission is turned ON, also enable 'Visible'
+                                                    if (nextChecked && perm.key !== 'isVisibleInUserEditor' && perm.key !== 'isContentProtected') {
+                                                        newPermissions.isVisibleInUserEditor = true;
                                                     }
-                                                })}
+
+                                                    // AUTO-UX: If 'Text' is turned ON, also enable 'Style' so they get the toolbar
+                                                    if (nextChecked && perm.key === 'canEditText' && layer.type === 'text') {
+                                                        newPermissions.canEditStyle = true;
+                                                    }
+
+                                                    handleUpdate({ permissions: newPermissions });
+                                                }}
                                                 className={`flex items-center justify-between px-2 py-1.5 rounded-lg border transition-all ${isChecked ? 'bg-premium-accent/10 border-premium-accent/30 text-premium-accent' : 'bg-white/5 border-white/5 text-white/40'}`}
                                             >
                                                 <span className="text-[10px] font-medium">{perm.label}</span>
@@ -942,7 +955,7 @@ export const PropertyPanel: React.FC = () => {
                                             className="w-full flex items-center justify-center gap-2 bg-premium-accent/20 hover:bg-premium-accent/30 text-premium-accent rounded-lg py-2 text-[10px] font-bold uppercase tracking-wider transition-all border border-premium-accent/20"
                                         >
                                             <Sparkles className="w-3 h-3" />
-                                            Sudah Memilih? Pakai Magic Auto-Anchor
+                                            Active Smart Layout (Auto-Wrap Text)
                                         </button>
 
                                         <div className="space-y-1">

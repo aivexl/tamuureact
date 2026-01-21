@@ -233,7 +233,9 @@ const TextElement: React.FC<{ layer: Layer, onContentLoad?: () => void, onDimens
         );
     }
 
-    const isMultiline = style?.multiline === true;
+    // Detect multiline: either explicitly set OR content contains newlines
+    const hasNewlines = layer.content?.includes('\n') || false;
+    const isMultiline = style?.multiline === true || hasNewlines;
 
     return (
         <div
@@ -246,13 +248,16 @@ const TextElement: React.FC<{ layer: Layer, onContentLoad?: () => void, onDimens
                 fontStyle: style?.fontStyle || 'normal',
                 textAlign: style?.textAlign || 'center',
                 color: style?.color || '#ffffff',
+                textDecoration: style?.textDecoration || 'none',
                 lineHeight: style?.lineHeight || 1.2,
                 letterSpacing: style?.letterSpacing || 0,
-                whiteSpace: isMultiline ? 'pre-wrap' : 'nowrap',
-                wordBreak: isMultiline ? 'break-word' : 'normal',
+                // 'pre' preserves newlines but doesn't auto-wrap at word boundaries
+                // 'nowrap' prevents any wrapping when there are no newlines
+                whiteSpace: hasNewlines ? 'pre' : 'nowrap',
                 overflow: 'visible',
                 padding: '4px',
-                minHeight: '100%'
+                minHeight: '100%',
+                boxSizing: 'border-box'
             }}
         >
             {layer.content || 'Text'}

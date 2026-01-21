@@ -33,13 +33,17 @@ interface SectionItemProps {
     expandedSection: string | null;
     toggleExpand: (id: string) => void;
     toggleVisibility: (e: React.MouseEvent, id: string) => void;
+    handleSave: () => Promise<void>;
+    saveStatus: SaveStatus;
 }
 
 const SectionItem: React.FC<SectionItemProps> = ({
     section,
     expandedSection,
     toggleExpand,
-    toggleVisibility
+    toggleVisibility,
+    handleSave,
+    saveStatus
 }) => {
     const controls = useDragControls();
     // Use REF for instant state checking in same event loop
@@ -181,7 +185,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
                                     </div>
 
                                     {/* Right: Content Editors */}
-                                    <div className="space-y-6">
+                                    <div className="space-y-6 flex flex-col h-full">
                                         <div className="px-2 flex items-center justify-between">
                                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Layer Configuration</span>
                                             <button className="flex items-center gap-1.5 text-indigo-600 hover:text-indigo-700 text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:gap-2">
@@ -189,28 +193,61 @@ const SectionItem: React.FC<SectionItemProps> = ({
                                                 Pro Designer
                                             </button>
                                         </div>
-                                        <div className="space-y-5">
-                                            {section.elements && section.elements.filter((el: any) => el.canEditContent).length > 0 ? (
-                                                section.elements
-                                                    .filter((el: any) => el.canEditContent)
-                                                    .map((element: any) => (
+                                        <div className="space-y-5 flex-1">
+                                            {(() => {
+                                                const editableElements = (section.elements || []).filter((el: any) => {
+                                                    if (el.canEditContent === true) return true;
+                                                    const p = el.permissions;
+                                                    // If no permissions object, default to false (Locked by Default)
+                                                    if (!p) return false;
+                                                    // Check for visibility OR any of the edit permissions
+                                                    return p.isVisibleInUserEditor || p.canEditText || p.canEditImage || p.canEditStyle || p.canEditContent || p.canEditPosition;
+                                                });
+
+                                                if (editableElements.length > 0) {
+                                                    return editableElements.map((element: any) => (
                                                         <UserElementEditor
                                                             key={element.id}
                                                             element={element}
                                                             sectionId={section.id}
                                                         />
-                                                    ))
-                                            ) : (
-                                                <div className="p-16 text-center bg-white rounded-[2.5rem] border-2 border-dashed border-slate-100 shadow-inner">
-                                                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                                        <Settings2 className="w-8 h-8 text-slate-200" />
+                                                    ));
+                                                }
+                                                return (
+                                                    <div className="p-16 text-center bg-white rounded-[2.5rem] border-2 border-dashed border-slate-100 shadow-inner">
+                                                        <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                                            <Settings2 className="w-8 h-8 text-slate-200" />
+                                                        </div>
+                                                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] leading-relaxed">
+                                                            Locked by Admin System <br />
+                                                            <span className="text-[8px] opacity-70 font-bold">Safe-mode active for this section</span>
+                                                        </p>
                                                     </div>
-                                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] leading-relaxed">
-                                                        Locked by Admin System <br />
-                                                        <span className="text-[8px] opacity-70 font-bold">Safe-mode active for this section</span>
-                                                    </p>
-                                                </div>
-                                            )}
+                                                );
+                                            })()}
+                                        </div>
+
+                                        {/* Section Save Button - Proportional Right Alignment */}
+                                        <div className="pt-8 mt-auto flex justify-end">
+                                            <m.button
+                                                onClick={handleSave}
+                                                disabled={saveStatus === 'saving'}
+                                                whileHover={{ scale: 1.02, y: -2 }}
+                                                whileTap={{ scale: 0.98 }}
+                                                className={`min-w-[160px] px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all duration-500 shadow-xl hover:shadow-2xl flex items-center justify-center gap-3 ${saveStatus === 'saving'
+                                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                                    : saveStatus === 'saved'
+                                                        ? 'bg-emerald-500 text-white'
+                                                        : saveStatus === 'error'
+                                                            ? 'bg-red-500 text-white'
+                                                            : 'bg-slate-950 text-white hover:bg-slate-900 border border-white/10'
+                                                    }`}
+                                            >
+                                                {saveStatus === 'saving' && <PremiumLoader variant="inline" color="white" />}
+                                                {saveStatus === 'saved' && <Check className="w-4 h-4" />}
+                                                {saveStatus === 'error' && <AlertCircle className="w-4 h-4" />}
+                                                {saveStatus === 'saving' ? 'Menyimpan...' : saveStatus === 'saved' ? 'Tersimpan!' : saveStatus === 'error' ? 'Gagal' : 'Simpan'}
+                                            </m.button>
                                         </div>
                                     </div>
                                 </div>
@@ -440,26 +477,6 @@ export const TemplateEditArea: React.FC = () => {
                             <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                             Preview
                         </m.button>
-
-                        <m.button
-                            onClick={handleSave}
-                            disabled={saveStatus === 'saving'}
-                            whileHover={{ scale: 1.02, y: -2 }}
-                            whileTap={{ scale: 0.98 }}
-                            className={`flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-widest transition-all duration-500 shadow-lg hover:shadow-xl h-[52px] sm:h-[56px] ${saveStatus === 'saving'
-                                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                : saveStatus === 'saved'
-                                    ? 'bg-emerald-500 text-white'
-                                    : saveStatus === 'error'
-                                        ? 'bg-red-500 text-white'
-                                        : 'bg-slate-900 text-white hover:bg-slate-800'
-                                }`}
-                        >
-                            {saveStatus === 'saving' && <PremiumLoader variant="inline" color="white" />}
-                            {saveStatus === 'saved' && <Check className="w-4 h-4" />}
-                            {saveStatus === 'error' && <AlertCircle className="w-4 h-4" />}
-                            {saveStatus === 'saving' ? 'Menyimpan...' : 'Simpan'}
-                        </m.button>
                     </div>
                 </div>
             </div>
@@ -487,6 +504,8 @@ export const TemplateEditArea: React.FC = () => {
                                     expandedSection={expandedSection}
                                     toggleExpand={toggleExpand}
                                     toggleVisibility={toggleVisibility}
+                                    handleSave={handleSave}
+                                    saveStatus={saveStatus}
                                 />
                             ))}
                         </Reorder.Group>

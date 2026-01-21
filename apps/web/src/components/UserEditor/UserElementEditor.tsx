@@ -1,6 +1,6 @@
-import React from 'react';
-import { m } from 'framer-motion';
-import { Type, Image as ImageIcon, MapPin, Copy, Shield, Clock, Lock } from 'lucide-react';
+import React, { useState } from 'react';
+import { m, AnimatePresence } from 'framer-motion';
+import { Type, Image as ImageIcon, MapPin, Copy, Shield, Clock, Lock, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Plus, Minus, Palette, ChevronDown, Settings2 } from 'lucide-react';
 import { useStore, Layer } from '@/store/useStore';
 
 interface UserElementEditorProps {
@@ -9,14 +9,15 @@ interface UserElementEditorProps {
 }
 
 export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, sectionId }) => {
+    const [showStyling, setShowStyling] = useState(false);
     const { updateElementInSection } = useStore();
     const permissions = element.permissions || {
-        canEditText: true,
-        canEditImage: true,
-        canEditStyle: true,
-        canEditPosition: true,
-        canDelete: true,
-        isVisibleInUserEditor: true,
+        canEditText: false,
+        canEditImage: false,
+        canEditStyle: false,
+        canEditPosition: false,
+        canDelete: false,
+        isVisibleInUserEditor: false,
         isContentProtected: false
     };
 
@@ -40,7 +41,9 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
         }
     };
 
-    if (permissions.isVisibleInUserEditor === false) return null;
+    // Element is visible if specifically set to visible OR has any active edit permission
+    const isVisible = permissions.isVisibleInUserEditor || permissions.canEditText || permissions.canEditImage || permissions.canEditStyle || permissions.canEditPosition;
+    if (!isVisible) return null;
 
     return (
         <m.div
@@ -57,12 +60,20 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                         <span className="text-xs font-black text-slate-800 tracking-tight uppercase tracking-widest">
                             {element.name || 'Element'}
                         </span>
-                        {(isProtected || !permissions.canEditText || !permissions.canEditImage || !permissions.canEditStyle) && (
-                            <div className="flex items-center gap-1 text-[8px] font-black text-amber-500 uppercase tracking-widest mt-0.5">
-                                <Shield className="w-2.5 h-2.5" />
-                                {isProtected ? 'Protected' : 'Locked by Admin'}
-                            </div>
-                        )}
+                        {(() => {
+                            const isLocked = isProtected ||
+                                (element.type === 'text' && !permissions.canEditText) ||
+                                ((element.type === 'image' || element.type === 'gif') && !permissions.canEditImage);
+
+                            if (!isLocked) return null;
+
+                            return (
+                                <div className="flex items-center gap-1 text-[8px] font-black text-amber-500 uppercase tracking-widest mt-0.5">
+                                    <Shield className="w-2.5 h-2.5" />
+                                    {isProtected ? 'Protected' : 'Locked by Admin'}
+                                </div>
+                            );
+                        })()}
                     </div>
                 </div>
 
@@ -79,26 +90,248 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
             {element.type === 'text' && (
                 <div className="space-y-2">
                     {permissions.canEditText ? (
-                        element.content && element.content.length > 50 ? (
-                            <textarea
-                                value={element.content || ''}
-                                onChange={(e) => handleUpdate({ content: e.target.value })}
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none resize-none"
-                                rows={3}
-                                placeholder="Mulai mengetik..."
-                            />
-                        ) : (
-                            <input
-                                type="text"
-                                value={element.content || ''}
-                                onChange={(e) => handleUpdate({ content: e.target.value })}
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
-                                placeholder="Mulai mengetik..."
-                            />
-                        )
+                        <textarea
+                            value={element.content || ''}
+                            onChange={(e) => handleUpdate({ content: e.target.value })}
+                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none resize-none"
+                            rows={Math.max(1, Math.min(6, (element.content?.split('\n').length || 1)))}
+                            placeholder="Mulai mengetik... (Enter untuk baris baru)"
+                            style={{ minHeight: '48px' }}
+                        />
                     ) : (
-                        <div className="px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-xl text-sm font-medium text-slate-400 italic">
+                        <div className="px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-xl text-sm font-medium text-slate-400 italic whitespace-pre-wrap">
                             {element.content || 'Konten dikunci oleh admin'}
+                        </div>
+                    )}
+
+                    {/* Advanced Rich Text Toolbar - Dropdown */}
+                    {(permissions.canEditStyle || permissions.canEditText) && (
+                        <div className="pt-2 border-t border-slate-100">
+                            {/* Toggle Button */}
+                            <button
+                                onClick={() => setShowStyling(!showStyling)}
+                                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all ${showStyling ? 'bg-teal-50 text-teal-600' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <Settings2 className="w-4 h-4" />
+                                    <span className="text-xs font-bold uppercase tracking-wider">Styling</span>
+                                </div>
+                                <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${showStyling ? 'rotate-180' : ''}`} />
+                            </button>
+
+                            {/* Dropdown Content */}
+                            <AnimatePresence>
+                                {showStyling && (
+                                    <m.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.2 }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="pt-4 space-y-4">
+                                            {/* Typography & Alignment Group */}
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                {/* Basic Style */}
+                                                <div className="flex bg-slate-50 p-1 rounded-xl">
+                                                    <button
+                                                        onClick={() => handleUpdate({ textStyle: { ...(element.textStyle || {}), fontWeight: element.textStyle?.fontWeight === 'bold' ? 'normal' : 'bold' } as any })}
+                                                        className={`p-2 rounded-lg transition-all ${element.textStyle?.fontWeight === 'bold' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                                        title="Bold"
+                                                    >
+                                                        <Bold className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleUpdate({ textStyle: { ...(element.textStyle || {}), fontStyle: element.textStyle?.fontStyle === 'italic' ? 'normal' : 'italic' } as any })}
+                                                        className={`p-2 rounded-lg transition-all ${element.textStyle?.fontStyle === 'italic' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                                        title="Italic"
+                                                    >
+                                                        <Italic className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleUpdate({ textStyle: { ...(element.textStyle || {}), textDecoration: element.textStyle?.textDecoration === 'underline' ? 'none' : 'underline' } as any })}
+                                                        className={`p-2 rounded-lg transition-all ${element.textStyle?.textDecoration === 'underline' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                                        title="Underline"
+                                                    >
+                                                        <Underline className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+
+                                                {/* Alignment */}
+                                                <div className="flex bg-slate-50 p-1 rounded-xl">
+                                                    <button
+                                                        onClick={() => handleUpdate({ textStyle: { ...(element.textStyle || {}), textAlign: 'left' } as any })}
+                                                        className={`p-2 rounded-lg transition-all ${element.textStyle?.textAlign === 'left' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                                        title="Align Left"
+                                                    >
+                                                        <AlignLeft className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleUpdate({ textStyle: { ...(element.textStyle || {}), textAlign: 'center' } as any })}
+                                                        className={`p-2 rounded-lg transition-all ${element.textStyle?.textAlign === 'center' || !element.textStyle?.textAlign ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                                        title="Align Center"
+                                                    >
+                                                        <AlignCenter className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleUpdate({ textStyle: { ...(element.textStyle || {}), textAlign: 'right' } as any })}
+                                                        className={`p-2 rounded-lg transition-all ${element.textStyle?.textAlign === 'right' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                                        title="Align Right"
+                                                    >
+                                                        <AlignRight className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+
+                                                {/* Canvas Positioning (Auto Align) - Always available if styling is open */}
+                                                {(() => {
+                                                    // console.log(`[Editor] Rendering alignment tools for ${element.name} (${element.id})`);
+                                                    const SAFE_MARGIN = 40; // Proportional side margin (Enterprise Standard - World Class spacing)
+                                                    const CANVAS_WIDTH = 414;
+
+                                                    return (
+                                                        <div className="flex bg-slate-50 p-1 rounded-xl">
+                                                            <button
+                                                                onClick={() => handleUpdate({ x: SAFE_MARGIN })}
+                                                                className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 transition-all"
+                                                                title="Align Canvas Left (Safe Area)"
+                                                            >
+                                                                <div className="relative">
+                                                                    <AlignLeft className="w-4 h-4" />
+                                                                    <div className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-indigo-500 rounded-full border border-white" />
+                                                                </div>
+                                                            </button>
+                                                            <button
+                                                                onClick={() => {
+                                                                    const width = element.width || 300;
+                                                                    handleUpdate({ x: (CANVAS_WIDTH - width) / 2 });
+                                                                }}
+                                                                className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 transition-all"
+                                                                title="Align Canvas Center"
+                                                            >
+                                                                <div className="relative">
+                                                                    <AlignCenter className="w-4 h-4" />
+                                                                    <div className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-indigo-500 rounded-full border border-white" />
+                                                                </div>
+                                                            </button>
+                                                            <button
+                                                                onClick={() => {
+                                                                    const width = element.width || 300;
+                                                                    handleUpdate({ x: CANVAS_WIDTH - width - SAFE_MARGIN });
+                                                                }}
+                                                                className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 transition-all"
+                                                                title="Align Canvas Right (Safe Area)"
+                                                            >
+                                                                <div className="relative">
+                                                                    <AlignRight className="w-4 h-4" />
+                                                                    <div className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-indigo-500 rounded-full border border-white" />
+                                                                </div>
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })()}
+                                            </div>
+
+                                            {/* Font Size & Color Row */}
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                {/* Font Size */}
+                                                <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl px-2">
+                                                    <button
+                                                        onClick={() => handleUpdate({ textStyle: { ...(element.textStyle || {}), fontSize: Math.max(8, (element.textStyle?.fontSize || 24) - 2) } as any })}
+                                                        className="p-1.5 text-slate-400 hover:text-teal-600"
+                                                        title="Smaller"
+                                                    >
+                                                        <Minus className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <div className="flex flex-col items-center min-w-[32px]">
+                                                        <span className="text-[10px] font-black text-slate-800 leading-none">
+                                                            {(element.textStyle?.fontSize || 24)}
+                                                        </span>
+                                                        <span className="text-[6px] font-bold text-slate-400 uppercase tracking-tighter">Size</span>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleUpdate({ textStyle: { ...(element.textStyle || {}), fontSize: Math.min(100, (element.textStyle?.fontSize || 24) + 2) } as any })}
+                                                        className="p-1.5 text-slate-400 hover:text-teal-600"
+                                                        title="Larger"
+                                                    >
+                                                        <Plus className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
+
+                                                {/* Color Picker */}
+                                                <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl px-2">
+                                                    <div className="flex items-center gap-1">
+                                                        {['#ffffff', '#000000', '#bfa181', '#ef4444'].map(color => (
+                                                            <button
+                                                                key={color}
+                                                                onClick={() => handleUpdate({ textStyle: { ...(element.textStyle || {}), color } as any })}
+                                                                className={`w-4 h-4 rounded-full border border-white shadow-sm transition-transform hover:scale-125 ${element.textStyle?.color === color ? 'ring-2 ring-teal-500' : ''}`}
+                                                                style={{ backgroundColor: color }}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                    <div className="w-[1px] h-4 bg-slate-200" />
+                                                    <div className="relative w-6 h-6 rounded-lg flex items-center justify-center bg-white border border-slate-100 shadow-sm group/color overflow-hidden">
+                                                        <Palette className="w-3.5 h-3.5 text-slate-400" />
+                                                        <input
+                                                            type="color"
+                                                            value={element.textStyle?.color || '#ffffff'}
+                                                            onChange={(e) => handleUpdate({ textStyle: { ...(element.textStyle || {}), color: e.target.value } as any })}
+                                                            className="w-full h-full opacity-0 absolute cursor-pointer inset-0"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Spacing Group (Line Height & Letter Spacing) */}
+                                            <div className="flex flex-wrap items-center gap-3">
+                                                {/* Line Height */}
+                                                <div className="flex items-center gap-2 bg-slate-50/50 p-1.5 px-3 rounded-xl border border-slate-100">
+                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Line Height</span>
+                                                    <div className="flex items-center gap-1">
+                                                        <button
+                                                            onClick={() => handleUpdate({ textStyle: { ...(element.textStyle || {}), lineHeight: Math.max(0.5, parseFloat(Number((element.textStyle?.lineHeight || 1.2) - 0.1).toFixed(1))) } as any })}
+                                                            className="w-6 h-6 flex items-center justify-center bg-white border border-slate-100 rounded-lg text-slate-400 hover:text-teal-600 shadow-sm"
+                                                        >
+                                                            <Minus className="w-3 h-3" />
+                                                        </button>
+                                                        <span className="text-[10px] font-black text-slate-700 min-w-[28px] text-center">
+                                                            {Number(element.textStyle?.lineHeight || 1.2).toFixed(1)}
+                                                        </span>
+                                                        <button
+                                                            onClick={() => handleUpdate({ textStyle: { ...(element.textStyle || {}), lineHeight: Math.min(3, parseFloat(Number((element.textStyle?.lineHeight || 1.2) + 0.1).toFixed(1))) } as any })}
+                                                            className="w-6 h-6 flex items-center justify-center bg-white border border-slate-100 rounded-lg text-slate-400 hover:text-teal-600 shadow-sm"
+                                                        >
+                                                            <Plus className="w-3 h-3" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {/* Letter Spacing */}
+                                                <div className="flex items-center gap-2 bg-slate-50/50 p-1.5 px-3 rounded-xl border border-slate-100">
+                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Spacing</span>
+                                                    <div className="flex items-center gap-1">
+                                                        <button
+                                                            onClick={() => handleUpdate({ textStyle: { ...(element.textStyle || {}), letterSpacing: Math.max(-10, (element.textStyle?.letterSpacing || 0) - 1) } as any })}
+                                                            className="w-6 h-6 flex items-center justify-center bg-white border border-slate-100 rounded-lg text-slate-400 hover:text-teal-600 shadow-sm"
+                                                        >
+                                                            <Minus className="w-3 h-3" />
+                                                        </button>
+                                                        <span className="text-[10px] font-black text-slate-700 min-w-[28px] text-center">
+                                                            {element.textStyle?.letterSpacing || 0}
+                                                        </span>
+                                                        <button
+                                                            onClick={() => handleUpdate({ textStyle: { ...(element.textStyle || {}), letterSpacing: Math.min(100, (element.textStyle?.letterSpacing || 0) + 1) } as any })}
+                                                            className="w-6 h-6 flex items-center justify-center bg-white border border-slate-100 rounded-lg text-slate-400 hover:text-teal-600 shadow-sm"
+                                                        >
+                                                            <Plus className="w-3 h-3" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </m.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     )}
                 </div>
@@ -169,7 +402,6 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                                 onChange={(e) => handleUpdate({
                                     mapsConfig: { ...element.mapsConfig!, googleMapsUrl: e.target.value } as typeof element.mapsConfig
                                 })}
-
                                 className="flex-1 px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
                                 placeholder="https://maps.app.goo.gl/..."
                             />

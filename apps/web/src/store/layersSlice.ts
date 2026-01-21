@@ -72,6 +72,7 @@ export interface TextStyle {
     fontStyle: 'normal' | 'italic';
     textAlign: 'left' | 'center' | 'right';
     color: string;
+    textDecoration?: 'none' | 'underline';
     lineHeight?: number;
     letterSpacing?: number;
     multiline?: boolean; // CTO: Enable multi-line wrapping when true

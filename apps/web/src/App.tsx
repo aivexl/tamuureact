@@ -56,22 +56,35 @@ const App: React.FC = () => {
 
     useEffect(() => {
         // Optimization: Detect if we are on landing/store or in the heavy app
-        const isAppPath = window.location.pathname.startsWith('/editor') ||
-            window.location.pathname.startsWith('/admin') ||
-            window.location.pathname.startsWith('/onboarding') ||
-            window.location.pathname.startsWith('/tools') ||
-            window.location.pathname.startsWith('/guests') ||
-            window.location.pathname.startsWith('/profile');
+        // We include /v, /preview, /welcome, /user, and basically anything that isn't the root landing/store
+        const path = window.location.pathname;
+        const isAppPath = path.startsWith('/editor') ||
+            path.startsWith('/admin') ||
+            path.startsWith('/onboarding') ||
+            path.startsWith('/tools') ||
+            path.startsWith('/guests') ||
+            path.startsWith('/profile') ||
+            path.startsWith('/user') ||
+            path.startsWith('/preview') ||
+            path.startsWith('/v') ||
+            path.startsWith('/welcome') ||
+            path.startsWith('/display') ||
+            // Catch-all for slug routes: if it's not root, it's likely an invitation
+            (path !== '/' && path !== '/login' && path !== '/signup' && path !== '/invitations');
 
-        // Only inject dynamic stylesheet if we are in the heavy app (editor/admin)
+        // Only inject dynamic stylesheet if we are in the heavy app (editor/admin) or any invitation/preview route
         // Public pages (landing/store) now use the static stylesheet in index.html for 100/100 performance
         if (isAppPath) {
             const link = document.createElement('link');
             link.rel = 'stylesheet';
-            link.href = getGoogleFontsUrl();
-            document.head.appendChild(link);
+            // CTO FIX: Only load CORE_FONTS globally to avoid massive URL overhead
+            // Individual fonts for designs are loaded via SmartFontInjector
+            import('./lib/fonts').then(({ CORE_FONTS, getGoogleFontsUrl }) => {
+                link.href = getGoogleFontsUrl(CORE_FONTS);
+                document.head.appendChild(link);
+            });
             return () => {
-                document.head.removeChild(link);
+                if (link.parentNode) document.head.removeChild(link);
             };
         }
     }, []);

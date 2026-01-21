@@ -13,6 +13,7 @@ import { SharePanel } from '@/components/UserEditor/Panels/SharePanel';
 import { ExportPanel } from '@/components/UserEditor/Panels/ExportPanel';
 import { OrbitPanel } from '@/components/UserEditor/Panels/OrbitPanel';
 import { TemplateStorePanel } from '@/components/UserEditor/Panels/TemplateStorePanel';
+import { SmartFontInjector } from '@/components/ui/SmartFontInjector';
 import { DisplayStorePanel } from '@/components/UserEditor/Panels/DisplayStorePanel';
 import { WishesPanel } from '@/components/UserEditor/Panels/WishesPanel';
 import { AnalyticsPanel } from '@/components/UserEditor/Panels/AnalyticsPanel';
@@ -169,6 +170,7 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
 
     return (
         <UserEditorLayout>
+            <SmartFontInjector />
             <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {/* 1. Information Card */}
                 <InvitationInfoCard

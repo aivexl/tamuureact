@@ -14,6 +14,7 @@ import { useAudioController } from '@/hooks/useAudioController';
 import { useSEO } from '@/hooks/useSEO';
 import { GuestQRTrigger } from './GuestQRTrigger';
 import { GuestQRModal } from './GuestQRModal';
+import { SmartFontInjector } from '../ui/SmartFontInjector';
 
 // Canvas dimensions - now dynamic based on template type
 const INVITATION_WIDTH = 414;
@@ -818,6 +819,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                 className="fixed inset-0 z-[9999] flex flex-col items-center overflow-hidden transition-colors duration-700"
                 style={viewportBackgroundStyle}
             >
+                <SmartFontInjector />
                 {/* 
                     INTERACTION OVERLAY (CTO FIX)
                     A transparent layer on top of everything to catch clicks reliably in preview mode.
