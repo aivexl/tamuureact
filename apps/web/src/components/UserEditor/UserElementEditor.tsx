@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { Type, Image as ImageIcon, MapPin, Copy, Shield, Clock, Lock, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Plus, Minus, Palette, ChevronDown, Settings2 } from 'lucide-react';
+import { Type, Image as ImageIcon, MapPin, Copy, Shield, Clock, Lock, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Plus, Minus, Palette, ChevronDown, Settings2, Type as FontIcon } from 'lucide-react';
 import { useStore, Layer } from '@/store/useStore';
+import { SUPPORTED_FONTS } from '@/lib/fonts';
 
 interface UserElementEditorProps {
     element: Layer;
@@ -10,7 +11,7 @@ interface UserElementEditorProps {
 
 export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, sectionId }) => {
     const [showStyling, setShowStyling] = useState(false);
-    const { updateElementInSection } = useStore();
+    const { updateElementInSection, elementDimensions } = useStore();
     const permissions = element.permissions || {
         canEditText: false,
         canEditImage: false,
@@ -184,9 +185,10 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
 
                                                 {/* Canvas Positioning (Auto Align) - Always available if styling is open */}
                                                 {(() => {
-                                                    // console.log(`[Editor] Rendering alignment tools for ${element.name} (${element.id})`);
-                                                    const SAFE_MARGIN = 40; // Proportional side margin (Enterprise Standard - World Class spacing)
+                                                    const SAFE_MARGIN = 64; // Professional side margin (Luxury Standard - World Class spacing)
                                                     const CANVAS_WIDTH = 414;
+                                                    const detectedDim = elementDimensions[element.id];
+                                                    const currentWidth = detectedDim?.width || element.width || 300;
 
                                                     return (
                                                         <div className="flex bg-slate-50 p-1 rounded-xl">
@@ -202,8 +204,7 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                                                             </button>
                                                             <button
                                                                 onClick={() => {
-                                                                    const width = element.width || 300;
-                                                                    handleUpdate({ x: (CANVAS_WIDTH - width) / 2 });
+                                                                    handleUpdate({ x: (CANVAS_WIDTH - currentWidth) / 2 });
                                                                 }}
                                                                 className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 transition-all"
                                                                 title="Align Canvas Center"
@@ -215,8 +216,7 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                                                             </button>
                                                             <button
                                                                 onClick={() => {
-                                                                    const width = element.width || 300;
-                                                                    handleUpdate({ x: CANVAS_WIDTH - width - SAFE_MARGIN });
+                                                                    handleUpdate({ x: CANVAS_WIDTH - currentWidth - SAFE_MARGIN });
                                                                 }}
                                                                 className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 transition-all"
                                                                 title="Align Canvas Right (Safe Area)"
@@ -233,6 +233,25 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
 
                                             {/* Font Size & Color Row */}
                                             <div className="flex flex-wrap items-center gap-2">
+                                                {/* Font Family Selector */}
+                                                <div className="relative group/font flex-1 min-w-[140px]">
+                                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                                                        <FontIcon className="w-3.5 h-3.5" />
+                                                    </div>
+                                                    <select
+                                                        value={element.textStyle?.fontFamily || 'Inter'}
+                                                        onChange={(e) => handleUpdate({ textStyle: { ...(element.textStyle || {}), fontFamily: e.target.value } as any })}
+                                                        className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 appearance-none outline-none transition-all"
+                                                    >
+                                                        {SUPPORTED_FONTS.map(f => (
+                                                            <option key={f.name} value={f.name}>{f.name}</option>
+                                                        ))}
+                                                    </select>
+                                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover/font:text-teal-500 transition-colors">
+                                                        <ChevronDown className="w-3.5 h-3.5" />
+                                                    </div>
+                                                </div>
+
                                                 {/* Font Size */}
                                                 <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl px-2">
                                                     <button

@@ -3,6 +3,17 @@ import { useStore } from '@/store/useStore';
 import { CORE_FONTS, getGoogleFontsUrl } from '@/lib/fonts';
 
 /**
+ * Helper to extract the primary font family name.
+ * Example: "'Plus Jakarta Sans', sans-serif" -> "Plus Jakarta Sans"
+ */
+const cleanFontName = (fontFamily: string): string => {
+    // 1. Get the first part before any comma
+    const primary = fontFamily.split(',')[0].trim();
+    // 2. Strip single and double quotes
+    return primary.replace(/['"]/g, '');
+};
+
+/**
  * SmartFontInjector
  * Analyzes the current invitation/display state and injects ONLY the required Google Fonts.
  * This prevents massive URL overhead and ensures font consistency between Editor and Preview.
@@ -21,7 +32,7 @@ export const SmartFontInjector: React.FC = () => {
         sections.forEach(section => {
             (section.elements || []).forEach(element => {
                 if (element.textStyle?.fontFamily) {
-                    fontSet.add(element.textStyle.fontFamily);
+                    fontSet.add(cleanFontName(element.textStyle.fontFamily));
                 }
             });
         });
@@ -30,13 +41,13 @@ export const SmartFontInjector: React.FC = () => {
         const scanOrbit = (elements?: any[]) => {
             (elements || []).forEach(element => {
                 if (element.textStyle?.fontFamily) {
-                    fontSet.add(element.textStyle.fontFamily);
+                    fontSet.add(cleanFontName(element.textStyle.fontFamily));
                 }
             });
         };
 
-        scanOrbit(orbit.left.elements);
-        scanOrbit(orbit.right.elements);
+        scanOrbit(orbit.left?.elements);
+        scanOrbit(orbit.right?.elements);
 
         return Array.from(fontSet);
     }, [sections, orbit]);
