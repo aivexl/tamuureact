@@ -69,6 +69,14 @@ export const WelcomeDisplaysTab: React.FC = () => {
     const handleSelectTemplate = async (template: DisplayTemplate) => {
         if (!user?.id) return;
 
+        // Check if user already has designs - ask for confirmation
+        if (userDesigns.length > 0) {
+            const confirmReplace = confirm(
+                `Anda sudah memiliki ${userDesigns.length} desain display. Memilih template baru akan menambah desain baru. Lanjutkan?`
+            );
+            if (!confirmReplace) return;
+        }
+
         setSelectedTemplate(template);
         setIsApplying(true);
 
@@ -98,6 +106,7 @@ export const WelcomeDisplaysTab: React.FC = () => {
             setIsApplying(false);
             setSelectedTemplate(null);
         }
+
     };
 
     if (isLoading) {

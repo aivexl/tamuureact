@@ -110,7 +110,18 @@ export const DisplayStorePanel: React.FC<DisplayStorePanelProps> = ({
                 throw new Error('Display template not found');
             }
 
-            // 2. Create a new user-owned display design
+            // 2. Delete old design if exists (prevent orphaned data)
+            if (currentDisplayDesignId) {
+                try {
+                    await userDisplayDesigns.delete(currentDisplayDesignId);
+                    console.log('[DisplayStore] Old design deleted:', currentDisplayDesignId);
+                } catch (deleteError) {
+                    console.warn('[DisplayStore] Could not delete old design:', deleteError);
+                    // Continue anyway - old design might already be deleted
+                }
+            }
+
+            // 3. Create a new user-owned display design
             // This ensures editing this design doesn't affect the system template
             const designPayload = {
                 user_id: user.id,
@@ -127,10 +138,11 @@ export const DisplayStorePanel: React.FC<DisplayStorePanelProps> = ({
 
             const newDesign = await userDisplayDesigns.create(designPayload);
 
-            // 3. Link this new design to the invitation
+            // 4. Link this new design to the invitation
             await invitationsApi.update(currentInvitationId, {
                 display_design_id: newDesign.id
             });
+
 
             setCurrentDisplayDesignId(newDesign.id);
             setSourceTemplateId(selectedDisplay.id);
