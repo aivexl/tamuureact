@@ -328,7 +328,7 @@ export const DashboardPage: React.FC = () => {
                                                         <h5 className="font-bold text-slate-900 truncate mb-1 text-xs md:text-sm">{inv.name}</h5>
                                                         <p className="text-[10px] text-slate-400 truncate mb-3 lowercase">{getPublicDomain()}/{inv.slug}</p>
                                                         <div className="flex items-center justify-between mt-auto">
-                                                            <span className={`text - [9px] font - black uppercase tracking - widest px - 2 py - 0.5 rounded - md ${inv.is_published ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'} `}>{inv.is_published ? 'published' : 'draft'}</span>
+                                                            <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${inv.is_published ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>{inv.is_published ? 'published' : 'draft'}</span>
                                                             <button className="text-[10px] font-black text-slate-900 hover:text-teal-600 transition-colors flex items-center gap-1.5">
                                                                 <UsersIcon className="w-3.5 h-3.5" /> Tamu
                                                             </button>
@@ -427,7 +427,7 @@ export const DashboardPage: React.FC = () => {
                                                 </div>
                                                 <p className="text-slate-400 text-[10px] font-medium mb-4 uppercase tracking-[0.1em] truncate">{getPublicDomain()}/{inv.slug}</p>
                                                 <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                                                    <span className={`text - [9px] font - black uppercase tracking - [0.1em] px - 2 py - 1 rounded - md ${inv.is_published ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'} `}>{inv.is_published ? 'published' : 'draft'}</span>
+                                                    <span className={`text-[9px] font-black uppercase tracking-[0.1em] px-2 py-1 rounded-md ${inv.is_published ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>{inv.is_published ? 'published' : 'draft'}</span>
                                                     <button className="text-[10px] font-black text-slate-400 hover:text-teal-600 flex items-center gap-1.5 transition-colors">
                                                         <UsersIcon className="w-3.5 h-3.5" /> Tamu
                                                     </button>

@@ -14,6 +14,8 @@ import {
     AlertCircle,
     Power
 } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryClient';
 import { PremiumLoader } from '../ui/PremiumLoader';
 import { UserKonvaPreview } from './UserKonvaPreview';
 import { UserElementEditor } from './UserElementEditor';
@@ -273,6 +275,8 @@ export const TemplateEditArea: React.FC = () => {
         setIsPublished
     } = useStore();
 
+    const queryClient = useQueryClient();
+
     const [expandedSection, setExpandedSection] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'invitation' | 'orbit'>('invitation');
     const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
@@ -322,6 +326,9 @@ export const TemplateEditArea: React.FC = () => {
             });
             setSaveStatus('saved');
             console.log('[Save] Changes saved successfully');
+
+            // Invalidate queries to sync dashboard
+            queryClient.invalidateQueries({ queryKey: queryKeys.invitations.all });
 
             // Reset to idle after 3 seconds
             setTimeout(() => setSaveStatus('idle'), 3000);
@@ -384,6 +391,8 @@ export const TemplateEditArea: React.FC = () => {
         try {
             await invitationsApi.update(invitationId, { is_published: val });
             setIsPublished(val);
+            // Invalidate queries to sync dashboard
+            queryClient.invalidateQueries({ queryKey: queryKeys.invitations.all });
         } catch (err: any) {
             console.error('[TemplateEditArea] Failed to update status:', err);
             alert(`Gagal memperbarui status: ${err.message}`);

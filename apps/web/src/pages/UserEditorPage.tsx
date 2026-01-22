@@ -57,6 +57,7 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
     const sections = useStore(s => s.sections);
     const orbit = useStore(s => s.orbit);
     const exportFormat = useStore(s => s.exportFormat);
+    const isPublished = useStore(s => s.isPublished);
 
     if (mode === 'welcome') {
         return (
@@ -161,7 +162,11 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
             <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {/* 1. Information Card */}
                 <InvitationInfoCard
-                    invitation={invitation}
+                    invitation={{
+                        ...invitation,
+                        is_published: isPublished,
+                        status: isPublished ? "Published" : "Draft"
+                    }}
                     onShare={() => setActivePanel('share')}
                     onSettings={() => setActivePanel('settings')}
                 />
