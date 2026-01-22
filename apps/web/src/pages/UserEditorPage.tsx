@@ -39,31 +39,24 @@ interface UserEditorPageProps {
 export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitation' }) => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const {
-        activeSectionId,
-        setActiveSection,
-        setSections,
-        setOrbitLayers,
-        setSlug,
-        setId,
-        setProjectName,
-        setCategory,
-        setIsTemplate,
-        setThumbnailUrl,
-        setMusic,
-        isPublished,
-        setIsPublished,
-        sections,
-        exportFormat,
-        setExportFormat,
-        // Resetters
-        resetStore,
-        resetSections,
-        clearLayers,
-        hasHydrated,
-        orbit,
-        id: currentStoredId
-    } = useStore();
+    // 1. PROJECT IDENTIFIERS
+    const currentStoredId = useStore(s => s.id);
+    const hasHydrated = useStore(s => s.hasHydrated);
+
+    // 2. ATOMIC SETTERS
+    const resetStore = useStore(s => s.resetStore);
+    const resetSections = useStore(s => s.resetSections);
+    const clearLayers = useStore(s => s.clearLayers);
+    const hydrateProject = useStore(s => s.hydrateProject);
+    const setSections = useStore(s => s.setSections);
+    const setOrbitLayers = useStore(s => s.setOrbitLayers);
+    const setActiveSection = useStore(s => s.setActiveSection);
+
+    // 3. UI STATE
+    const activeSectionId = useStore(s => s.activeSectionId);
+    const sections = useStore(s => s.sections);
+    const orbit = useStore(s => s.orbit);
+    const exportFormat = useStore(s => s.exportFormat);
 
     if (mode === 'welcome') {
         return (
@@ -101,21 +94,15 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
             try {
                 const data = await invitationsApi.get(id);
 
-                // 2. TRANSACTIONAL HYDRATION: Update store in one go where possible
-                // We use the setters, but don't include them in deps because they are stable.
+                // 2. TRANSACTIONAL HYDRATION: Update store in one go.
+                // This replaces 10+ individual setters with a single transaction.
+                hydrateProject(data);
+
+                // Deep arrays still need individual syncs if they are handled by separate slices
                 setSections(data.sections || []);
                 if (data.orbit_layers) setOrbitLayers(data.orbit_layers);
 
-                setSlug(data.slug || '');
-                setId(data.id);
-                setProjectName(data.name || 'Untitled Design');
-                setCategory(data.category || 'Wedding');
-                setThumbnailUrl(data.thumbnail_url);
-                if (data.music) setMusic(data.music);
-                setIsPublished(!!data.is_published);
-                setIsTemplate(false);
-
-                // 3. UI Sync
+                // 3. UI Sync (Local Component State)
                 setInvitation({
                     id: data.id,
                     title: data.name,

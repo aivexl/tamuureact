@@ -24,7 +24,7 @@ export const StatusToggles: React.FC<StatusTogglesProps> = ({ invitation, onUpda
             console.log('[StatusToggles] Updating is_published to:', val);
             await invitationsApi.update(invitation.id, { is_published: val });
             setIsPublished(val);
-            onUpdate({ ...invitation, is_published: val, status: val ? "Published" : "Draft" });
+            onUpdate({ ...invitation, is_published: val });
         } catch (err: any) {
             console.error('[StatusToggles] Failed to update status:', err);
             const errorDetails = err.response?.data?.details || err.message;

@@ -27,6 +27,7 @@ export interface AuthState {
     setLoading: (isLoading: boolean) => void;
     setError: (error: string | null) => void;
     updateSubscription: (updates: Partial<Pick<User, 'tier' | 'maxInvitations' | 'expiresAt'>>) => void;
+    setAuthSession: (session: { user: User; token: string }) => void;
     logout: () => void;
 }
 
@@ -44,5 +45,11 @@ export const createAuthSlice: StateCreator<AuthState> = (set) => ({
     updateSubscription: (updates) => set((state) => ({
         user: state.user ? { ...state.user, ...updates } : null
     })),
+    setAuthSession: ({ user, token }) => set({
+        user,
+        token,
+        isAuthenticated: !!user,
+        isLoading: false
+    }),
     logout: () => set({ user: null, isAuthenticated: false, token: null, error: null }),
 });

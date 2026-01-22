@@ -10,7 +10,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { setUser, setToken, setLoading } = useStore();
+    const { setAuthSession, setUser, setToken, setLoading } = useStore();
 
     useEffect(() => {
         // 1. Check current session on load
@@ -19,11 +19,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const { data: { session } } = await supabase.auth.getSession();
 
             if (session) {
-                setToken(session.access_token);
                 // Non-blocking sync to allow immediate access to basic auth state
-                syncUserProfile(session.user);
+                syncUserProfile(session.user, session.access_token);
+            } else {
+                setLoading(false);
             }
-            setLoading(false);
         };
 
         initAuth();
@@ -33,15 +33,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.log(`[Auth Event] ${event}`);
 
             if (session) {
-                setToken(session.access_token);
                 // Non-blocking profile sync for faster UI response
-                syncUserProfile(session.user);
+                syncUserProfile(session.user, session.access_token);
             } else {
                 setUser(null);
                 setToken(null);
+                setLoading(false);
             }
-
-            setLoading(false);
         });
 
         return () => {
@@ -53,7 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
      * Syncs Supabase Auth user with our Zustand store
      * Uses user_metadata initially, then fetches D1 data
      */
-    const syncUserProfile = async (supabaseUser: any) => {
+    const syncUserProfile = async (supabaseUser: any, token: string) => {
         // Build initial user object from Supabase auth metadata
         const initialUser: User = {
             id: supabaseUser.id,
@@ -67,8 +65,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             expiresAt: undefined,
         };
 
-        // Set initial state for responsiveness
-        setUser(initialUser);
+        // Set initial state atomically with token
+        setAuthSession({ user: initialUser, token });
 
         try {
             console.log(`[Auth Sync] Fetching D1 profile for ${supabaseUser.email}...`);
@@ -87,11 +85,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     expiresAt: d1User.expires_at
                 };
 
-                console.log('[Auth Sync] Updating store with:', updatedUser.tier);
-                setUser(updatedUser);
+                console.log('[Auth Sync] Updating session with:', updatedUser.tier);
+                setAuthSession({ user: updatedUser, token });
             }
         } catch (error) {
             console.error('[Auth Sync] Failed to sync profile with D1:', error);
+            setLoading(false);
         }
     };
 

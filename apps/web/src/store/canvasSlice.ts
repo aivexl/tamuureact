@@ -36,6 +36,7 @@ export interface CanvasState {
     setMusic: (music: CanvasState['music']) => void;
     setIsPublished: (isPublished: boolean) => void;
     setExportFormat: (format: 'mobile' | 'desktop' | 'print' | null) => void;
+    hydrateProject: (data: any) => void;
     resetStore: () => void;
 }
 
@@ -69,6 +70,16 @@ export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
     setMusic: (music) => set({ music }),
     setIsPublished: (isPublished) => set({ isPublished }),
     setExportFormat: (exportFormat) => set({ exportFormat }),
+    hydrateProject: (data) => set({
+        id: data.id,
+        slug: data.slug || '',
+        projectName: data.name || 'Untitled Design',
+        category: data.category || 'Wedding',
+        thumbnailUrl: data.thumbnail_url,
+        music: data.music,
+        isPublished: !!data.is_published,
+        isTemplate: false
+    }),
     resetStore: () => set({
         zoom: 1,
         pan: { x: 0, y: 0 },
