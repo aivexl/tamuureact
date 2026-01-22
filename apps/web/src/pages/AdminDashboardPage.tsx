@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { AdminLayout } from '../components/Layout/AdminLayout';
 import {
     Users,
@@ -7,9 +7,15 @@ import {
     ArrowUpRight,
     Clock,
     Zap,
-    MessageSquare
+    MessageSquare,
+    Search,
+    Filter,
+    ChevronDown,
+    UserCircle,
+    FileText,
+    Mail
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { admin } from '@/lib/api';
 
 // Initial state for real statistics
@@ -18,13 +24,6 @@ const INITIAL_STATS = [
     { id: 'totalTemplates', label: 'Active Templates', value: '0', change: '...', icon: Smartphone, color: 'text-teal-400', bg: 'bg-teal-400/10' },
     { id: 'totalInvitations', label: 'Display Designs', value: '0', change: '...', icon: Monitor, color: 'text-purple-400', bg: 'bg-purple-400/10' },
     { id: 'totalRsvps', label: 'Total RSVPs', value: '0', change: '...', icon: MessageSquare, color: 'text-rose-400', bg: 'bg-rose-400/10' },
-];
-
-const RECENT_ACTIVITY = [
-    { user: 'Budi Santoso', action: 'Created new invitation', time: '2 mins ago', type: 'create' },
-    { user: 'Siti Aminah', action: 'Published "Rustic Gold"', time: '15 mins ago', type: 'publish' },
-    { user: 'System', action: 'Backup completed', time: '1 hour ago', type: 'system' },
-    { user: 'Admin', action: 'Updated "Neon Future" template', time: '2 hours ago', type: 'edit' },
 ];
 
 const StatCard = ({ stat, index }: { stat: any, index: number }) => (
@@ -50,28 +49,70 @@ const StatCard = ({ stat, index }: { stat: any, index: number }) => (
 
 export const AdminDashboardPage: React.FC = () => {
     const [stats, setStats] = useState(INITIAL_STATS);
+    const [recentActivity, setRecentActivity] = useState<any[]>([]);
     const [systemHealth, setSystemHealth] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
 
+    // Search & Filter State
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filterType, setFilterType] = useState('all');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
+    // Debounce search input
     useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const data = await admin.getStats();
+        const handler = setTimeout(() => {
+            setDebouncedSearch(searchQuery);
+        }, 300);
+        return () => clearTimeout(handler);
+    }, [searchQuery]);
 
-                setStats(prev => prev.map(s => ({
-                    ...s,
-                    value: data[s.id as keyof typeof data]?.toLocaleString() || '0'
-                })));
-                setSystemHealth(data.systemHealth);
-            } catch (err) {
-                console.error('[AdminDashboard] Fetch error:', err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
+    const fetchStats = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            const data = await admin.getStats({
+                search: debouncedSearch,
+                filter: filterType
+            });
 
+            setStats(prev => prev.map(s => ({
+                ...s,
+                value: data[s.id as keyof typeof data]?.toLocaleString() || '0'
+            })));
+            setRecentActivity(data.recentActivity || []);
+            setSystemHealth(data.systemHealth);
+        } catch (err) {
+            console.error('[AdminDashboard] Fetch error:', err);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [debouncedSearch, filterType]);
+
+    useEffect(() => {
         fetchStats();
-    }, []);
+    }, [fetchStats]);
+
+    // Format time distance
+    const formatTime = (dateStr: string) => {
+        const date = new Date(dateStr);
+        const now = new Date();
+        const diffMs = now.getTime() - date.getTime();
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMins / 60);
+        const diffDays = Math.floor(diffHours / 24);
+
+        if (diffMins < 60) return `${diffMins} mins ago`;
+        if (diffHours < 24) return `${diffHours} hours ago`;
+        return `${diffDays} days ago`;
+    };
+
+    const getActivityIcon = (type: string) => {
+        switch (type) {
+            case 'user': return <UserCircle className="w-4 h-4 text-blue-400" />;
+            case 'invitation': return <FileText className="w-4 h-4 text-teal-400" />;
+            case 'rsvp': return <Mail className="w-4 h-4 text-rose-400" />;
+            default: return <Clock className="w-4 h-4 text-slate-400" />;
+        }
+    };
 
     return (
         <AdminLayout>
@@ -99,28 +140,83 @@ export const AdminDashboardPage: React.FC = () => {
             {/* Content Area */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Recent Activity */}
-                <div className="lg:col-span-2 bg-[#111] border border-white/5 rounded-3xl p-8">
-                    <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-xl font-bold">Recent Activity</h2>
-                        <button className="text-teal-400 text-sm font-bold hover:underline">View All</button>
-                    </div>
-                    <div className="space-y-6">
-                        {RECENT_ACTIVITY.map((activity, i) => (
-                            <div key={i} className="flex items-center gap-4 group">
-                                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/5 group-hover:border-teal-500/30 transition-colors">
-                                    <Clock className="w-4 h-4 text-slate-400 group-hover:text-teal-400" />
-                                </div>
-                                <div className="flex-1">
-                                    <p className="text-sm text-white font-medium">
-                                        <span className="font-bold text-teal-400">{activity.user}</span> {activity.action}
-                                    </p>
-                                    <p className="text-xs text-slate-500">{activity.time}</p>
-                                </div>
-                                <button className="px-3 py-1 bg-white/5 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white transition-colors">
-                                    Detail
-                                </button>
+                <div className="lg:col-span-2 bg-[#111] border border-white/5 rounded-3xl p-8 flex flex-col h-[600px]">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                        <div>
+                            <h2 className="text-xl font-bold">Recent Activity</h2>
+                            <p className="text-xs text-slate-500 mt-1">Real-time system events</p>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            {/* Search */}
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Search events..."
+                                    className="pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:ring-2 focus:ring-teal-500/50 outline-none w-full md:w-48 transition-all"
+                                />
                             </div>
-                        ))}
+
+                            {/* Filter */}
+                            <div className="relative group">
+                                <select
+                                    value={filterType}
+                                    onChange={(e) => setFilterType(e.target.value)}
+                                    className="appearance-none pl-4 pr-10 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:ring-2 focus:ring-teal-500/50 outline-none cursor-pointer hover:bg-white/10 transition-all font-bold uppercase tracking-wider"
+                                >
+                                    <option value="all" className="bg-[#111]">ALL</option>
+                                    <option value="user" className="bg-[#111]">USERS</option>
+                                    <option value="invitation" className="bg-[#111]">INVITATIONS</option>
+                                    <option value="rsvp" className="bg-[#111]">RSVP</option>
+                                </select>
+                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto pr-2 space-y-6 custom-scrollbar">
+                        <AnimatePresence mode="popLayout">
+                            {isLoading && recentActivity.length === 0 ? (
+                                <div className="h-full flex items-center justify-center">
+                                    <Zap className="w-8 h-8 text-teal-500 animate-pulse" />
+                                </div>
+                            ) : recentActivity.length === 0 ? (
+                                <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-2 py-20">
+                                    <Search className="w-12 h-12 opacity-20" />
+                                    <p className="font-bold uppercase tracking-widest text-xs">No activities match your criteria</p>
+                                </div>
+                            ) : (
+                                recentActivity.map((activity, i) => (
+                                    <motion.div
+                                        key={`${activity.user}-${activity.time}-${i}`}
+                                        layout
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, scale: 0.95 }}
+                                        transition={{ delay: i * 0.05 }}
+                                        className="flex items-center gap-4 group"
+                                    >
+                                        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/5 group-hover:border-teal-500/30 transition-colors">
+                                            {getActivityIcon(activity.type)}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm text-white font-medium truncate">
+                                                <span className="font-black text-teal-400">{activity.user}</span>
+                                                <span className="text-slate-400 mx-1.5 opacity-50">•</span>
+                                                {activity.action}
+                                            </p>
+                                            <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mt-0.5">{formatTime(activity.time)}</p>
+                                        </div>
+                                        <button className="px-3 py-1 bg-white/5 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white border border-white/5 hover:border-teal-500/30 transition-all flex-shrink-0">
+                                            Detail
+                                        </button>
+                                    </motion.div>
+                                ))
+                            )}
+                        </AnimatePresence>
                     </div>
                 </div>
 

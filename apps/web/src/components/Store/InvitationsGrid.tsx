@@ -130,7 +130,7 @@ export const InvitationsGrid: React.FC<InvitationsGridProps> = ({
                                 {template.tier && template.tier !== 'free' && (
                                     <span className={`px-3 py-1 ${template.tier === 'vvip' ? 'bg-[#FFBF00] text-[#0A1128]' : 'bg-indigo-600 text-white'} text-[9px] font-black uppercase tracking-widest rounded-lg shadow-lg flex items-center gap-1`}>
                                         {template.tier === 'vvip' ? <Star className="w-3 h-3 fill-current" /> : <Crown className="w-3 h-3 fill-current" />}
-                                        {template.tier.toUpperCase()}
+                                        {template.tier === 'vvip' ? 'VVIP EXCLUSIVE' : template.tier === 'vip' ? 'VIP PREMIERE' : 'FREE EXPLORER'}
                                     </span>
                                 )}
                             </div>

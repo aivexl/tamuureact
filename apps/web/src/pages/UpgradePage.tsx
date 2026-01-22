@@ -106,7 +106,7 @@ export const UpgradePage: React.FC = () => {
                 maxInvitations: tier === 'vvip' ? 3 : 1,
                 expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
             });
-            alert(`Selamat! Anda sekarang adalah member ${tier.toUpperCase()}.`);
+            alert(`Selamat! Anda sekarang adalah member ${tier === 'vvip' ? 'VVIP EXCLUSIVE' : tier === 'vip' ? 'VIP PREMIERE' : 'FREE EXPLORER'}.`);
             navigate('/billing');
         }
     };
@@ -167,7 +167,7 @@ export const UpgradePage: React.FC = () => {
 
                     {/* VIP Tier */}
                     <TierCard
-                        name="VIP"
+                        name="VIP PREMIERE"
                         price="Rp 99k"
                         originalPrice="Rp 149k"
                         duration="per year"
@@ -184,13 +184,13 @@ export const UpgradePage: React.FC = () => {
                             "1 Year Online Access",
                             "Priority Support"
                         ]}
-                        buttonText={user?.tier === 'vip' ? "Active" : "Upgrade to VIP"}
+                        buttonText={user?.tier === 'vip' ? "Active" : "Go VIP PREMIERE"}
                         onSelect={() => handleUpgrade('vip')}
                     />
 
                     {/* VVIP Tier */}
                     <TierCard
-                        name="VVIP"
+                        name="VVIP EXCLUSIVE"
                         price="Rp 199k"
                         originalPrice="Rp 299k"
                         duration="per year"
@@ -206,7 +206,7 @@ export const UpgradePage: React.FC = () => {
                             "1 Year Online Access",
                             "Concierge Setup Service"
                         ]}
-                        buttonText={user?.tier === 'vvip' ? "Active" : "Go VVIP"}
+                        buttonText={user?.tier === 'vvip' ? "Active" : "Go VVIP EXCLUSIVE"}
                         onSelect={() => handleUpgrade('vvip')}
                     />
                 </div>

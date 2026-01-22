@@ -576,8 +576,12 @@ export const music = {
 // ADMIN API
 // ============================================
 export const admin = {
-    async getStats() {
-        const res = await safeFetch(`${API_BASE}/api/admin/stats`);
+    async getStats(options?: { search?: string; filter?: string }) {
+        const params = new URLSearchParams();
+        if (options?.search) params.append('search', options.search);
+        if (options?.filter) params.append('filter', options.filter);
+        const url = params.toString() ? `${API_BASE}/api/admin/stats?${params.toString()}` : `${API_BASE}/api/admin/stats`;
+        const res = await safeFetch(url);
         if (!res.ok) throw new Error('Failed to fetch admin stats');
         const data = await res.json();
         return sanitizeValue(data);

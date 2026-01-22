@@ -229,7 +229,7 @@ export const Navbar: React.FC = () => {
                                 <div className="flex flex-col items-end hidden md:flex">
                                     <span className={`text-sm font-bold leading-tight ${isDarkTheme ? 'text-slate-900' : 'text-white'}`}>{user?.name || 'User'}</span>
                                     <span className={`text-[10px] font-black uppercase tracking-widest ${user?.tier === 'vvip' ? 'text-[#FFBF00]' : user?.tier === 'vip' ? 'text-teal-500' : 'text-slate-400'}`}>
-                                        {user?.tier || 'Free'} Member
+                                        {user?.tier === 'vvip' ? 'VVIP EXCLUSIVE' : user?.tier === 'vip' ? 'VIP PREMIERE' : 'FREE EXPLORER'}
                                     </span>
                                 </div>
                                 <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white font-black shadow-lg shadow-teal-500/20 ring-2 ring-white/10 group-hover:ring-teal-500 transition-all">
@@ -390,7 +390,7 @@ export const Navbar: React.FC = () => {
                                             <div>
                                                 <p className={`font-bold ${isDarkTheme ? 'text-slate-900' : 'text-white'}`}>{user?.name || 'User'}</p>
                                                 <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${user?.tier === 'vvip' ? 'text-[#FFBF00]' : user?.tier === 'vip' ? 'text-teal-500' : 'text-slate-400'}`}>
-                                                    {user?.tier || 'Free'} Member
+                                                    {user?.tier === 'vvip' ? 'VVIP EXCLUSIVE' : user?.tier === 'vip' ? 'VIP PREMIERE' : 'FREE EXPLORER'}
                                                 </p>
                                             </div>
                                         </div>

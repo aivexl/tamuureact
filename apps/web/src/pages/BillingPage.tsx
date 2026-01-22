@@ -36,7 +36,7 @@ export const BillingPage: React.FC = () => {
     const tierLabels = {
         free: 'Free Explorer',
         vip: 'VIP Premiere',
-        vvip: 'VVIP Exclusive'
+        vvip: 'VVIP EXCLUSIVE'
     };
 
     const tierColors = {

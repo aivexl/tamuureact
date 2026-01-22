@@ -183,7 +183,7 @@ export const MusicPanel: React.FC = () => {
                             )}
                         </div>
                         <div className="px-3 py-1 bg-pink-500 rounded-full text-[8px] font-black text-white uppercase tracking-widest shadow-lg shadow-pink-500/20">
-                            VVIP Exclusive
+                            VVIP EXCLUSIVE
                         </div>
                     </div>
 

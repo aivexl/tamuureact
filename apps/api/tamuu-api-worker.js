@@ -236,17 +236,36 @@ export default {
             }
 
             if (path === '/api/admin/stats' && method === 'GET') {
+                const search = url.searchParams.get('search') || '';
+                const filter = url.searchParams.get('filter') || 'all';
+
                 // In a real app, verify admin role from session/token
                 const usersCount = await env.DB.prepare('SELECT COUNT(*) as count FROM users').first('count');
                 const templatesCount = await env.DB.prepare('SELECT COUNT(*) as count FROM templates').first('count');
                 const invitationsCount = await env.DB.prepare('SELECT COUNT(*) as count FROM invitations').first('count');
                 const rsvpCount = await env.DB.prepare('SELECT COUNT(*) as count FROM rsvp_responses').first('count');
 
+                // Real Recent Activity with Search & Filter
+                const searchQuery = `%${search}%`;
+                const { results: recentActivity } = await env.DB.prepare(`
+                    SELECT * FROM (
+                        SELECT 'user' as type, name as user, 'Joined Tamuu' as action, created_at as time FROM users
+                        UNION ALL
+                        SELECT 'invitation' as type, COALESCE((SELECT name FROM users WHERE id = invitations.user_id), 'Unknown') as user, 'Created new invitation: ' || name as action, created_at as time FROM invitations
+                        UNION ALL
+                        SELECT 'rsvp' as type, name as user, 'Submitted RSVP for ' || COALESCE((SELECT name FROM invitations WHERE id = rsvp_responses.invitation_id), 'invitation') as action, submitted_at as time FROM rsvp_responses
+                    ) 
+                    WHERE (user LIKE ? OR action LIKE ?)
+                    AND (? = 'all' OR type = ?)
+                    ORDER BY time DESC LIMIT 20
+                `).bind(searchQuery, searchQuery, filter, filter).all();
+
                 return json({
                     totalUsers: usersCount,
                     totalTemplates: templatesCount,
                     totalInvitations: invitationsCount,
                     totalRsvps: rsvpCount,
+                    recentActivity,
                     systemHealth: {
                         db: 'Healthy',
                         r2: 'Healthy',
