@@ -158,7 +158,7 @@ export const ProfilePage: React.FC = () => {
         }
     }, [profile]);
 
-    const tierConfig = getTierConfig(profile?.plan || 'free');
+    const tierConfig = getTierConfig(profile?.tier || 'free');
 
     useSEO({
         title: 'Account Settings - Tamuu',
