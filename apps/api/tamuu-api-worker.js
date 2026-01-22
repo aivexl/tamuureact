@@ -695,9 +695,15 @@ export default {
                         "UPDATE templates SET type = 'display' WHERE (name LIKE '%Display%' OR name LIKE '%Layar%') AND type = 'invitation'"
                     ).run();
 
-                    const response = await env.DB.prepare(
-                        'SELECT * FROM templates ORDER BY updated_at DESC LIMIT 100'
-                    ).all();
+                    // Support type filter (e.g., ?type=display)
+                    const type = url.searchParams.get('type');
+                    let query = 'SELECT * FROM templates';
+                    if (type) {
+                        query += ` WHERE type = '${type}'`;
+                    }
+                    query += ' ORDER BY updated_at DESC LIMIT 100';
+
+                    const response = await env.DB.prepare(query).all();
 
                     if (!response.success || !response.results) return [];
 
