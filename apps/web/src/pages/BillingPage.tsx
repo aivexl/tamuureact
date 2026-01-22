@@ -206,7 +206,7 @@ export const BillingPage: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-2">
                         <CreditCard className="w-4 h-4" />
-                        <span className="text-xs font-bold uppercase tracking-tighter">Processed by Xendit</span>
+                        <span className="text-xs font-bold uppercase tracking-tighter">Processed by Midtrans</span>
                     </div>
                 </div>
             </div>

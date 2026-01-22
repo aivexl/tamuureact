@@ -35,8 +35,7 @@ export const Footer: React.FC = () => {
                     <div>
                         <h2 className="text-[#FFBF00] font-black uppercase tracking-widest text-xs mb-8">Platform</h2>
                         <ul className="space-y-4">
-                            <li><Link to="/" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Beranda</Link></li>
-                            <li><Link to="/invitations" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Undangan</Link></li>
+                            <li><Link to="/about" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">About Us</Link></li>
                             <li><a href="#features" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Fitur</a></li>
                             <li><a href="#pricing" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Harga</a></li>
                         </ul>
@@ -46,10 +45,10 @@ export const Footer: React.FC = () => {
                     <div>
                         <h2 className="text-[#FFBF00] font-black uppercase tracking-widest text-xs mb-8">Bantuan</h2>
                         <ul className="space-y-4">
-                            <li><a href="#" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Pusat Bantuan</a></li>
-                            <li><a href="#" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Syarat & Ketentuan</a></li>
-                            <li><a href="#" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Kebijakan Privasi</a></li>
-                            <li><a href="#" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Kontak Kami</a></li>
+                            <li><Link to="/contact" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Contact Support</Link></li>
+                            <li><Link to="/terms" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Terms & Conditions</Link></li>
+                            <li><Link to="/privacy" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Privacy Policy</Link></li>
+                            <li><Link to="/refund" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Refund Policy</Link></li>
                         </ul>
                     </div>
 
@@ -59,7 +58,7 @@ export const Footer: React.FC = () => {
                         <ul className="space-y-4">
                             <li className="flex items-center gap-3 text-slate-300 group">
                                 <Mail className="w-4 h-4 text-[#FFBF00] flex-shrink-0" aria-hidden="true" />
-                                <span className="text-xs font-bold uppercase tracking-tight break-all">support@tamuu.id</span>
+                                <span className="text-xs font-bold uppercase tracking-tight break-all">cs@tamuu.id</span>
                             </li>
                             <li className="flex items-center gap-3 text-slate-300">
                                 <Phone className="w-4 h-4 text-[#FFBF00]" aria-hidden="true" />
@@ -67,7 +66,7 @@ export const Footer: React.FC = () => {
                             </li>
                             <li className="flex items-start gap-3 text-slate-300">
                                 <MapPin className="w-4 h-4 text-[#FFBF00] mt-1" aria-hidden="true" />
-                                <span className="text-xs font-bold uppercase tracking-tight">Jakarta Selatan, Indonesia</span>
+                                <span className="text-xs font-bold uppercase tracking-tight">BSD, Tangerang, Banten, Indonesia</span>
                             </li>
                         </ul>
                     </div>

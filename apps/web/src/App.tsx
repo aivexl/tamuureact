@@ -49,6 +49,9 @@ const UpgradePage = lazy(() => import('./pages/UpgradePage').then(m => ({ defaul
 const BillingPage = lazy(() => import('./pages/BillingPage').then(m => ({ default: m.BillingPage })));
 const TermsPage = lazy(() => import('./pages/TermsPage').then(m => ({ default: m.TermsPage })));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then(m => ({ default: m.PrivacyPage })));
+const RefundPage = lazy(() => import('./pages/RefundPage').then(m => ({ default: m.RefundPage })));
+const AboutPage = lazy(() => import('./pages/AboutPage').then(m => ({ default: m.AboutPage })));
+const ContactPage = lazy(() => import('./pages/ContactPage').then(m => ({ default: m.ContactPage })));
 
 const App: React.FC = () => {
     // Memoize domain check to avoid recalculation
@@ -119,6 +122,9 @@ const App: React.FC = () => {
                         {/* Help / Legal (Public) */}
                         <Route path="/terms" element={<MainLayout><TermsPage /></MainLayout>} />
                         <Route path="/privacy" element={<MainLayout><PrivacyPage /></MainLayout>} />
+                        <Route path="/refund" element={<MainLayout><RefundPage /></MainLayout>} />
+                        <Route path="/about" element={<MainLayout><AboutPage /></MainLayout>} />
+                        <Route path="/contact" element={<MainLayout><ContactPage /></MainLayout>} />
 
                         {/* ============================================ */}
                         {/* APP ROUTES - Domain Aware Routing */}

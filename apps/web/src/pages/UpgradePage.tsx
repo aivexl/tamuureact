@@ -96,18 +96,49 @@ export const UpgradePage: React.FC = () => {
     const { user, updateSubscription } = useStore();
     const navigate = useNavigate();
 
-    const handleUpgrade = (tier: string) => {
-        // Mock Xendit Flow
-        const isConfirmed = window.confirm(`Simulasi Pembayaran Xendit: Anda akan mengupgrade ke ${tier.toUpperCase()} seharga Rp ${tier === 'vip' ? '99k' : '199k'}?`);
+    const handleUpgrade = async (tier: string) => {
+        if (!user) return;
 
-        if (isConfirmed) {
-            updateSubscription({
-                tier: tier as any,
-                maxInvitations: tier === 'vvip' ? 3 : 1,
-                expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+        const amount = tier === 'vvip' ? 199000 : 99000;
+
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE}/api/billing/midtrans/token`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: user.id,
+                    tier,
+                    amount,
+                    email: user.email,
+                    name: user.name
+                })
             });
-            alert(`Selamat! Anda sekarang adalah member ${tier === 'vvip' ? 'VVIP EXCLUSIVE' : tier === 'vip' ? 'VIP PREMIERE' : 'FREE EXPLORER'}.`);
-            navigate('/billing');
+
+            const { token } = await response.json();
+
+            if (token) {
+                // @ts-ignore
+                window.snap.pay(token, {
+                    onSuccess: (result: any) => {
+                        console.log('Payment success:', result);
+                        navigate('/billing?status=success');
+                    },
+                    onPending: (result: any) => {
+                        console.log('Payment pending:', result);
+                        navigate('/billing?status=pending');
+                    },
+                    onError: (result: any) => {
+                        console.error('Payment error:', result);
+                        alert('Terjadi kesalahan pembayaran. Silakan coba lagi.');
+                    },
+                    onClose: () => {
+                        console.log('Customer closed the popup without finishing the payment');
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Checkout error:', error);
+            alert('Gagal membuat sesi pembayaran.');
         }
     };
 
@@ -211,11 +242,21 @@ export const UpgradePage: React.FC = () => {
                     />
                 </div>
 
+                {/* Payment Methods Visuals */}
+                <div className="mt-24 mb-12 text-center">
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-8">Secure Payment Powered by Midtrans</p>
+                    <div className="flex flex-wrap justify-center items-center gap-8 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
+                        {["BNI", "CIMB", "ShopeePay", "Permata", "BRI", "QRIS", "BSI", "GoPay", "Mandiri", "DANA"].map(logo => (
+                            <span key={logo} className="text-lg font-black text-slate-800 tracking-tighter">{logo}</span>
+                        ))}
+                    </div>
+                </div>
+
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.4 }}
-                    className="mt-20 p-8 rounded-3xl bg-[#0A1128] text-white overflow-hidden relative"
+                    className="p-8 rounded-3xl bg-[#0A1128] text-white overflow-hidden relative"
                 >
                     <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
                         <div>

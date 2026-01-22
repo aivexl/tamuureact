@@ -557,7 +557,7 @@ export const ProfilePage: React.FC = () => {
                                                 onChange={(e) => handleInputChange('giftAddress', e.target.value)}
                                                 className="block w-full px-4 py-3 bg-white border border-indigo-100 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm leading-relaxed"
                                                 rows={4}
-                                                placeholder="Contoh: Jl. Kemewahan No. 123, Jakarta Selatan (UP: Jane Doe / 08123456789)"
+                                                placeholder="Contoh: BSD City, Tangerang, Banten (UP: Jane Doe / 08123456789)"
                                             />
                                             <p className="mt-3 text-xs text-indigo-400 font-medium italic">
                                                 *Alamat ini akan ditampilkan di bagian 'Kirim Kado' untuk memudahkan tamu mengirim kado fisik.

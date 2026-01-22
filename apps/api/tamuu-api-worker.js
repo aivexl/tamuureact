@@ -160,44 +160,111 @@ export default {
             }
 
             // ============================================
-            // BILLING & XENDIT ENDPOINTS
+            // MIDTRANS PAYMENT ENDPOINTS
             // ============================================
-            if (path === '/api/billing/create-invoice' && method === 'POST') {
+            if (path === '/api/billing/midtrans/token' && method === 'POST') {
                 const body = await request.json();
-                const { userId, tier, amount, email } = body;
+                const { userId, tier, amount, email, name } = body;
 
                 if (!userId || !tier || !amount) {
                     return json({ error: 'Missing required fields' }, { ...corsHeaders, status: 400 });
                 }
 
-                // Call Xendit API
-                const xenditResponse = await fetch('https://api.xendit.co/v2/invoices', {
+                const orderId = `order-${Date.now()}-${userId.substring(0, 8)}`;
+
+                const midtransResponse = await fetch('https://app.midtrans.com/snap/v1/transactions', {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Basic ${btoa(env.XENDIT_SECRET_KEY + ':')}`,
-                        'Content-Type': 'application/json'
+                        'Authorization': `Basic ${btoa(env.MIDTRANS_SERVER_KEY + ':')}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify({
-                        external_id: `inv-${Date.now()}-${userId}`,
-                        amount: amount,
-                        description: `Tamuu ${tier.toUpperCase()} Subscription`,
-                        payer_email: email,
-                        callback_virtual_accounts_expiration_time: 86400,
-                        success_redirect_url: 'https://app.tamuu.id/billing?success=true',
-                        failure_redirect_url: 'https://app.tamuu.id/billing?error=true',
-                        metadata: { userId, tier }
+                        transaction_details: {
+                            order_id: orderId,
+                            gross_amount: amount
+                        },
+                        item_details: [{
+                            id: tier,
+                            price: amount,
+                            quantity: 1,
+                            name: `Tamuu ${tier.toUpperCase()} Subscription`
+                        }],
+                        customer_details: {
+                            first_name: name || 'User',
+                            email: email
+                        },
+                        enabled_payments: [
+                            "bni_va", "cimb_va", "shopeepay", "permata_va",
+                            "bri_va", "qris", "bsi_va", "gopay", "echannel", "dana"
+                        ],
+                        credit_card: {
+                            secure: true
+                        }
                     })
                 });
 
-                const invoice = await xenditResponse.json();
+                const data = await midtransResponse.json();
 
-                // Log transaction in DB
-                await env.DB.prepare(
-                    `INSERT INTO billing_transactions (user_id, external_id, amount, status, tier) 
-                     VALUES (?, ?, ?, ?, ?)`
-                ).bind(userId, invoice.id, amount, 'PENDING', tier).run();
+                if (data.token) {
+                    // Log transaction in DB
+                    await env.DB.prepare(
+                        `INSERT INTO billing_transactions (user_id, external_id, amount, status, tier, payment_method) 
+                         VALUES (?, ?, ?, ?, ?, ?)`
+                    ).bind(userId, orderId, amount, 'PENDING', tier, 'MIDTRANS').run();
+                }
 
-                return json({ invoice_url: invoice.invoice_url }, corsHeaders);
+                return json(data, corsHeaders);
+            }
+
+            if (path === '/api/billing/midtrans/webhook' && method === 'POST') {
+                const body = await request.json();
+                const {
+                    transaction_status,
+                    order_id,
+                    status_code,
+                    gross_amount,
+                    signature_key,
+                    payment_type
+                } = body;
+
+                // Verify Signature using SHA-512
+                const payload = order_id + status_code + gross_amount + env.MIDTRANS_SERVER_KEY;
+                const msgUint8 = new TextEncoder().encode(payload);
+                const hashBuffer = await crypto.subtle.digest('SHA-512', msgUint8);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashedPayload = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+                if (hashedPayload !== signature_key) {
+                    return json({ error: 'Invalid signature' }, { ...corsHeaders, status: 403 });
+                }
+
+                // Handle status
+                if (transaction_status === 'settlement' || transaction_status === 'capture') {
+                    // Find transaction to get full data
+                    const transaction = await env.DB.prepare(
+                        'SELECT * FROM billing_transactions WHERE external_id = ?'
+                    ).bind(order_id).first();
+
+                    if (transaction && transaction.status !== 'PAID') {
+                        const userId = transaction.user_id;
+                        const tier = transaction.tier;
+                        const maxInvitations = tier === 'vvip' ? 3 : 1;
+                        const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+
+                        // 1. Update Transaction
+                        await env.DB.prepare(
+                            'UPDATE billing_transactions SET status = ?, paid_at = datetime("now"), payment_channel = ? WHERE external_id = ?'
+                        ).bind('PAID', payment_type || 'midtrans', order_id).run();
+
+                        // 2. Provision User
+                        await env.DB.prepare(
+                            'UPDATE users SET tier = ?, max_invitations = ?, expires_at = ?, updated_at = datetime("now") WHERE id = ?'
+                        ).bind(tier, maxInvitations, expiresAt, userId).run();
+                    }
+                }
+
+                return json({ success: true }, corsHeaders);
             }
 
             if (path === '/api/billing/webhook' && method === 'POST') {
