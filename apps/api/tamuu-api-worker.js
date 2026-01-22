@@ -249,11 +249,13 @@ export default {
                 const searchQuery = `%${search}%`;
                 const { results: recentActivity } = await env.DB.prepare(`
                     SELECT * FROM (
-                        SELECT 'user' as type, name as user, 'Joined Tamuu' as action, created_at as time FROM users
+                        SELECT 'user' as type, COALESCE(name, email) as user, id as target_id, 'Joined Tamuu' as action, created_at as time FROM users
                         UNION ALL
-                        SELECT 'invitation' as type, COALESCE((SELECT name FROM users WHERE id = invitations.user_id), 'Unknown') as user, 'Created new invitation: ' || name as action, created_at as time FROM invitations
+                        SELECT 'invitation' as type, COALESCE(u.name, u.email, 'Unknown') as user, i.id as target_id, 'Created new invitation: ' || i.name as action, i.created_at as time 
+                        FROM invitations i LEFT JOIN users u ON i.user_id = u.id
                         UNION ALL
-                        SELECT 'rsvp' as type, name as user, 'Submitted RSVP for ' || COALESCE((SELECT name FROM invitations WHERE id = rsvp_responses.invitation_id), 'invitation') as action, submitted_at as time FROM rsvp_responses
+                        SELECT 'rsvp' as type, r.name as user, r.invitation_id as target_id, 'Submitted RSVP for ' || COALESCE(i.name, 'invitation') as action, r.submitted_at as time 
+                        FROM rsvp_responses r LEFT JOIN invitations i ON r.invitation_id = i.id
                     ) 
                     WHERE (user LIKE ? OR action LIKE ?)
                     AND (? = 'all' OR type = ?)
