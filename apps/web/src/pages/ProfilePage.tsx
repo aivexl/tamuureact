@@ -275,51 +275,51 @@ export const ProfilePage: React.FC = () => {
                                     <m.div
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        className={`mb-10 p-6 rounded-3xl border transition-all duration-500 overflow-hidden relative group ${subStatus.urgency === 'critical' || subStatus.isExpired
-                                            ? 'bg-rose-50 border-rose-100'
-                                            : subStatus.urgency === 'high'
-                                                ? 'bg-amber-50 border-amber-100'
-                                                : 'bg-gradient-to-br from-indigo-50/50 to-slate-50 border-indigo-100/50'
+                                        className={`mb-10 p-7 rounded-[2rem] border transition-all duration-500 overflow-hidden relative group ${subStatus.urgency === 'critical' || subStatus.isExpired
+                                                ? 'bg-rose-50/50 border-rose-100'
+                                                : subStatus.urgency === 'high'
+                                                    ? 'bg-amber-50/50 border-amber-100'
+                                                    : 'bg-white border-slate-200 shadow-sm'
                                             }`}
                                     >
-                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-                                            <div className="flex items-start gap-5">
-                                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-lg transition-transform group-hover:scale-110 duration-500 ${subStatus.isExpired ? 'bg-rose-600 text-white shadow-rose-200' :
-                                                    subStatus.urgency === 'critical' ? 'bg-rose-500 text-white shadow-rose-200 animate-pulse' :
-                                                        subStatus.urgency === 'high' ? 'bg-amber-500 text-white shadow-amber-200' :
-                                                            'bg-white text-indigo-600 shadow-indigo-100 border border-indigo-50'
+                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 relative z-10">
+                                            <div className="flex items-center gap-6">
+                                                <div className={`w-16 h-16 rounded-[1.25rem] flex items-center justify-center shrink-0 shadow-lg transition-all duration-500 group-hover:rotate-6 ${subStatus.isExpired ? 'bg-rose-600 text-white shadow-rose-200' :
+                                                        subStatus.urgency === 'critical' ? 'bg-rose-500 text-white shadow-rose-200 animate-pulse' :
+                                                            subStatus.urgency === 'high' ? 'bg-amber-500 text-white shadow-amber-200' :
+                                                                'bg-indigo-600 text-white shadow-indigo-100'
                                                     }`}>
-                                                    <ClockIcon className="w-7 h-7" />
+                                                    <ClockIcon className="w-8 h-8" />
                                                 </div>
 
-                                                <div className="space-y-1">
-                                                    <div className="flex items-center gap-2">
-                                                        <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Masa Aktif</h3>
-                                                        <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter border ${subStatus.isExpired
-                                                            ? 'bg-rose-100 text-rose-600 border-rose-200'
-                                                            : 'bg-emerald-100 text-emerald-600 border-emerald-200'
+                                                <div className="space-y-1.5">
+                                                    <div className="flex items-center gap-3">
+                                                        <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.2em]">Subscription</h3>
+                                                        <span className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${subStatus.isExpired
+                                                                ? 'bg-rose-100 text-rose-600 border-rose-200'
+                                                                : 'bg-emerald-100 text-emerald-600 border-emerald-200'
                                                             }`}>
                                                             {!subStatus.isExpired && (
-                                                                <span className="relative flex h-2 w-2">
+                                                                <span className="relative flex h-1.5 w-1.5">
                                                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                                                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
                                                                 </span>
                                                             )}
                                                             {subStatus.isExpired ? 'Expired' : 'Active'}
                                                         </span>
                                                     </div>
 
-                                                    <div className="flex flex-col gap-1">
-                                                        <div className="text-2xl font-black tracking-tight font-outfit text-slate-900">
-                                                            {profile?.expires_at ? subStatus.label : '∞ Selamanya'}
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <div className="text-3xl font-bold tracking-tight text-slate-900 font-outfit">
+                                                            {profile?.expires_at ? subStatus.label : (profile?.tier === 'free' ? 'Free Version' : '∞ Lifetime')}
                                                         </div>
-                                                        <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                                                        <div className="flex items-center gap-2 text-[13px] text-slate-500 font-medium">
                                                             {subStatus.isExpired ? (
-                                                                <span className="text-rose-600 font-bold">Data akan dihapus dalam {30 - subStatus.daysSinceExpiry} hari</span>
+                                                                <span className="text-rose-600 font-bold">Data deletion in {30 - subStatus.daysSinceExpiry} days</span>
                                                             ) : profile?.expires_at ? (
-                                                                <span>Hingga {new Date(profile.expires_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                                                <span>Valid until {new Date(profile.expires_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                                                             ) : (
-                                                                <span>Akses penuh tanpa batas waktu</span>
+                                                                <span>{profile?.tier === 'free' ? 'Upgrade to access VIP features' : 'Unlimited full access'}</span>
                                                             )}
                                                         </div>
                                                     </div>
@@ -329,34 +329,34 @@ export const ProfilePage: React.FC = () => {
                                             <div className="flex items-center gap-3">
                                                 <button
                                                     onClick={() => navigate('/dashboard?tab=invoice')}
-                                                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-black rounded-xl border border-slate-200 transition-all shadow-sm active:scale-95 uppercase tracking-widest"
+                                                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-slate-50 text-slate-700 text-[11px] font-bold rounded-2xl border border-slate-200 transition-all shadow-sm active:scale-95 uppercase tracking-widest whitespace-nowrap"
                                                 >
-                                                    <CreditCardIcon className="w-3.5 h-3.5" />
+                                                    <CreditCardIcon className="w-4 h-4" />
                                                     Invoice
                                                 </button>
                                                 <button
                                                     onClick={() => navigate('/billing')}
-                                                    className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 text-white text-xs font-black rounded-xl transition-all shadow-lg active:scale-95 uppercase tracking-widest ${subStatus.urgency === 'critical' || subStatus.isExpired
-                                                        ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-100'
-                                                        : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100'
+                                                    className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-3 text-white text-[11px] font-bold rounded-2xl transition-all shadow-lg active:scale-95 uppercase tracking-widest whitespace-nowrap ${subStatus.urgency === 'critical' || subStatus.isExpired
+                                                            ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-200'
+                                                            : 'bg-slate-900 hover:bg-black shadow-slate-200'
                                                         }`}
                                                 >
-                                                    Perpanjang
-                                                    <ExternalLinkIcon className="w-3.5 h-3.5" />
+                                                    Upgrade Plan
+                                                    <ExternalLinkIcon className="w-4 h-4" />
                                                 </button>
                                             </div>
                                         </div>
 
                                         {/* Visualization Bar */}
                                         {!subStatus.isExpired && profile?.expires_at && (
-                                            <div className="mt-6 h-1.5 w-full bg-slate-100/50 rounded-full overflow-hidden">
+                                            <div className="mt-8 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                                                 <m.div
                                                     initial={{ width: 0 }}
                                                     animate={{ width: `${Math.max(5, (subStatus.days / 365) * 100)}%` }}
                                                     transition={{ duration: 1.5, ease: "easeOut" }}
                                                     className={`h-full rounded-full ${subStatus.urgency === 'critical' ? 'bg-rose-500' :
-                                                        subStatus.urgency === 'high' ? 'bg-amber-500' :
-                                                            'bg-indigo-500'
+                                                            subStatus.urgency === 'high' ? 'bg-amber-500' :
+                                                                'bg-indigo-600'
                                                         }`}
                                                 />
                                             </div>

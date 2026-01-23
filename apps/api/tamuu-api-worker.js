@@ -73,10 +73,22 @@ export default {
                         const userIdToUse = providedUid || crypto.randomUUID();
                         const tamuuId = `TAMUU-USER-${userIdToUse.substring(0, 8).toUpperCase()}`;
 
+                        // SUPER ULTRA: Business Rules for Trial/Subscription
+                        // - Free tier: 30 days (1 month) from signup
+                        // - Special test accounts: Unlimited (no expiry)
+                        const isSpecialAccount = email === 'user@tamuu.id' || email === 'admin@tamuu.id';
+                        let expiresAtString = null;
+
+                        if (!isSpecialAccount) {
+                            const trialEndDate = new Date();
+                            trialEndDate.setDate(trialEndDate.getDate() + 30); // 1 month trial
+                            expiresAtString = trialEndDate.toISOString();
+                        }
+
                         await env.DB.prepare(
-                            `INSERT INTO users (id, email, tamuu_id, tier, max_invitations, invitation_count) 
-                             VALUES (?, ?, ?, 'free', 1, 0)`
-                        ).bind(userIdToUse, email, tamuuId).run();
+                            `INSERT INTO users (id, email, tamuu_id, tier, max_invitations, invitation_count, expires_at) 
+                             VALUES (?, ?, ?, 'free', 1, 0, ?)`
+                        ).bind(userIdToUse, email, tamuuId, expiresAtString).run();
 
                         user = {
                             id: userIdToUse,
@@ -84,7 +96,8 @@ export default {
                             tamuu_id: tamuuId,
                             tier: 'free',
                             max_invitations: 1,
-                            invitation_count: 0
+                            invitation_count: 0,
+                            expires_at: expiresAtString
                         };
                     }
 
@@ -95,6 +108,7 @@ export default {
                         invitationCount: user.invitation_count || 0,
                         tier: user.tier || 'free',
                         tamuuId: user.tamuu_id || `TAMUU-USER-${user.id.substring(0, 8)}`,
+                        expires_at: user.expires_at,
                         birthDate: user.birth_date,
                         bank1Name: user.bank1_name,
                         bank1Number: user.bank1_number,
@@ -472,6 +486,57 @@ export default {
                         uptime: '99.9%'
                     }
                 }, corsHeaders);
+            }
+
+            // ADMIN: Update User Subscription (expires_at)
+            if (path.startsWith('/api/admin/users/') && path.endsWith('/subscription') && method === 'PUT') {
+                const userId = path.split('/')[4];
+                const { expires_at, tier, max_invitations } = await request.json();
+
+                // Build dynamic update query
+                const updates = [];
+                const values = [];
+
+                if (expires_at !== undefined) {
+                    updates.push('expires_at = ?');
+                    values.push(expires_at); // Can be null for unlimited
+                }
+                if (tier) {
+                    updates.push('tier = ?');
+                    values.push(tier);
+                }
+                if (max_invitations !== undefined) {
+                    updates.push('max_invitations = ?');
+                    values.push(max_invitations);
+                }
+
+                if (updates.length === 0) {
+                    return json({ error: 'No fields to update' }, { ...corsHeaders, status: 400 });
+                }
+
+                updates.push('updated_at = datetime("now")');
+                values.push(userId);
+
+                await env.DB.prepare(
+                    `UPDATE users SET ${updates.join(', ')} WHERE id = ?`
+                ).bind(...values).run();
+
+                // Fetch and return updated user
+                const updatedUser = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first();
+
+                return json({
+                    success: true,
+                    message: 'User subscription updated',
+                    user: updatedUser
+                }, corsHeaders);
+            }
+
+            // ADMIN: List All Users
+            if (path === '/api/admin/users' && method === 'GET') {
+                const { results } = await env.DB.prepare(
+                    'SELECT id, email, name, tier, expires_at, max_invitations, invitation_count, created_at FROM users ORDER BY created_at DESC'
+                ).all();
+                return json(results, corsHeaders);
             }
 
             // ============================================
