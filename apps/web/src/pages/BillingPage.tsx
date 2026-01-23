@@ -19,33 +19,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 
-// Helper for date formatting - converts UTC to local timezone (WIB)
-const formatDateFull = (dateStr: string) => {
-  try {
-    // Database stores UTC time, ensure we parse it correctly
-    let d = new Date(dateStr);
-
-    // If the date string doesn't have timezone info, treat it as UTC
-    if (!dateStr.includes('Z') && !dateStr.includes('+') && !dateStr.includes('-', 10)) {
-      d = new Date(dateStr + 'Z'); // Append Z to indicate UTC
-    }
-
-    return d
-      .toLocaleString("id-ID", {
-        timeZone: "Asia/Jakarta", // Explicitly use WIB timezone
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      })
-      .replace(/\./g, ":");
-  } catch (e) {
-    return dateStr;
-  }
-};
+import { formatDateFull } from "../lib/utils";
 
 
 export const BillingPage: React.FC = () => {

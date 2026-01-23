@@ -7,6 +7,7 @@ import { useStore } from '../store/useStore';
 import { useSEO } from '../hooks/useSEO';
 import { useInvitations, Invitation } from '../hooks/queries';
 import { WelcomeDisplaysTab } from '../components/Dashboard/WelcomeDisplaysTab';
+import { BillingHistoryTab } from '../components/Dashboard/BillingHistoryTab';
 
 // ============================================
 // INLINE SVG ICONS (Zero external dependency)
@@ -540,13 +541,7 @@ export const DashboardPage: React.FC = () => {
 
                         {/* Invoice Tab */}
                         {activeTab === 'invoice' && (
-                            <m.div key="invoice" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-slate-200">
-                                <div className="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
-                                    <FileTextIcon className="w-10 h-10 text-slate-400" />
-                                </div>
-                                <h3 className="text-xl font-semibold text-slate-800 mb-2">Belum Ada Invoice</h3>
-                                <p className="text-slate-500 text-center">Riwayat pembayaran & invoice akan muncul di sini</p>
-                            </m.div>
+                            <BillingHistoryTab />
                         )}
 
                         {/* Tutorial Tab */}

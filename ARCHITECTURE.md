@@ -175,7 +175,7 @@ npm run deploy:api         # Deploy API to Cloudflare Workers
 ## 🔗 Environment Variables
 
 ```env
-- `VITE_API_URL`: `https://tamuu-api.shafania57.workers.dev` (Production)
+- `VITE_API_BASE`: `https://api.tamuu.id` (Production)
 ```
 
 ---
