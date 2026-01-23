@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { m, AnimatePresence } from 'framer-motion';
 import { getPublicDomain } from '../lib/utils';
 import { invitations as invitationsApi, billing } from '../lib/api';
@@ -152,7 +152,15 @@ export const DashboardPage: React.FC = () => {
     const navigate = useNavigate();
     const user = useStore(s => s.user);
     const logout = useStore(s => s.logout);
-    const [activeTab, setActiveTab] = useState<TabId>('dashboard');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const initialTab = (searchParams.get('tab') as TabId) || 'dashboard';
+    const [activeTab, setActiveTab] = useState<TabId>(initialTab);
+
+    // Sync tab with URL
+    const handleTabChange = (tabId: TabId) => {
+        setActiveTab(tabId);
+        setSearchParams({ tab: tabId });
+    };
 
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -204,7 +212,7 @@ export const DashboardPage: React.FC = () => {
                                 if (item.id === 'wishes') {
                                     navigate('/wishes');
                                 } else {
-                                    setActiveTab(item.id);
+                                    handleTabChange(item.id);
                                 }
                             }}
                             className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${activeTab === item.id ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
@@ -242,7 +250,7 @@ export const DashboardPage: React.FC = () => {
                 {menuItems.slice(0, 5).map(item => (
                     <button
                         key={item.id}
-                        onClick={() => setActiveTab(item.id)}
+                        onClick={() => handleTabChange(item.id)}
                         className={`flex flex-col items-center gap-1 transition-all ${activeTab === item.id ? 'text-teal-400' : 'text-slate-400'}`}
                     >
                         <div className={`w-11 h-11 rounded-[1.25rem] flex items-center justify-center transition-all ${activeTab === item.id ? 'bg-teal-400/20 shadow-[0_0_20px_rgba(45,212,191,0.2)]' : 'bg-transparent'}`}>
@@ -306,7 +314,7 @@ export const DashboardPage: React.FC = () => {
                                     <div className="lg:col-span-2 space-y-6">
                                         <div className="flex items-center justify-between px-1">
                                             <h3 className="text-lg md:text-xl font-black text-slate-900">Undangan Terbaru</h3>
-                                            <button onClick={() => setActiveTab('invitations')} className="text-xs font-black text-teal-600 hover:text-teal-700 transition-colors uppercase tracking-widest">Lihat Semua</button>
+                                            <button onClick={() => handleTabChange('invitations')} className="text-xs font-black text-teal-600 hover:text-teal-700 transition-colors uppercase tracking-widest">Lihat Semua</button>
                                         </div>
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">

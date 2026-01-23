@@ -301,11 +301,17 @@ export const ProfilePage: React.FC = () => {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3">
-                                                <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 transition-all shadow-sm">
+                                                <button
+                                                    onClick={() => navigate('/dashboard?tab=invoice')}
+                                                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 transition-all shadow-sm"
+                                                >
                                                     <CreditCardIcon className="w-3.5 h-3.5" />
                                                     Invoice
                                                 </button>
-                                                <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-indigo-100">
+                                                <button
+                                                    onClick={() => navigate('/billing')}
+                                                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-indigo-100"
+                                                >
                                                     Perpanjang
                                                     <ExternalLinkIcon className="w-3.5 h-3.5" />
                                                 </button>

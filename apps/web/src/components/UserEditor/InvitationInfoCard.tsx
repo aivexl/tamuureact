@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { Calendar, Clock, Upload, ExternalLink, Copy, Check, Share2, Settings } from 'lucide-react';
+import { Calendar, Clock, Upload, ExternalLink, Copy, Check, Share2, Settings, CreditCard } from 'lucide-react';
 import { getPublicDomain } from '@/lib/utils';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 interface InvitationInfoCardProps {
     invitation: {
@@ -18,6 +18,7 @@ interface InvitationInfoCardProps {
 }
 
 export const InvitationInfoCard: React.FC<InvitationInfoCardProps> = ({ invitation, onShare, onSettings }) => {
+    const navigate = useNavigate();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [copied, setCopied] = useState(false);
 
@@ -153,6 +154,16 @@ export const InvitationInfoCard: React.FC<InvitationInfoCardProps> = ({ invitati
                     <m.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
+                        onClick={() => navigate('/dashboard?tab=invoice')}
+                        className="px-6 py-3.5 bg-white text-slate-700 font-bold rounded-xl border border-slate-200 shadow-sm hover:bg-slate-50 transition-all font-outfit text-xs uppercase tracking-widest flex items-center justify-center gap-2 group whitespace-nowrap"
+                    >
+                        <CreditCard className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-600 transition-colors" />
+                        <span>Invoice</span>
+                    </m.button>
+                    <m.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => navigate('/billing')}
                         className="px-6 py-3.5 bg-slate-900 text-white font-bold rounded-xl shadow-lg shadow-slate-900/10 hover:shadow-xl hover:shadow-slate-900/20 hover:bg-slate-800 transition-all font-outfit text-xs uppercase tracking-widest flex items-center justify-center gap-2 group whitespace-nowrap"
                     >
                         <span>Perpanjang</span>
