@@ -568,8 +568,8 @@ export const GuestManagementPage: React.FC = () => {
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap">Meja</th>
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center">Jumlah</th>
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center">Status WA</th>
-                                    <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center text-emerald-500 bg-emerald-50/30">Check-in</th>
-                                    <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center text-rose-500 bg-rose-50/30">Check-out</th>
+                                    <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center">Check-in</th>
+                                    <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center">Check-out</th>
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center">Kehadiran</th>
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center">Aksi</th>
                                 </tr>
