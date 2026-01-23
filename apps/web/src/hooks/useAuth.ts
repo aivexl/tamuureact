@@ -40,7 +40,7 @@ export const useAuth = () => {
     /**
      * Enterprise-grade Signup
      */
-    const signUp = async (email: string, password: string, fullName: string, role: 'user' | 'admin' = 'user') => {
+    const signUp = async (email: string, password: string, fullName: string, gender: string, birthDate: string, role: 'user' | 'admin' = 'user') => {
         setLoading(true);
         setError(null);
         try {
@@ -50,6 +50,8 @@ export const useAuth = () => {
                 options: {
                     data: {
                         full_name: fullName,
+                        gender: gender,
+                        birth_date: birthDate,
                         role: role,
                     },
                 },

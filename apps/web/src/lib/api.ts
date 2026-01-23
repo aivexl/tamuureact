@@ -436,8 +436,15 @@ export const billing = {
 // USERS API
 // ============================================
 export const users = {
-    async getMe(email: string) {
-        const res = await safeFetch(`${API_BASE}/api/auth/me?email=${email}`);
+    async getMe(email: string, metadata?: { name?: string; gender?: string; birthDate?: string; uid?: string }) {
+        let url = `${API_BASE}/api/auth/me?email=${email}`;
+        if (metadata) {
+            if (metadata.uid) url += `&uid=${metadata.uid}`;
+            if (metadata.name) url += `&name=${encodeURIComponent(metadata.name)}`;
+            if (metadata.gender) url += `&gender=${metadata.gender}`;
+            if (metadata.birthDate) url += `&birthDate=${metadata.birthDate}`;
+        }
+        const res = await safeFetch(url);
         if (!res.ok) throw new Error('Failed to fetch user data');
         const data = await res.json();
         return sanitizeValue(data);

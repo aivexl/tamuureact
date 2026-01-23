@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, ArrowRight, User, Mail, Lock } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, User, Mail, Lock, Calendar, ChevronDown } from 'lucide-react';
 import { PremiumLoader } from '../ui/PremiumLoader';
 import { Link } from 'react-router-dom';
 
@@ -13,6 +13,8 @@ interface AuthFormProps {
 export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit, isLoading = false }) => {
     const [form, setForm] = useState({
         name: '',
+        gender: '',
+        birthDate: '',
         email: '',
         password: '',
         confirmPassword: ''
@@ -22,7 +24,11 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit, isLoading = 
 
     const validate = () => {
         const newErrors: Record<string, string> = {};
-        if (mode === 'signup' && !form.name) newErrors.name = 'Nama lengkap wajib diisi';
+        if (mode === 'signup') {
+            if (!form.name) newErrors.name = 'Nama lengkap wajib diisi';
+            if (!form.gender) newErrors.gender = 'Jenis kelamin wajib dipilih';
+            if (!form.birthDate) newErrors.birthDate = 'Tanggal lahir wajib diisi';
+        }
         if (!form.email) newErrors.email = 'Email wajib diisi';
         else if (!/\S+@\S+\.\S+/.test(form.email)) newErrors.email = 'Format email tidak valid';
 
@@ -48,29 +54,68 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit, isLoading = 
         w-full bg-white/5 border ${errors[field] ? 'border-rose-500/50' : 'border-white/10'} 
         rounded-2xl px-12 py-4 text-white font-medium 
         focus:outline-none focus:ring-2 ${errors[field] ? 'focus:ring-rose-500/20' : 'focus:ring-premium-accent/20'} 
-        focus:border-premium-accent/50 transition-all duration-300 placeholder:text-white/20
+        focus:border-premium-accent/50 transition-all duration-300 placeholder:text-white/20 appearance-none
     `;
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <AnimatePresence mode="wait">
                 {mode === 'signup' && (
-                    <m.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="relative"
-                    >
-                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
-                        <input
-                            type="text"
-                            placeholder="Nama Lengkap"
-                            value={form.name}
-                            onChange={(e) => setForm({ ...form, name: e.target.value })}
-                            className={inputClasses('name')}
-                        />
-                        {errors.name && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{errors.name}</p>}
-                    </m.div>
+                    <div className="space-y-4">
+                        <m.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="relative"
+                        >
+                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                            <input
+                                type="text"
+                                placeholder="Nama Lengkap"
+                                value={form.name}
+                                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                                className={inputClasses('name')}
+                            />
+                            {errors.name && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{errors.name}</p>}
+                        </m.div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <m.div
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="relative"
+                            >
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                                <select
+                                    value={form.gender}
+                                    onChange={(e) => setForm({ ...form, gender: e.target.value })}
+                                    className={`${inputClasses('gender')} cursor-pointer`}
+                                >
+                                    <option value="" disabled className="bg-slate-900 text-white/20">Jenis Kelamin</option>
+                                    <option value="male" className="bg-slate-900 text-white">Laki-laki</option>
+                                    <option value="female" className="bg-slate-900 text-white">Perempuan</option>
+                                </select>
+                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+                                {errors.gender && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{errors.gender}</p>}
+                            </m.div>
+
+                            <m.div
+                                initial={{ opacity: 0, x: 10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="relative"
+                            >
+                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                                <input
+                                    type="date"
+                                    value={form.birthDate}
+                                    onChange={(e) => setForm({ ...form, birthDate: e.target.value })}
+                                    className={`${inputClasses('birthDate')} cursor-pointer scale-95 origin-left`}
+                                    style={{ colorScheme: 'dark' }}
+                                />
+                                {errors.birthDate && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{errors.birthDate}</p>}
+                            </m.div>
+                        </div>
+                    </div>
                 )}
             </AnimatePresence>
 

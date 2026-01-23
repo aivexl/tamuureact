@@ -16,7 +16,7 @@ export const SignupPage: React.FC = () => {
     });
 
     const handleSignup = async (data: any) => {
-        const { error } = await signUp(data.email, data.password, data.name);
+        const { error } = await signUp(data.email, data.password, data.name, data.gender, data.birthDate);
 
         if (!error) {
             navigate('/onboarding');

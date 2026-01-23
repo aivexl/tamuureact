@@ -59,6 +59,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             name: supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || '',
             avatar_url: supabaseUser.user_metadata?.avatar_url || '',
             role: (supabaseUser.user_metadata?.role as 'user' | 'admin') || 'user',
+            gender: supabaseUser.user_metadata?.gender || '',
+            birthDate: supabaseUser.user_metadata?.birth_date || '',
             tier: 'free', // Initial default
             maxInvitations: 1,
             invitationCount: 0,
@@ -69,10 +71,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setAuthSession({ user: initialUser, token });
 
         try {
-            console.log(`[Auth Sync] Fetching D1 profile for ${supabaseUser.email} (UID: ${supabaseUser.id})...`);
             // Fetch real tier and quotas from D1 via our API
             const { users: usersApi } = await import('../lib/api');
-            const d1User = await usersApi.getMe(`${supabaseUser.email}&uid=${supabaseUser.id}`);
+            const d1User = await usersApi.getMe(`${supabaseUser.email}`, {
+                uid: supabaseUser.id,
+                name: supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || '',
+                gender: supabaseUser.user_metadata?.gender || '',
+                birthDate: supabaseUser.user_metadata?.birth_date || ''
+            });
 
             console.log('[Auth Sync] D1 Profile received:', d1User);
 
