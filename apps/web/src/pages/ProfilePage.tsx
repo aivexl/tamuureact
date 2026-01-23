@@ -87,8 +87,9 @@ const MapPinIcon = ({ className }: { className?: string }) => (
 const getTierConfig = (plan: string) => {
     const configs: Record<string, { label: string; bgClass: string; textClass: string }> = {
         free: { label: 'FREE EXPLORER', bgClass: 'bg-slate-100', textClass: 'text-slate-700 border-slate-200' },
-        vip: { label: 'VIP PREMIERE', bgClass: 'bg-indigo-100', textClass: 'text-indigo-700 border-indigo-200' },
-        vvip: { label: 'VVIP EXCLUSIVE', bgClass: 'bg-amber-100', textClass: 'text-amber-700 border-amber-200' },
+        vip: { label: 'PRO ACCESS', bgClass: 'bg-indigo-100', textClass: 'text-indigo-700 border-indigo-200' },
+        platinum: { label: 'ULTIMATE EVENT', bgClass: 'bg-emerald-100', textClass: 'text-emerald-700 border-emerald-200' },
+        vvip: { label: 'ELITE EXCLUSIVE', bgClass: 'bg-amber-100', textClass: 'text-amber-700 border-amber-200' },
     };
     return configs[plan.toLowerCase()] || configs.free;
 };

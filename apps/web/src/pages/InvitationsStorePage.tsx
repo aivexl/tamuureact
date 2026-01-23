@@ -101,6 +101,21 @@ export const InvitationsStorePage: React.FC = () => {
             return;
         }
 
+        // [QUOTA GUARD] Check if user has reached their invitation limit
+        const maxInvitations = user?.maxInvitations || 1;
+        const invitationCount = user?.invitationCount || 0;
+        if (invitationCount >= maxInvitations) {
+            const tierName = user?.tier === 'vvip' ? 'ELITE' : user?.tier === 'platinum' ? 'ULTIMATE' : user?.tier === 'vip' ? 'PRO' : 'FREE';
+            showModal({
+                title: 'Kuota Undangan Penuh',
+                message: `Paket ${tierName} Anda hanya memiliki ${maxInvitations} slot undangan aktif. Upgrade ke paket yang lebih tinggi untuk membuat undangan baru!`,
+                type: 'warning',
+                confirmText: 'Lihat Paket Upgrade',
+                onConfirm: () => navigate('/upgrade')
+            });
+            return;
+        }
+
         const isAppDomain = getIsAppDomain();
 
         if (isOnboarding) {

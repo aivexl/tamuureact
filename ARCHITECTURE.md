@@ -115,11 +115,13 @@ tamuureact/
 ## 💰 Monetization & Billing
 
 ### Subscription Tiers (Consumer)
-| Tier | Price | Features |
-|------|-------|----------|
-| **Free** | Rp 0 | 1 Invitation, Basic Templates |
-| **VIP** | Rp 99k/yr | 1 Invitation, VIP Templates, HD PDF Export |
-| **VVIP** | Rp 199k/yr | 3 Invitations, All Access, Video Export, Custom MP3 |
+| Tier | Price | Quota | Features |
+|------|-------|-------|----------|
+| **FREE** | Rp 0 | 1 | 30-Day Trial, Basic Templates, Watermark |
+| **PRO** | Rp 99k/yr | 1 | Premium Templates, Music, Digital Gift |
+| **ULTIMATE** | Rp 149k/yr | 2 | Check-in System, Analytics, Lucky Draw (**Recommended**) |
+| **ELITE** | Rp 199k/yr | 3 | All Access, Advanced Export, Priority Service |
+
 
 ### Billing Architecture
 - **Xendit Integration**: Menggunakan Xendit Invoice API untuk auto-generate link pembayaran.

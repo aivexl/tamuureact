@@ -374,7 +374,10 @@ export default {
                     if (transaction && transaction.status !== 'PAID') {
                         const userId = transaction.user_id;
                         const tier = transaction.tier;
-                        const maxInvitations = tier === 'vvip' ? 3 : 1;
+                        let maxInvitations = 1;
+                        if (tier === 'vvip') maxInvitations = 3;
+                        else if (tier === 'platinum') maxInvitations = 2;
+                        
                         const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
 
                         // 1. Update Transaction
@@ -419,7 +422,10 @@ export default {
                 if (status === 'PAID') {
                     const userId = metadata.userId;
                     const tier = metadata.tier;
-                    const maxInvitations = tier === 'vvip' ? 3 : 1;
+                    let maxInvitations = 1;
+                    if (tier === 'vvip') maxInvitations = 3;
+                    else if (tier === 'platinum') maxInvitations = 2;
+
                     const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
 
                     // 1. Update Transaction

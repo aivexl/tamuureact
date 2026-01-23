@@ -44,6 +44,7 @@ export const InvitationsGrid: React.FC<InvitationsGridProps> = ({
     const checkAccess = (templateTier?: SubscriptionTier) => {
         if (!templateTier || templateTier === 'free') return true;
         if (user?.tier === 'vvip') return true;
+        if (user?.tier === 'platinum' && (templateTier === 'platinum' || templateTier === 'vip')) return true;
         if (user?.tier === 'vip' && templateTier === 'vip') return true;
         return false;
     };
@@ -128,9 +129,9 @@ export const InvitationsGrid: React.FC<InvitationsGridProps> = ({
                                     </m.span>
                                 )}
                                 {template.tier && template.tier !== 'free' && (
-                                    <span className={`px-3 py-1 ${template.tier === 'vvip' ? 'bg-[#FFBF00] text-[#0A1128]' : 'bg-indigo-600 text-white'} text-[9px] font-black uppercase tracking-widest rounded-lg shadow-lg flex items-center gap-1`}>
-                                        {template.tier === 'vvip' ? <Star className="w-3 h-3 fill-current" /> : <Crown className="w-3 h-3 fill-current" />}
-                                        {template.tier === 'vvip' ? 'VVIP EXCLUSIVE' : template.tier === 'vip' ? 'VIP PREMIERE' : 'FREE EXPLORER'}
+                                    <span className={`px-3 py-1 ${template.tier === 'vvip' ? 'bg-[#FFBF00] text-[#0A1128]' : template.tier === 'platinum' ? 'bg-emerald-600 text-white' : 'bg-indigo-600 text-white'} text-[9px] font-black uppercase tracking-widest rounded-lg shadow-lg flex items-center gap-1`}>
+                                        {template.tier === 'vvip' ? <Star className="w-3 h-3 fill-current" /> : template.tier === 'platinum' ? <Sparkles className="w-3 h-3 fill-current" /> : <Crown className="w-3 h-3 fill-current" />}
+                                        {template.tier === 'vvip' ? 'ELITE EXCLUSIVE' : template.tier === 'platinum' ? 'ULTIMATE EVENT' : template.tier === 'vip' ? 'PRO ACCESS' : 'FREE EXPLORER'}
                                     </span>
                                 )}
                             </div>
@@ -167,7 +168,7 @@ export const InvitationsGrid: React.FC<InvitationsGridProps> = ({
                                     {template.id === selectedId
                                         ? 'Konfirmasi Desain'
                                         : !checkAccess(template.tier)
-                                            ? `Unlock ${template.tier?.toUpperCase()}`
+                                            ? `Unlock ${template.tier === 'vip' ? 'PRO' : template.tier?.toUpperCase()}`
                                             : 'Gunakan Desain'}
                                 </button>
                                 <button

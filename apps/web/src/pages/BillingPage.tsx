@@ -187,7 +187,7 @@ export const BillingPage: React.FC = () => {
                         <tbody>
                             <tr>
                                 <td style="padding: 20px 15px; border-bottom: 1px solid #f1f5f9;">
-                                    <p style="font-size: 16px; font-weight: 700; color: #0A1128; margin: 0;">Subscription Plan: ${tx.tier.toUpperCase()}</p>
+                                    <p style="font-size: 16px; font-weight: 700; color: #0A1128; margin: 0;">Subscription Plan: ${tx.tier === 'vip' ? 'PRO' : tx.tier === 'platinum' ? 'ULTIMATE' : tx.tier === 'vvip' ? 'ELITE' : tx.tier.toUpperCase()}</p>
                                     <p style="font-size: 12px; color: #64748b; margin: 5px 0 0 0;">Akses premium Tamuu selama 1 tahun</p>
                                 </td>
                                 <td style="padding: 20px 15px; border-bottom: 1px solid #f1f5f9; text-align: right; font-size: 16px; font-weight: 800; color: #0A1128;">
@@ -270,14 +270,16 @@ export const BillingPage: React.FC = () => {
   ]);
 
   const tierLabels = {
-    free: "Free Explorer",
-    vip: "VIP Premiere",
-    vvip: "VVIP EXCLUSIVE",
+    free: "FREE EXPLORER",
+    vip: "PRO ACCESS",
+    platinum: "ULTIMATE EVENT",
+    vvip: "ELITE EXCLUSIVE",
   };
 
   const tierColors = {
     free: "bg-slate-100 text-slate-600",
     vip: "bg-indigo-100 text-indigo-600",
+    platinum: "bg-emerald-100 text-emerald-600",
     vvip: "bg-[#FFBF00]/10 text-[#B8860B]",
   };
 
@@ -349,8 +351,10 @@ export const BillingPage: React.FC = () => {
                   {user?.tier === "free"
                     ? "Standard Access"
                     : user?.tier === "vip"
-                      ? "VIP Annual"
-                      : "VVIP Annual"}
+                      ? "Pro Annual"
+                      : user?.tier === "platinum"
+                        ? "Ultimate Annual"
+                        : "Elite Annual"}
                 </h2>
                 <p className="text-slate-500 mb-8">
                   {user?.tier === "free"

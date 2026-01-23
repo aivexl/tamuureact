@@ -125,67 +125,91 @@ export const UpgradePage: React.FC = () => {
                     </motion.p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start relative">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start relative">
                     {/* Free Tier */}
                     <TierCard
-                        name="Free"
+                        name="FREE"
                         price="Rp 0"
-                        duration="Forever"
+                        duration="selamanya"
                         icon={Zap}
                         color="bg-slate-400"
                         isCurrent={user?.tier === 'free'}
                         features={[
                             "1 Undangan Aktif",
+                            "Masa Aktif 30 Hari",
                             "Template Dasar",
                             "Buku Tamu Digital",
-                            "Integrasi WhatsApp",
-                            "Masa Aktif 1 Bulan",
+                            "RSVP Dasar",
+                            "Watermark Tamuu",
                         ]}
                         buttonText={user?.tier === 'free' ? "Current Plan" : "Get Started"}
                         onSelect={() => navigate('/dashboard')}
                         isLoading={processingTier === 'free'}
                     />
 
-                    {/* VIP Tier */}
+                    {/* Pro Tier */}
                     <TierCard
-                        name="VIP PREMIERE"
+                        name="PRO"
                         price="Rp 99k"
                         originalPrice="Rp 149k"
-                        duration="per year"
+                        duration="per tahun"
                         icon={Crown}
                         color="bg-indigo-600"
-                        isPopular={true}
                         isCurrent={user?.tier === 'vip'}
                         features={[
                             "1 Undangan Aktif",
-                            "Semua Template VIP",
-                            "Export PDF Full HD",
-                            "Hapus Branding Tamuu",
-                            "Manajemen RSVP",
                             "Masa Aktif 1 Tahun",
-                            "Dukungan Prioritas",
+                            "Semua Template Premium",
+                            "Orbit Dynamic Animations",
+                            "Premium Music Library",
+                            "Digital Gift & Angpao",
+                            "Smart WhatsApp Sharing",
                         ]}
-                        buttonText={user?.tier === 'vip' ? "Active" : "Go VIP PREMIERE"}
+                        buttonText={user?.tier === 'vip' ? "Active" : "Go Pro"}
                         onSelect={() => initiatePayment('vip')}
                         isLoading={processingTier === 'vip'}
                     />
 
-                    {/* VVIP Tier */}
+                    {/* Ultimate Tier */}
                     <TierCard
-                        name="VVIP EXCLUSIVE"
+                        name="ULTIMATE"
+                        price="Rp 149k"
+                        originalPrice="Rp 249k"
+                        duration="per tahun"
+                        icon={Star}
+                        color="bg-emerald-600"
+                        isPopular={true}
+                        isCurrent={user?.tier === 'platinum'}
+                        features={[
+                            "2 Undangan Aktif",
+                            "Semua Fitur Pro",
+                            "Sistem Check-in & Out",
+                            "QR Code per Tamu",
+                            "Lucky Draw / Undian",
+                            "Dashboard Analytics",
+                            "Social Media Management",
+                        ]}
+                        buttonText={user?.tier === 'platinum' ? "Active" : "Go Ultimate"}
+                        onSelect={() => initiatePayment('platinum')}
+                        isLoading={processingTier === 'platinum'}
+                    />
+
+                    {/* Elite Tier */}
+                    <TierCard
+                        name="ELITE"
                         price="Rp 199k"
                         originalPrice="Rp 299k"
-                        duration="per year"
-                        icon={Star}
+                        duration="per tahun"
+                        icon={Crown}
                         color="bg-[#FFBF00]"
                         isCurrent={user?.tier === 'vvip'}
                         features={[
                             "3 Undangan Aktif",
-                            "Akses Semua Template",
-                            "White-label (No Brand)",
-                            "Masa Aktif 1 Tahun",
+                            "Semua Fitur Ultimate",
+                            "Advanced Import/Export",
+                            "Eksklusivitas Layanan",
                         ]}
-                        buttonText={user?.tier === 'vvip' ? "Active" : "Go VVIP EXCLUSIVE"}
+                        buttonText={user?.tier === 'vvip' ? "Active" : "Go Elite"}
                         onSelect={() => initiatePayment('vvip')}
                         isLoading={processingTier === 'vvip'}
                     />
