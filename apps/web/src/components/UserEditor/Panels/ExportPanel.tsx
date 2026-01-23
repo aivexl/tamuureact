@@ -74,7 +74,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ previewRef }) => {
                             <p className="text-[10px] text-slate-400 font-medium">Format PNG (High Quality)</p>
                         </div>
                     </div>
-                    {isExporting && !exportSuccess ? <PremiumLoader variant="inline" color="#0d9488" /> : <div className="text-xs font-black text-slate-300 uppercase tracking-widest">PNG</div>}
+                    {isExporting && !exportSuccess ? <PremiumLoader variant="inline" size="sm" color="#0d9488" /> : <div className="text-xs font-black text-slate-300 uppercase tracking-widest">PNG</div>}
                 </m.button>
 
                 <m.button
@@ -93,7 +93,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ previewRef }) => {
                             <p className="text-[10px] text-teal-100/70 font-medium">Format PDF Dokumen HD</p>
                         </div>
                     </div>
-                    {isExporting && !exportSuccess ? <PremiumLoader variant="inline" color="white" /> : <div className="text-xs font-black text-teal-400 uppercase tracking-widest">PDF</div>}
+                    {isExporting && !exportSuccess ? <PremiumLoader variant="inline" size="sm" color="white" /> : <div className="text-xs font-black text-teal-400 uppercase tracking-widest">PDF</div>}
                 </m.button>
             </div>
 

@@ -68,7 +68,7 @@ export const ForgotPasswordPage: React.FC = () => {
                             className="w-full bg-white text-slate-950 font-black py-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl hover:bg-slate-50 transition-all disabled:opacity-50 group"
                         >
                             {isLoading ? (
-                                <PremiumLoader variant="inline" color="white" />
+                                <PremiumLoader variant="inline" size="sm" color="white" />
                             ) : (
                                 <>
                                     Kirim Instruksi Pemulihan

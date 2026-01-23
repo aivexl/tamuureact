@@ -588,7 +588,7 @@ export const ProfilePage: React.FC = () => {
                             disabled={isSaving}
                             className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl shadow-md shadow-indigo-200 transition-all active:scale-95"
                         >
-                            {isSaving ? <PremiumLoader variant="inline" color="white" /> : <SaveIcon className="w-4 h-4" />}
+                            {isSaving ? <PremiumLoader variant="inline" size="sm" color="white" /> : <SaveIcon className="w-4 h-4" />}
                             Save Changes
                         </button>
                     </div>

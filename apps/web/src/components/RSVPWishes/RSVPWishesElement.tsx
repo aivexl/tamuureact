@@ -307,7 +307,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isPreview, invitat
             >
                 {isSubmitting ? (
                     <>
-                        <PremiumLoader variant="inline" color="white" />
+                        <PremiumLoader variant="inline" size="sm" color="white" />
                         Mengirim...
                     </>
                 ) : (
@@ -445,7 +445,7 @@ const GuestWishesSection: React.FC<GuestWishesSectionProps & { variant: VariantS
     }, [invitationId, isPreview, config.wishesMaxDisplay, refreshKey]);
 
     if (loading) {
-        return <div className="flex justify-center py-8"><PremiumLoader variant="inline" color={config.textColor} /></div>;
+        return <div className="flex justify-center py-8"><PremiumLoader variant="inline" size="sm" color={config.textColor} /></div>;
     }
 
     if (wishes.length === 0) {

@@ -140,7 +140,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit, isLoading = 
                 className="w-full bg-white text-slate-950 font-black py-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl hover:bg-slate-50 transition-all disabled:opacity-50 group mt-6"
             >
                 {isLoading ? (
-                    <PremiumLoader variant="inline" color="#0f172a" />
+                    <PremiumLoader variant="inline" size="sm" color="#0f172a" />
                 ) : (
                     <>
                         {mode === 'login' ? 'Masuk Sekarang' : 'Daftar Akun'}

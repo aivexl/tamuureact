@@ -171,7 +171,7 @@ export const SEOPanel: React.FC<SEOPanelProps> = ({ invitationId, onClose }) => 
                     className={`flex-1 h-16 rounded-3xl flex items-center justify-center gap-3 font-black uppercase tracking-widest text-xs transition-all shadow-2xl active:scale-95 ${success ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-slate-900 text-white hover:bg-indigo-600 shadow-slate-900/20'}`}
                 >
                     {saving ? (
-                        <PremiumLoader variant="inline" color="white" />
+                        <PremiumLoader variant="inline" size="sm" color="white" />
                     ) : success ? (
                         <>
                             <Check className="w-6 h-6" />

@@ -220,7 +220,7 @@ export const GalleryPanel: React.FC<GalleryPanelProps> = ({ invitationId, onClos
                             : 'bg-slate-900 text-white hover:bg-slate-800'
                         }`}
                 >
-                    {saving && <PremiumLoader variant="inline" color="white" />}
+                    {saving && <PremiumLoader variant="inline" size="sm" color="white" />}
                     {success && <Check className="w-4 h-4" />}
                     {saving ? 'Menyimpan...' : success ? 'Tersimpan!' : 'Simpan'}
                 </button>
@@ -282,7 +282,7 @@ export const GalleryPanel: React.FC<GalleryPanelProps> = ({ invitationId, onClos
                         className="aspect-square rounded-2xl border-2 border-dashed border-slate-200 hover:border-violet-400 hover:bg-violet-50/30 flex flex-col items-center justify-center gap-2 text-slate-400 hover:text-violet-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {uploading ? (
-                            <PremiumLoader variant="inline" color="#8b5cf6" />
+                            <PremiumLoader variant="inline" size="sm" color="#8b5cf6" />
                         ) : (
                             <Camera className="w-6 h-6" />
                         )}

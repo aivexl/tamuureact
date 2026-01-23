@@ -245,7 +245,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
                                                             : 'bg-slate-950 text-white hover:bg-slate-900 border border-white/10'
                                                     }`}
                                             >
-                                                {saveStatus === 'saving' && <PremiumLoader variant="inline" color="white" />}
+                                                {saveStatus === 'saving' && <PremiumLoader variant="inline" size="sm" color="white" />}
                                                 {saveStatus === 'saved' && <Check className="w-4 h-4" />}
                                                 {saveStatus === 'error' && <AlertCircle className="w-4 h-4" />}
                                                 {saveStatus === 'saving' ? 'Menyimpan...' : saveStatus === 'saved' ? 'Tersimpan!' : saveStatus === 'error' ? 'Gagal' : 'Simpan'}
@@ -463,7 +463,7 @@ export const TemplateEditArea: React.FC = () => {
                         className={`group relative flex items-center gap-3 p-1.5 pr-4 bg-white rounded-2xl border transition-all duration-300 w-full lg:w-auto h-[52px] sm:h-[56px] ${isPublished ? 'border-teal-100 shadow-sm' : 'border-slate-100 shadow-sm'} ${isUpdatingStatus ? 'opacity-50' : ''} order-first lg:order-last`}
                     >
                         <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-all duration-500 shadow-sm ${isPublished ? 'text-teal-600 bg-teal-50' : 'text-slate-400 bg-slate-50'}`}>
-                            {isUpdatingStatus ? <PremiumLoader variant="inline" color={isPublished ? '#0d9488' : '#94a3b8'} /> : <Power className="w-4 h-4 sm:w-5 sm:h-5" />}
+                            {isUpdatingStatus ? <PremiumLoader variant="inline" size="sm" color={isPublished ? '#0d9488' : '#94a3b8'} /> : <Power className="w-4 h-4 sm:w-5 sm:h-5" />}
                         </div>
                         <div className="text-left min-w-[100px]">
                             <p className="text-[9px] sm:text-[10px] font-black text-slate-800 uppercase tracking-tight">Status Undangan</p>

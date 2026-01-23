@@ -285,7 +285,7 @@ export const LuckyDrawPanel: React.FC<LuckyDrawPanelProps> = ({ invitationId, on
                             : 'bg-slate-900 text-white hover:bg-slate-800'
                         }`}
                 >
-                    {saving && <PremiumLoader variant="inline" color="white" />}
+                    {saving && <PremiumLoader variant="inline" size="sm" color="white" />}
                     {success && <Check className="w-4 h-4" />}
                     {saving ? 'Menyimpan...' : success ? 'Tersimpan!' : 'Simpan'}
                 </button>

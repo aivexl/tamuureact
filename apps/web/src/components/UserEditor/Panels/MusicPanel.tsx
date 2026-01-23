@@ -177,7 +177,7 @@ export const MusicPanel: React.FC = () => {
                     <div className="flex items-center justify-between mb-4">
                         <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-pink-500 shadow-sm group-hover:scale-110 transition-transform">
                             {isUploading ? (
-                                <PremiumLoader variant="inline" color="#ec4899" />
+                                <PremiumLoader variant="inline" size="sm" color="#ec4899" />
                             ) : (
                                 <Upload className="w-6 h-6" />
                             )}

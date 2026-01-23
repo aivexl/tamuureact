@@ -205,7 +205,7 @@ export const GiftPanel: React.FC<GiftPanelProps> = ({ onClose }) => {
                     className={`flex-1 h-14 rounded-2xl flex items-center justify-center gap-2 font-black uppercase tracking-widest text-xs transition-all shadow-xl active:scale-95 ${success ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-slate-900 text-white hover:bg-emerald-600 shadow-slate-900/20'}`}
                 >
                     {saving ? (
-                        <PremiumLoader variant="inline" color="white" />
+                        <PremiumLoader variant="inline" size="sm" color="white" />
                     ) : success ? (
                         <>
                             <Check className="w-5 h-5" />

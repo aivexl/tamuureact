@@ -10,6 +10,7 @@ import { m } from 'framer-motion';
 
 interface PremiumLoaderProps {
     variant?: 'full' | 'inline';
+    size?: 'sm' | 'md' | 'lg';
     showLabel?: boolean;
     label?: string;
     className?: string;
@@ -19,6 +20,7 @@ interface PremiumLoaderProps {
 
 export const PremiumLoader: React.FC<PremiumLoaderProps> = ({
     variant = 'full',
+    size = 'md',
     showLabel = false,
     label = 'Memuat...',
     className = '',
@@ -26,10 +28,6 @@ export const PremiumLoader: React.FC<PremiumLoaderProps> = ({
     labelColor
 }) => {
     // S-Pattern / Snake sequence for a 4x4 grid (16 dots)
-    // 0  1  2  3
-    // 4  5  6  7
-    // 8  9  10 11
-    // 12 13 14 15
     const snakeIndices = [0, 1, 2, 3, 7, 11, 15, 14, 13, 12, 8, 4, 5, 6, 10, 9];
 
     // Map index to its position in the snake sequence
@@ -51,14 +49,15 @@ export const PremiumLoader: React.FC<PremiumLoaderProps> = ({
     };
 
     const isInline = variant === 'inline';
+    const isSm = size === 'sm';
 
     return (
         <div className={`
             ${variant === 'full' ? 'fixed inset-0 z-[9999] bg-[#000000] flex flex-col items-center justify-center' : 'inline-flex items-center justify-center'}
             select-none overflow-hidden ${className}
         `}>
-            <div className={`flex flex-col items-center ${isInline ? 'gap-3' : 'gap-6'} relative`}>
-                <div className={`grid grid-cols-4 ${isInline ? 'gap-1' : 'gap-1.5'} p-1`}>
+            <div className={`flex flex-col items-center ${isInline ? (isSm ? 'gap-1.5' : 'gap-3') : 'gap-6'} relative`}>
+                <div className={`grid grid-cols-4 ${isSm ? 'gap-[1.5px]' : (isInline ? 'gap-1' : 'gap-1.5')} ${isSm ? 'p-0.5' : 'p-1'}`}>
                     {[...Array(16)].map((_, i) => (
                         <m.div
                             key={i}
@@ -67,7 +66,7 @@ export const PremiumLoader: React.FC<PremiumLoaderProps> = ({
                             animate="animate"
                             style={{ backgroundColor: color }}
                             className={`
-                                ${isInline ? 'w-[3px] h-[3px]' : 'w-[4px] h-[4px]'}
+                                ${isSm ? 'w-[2px] h-[2px]' : (isInline ? 'w-[3px] h-[3px]' : 'w-[4px] h-[4px]')}
                                 rounded-none
                             `}
                         />
@@ -78,7 +77,7 @@ export const PremiumLoader: React.FC<PremiumLoaderProps> = ({
                     <m.p
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className={`font-mono uppercase tracking-[0.3em] ${isInline ? 'text-[8px]' : 'text-[9px] text-white/30'}`}
+                        className={`font-mono uppercase tracking-[0.3em] ${isSm ? 'text-[7px]' : (isInline ? 'text-[8px]' : 'text-[9px] text-white/30')}`}
                         style={{ color: labelColor || (isInline ? color : undefined) }}
                     >
                         {label}

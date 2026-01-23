@@ -254,7 +254,7 @@ export const AdminMusicPage: React.FC = () => {
                 >
                     {isUploading ? (
                         <>
-                            <PremiumLoader variant="inline" color="#0f172a" />
+                            <PremiumLoader variant="inline" size="sm" color="#0f172a" />
                             Uploading...
                         </>
                     ) : (

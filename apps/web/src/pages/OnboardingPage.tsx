@@ -658,7 +658,7 @@ export const OnboardingPage: React.FC = () => {
                                     <div className="flex items-center gap-2 ml-4 mt-2">
                                         {isCheckingSlug ? (
                                             <div className="flex items-center gap-2 text-slate-400">
-                                                <PremiumLoader variant="inline" color="currentColor" showLabel label="Checking..." />
+                                                <PremiumLoader variant="inline" size="sm" color="currentColor" showLabel label="Checking..." />
                                             </div>
                                         ) : slug.length > 0 && slug.length < 3 ? (
                                             <span className="text-[10px] text-amber-500 font-black uppercase tracking-widest">Minimal 3 karakter ya kak</span>
