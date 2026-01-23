@@ -24,23 +24,23 @@ export const SubscriptionStatusWidget: React.FC<SubscriptionStatusWidgetProps> =
             <m.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`flex items-center gap-3 px-4 py-2 rounded-2xl border transition-all duration-500 overflow-hidden relative group shadow-lg ${subStatus.urgency === 'critical' || subStatus.isExpired
+                className={`w-full rounded-2xl border transition-all duration-500 overflow-hidden relative shadow-lg ${subStatus.urgency === 'critical' || subStatus.isExpired
                         ? 'bg-rose-50/20 border-rose-100'
                         : subStatus.urgency === 'high'
                             ? 'bg-amber-50/20 border-amber-100'
                             : 'bg-white border-slate-200 shadow-slate-200/20'
                     }`}
             >
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${subStatus.isExpired ? 'bg-rose-600 text-white shadow-rose-200' :
-                        subStatus.urgency === 'critical' ? 'bg-rose-500 text-white shadow-rose-200 animate-pulse' :
-                            subStatus.urgency === 'high' ? 'bg-amber-500 text-white shadow-amber-200' :
-                                'bg-indigo-600 text-white shadow-indigo-100/50'
-                    }`}>
-                    <Clock className="w-4 h-4" />
-                </div>
+                <div className="px-4 py-3 flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${subStatus.isExpired ? 'bg-rose-600 text-white shadow-rose-200' :
+                            subStatus.urgency === 'critical' ? 'bg-rose-500 text-white shadow-rose-200 animate-pulse' :
+                                subStatus.urgency === 'high' ? 'bg-amber-500 text-white shadow-amber-200' :
+                                    'bg-indigo-600 text-white shadow-indigo-100/50'
+                        }`}>
+                        <Clock className="w-4 h-4" />
+                    </div>
 
-                <div className="flex flex-col">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-1">
                         <span className={`px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border ${subStatus.isExpired
                                 ? 'bg-rose-100 text-rose-600 border-rose-200'
                                 : 'bg-emerald-50 text-emerald-600 border-emerald-200'
@@ -57,13 +57,32 @@ export const SubscriptionStatusWidget: React.FC<SubscriptionStatusWidgetProps> =
                     </div>
                 </div>
 
-                <button
-                    onClick={() => navigate('/billing')}
-                    className="ml-auto p-1.5 bg-slate-900 text-white rounded-lg hover:bg-indigo-600 transition-colors"
-                    title="Perpanjang"
-                >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                </button>
+                {/* Progress Bar */}
+                {!subStatus.isExpired && expiresAt && (
+                    <div className="px-4 pb-3">
+                        <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden relative">
+                            <m.div
+                                initial={{ width: 0 }}
+                                animate={{
+                                    width: `${isUnlimited
+                                        ? 100
+                                        : Math.max(2, Math.min(100, (subStatus.days / 30) * 100))}%`
+                                }}
+                                transition={{ duration: 2, ease: "circOut" }}
+                                className={`h-full rounded-full relative ${subStatus.urgency === 'critical' ? 'bg-rose-500' :
+                                        subStatus.urgency === 'high' ? 'bg-amber-500' :
+                                            'bg-indigo-600'
+                                    }`}
+                            />
+                        </div>
+                        <div className="flex justify-between items-center mt-1.5">
+                            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Time Remaining</span>
+                            <span className="text-[8px] font-black text-slate-900 uppercase">
+                                {isUnlimited ? 'Unlimited' : `${subStatus.days} Hari`}
+                            </span>
+                        </div>
+                    </div>
+                )}
             </m.div>
         );
     }
@@ -73,19 +92,19 @@ export const SubscriptionStatusWidget: React.FC<SubscriptionStatusWidgetProps> =
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className={`rounded-[2rem] border transition-all duration-700 overflow-hidden relative group shadow-2xl shadow-indigo-100/10 ${subStatus.urgency === 'critical' || subStatus.isExpired
-                    ? 'bg-rose-50/20 border-rose-100'
-                    : subStatus.urgency === 'high'
-                        ? 'bg-amber-50/20 border-amber-100'
-                        : 'bg-white border-slate-200'
+                ? 'bg-rose-50/20 border-rose-100'
+                : subStatus.urgency === 'high'
+                    ? 'bg-amber-50/20 border-amber-100'
+                    : 'bg-white border-slate-200'
                 }`}
         >
             <div className="p-7 relative z-10">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="flex items-center gap-5">
                         <div className={`w-11 h-11 rounded-[0.85rem] flex items-center justify-center shrink-0 shadow-lg ${subStatus.isExpired ? 'bg-rose-600 text-white shadow-rose-200' :
-                                subStatus.urgency === 'critical' ? 'bg-rose-500 text-white shadow-rose-200 animate-pulse' :
-                                    subStatus.urgency === 'high' ? 'bg-amber-500 text-white shadow-amber-200' :
-                                        'bg-indigo-600 text-white shadow-indigo-100/50'
+                            subStatus.urgency === 'critical' ? 'bg-rose-500 text-white shadow-rose-200 animate-pulse' :
+                                subStatus.urgency === 'high' ? 'bg-amber-500 text-white shadow-amber-200' :
+                                    'bg-indigo-600 text-white shadow-indigo-100/50'
                             }`}>
                             <Clock className="w-5 h-5" />
                         </div>
@@ -94,8 +113,8 @@ export const SubscriptionStatusWidget: React.FC<SubscriptionStatusWidgetProps> =
                             <div className="flex items-center gap-3">
                                 <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Status Langganan</h3>
                                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border transition-colors ${subStatus.isExpired
-                                        ? 'bg-rose-100 text-rose-600 border-rose-200'
-                                        : 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                                    ? 'bg-rose-100 text-rose-600 border-rose-200'
+                                    : 'bg-emerald-50 text-emerald-600 border-emerald-200'
                                     }`}>
                                     {subStatus.isExpired ? 'Kadaluarsa' : 'Aktif'}
                                 </span>
@@ -103,9 +122,9 @@ export const SubscriptionStatusWidget: React.FC<SubscriptionStatusWidgetProps> =
 
                             <div className="flex items-center gap-3 whitespace-nowrap overflow-hidden">
                                 <div className={`text-[11px] font-black tracking-[0.05em] font-mono transition-colors duration-500 leading-none ${subStatus.isExpired ? 'text-rose-600' :
-                                        subStatus.urgency === 'critical' ? 'text-rose-500' :
-                                            subStatus.urgency === 'high' ? 'text-amber-600' :
-                                                'text-slate-900'
+                                    subStatus.urgency === 'critical' ? 'text-rose-500' :
+                                        subStatus.urgency === 'high' ? 'text-amber-600' :
+                                            'text-slate-900'
                                     }`}>
                                     {isUnlimited ? 'UNLIMITED ACCESS' : subStatus.label}
                                 </div>
@@ -129,8 +148,8 @@ export const SubscriptionStatusWidget: React.FC<SubscriptionStatusWidgetProps> =
                         <button
                             onClick={() => navigate('/billing')}
                             className={`flex items-center gap-2 px-6 py-2 text-white text-[11px] font-bold rounded-xl transition-all shadow-lg active:scale-95 uppercase tracking-widest whitespace-nowrap ${subStatus.urgency === 'critical' || subStatus.isExpired
-                                    ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-200'
-                                    : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200/50'
+                                ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-200'
+                                : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200/50'
                                 }`}
                         >
                             Perpanjang
