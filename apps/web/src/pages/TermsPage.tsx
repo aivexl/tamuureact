@@ -80,6 +80,9 @@ export const TermsPage: React.FC = () => {
                         <p>
                             In consideration for the license granted, you shall pay to Tamuu the license fee as set out in the fee schedule on the Pricing page of the Site. The License Fee is exclusive of VAT and shall be invoiced and billed to the Licensee's credit card details or preferred payment method.
                         </p>
+                        <p className="mt-4 text-sm italic opacity-80">
+                            Note: When you choose to upgrade to a paid subscription, any remaining trial period will naturally conclude as your new premium benefits and extended validity period begin immediately.
+                        </p>
                     </section>
 
                     <section>
