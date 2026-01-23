@@ -11,7 +11,7 @@ interface StatusTogglesProps {
 
 export const StatusToggles: React.FC<StatusTogglesProps> = ({ invitation, onUpdate }) => {
     const [isUpdating, setIsUpdating] = useState(false);
-    const { setIsPublished } = useStore();
+    const { setIsPublished, showModal } = useStore();
 
     // Mock states for other toggles for now
     const [isScroll, setIsScroll] = useState(true);
@@ -28,7 +28,11 @@ export const StatusToggles: React.FC<StatusTogglesProps> = ({ invitation, onUpda
         } catch (err: any) {
             console.error('[StatusToggles] Failed to update status:', err);
             const errorDetails = err.response?.data?.details || err.message;
-            alert(`Gagal memperbarui status: ${errorDetails}`);
+            showModal({
+                title: 'Gagal Update Status',
+                message: `Gagal memperbarui status publikasi: ${errorDetails}`,
+                type: 'error'
+            });
         } finally {
             setIsUpdating(false);
         }

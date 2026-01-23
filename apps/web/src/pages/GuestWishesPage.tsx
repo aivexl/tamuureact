@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { rsvp as rsvpApi } from '@/lib/api';
 import { useSEO } from '@/hooks/useSEO';
+import { useStore } from '@/store/useStore';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
 
 interface WishData {
@@ -32,6 +33,7 @@ interface WishData {
 }
 
 export const GuestWishesPage: React.FC = () => {
+    const { showModal } = useStore();
     const [wishes, setWishes] = useState<WishData[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -78,14 +80,22 @@ export const GuestWishesPage: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Hapus ucapan ini selamanya?')) return;
-        try {
-            await rsvpApi.delete(id);
-            setWishes(prev => prev.filter(w => w.id !== id));
-            showNotification('success', 'Ucapan berhasil dihapus');
-        } catch (err) {
-            showNotification('error', 'Gagal menghapus ucapan');
-        }
+        showModal({
+            title: 'Hapus Ucapan?',
+            message: 'Apakah Anda yakin ingin menghapus ucapan ini selamanya? Tindakan ini tidak dapat dibatalkan.',
+            type: 'warning',
+            confirmText: 'Ya, Hapus',
+            cancelText: 'Batal',
+            onConfirm: async () => {
+                try {
+                    await rsvpApi.delete(id);
+                    setWishes(prev => prev.filter(w => w.id !== id));
+                    showNotification('success', 'Ucapan berhasil dihapus');
+                } catch (err) {
+                    showNotification('error', 'Gagal menghapus ucapan');
+                }
+            }
+        });
     };
 
     const filteredWishes = wishes.filter(w =>

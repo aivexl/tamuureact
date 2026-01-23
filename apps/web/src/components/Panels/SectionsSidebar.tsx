@@ -17,7 +17,8 @@ export const SectionsSidebar: React.FC = () => {
         setActiveCanvas,
         activeCanvas,
         updateSectionsBatch,
-        addSection
+        addSection,
+        showModal
     } = useStore();
 
     const [showAddMenu, setShowAddMenu] = useState(false);
@@ -331,7 +332,11 @@ function SectionItem({ section }: { section: any }) {
                                     if (sections.length > 1) {
                                         removeSection(section.id);
                                     } else {
-                                        alert("You must have at least one section.");
+                                        showModal({
+                                            title: 'Tidak Bisa Menghapus',
+                                            message: 'Minimal Anda harus memiliki satu section dalam desain.',
+                                            type: 'warning'
+                                        });
                                     }
                                     setExpandedMenuId(null);
                                 }}

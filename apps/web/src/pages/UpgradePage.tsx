@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Check, Zap, Crown, Star, ArrowRight } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { Link, useNavigate } from 'react-router-dom';
+import { usePayment } from '../hooks/usePayment';
 
 interface TierCardProps {
     name: string;
@@ -16,6 +17,7 @@ interface TierCardProps {
     color: string;
     buttonText: string;
     onSelect: () => void;
+    isLoading?: boolean;
 }
 
 const TierCard: React.FC<TierCardProps> = ({
@@ -29,7 +31,8 @@ const TierCard: React.FC<TierCardProps> = ({
     icon: Icon,
     color,
     buttonText,
-    onSelect
+    onSelect,
+    isLoading
 }) => (
     <motion.div
         whileHover={{ y: -5 }}
@@ -78,69 +81,24 @@ const TierCard: React.FC<TierCardProps> = ({
 
         <button
             onClick={onSelect}
-            disabled={isCurrent}
+            disabled={isCurrent || isLoading}
             className={`w-full py-4 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-2 ${isCurrent
                 ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                 : isPopular
                     ? 'bg-[#FFBF00] text-[#0A1128] hover:shadow-[0_10px_20px_rgba(255,191,0,0.3)]'
                     : 'bg-[#0A1128] text-white hover:bg-[#152042]'
-                }`}
+                } ${isLoading ? 'opacity-70 cursor-wait' : ''}`}
         >
-            {buttonText}
-            {!isCurrent && <ArrowRight className="w-4 h-4" />}
+            {isLoading ? 'Processing...' : buttonText}
+            {!isCurrent && !isLoading && <ArrowRight className="w-4 h-4" />}
         </button>
     </motion.div>
 );
 
 export const UpgradePage: React.FC = () => {
-    const { user, updateSubscription } = useStore();
+    const { user } = useStore();
     const navigate = useNavigate();
-
-    const handleUpgrade = async (tier: string) => {
-        if (!user) return;
-
-        const amount = tier === 'vvip' ? 199000 : 99000;
-
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_BASE}/api/billing/midtrans/token`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId: user.id,
-                    tier,
-                    amount,
-                    email: user.email,
-                    name: user.name
-                })
-            });
-
-            const { token } = await response.json();
-
-            if (token) {
-                // @ts-ignore
-                window.snap.pay(token, {
-                    onSuccess: (result: any) => {
-                        console.log('Payment success:', result);
-                        navigate('/billing?status=success');
-                    },
-                    onPending: (result: any) => {
-                        console.log('Payment pending:', result);
-                        navigate('/billing?status=pending');
-                    },
-                    onError: (result: any) => {
-                        console.error('Payment error:', result);
-                        alert('Terjadi kesalahan pembayaran. Silakan coba lagi.');
-                    },
-                    onClose: () => {
-                        console.log('Customer closed the popup without finishing the payment');
-                    }
-                });
-            }
-        } catch (error) {
-            console.error('Checkout error:', error);
-            alert('Gagal membuat sesi pembayaran.');
-        }
-    };
+    const { initiatePayment, processingTier } = usePayment();
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] py-20 px-4">
@@ -193,7 +151,8 @@ export const UpgradePage: React.FC = () => {
                             "1 Month Online Access"
                         ]}
                         buttonText={user?.tier === 'free' ? "Current Plan" : "Get Started"}
-                        onSelect={() => handleUpgrade('free')}
+                        onSelect={() => navigate('/dashboard')}
+                        isLoading={processingTier === 'free'}
                     />
 
                     {/* VIP Tier */}
@@ -216,7 +175,8 @@ export const UpgradePage: React.FC = () => {
                             "Priority Support"
                         ]}
                         buttonText={user?.tier === 'vip' ? "Active" : "Go VIP PREMIERE"}
-                        onSelect={() => handleUpgrade('vip')}
+                        onSelect={() => initiatePayment('vip')}
+                        isLoading={processingTier === 'vip'}
                     />
 
                     {/* VVIP Tier */}
@@ -238,9 +198,11 @@ export const UpgradePage: React.FC = () => {
                             "Concierge Setup Service"
                         ]}
                         buttonText={user?.tier === 'vvip' ? "Active" : "Go VVIP EXCLUSIVE"}
-                        onSelect={() => handleUpgrade('vvip')}
+                        onSelect={() => initiatePayment('vvip')}
+                        isLoading={processingTier === 'vvip'}
                     />
                 </div>
+
 
                 {/* Payment Methods Visuals */}
                 <div className="mt-24 mb-12 text-center">

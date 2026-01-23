@@ -33,7 +33,8 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
         sections,
         updateElementInSection,
         imageCropModal,
-        closeImageCropModal
+        closeImageCropModal,
+        showModal
     } = useStore();
 
 
@@ -454,9 +455,13 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                                     });
                                 }
                             }
-                        } catch (error) {
+                        } catch (error: any) {
                             console.error('[EditorLayout] Crop upload failed:', error);
-                            alert('Failed to upload cropped image. Please try again.');
+                            showModal({
+                                title: 'Gagal Mengunggah',
+                                message: 'Gagal mengunggah foto yang telah dipotong. Silakan coba beberapa saat lagi.',
+                                type: 'error'
+                            });
                         }
                     }
                 }}

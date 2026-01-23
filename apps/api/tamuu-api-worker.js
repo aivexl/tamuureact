@@ -58,6 +58,7 @@ export default {
             // ============================================
             if (path === '/api/auth/me' && method === 'GET') {
                 const email = url.searchParams.get('email');
+                const providedUid = url.searchParams.get('uid');
                 if (!email) return json({ error: 'Email required' }, { headers: corsHeaders, status: 400 });
 
                 try {
@@ -69,16 +70,16 @@ export default {
 
                     // Auto-create user if not found (for Supabase auth sync)
                     if (!user) {
-                        const userId = crypto.randomUUID();
-                        const tamuuId = `TAMUU-USER-${userId.substring(0, 8).toUpperCase()}`;
+                        const userIdToUse = providedUid || crypto.randomUUID();
+                        const tamuuId = `TAMUU-USER-${userIdToUse.substring(0, 8).toUpperCase()}`;
 
                         await env.DB.prepare(
                             `INSERT INTO users (id, email, tamuu_id, tier, max_invitations, invitation_count) 
                              VALUES (?, ?, ?, 'free', 1, 0)`
-                        ).bind(userId, email, tamuuId).run();
+                        ).bind(userIdToUse, email, tamuuId).run();
 
                         user = {
-                            id: userId,
+                            id: userIdToUse,
                             email: email,
                             tamuu_id: tamuuId,
                             tier: 'free',
@@ -163,58 +164,168 @@ export default {
             // MIDTRANS PAYMENT ENDPOINTS
             // ============================================
             if (path === '/api/billing/midtrans/token' && method === 'POST') {
-                const body = await request.json();
-                const { userId, tier, amount, email, name } = body;
+                try {
+                    const body = await request.json();
+                    const { userId, tier, amount, email, name } = body;
 
-                if (!userId || !tier || !amount) {
-                    return json({ error: 'Missing required fields' }, { ...corsHeaders, status: 400 });
-                }
+                    if (!userId || !tier || !amount) {
+                        return json({ error: 'Missing required fields' }, { ...corsHeaders, status: 400 });
+                    }
 
-                const orderId = `order-${Date.now()}-${userId.substring(0, 8)}`;
+                    // BLOCKING LOGIC: Check for existing PENDING transaction
+                    try {
+                        const { results: pendingResults } = await env.DB.prepare(
+                            'SELECT * FROM billing_transactions WHERE user_id = ? AND status = ?'
+                        ).bind(userId, 'PENDING').all();
 
-                const midtransResponse = await fetch('https://app.midtrans.com/snap/v1/transactions', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Basic ${btoa(env.MIDTRANS_SERVER_KEY + ':')}`,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        transaction_details: {
-                            order_id: orderId,
-                            gross_amount: amount
-                        },
-                        item_details: [{
-                            id: tier,
-                            price: amount,
-                            quantity: 1,
-                            name: `Tamuu ${tier.toUpperCase()} Subscription`
-                        }],
-                        customer_details: {
-                            first_name: name || 'User',
-                            email: email
-                        },
-                        enabled_payments: [
-                            "bni_va", "cimb_va", "shopeepay", "permata_va",
-                            "bri_va", "qris", "bsi_va", "gopay", "echannel", "dana"
-                        ],
-                        credit_card: {
-                            secure: true
+                        if (pendingResults && pendingResults.length > 0) {
+                            return json({
+                                error: 'pending_exists',
+                                message: 'Anda masih memiliki pembayaran tertunda. Silakan selesaikan atau batalkan terlebih dahulu.',
+                                pending_order: pendingResults[0]
+                            }, { ...corsHeaders, status: 400 });
                         }
-                    })
-                });
+                    } catch (dbErr) {
+                        console.error('DB Error checking pending:', dbErr);
+                    }
 
-                const data = await midtransResponse.json();
+                    if (!env.MIDTRANS_SERVER_KEY) {
+                        return json({ error: 'Midtrans Server Key is not configured in worker environment' }, { ...corsHeaders, status: 500 });
+                    }
 
-                if (data.token) {
-                    // Log transaction in DB
-                    await env.DB.prepare(
-                        `INSERT INTO billing_transactions (user_id, external_id, amount, status, tier, payment_method) 
-                         VALUES (?, ?, ?, ?, ?, ?)`
-                    ).bind(userId, orderId, amount, 'PENDING', tier, 'MIDTRANS').run();
+                    const orderId = `order-${Date.now()}-${userId.substring(0, 8)}`;
+                    const authHeader = `Basic ${btoa(env.MIDTRANS_SERVER_KEY + ':')}`;
+
+                    const midtransResponse = await fetch('https://app.sandbox.midtrans.com/snap/v1/transactions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': authHeader,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            transaction_details: {
+                                order_id: orderId,
+                                gross_amount: amount
+                            },
+                            item_details: [{
+                                id: tier,
+                                price: amount,
+                                quantity: 1,
+                                name: `Tamuu ${tier.toUpperCase()} Subscription`
+                            }],
+                            customer_details: {
+                                first_name: name || 'User',
+                                email: email
+                            },
+                            enabled_payments: [
+                                "bni_va", "cimb_va", "shopeepay", "permata_va",
+                                "bri_va", "qris", "bsi_va", "gopay", "echannel", "dana"
+                            ],
+                            credit_card: {
+                                secure: true
+                            }
+                        })
+                    });
+
+                    const data = await midtransResponse.json();
+
+                    if (!midtransResponse.ok) {
+                        console.error('Midtrans API Error:', data);
+                        return json({
+                            error: 'Midtrans API rejected the request',
+                            details: data.error_messages || data.message || data
+                        }, { ...corsHeaders, status: midtransResponse.status });
+                    }
+
+                    if (data.token) {
+                        try {
+                            // Log transaction in DB
+                            await env.DB.prepare(
+                                `INSERT INTO billing_transactions (user_id, external_id, amount, status, tier, payment_method, payment_url) 
+                                 VALUES (?, ?, ?, ?, ?, ?, ?)`
+                            ).bind(userId, orderId, amount, 'PENDING', tier, 'MIDTRANS', data.redirect_url).run();
+                            console.log(`[Billing/Token] Transaction logged successfully: ${orderId}`);
+                        } catch (dbError) {
+                            console.error('[Billing/Token] CRITICAL: Database Error logging transaction:', dbError);
+                            // Return the token WITH a warning so frontend knows there's an issue
+                            return json({
+                                ...data,
+                                warning: 'Transaction created but DB logging failed. Please contact support if issues persist.',
+                                orderId: orderId
+                            }, corsHeaders);
+                        }
+                    }
+
+                    return json({ ...data, orderId: orderId }, corsHeaders);
+                } catch (err) {
+                    console.error('Server Side Error:', err);
+                    return json({
+                        error: 'Failed to generate payment session',
+                        details: err.message
+                    }, { ...corsHeaders, status: 500 });
+                }
+            }
+
+            if (path === '/api/billing/midtrans/cancel' && method === 'POST') {
+                const { orderId, userId } = await request.json();
+
+                if (!orderId || !userId) {
+                    return json({ error: 'Missing orderId or userId' }, { ...corsHeaders, status: 400 });
                 }
 
-                return json(data, corsHeaders);
+                try {
+                    console.log(`[Billing/Cancel] Request received for OrderID: ${orderId}, UserID: ${userId}`);
+
+                    // First, check if transaction exists and its current status
+                    const existingTx = await env.DB.prepare(
+                        'SELECT status FROM billing_transactions WHERE external_id = ? AND user_id = ?'
+                    ).bind(orderId, userId).first();
+
+                    console.log(`[Billing/Cancel] Existing transaction:`, JSON.stringify(existingTx));
+
+                    if (!existingTx) {
+                        console.warn(`[Billing/Cancel] Transaction not found in DB: ${orderId}`);
+                        return json({
+                            error: 'Transaction not found. It may not have been recorded properly.',
+                            code: 'NOT_FOUND'
+                        }, { ...corsHeaders, status: 404 });
+                    }
+
+                    if (existingTx.status === 'PAID') {
+                        return json({
+                            error: 'Cannot cancel a paid transaction',
+                            code: 'ALREADY_PAID'
+                        }, { ...corsHeaders, status: 400 });
+                    }
+
+                    if (existingTx.status === 'CANCELLED') {
+                        console.log(`[Billing/Cancel] Transaction already cancelled: ${orderId}`);
+                        return json({
+                            success: true,
+                            message: 'Transaction was already cancelled',
+                            alreadyCancelled: true
+                        }, corsHeaders);
+                    }
+
+                    // Update status to CANCELLED (works for PENDING or EXPIRED)
+                    const result = await env.DB.prepare(
+                        'UPDATE billing_transactions SET status = ?, updated_at = datetime("now") WHERE external_id = ? AND user_id = ?'
+                    ).bind('CANCELLED', orderId, userId).run();
+
+                    console.log(`[Billing/Cancel] DB Update Result:`, JSON.stringify(result));
+
+                    if (result.meta?.changes === 0) {
+                        console.error(`[Billing/Cancel] Update failed unexpectedly for: ${orderId}`);
+                        return json({ error: 'Failed to update transaction status' }, { ...corsHeaders, status: 500 });
+                    }
+
+                    console.log(`[Billing/Cancel] Successfully cancelled order: ${orderId}`);
+                    return json({ success: true, message: 'Pesanan berhasil dibatalkan' }, corsHeaders);
+                } catch (err) {
+                    console.error('[Billing/Cancel] Error:', err);
+                    return json({ error: 'Internal server error during cancellation', details: err.message }, { ...corsHeaders, status: 500 });
+                }
             }
 
             if (path === '/api/billing/midtrans/webhook' && method === 'POST') {
@@ -262,6 +373,26 @@ export default {
                             'UPDATE users SET tier = ?, max_invitations = ?, expires_at = ?, updated_at = datetime("now") WHERE id = ?'
                         ).bind(tier, maxInvitations, expiresAt, userId).run();
                     }
+                } else if (transaction_status === 'expire') {
+                    // IMPORTANT: Don't overwrite CANCELLED status with EXPIRED
+                    // Check current status first
+                    const existingTx = await env.DB.prepare(
+                        'SELECT status FROM billing_transactions WHERE external_id = ?'
+                    ).bind(order_id).first();
+
+                    if (existingTx && existingTx.status !== 'CANCELLED' && existingTx.status !== 'PAID') {
+                        await env.DB.prepare(
+                            'UPDATE billing_transactions SET status = ?, updated_at = datetime("now") WHERE external_id = ?'
+                        ).bind('EXPIRED', order_id).run();
+                        console.log(`[Webhook] Transaction ${order_id} expired`);
+                    } else {
+                        console.log(`[Webhook] Skipping expire for ${order_id}, current status: ${existingTx?.status}`);
+                    }
+                } else if (transaction_status === 'cancel' || transaction_status === 'deny') {
+
+                    await env.DB.prepare(
+                        'UPDATE billing_transactions SET status = ?, updated_at = datetime("now") WHERE external_id = ?'
+                    ).bind('CANCELLED', order_id).run();
                 }
 
                 return json({ success: true }, corsHeaders);

@@ -13,6 +13,7 @@ import { PremiumLoader } from '../ui/PremiumLoader';
 import { LayerType } from '@/store/useStore';
 import { storage } from '@/lib/api';
 import { useMusicLibrary, Song } from '@/hooks/queries';
+import { useStore } from '@/store/useStore';
 
 interface AssetSelectionModalProps {
     type: LayerType | null;
@@ -359,6 +360,7 @@ const PARTICLE_PRESETS = {
 
 export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, onSelect, onClose, direction = 'right' }) => {
 
+    const { showModal } = useStore();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [dragActive, setDragActive] = useState(false);
     const [uploading, setUploading] = useState(false);
@@ -391,9 +393,13 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                 onSelect({ videoUrl: publicUrl });
             }
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Upload failed:', error);
-            alert('Upload failed. Please try again.');
+            showModal({
+                title: 'Upload Gagal',
+                message: error.message || 'Terjadi kesalahan saat mengunggah aset. Silakan coba lagi.',
+                type: 'error'
+            });
         } finally {
             setUploading(false);
         }

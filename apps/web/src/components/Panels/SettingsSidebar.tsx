@@ -21,7 +21,8 @@ export const SettingsSidebar: React.FC = () => {
         id,
         category,
         setCategory,
-        isTemplate
+        isTemplate,
+        showModal
     } = useStore();
 
     // Category state
@@ -81,13 +82,31 @@ export const SettingsSidebar: React.FC = () => {
     };
 
     const handleDeleteCategory = async (id: string) => {
-        if (!confirm('Yakin hapus kategori ini?')) return;
-        try {
-            await categoriesApi.delete(id);
-            setCategoryList(prev => prev.filter(cat => cat.id !== id));
-        } catch (e) {
-            console.error('Failed to delete category:', e);
-        }
+        showModal({
+            title: 'Hapus Kategori?',
+            message: 'Apakah Anda yakin ingin menghapus kategori ini? Tindakan ini tidak dapat dibatalkan.',
+            type: 'warning',
+            confirmText: 'Ya, Hapus',
+            cancelText: 'Batal',
+            onConfirm: async () => {
+                try {
+                    await categoriesApi.delete(id);
+                    setCategoryList(prev => prev.filter(cat => cat.id !== id));
+                    showModal({
+                        title: 'Berhasil',
+                        message: 'Kategori telah dihapus.',
+                        type: 'success'
+                    });
+                } catch (e: any) {
+                    console.error('Failed to delete category:', e);
+                    showModal({
+                        title: 'Gagal Menghapus',
+                        message: e.message || 'Terjadi kesalahan saat menghapus kategori.',
+                        type: 'error'
+                    });
+                }
+            }
+        });
     };
 
     // Get active section's background color
@@ -110,9 +129,13 @@ export const SettingsSidebar: React.FC = () => {
         try {
             const result = await storage.upload(file);
             updateSection(activeSectionId, { backgroundUrl: result.url });
-        } catch (error) {
+        } catch (error: any) {
             console.error('BG Upload failed:', error);
-            alert('Background upload failed. Please try again.');
+            showModal({
+                title: 'Upload Gagal',
+                message: 'Gagal mengunggah background. Silakan coba beberapa saat lagi.',
+                type: 'error'
+            });
         } finally {
             setUploading(false);
         }
@@ -489,7 +512,7 @@ export const SettingsSidebar: React.FC = () => {
 // THUMBNAIL CONTROL
 // ============================================
 function ThumbnailControl() {
-    const { thumbnailUrl, setThumbnailUrl, projectName } = useStore();
+    const { thumbnailUrl, setThumbnailUrl, projectName, showModal } = useStore();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [uploading, setUploading] = useState(false);
 
@@ -504,9 +527,13 @@ function ThumbnailControl() {
             setThumbnailUrl(result.url);
             console.log('[Thumbnail] Uploaded:', result.url);
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Thumbnail upload failed:', error);
-            alert('Failed to upload thumbnail. Check console.');
+            showModal({
+                title: 'Upload Gagal',
+                message: 'Gagal mengunggah thumbnail. Silakan coba lagi.',
+                type: 'error'
+            });
         } finally {
             setUploading(false);
         }

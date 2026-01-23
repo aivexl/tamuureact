@@ -80,7 +80,8 @@ export const SeamlessCanvas: React.FC = () => {
         alignOrbitElements,
         distributeOrbitElements,
         matchOrbitSize,
-        templateType
+        templateType,
+        showModal
     } = useStore();
 
     const isDisplay = templateType === 'display';
@@ -156,19 +157,33 @@ export const SeamlessCanvas: React.FC = () => {
     };
 
     const handleClearWithConfirm = (id: string) => {
-        if (confirm('Are you sure you want to clear all elements from this section?')) {
-            clearSectionContent(id);
-        }
+        showModal({
+            title: 'Hapus Semua Elemen?',
+            message: 'Apakah Anda yakin ingin menghapus semua elemen dari section ini?',
+            type: 'warning',
+            confirmText: 'Ya, Hapus',
+            cancelText: 'Batal',
+            onConfirm: () => clearSectionContent(id)
+        });
     };
 
     const handleDeleteWithConfirm = (id: string) => {
         if (sections.length <= 1) {
-            alert('Cannot delete the last section.');
+            showModal({
+                title: 'Tidak Bisa Menghapus',
+                message: 'Minimal Anda harus memiliki satu section.',
+                type: 'warning'
+            });
             return;
         }
-        if (confirm('Are you sure you want to delete this section? This cannot be undone.')) {
-            removeSection(id);
-        }
+        showModal({
+            title: 'Hapus Section?',
+            message: 'Apakah Anda yakin ingin menghapus section ini? Tindakan ini tidak dapat dibatalkan.',
+            type: 'warning',
+            confirmText: 'Ya, Hapus',
+            cancelText: 'Batal',
+            onConfirm: () => removeSection(id)
+        });
     };
 
     const sortedSections = useMemo(() => [...sections].sort((a, b) => a.order - b.order), [sections]);
@@ -453,9 +468,14 @@ export const SeamlessCanvas: React.FC = () => {
                         onMarqueeEnd={handleMarqueeEnd}
                         onContextMenu={handleContextMenu}
                         onClear={() => {
-                            if (confirm('Clear all elements from LEFT orbit canvas?')) {
-                                useStore.getState().clearOrbitCanvas('left');
-                            }
+                            showModal({
+                                title: 'Hapus Semua Elemen?',
+                                message: 'Apakah Anda yakin ingin menghapus semua elemen dari LEFT orbit canvas?',
+                                type: 'warning',
+                                confirmText: 'Ya, Hapus',
+                                cancelText: 'Batal',
+                                onConfirm: () => useStore.getState().clearOrbitCanvas('left')
+                            });
                         }}
                         onCopy={() => handleOpenOrbitCopyModal('left')}
                     />
@@ -529,9 +549,14 @@ export const SeamlessCanvas: React.FC = () => {
                         onMarqueeEnd={handleMarqueeEnd}
                         onContextMenu={handleContextMenu}
                         onClear={() => {
-                            if (confirm('Clear all elements from RIGHT orbit canvas?')) {
-                                useStore.getState().clearOrbitCanvas('right');
-                            }
+                            showModal({
+                                title: 'Hapus Semua Elemen?',
+                                message: 'Apakah Anda yakin ingin menghapus semua elemen dari RIGHT orbit canvas?',
+                                type: 'warning',
+                                confirmText: 'Ya, Hapus',
+                                cancelText: 'Batal',
+                                onConfirm: () => useStore.getState().clearOrbitCanvas('right')
+                            });
                         }}
                         onCopy={() => handleOpenOrbitCopyModal('right')}
                     />

@@ -4,6 +4,7 @@ import { persist } from 'zustand/middleware';
 import { createCanvasSlice, CanvasState } from './canvasSlice';
 import { createLayersSlice, LayersState, Layer, LayerType, AnimationType, TextStyle, IconStyle, CountdownConfig, ButtonConfig, ShapeConfig, MapsConfig, MotionPathPoint, MotionPathConfig } from './layersSlice';
 import { createUISlice, UIState } from './uiSlice';
+import { createModalSlice, ModalState } from './modalSlice';
 import { createSectionsSlice, SectionsState, Section, PredefinedSectionType, SECTION_ICONS, SECTION_LABELS, PREDEFINED_SECTION_TYPES, ZoomPoint, ZoomConfig } from './sectionsSlice';
 import { createAuthSlice, AuthState } from './authSlice';
 import { sanitizeValue } from '@/lib/utils';
@@ -11,7 +12,7 @@ import { sanitizeValue } from '@/lib/utils';
 // ============================================
 // COMBINED STORE TYPE
 // ============================================
-type StoreState = CanvasState & LayersState & UIState & SectionsState & AuthState;
+type StoreState = CanvasState & LayersState & UIState & ModalState & SectionsState & AuthState;
 
 // ============================================
 // MAIN STORE WITH UNDO/REDO
@@ -23,6 +24,7 @@ export const useStore = create<StoreState>()(
                 ...createCanvasSlice(...a),
                 ...createLayersSlice(...a),
                 ...createUISlice(...a),
+                ...createModalSlice(...a),
                 ...createSectionsSlice(...a),
                 ...createAuthSlice(...a),
             }),

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { AdminLayout } from '../components/Layout/AdminLayout';
 import { PremiumLoader } from '../components/ui/PremiumLoader';
+import { useStore } from '@/store/useStore';
 
 interface Template {
     id: string;
@@ -27,6 +28,7 @@ interface Template {
 }
 
 export const AdminTemplatesPage: React.FC = () => {
+    const { showModal } = useStore();
     const navigate = useNavigate();
     const { type } = useParams<{ type: string }>();
 
@@ -78,9 +80,13 @@ export const AdminTemplatesPage: React.FC = () => {
                     : `/admin/editor/${data.slug || data.id}`;
                 navigate(editorPath);
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Create error:', err);
-            alert('Failed to create template');
+            showModal({
+                title: 'Gagal Membuat',
+                message: err.message || 'Gagal membuat template baru. Silakan coba lagi.',
+                type: 'error'
+            });
         } finally {
             setIsCreating(false);
             setIsCreateModalOpen(false);
@@ -90,14 +96,32 @@ export const AdminTemplatesPage: React.FC = () => {
     const handleDelete = async (id: string, e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        if (!confirm('Are you sure you want to delete this template?')) return;
 
-        try {
-            await templatesApi.delete(id);
-            setTemplates(prev => prev.filter(t => t.id !== id));
-        } catch (err) {
-            console.error('Delete error:', err);
-        }
+        showModal({
+            title: 'Hapus Template?',
+            message: 'Apakah Anda yakin ingin menghapus template ini? Tindakan ini tidak dapat dibatalkan.',
+            type: 'warning',
+            confirmText: 'Ya, Hapus',
+            cancelText: 'Batal',
+            onConfirm: async () => {
+                try {
+                    await templatesApi.delete(id);
+                    setTemplates(prev => prev.filter(t => t.id !== id));
+                    showModal({
+                        title: 'Berhasil',
+                        message: 'Template telah dihapus.',
+                        type: 'success'
+                    });
+                } catch (err: any) {
+                    console.error('Delete error:', err);
+                    showModal({
+                        title: 'Gagal Menghapus',
+                        message: err.message || 'Terjadi kesalahan saat menghapus template.',
+                        type: 'error'
+                    });
+                }
+            }
+        });
     };
 
     // Filter Logic

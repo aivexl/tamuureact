@@ -42,7 +42,7 @@ const getIsAppDomain = (): boolean => {
 
 export const InvitationsStorePage: React.FC = () => {
     const { search } = useLocation();
-    const { isAuthenticated, user } = useStore();
+    const { isAuthenticated, user, showModal } = useStore();
     const queryParams = useMemo(() => new URLSearchParams(search), [search]);
     const isOnboarding = queryParams.get('onboarding') === 'true';
     const onboardingSlug = queryParams.get('slug');
@@ -191,7 +191,11 @@ export const InvitationsStorePage: React.FC = () => {
                 }
             } catch (error: any) {
                 console.error('Failed to create invitation:', error);
-                alert(error.message || 'Gagal membuat undangan. Silakan coba lagi.');
+                showModal({
+                    title: 'Gagal Membuat Undangan',
+                    message: error.message || 'Terjadi kesalahan sistem. Silakan coba beberapa saat lagi.',
+                    type: 'error'
+                });
             } finally {
                 setIsCreating(false);
             }

@@ -20,6 +20,7 @@ import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { invitations as invitationsApi, assets as assetsApi } from '@/lib/api';
 import { ImageCropModal } from '@/components/Modals/ImageCropModal';
 import { dataURLtoBlob } from '@/lib/utils';
+import { useStore } from '@/store/useStore';
 
 interface GalleryPanelProps {
     invitationId: string;
@@ -34,6 +35,7 @@ interface GalleryPhoto {
 const MAX_PHOTOS = 6;
 
 export const GalleryPanel: React.FC<GalleryPanelProps> = ({ invitationId, onClose }) => {
+    const { showModal } = useStore();
     const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -86,7 +88,11 @@ export const GalleryPanel: React.FC<GalleryPanelProps> = ({ invitationId, onClos
         if (!file) return;
 
         if (photos.length >= MAX_PHOTOS) {
-            alert(`Maksimal ${MAX_PHOTOS} foto`);
+            showModal({
+                title: 'Limit Foto Tercapai',
+                message: `Maksimal Anda hanya bisa mengunggah ${MAX_PHOTOS} foto dalam galeri ini.`,
+                type: 'warning'
+            });
             return;
         }
 

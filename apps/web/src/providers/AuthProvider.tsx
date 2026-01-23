@@ -69,10 +69,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setAuthSession({ user: initialUser, token });
 
         try {
-            console.log(`[Auth Sync] Fetching D1 profile for ${supabaseUser.email}...`);
+            console.log(`[Auth Sync] Fetching D1 profile for ${supabaseUser.email} (UID: ${supabaseUser.id})...`);
             // Fetch real tier and quotas from D1 via our API
             const { users: usersApi } = await import('../lib/api');
-            const d1User = await usersApi.getMe(supabaseUser.email);
+            const d1User = await usersApi.getMe(`${supabaseUser.email}&uid=${supabaseUser.id}`);
 
             console.log('[Auth Sync] D1 Profile received:', d1User);
 

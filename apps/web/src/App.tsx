@@ -6,6 +6,7 @@ import { CORE_FONTS, getGoogleFontsUrl } from './lib/fonts';
 import { MainLayout } from './components/Layout/MainLayout';
 import { LazyMotion, domMax } from 'framer-motion';
 import { PremiumLoader } from './components/ui/PremiumLoader';
+import GlobalModal from './components/Shared/GlobalModal';
 
 // ============================================
 // DOMAIN DETECTION
@@ -96,6 +97,7 @@ const App: React.FC = () => {
         <BrowserRouter>
             <LazyMotion features={domMax} strict>
                 <Suspense fallback={<PremiumLoader />}>
+                    <GlobalModal />
                     <Routes>
                         {/* ============================================ */}
                         {/* DOMAIN-AWARE ROOT PATH */}

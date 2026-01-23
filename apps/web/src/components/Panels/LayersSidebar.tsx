@@ -90,7 +90,8 @@ function LayersTab() {
         removeElementFromSection,
         updateLayersBatch,
         updateSectionElementsBatch,
-        updateOrbitElementsBatch
+        updateOrbitElementsBatch,
+        showModal
     } = useStore();
 
     const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
@@ -186,15 +187,22 @@ function LayersTab() {
 
     // Remove Helper
     const removeItem = (layerId: string) => {
-        if (confirm('Delete this layer?')) {
-            if (activeCanvas === 'main' && activeSectionId) {
-                removeElementFromSection(activeSectionId, layerId);
-            } else if (activeCanvas === 'left' || activeCanvas === 'right') {
-                removeOrbitElement(activeCanvas, layerId);
-            } else {
-                removeLayer(layerId);
+        showModal({
+            title: 'Hapus Layer?',
+            message: 'Apakah Anda yakin ingin menghapus layer ini?',
+            type: 'warning',
+            confirmText: 'Ya, Hapus',
+            cancelText: 'Batal',
+            onConfirm: () => {
+                if (activeCanvas === 'main' && activeSectionId) {
+                    removeElementFromSection(activeSectionId, layerId);
+                } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                    removeOrbitElement(activeCanvas, layerId);
+                } else {
+                    removeLayer(layerId);
+                }
             }
-        }
+        });
     };
 
     return (
@@ -246,7 +254,8 @@ function LayerItem({ layer }: { layer: Layer }) {
         updateElementInSection,
         removeElementFromSection,
         updateOrbitElement,
-        removeOrbitElement
+        removeOrbitElement,
+        showModal
     } = useStore();
 
     const controls = useDragControls();
@@ -293,15 +302,22 @@ function LayerItem({ layer }: { layer: Layer }) {
     };
 
     const removeItem = (layerId: string) => {
-        if (confirm('Delete this layer?')) {
-            if (activeCanvas === 'main' && activeSectionId) {
-                removeElementFromSection(activeSectionId, layerId);
-            } else if (activeCanvas === 'left' || activeCanvas === 'right') {
-                removeOrbitElement(activeCanvas, layerId);
-            } else {
-                removeLayer(layerId);
+        showModal({
+            title: 'Hapus Layer?',
+            message: 'Apakah Anda yakin ingin menghapus layer ini?',
+            type: 'warning',
+            confirmText: 'Ya, Hapus',
+            cancelText: 'Batal',
+            onConfirm: () => {
+                if (activeCanvas === 'main' && activeSectionId) {
+                    removeElementFromSection(activeSectionId, layerId);
+                } else if (activeCanvas === 'left' || activeCanvas === 'right') {
+                    removeOrbitElement(activeCanvas, layerId);
+                } else {
+                    removeLayer(layerId);
+                }
             }
-        }
+        });
     };
 
     return (

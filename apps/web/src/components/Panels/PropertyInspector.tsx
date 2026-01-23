@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 
 export const PropertyInspector: React.FC = () => {
-    const { layers, selectedLayerId, updateLayer, removeLayer, selectLayer, activeSectionId, sections, updateElementInSection, removeElementFromSection } = useStore();
+    const { layers, selectedLayerId, updateLayer, removeLayer, selectLayer, activeSectionId, sections, updateElementInSection, removeElementFromSection, showModal } = useStore();
 
     // Find active section and element
     const activeSection = sections.find(s => s.id === activeSectionId);
@@ -60,14 +60,21 @@ export const PropertyInspector: React.FC = () => {
     };
 
     const handleRemove = () => {
-        if (confirm('Are you sure you want to delete this element?')) {
-            if (sectionLayer && activeSectionId) {
-                removeElementFromSection(activeSectionId, layer.id);
-            } else {
-                removeLayer(layer.id);
+        showModal({
+            title: 'Hapus Elemen?',
+            message: 'Apakah Anda yakin ingin menghapus elemen ini?',
+            type: 'warning',
+            confirmText: 'Ya, Hapus',
+            cancelText: 'Batal',
+            onConfirm: () => {
+                if (sectionLayer && activeSectionId) {
+                    removeElementFromSection(activeSectionId, layer.id);
+                } else {
+                    removeLayer(layer.id);
+                }
+                selectLayer(null);
             }
-            selectLayer(null);
-        }
+        });
     };
 
     return (

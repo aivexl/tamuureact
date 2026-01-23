@@ -10,7 +10,7 @@ interface GiftPanelProps {
 }
 
 export const GiftPanel: React.FC<GiftPanelProps> = ({ onClose }) => {
-    const { user } = useStore();
+    const { user, showModal } = useStore();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -88,9 +88,13 @@ export const GiftPanel: React.FC<GiftPanelProps> = ({ onClose }) => {
                 setSuccess(false);
                 onClose();
             }, 1500);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to update gift info:', error);
-            alert('Gagal menyimpan perubahan. Silakan coba lagi.');
+            showModal({
+                title: 'Gagal Menyimpan',
+                message: error.message || 'Terjadi kesalahan saat menyimpan data kado. Silakan coba lagi.',
+                type: 'error'
+            });
         } finally {
             setSaving(false);
         }

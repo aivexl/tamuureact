@@ -272,7 +272,8 @@ export const TemplateEditArea: React.FC = () => {
         updateOrbitCanvas,
         slug,
         isPublished,
-        setIsPublished
+        setIsPublished,
+        showModal
     } = useStore();
 
     const queryClient = useQueryClient();
@@ -381,7 +382,11 @@ export const TemplateEditArea: React.FC = () => {
             window.open(targetUrl, '_blank');
         } else {
             console.error('[Preview] Critical Error: Both Slug and ID are missing');
-            alert('Maaf, link preview tidak bisa dibuat. Hubungi admin.');
+            showModal({
+                title: 'Gagal Membuat Preview',
+                message: 'Maaf, link preview tidak bisa dibuat karena data identitas undangan tidak lengkap. Hubungi admin.',
+                type: 'error'
+            });
         }
     };
 
@@ -395,7 +400,11 @@ export const TemplateEditArea: React.FC = () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.invitations.all });
         } catch (err: any) {
             console.error('[TemplateEditArea] Failed to update status:', err);
-            alert(`Gagal memperbarui status: ${err.message}`);
+            showModal({
+                title: 'Gagal Update Status',
+                message: `Gagal memperbarui status publikasi: ${err.message || 'Error tidak diketahui'}`,
+                type: 'error'
+            });
         } finally {
             setIsUpdatingStatus(false);
         }

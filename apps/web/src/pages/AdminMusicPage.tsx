@@ -4,6 +4,7 @@ import { Music, Upload, Trash2, Play, Pause, Search, AlertCircle, CheckCircle } 
 import { PremiumLoader } from '../components/ui/PremiumLoader';
 import { motion, AnimatePresence } from 'framer-motion';
 import { music as musicApi } from '../lib/api';
+import { useStore } from '../store/useStore';
 
 interface MusicTrack {
     id: string;
@@ -18,6 +19,7 @@ interface MusicTrack {
 const CATEGORIES = ['Traditional', 'Instrumental', 'Mixed'];
 
 export const AdminMusicPage: React.FC = () => {
+    const { showModal } = useStore();
     const [tracks, setTracks] = useState<MusicTrack[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isUploading, setIsUploading] = useState(false);
@@ -102,14 +104,31 @@ export const AdminMusicPage: React.FC = () => {
 
     // Handle delete
     const handleDelete = async (id: string, title: string) => {
-        if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
-
-        try {
-            await musicApi.delete(id);
-            setTracks(prev => prev.filter(t => t.id !== id));
-        } catch (err) {
-            console.error('Delete failed:', err);
-        }
+        showModal({
+            title: 'Hapus Musik?',
+            message: `Apakah Anda yakin ingin menghapus "${title}"? Tindakan ini tidak dapat dibatalkan.`,
+            type: 'warning',
+            confirmText: 'Ya, Hapus',
+            cancelText: 'Batal',
+            onConfirm: async () => {
+                try {
+                    await musicApi.delete(id);
+                    setTracks(prev => prev.filter(t => t.id !== id));
+                    showModal({
+                        title: 'Berhasil',
+                        message: 'Musik telah dihapus.',
+                        type: 'success'
+                    });
+                } catch (err: any) {
+                    console.error('Delete failed:', err);
+                    showModal({
+                        title: 'Gagal Menghapus',
+                        message: err.message || 'Terjadi kesalahan saat menghapus musik.',
+                        type: 'error'
+                    });
+                }
+            }
+        });
     };
 
     // Handle play/pause

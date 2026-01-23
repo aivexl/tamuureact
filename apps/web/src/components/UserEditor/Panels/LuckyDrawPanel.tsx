@@ -22,6 +22,7 @@ import {
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { invitations as invitationsApi, guests as guestsApi } from '@/lib/api';
 import SpinWheel from '@/components/ui/SpinWheel';
+import { useStore } from '@/store/useStore';
 
 interface LuckyDrawPanelProps {
     invitationId: string;
@@ -80,6 +81,7 @@ const PARTICIPANT_SOURCES = [
 ];
 
 export const LuckyDrawPanel: React.FC<LuckyDrawPanelProps> = ({ invitationId, onClose }) => {
+    const { showModal } = useStore();
     const [settings, setSettings] = useState<LuckyDrawSettings>({
         participants: [],
         prizes: [],
@@ -215,12 +217,19 @@ export const LuckyDrawPanel: React.FC<LuckyDrawPanelProps> = ({ invitationId, on
 
     // Reset winners
     const resetWinners = () => {
-        if (confirm('Reset semua pemenang?')) {
-            setSettings(prev => ({
-                ...prev,
-                winners: []
-            }));
-        }
+        showModal({
+            title: 'Reset Pemenang?',
+            message: 'Apakah Anda yakin ingin menghapus semua daftar pemenang? Tindakan ini tidak dapat dibatalkan.',
+            type: 'warning',
+            confirmText: 'Ya, Reset',
+            cancelText: 'Batal',
+            onConfirm: () => {
+                setSettings(prev => ({
+                    ...prev,
+                    winners: []
+                }));
+            }
+        });
     };
 
     // Save handler

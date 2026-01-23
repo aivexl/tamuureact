@@ -9,9 +9,9 @@ import {
     Calendar, MapPin, CreditCard, Landmark, User,
     Plus, X, Smartphone
 } from 'lucide-react';
+import { invitations } from '../lib/api';
 import { useStore } from '../store/useStore';
 import { useProfileStore } from '../store/useProfileStore';
-import { invitations } from '../lib/api';
 
 // ============================================
 // DATA & TYPES
@@ -52,7 +52,7 @@ export const OnboardingPage: React.FC = () => {
     const [currentStep, setCurrentStep] = useState(1);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(queryParams.get('category'));
 
-    const { user, isAuthenticated } = useStore();
+    const { user, isAuthenticated, showModal } = useStore();
     const { profile, fetchProfile } = useProfileStore();
 
     // Names
@@ -253,7 +253,11 @@ export const OnboardingPage: React.FC = () => {
         const totalPhotos = galleryPhotos.length + files.length;
 
         if (totalPhotos > 6) {
-            alert('Maksimal 6 foto ya kak');
+            showModal({
+                title: 'Limit Galeri',
+                message: 'Maksimal 6 foto ya kak untuk menjaga performa undangan.',
+                type: 'warning'
+            });
             return;
         }
 

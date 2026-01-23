@@ -2,9 +2,11 @@ import { m } from 'framer-motion';
 import { CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/useStore';
+import { usePayment } from '../../hooks/usePayment';
 
 const pricingPlans = [
     {
+        tier: "free",
         name: "Free",
         price: 0,
         originalPrice: null,
@@ -18,6 +20,7 @@ const pricingPlans = [
         ],
     },
     {
+        tier: "vip",
         name: "VIP",
         price: 99000,
         originalPrice: 149000,
@@ -34,6 +37,7 @@ const pricingPlans = [
         ],
     },
     {
+        tier: "vvip",
         name: "VVIP",
         price: 199000,
         originalPrice: 299000,
@@ -57,12 +61,18 @@ const formatPrice = (price: number) => {
 const PricingSection: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useStore();
+    const { initiatePayment, processingTier } = usePayment();
 
-    const handleAction = () => {
-        if (user) {
-            navigate('/upgrade');
-        } else {
+    const handleAction = (tier: string) => {
+        if (!user) {
             navigate('/signup');
+            return;
+        }
+
+        if (tier === 'free') {
+            navigate('/dashboard');
+        } else {
+            initiatePayment(tier);
         }
     };
 
@@ -121,14 +131,15 @@ const PricingSection: React.FC = () => {
                         </ul>
 
                         <button
-                            onClick={handleAction}
+                            onClick={() => handleAction(plan.tier)}
+                            disabled={!!processingTier}
                             className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all duration-300 transform active:scale-95 ${plan.popular
                                 ? 'bg-[#FFBF00] text-[#0A1128] hover:bg-[#FFD700]'
                                 : 'bg-[#0A1128] text-white shadow-lg shadow-[#0A1128]/20 hover:bg-slate-800'
-                                }`}
+                                } ${processingTier === plan.tier ? 'opacity-70 cursor-wait' : ''}`}
                             aria-label={`Pilih paket ${plan.name}`}
                         >
-                            Pilih Sekarang
+                            {processingTier === plan.tier ? "Processing..." : "Pilih Sekarang"}
                         </button>
                     </m.div>
                 ))}
@@ -136,5 +147,6 @@ const PricingSection: React.FC = () => {
         </section>
     );
 };
+
 
 export default PricingSection;

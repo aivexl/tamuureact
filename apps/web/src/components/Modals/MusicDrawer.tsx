@@ -8,6 +8,7 @@ import {
 import { PremiumLoader } from '../ui/PremiumLoader';
 import { useMusicLibrary, Song } from '@/hooks/queries';
 import { useAudioController } from '@/hooks/useAudioController';
+import { useStore } from '@/store/useStore';
 
 interface MusicDrawerProps {
     isOpen: boolean;
@@ -19,6 +20,7 @@ interface MusicDrawerProps {
 const CATEGORIES = ['Semua', 'Instrumental', 'Piano', 'Classical'];
 
 export const MusicDrawer: React.FC<MusicDrawerProps> = ({ isOpen, onClose, onSelect, selectedSongId }) => {
+    const { showModal } = useStore();
     const { data: songs = [], isLoading } = useMusicLibrary();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('library'); // 'library' or 'gdrive'
@@ -36,7 +38,11 @@ export const MusicDrawer: React.FC<MusicDrawerProps> = ({ isOpen, onClose, onSel
 
     const handleGdriveSubmit = () => {
         if (!gdriveUrl.includes('drive.google.com')) {
-            alert('Silakan masukkan link Google Drive yang valid.');
+            showModal({
+                title: 'Link Tidak Valid',
+                message: 'Silakan masukkan link Google Drive yang valid agar musik dapat diputar.',
+                type: 'warning'
+            });
             return;
         }
 

@@ -410,6 +410,25 @@ export const billing = {
         if (!res.ok) throw new Error('Failed to fetch transactions');
         const data = await res.json();
         return sanitizeValue(data);
+    },
+
+    async getMidtransToken(data: { userId: string; tier: string; amount: number; email: string; name?: string }) {
+        const res = await safeFetch(`${API_BASE}/api/billing/midtrans/token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sanitizeValue(data))
+        });
+        const responseData = await res.json();
+        return sanitizeValue(responseData);
+    },
+
+    async cancelTransaction(orderId: string, userId: string) {
+        const res = await safeFetch(`${API_BASE}/api/billing/midtrans/cancel`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderId, userId })
+        });
+        return res.json();
     }
 };
 

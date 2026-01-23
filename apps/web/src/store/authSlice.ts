@@ -1,4 +1,5 @@
 import { StateCreator } from 'zustand';
+import { supabase } from '../lib/supabase';
 
 export type SubscriptionTier = 'free' | 'vip' | 'vvip';
 
@@ -51,5 +52,13 @@ export const createAuthSlice: StateCreator<AuthState> = (set) => ({
         isAuthenticated: !!user,
         isLoading: false
     }),
-    logout: () => set({ user: null, isAuthenticated: false, token: null, error: null }),
+    logout: () => {
+        // 1. Terminate Supabase Session (Clears Cookies/Storage)
+        supabase.auth.signOut().catch(err => {
+            console.error('[Auth logout] Sign out error:', err);
+        });
+
+        // 2. Clear Zustand State
+        set({ user: null, isAuthenticated: false, token: null, error: null });
+    },
 });

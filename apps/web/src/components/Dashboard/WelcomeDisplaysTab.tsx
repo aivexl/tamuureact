@@ -30,7 +30,7 @@ interface UserDesign {
 }
 
 export const WelcomeDisplaysTab: React.FC = () => {
-    const { user } = useStore();
+    const { user, showModal } = useStore();
     const navigate = useNavigate();
 
     const [templates, setTemplates] = useState<DisplayTemplate[]>([]);
@@ -71,11 +71,22 @@ export const WelcomeDisplaysTab: React.FC = () => {
 
         // Check if user already has designs - ask for confirmation
         if (userDesigns.length > 0) {
-            const confirmReplace = confirm(
-                `Anda sudah memiliki ${userDesigns.length} desain display. Memilih template baru akan menambah desain baru. Lanjutkan?`
-            );
-            if (!confirmReplace) return;
+            showModal({
+                title: 'Lanjutkan?',
+                message: `Anda sudah memiliki ${userDesigns.length} desain display. Memilih template baru akan menambah desain baru. Lanjutkan?`,
+                type: 'warning',
+                confirmText: 'Ya, Lanjutkan',
+                cancelText: 'Batal',
+                onConfirm: () => proceedSelection(template)
+            });
+            return;
         }
+
+        proceedSelection(template);
+    };
+
+    const proceedSelection = async (template: DisplayTemplate) => {
+        if (!user?.id) return;
 
         setSelectedTemplate(template);
         setIsApplying(true);
@@ -101,7 +112,11 @@ export const WelcomeDisplaysTab: React.FC = () => {
             navigate(`/user/display-editor/${newDesign.id}`);
         } catch (error) {
             console.error('[WelcomeDisplaysTab] Failed to apply template:', error);
-            alert('Gagal memilih template. Silakan coba lagi.');
+            showModal({
+                title: 'Gagal',
+                message: 'Gagal memilih template. Silakan coba lagi.',
+                type: 'error'
+            });
         } finally {
             setIsApplying(false);
             setSelectedTemplate(null);

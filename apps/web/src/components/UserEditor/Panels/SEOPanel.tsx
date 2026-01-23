@@ -3,6 +3,7 @@ import { m } from 'framer-motion';
 import { Search, Save, Check, Image as ImageIcon, Globe, MessageCircle } from 'lucide-react';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { invitations } from '@/lib/api';
+import { useStore } from '@/store/useStore';
 
 interface SEOPanelProps {
     invitationId: string;
@@ -10,6 +11,7 @@ interface SEOPanelProps {
 }
 
 export const SEOPanel: React.FC<SEOPanelProps> = ({ invitationId, onClose }) => {
+    const { showModal } = useStore();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -54,9 +56,13 @@ export const SEOPanel: React.FC<SEOPanelProps> = ({ invitationId, onClose }) => 
                 setSuccess(false);
                 onClose();
             }, 1500);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to save SEO data:', error);
-            alert('Gagal menyimpan pengaturan Preview.');
+            showModal({
+                title: 'Gagal Menyimpan',
+                message: error.message || 'Terjadi kesalahan saat menyimpan pengaturan Preview Sosmed. Silakan coba lagi.',
+                type: 'error'
+            });
         } finally {
             setSaving(false);
         }
