@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Check, Zap, Crown, Star, ArrowRight } from 'lucide-react';
+import { Check, Zap, Crown, Star, ArrowRight, Infinity } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { Link, useNavigate } from 'react-router-dom';
 import { usePayment } from '../hooks/usePayment';
@@ -125,7 +125,7 @@ export const UpgradePage: React.FC = () => {
                     </motion.p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start relative">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start relative">
                     {/* Free Tier */}
                     <TierCard
                         name="Free"
@@ -189,6 +189,61 @@ export const UpgradePage: React.FC = () => {
                         onSelect={() => initiatePayment('vvip')}
                         isLoading={processingTier === 'vvip'}
                     />
+
+                    {/* ULTRA INFINITY Tier */}
+                    <motion.div
+                        whileHover={{ y: -5 }}
+                        className={`relative p-8 rounded-3xl border bg-slate-900 border-slate-800 shadow-2xl shadow-slate-900/20 overflow-hidden group ${user?.tier === 'ultra' ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-slate-900' : ''}`}
+                    >
+                        {/* Decorative background glow */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-indigo-500/20 transition-colors" />
+
+                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg">
+                            Hanya Sekali Bayar
+                        </div>
+
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-6 shadow-lg shadow-indigo-500/20">
+                            <Infinity className="w-8 h-8 text-white" />
+                        </div>
+
+                        <h3 className="text-2xl font-black text-white mb-2">Tamuu INFINITY</h3>
+                        <div className="flex items-baseline gap-2 mb-1">
+                            <span className="text-4xl font-black text-white">Rp 2.4m</span>
+                        </div>
+                        <span className="text-slate-500 text-sm font-medium mb-6 block">
+                            Sekali bayar, aktif selamanya
+                        </span>
+
+                        <div className="space-y-4 mb-8 mt-6">
+                            {[
+                                "Unlimited Undangan",
+                                "Semua Fitur Premium",
+                                "Custom Root Domain",
+                                "Priority Tech Support",
+                                "No Branding Selamanya",
+                                "Lencana Member Elite"
+                            ].map((feature) => (
+                                <div key={feature} className="flex items-start gap-3">
+                                    <div className="mt-1 bg-indigo-500/20 rounded-full p-0.5">
+                                        <Check className="w-3.5 h-3.5 text-indigo-400" />
+                                    </div>
+                                    <span className="text-slate-300 text-sm leading-tight">{feature}</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <button
+                            onClick={() => initiatePayment('ultra')}
+                            disabled={user?.tier === 'ultra' || processingTier === 'ultra'}
+                            className={`w-full py-4 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-2 ${user?.tier === 'ultra'
+                                ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                                : 'bg-indigo-600 text-white hover:bg-indigo-500 hover:shadow-[0_10px_20px_rgba(79,70,229,0.3)]'
+                                } ${processingTier === 'ultra' ? 'opacity-70 cursor-wait' : ''}`}
+                        >
+                            {processingTier === 'ultra' ? 'Processing...' : (user?.tier === 'ultra' ? 'Infinity Member' : 'Become Infinity')}
+                            {user?.tier !== 'ultra' && processingTier !== 'ultra' && <ArrowRight className="w-4 h-4" />}
+                        </button>
+                    </motion.div>
                 </div>
 
 

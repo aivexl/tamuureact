@@ -1,7 +1,7 @@
 import { StateCreator } from 'zustand';
 import { supabase } from '../lib/supabase';
 
-export type SubscriptionTier = 'free' | 'vip' | 'vvip';
+export type SubscriptionTier = 'free' | 'vip' | 'vvip' | 'ultra';
 
 export interface User {
     id: string;
