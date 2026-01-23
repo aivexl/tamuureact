@@ -73,8 +73,10 @@ export const useSubscriptionTimer = (expiresAt: string | null): SubscriptionStat
         else if (days < 7) urgency = 'high';
         else if (days < 14) urgency = 'medium';
 
-        let label = `${days} Hari ${hours} Jam sisa`;
-        if (days === 0) label = `${hours}j ${minutes}m ${seconds}s sisa`;
+        // Super Ultra Format: 31d : 05h : 22m : 11s
+        const label = days > 0
+            ? `${days}d : ${String(hours).padStart(2, '0')}h : ${String(minutes).padStart(2, '0')}m : ${String(seconds).padStart(2, '0')}s`
+            : `${String(hours).padStart(2, '0')}h : ${String(minutes).padStart(2, '0')}m : ${String(seconds).padStart(2, '0')}s`;
 
         return {
             days, hours, minutes, seconds,
