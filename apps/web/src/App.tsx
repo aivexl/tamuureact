@@ -53,6 +53,7 @@ const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then(m => ({ defaul
 const RefundPage = lazy(() => import('./pages/RefundPage').then(m => ({ default: m.RefundPage })));
 const AboutPage = lazy(() => import('./pages/AboutPage').then(m => ({ default: m.AboutPage })));
 const ContactPage = lazy(() => import('./pages/ContactPage').then(m => ({ default: m.ContactPage })));
+const InactivePage = lazy(() => import('./pages/InactivePage').then(m => ({ default: m.InactivePage })));
 
 const App: React.FC = () => {
     // Memoize domain check to avoid recalculation
@@ -65,6 +66,7 @@ const App: React.FC = () => {
         const isAppPath = path.startsWith('/editor') ||
             path.startsWith('/admin') ||
             path.startsWith('/onboarding') ||
+            path.startsWith('/inactive') ||
             path.startsWith('/tools') ||
             path.startsWith('/guests') ||
             path.startsWith('/profile') ||
@@ -127,6 +129,9 @@ const App: React.FC = () => {
                         <Route path="/refund" element={<MainLayout><RefundPage /></MainLayout>} />
                         <Route path="/about" element={<MainLayout><AboutPage /></MainLayout>} />
                         <Route path="/contact" element={<MainLayout><ContactPage /></MainLayout>} />
+
+                        {/* Inactive State (Public) */}
+                        <Route path="/inactive/:slug" element={<InactivePage />} />
 
                         {/* ============================================ */}
                         {/* APP ROUTES - Domain Aware Routing */}

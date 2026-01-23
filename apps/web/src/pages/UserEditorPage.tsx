@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { motion as m } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { UserEditorLayout } from '../components/Layout/UserEditorLayout';
 import { EditorLayout } from '@/components/Layout/EditorLayout';
@@ -29,8 +30,10 @@ import { LuckyDrawPanel } from '@/components/UserEditor/Panels/LuckyDrawPanel';
 import { AnimatedLayer } from '@/components/Preview/AnimatedLayer';
 import { useStore } from '@/store/useStore';
 import { invitations as invitationsApi } from '@/lib/api';
-import { Sparkles, AlertCircle } from 'lucide-react';
+import { Sparkles, AlertCircle, Clock } from 'lucide-react';
 import { useRef } from 'react';
+import { useSubscriptionTimer } from '../hooks/useSubscriptionTimer';
+import { useProfileStore } from '../store/useProfileStore';
 
 interface UserEditorPageProps {
     mode?: 'invitation' | 'welcome';
@@ -70,6 +73,9 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [invitation, setInvitation] = useState<any>(null);
+
+    const { profile } = useProfileStore();
+    const subStatus = useSubscriptionTimer(profile?.expires_at || null);
     const [activePanel, setActivePanel] = useState<string | null>(null);
     const previewRef = useRef<HTMLDivElement>(null);
     const hasAttemptedRef = useRef<string | null>(null);
@@ -137,6 +143,56 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
 
     if (loading) {
         return <PremiumLoader showLabel label="Menyiapkan Editor Anda..." />;
+    }
+
+    if (subStatus.isExpired) {
+        return (
+            <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6 text-center overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/10 to-transparent pointer-events-none" />
+                <div className="absolute -top-24 -left-24 w-96 h-96 bg-rose-500/10 rounded-full blur-3xl" />
+
+                <m.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="max-w-md w-full bg-white/5 backdrop-blur-3xl border border-white/10 p-10 rounded-[3rem] shadow-2xl relative z-10"
+                >
+                    <div className="w-20 h-20 bg-rose-500 rounded-3xl flex items-center justify-center mb-8 mx-auto shadow-xl shadow-rose-500/20">
+                        <Clock className="w-10 h-10 text-white animate-pulse" />
+                    </div>
+
+                    <h2 className="text-3xl font-black text-white tracking-tight uppercase tracking-widest mb-4">Masa Aktif Habis</h2>
+                    <p className="text-slate-400 font-medium mb-8 leading-relaxed">
+                        Masa aktif undangan ini telah berakhir. Desain Anda tetap aman, namun akses edit dikunci sementara.
+                    </p>
+
+                    <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-8">
+                        <div className="text-[10px] font-black text-rose-400 uppercase tracking-[0.2em] mb-2">Hitung Mundur Penghapusan Data</div>
+                        <div className="text-4xl font-black text-white font-mono tracking-tighter">
+                            {30 - subStatus.daysSinceExpiry} <span className="text-sm font-bold text-slate-500 uppercase tracking-widest ml-1">Hari Lagi</span>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <button
+                            onClick={() => navigate('/billing')}
+                            className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl transition-all shadow-lg shadow-indigo-500/20 active:scale-95 uppercase tracking-widest text-xs"
+                        >
+                            Perpanjang Sekarang
+                        </button>
+                        <button
+                            onClick={() => navigate('/dashboard')}
+                            className="w-full py-4 bg-white/5 hover:bg-white/10 text-slate-300 font-black rounded-2xl transition-all active:scale-95 uppercase tracking-widest text-xs"
+                        >
+                            Ke Dashboard
+                        </button>
+                    </div>
+                </m.div>
+
+                <p className="mt-8 text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em]">
+                    Sesuai Kebijakan Tamuu: Data dihapus permanen dalam 30 hari.
+                </p>
+            </div>
+        );
     }
 
     if (error || !invitation) {

@@ -127,6 +127,11 @@ tamuureact/
 - **Gating Logic**: 
   - **FE**: UI-level restrictions di `ExportPanel`, `MusicPanel`, dan `InvitationsGrid`.
   - **BE**: Hard limits di API layer (Cloudflare D1) untuk mencegah bypass.
+- **Expiry & Data Policy**:
+  - **Immediate Inactive**: Saat `expires_at` terlampaui, publik akan di-redirect ke halaman "Inactive".
+  - **Editor Lock**: User kehilangan akses tulis (Read-Only) seketika saat kadaluarsa.
+  - **30-Day Hard Delete**: Seluruh data (DB & R2) akan dihapus permanen jika tidak diperpanjang dalam 30 hari pasca kadaluarsa.
+  - **Slug Recycling**: Setelah 30 hari dan data dihapus, slug tersebut menjadi **Tersedia Kembali** untuk digunakan oleh user lain.
 
 ---
 

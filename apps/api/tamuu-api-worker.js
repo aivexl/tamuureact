@@ -1164,14 +1164,14 @@ export default {
 
             // ============================================
             // SMART PREVIEW RESOLVER (Universal)
-            // Tries template first, then invitation
+            // Tries template first, then invitation (with Expiry Check)
             // ============================================
             if (path.startsWith('/api/preview/') && method === 'GET') {
                 return await smart_cache(request, 60, async () => {
                     const slug = path.split('/')[3];
                     if (!slug) return null;
 
-                    // 1. Try Template
+                    // 1. Try Template (Templates never expire)
                     let { results: templateResults } = await env.DB.prepare(
                         'SELECT * FROM templates WHERE slug = ? OR id = ?'
                     ).bind(slug, slug).all();
@@ -1180,13 +1180,36 @@ export default {
                         return { data: parseJsonFields(templateResults[0]), source: 'templates' };
                     }
 
-                    // 2. Try Invitation
-                    let { results: invitationResults } = await env.DB.prepare(
-                        'SELECT * FROM invitations WHERE slug = ? OR id = ?'
-                    ).bind(slug, slug).all();
+                    // 2. Try Invitation (Join with user to check expiry)
+                    let { results: invitationResults } = await env.DB.prepare(`
+                        SELECT i.*, u.expires_at as user_expires_at, u.tier as user_tier
+                        FROM invitations i
+                        JOIN users u ON i.user_id = u.id
+                        WHERE i.slug = ? OR i.id = ?
+                    `).bind(slug, slug).all();
 
                     if (invitationResults && invitationResults.length > 0) {
-                        return { data: parseJsonFields(invitationResults[0]), source: 'invitations' };
+                        const invitation = invitationResults[0];
+
+                        // SUPER ULTRA LOGIC: Check for Subscription Expiry
+                        const now = new Date();
+                        const expiresAt = invitation.user_expires_at ? new Date(invitation.user_expires_at) : null;
+
+                        // If expired, return limited data and expired flag
+                        if (expiresAt && now > expiresAt) {
+                            return {
+                                data: {
+                                    id: invitation.id,
+                                    name: invitation.name,
+                                    slug: invitation.slug,
+                                    expired: true
+                                },
+                                source: 'invitations',
+                                status: 'EXPIRED'
+                            };
+                        }
+
+                        return { data: parseJsonFields(invitation), source: 'invitations' };
                     }
 
                     return null;

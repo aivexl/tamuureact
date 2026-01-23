@@ -35,6 +35,13 @@ export const PreviewPage: React.FC = () => {
 
         const { data, source } = previewResponse;
 
+        // SUPER ULTRA: Expiry Guard
+        if (data?.expired) {
+            console.log('[PreviewPage] Invitation Expired. Redirecting to Inactive Page.');
+            navigate(`/inactive/${slug}`, { replace: true });
+            return;
+        }
+
         // Safety check to ensure we have actual invitation/template data
         if (!data) return;
 

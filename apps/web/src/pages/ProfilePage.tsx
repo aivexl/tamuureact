@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { PremiumLoader } from '../components/ui/PremiumLoader';
 import { motion as m } from 'framer-motion';
 import { useSEO } from '../hooks/useSEO';
+import { useSubscriptionTimer } from '../hooks/useSubscriptionTimer';
 
 // ============================================
 // INLINE SVG ICONS (Zero dependency)
@@ -99,6 +100,7 @@ export const ProfilePage: React.FC = () => {
     const navigate = useNavigate();
     const { user, isAuthenticated } = useStore();
     const { profile, fetchProfile, updateProfile, isLoading: isStoreLoading } = useProfileStore();
+    const subStatus = useSubscriptionTimer(profile?.expires_at || null);
 
     const [profileData, setProfileData] = useState({
         name: '',
@@ -269,55 +271,97 @@ export const ProfilePage: React.FC = () => {
                                     animate={{ opacity: 1, x: 0 }}
                                     className="space-y-6"
                                 >
-                                    {/* Subscription Active Period Section */}
-                                    <div className="mb-10 p-5 rounded-2xl bg-gradient-to-br from-indigo-50/50 to-slate-50 border border-indigo-100/50">
-                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                            <div className="flex items-start gap-4">
-                                                <div className="w-12 h-12 rounded-xl bg-white shadow-sm border border-indigo-100 flex items-center justify-center shrink-0">
-                                                    <ClockIcon className="w-6 h-6 text-indigo-600" />
+                                    {/* Super Ultra Subscription Active Period Section */}
+                                    <m.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className={`mb-10 p-6 rounded-3xl border transition-all duration-500 overflow-hidden relative group ${subStatus.urgency === 'critical' || subStatus.isExpired
+                                            ? 'bg-rose-50 border-rose-100'
+                                            : subStatus.urgency === 'high'
+                                                ? 'bg-amber-50 border-amber-100'
+                                                : 'bg-gradient-to-br from-indigo-50/50 to-slate-50 border-indigo-100/50'
+                                            }`}
+                                    >
+                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                                            <div className="flex items-start gap-5">
+                                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-lg transition-transform group-hover:scale-110 duration-500 ${subStatus.isExpired ? 'bg-rose-600 text-white shadow-rose-200' :
+                                                    subStatus.urgency === 'critical' ? 'bg-rose-500 text-white shadow-rose-200 animate-pulse' :
+                                                        subStatus.urgency === 'high' ? 'bg-amber-500 text-white shadow-amber-200' :
+                                                            'bg-white text-indigo-600 shadow-indigo-100 border border-indigo-50'
+                                                    }`}>
+                                                    <ClockIcon className="w-7 h-7" />
                                                 </div>
-                                                <div>
-                                                    <h3 className="text-sm font-bold text-slate-900 mb-1">Masa Aktif Subscription</h3>
-                                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                                                        <div className="flex items-center gap-1.5">
-                                                            <span className="text-xs text-slate-500">Berakhir pada:</span>
-                                                            <span className="text-sm font-bold text-indigo-700">
-                                                                {profile.expires_at ? new Date(profile.expires_at).toLocaleDateString('id-ID', {
-                                                                    day: 'numeric',
-                                                                    month: 'long',
-                                                                    year: 'numeric'
-                                                                }) : 'N/A'}
-                                                            </span>
+
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Masa Aktif</h3>
+                                                        <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter border ${subStatus.isExpired
+                                                            ? 'bg-rose-100 text-rose-600 border-rose-200'
+                                                            : 'bg-emerald-100 text-emerald-600 border-emerald-200'
+                                                            }`}>
+                                                            {!subStatus.isExpired && (
+                                                                <span className="relative flex h-2 w-2">
+                                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                                                </span>
+                                                            )}
+                                                            {subStatus.isExpired ? 'Expired' : 'Active'}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex flex-col gap-1">
+                                                        <div className="text-2xl font-black tracking-tight font-outfit text-slate-900">
+                                                            {profile?.expires_at ? subStatus.label : '∞ Selamanya'}
                                                         </div>
-                                                        <div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-slate-200" />
-                                                        <div className="flex items-center gap-1.5">
-                                                            <span className="text-xs text-slate-500">Status:</span>
-                                                            <span className="flex items-center gap-1">
-                                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                                                <span className="text-xs font-black uppercase text-emerald-600">Aktif</span>
-                                                            </span>
+                                                        <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                                                            {subStatus.isExpired ? (
+                                                                <span className="text-rose-600 font-bold">Data akan dihapus dalam {30 - subStatus.daysSinceExpiry} hari</span>
+                                                            ) : profile?.expires_at ? (
+                                                                <span>Hingga {new Date(profile.expires_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                                            ) : (
+                                                                <span>Akses penuh tanpa batas waktu</span>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
+
                                             <div className="flex items-center gap-3">
                                                 <button
                                                     onClick={() => navigate('/dashboard?tab=invoice')}
-                                                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 transition-all shadow-sm"
+                                                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-black rounded-xl border border-slate-200 transition-all shadow-sm active:scale-95 uppercase tracking-widest"
                                                 >
                                                     <CreditCardIcon className="w-3.5 h-3.5" />
                                                     Invoice
                                                 </button>
                                                 <button
                                                     onClick={() => navigate('/billing')}
-                                                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-indigo-100"
+                                                    className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 text-white text-xs font-black rounded-xl transition-all shadow-lg active:scale-95 uppercase tracking-widest ${subStatus.urgency === 'critical' || subStatus.isExpired
+                                                        ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-100'
+                                                        : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100'
+                                                        }`}
                                                 >
                                                     Perpanjang
                                                     <ExternalLinkIcon className="w-3.5 h-3.5" />
                                                 </button>
                                             </div>
                                         </div>
-                                    </div>
+
+                                        {/* Visualization Bar */}
+                                        {!subStatus.isExpired && profile?.expires_at && (
+                                            <div className="mt-6 h-1.5 w-full bg-slate-100/50 rounded-full overflow-hidden">
+                                                <m.div
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${Math.max(5, (subStatus.days / 365) * 100)}%` }}
+                                                    transition={{ duration: 1.5, ease: "easeOut" }}
+                                                    className={`h-full rounded-full ${subStatus.urgency === 'critical' ? 'bg-rose-500' :
+                                                        subStatus.urgency === 'high' ? 'bg-amber-500' :
+                                                            'bg-indigo-500'
+                                                        }`}
+                                                />
+                                            </div>
+                                        )}
+                                    </m.div>
 
                                     {/* Name & Phone Row */}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
