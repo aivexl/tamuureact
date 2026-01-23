@@ -2,6 +2,7 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSEO } from '../hooks/useSEO';
 import { useStore } from '../store/useStore';
+import { PremiumLoader } from '../components/ui/PremiumLoader';
 
 // Lazy load non-critical sections to improve TBT and FCP
 // Eagerly load the first section below the fold to improve Speed Index
@@ -15,7 +16,7 @@ const CTASection = lazy(() => import('../components/Landing/CTASection'));
 
 const SectionLoader = () => (
     <div className="py-20 flex justify-center items-center bg-white">
-        <div className="w-10 h-10 border-4 border-slate-100 border-t-[#FFBF00] rounded-full animate-spin"></div>
+        <PremiumLoader variant="inline" color="#0A1128" showLabel label="Loading Section..." />
     </div>
 );
 

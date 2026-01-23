@@ -12,6 +12,7 @@ import {
 import { invitations } from '../lib/api';
 import { useStore } from '../store/useStore';
 import { useProfileStore } from '../store/useProfileStore';
+import { PremiumLoader } from '../components/ui/PremiumLoader';
 
 // ============================================
 // DATA & TYPES
@@ -656,9 +657,8 @@ export const OnboardingPage: React.FC = () => {
                                     </label>
                                     <div className="flex items-center gap-2 ml-4 mt-2">
                                         {isCheckingSlug ? (
-                                            <div className="flex items-center gap-1.5 text-slate-400">
-                                                <div className="w-3 h-3 border-2 border-slate-300 border-t-slate-500 rounded-full animate-spin" />
-                                                <span className="text-[10px] font-black uppercase tracking-widest">Checking availability...</span>
+                                            <div className="flex items-center gap-2 text-slate-400">
+                                                <PremiumLoader variant="inline" color="currentColor" showLabel label="Checking..." />
                                             </div>
                                         ) : slug.length > 0 && slug.length < 3 ? (
                                             <span className="text-[10px] text-amber-500 font-black uppercase tracking-widest">Minimal 3 karakter ya kak</span>

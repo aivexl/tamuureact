@@ -13,241 +13,139 @@
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Josefin+Sans:wght@300;400;500;600;700&family=Poiret+One&display=swap">
   <style>
-    :root {
-      --premium-dark: #0A1128;
-      --premium-accent: #FFBF00;
-    }
-
-    body {
-      background-color: var(--premium-dark);
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
-      font-family: 'Outfit', sans-serif;
-    }
-
-    /* Critical Hero Layout Hints */
-    .hero-section {
-      display: flex;
-      flex-direction: column;
-    }
-
-    #root {
-      min-height: 100vh;
-    }
-
-    @keyframes soft-float {
-      0% {
-        transform: translate(0px, 0px) scale(1);
-      }
-
-      33% {
-        transform: translate(15px, -25px) scale(1.05);
-      }
-
-      66% {
-        transform: translate(-10px, 10px) scale(0.95);
-      }
-
-      100% {
-        transform: translate(0px, 0px) scale(1);
-      }
-    }
-
-    .animate-soft-float {
-      animation: soft-float 20s ease-in-out infinite;
-    }
-
-    .animation-delay-2000 {
-      animation-delay: 2s;
-    }
-
-    .animation-delay-4000 {
-      animation-delay: 4s;
-    }
-
-    .animation-delay-8000 {
-      animation-delay: 8s;
-    }
-
-    /* Ultra-critical Tailwind Utility Inlines */
-    .bg-white {
-      background-color: #ffffff;
-    }
-
-    .text-white {
-      color: #ffffff;
-    }
-
-    .font-black {
-      font-weight: 900;
-    }
-
-    .tracking-tighter {
-      letter-spacing: -0.05em;
-    }
-
-    .overflow-hidden {
-      overflow: hidden;
-    }
-
-    .relative {
-      position: relative;
-    }
-
-    .z-10 {
-      z-index: 10;
-    }
-
-    .max-w-7xl {
-      max-width: 80rem;
-    }
-
-    .mx-auto {
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .grid {
-      display: grid;
-    }
-
-    .pt-24 {
-      padding-top: 6rem;
-    }
-
-    .flex {
-      display: flex;
-    }
-
-    .items-center {
-      align-items: center;
-    }
-
-    .justify-center {
-      justify-content: center;
-    }
-
-    .w-full {
-      width: 100%;
-    }
-
-    .max-w-xl {
-      max-width: 36rem;
-    }
-
-    .space-y-8> :not([hidden])~ :not([hidden]) {
-      --tw-space-y-reverse: 0;
-      margin-top: calc(2rem * calc(1 - var(--tw-space-y-reverse)));
-      margin-bottom: calc(2rem * var(--tw-space-y-reverse));
-    }
-
-    .h-16 {
-      height: 4rem;
-    }
-
-    .h-14 {
-      height: 3.5rem;
-    }
-
-    .h-4 {
-      height: 1rem;
-    }
-
-    .rounded-2xl {
-      border-radius: 1rem;
-    }
-
-    .rounded-xl {
-      border-radius: 0.75rem;
-    }
-
-    .bg-white\/5 {
-      background-color: rgb(255 255 255 / 0.05);
-    }
-
-    .bg-white\/10 {
-      background-color: rgb(255 255 255 / 0.1);
-    }
-
-    .animate-pulse {
-      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-
-    @keyframes pulse {
+    /* Premium Loader - CSS Native Implementation */
+    @keyframes dot-pulse {
 
       0%,
-      100% {
+      15% {
+        opacity: 0.1;
+      }
+
+      25% {
         opacity: 1;
       }
 
-      50% {
-        opacity: .5;
+      35%,
+      100% {
+        opacity: 0.1;
       }
     }
 
-    .gap-4 {
-      gap: 1rem;
+    .loader-container {
+      position: fixed;
+      inset: 0;
+      background-color: #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
     }
 
-    .w-3\/4 {
-      width: 75%;
+    .loader-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      padding: 4px;
     }
 
-    .w-1\/2 {
-      width: 50%;
+    .loader-dot {
+      width: 4px;
+      height: 4px;
+      background-color: #ffffff;
+      opacity: 0.1;
+      animation: dot-pulse 1.5s linear infinite;
     }
 
-    .w-40 {
-      width: 10rem;
+    /* Snake Sequence Delays (matching PremiumLoader.tsx snakeIndices) */
+    /* [0, 1, 2, 3, 7, 11, 15, 14, 13, 12, 8, 4, 5, 6, 10, 9] */
+    .dot-0 {
+      animation-delay: 0.00s;
     }
 
-    .px-6 {
-      padding-left: 1.5rem;
-      padding-right: 1.5rem;
+    .dot-1 {
+      animation-delay: 0.08s;
     }
 
-    .pt-20 {
-      padding-top: 5rem;
+    .dot-2 {
+      animation-delay: 0.16s;
     }
 
-    .pb-0 {
-      padding-bottom: 0px;
+    .dot-3 {
+      animation-delay: 0.24s;
     }
 
-    .sm\:pt-32 {
-      @media (min-width: 640px) {
-        padding-top: 8rem;
-      }
+    .dot-7 {
+      animation-delay: 0.32s;
     }
 
-    .lg\:justify-start {
-      @media (min-width: 1024px) {
-        justify-content: flex-start;
-      }
+    .dot-11 {
+      animation-delay: 0.40s;
+    }
+
+    .dot-15 {
+      animation-delay: 0.48s;
+    }
+
+    .dot-14 {
+      animation-delay: 0.56s;
+    }
+
+    .dot-13 {
+      animation-delay: 0.64s;
+    }
+
+    .dot-12 {
+      animation-delay: 0.72s;
+    }
+
+    .dot-8 {
+      animation-delay: 0.80s;
+    }
+
+    .dot-4 {
+      animation-delay: 0.88s;
+    }
+
+    .dot-5 {
+      animation-delay: 0.96s;
+    }
+
+    .dot-6 {
+      animation-delay: 1.04s;
+    }
+
+    .dot-10 {
+      animation-delay: 1.12s;
+    }
+
+    .dot-9 {
+      animation-delay: 1.20s;
     }
   </style>
 </head>
 
-<body class="bg-premium-dark text-white selection:bg-premium-accent selection:text-premium-dark">
+<body class="bg-black text-white selection:bg-premium-accent selection:text-premium-dark">
   <div id="root">
-    <!-- Critical Hero Shell for LCP/PSI -->
-    <section class="relative pt-24 pb-0 sm:pt-32 overflow-hidden hero-section"
-      style="background-color: #0A1128; height: 100vh;">
-      <div class="max-w-7xl mx-auto px-6 relative">
-        <div class="flex items-center justify-center lg:justify-start pt-20">
-          <div class="space-y-8 w-full max-w-xl">
-            <div class="h-16 bg-white/5 rounded-2xl w-3/4 animate-pulse"></div>
-            <div class="h-16 bg-white/5 rounded-2xl w-1/2 animate-pulse"></div>
-            <div class="h-4 bg-white/5 rounded-xl w-full animate-pulse"></div>
-            <div class="flex gap-4">
-              <div class="h-14 bg-white/10 rounded-2xl w-40 animate-pulse"></div>
-              <div class="h-14 bg-white/5 rounded-2xl w-40 animate-pulse"></div>
-            </div>
-          </div>
-        </div>
+    <div class="loader-container">
+      <div class="loader-grid">
+        <div class="loader-dot dot-0"></div>
+        <div class="loader-dot dot-1"></div>
+        <div class="loader-dot dot-2"></div>
+        <div class="loader-dot dot-3"></div>
+        <div class="loader-dot dot-4"></div>
+        <div class="loader-dot dot-5"></div>
+        <div class="loader-dot dot-6"></div>
+        <div class="loader-dot dot-7"></div>
+        <div class="loader-dot dot-8"></div>
+        <div class="loader-dot dot-9"></div>
+        <div class="loader-dot dot-10"></div>
+        <div class="loader-dot dot-11"></div>
+        <div class="loader-dot dot-12"></div>
+        <div class="loader-dot dot-13"></div>
+        <div class="loader-dot dot-14"></div>
+        <div class="loader-dot dot-15"></div>
       </div>
-    </section>
+    </div>
   </div>
   <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="Mid-client-aVS390dhMuLvPXMa">
   </script>
