@@ -164,7 +164,8 @@ function SectionItem({ section }: { section: any }) {
         updateSection,
         removeSection,
         duplicateSection,
-        sections
+        sections,
+        showModal
     } = useStore();
 
     const controls = useDragControls();

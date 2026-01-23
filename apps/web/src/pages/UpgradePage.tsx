@@ -104,14 +104,6 @@ export const UpgradePage: React.FC = () => {
         <div className="min-h-screen bg-[#F8FAFC] py-20 px-4">
             <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-16">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 bg-[#FFBF00]/10 text-[#B8860B] px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-6"
-                    >
-                        <Star className="w-3.5 h-3.5 fill-current" />
-                        Premium Experience
-                    </motion.div>
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
