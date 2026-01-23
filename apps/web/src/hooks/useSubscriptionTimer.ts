@@ -73,8 +73,8 @@ export const useSubscriptionTimer = (expiresAt: string | null): SubscriptionStat
         else if (days < 7) urgency = 'high';
         else if (days < 14) urgency = 'medium';
 
-        let label = `${days}d ${hours}h remaining`;
-        if (days === 0) label = `${hours}h ${minutes}m ${seconds}s remaining`;
+        let label = `${days} Hari ${hours} Jam sisa`;
+        if (days === 0) label = `${hours}j ${minutes}m ${seconds}s sisa`;
 
         return {
             days, hours, minutes, seconds,

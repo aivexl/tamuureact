@@ -276,18 +276,18 @@ export const ProfilePage: React.FC = () => {
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         className={`mb-10 p-7 rounded-[2rem] border transition-all duration-500 overflow-hidden relative group ${subStatus.urgency === 'critical' || subStatus.isExpired
-                                                ? 'bg-rose-50/50 border-rose-100'
-                                                : subStatus.urgency === 'high'
-                                                    ? 'bg-amber-50/50 border-amber-100'
-                                                    : 'bg-white border-slate-200 shadow-sm'
+                                            ? 'bg-rose-50/50 border-rose-100'
+                                            : subStatus.urgency === 'high'
+                                                ? 'bg-amber-50/50 border-amber-100'
+                                                : 'bg-white border-slate-200 shadow-sm'
                                             }`}
                                     >
                                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 relative z-10">
                                             <div className="flex items-center gap-6">
                                                 <div className={`w-16 h-16 rounded-[1.25rem] flex items-center justify-center shrink-0 shadow-lg transition-all duration-500 group-hover:rotate-6 ${subStatus.isExpired ? 'bg-rose-600 text-white shadow-rose-200' :
-                                                        subStatus.urgency === 'critical' ? 'bg-rose-500 text-white shadow-rose-200 animate-pulse' :
-                                                            subStatus.urgency === 'high' ? 'bg-amber-500 text-white shadow-amber-200' :
-                                                                'bg-indigo-600 text-white shadow-indigo-100'
+                                                    subStatus.urgency === 'critical' ? 'bg-rose-500 text-white shadow-rose-200 animate-pulse' :
+                                                        subStatus.urgency === 'high' ? 'bg-amber-500 text-white shadow-amber-200' :
+                                                            'bg-indigo-600 text-white shadow-indigo-100'
                                                     }`}>
                                                     <ClockIcon className="w-8 h-8" />
                                                 </div>
@@ -296,8 +296,8 @@ export const ProfilePage: React.FC = () => {
                                                     <div className="flex items-center gap-3">
                                                         <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.2em]">Subscription</h3>
                                                         <span className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${subStatus.isExpired
-                                                                ? 'bg-rose-100 text-rose-600 border-rose-200'
-                                                                : 'bg-emerald-100 text-emerald-600 border-emerald-200'
+                                                            ? 'bg-rose-100 text-rose-600 border-rose-200'
+                                                            : 'bg-emerald-100 text-emerald-600 border-emerald-200'
                                                             }`}>
                                                             {!subStatus.isExpired && (
                                                                 <span className="relative flex h-1.5 w-1.5">
@@ -310,16 +310,20 @@ export const ProfilePage: React.FC = () => {
                                                     </div>
 
                                                     <div className="flex flex-col gap-0.5">
-                                                        <div className="text-3xl font-bold tracking-tight text-slate-900 font-outfit">
-                                                            {profile?.expires_at ? subStatus.label : (profile?.tier === 'free' ? 'Free Version' : '∞ Lifetime')}
+                                                        <div className="text-2xl font-bold tracking-tight text-slate-900 font-outfit">
+                                                            {(profile?.email === 'user@tamuu.id' || profile?.email === 'admin@tamuu.id')
+                                                                ? 'Unlimited Activation'
+                                                                : (profile?.expires_at ? subStatus.label : 'Masa Aktif Standar')}
                                                         </div>
-                                                        <div className="flex items-center gap-2 text-[13px] text-slate-500 font-medium">
+                                                        <div className="flex items-center gap-2 text-[12px] text-slate-500 font-medium">
                                                             {subStatus.isExpired ? (
-                                                                <span className="text-rose-600 font-bold">Data deletion in {30 - subStatus.daysSinceExpiry} days</span>
+                                                                <span className="text-rose-600 font-bold uppercase tracking-wider text-[10px]">Data deletion in {30 - subStatus.daysSinceExpiry} days</span>
+                                                            ) : (profile?.email === 'user@tamuu.id' || profile?.email === 'admin@tamuu.id') ? (
+                                                                <span className="text-indigo-500 font-bold uppercase tracking-widest text-[10px]">Special Access Account</span>
                                                             ) : profile?.expires_at ? (
-                                                                <span>Valid until {new Date(profile.expires_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                                                <span className="opacity-70">Valid until {new Date(profile.expires_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                                                             ) : (
-                                                                <span>{profile?.tier === 'free' ? 'Upgrade to access VIP features' : 'Unlimited full access'}</span>
+                                                                <span>{profile?.tier === 'free' ? 'Standard 1-Month Access' : 'Full Access Activation'}</span>
                                                             )}
                                                         </div>
                                                     </div>
@@ -337,8 +341,8 @@ export const ProfilePage: React.FC = () => {
                                                 <button
                                                     onClick={() => navigate('/billing')}
                                                     className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-3 text-white text-[11px] font-bold rounded-2xl transition-all shadow-lg active:scale-95 uppercase tracking-widest whitespace-nowrap ${subStatus.urgency === 'critical' || subStatus.isExpired
-                                                            ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-200'
-                                                            : 'bg-slate-900 hover:bg-black shadow-slate-200'
+                                                        ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-200'
+                                                        : 'bg-slate-900 hover:bg-black shadow-slate-200'
                                                         }`}
                                                 >
                                                     Upgrade Plan
@@ -355,8 +359,8 @@ export const ProfilePage: React.FC = () => {
                                                     animate={{ width: `${Math.max(5, (subStatus.days / 365) * 100)}%` }}
                                                     transition={{ duration: 1.5, ease: "easeOut" }}
                                                     className={`h-full rounded-full ${subStatus.urgency === 'critical' ? 'bg-rose-500' :
-                                                            subStatus.urgency === 'high' ? 'bg-amber-500' :
-                                                                'bg-indigo-600'
+                                                        subStatus.urgency === 'high' ? 'bg-amber-500' :
+                                                            'bg-indigo-600'
                                                         }`}
                                                 />
                                             </div>
