@@ -35,6 +35,8 @@ import { useRef } from 'react';
 import { useSubscriptionTimer } from '../hooks/useSubscriptionTimer';
 import { useProfileStore } from '../store/useProfileStore';
 
+import { SubscriptionStatusWidget } from '../components/ui/SubscriptionStatusWidget';
+
 interface UserEditorPageProps {
     mode?: 'invitation' | 'welcome';
 }
@@ -216,6 +218,7 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
         <UserEditorLayout>
             <SmartFontInjector />
             <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+
                 {/* 1. Information Card */}
                 <InvitationInfoCard
                     invitation={{

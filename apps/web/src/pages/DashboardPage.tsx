@@ -8,6 +8,7 @@ import { useSEO } from '../hooks/useSEO';
 import { useInvitations, Invitation } from '../hooks/queries';
 import { WelcomeDisplaysTab } from '../components/Dashboard/WelcomeDisplaysTab';
 import { BillingHistoryTab } from '../components/Dashboard/BillingHistoryTab';
+import { SubscriptionStatusWidget } from '../components/ui/SubscriptionStatusWidget';
 
 // ============================================
 // INLINE SVG ICONS (Zero external dependency)
@@ -280,6 +281,15 @@ export const DashboardPage: React.FC = () => {
                                     </Link>
                                 </div>
 
+                                {/* Subscription Status (Top) */}
+                                <div className="grid grid-cols-1">
+                                    <SubscriptionStatusWidget
+                                        expiresAt={user?.expiresAt || null}
+                                        email={user?.email}
+                                        variant="dashboard"
+                                    />
+                                </div>
+
                                 {/* Stats Cards */}
                                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                                     {[
@@ -348,7 +358,8 @@ export const DashboardPage: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    {/* Upgrade Card */}
+                                    {/* Subscription Status Section */}
+                                    {/* Upgrade Card (Restored) */}
                                     <div className="space-y-6 md:mt-2">
                                         <h3 className="text-lg md:text-xl font-black text-slate-900 px-1">Layanan & Akun</h3>
                                         <div className="bg-slate-900 text-white rounded-[2rem] p-7 md:p-8 relative overflow-hidden group shadow-2xl shadow-slate-900/40">
@@ -567,8 +578,8 @@ export const DashboardPage: React.FC = () => {
                     </AnimatePresence>
 
                 </div>
-            </main>
-        </div>
+            </main >
+        </div >
     );
 };
 

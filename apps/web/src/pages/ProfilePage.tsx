@@ -287,9 +287,9 @@ export const ProfilePage: React.FC = () => {
                                                 <div className="flex items-center gap-5">
                                                     {/* Compact Icon */}
                                                     <div className={`w-11 h-11 rounded-[0.85rem] flex items-center justify-center shrink-0 shadow-lg ${subStatus.isExpired ? 'bg-rose-600 text-white shadow-rose-200' :
-                                                            subStatus.urgency === 'critical' ? 'bg-rose-500 text-white shadow-rose-200 animate-pulse' :
-                                                                subStatus.urgency === 'high' ? 'bg-amber-500 text-white shadow-amber-200' :
-                                                                    'bg-indigo-600 text-white shadow-indigo-100/50'
+                                                        subStatus.urgency === 'critical' ? 'bg-rose-500 text-white shadow-rose-200 animate-pulse' :
+                                                            subStatus.urgency === 'high' ? 'bg-amber-500 text-white shadow-amber-200' :
+                                                                'bg-indigo-600 text-white shadow-indigo-100/50'
                                                         }`}>
                                                         <ClockIcon className="w-5 h-5" />
                                                     </div>
@@ -298,8 +298,8 @@ export const ProfilePage: React.FC = () => {
                                                         <div className="flex items-center gap-3">
                                                             <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Status Langganan</h3>
                                                             <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border transition-colors ${subStatus.isExpired
-                                                                    ? 'bg-rose-100 text-rose-600 border-rose-200'
-                                                                    : 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                                                                ? 'bg-rose-100 text-rose-600 border-rose-200'
+                                                                : 'bg-emerald-50 text-emerald-600 border-emerald-200'
                                                                 }`}>
                                                                 {subStatus.isExpired ? 'Kadaluarsa' : 'Aktif'}
                                                             </span>
@@ -307,9 +307,9 @@ export const ProfilePage: React.FC = () => {
 
                                                         <div className="flex items-center gap-3 whitespace-nowrap overflow-hidden">
                                                             <div className={`text-[11px] font-black tracking-[0.05em] font-mono transition-colors duration-500 leading-none ${subStatus.isExpired ? 'text-rose-600' :
-                                                                    subStatus.urgency === 'critical' ? 'text-rose-500' :
-                                                                        subStatus.urgency === 'high' ? 'text-amber-600' :
-                                                                            'text-slate-900'
+                                                                subStatus.urgency === 'critical' ? 'text-rose-500' :
+                                                                    subStatus.urgency === 'high' ? 'text-amber-600' :
+                                                                        'text-slate-900'
                                                                 }`}>
                                                                 {(profile?.email === 'user@tamuu.id' || profile?.email === 'admin@tamuu.id')
                                                                     ? 'UNLIMITED ACCESS'
@@ -335,8 +335,8 @@ export const ProfilePage: React.FC = () => {
                                                     <button
                                                         onClick={() => navigate('/billing')}
                                                         className={`flex items-center gap-2 px-6 py-2 text-white text-[11px] font-bold rounded-xl transition-all shadow-lg active:scale-95 uppercase tracking-widest whitespace-nowrap ${subStatus.urgency === 'critical' || subStatus.isExpired
-                                                                ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-200'
-                                                                : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200/50'
+                                                            ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-200'
+                                                            : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200/50'
                                                             }`}
                                                     >
                                                         Perpanjang
@@ -351,7 +351,11 @@ export const ProfilePage: React.FC = () => {
                                                     <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden relative">
                                                         <m.div
                                                             initial={{ width: 0 }}
-                                                            animate={{ width: `${Math.max(2, (subStatus.days / 365) * 100)}%` }}
+                                                            animate={{
+                                                                width: `${(profile?.email === 'user@tamuu.id' || profile?.email === 'admin@tamuu.id')
+                                                                    ? 100
+                                                                    : Math.max(2, Math.min(100, (subStatus.days / 30) * 100))}%`
+                                                            }}
                                                             transition={{ duration: 2, ease: "circOut" }}
                                                             className={`h-full rounded-full relative ${subStatus.urgency === 'critical' ? 'bg-rose-500' :
                                                                 subStatus.urgency === 'high' ? 'bg-amber-500' :
@@ -362,7 +366,9 @@ export const ProfilePage: React.FC = () => {
                                                     <div className="flex justify-between items-center mt-2.5">
                                                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Utilized Balance</span>
                                                         <span className="text-[9px] font-black text-slate-900 uppercase">
-                                                            {subStatus.days} Hari Tersisa
+                                                            {(profile?.email === 'user@tamuu.id' || profile?.email === 'admin@tamuu.id')
+                                                                ? 'Unlimited Balance'
+                                                                : `${subStatus.days} Hari Tersisa`}
                                                         </span>
                                                     </div>
                                                 </div>
