@@ -202,6 +202,16 @@ export const GuestManagementPage: React.FC = () => {
         return p;
     };
 
+    const formatTime = (isoString: string | null) => {
+        if (!isoString) return '-';
+        try {
+            const date = new Date(isoString);
+            return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false });
+        } catch (e) {
+            return '-';
+        }
+    };
+
     const copyGeneralLink = () => {
         if (!invitation) return;
         const publicDomain = getPublicDomain();
@@ -558,6 +568,8 @@ export const GuestManagementPage: React.FC = () => {
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap">Meja</th>
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center">Jumlah</th>
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center">Status WA</th>
+                                    <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center text-emerald-500 bg-emerald-50/30">Check-in</th>
+                                    <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center text-rose-500 bg-rose-50/30">Check-out</th>
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center">Kehadiran</th>
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center">Aksi</th>
                                 </tr>
@@ -589,6 +601,12 @@ export const GuestManagementPage: React.FC = () => {
                                                 ) : (
                                                     <span className="text-slate-300 text-[10px] font-black">BELUM</span>
                                                 )}
+                                            </td>
+                                            <td className="px-4 py-4 text-center text-[11px] font-bold text-slate-500 tabular-nums">
+                                                {formatTime(guest.checkedInAt)}
+                                            </td>
+                                            <td className="px-4 py-4 text-center text-[11px] font-bold text-slate-500 tabular-nums">
+                                                {formatTime(guest.checkedOutAt)}
                                             </td>
                                             <td className="px-4 py-4 text-center">
                                                 {guest.checkedInAt ? (
