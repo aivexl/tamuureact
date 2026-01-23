@@ -88,7 +88,6 @@ const getTierConfig = (plan: string) => {
         free: { label: 'FREE EXPLORER', bgClass: 'bg-slate-100', textClass: 'text-slate-700 border-slate-200' },
         vip: { label: 'VIP PREMIERE', bgClass: 'bg-indigo-100', textClass: 'text-indigo-700 border-indigo-200' },
         vvip: { label: 'VVIP EXCLUSIVE', bgClass: 'bg-amber-100', textClass: 'text-amber-700 border-amber-200' },
-        ultra: { label: 'INFINITY MEMBER', bgClass: 'bg-slate-900', textClass: 'text-white border-slate-800' },
     };
     return configs[plan.toLowerCase()] || configs.free;
 };
@@ -270,34 +269,32 @@ export const ProfilePage: React.FC = () => {
                                     animate={{ opacity: 1, x: 0 }}
                                     className="space-y-6"
                                 >
-                                    <div className={`mb-10 p-5 rounded-2xl border ${profile.tier === 'ultra' ? 'bg-slate-900 text-white border-slate-800 shadow-2xl shadow-slate-900/40 relative overflow-hidden' : 'bg-gradient-to-br from-indigo-50/50 to-slate-50 border-indigo-100/50'}`}>
-                                        {profile.tier === 'ultra' && (
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl -mr-10 -mt-10" />
-                                        )}
-                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+                                    {/* Subscription Active Period Section */}
+                                    <div className="mb-10 p-5 rounded-2xl bg-gradient-to-br from-indigo-50/50 to-slate-50 border border-indigo-100/50">
+                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                             <div className="flex items-start gap-4">
-                                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${profile.tier === 'ultra' ? 'bg-white/10 border border-white/20' : 'bg-white shadow-sm border border-indigo-100'}`}>
-                                                    <ClockIcon className={`w-6 h-6 ${profile.tier === 'ultra' ? 'text-indigo-400' : 'text-indigo-600'}`} />
+                                                <div className="w-12 h-12 rounded-xl bg-white shadow-sm border border-indigo-100 flex items-center justify-center shrink-0">
+                                                    <ClockIcon className="w-6 h-6 text-indigo-600" />
                                                 </div>
                                                 <div>
-                                                    <h3 className={`text-sm font-bold mb-1 ${profile.tier === 'ultra' ? 'text-white' : 'text-slate-900'}`}>Masa Aktif Subscription</h3>
+                                                    <h3 className="text-sm font-bold text-slate-900 mb-1">Masa Aktif Subscription</h3>
                                                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                                                         <div className="flex items-center gap-1.5">
-                                                            <span className={`text-xs ${profile.tier === 'ultra' ? 'text-slate-400' : 'text-slate-500'}`}>Berakhir pada:</span>
-                                                            <span className={`text-sm font-bold ${profile.tier === 'ultra' ? 'text-indigo-400' : 'text-indigo-700'}`}>
-                                                                {profile.tier === 'ultra' ? '∞ Selamanya' : (profile.expires_at ? new Date(profile.expires_at).toLocaleDateString('id-ID', {
+                                                            <span className="text-xs text-slate-500">Berakhir pada:</span>
+                                                            <span className="text-sm font-bold text-indigo-700">
+                                                                {profile.expires_at ? new Date(profile.expires_at).toLocaleDateString('id-ID', {
                                                                     day: 'numeric',
                                                                     month: 'long',
                                                                     year: 'numeric'
-                                                                }) : 'N/A')}
+                                                                }) : 'N/A'}
                                                             </span>
                                                         </div>
-                                                        <div className={`hidden sm:block w-1.5 h-1.5 rounded-full ${profile.tier === 'ultra' ? 'bg-white/10' : 'bg-slate-200'}`} />
+                                                        <div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-slate-200" />
                                                         <div className="flex items-center gap-1.5">
-                                                            <span className={`text-xs ${profile.tier === 'ultra' ? 'text-slate-400' : 'text-slate-500'}`}>Status:</span>
+                                                            <span className="text-xs text-slate-500">Status:</span>
                                                             <span className="flex items-center gap-1">
                                                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                                                <span className="text-xs font-black uppercase text-emerald-500">Aktif</span>
+                                                                <span className="text-xs font-black uppercase text-emerald-600">Aktif</span>
                                                             </span>
                                                         </div>
                                                     </div>
@@ -306,20 +303,18 @@ export const ProfilePage: React.FC = () => {
                                             <div className="flex items-center gap-3">
                                                 <button
                                                     onClick={() => navigate('/dashboard?tab=invoice')}
-                                                    className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold rounded-xl border transition-all shadow-sm ${profile.tier === 'ultra' ? 'bg-white/10 hover:bg-white/20 text-white border-white/10' : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'}`}
+                                                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 transition-all shadow-sm"
                                                 >
                                                     <CreditCardIcon className="w-3.5 h-3.5" />
                                                     Invoice
                                                 </button>
-                                                {profile.tier !== 'ultra' && (
-                                                    <button
-                                                        onClick={() => navigate('/billing')}
-                                                        className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-indigo-100"
-                                                    >
-                                                        Perpanjang
-                                                        <ExternalLinkIcon className="w-3.5 h-3.5" />
-                                                    </button>
-                                                )}
+                                                <button
+                                                    onClick={() => navigate('/billing')}
+                                                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-indigo-100"
+                                                >
+                                                    Perpanjang
+                                                    <ExternalLinkIcon className="w-3.5 h-3.5" />
+                                                </button>
                                             </div>
                                         </div>
                                     </div>

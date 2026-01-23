@@ -273,14 +273,12 @@ export const BillingPage: React.FC = () => {
     free: "Free Explorer",
     vip: "VIP Premiere",
     vvip: "VVIP EXCLUSIVE",
-    ultra: "INFINITY MEMBER",
   };
 
   const tierColors = {
     free: "bg-slate-100 text-slate-600",
     vip: "bg-indigo-100 text-indigo-600",
     vvip: "bg-[#FFBF00]/10 text-[#B8860B]",
-    ultra: "bg-slate-900 text-white border-slate-800",
   };
 
   return (
@@ -352,16 +350,12 @@ export const BillingPage: React.FC = () => {
                     ? "Standard Access"
                     : user?.tier === "vip"
                       ? "VIP Annual"
-                      : user?.tier === "vvip"
-                        ? "VVIP Annual"
-                        : "Tamuu INFINITY"}
+                      : "VVIP Annual"}
                 </h2>
                 <p className="text-slate-500 mb-8">
                   {user?.tier === "free"
                     ? "Upgrade to unlock premium features and templates."
-                    : user?.tier === "ultra"
-                      ? "Selamat! Anda adalah member INFINITY. Akses tanpa batas selamanya."
-                      : `Your subscription is active until ${user?.expiresAt ? new Date(user.expiresAt).toLocaleDateString() : "next year"}.`}
+                    : `Your subscription is active until ${user?.expiresAt ? new Date(user.expiresAt).toLocaleDateString() : "next year"}.`}
                 </p>
 
                 <div className="flex flex-wrap gap-4">
