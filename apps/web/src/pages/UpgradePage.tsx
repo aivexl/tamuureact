@@ -121,8 +121,7 @@ export const UpgradePage: React.FC = () => {
                         transition={{ delay: 0.2 }}
                         className="text-slate-500 text-lg max-w-2xl mx-auto"
                     >
-                        Choose the perfect plan to make your invitation unforgettable.
-                        Unlock premium themes, video exports, and VIP support.
+                        Pilih paket terbaik untuk membuat momen kebahagiaan Anda tak terlupakan.
                     </motion.p>
                 </div>
 
@@ -136,11 +135,11 @@ export const UpgradePage: React.FC = () => {
                         color="bg-slate-400"
                         isCurrent={user?.tier === 'free'}
                         features={[
-                            "1 Active Invitation",
-                            "Basic Templates Only",
-                            "Digital Guestbook (Basic)",
-                            "WhatsApp Integration",
-                            "1 Month Online Access"
+                            "1 Undangan Aktif",
+                            "Template Dasar",
+                            "Buku Tamu Digital",
+                            "Integrasi WhatsApp",
+                            "Masa Aktif 1 Bulan",
                         ]}
                         buttonText={user?.tier === 'free' ? "Current Plan" : "Get Started"}
                         onSelect={() => navigate('/dashboard')}
@@ -158,13 +157,13 @@ export const UpgradePage: React.FC = () => {
                         isPopular={true}
                         isCurrent={user?.tier === 'vip'}
                         features={[
-                            "1 Active Invitation",
-                            "VIP & Basic Templates",
-                            "Full HD PDF Export",
-                            "Remove Tamuu Branding",
-                            "RSVP Management",
-                            "1 Year Online Access",
-                            "Priority Support"
+                            "1 Undangan Aktif",
+                            "Semua Template VIP",
+                            "Export PDF Full HD",
+                            "Hapus Branding Tamuu",
+                            "Manajemen RSVP",
+                            "Masa Aktif 1 Tahun",
+                            "Dukungan Prioritas",
                         ]}
                         buttonText={user?.tier === 'vip' ? "Active" : "Go VIP PREMIERE"}
                         onSelect={() => initiatePayment('vip')}
@@ -181,13 +180,10 @@ export const UpgradePage: React.FC = () => {
                         color="bg-[#FFBF00]"
                         isCurrent={user?.tier === 'vvip'}
                         features={[
-                            "3 Active Invitations",
-                            "All Templates (All access)",
-                            "Video Invitation Export",
-                            "Custom Music Upload",
-                            "White-label (No Branding)",
-                            "1 Year Online Access",
-                            "Concierge Setup Service"
+                            "3 Undangan Aktif",
+                            "Akses Semua Template",
+                            "White-label (No Brand)",
+                            "Masa Aktif 1 Tahun",
                         ]}
                         buttonText={user?.tier === 'vvip' ? "Active" : "Go VVIP EXCLUSIVE"}
                         onSelect={() => initiatePayment('vvip')}
@@ -196,9 +192,8 @@ export const UpgradePage: React.FC = () => {
                 </div>
 
 
-                {/* Payment Methods Visuals */}
                 <div className="mt-24 mb-12 text-center">
-                    <p className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-8">Secure Payment Powered by Midtrans</p>
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-8">Pilihan Metode Pembayaran</p>
                     <div className="flex flex-wrap justify-center items-center gap-8 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
                         {["BNI", "CIMB", "ShopeePay", "Permata", "BRI", "QRIS", "BSI", "GoPay", "Mandiri", "DANA"].map(logo => (
                             <span key={logo} className="text-lg font-black text-slate-800 tracking-tighter">{logo}</span>

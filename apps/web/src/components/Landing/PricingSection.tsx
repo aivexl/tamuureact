@@ -45,11 +45,8 @@ const pricingPlans = [
         features: [
             "3 Undangan Aktif",
             "Akses Semua Template",
-            "Export Undangan Video",
-            "Custom Musik/MP3",
             "White-label (No Brand)",
             "Masa Aktif 1 Tahun",
-            "Layanan Setup Concierge",
         ],
     },
 ];
