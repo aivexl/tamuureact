@@ -493,6 +493,126 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
                 )}
             </AnimatePresence>
 
+            {/* Add Account Modal */}
+            <AnimatePresence>
+                {isAddModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-0">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsAddModalOpen(false)}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-xl"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="bg-[#0F0F0F] border border-white/10 rounded-3xl w-full max-w-lg relative z-10 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]"
+                        >
+                            <div className="p-8">
+                                <h3 className="text-2xl font-bold text-white mb-2">Create New {initialRole || 'User'}</h3>
+                                <p className="text-slate-500 text-sm mb-8 leading-relaxed">Fill in the details to manually add a new account.</p>
+
+                                <div className="space-y-6 overflow-y-auto max-h-[60vh] pr-4 custom-scrollbar">
+                                    {/* BASIC INFO */}
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-2">Email Address *</label>
+                                            <input
+                                                type="email"
+                                                value={addForm.email}
+                                                onChange={(e) => setAddForm(prev => ({ ...prev, email: e.target.value }))}
+                                                placeholder="user@example.com"
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-3.5 text-white focus:ring-2 focus:ring-teal-500/30 outline-none transition-all font-bold"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-2">Full Name</label>
+                                            <input
+                                                type="text"
+                                                value={addForm.name}
+                                                onChange={(e) => setAddForm(prev => ({ ...prev, name: e.target.value }))}
+                                                placeholder="Enter display name"
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-3.5 text-white focus:ring-2 focus:ring-teal-500/30 outline-none transition-all font-bold"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {!initialRole && (
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-3">Role</label>
+                                            <div className="grid grid-cols-3 gap-3">
+                                                {['user', 'reseller', 'admin'].map((r) => (
+                                                    <button
+                                                        key={r}
+                                                        onClick={() => setAddForm(prev => ({ ...prev, role: r as any }))}
+                                                        className={`px-4 py-3 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all ${addForm.role === r
+                                                            ? 'bg-purple-500/10 border-purple-500/50 text-purple-400'
+                                                            : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10'
+                                                            }`}
+                                                    >
+                                                        {r}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {addForm.role !== 'user' && (
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-3">Initial Permissions</label>
+                                            <div className="grid grid-cols-1 gap-2">
+                                                {[
+                                                    { id: 'management:invitations', label: 'Manage Invitations' },
+                                                    { id: 'management:music', label: 'Manage Music Library' },
+                                                    { id: 'management:users', label: 'Manage User Accounts' },
+                                                    { id: 'system:activity', label: 'View Live Activity' }
+                                                ].map((p) => (
+                                                    <button
+                                                        key={p.id}
+                                                        onClick={() => {
+                                                            setAddForm(prev => ({
+                                                                ...prev,
+                                                                permissions: prev.permissions.includes(p.id)
+                                                                    ? prev.permissions.filter(x => x !== p.id)
+                                                                    : [...prev.permissions, p.id]
+                                                            }));
+                                                        }}
+                                                        className={`flex items-center justify-between px-4 py-3 rounded-xl border text-left transition-all ${addForm.permissions.includes(p.id)
+                                                            ? 'bg-teal-500/10 border-teal-500/50 text-teal-400'
+                                                            : 'bg-white/5 border-white/5 text-slate-500 hover:bg-white/10'
+                                                            }`}
+                                                    >
+                                                        <span className="text-[10px] font-bold uppercase tracking-widest">{p.label}</span>
+                                                        {addForm.permissions.includes(p.id) && <CheckCircle className="w-3 h-3" />}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="flex gap-3 mt-10">
+                                    <button
+                                        onClick={() => setIsAddModalOpen(false)}
+                                        className="flex-1 py-4 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-widest text-xs rounded-2xl border border-white/5 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleCreateAccount}
+                                        className="flex-[2] py-4 bg-teal-500 hover:bg-teal-400 text-slate-900 font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-teal-500/20 transition-all flex items-center justify-center gap-2"
+                                    >
+                                        Create Account
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
             {/* Delete Confirmation Modal */}
             <AnimatePresence>
                 {isDeleteModalOpen && selectedUser && (
