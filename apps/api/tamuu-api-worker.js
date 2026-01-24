@@ -216,8 +216,12 @@ export default {
 
                     const orderId = `order-${Date.now()}-${userId.substring(0, 8)}`;
                     const authHeader = `Basic ${btoa(env.MIDTRANS_SERVER_KEY + ':')}`;
+                    const isSandbox = env.MIDTRANS_SERVER_KEY.startsWith('SB-');
+                    const snapUrl = isSandbox
+                        ? 'https://app.sandbox.midtrans.com/snap/v1/transactions'
+                        : 'https://app.midtrans.com/snap/v1/transactions';
 
-                    const midtransResponse = await fetch('https://app.sandbox.midtrans.com/snap/v1/transactions', {
+                    const midtransResponse = await fetch(snapUrl, {
                         method: 'POST',
                         headers: {
                             'Authorization': authHeader,
@@ -652,6 +656,14 @@ export default {
 
                     if (!midtransRes.ok) {
                         const errorData = await midtransRes.json();
+                        // Special handling for 404 (Transaction not found in Midtrans)
+                        if (midtransRes.status === 404) {
+                            return json({
+                                error: 'transaction_not_found',
+                                message: 'Transaksi ini tidak ditemukan di data Midtrans (mungkin belum memilih metode pembayaran).',
+                                status_code: 404
+                            }, { ...corsHeaders, status: 404 });
+                        }
                         return json({ error: 'Midtrans API error', details: errorData }, { ...corsHeaders, status: midtransRes.status });
                     }
 
