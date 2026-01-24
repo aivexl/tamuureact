@@ -382,8 +382,8 @@ export default {
                         const userId = transaction.user_id;
                         const tier = transaction.tier;
                         let maxInvitations = 1;
-                        if (tier === 'vvip') maxInvitations = 3;
-                        else if (tier === 'platinum') maxInvitations = 2;
+                        if (tier === 'elite') maxInvitations = 3;
+                        else if (tier === 'ultimate') maxInvitations = 2;
 
                         const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -430,8 +430,8 @@ export default {
                     const userId = metadata.userId;
                     const tier = metadata.tier;
                     let maxInvitations = 1;
-                    if (tier === 'vvip') maxInvitations = 3;
-                    else if (tier === 'platinum') maxInvitations = 2;
+                    if (tier === 'elite') maxInvitations = 3;
+                    else if (tier === 'ultimate') maxInvitations = 2;
 
                     const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -690,8 +690,8 @@ export default {
                             const userId = transaction.user_id;
                             const tier = transaction.tier;
                             let maxInvitations = 1;
-                            if (tier === 'vvip') maxInvitations = 3;
-                            else if (tier === 'platinum') maxInvitations = 2;
+                            if (tier === 'elite') maxInvitations = 3;
+                            else if (tier === 'ultimate') maxInvitations = 2;
 
                             const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
 

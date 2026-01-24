@@ -29,7 +29,12 @@ export const usePayment = () => {
         }
 
         setProcessingTier(tier);
-        const amount = tier === 'vvip' ? 199000 : 99000;
+        const pricing: Record<string, number> = {
+            'pro': 99000,
+            'ultimate': 149000,
+            'elite': 199000
+        };
+        const amount = pricing[tier] || 99000;
 
         try {
             console.log(`[usePayment] Fetching Midtrans token for amount: ${amount}`);

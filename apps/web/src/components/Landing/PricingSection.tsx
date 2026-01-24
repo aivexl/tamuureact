@@ -21,7 +21,7 @@ const pricingPlans = [
         ],
     },
     {
-        tier: "vip",
+        tier: "pro",
         name: "PRO",
         price: 99000,
         originalPrice: 149000,
@@ -37,7 +37,7 @@ const pricingPlans = [
         ],
     },
     {
-        tier: "platinum",
+        tier: "ultimate",
         name: "ULTIMATE",
         price: 149000,
         originalPrice: 249000,
@@ -54,7 +54,7 @@ const pricingPlans = [
         ],
     },
     {
-        tier: "vvip",
+        tier: "elite",
         name: "ELITE",
         price: 199000,
         originalPrice: 299000,
