@@ -14,7 +14,8 @@ import {
     ChevronDown,
     UserCircle,
     FileText,
-    Mail
+    Mail,
+    Layers
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { admin } from '@/lib/api';
@@ -22,9 +23,9 @@ import { admin } from '@/lib/api';
 // Initial state for real statistics
 const INITIAL_STATS = [
     { id: 'totalUsers', label: 'Total Users', value: '0', change: '...', icon: Users, color: 'text-blue-400', bg: 'bg-blue-400/10' },
-    { id: 'totalTemplates', label: 'Active Templates', value: '0', change: '...', icon: Smartphone, color: 'text-teal-400', bg: 'bg-teal-400/10' },
-    { id: 'totalInvitations', label: 'Display Designs', value: '0', change: '...', icon: Monitor, color: 'text-purple-400', bg: 'bg-purple-400/10' },
-    { id: 'totalRsvps', label: 'Total RSVPs', value: '0', change: '...', icon: MessageSquare, color: 'text-rose-400', bg: 'bg-rose-400/10' },
+    { id: 'totalInvitations', label: 'Active Invitations', value: '0', change: '...', icon: Smartphone, color: 'text-teal-400', bg: 'bg-teal-400/10' },
+    { id: 'totalTemplates', label: 'Invitation Templates', value: '0', change: '...', icon: Layers, color: 'text-amber-400', bg: 'bg-amber-400/10' },
+    { id: 'totalDisplays', label: 'Display Templates', value: '0', change: '...', icon: Monitor, color: 'text-purple-400', bg: 'bg-purple-400/10' },
 ];
 
 const StatCard = ({ stat, index }: { stat: any, index: number }) => (

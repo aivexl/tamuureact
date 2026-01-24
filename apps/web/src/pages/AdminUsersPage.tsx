@@ -464,31 +464,34 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
                                         </div>
                                     </div>
 
+                                    {/* SYSTEM ROLE SELECTOR (ALWAYS VISIBLE) */}
+                                    <div className="p-5 bg-white/5 rounded-2xl border border-white/5 mt-6">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-teal-500 mb-4 flex items-center gap-2">
+                                            <ShieldCheck className="w-3 h-3" /> System Role
+                                        </h4>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            {['user', 'reseller', 'admin'].map((r) => (
+                                                <button
+                                                    key={r}
+                                                    onClick={() => setEditForm(prev => ({ ...prev, role: r }))}
+                                                    className={`px-4 py-3 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all ${editForm.role === r
+                                                        ? 'bg-purple-500/10 border-purple-500/50 text-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.1)]'
+                                                        : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10 hover:border-white/10'
+                                                        }`}
+                                                >
+                                                    {r}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
                                     {/* PERMISSIONS SECTION (ONLY FOR ADMIN) */}
-                                    {(selectedUser.role === 'admin' || editForm.role === 'admin') && (
-                                        <div className="p-5 bg-white/5 rounded-2xl border border-white/5">
+                                    {editForm.role === 'admin' && (
+                                        <div className="p-5 bg-white/5 rounded-2xl border border-white/5 mt-6">
                                             <h4 className="text-[10px] font-black uppercase tracking-widest text-teal-500 mb-4 flex items-center gap-2">
                                                 <Lock className="w-3 h-3" /> Access & Permissions
                                             </h4>
                                             <div className="space-y-6">
-                                                <div>
-                                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-3">System Role</label>
-                                                    <div className="grid grid-cols-2 gap-3">
-                                                        {['user', 'reseller', 'admin'].map((r) => (
-                                                            <button
-                                                                key={r}
-                                                                onClick={() => setEditForm(prev => ({ ...prev, role: r }))}
-                                                                className={`px-4 py-3 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all ${editForm.role === r
-                                                                    ? 'bg-purple-500/10 border-purple-500/50 text-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.1)]'
-                                                                    : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10 hover:border-white/10'
-                                                                    }`}
-                                                            >
-                                                                {r}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-
                                                 <div>
                                                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-3">Granular Access</label>
                                                     <div className="grid grid-cols-1 gap-2">
@@ -563,272 +566,276 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
 
             {/* Add Account Modal */}
             <AnimatePresence>
-                {isAddModalOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-0">
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setIsAddModalOpen(false)}
-                            className="absolute inset-0 bg-black/80 backdrop-blur-xl"
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="bg-[#0F0F0F] border border-white/10 rounded-3xl w-full max-w-xl relative z-10 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]"
-                        >
-                            <div className="p-8">
-                                <div className="flex justify-between items-start mb-8">
-                                    <div>
-                                        <h3 className="text-2xl font-bold text-white mb-2">Create New {initialRole === 'admin' ? 'Admin' : initialRole === 'reseller' ? 'Reseller' : 'User'}</h3>
-                                        <p className="text-slate-500 text-sm leading-relaxed tracking-wide">Enter account details and initial configuration.</p>
-                                    </div>
-                                    <div className="p-3 bg-teal-500/10 rounded-2xl border border-teal-500/20">
-                                        <ShieldCheck className="w-6 h-6 text-teal-500" />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-6 overflow-y-auto max-h-[70vh] pr-4 custom-scrollbar">
-                                    {/* PERSONAL INFO (MATCHING SIGNUP) */}
-                                    <div className="space-y-4">
-                                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-500/70 mb-4 flex items-center gap-2">
-                                            <User className="w-3 h-3" /> Personal Information
-                                        </h4>
-                                        <div className="relative">
-                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
-                                            <input
-                                                type="text"
-                                                placeholder="Nama Lengkap"
-                                                value={addForm.name}
-                                                onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
-                                                className={`w-full bg-white/5 border ${addErrors.name ? 'border-rose-500/50' : 'border-white/10'} rounded-2xl px-12 py-4 text-white font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-white/20`}
-                                            />
-                                            {addErrors.name && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{addErrors.name}</p>}
+                {
+                    isAddModalOpen && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-0">
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setIsAddModalOpen(false)}
+                                className="absolute inset-0 bg-black/80 backdrop-blur-xl"
+                            />
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                                className="bg-[#0F0F0F] border border-white/10 rounded-3xl w-full max-w-xl relative z-10 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]"
+                            >
+                                <div className="p-8">
+                                    <div className="flex justify-between items-start mb-8">
+                                        <div>
+                                            <h3 className="text-2xl font-bold text-white mb-2">Create New {initialRole === 'admin' ? 'Admin' : initialRole === 'reseller' ? 'Reseller' : 'User'}</h3>
+                                            <p className="text-slate-500 text-sm leading-relaxed tracking-wide">Enter account details and initial configuration.</p>
                                         </div>
+                                        <div className="p-3 bg-teal-500/10 rounded-2xl border border-teal-500/20">
+                                            <ShieldCheck className="w-6 h-6 text-teal-500" />
+                                        </div>
+                                    </div>
 
-                                        <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-6 overflow-y-auto max-h-[70vh] pr-4 custom-scrollbar">
+                                        {/* PERSONAL INFO (MATCHING SIGNUP) */}
+                                        <div className="space-y-4">
+                                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-500/70 mb-4 flex items-center gap-2">
+                                                <User className="w-3 h-3" /> Personal Information
+                                            </h4>
                                             <div className="relative">
                                                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
-                                                <select
-                                                    value={addForm.gender}
-                                                    onChange={(e) => setAddForm({ ...addForm, gender: e.target.value })}
-                                                    className={`w-full bg-white/5 border ${addErrors.gender ? 'border-rose-500/50' : 'border-white/10'} rounded-2xl px-12 py-4 text-white font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all appearance-none cursor-pointer`}
-                                                >
-                                                    <option value="" disabled className="bg-slate-900 text-white/20">Jenis Kelamin</option>
-                                                    <option value="male" className="bg-slate-900 text-white">Laki-laki</option>
-                                                    <option value="female" className="bg-slate-900 text-white">Perempuan</option>
-                                                </select>
-                                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
-                                                {addErrors.gender && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{addErrors.gender}</p>}
+                                                <input
+                                                    type="text"
+                                                    placeholder="Nama Lengkap"
+                                                    value={addForm.name}
+                                                    onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
+                                                    className={`w-full bg-white/5 border ${addErrors.name ? 'border-rose-500/50' : 'border-white/10'} rounded-2xl px-12 py-4 text-white font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-white/20`}
+                                                />
+                                                {addErrors.name && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{addErrors.name}</p>}
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="relative">
+                                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                                                    <select
+                                                        value={addForm.gender}
+                                                        onChange={(e) => setAddForm({ ...addForm, gender: e.target.value })}
+                                                        className={`w-full bg-white/5 border ${addErrors.gender ? 'border-rose-500/50' : 'border-white/10'} rounded-2xl px-12 py-4 text-white font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all appearance-none cursor-pointer`}
+                                                    >
+                                                        <option value="" disabled className="bg-slate-900 text-white/20">Jenis Kelamin</option>
+                                                        <option value="male" className="bg-slate-900 text-white">Laki-laki</option>
+                                                        <option value="female" className="bg-slate-900 text-white">Perempuan</option>
+                                                    </select>
+                                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+                                                    {addErrors.gender && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{addErrors.gender}</p>}
+                                                </div>
+
+                                                <div className="relative">
+                                                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                                                    <input
+                                                        type="date"
+                                                        value={addForm.birthDate}
+                                                        onChange={(e) => setAddForm({ ...addForm, birthDate: e.target.value })}
+                                                        className={`w-full bg-white/5 border ${addErrors.birthDate ? 'border-rose-500/50' : 'border-white/10'} rounded-2xl px-12 py-4 text-white font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer`}
+                                                        style={{ colorScheme: 'dark' }}
+                                                    />
+                                                    {addErrors.birthDate && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{addErrors.birthDate}</p>}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* ACCOUNT CREDENTIALS */}
+                                        <div className="space-y-4">
+                                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-500/70 mb-4 flex items-center gap-2">
+                                                <Lock className="w-3 h-3" /> Account Credentials
+                                            </h4>
+                                            <div className="relative">
+                                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                                                <input
+                                                    type="email"
+                                                    placeholder="Alamat Email"
+                                                    value={addForm.email}
+                                                    onChange={(e) => setAddForm({ ...addForm, email: e.target.value })}
+                                                    className={`w-full bg-white/5 border ${addErrors.email ? 'border-rose-500/50' : 'border-white/10'} rounded-2xl px-12 py-4 text-white font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-white/20`}
+                                                />
+                                                {addErrors.email && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{addErrors.email}</p>}
                                             </div>
 
                                             <div className="relative">
-                                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
                                                 <input
-                                                    type="date"
-                                                    value={addForm.birthDate}
-                                                    onChange={(e) => setAddForm({ ...addForm, birthDate: e.target.value })}
-                                                    className={`w-full bg-white/5 border ${addErrors.birthDate ? 'border-rose-500/50' : 'border-white/10'} rounded-2xl px-12 py-4 text-white font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer`}
-                                                    style={{ colorScheme: 'dark' }}
+                                                    type={showPassword ? 'text' : 'password'}
+                                                    placeholder="Initial Password"
+                                                    value={addForm.password}
+                                                    onChange={(e) => setAddForm({ ...addForm, password: e.target.value })}
+                                                    className={`w-full bg-white/5 border ${addErrors.password ? 'border-rose-500/50' : 'border-white/10'} rounded-2xl px-12 py-4 text-white font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-white/20`}
                                                 />
-                                                {addErrors.birthDate && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{addErrors.birthDate}</p>}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* ACCOUNT CREDENTIALS */}
-                                    <div className="space-y-4">
-                                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-500/70 mb-4 flex items-center gap-2">
-                                            <Lock className="w-3 h-3" /> Account Credentials
-                                        </h4>
-                                        <div className="relative">
-                                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
-                                            <input
-                                                type="email"
-                                                placeholder="Alamat Email"
-                                                value={addForm.email}
-                                                onChange={(e) => setAddForm({ ...addForm, email: e.target.value })}
-                                                className={`w-full bg-white/5 border ${addErrors.email ? 'border-rose-500/50' : 'border-white/10'} rounded-2xl px-12 py-4 text-white font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-white/20`}
-                                            />
-                                            {addErrors.email && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{addErrors.email}</p>}
-                                        </div>
-
-                                        <div className="relative">
-                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
-                                            <input
-                                                type={showPassword ? 'text' : 'password'}
-                                                placeholder="Initial Password"
-                                                value={addForm.password}
-                                                onChange={(e) => setAddForm({ ...addForm, password: e.target.value })}
-                                                className={`w-full bg-white/5 border ${addErrors.password ? 'border-rose-500/50' : 'border-white/10'} rounded-2xl px-12 py-4 text-white font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-white/20`}
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowPassword(!showPassword)}
-                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/50 transition-colors"
-                                            >
-                                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                            </button>
-                                            {addErrors.password && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{addErrors.password}</p>}
-                                        </div>
-
-                                        <div className="relative">
-                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
-                                            <input
-                                                type={showConfirmPassword ? 'text' : 'password'}
-                                                placeholder="Konfirmasi Password"
-                                                value={addForm.confirmPassword}
-                                                onChange={(e) => setAddForm({ ...addForm, confirmPassword: e.target.value })}
-                                                className={`w-full bg-white/5 border ${addErrors.confirmPassword ? 'border-rose-500/50' : 'border-white/10'} rounded-2xl px-12 py-4 text-white font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-white/20`}
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/50 transition-colors"
-                                            >
-                                                {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                            </button>
-                                            {addErrors.confirmPassword && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{addErrors.confirmPassword}</p>}
-                                        </div>
-                                    </div>
-
-                                    {/* SYSTEM SETTINGS (ADMIN ONLY VISIBLE FIELDS) */}
-                                    <div className="space-y-4">
-                                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-500/70 mb-4 flex items-center gap-2">
-                                            <ShieldCheck className="w-3 h-3" /> Plan & Roles
-                                        </h4>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-3">Subscription Tier</label>
-                                                <select
-                                                    value={addForm.tier}
-                                                    onChange={(e) => setAddForm({ ...addForm, tier: e.target.value })}
-                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white font-bold text-xs uppercase tracking-widest outline-none transition-all focus:ring-2 focus:ring-teal-500/20"
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowPassword(!showPassword)}
+                                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/50 transition-colors"
                                                 >
-                                                    <option value="free" className="bg-slate-900">FREE</option>
-                                                    <option value="vip" className="bg-slate-900">PRO</option>
-                                                    <option value="platinum" className="bg-slate-900">ULTIMATE</option>
-                                                    <option value="vvip" className="bg-slate-900">ELITE</option>
-                                                </select>
+                                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                                </button>
+                                                {addErrors.password && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{addErrors.password}</p>}
                                             </div>
-                                            {!initialRole && (
+
+                                            <div className="relative">
+                                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                                                <input
+                                                    type={showConfirmPassword ? 'text' : 'password'}
+                                                    placeholder="Konfirmasi Password"
+                                                    value={addForm.confirmPassword}
+                                                    onChange={(e) => setAddForm({ ...addForm, confirmPassword: e.target.value })}
+                                                    className={`w-full bg-white/5 border ${addErrors.confirmPassword ? 'border-rose-500/50' : 'border-white/10'} rounded-2xl px-12 py-4 text-white font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-white/20`}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/50 transition-colors"
+                                                >
+                                                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                                </button>
+                                                {addErrors.confirmPassword && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{addErrors.confirmPassword}</p>}
+                                            </div>
+                                        </div>
+
+                                        {/* SYSTEM SETTINGS (ADMIN ONLY VISIBLE FIELDS) */}
+                                        <div className="space-y-4">
+                                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-500/70 mb-4 flex items-center gap-2">
+                                                <ShieldCheck className="w-3 h-3" /> Plan & Roles
+                                            </h4>
+                                            <div className="grid grid-cols-2 gap-4">
                                                 <div>
-                                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-3">System Role</label>
+                                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-3">Subscription Tier</label>
                                                     <select
-                                                        value={addForm.role}
-                                                        onChange={(e) => setAddForm({ ...addForm, role: e.target.value as any })}
+                                                        value={addForm.tier}
+                                                        onChange={(e) => setAddForm({ ...addForm, tier: e.target.value })}
                                                         className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white font-bold text-xs uppercase tracking-widest outline-none transition-all focus:ring-2 focus:ring-teal-500/20"
                                                     >
-                                                        <option value="user" className="bg-slate-900">User</option>
-                                                        <option value="reseller" className="bg-slate-900">Reseller</option>
-                                                        <option value="admin" className="bg-slate-900">Admin</option>
+                                                        <option value="free" className="bg-slate-900">FREE</option>
+                                                        <option value="vip" className="bg-slate-900">PRO</option>
+                                                        <option value="platinum" className="bg-slate-900">ULTIMATE</option>
+                                                        <option value="vvip" className="bg-slate-900">ELITE</option>
                                                     </select>
                                                 </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {addForm.role === 'admin' && (
-                                        <div className="p-5 bg-white/5 rounded-2xl border border-white/5">
-                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-teal-500 mb-4 flex items-center gap-2">
-                                                <Lock className="w-3 h-3" /> Initial Permissions
-                                            </h4>
-                                            <div className="grid grid-cols-1 gap-2">
-                                                {[
-                                                    { id: 'management:invitations', label: 'Manage Invitations' },
-                                                    { id: 'management:music', label: 'Manage Music Library' },
-                                                    { id: 'management:users', label: 'Manage User Accounts' },
-                                                    { id: 'system:activity', label: 'View Live Activity' }
-                                                ].map((p) => (
-                                                    <button
-                                                        key={p.id}
-                                                        onClick={() => {
-                                                            setAddForm(prev => ({
-                                                                ...prev,
-                                                                permissions: prev.permissions.includes(p.id)
-                                                                    ? prev.permissions.filter(x => x !== p.id)
-                                                                    : [...prev.permissions, p.id]
-                                                            }));
-                                                        }}
-                                                        className={`flex items-center justify-between px-4 py-3 rounded-xl border text-left transition-all ${addForm.permissions.includes(p.id)
-                                                            ? 'bg-teal-500/10 border-teal-500/50 text-teal-400'
-                                                            : 'bg-white/5 border-white/5 text-slate-500 hover:bg-white/10'
-                                                            }`}
-                                                    >
-                                                        <span className="text-[10px] font-bold uppercase tracking-widest">{p.label}</span>
-                                                        {addForm.permissions.includes(p.id) && <CheckCircle className="w-3 h-3" />}
-                                                    </button>
-                                                ))}
+                                                {!initialRole && (
+                                                    <div>
+                                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-3">System Role</label>
+                                                        <select
+                                                            value={addForm.role}
+                                                            onChange={(e) => setAddForm({ ...addForm, role: e.target.value as any })}
+                                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white font-bold text-xs uppercase tracking-widest outline-none transition-all focus:ring-2 focus:ring-teal-500/20"
+                                                        >
+                                                            <option value="user" className="bg-slate-900">User</option>
+                                                            <option value="reseller" className="bg-slate-900">Reseller</option>
+                                                            <option value="admin" className="bg-slate-900">Admin</option>
+                                                        </select>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
-                                    )}
-                                </div>
 
-                                <div className="flex gap-3 mt-10">
-                                    <button
-                                        onClick={() => setIsAddModalOpen(false)}
-                                        className="flex-1 py-4 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-widest text-xs rounded-2xl border border-white/5 transition-all outline-none"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={handleCreateAccount}
-                                        className="flex-[2] py-4 bg-teal-500 hover:bg-teal-400 text-slate-900 font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-teal-500/20 transition-all flex items-center justify-center gap-2 outline-none group"
-                                    >
-                                        Create Account
-                                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                    </button>
+                                        {addForm.role === 'admin' && (
+                                            <div className="p-5 bg-white/5 rounded-2xl border border-white/5">
+                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-teal-500 mb-4 flex items-center gap-2">
+                                                    <Lock className="w-3 h-3" /> Initial Permissions
+                                                </h4>
+                                                <div className="grid grid-cols-1 gap-2">
+                                                    {[
+                                                        { id: 'management:invitations', label: 'Manage Invitations' },
+                                                        { id: 'management:music', label: 'Manage Music Library' },
+                                                        { id: 'management:users', label: 'Manage User Accounts' },
+                                                        { id: 'system:activity', label: 'View Live Activity' }
+                                                    ].map((p) => (
+                                                        <button
+                                                            key={p.id}
+                                                            onClick={() => {
+                                                                setAddForm(prev => ({
+                                                                    ...prev,
+                                                                    permissions: prev.permissions.includes(p.id)
+                                                                        ? prev.permissions.filter(x => x !== p.id)
+                                                                        : [...prev.permissions, p.id]
+                                                                }));
+                                                            }}
+                                                            className={`flex items-center justify-between px-4 py-3 rounded-xl border text-left transition-all ${addForm.permissions.includes(p.id)
+                                                                ? 'bg-teal-500/10 border-teal-500/50 text-teal-400'
+                                                                : 'bg-white/5 border-white/5 text-slate-500 hover:bg-white/10'
+                                                                }`}
+                                                        >
+                                                            <span className="text-[10px] font-bold uppercase tracking-widest">{p.label}</span>
+                                                            {addForm.permissions.includes(p.id) && <CheckCircle className="w-3 h-3" />}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="flex gap-3 mt-10">
+                                        <button
+                                            onClick={() => setIsAddModalOpen(false)}
+                                            className="flex-1 py-4 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-widest text-xs rounded-2xl border border-white/5 transition-all outline-none"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={handleCreateAccount}
+                                            className="flex-[2] py-4 bg-teal-500 hover:bg-teal-400 text-slate-900 font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-teal-500/20 transition-all flex items-center justify-center gap-2 outline-none group"
+                                        >
+                                            Create Account
+                                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
+                            </motion.div>
+                        </div>
+                    )
+                }
+            </AnimatePresence >
 
             {/* Delete Confirmation Modal */}
             <AnimatePresence>
-                {isDeleteModalOpen && selectedUser && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-0">
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setIsDeleteModalOpen(false)}
-                            className="absolute inset-0 bg-black/90 backdrop-blur-md"
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="bg-[#0F0F0F] border border-rose-500/20 rounded-3xl w-full max-w-sm relative z-10 overflow-hidden shadow-[0_0_50px_rgba(244,63,94,0.1)]"
-                        >
-                            <div className="p-8 text-center">
-                                <div className="w-20 h-20 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-rose-500/20">
-                                    <Trash2 className="w-10 h-10 text-rose-500" />
-                                </div>
-                                <h3 className="text-2xl font-bold text-white mb-2">Hapus User?</h3>
-                                <p className="text-slate-500 text-sm mb-8 leading-relaxed">Tindakan ini permanen. Seluruh undangan dan data milik <span className="text-rose-400 font-bold">{selectedUser.email}</span> akan dihapus dari server.</p>
+                {
+                    isDeleteModalOpen && selectedUser && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-0">
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setIsDeleteModalOpen(false)}
+                                className="absolute inset-0 bg-black/90 backdrop-blur-md"
+                            />
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                                className="bg-[#0F0F0F] border border-rose-500/20 rounded-3xl w-full max-w-sm relative z-10 overflow-hidden shadow-[0_0_50px_rgba(244,63,94,0.1)]"
+                            >
+                                <div className="p-8 text-center">
+                                    <div className="w-20 h-20 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-rose-500/20">
+                                        <Trash2 className="w-10 h-10 text-rose-500" />
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-white mb-2">Hapus User?</h3>
+                                    <p className="text-slate-500 text-sm mb-8 leading-relaxed">Tindakan ini permanen. Seluruh undangan dan data milik <span className="text-rose-400 font-bold">{selectedUser.email}</span> akan dihapus dari server.</p>
 
-                                <div className="flex flex-col gap-3">
-                                    <button
-                                        onClick={handleDeleteUser}
-                                        className="w-full py-4 bg-rose-500 hover:bg-rose-400 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-rose-500/20 transition-all"
-                                    >
-                                        Ya, Hapus Permanen
-                                    </button>
-                                    <button
-                                        onClick={() => setIsDeleteModalOpen(false)}
-                                        className="w-full py-4 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white font-black uppercase tracking-widest text-xs rounded-2xl transition-all"
-                                    >
-                                        Batalkan
-                                    </button>
+                                    <div className="flex flex-col gap-3">
+                                        <button
+                                            onClick={handleDeleteUser}
+                                            className="w-full py-4 bg-rose-500 hover:bg-rose-400 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-rose-500/20 transition-all"
+                                        >
+                                            Ya, Hapus Permanen
+                                        </button>
+                                        <button
+                                            onClick={() => setIsDeleteModalOpen(false)}
+                                            className="w-full py-4 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white font-black uppercase tracking-widest text-xs rounded-2xl transition-all"
+                                        >
+                                            Batalkan
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-        </AdminLayout>
+                            </motion.div>
+                        </div>
+                    )
+                }
+            </AnimatePresence >
+        </AdminLayout >
     );
 };

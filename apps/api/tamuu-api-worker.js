@@ -466,8 +466,9 @@ export default {
 
                 // In a real app, verify admin role from session/token
                 const usersCount = await env.DB.prepare('SELECT COUNT(*) as count FROM users').first('count');
-                const templatesCount = await env.DB.prepare('SELECT COUNT(*) as count FROM templates').first('count');
+                const templatesCount = await env.DB.prepare("SELECT COUNT(*) as count FROM templates WHERE type = 'invitation'").first('count');
                 const invitationsCount = await env.DB.prepare('SELECT COUNT(*) as count FROM invitations').first('count');
+                const displaysCount = await env.DB.prepare("SELECT COUNT(*) as count FROM templates WHERE type = 'display'").first('count');
                 const rsvpCount = await env.DB.prepare('SELECT COUNT(*) as count FROM rsvp_responses').first('count');
 
                 // Real Recent Activity with Search & Filter
@@ -489,8 +490,9 @@ export default {
 
                 return json({
                     totalUsers: usersCount,
-                    totalTemplates: templatesCount,
                     totalInvitations: invitationsCount,
+                    totalTemplates: templatesCount,
+                    totalDisplays: displaysCount,
                     totalRsvps: rsvpCount,
                     recentActivity,
                     systemHealth: {
@@ -577,6 +579,135 @@ export default {
                 if (newUser) newUser.permissions = JSON.parse(newUser.permissions || '[]');
 
                 return json({ success: true, user: newUser }, corsHeaders);
+            }
+
+            // ADMIN: List Transactions (with filtering)
+            if (path.startsWith('/api/admin/transactions') && method === 'GET') {
+                const url = new URL(request.url);
+                const status = url.searchParams.get('status');
+                const startDate = url.searchParams.get('startDate');
+                const endDate = url.searchParams.get('endDate');
+
+                let query = `
+                    SELECT 
+                        t.*,
+                        u.name as user_name,
+                        u.email as user_email
+                    FROM billing_transactions t
+                    LEFT JOIN users u ON t.user_id = u.id
+                    WHERE 1=1
+                `;
+                const params = [];
+
+                if (status && status !== 'all') {
+                    query += ` AND t.status = ?`;
+                    params.push(status);
+                }
+
+                if (startDate) {
+                    query += ` AND t.created_at >= ?`;
+                    params.push(startDate); // Start of day or specific timestamp
+                }
+
+                if (endDate) {
+                    query += ` AND t.created_at <= ?`;
+                    params.push(endDate); // End of day
+                }
+
+                query += ` ORDER BY t.created_at DESC LIMIT 500`;
+
+                const transactions = await env.DB.prepare(query).bind(...params).all();
+                return json(transactions.results, corsHeaders);
+            }
+
+            // ADMIN: Sync Midtrans Transaction Status
+            if (path.startsWith('/api/admin/transactions/') && path.endsWith('/sync') && method === 'GET') {
+                const transactionId = path.split('/')[4];
+
+                try {
+                    // 1. Fetch transaction from DB to get external_id (orderId)
+                    const transaction = await env.DB.prepare(
+                        'SELECT * FROM billing_transactions WHERE id = ?'
+                    ).bind(transactionId).first();
+
+                    if (!transaction) {
+                        return json({ error: 'Transaction not found' }, { ...corsHeaders, status: 404 });
+                    }
+
+                    const orderId = transaction.external_id;
+                    const isSandbox = orderId.includes('sandbox') || env.MIDTRANS_SERVER_KEY.startsWith('SB-');
+                    const baseUrl = isSandbox
+                        ? 'https://api.sandbox.midtrans.com/v2'
+                        : 'https://api.midtrans.com/v2';
+
+                    const authHeader = `Basic ${btoa(env.MIDTRANS_SERVER_KEY + ':')}`;
+
+                    // 2. Fetch status from Midtrans
+                    const midtransRes = await fetch(`${baseUrl}/${orderId}/status`, {
+                        headers: {
+                            'Authorization': authHeader,
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (!midtransRes.ok) {
+                        const errorData = await midtransRes.json();
+                        return json({ error: 'Midtrans API error', details: errorData }, { ...corsHeaders, status: midtransRes.status });
+                    }
+
+                    const data = await midtransRes.json();
+                    const status = data.transaction_status;
+                    const paymentType = data.payment_type;
+
+                    // 3. Map status to our DB status
+                    let newStatus = transaction.status;
+                    if (status === 'settlement' || status === 'capture') {
+                        newStatus = 'PAID';
+                    } else if (status === 'pending') {
+                        newStatus = 'PENDING';
+                    } else if (status === 'expire') {
+                        newStatus = 'EXPIRED';
+                    } else if (status === 'cancel' || status === 'deny') {
+                        newStatus = 'CANCELLED';
+                    }
+
+                    // 4. Update DB if status changed
+                    if (newStatus !== transaction.status) {
+                        await env.DB.prepare(
+                            'UPDATE billing_transactions SET status = ?, payment_channel = ?, updated_at = datetime("now") WHERE id = ?'
+                        ).bind(newStatus, paymentType || transaction.payment_channel, transactionId).run();
+
+                        // Provision if PAID
+                        if (newStatus === 'PAID') {
+                            const userId = transaction.user_id;
+                            const tier = transaction.tier;
+                            let maxInvitations = 1;
+                            if (tier === 'vvip') maxInvitations = 3;
+                            else if (tier === 'platinum') maxInvitations = 2;
+
+                            const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+
+                            await env.DB.prepare(
+                                'UPDATE users SET tier = ?, max_invitations = ?, expires_at = ?, updated_at = datetime("now") WHERE id = ?'
+                            ).bind(tier, maxInvitations, expiresAt, userId).run();
+
+                            await env.DB.prepare(
+                                'UPDATE billing_transactions SET paid_at = datetime("now") WHERE id = ?'
+                            ).bind(transactionId).run();
+                        }
+                    }
+
+                    return json({
+                        success: true,
+                        status: newStatus,
+                        midtrans_status: status,
+                        updated: newStatus !== transaction.status
+                    }, corsHeaders);
+
+                } catch (err) {
+                    console.error('[Admin/Sync] Error:', err);
+                    return json({ error: 'Sync failed', message: err.message }, { ...corsHeaders, status: 500 });
+                }
             }
 
             // ADMIN: Update User Access (Role & Permissions)

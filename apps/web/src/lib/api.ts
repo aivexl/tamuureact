@@ -679,6 +679,19 @@ export const admin = {
         return sanitizeValue(updatedData);
     },
 
+    async listTransactions(filters?: { status?: string; startDate?: string; endDate?: string }) {
+        const query = new URLSearchParams(filters as any).toString();
+        const res = await safeFetch(`${API_BASE}/api/admin/transactions?${query}`);
+        if (!res.ok) throw new Error('Failed to fetch transactions');
+        return res.json();
+    },
+
+    async syncTransaction(transactionId: string) {
+        const res = await safeFetch(`${API_BASE}/api/admin/transactions/${transactionId}/sync`);
+        if (!res.ok) throw new Error('Failed to sync transaction');
+        return res.json();
+    },
+
     async deleteUser(userId: string) {
         const res = await safeFetch(`${API_BASE}/api/admin/users/${userId}`, {
             method: 'DELETE'
