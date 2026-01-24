@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { admin } from '@/lib/api';
+import { TIER_LABELS } from '../store/authSlice';
 import { toast } from 'react-hot-toast';
 
 interface UserData {
@@ -132,10 +133,10 @@ export const AdminUsersPage: React.FC = () => {
                             className="bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-500/30 transition-all font-bold uppercase tracking-widest text-xs outline-none cursor-pointer"
                         >
                             <option value="all" className="bg-[#111]">All Tiers</option>
-                            <option value="free" className="bg-[#111]">Free</option>
-                            <option value="pro" className="bg-[#111]">Pro</option>
-                            <option value="platinum" className="bg-[#111]">Platinum</option>
-                            <option value="vvip" className="bg-[#111]">VVIP</option>
+                            <option value="free" className="bg-[#111]">FREE</option>
+                            <option value="vip" className="bg-[#111]">PRO</option>
+                            <option value="platinum" className="bg-[#111]">ULTIMATE</option>
+                            <option value="vvip" className="bg-[#111]">ELITE</option>
                         </select>
                     </div>
                     <button
@@ -201,11 +202,11 @@ export const AdminUsersPage: React.FC = () => {
                                 <td className="px-8 py-6">
                                     <div className="flex flex-col gap-1.5">
                                         <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest w-fit shadow-lg ${user.tier === 'vvip' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/20' :
-                                                user.tier === 'platinum' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/20' :
-                                                    user.tier === 'pro' ? 'bg-teal-500/20 text-teal-400 border border-teal-500/20' :
-                                                        'bg-slate-500/20 text-slate-400 border border-slate-500/20'
+                                            user.tier === 'platinum' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/20' :
+                                                user.tier === 'vip' ? 'bg-teal-500/20 text-teal-400 border border-teal-500/20' :
+                                                    'bg-slate-500/20 text-slate-400 border border-slate-500/20'
                                             }`}>
-                                            {user.tier}
+                                            {TIER_LABELS[user.tier as keyof typeof TIER_LABELS] || user.tier}
                                         </span>
                                         {user.expires_at ? (
                                             <div className={`flex items-center gap-1.5 text-[10px] font-bold ${isExpired(user.expires_at) ? 'text-rose-400' : 'text-slate-500'}`}>
@@ -297,16 +298,21 @@ export const AdminUsersPage: React.FC = () => {
                                     <div>
                                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-3">Subscription Tier</label>
                                         <div className="grid grid-cols-2 gap-3">
-                                            {['free', 'pro', 'platinum', 'vvip'].map((t) => (
+                                            {[
+                                                { id: 'free', label: 'FREE' },
+                                                { id: 'vip', label: 'PRO' },
+                                                { id: 'platinum', label: 'ULTIMATE' },
+                                                { id: 'vvip', label: 'ELITE' }
+                                            ].map((t) => (
                                                 <button
-                                                    key={t}
-                                                    onClick={() => setEditForm(prev => ({ ...prev, tier: t }))}
-                                                    className={`px-4 py-3 rounded-2xl border text-sm font-bold uppercase tracking-widest transition-all ${editForm.tier === t
-                                                            ? 'bg-teal-500/10 border-teal-500/50 text-teal-400 shadow-[0_0_20px_rgba(20,184,166,0.1)]'
-                                                            : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10 hover:border-white/10'
+                                                    key={t.id}
+                                                    onClick={() => setEditForm(prev => ({ ...prev, tier: t.id }))}
+                                                    className={`px-4 py-3 rounded-2xl border text-sm font-bold uppercase tracking-widest transition-all ${editForm.tier === t.id
+                                                        ? 'bg-teal-500/10 border-teal-500/50 text-teal-400 shadow-[0_0_20px_rgba(20,184,166,0.1)]'
+                                                        : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10 hover:border-white/10'
                                                         }`}
                                                 >
-                                                    {t}
+                                                    {t.label}
                                                 </button>
                                             ))}
                                         </div>

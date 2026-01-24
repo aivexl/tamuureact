@@ -4,6 +4,7 @@ import { m, AnimatePresence } from 'framer-motion';
 import { getPublicDomain } from '../lib/utils';
 import { invitations as invitationsApi, billing } from '../lib/api';
 import { useStore } from '../store/useStore';
+import { TIER_LABELS } from '../store/authSlice';
 import { useSEO } from '../hooks/useSEO';
 import { useInvitations, Invitation } from '../hooks/queries';
 import { WelcomeDisplaysTab } from '../components/Dashboard/WelcomeDisplaysTab';
@@ -197,7 +198,7 @@ export const DashboardPage: React.FC = () => {
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="font-bold text-slate-900 truncate leading-tight">{user?.name || user?.email}</p>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-teal-600 mt-0.5">{user?.tier || 'Free'} Plan</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-teal-600 mt-0.5">{user?.tier ? TIER_LABELS[user.tier as keyof typeof TIER_LABELS] : 'FREE'} Plan</p>
                             </div>
                         </div>
                     </div>
@@ -273,7 +274,7 @@ export const DashboardPage: React.FC = () => {
                                 {/* Welcome Section */}
                                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                                     <div className="pt-2 md:pt-0">
-                                        <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-1 md:mb-2 leading-tight">Selamat datang,<br className="md:hidden" /> {user?.name || 'User'} ✨</h2>
+                                        <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-1 md:mb-2 leading-tight">Selamat datang,<br className="md:hidden" /> {user?.name || 'User'}</h2>
                                         <p className="text-slate-500 text-sm md:text-lg">Berikut ringkasan performa hari ini.</p>
                                     </div>
                                     <Link to="/onboarding" className="flex items-center justify-center gap-2 px-6 py-4 md:py-3.5 bg-slate-900 text-white font-black rounded-2xl shadow-xl shadow-slate-900/10 hover:shadow-2xl hover:shadow-slate-900/20 hover:-translate-y-0.5 transition-all active:scale-95 text-sm md:text-base">
@@ -369,7 +370,7 @@ export const DashboardPage: React.FC = () => {
                                                     <SparklesIcon className="w-6 h-6 text-teal-400" />
                                                 </div>
                                                 <h4 className="text-xl md:text-2xl font-black mb-3">
-                                                    {user?.tier === 'free' ? 'Ganti ke VIP' : user?.tier === 'vip' ? 'Ganti ke VVIP' : 'Premium Active'}
+                                                    {user?.tier === 'free' ? 'Ganti ke PRO' : user?.tier === 'vip' ? 'Ganti ke ULTIMATE' : user?.tier === 'platinum' ? 'Ganti ke ELITE' : 'Premium Active'}
                                                 </h4>
                                                 <p className="text-slate-400 mb-8 leading-relaxed text-xs md:text-sm">
                                                     {user?.tier === 'free'

@@ -26,7 +26,7 @@ export const MusicPanel: React.FC = () => {
     const [isUploading, setIsUploading] = useState(false);
     const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
-    const isVVIP = profile?.tier === 'vvip';
+    const isELITE = profile?.tier === 'vvip';
 
     const handleSelectSong = (song: any) => {
         const patchedUrl = patchLegacyUrl(song.url);
@@ -171,8 +171,8 @@ export const MusicPanel: React.FC = () => {
                 </div>
             </div>
 
-            {/* Premium: Custom Music Upload (VVIP Only) */}
-            {isVVIP ? (
+            {/* Premium: Custom Music Upload (ELITE Only) */}
+            {isELITE ? (
                 <div className="p-6 bg-gradient-to-br from-pink-50 to-rose-100 rounded-[2.5rem] border border-pink-200 group relative">
                     <div className="flex items-center justify-between mb-4">
                         <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-pink-500 shadow-sm group-hover:scale-110 transition-transform">
@@ -183,7 +183,7 @@ export const MusicPanel: React.FC = () => {
                             )}
                         </div>
                         <div className="px-3 py-1 bg-pink-500 rounded-full text-[8px] font-black text-white uppercase tracking-widest shadow-lg shadow-pink-500/20">
-                            VVIP EXCLUSIVE
+                            ELITE EXCLUSIVE
                         </div>
                     </div>
 
@@ -220,7 +220,7 @@ export const MusicPanel: React.FC = () => {
                         </div>
                         <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
                     </div>
-                    <p className="text-[11px] text-slate-400 font-medium">Upgrade ke VVIP untuk upload musik sendiri.</p>
+                    <p className="text-[11px] text-slate-400 font-medium">Upgrade ke ELITE untuk upload musik sendiri.</p>
                 </div>
             )}
 

@@ -3,6 +3,13 @@ import { supabase } from '../lib/supabase';
 
 export type SubscriptionTier = 'free' | 'vip' | 'platinum' | 'vvip';
 
+export const TIER_LABELS: Record<SubscriptionTier, string> = {
+    free: 'FREE',
+    vip: 'PRO',
+    platinum: 'ULTIMATE',
+    vvip: 'ELITE'
+};
+
 export interface User {
     id: string;
     email: string;

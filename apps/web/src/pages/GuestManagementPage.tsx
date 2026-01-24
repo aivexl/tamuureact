@@ -495,7 +495,7 @@ export const GuestManagementPage: React.FC = () => {
                                 <p className="text-2xl font-black text-indigo-900">{stats.waSent}</p>
                             </div>
                             <div className="p-4 rounded-2xl bg-amber-50 border border-amber-100">
-                                <p className="text-[10px] text-amber-600 font-bold uppercase mb-0.5">VIP & VVIP</p>
+                                <p className="text-[10px] text-amber-600 font-bold uppercase mb-0.5">ULTIMATE & ELITE</p>
                                 <p className="text-2xl font-black text-amber-900">{stats.vip}</p>
                             </div>
                             <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100">

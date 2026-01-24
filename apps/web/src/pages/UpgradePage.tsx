@@ -53,9 +53,6 @@ const TierCard: React.FC<TierCardProps> = ({
             </div>
         )}
 
-        <div className={`w-14 h-14 rounded-2xl ${color} flex items-center justify-center mb-6 shadow-lg`}>
-            <Icon className="w-7 h-7 text-white" />
-        </div>
 
         <h3 className="text-2xl font-black text-[#0A1128] mb-2">{name}</h3>
         <div className="flex items-baseline gap-2 mb-1">
