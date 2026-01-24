@@ -396,8 +396,8 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
                                         </div>
                                     </div>
 
-                                    {/* PERMISSIONS SECTION (ONLY FOR ADMIN/RESELLER) */}
-                                    {(selectedUser.role !== 'user' || editForm.role !== 'user') && (
+                                    {/* PERMISSIONS SECTION (ONLY FOR ADMIN) */}
+                                    {(selectedUser.role === 'admin' || editForm.role === 'admin') && (
                                         <div className="p-5 bg-white/5 rounded-2xl border border-white/5">
                                             <h4 className="text-[10px] font-black uppercase tracking-widest text-teal-500 mb-4 flex items-center gap-2">
                                                 <Lock className="w-3 h-3" /> Access & Permissions
@@ -559,7 +559,7 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
                                         </div>
                                     )}
 
-                                    {addForm.role !== 'user' && (
+                                    {addForm.role === 'admin' && (
                                         <div>
                                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-3">Initial Permissions</label>
                                             <div className="grid grid-cols-1 gap-2">
