@@ -58,7 +58,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             email: supabaseUser.email || '',
             name: supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || '',
             avatar_url: supabaseUser.user_metadata?.avatar_url || '',
-            role: (supabaseUser.user_metadata?.role as 'user' | 'admin') || 'user',
+            role: (supabaseUser.user_metadata?.role as 'user' | 'admin' | 'reseller') || 'user',
+            permissions: [],
             gender: supabaseUser.user_metadata?.gender || '',
             birthDate: supabaseUser.user_metadata?.birth_date || '',
             tier: 'free', // Initial default
@@ -88,7 +89,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     tier: d1User.tier || 'free',
                     maxInvitations: d1User.maxInvitations || 1,
                     invitationCount: d1User.invitationCount || 0,
-                    expiresAt: d1User.expires_at
+                    expiresAt: d1User.expires_at,
+                    role: d1User.role || initialUser.role,
+                    permissions: d1User.permissions || []
                 };
 
                 console.log('[Auth Sync] Updating session with:', updatedUser.tier);

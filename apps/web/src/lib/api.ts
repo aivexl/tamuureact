@@ -624,11 +624,36 @@ export const admin = {
         return sanitizeValue(updatedData);
     },
 
-    async listUsers() {
-        const res = await safeFetch(`${API_BASE}/api/admin/users`);
+    async listUsers(role?: string) {
+        let url = `${API_BASE}/api/admin/users`;
+        if (role) url += `?role=${role}`;
+        const res = await safeFetch(url);
         if (!res.ok) throw new Error('Failed to fetch users');
         const data = await res.json();
         return sanitizeValue(data);
+    },
+
+    async createAccount(data: { email: string; name?: string; role: string; tier?: string; permissions?: string[]; expires_at?: string | null; max_invitations?: number }) {
+        const res = await safeFetch(`${API_BASE}/api/admin/users`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sanitizeValue(data))
+        });
+        if (!res.ok) {
+            const error = await res.json();
+            throw new Error(error.error || 'Failed to create account');
+        }
+        return res.json();
+    },
+
+    async updateAccess(userId: string, data: { role?: string; permissions?: string[] }) {
+        const res = await safeFetch(`${API_BASE}/api/admin/users/${userId}/access`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sanitizeValue(data))
+        });
+        if (!res.ok) throw new Error('Failed to update access');
+        return res.json();
     },
 
     async updateUserSubscription(userId: string, data: { tier?: string; expires_at?: string | null; max_invitations?: number }) {

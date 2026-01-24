@@ -171,7 +171,9 @@ const App: React.FC = () => {
                                 {/* Admin Routes */}
                                 <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="admin"><AdminDashboardPage /></ProtectedRoute>} />
                                 <Route path="/admin/music" element={<ProtectedRoute requiredRole="admin"><AdminMusicPage /></ProtectedRoute>} />
-                                <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsersPage /></ProtectedRoute>} />
+                                <Route path="/admin/admins" element={<ProtectedRoute requiredRole="admin"><AdminUsersPage role="admin" /></ProtectedRoute>} />
+                                <Route path="/admin/resellers" element={<ProtectedRoute requiredRole="admin"><AdminUsersPage role="reseller" /></ProtectedRoute>} />
+                                <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsersPage role="user" /></ProtectedRoute>} />
                                 <Route path="/admin/templates" element={<ProtectedRoute requiredRole="admin"><AdminTemplatesPage /></ProtectedRoute>} />
                                 <Route path="/admin/templates/:type" element={<ProtectedRoute requiredRole="admin"><AdminTemplatesPage /></ProtectedRoute>} />
 

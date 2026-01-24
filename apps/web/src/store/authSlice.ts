@@ -17,7 +17,8 @@ export interface User {
     gender?: string;
     birthDate?: string;
     avatar_url?: string;
-    role: 'user' | 'admin';
+    role: 'user' | 'admin' | 'reseller';
+    permissions: string[];
     tier: SubscriptionTier;
     maxInvitations: number;
     invitationCount: number;

@@ -12,8 +12,11 @@ import {
     Settings,
     Activity,
     CreditCard,
-    Music
+    Music,
+    ShieldCheck,
+    Briefcase
 } from 'lucide-react';
+import { useStore } from '../../store/useStore';
 
 interface SidebarItemProps {
     href: string;
@@ -50,6 +53,13 @@ const SidebarItem = ({ href, icon: Icon, label, active, sidebarOpen }: SidebarIt
 export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const location = useLocation();
+    const { user } = useStore();
+
+    const hasPermission = (perm: string) => {
+        if (!user) return false;
+        if (user.role === 'admin' && (user.permissions.includes('all') || user.permissions.length === 0)) return true;
+        return user.permissions.includes(perm);
+    };
 
     return (
         <div className="min-h-screen bg-[#0A0A0A] text-white font-outfit flex overflow-hidden">
@@ -108,21 +118,45 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                         sidebarOpen={sidebarOpen}
                     />
 
-                    <SidebarItem
-                        href="/admin/music"
-                        icon={Music}
-                        label="Music Library"
-                        active={location.pathname.startsWith('/admin/music')}
-                        sidebarOpen={sidebarOpen}
-                    />
+                    {hasPermission('management:music') && (
+                        <SidebarItem
+                            href="/admin/music"
+                            icon={Music}
+                            label="Music Library"
+                            active={location.pathname.startsWith('/admin/music')}
+                            sidebarOpen={sidebarOpen}
+                        />
+                    )}
 
-                    <SidebarItem
-                        href="/admin/users"
-                        icon={Users}
-                        label="Users"
-                        active={location.pathname.startsWith('/admin/users')}
-                        sidebarOpen={sidebarOpen}
-                    />
+                    {hasPermission('management:admins') && (
+                        <SidebarItem
+                            href="/admin/admins"
+                            icon={ShieldCheck}
+                            label="Admins"
+                            active={location.pathname === '/admin/admins'}
+                            sidebarOpen={sidebarOpen}
+                        />
+                    )}
+
+                    {hasPermission('management:resellers') && (
+                        <SidebarItem
+                            href="/admin/resellers"
+                            icon={Briefcase}
+                            label="Resellers"
+                            active={location.pathname === '/admin/resellers'}
+                            sidebarOpen={sidebarOpen}
+                        />
+                    )}
+
+                    {hasPermission('management:users') && (
+                        <SidebarItem
+                            href="/admin/users"
+                            icon={Users}
+                            label="Users"
+                            active={location.pathname === '/admin/users'}
+                            sidebarOpen={sidebarOpen}
+                        />
+                    )}
                     <SidebarItem
                         href="/admin/transactions"
                         icon={CreditCard}

@@ -118,7 +118,9 @@ export default {
                         bank2Holder: user.bank2_holder,
                         emoneyType: user.emoney_type,
                         emoneyNumber: user.emoney_number,
-                        giftAddress: user.gift_address
+                        giftAddress: user.gift_address,
+                        role: user.role || 'user',
+                        permissions: JSON.parse(user.permissions || '[]')
                     };
 
                     return json(normalizedUser, {
@@ -530,6 +532,11 @@ export default {
                 // Fetch and return updated user
                 const updatedUser = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first();
 
+                // Format permissions for response
+                if (updatedUser) {
+                    updatedUser.permissions = JSON.parse(updatedUser.permissions || '[]');
+                }
+
                 return json({
                     success: true,
                     message: 'User subscription updated',
@@ -537,12 +544,87 @@ export default {
                 }, corsHeaders);
             }
 
+            // ADMIN: Create New Account (Manual)
+            if (path === '/api/admin/users' && method === 'POST') {
+                const { email, name, role, tier, permissions, expires_at, max_invitations } = await request.json();
+
+                if (!email) return json({ error: 'Email required' }, { ...corsHeaders, status: 400 });
+
+                // Check for existing
+                const existing = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
+                if (existing) return json({ error: 'User with this email already exists' }, { ...corsHeaders, status: 409 });
+
+                const id = crypto.randomUUID();
+                const tamuuId = `TAMUU-USER-${id.substring(0, 8).toUpperCase()}`;
+
+                await env.DB.prepare(
+                    `INSERT INTO users (id, email, tamuu_id, name, role, tier, permissions, expires_at, max_invitations, invitation_count) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`
+                ).bind(
+                    id, email, tamuuId, name || '', role || 'user', tier || 'free',
+                    JSON.stringify(permissions || []),
+                    expires_at || null,
+                    max_invitations || 1
+                ).run();
+
+                const newUser = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(id).first();
+                if (newUser) newUser.permissions = JSON.parse(newUser.permissions || '[]');
+
+                return json({ success: true, user: newUser }, corsHeaders);
+            }
+
+            // ADMIN: Update User Access (Role & Permissions)
+            if (path.startsWith('/api/admin/users/') && path.endsWith('/access') && method === 'PUT') {
+                const userId = path.split('/')[4];
+                const { role, permissions } = await request.json();
+
+                const updates = [];
+                const values = [];
+
+                if (role) {
+                    updates.push('role = ?');
+                    values.push(role);
+                }
+                if (permissions) {
+                    updates.push('permissions = ?');
+                    values.push(JSON.stringify(permissions));
+                }
+
+                if (updates.length > 0) {
+                    values.push(userId);
+                    await env.DB.prepare(
+                        `UPDATE users SET ${updates.join(', ')}, updated_at = datetime("now") WHERE id = ?`
+                    ).bind(...values).run();
+                }
+
+                const updatedUser = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first();
+                if (updatedUser) updatedUser.permissions = JSON.parse(updatedUser.permissions || '[]');
+
+                return json({ success: true, user: updatedUser }, corsHeaders);
+            }
+
             // ADMIN: List All Users
             if (path === '/api/admin/users' && method === 'GET') {
-                const { results } = await env.DB.prepare(
-                    'SELECT id, email, name, tier, expires_at, max_invitations, invitation_count, created_at FROM users ORDER BY created_at DESC'
-                ).all();
-                return json(results, corsHeaders);
+                const roleFilter = url.searchParams.get('role');
+                let query = 'SELECT id, email, name, role, permissions, tier, expires_at, max_invitations, invitation_count, created_at FROM users';
+                let params = [];
+
+                if (roleFilter) {
+                    query += ' WHERE role = ?';
+                    params.push(roleFilter);
+                }
+
+                query += ' ORDER BY created_at DESC';
+
+                const { results } = await env.DB.prepare(query).bind(...params).all();
+
+                // Format permissions JSON
+                const formatted = results.map(u => ({
+                    ...u,
+                    permissions: JSON.parse(u.permissions || '[]')
+                }));
+
+                return json(formatted, corsHeaders);
             }
 
             // ADMIN: Delete User (Permanent Removal)
