@@ -622,6 +622,32 @@ export const admin = {
         if (!res.ok) throw new Error('Failed to trigger display');
         const updatedData = await res.json();
         return sanitizeValue(updatedData);
+    },
+
+    async listUsers() {
+        const res = await safeFetch(`${API_BASE}/api/admin/users`);
+        if (!res.ok) throw new Error('Failed to fetch users');
+        const data = await res.json();
+        return sanitizeValue(data);
+    },
+
+    async updateUserSubscription(userId: string, data: { tier?: string; expires_at?: string | null; max_invitations?: number }) {
+        const res = await safeFetch(`${API_BASE}/api/admin/users/${userId}/subscription`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sanitizeValue(data))
+        });
+        if (!res.ok) throw new Error('Failed to update user subscription');
+        const updatedData = await res.json();
+        return sanitizeValue(updatedData);
+    },
+
+    async deleteUser(userId: string) {
+        const res = await safeFetch(`${API_BASE}/api/admin/users/${userId}`, {
+            method: 'DELETE'
+        });
+        if (!res.ok) throw new Error('Failed to delete user');
+        return true;
     }
 };
 

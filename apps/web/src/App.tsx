@@ -7,6 +7,7 @@ import { MainLayout } from './components/Layout/MainLayout';
 import { LazyMotion, domMax } from 'framer-motion';
 import { PremiumLoader } from './components/ui/PremiumLoader';
 import GlobalModal from './components/Shared/GlobalModal';
+import { Toaster } from 'react-hot-toast';
 
 // ============================================
 // DOMAIN DETECTION
@@ -40,6 +41,7 @@ const UserEditorPage = lazy(() => import('./pages/UserEditorPage').then(m => ({ 
 const GuestWishesPage = lazy(() => import('./pages/GuestWishesPage').then(m => ({ default: m.GuestWishesPage })));
 const GuestWelcomePage = lazy(() => import('./pages/GuestWelcomePage').then(m => ({ default: m.GuestWelcomePage })));
 const GuestWelcomeDisplay = lazy(() => import('./pages/GuestWelcomeDisplay').then(m => ({ default: m.GuestWelcomeDisplay })));
+const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage').then(m => ({ default: m.AdminUsersPage })));
 const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })));
 const AdminMusicPage = lazy(() => import('./pages/AdminMusicPage').then(m => ({ default: m.AdminMusicPage })));
 const DisplayEditorPage = lazy(() => import('./pages/DisplayEditorPage').then(m => ({ default: m.DisplayEditorPage })));
@@ -100,6 +102,19 @@ const App: React.FC = () => {
             <LazyMotion features={domMax} strict>
                 <Suspense fallback={<PremiumLoader />}>
                     <GlobalModal />
+                    <Toaster
+                        position="bottom-right"
+                        toastOptions={{
+                            style: {
+                                background: '#111',
+                                color: '#fff',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '16px',
+                                fontSize: '13px',
+                                fontWeight: 'bold'
+                            }
+                        }}
+                    />
                     <Routes>
                         {/* ============================================ */}
                         {/* DOMAIN-AWARE ROOT PATH */}
@@ -156,6 +171,7 @@ const App: React.FC = () => {
                                 {/* Admin Routes */}
                                 <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="admin"><AdminDashboardPage /></ProtectedRoute>} />
                                 <Route path="/admin/music" element={<ProtectedRoute requiredRole="admin"><AdminMusicPage /></ProtectedRoute>} />
+                                <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsersPage /></ProtectedRoute>} />
                                 <Route path="/admin/templates" element={<ProtectedRoute requiredRole="admin"><AdminTemplatesPage /></ProtectedRoute>} />
                                 <Route path="/admin/templates/:type" element={<ProtectedRoute requiredRole="admin"><AdminTemplatesPage /></ProtectedRoute>} />
 

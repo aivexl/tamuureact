@@ -377,7 +377,7 @@ export default {
                         let maxInvitations = 1;
                         if (tier === 'vvip') maxInvitations = 3;
                         else if (tier === 'platinum') maxInvitations = 2;
-                        
+
                         const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
 
                         // 1. Update Transaction
@@ -543,6 +543,28 @@ export default {
                     'SELECT id, email, name, tier, expires_at, max_invitations, invitation_count, created_at FROM users ORDER BY created_at DESC'
                 ).all();
                 return json(results, corsHeaders);
+            }
+
+            // ADMIN: Delete User (Permanent Removal)
+            if (path.startsWith('/api/admin/users/') && method === 'DELETE') {
+                const userId = path.split('/')[4];
+                if (!userId) return json({ error: 'User ID required' }, { ...corsHeaders, status: 400 });
+
+                try {
+                    // Start deletion sequence (Cascade is handled by DB ideally, but D1 sometimes needs manual clean-up)
+                    // 1. Delete associated invitations
+                    await env.DB.prepare('DELETE FROM invitations WHERE user_id = ?').bind(userId).run();
+
+                    // 2. Delete associated assets
+                    await env.DB.prepare('DELETE FROM assets WHERE user_id = ?').bind(userId).run();
+
+                    // 3. Delete user
+                    await env.DB.prepare('DELETE FROM users WHERE id = ?').bind(userId).run();
+
+                    return json({ success: true, message: 'User and all associated data deleted permanently' }, corsHeaders);
+                } catch (error) {
+                    return json({ error: 'Failed to delete user', details: error.message }, { ...corsHeaders, status: 500 });
+                }
             }
 
             // ============================================
