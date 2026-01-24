@@ -216,12 +216,8 @@ export default {
 
                     const orderId = `order-${Date.now()}-${userId.substring(0, 8)}`;
                     const authHeader = `Basic ${btoa(env.MIDTRANS_SERVER_KEY + ':')}`;
-                    const isSandbox = env.MIDTRANS_SERVER_KEY.startsWith('SB-');
-                    const snapUrl = isSandbox
-                        ? 'https://app.sandbox.midtrans.com/snap/v1/transactions'
-                        : 'https://app.midtrans.com/snap/v1/transactions';
 
-                    const midtransResponse = await fetch(snapUrl, {
+                    const midtransResponse = await fetch('https://app.sandbox.midtrans.com/snap/v1/transactions', {
                         method: 'POST',
                         headers: {
                             'Authorization': authHeader,
