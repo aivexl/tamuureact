@@ -20,6 +20,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit, isLoading = 
         confirmPassword: ''
     });
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const validate = () => {
@@ -79,42 +80,40 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit, isLoading = 
                             {errors.name && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{errors.name}</p>}
                         </m.div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <m.div
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="relative"
+                        <m.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="relative"
+                        >
+                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                            <select
+                                value={form.gender}
+                                onChange={(e) => setForm({ ...form, gender: e.target.value })}
+                                className={`${inputClasses('gender')} cursor-pointer`}
                             >
-                                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
-                                <select
-                                    value={form.gender}
-                                    onChange={(e) => setForm({ ...form, gender: e.target.value })}
-                                    className={`${inputClasses('gender')} cursor-pointer`}
-                                >
-                                    <option value="" disabled className="bg-slate-900 text-white/20">Jenis Kelamin</option>
-                                    <option value="male" className="bg-slate-900 text-white">Laki-laki</option>
-                                    <option value="female" className="bg-slate-900 text-white">Perempuan</option>
-                                </select>
-                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
-                                {errors.gender && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{errors.gender}</p>}
-                            </m.div>
+                                <option value="" disabled className="bg-slate-900 text-white/20">Jenis Kelamin</option>
+                                <option value="male" className="bg-slate-900 text-white">Laki-laki</option>
+                                <option value="female" className="bg-slate-900 text-white">Perempuan</option>
+                            </select>
+                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+                            {errors.gender && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{errors.gender}</p>}
+                        </m.div>
 
-                            <m.div
-                                initial={{ opacity: 0, x: 10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="relative"
-                            >
-                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
-                                <input
-                                    type="date"
-                                    value={form.birthDate}
-                                    onChange={(e) => setForm({ ...form, birthDate: e.target.value })}
-                                    className={`${inputClasses('birthDate')} cursor-pointer scale-95 origin-left`}
-                                    style={{ colorScheme: 'dark' }}
-                                />
-                                {errors.birthDate && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{errors.birthDate}</p>}
-                            </m.div>
-                        </div>
+                        <m.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="relative"
+                        >
+                            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                            <input
+                                type="date"
+                                value={form.birthDate}
+                                onChange={(e) => setForm({ ...form, birthDate: e.target.value })}
+                                className={`${inputClasses('birthDate')} cursor-pointer`}
+                                style={{ colorScheme: 'dark' }}
+                            />
+                            {errors.birthDate && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{errors.birthDate}</p>}
+                        </m.div>
                     </div>
                 )}
             </AnimatePresence>
@@ -159,12 +158,19 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit, isLoading = 
                 >
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
                     <input
-                        type={showPassword ? 'text' : 'password'}
+                        type={showConfirmPassword ? 'text' : 'password'}
                         placeholder="Konfirmasi Password"
                         value={form.confirmPassword}
                         onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
                         className={inputClasses('confirmPassword')}
                     />
+                    <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/50 transition-colors"
+                    >
+                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
                     {errors.confirmPassword && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{errors.confirmPassword}</p>}
                 </m.div>
             )}
