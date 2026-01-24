@@ -73,6 +73,11 @@ export default {
                         const userIdToUse = providedUid || crypto.randomUUID();
                         const tamuuId = `TAMUU-USER-${userIdToUse.substring(0, 8).toUpperCase()}`;
 
+                        // Extract profile data from params (passed from AuthProvider during sync)
+                        const name = url.searchParams.get('name') || '';
+                        const gender = url.searchParams.get('gender') || null;
+                        const birthDate = url.searchParams.get('birthDate') || null;
+
                         // SUPER ULTRA: Business Rules for Trial/Subscription
                         // - Free tier: 30 days (1 month) from signup
                         // - Special test accounts: Unlimited (no expiry)
@@ -86,9 +91,9 @@ export default {
                         }
 
                         await env.DB.prepare(
-                            `INSERT INTO users (id, email, tamuu_id, tier, max_invitations, invitation_count, expires_at) 
-                             VALUES (?, ?, ?, 'free', 1, 0, ?)`
-                        ).bind(userIdToUse, email, tamuuId, expiresAtString).run();
+                            `INSERT INTO users (id, email, tamuu_id, name, gender, birth_date, tier, max_invitations, invitation_count, expires_at) 
+                             VALUES (?, ?, ?, ?, ?, ?, 'free', 1, 0, ?)`
+                        ).bind(userIdToUse, email, tamuuId, name, gender, birthDate, expiresAtString).run();
 
                         user = {
                             id: userIdToUse,
@@ -546,22 +551,23 @@ export default {
 
             // ADMIN: Create New Account (Manual)
             if (path === '/api/admin/users' && method === 'POST') {
-                const { email, name, role, tier, permissions, expires_at, max_invitations } = await request.json();
+                const { email, name, gender, birthDate, role, tier, permissions, expires_at, max_invitations, uid } = await request.json();
 
                 if (!email) return json({ error: 'Email required' }, { ...corsHeaders, status: 400 });
 
                 // Check for existing
                 const existing = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
-                if (existing) return json({ error: 'User with this email already exists' }, { ...corsHeaders, status: 409 });
+                if (existing) return json({ success: true, user: existing }); // If exists, return it (to avoid race conditions)
 
-                const id = crypto.randomUUID();
+                const id = uid || crypto.randomUUID();
                 const tamuuId = `TAMUU-USER-${id.substring(0, 8).toUpperCase()}`;
 
                 await env.DB.prepare(
-                    `INSERT INTO users (id, email, tamuu_id, name, role, tier, permissions, expires_at, max_invitations, invitation_count) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`
+                    `INSERT INTO users (id, email, tamuu_id, name, gender, birth_date, role, tier, permissions, expires_at, max_invitations, invitation_count) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`
                 ).bind(
-                    id, email, tamuuId, name || '', role || 'user', tier || 'free',
+                    id, email, tamuuId, name || '', gender || null, birthDate || null,
+                    role || 'user', tier || 'free',
                     JSON.stringify(permissions || []),
                     expires_at || null,
                     max_invitations || 1

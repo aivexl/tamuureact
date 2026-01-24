@@ -633,7 +633,19 @@ export const admin = {
         return sanitizeValue(data);
     },
 
-    async createAccount(data: { email: string; name?: string; role: string; tier?: string; permissions?: string[]; expires_at?: string | null; max_invitations?: number }) {
+    async createAccount(data: {
+        email: string;
+        name?: string;
+        role: string;
+        tier?: string;
+        gender?: string;
+        birthDate?: string;
+        password?: string;
+        uid?: string;
+        permissions?: string[];
+        expires_at?: string | null;
+        max_invitations?: number
+    }) {
         const res = await safeFetch(`${API_BASE}/api/admin/users`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

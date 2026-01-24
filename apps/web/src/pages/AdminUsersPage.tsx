@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import { AdminLayout } from '../components/Layout/AdminLayout';
 import {
     Search,
@@ -16,12 +17,22 @@ import {
     ShieldCheck,
     Briefcase,
     Lock,
-    User
+    User,
+    Eye,
+    EyeOff,
+    ChevronDown,
+    ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { admin } from '@/lib/api';
 import { TIER_LABELS } from '../store/authSlice';
 import { toast } from 'react-hot-toast';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const shadowSupabase = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: { persistSession: false }
+});
 
 interface UserData {
     id: string;
@@ -63,8 +74,34 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
         name: '',
         role: initialRole || 'user',
         tier: 'free',
+        gender: '',
+        birthDate: '',
+        password: '',
+        confirmPassword: '',
         permissions: [] as string[]
     });
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [addErrors, setAddErrors] = useState<Record<string, string>>({});
+
+    const validateAddForm = () => {
+        const newErrors: Record<string, string> = {};
+        if (!addForm.name) newErrors.name = 'Nama lengkap wajib diisi';
+        if (!addForm.gender) newErrors.gender = 'Jenis kelamin wajib dipilih';
+        if (!addForm.birthDate) newErrors.birthDate = 'Tanggal lahir wajib diisi';
+        if (!addForm.email) newErrors.email = 'Email wajib diisi';
+        else if (!/\S+@\S+\.\S+/.test(addForm.email)) newErrors.email = 'Format email tidak valid';
+
+        if (!addForm.password) newErrors.password = 'Password wajib diisi';
+        else if (addForm.password.length < 6) newErrors.password = 'Password minimal 6 karakter';
+
+        if (addForm.password !== addForm.confirmPassword) {
+            newErrors.confirmPassword = 'Password tidak cocok';
+        }
+
+        setAddErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     useEffect(() => {
         fetchUsers();
@@ -111,8 +148,33 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
     };
 
     const handleCreateAccount = async () => {
+        if (!validateAddForm()) return;
+        const loadingToast = toast.loading('Creating account...');
         try {
-            await admin.createAccount(addForm);
+            // 1. Create in Supabase Auth (using shadow client to prevent admin logout)
+            const { data: authData, error: authError } = await shadowSupabase.auth.signUp({
+                email: addForm.email,
+                password: addForm.password,
+                options: {
+                    data: {
+                        full_name: addForm.name,
+                        gender: addForm.gender,
+                        birth_date: addForm.birthDate,
+                        role: addForm.role
+                    }
+                }
+            });
+
+            if (authError) throw authError;
+            if (!authData.user) throw new Error('Failed to create auth project');
+
+            // 2. Sync with D1 immediately with extra metadata (Role, Tier, Permissions)
+            await admin.createAccount({
+                ...addForm,
+                uid: authData.user.id
+            });
+
+            toast.dismiss(loadingToast);
             fetchUsers();
             setIsAddModalOpen(false);
             setAddForm({
@@ -120,10 +182,16 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
                 name: '',
                 role: initialRole || 'user',
                 tier: 'free',
+                gender: '',
+                birthDate: '',
+                password: '',
+                confirmPassword: '',
                 permissions: []
             });
-            toast.success('Account created successfully');
+            setAddErrors({});
+            toast.success('Account created and synced successfully');
         } catch (err: any) {
+            toast.dismiss(loadingToast);
             toast.error(err.message || 'Failed to create account');
         }
     };
@@ -508,60 +576,164 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="bg-[#0F0F0F] border border-white/10 rounded-3xl w-full max-w-lg relative z-10 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]"
+                            className="bg-[#0F0F0F] border border-white/10 rounded-3xl w-full max-w-xl relative z-10 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]"
                         >
                             <div className="p-8">
-                                <h3 className="text-2xl font-bold text-white mb-2">Create New {initialRole || 'User'}</h3>
-                                <p className="text-slate-500 text-sm mb-8 leading-relaxed">Fill in the details to manually add a new account.</p>
+                                <div className="flex justify-between items-start mb-8">
+                                    <div>
+                                        <h3 className="text-2xl font-bold text-white mb-2">Create New {initialRole === 'admin' ? 'Admin' : initialRole === 'reseller' ? 'Reseller' : 'User'}</h3>
+                                        <p className="text-slate-500 text-sm leading-relaxed tracking-wide">Enter account details and initial configuration.</p>
+                                    </div>
+                                    <div className="p-3 bg-teal-500/10 rounded-2xl border border-teal-500/20">
+                                        <ShieldCheck className="w-6 h-6 text-teal-500" />
+                                    </div>
+                                </div>
 
-                                <div className="space-y-6 overflow-y-auto max-h-[60vh] pr-4 custom-scrollbar">
-                                    {/* BASIC INFO */}
+                                <div className="space-y-6 overflow-y-auto max-h-[70vh] pr-4 custom-scrollbar">
+                                    {/* PERSONAL INFO (MATCHING SIGNUP) */}
                                     <div className="space-y-4">
-                                        <div>
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-2">Email Address *</label>
-                                            <input
-                                                type="email"
-                                                value={addForm.email}
-                                                onChange={(e) => setAddForm(prev => ({ ...prev, email: e.target.value }))}
-                                                placeholder="user@example.com"
-                                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-3.5 text-white focus:ring-2 focus:ring-teal-500/30 outline-none transition-all font-bold"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-2">Full Name</label>
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-500/70 mb-4 flex items-center gap-2">
+                                            <User className="w-3 h-3" /> Personal Information
+                                        </h4>
+                                        <div className="relative">
+                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
                                             <input
                                                 type="text"
+                                                placeholder="Nama Lengkap"
                                                 value={addForm.name}
-                                                onChange={(e) => setAddForm(prev => ({ ...prev, name: e.target.value }))}
-                                                placeholder="Enter display name"
-                                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-3.5 text-white focus:ring-2 focus:ring-teal-500/30 outline-none transition-all font-bold"
+                                                onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
+                                                className={`w-full bg-white/5 border ${addErrors.name ? 'border-rose-500/50' : 'border-white/10'} rounded-2xl px-12 py-4 text-white font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-white/20`}
                                             />
+                                            {addErrors.name && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{addErrors.name}</p>}
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="relative">
+                                                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                                                <select
+                                                    value={addForm.gender}
+                                                    onChange={(e) => setAddForm({ ...addForm, gender: e.target.value })}
+                                                    className={`w-full bg-white/5 border ${addErrors.gender ? 'border-rose-500/50' : 'border-white/10'} rounded-2xl px-12 py-4 text-white font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all appearance-none cursor-pointer`}
+                                                >
+                                                    <option value="" disabled className="bg-slate-900 text-white/20">Jenis Kelamin</option>
+                                                    <option value="male" className="bg-slate-900 text-white">Laki-laki</option>
+                                                    <option value="female" className="bg-slate-900 text-white">Perempuan</option>
+                                                </select>
+                                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+                                                {addErrors.gender && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{addErrors.gender}</p>}
+                                            </div>
+
+                                            <div className="relative">
+                                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                                                <input
+                                                    type="date"
+                                                    value={addForm.birthDate}
+                                                    onChange={(e) => setAddForm({ ...addForm, birthDate: e.target.value })}
+                                                    className={`w-full bg-white/5 border ${addErrors.birthDate ? 'border-rose-500/50' : 'border-white/10'} rounded-2xl px-12 py-4 text-white font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer`}
+                                                    style={{ colorScheme: 'dark' }}
+                                                />
+                                                {addErrors.birthDate && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{addErrors.birthDate}</p>}
+                                            </div>
                                         </div>
                                     </div>
 
-                                    {!initialRole && (
-                                        <div>
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-3">Role</label>
-                                            <div className="grid grid-cols-3 gap-3">
-                                                {['user', 'reseller', 'admin'].map((r) => (
-                                                    <button
-                                                        key={r}
-                                                        onClick={() => setAddForm(prev => ({ ...prev, role: r as any }))}
-                                                        className={`px-4 py-3 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all ${addForm.role === r
-                                                            ? 'bg-purple-500/10 border-purple-500/50 text-purple-400'
-                                                            : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10'
-                                                            }`}
-                                                    >
-                                                        {r}
-                                                    </button>
-                                                ))}
-                                            </div>
+                                    {/* ACCOUNT CREDENTIALS */}
+                                    <div className="space-y-4">
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-500/70 mb-4 flex items-center gap-2">
+                                            <Lock className="w-3 h-3" /> Account Credentials
+                                        </h4>
+                                        <div className="relative">
+                                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                                            <input
+                                                type="email"
+                                                placeholder="Alamat Email"
+                                                value={addForm.email}
+                                                onChange={(e) => setAddForm({ ...addForm, email: e.target.value })}
+                                                className={`w-full bg-white/5 border ${addErrors.email ? 'border-rose-500/50' : 'border-white/10'} rounded-2xl px-12 py-4 text-white font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-white/20`}
+                                            />
+                                            {addErrors.email && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{addErrors.email}</p>}
                                         </div>
-                                    )}
+
+                                        <div className="relative">
+                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                                            <input
+                                                type={showPassword ? 'text' : 'password'}
+                                                placeholder="Initial Password"
+                                                value={addForm.password}
+                                                onChange={(e) => setAddForm({ ...addForm, password: e.target.value })}
+                                                className={`w-full bg-white/5 border ${addErrors.password ? 'border-rose-500/50' : 'border-white/10'} rounded-2xl px-12 py-4 text-white font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-white/20`}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/50 transition-colors"
+                                            >
+                                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                            </button>
+                                            {addErrors.password && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{addErrors.password}</p>}
+                                        </div>
+
+                                        <div className="relative">
+                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                                            <input
+                                                type={showConfirmPassword ? 'text' : 'password'}
+                                                placeholder="Konfirmasi Password"
+                                                value={addForm.confirmPassword}
+                                                onChange={(e) => setAddForm({ ...addForm, confirmPassword: e.target.value })}
+                                                className={`w-full bg-white/5 border ${addErrors.confirmPassword ? 'border-rose-500/50' : 'border-white/10'} rounded-2xl px-12 py-4 text-white font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-white/20`}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/50 transition-colors"
+                                            >
+                                                {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                            </button>
+                                            {addErrors.confirmPassword && <p className="text-rose-500 text-[10px] font-black uppercase tracking-widest mt-2 ml-4">{addErrors.confirmPassword}</p>}
+                                        </div>
+                                    </div>
+
+                                    {/* SYSTEM SETTINGS (ADMIN ONLY VISIBLE FIELDS) */}
+                                    <div className="space-y-4">
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-500/70 mb-4 flex items-center gap-2">
+                                            <ShieldCheck className="w-3 h-3" /> Plan & Roles
+                                        </h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-3">Subscription Tier</label>
+                                                <select
+                                                    value={addForm.tier}
+                                                    onChange={(e) => setAddForm({ ...addForm, tier: e.target.value })}
+                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white font-bold text-xs uppercase tracking-widest outline-none transition-all focus:ring-2 focus:ring-teal-500/20"
+                                                >
+                                                    <option value="free" className="bg-slate-900">FREE</option>
+                                                    <option value="vip" className="bg-slate-900">PRO</option>
+                                                    <option value="platinum" className="bg-slate-900">ULTIMATE</option>
+                                                    <option value="vvip" className="bg-slate-900">ELITE</option>
+                                                </select>
+                                            </div>
+                                            {!initialRole && (
+                                                <div>
+                                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-3">System Role</label>
+                                                    <select
+                                                        value={addForm.role}
+                                                        onChange={(e) => setAddForm({ ...addForm, role: e.target.value as any })}
+                                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white font-bold text-xs uppercase tracking-widest outline-none transition-all focus:ring-2 focus:ring-teal-500/20"
+                                                    >
+                                                        <option value="user" className="bg-slate-900">User</option>
+                                                        <option value="reseller" className="bg-slate-900">Reseller</option>
+                                                        <option value="admin" className="bg-slate-900">Admin</option>
+                                                    </select>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
 
                                     {addForm.role === 'admin' && (
-                                        <div>
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-3">Initial Permissions</label>
+                                        <div className="p-5 bg-white/5 rounded-2xl border border-white/5">
+                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-teal-500 mb-4 flex items-center gap-2">
+                                                <Lock className="w-3 h-3" /> Initial Permissions
+                                            </h4>
                                             <div className="grid grid-cols-1 gap-2">
                                                 {[
                                                     { id: 'management:invitations', label: 'Manage Invitations' },
@@ -596,15 +768,16 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
                                 <div className="flex gap-3 mt-10">
                                     <button
                                         onClick={() => setIsAddModalOpen(false)}
-                                        className="flex-1 py-4 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-widest text-xs rounded-2xl border border-white/5 transition-all"
+                                        className="flex-1 py-4 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-widest text-xs rounded-2xl border border-white/5 transition-all outline-none"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         onClick={handleCreateAccount}
-                                        className="flex-[2] py-4 bg-teal-500 hover:bg-teal-400 text-slate-900 font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-teal-500/20 transition-all flex items-center justify-center gap-2"
+                                        className="flex-[2] py-4 bg-teal-500 hover:bg-teal-400 text-slate-900 font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-teal-500/20 transition-all flex items-center justify-center gap-2 outline-none group"
                                     >
                                         Create Account
+                                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                     </button>
                                 </div>
                             </div>
