@@ -152,7 +152,7 @@ export const UpgradePage: React.FC = () => {
                         duration="per tahun"
                         icon={Crown}
                         color="bg-indigo-600"
-                        isCurrent={user?.tier === 'vip'}
+                        isCurrent={user?.tier === 'pro'}
                         features={[
                             "1 Undangan Aktif",
                             "Masa Aktif 1 Tahun",
@@ -162,9 +162,9 @@ export const UpgradePage: React.FC = () => {
                             "Digital Gift & Angpao",
                             "Smart WhatsApp Sharing",
                         ]}
-                        buttonText={user?.tier === 'vip' ? "Active" : "Go Pro"}
-                        onSelect={() => initiatePayment('vip')}
-                        isLoading={processingTier === 'vip'}
+                        buttonText={user?.tier === 'pro' ? "Active" : "Go Pro"}
+                        onSelect={() => initiatePayment('pro')}
+                        isLoading={processingTier === 'pro'}
                     />
 
                     {/* Ultimate Tier */}
@@ -176,7 +176,7 @@ export const UpgradePage: React.FC = () => {
                         icon={Star}
                         color="bg-emerald-600"
                         isPopular={true}
-                        isCurrent={user?.tier === 'platinum'}
+                        isCurrent={user?.tier === 'ultimate'}
                         features={[
                             "2 Undangan Aktif",
                             "Semua Fitur Pro",
@@ -186,9 +186,9 @@ export const UpgradePage: React.FC = () => {
                             "Dashboard Analytics",
                             "Social Media Management",
                         ]}
-                        buttonText={user?.tier === 'platinum' ? "Active" : "Go Ultimate"}
-                        onSelect={() => initiatePayment('platinum')}
-                        isLoading={processingTier === 'platinum'}
+                        buttonText={user?.tier === 'ultimate' ? "Active" : "Go Ultimate"}
+                        onSelect={() => initiatePayment('ultimate')}
+                        isLoading={processingTier === 'ultimate'}
                     />
 
                     {/* Elite Tier */}
@@ -199,16 +199,16 @@ export const UpgradePage: React.FC = () => {
                         duration="per tahun"
                         icon={Crown}
                         color="bg-[#FFBF00]"
-                        isCurrent={user?.tier === 'vvip'}
+                        isCurrent={user?.tier === 'elite'}
                         features={[
                             "3 Undangan Aktif",
                             "Semua Fitur Ultimate",
                             "Advanced Import/Export",
                             "Eksklusivitas Layanan",
                         ]}
-                        buttonText={user?.tier === 'vvip' ? "Active" : "Go Elite"}
-                        onSelect={() => initiatePayment('vvip')}
-                        isLoading={processingTier === 'vvip'}
+                        buttonText={user?.tier === 'elite' ? "Active" : "Go Elite"}
+                        onSelect={() => initiatePayment('elite')}
+                        isLoading={processingTier === 'elite'}
                     />
                 </div>
 

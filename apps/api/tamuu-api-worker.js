@@ -187,10 +187,23 @@ export default {
             if (path === '/api/billing/midtrans/token' && method === 'POST') {
                 try {
                     const body = await request.json();
-                    const { userId, tier, amount, email, name } = body;
+                    let { userId, tier, amount, email, name } = body;
+
+                    // Legacy Mapping
+                    if (tier === 'vip') tier = 'pro';
+                    if (tier === 'platinum') tier = 'ultimate';
+                    if (tier === 'vvip') tier = 'elite';
 
                     if (!userId || !tier || !amount) {
                         return json({ error: 'Missing required fields' }, { ...corsHeaders, status: 400 });
+                    }
+
+                    // Server-side Pricing Safeguard
+                    const pricing = { 'pro': 99000, 'ultimate': 149000, 'elite': 199000 };
+                    const expectedPrice = pricing[tier];
+                    if (expectedPrice && amount !== expectedPrice) {
+                        console.warn(`[Billing] Price mismatch detected for ${tier}. Expected ${expectedPrice}, got ${amount}. Overriding.`);
+                        amount = expectedPrice;
                     }
 
                     // BLOCKING LOGIC: Check for existing PENDING transaction
@@ -200,11 +213,10 @@ export default {
                         ).bind(userId, 'PENDING').all();
 
                         if (pendingResults && pendingResults.length > 0) {
-                            return json({
-                                error: 'pending_exists',
-                                message: 'Anda masih memiliki pembayaran tertunda. Silakan selesaikan atau batalkan terlebih dahulu.',
-                                pending_order: pendingResults[0]
-                            }, { ...corsHeaders, status: 400 });
+                            console.log(`[Billing] User ${userId} has ${pendingResults.length} pending transactions. Auto-cancelling for new session.`);
+                            await env.DB.prepare(
+                                'UPDATE billing_transactions SET status = ? WHERE user_id = ? AND status = ?'
+                            ).bind('CANCELLED', userId, 'PENDING').run();
                         }
                     } catch (dbErr) {
                         console.error('DB Error checking pending:', dbErr);

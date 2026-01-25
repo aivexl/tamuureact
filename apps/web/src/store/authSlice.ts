@@ -1,10 +1,13 @@
 import { StateCreator } from 'zustand';
 import { supabase } from '../lib/supabase';
 
-export type SubscriptionTier = 'free' | 'vip' | 'platinum' | 'vvip';
+export type SubscriptionTier = 'free' | 'pro' | 'ultimate' | 'elite' | 'vip' | 'platinum' | 'vvip';
 
-export const TIER_LABELS: Record<SubscriptionTier, string> = {
+export const TIER_LABELS: Record<string, string> = {
     free: 'FREE',
+    pro: 'PRO',
+    ultimate: 'ULTIMATE',
+    elite: 'ELITE',
     vip: 'PRO',
     platinum: 'ULTIMATE',
     vvip: 'ELITE'

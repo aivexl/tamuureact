@@ -371,3 +371,10 @@ Invitations are organized into multiple **Sections** (e.g., Opening, Bride & Gro
 - **Implementation**: Real-time dimension tracking via `ResizeObserver` reported to the Zustand store.
 - **Mechanism**: `AnimatedLayer.tsx` calculates a `relativeShift` based on the targeted anchor's height, preventing element overlaps automatically.
 - **Admin Control**: Granular permissions (Text, Style, Image, Position) enforced in `UserElementEditor.tsx` and previewed via **Simulation Mode**.
+
+---
+
+## 📜 Development Rules
+
+### 🛑 Terminal Commands
+- **Sangat Penting**: Jangan pernah menggunakan operator `&&` untuk menggabungkan beberapa perintah dalam satu baris di terminal (PowerShell incompatibility). Jalankan perintah satu per satu secara terpisah.

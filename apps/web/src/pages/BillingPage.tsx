@@ -187,7 +187,7 @@ export const BillingPage: React.FC = () => {
                         <tbody>
                             <tr>
                                 <td style="padding: 20px 15px; border-bottom: 1px solid #f1f5f9;">
-                                    <p style="font-size: 16px; font-weight: 700; color: #0A1128; margin: 0;">Subscription Plan: ${tx.tier === 'vip' ? 'PRO' : tx.tier === 'platinum' ? 'ULTIMATE' : tx.tier === 'vvip' ? 'ELITE' : tx.tier.toUpperCase()}</p>
+                                    <p style="font-size: 16px; font-weight: 700; color: #0A1128; margin: 0;">Subscription Plan: ${tx.tier === 'pro' ? 'PRO' : tx.tier === 'ultimate' ? 'ULTIMATE' : tx.tier === 'elite' ? 'ELITE' : tx.tier.toUpperCase()}</p>
                                     <p style="font-size: 12px; color: #64748b; margin: 5px 0 0 0;">Akses premium Tamuu selama 1 tahun</p>
                                 </td>
                                 <td style="padding: 20px 15px; border-bottom: 1px solid #f1f5f9; text-align: right; font-size: 16px; font-weight: 800; color: #0A1128;">
@@ -269,18 +269,35 @@ export const BillingPage: React.FC = () => {
     syncUserData,
   ]);
 
-  const tierLabels = {
+  const tierLabels: Record<string, string> = {
     free: "FREE EXPLORER",
+    pro: "PRO ACCESS",
+    ultimate: "ULTIMATE EVENT",
+    elite: "ELITE EXCLUSIVE",
+    // Legacy support
     vip: "PRO ACCESS",
     platinum: "ULTIMATE EVENT",
     vvip: "ELITE EXCLUSIVE",
   };
 
-  const tierColors = {
+  const tierColors: Record<string, string> = {
     free: "bg-slate-100 text-slate-600",
+    pro: "bg-indigo-100 text-indigo-600",
+    ultimate: "bg-emerald-100 text-emerald-600",
+    elite: "bg-[#FFBF00]/10 text-[#B8860B]",
     vip: "bg-indigo-100 text-indigo-600",
     platinum: "bg-emerald-100 text-emerald-600",
     vvip: "bg-[#FFBF00]/10 text-[#B8860B]",
+  };
+
+  const tierDisplay: Record<string, string> = {
+    free: "Standard Access",
+    pro: "Pro Annual",
+    ultimate: "Ultimate Annual",
+    elite: "Elite Annual",
+    vip: "Pro Annual",
+    platinum: "Ultimate Annual",
+    vvip: "Elite Annual"
   };
 
   return (
@@ -341,20 +358,14 @@ export const BillingPage: React.FC = () => {
                     Active Plan
                   </span>
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-tighter ${tierColors[user?.tier || "free"]}`}
+                    className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-tighter ${tierColors[user?.tier || "free"] || tierColors.free}`}
                   >
-                    {tierLabels[user?.tier || "free"]}
+                    {tierLabels[user?.tier || "free"] || tierLabels.free}
                   </span>
                 </div>
 
                 <h2 className="text-4xl font-black text-[#0A1128] mb-1">
-                  {user?.tier === "free"
-                    ? "Standard Access"
-                    : user?.tier === "vip"
-                      ? "Pro Annual"
-                      : user?.tier === "platinum"
-                        ? "Ultimate Annual"
-                        : "Elite Annual"}
+                  {tierDisplay[user?.tier || "free"] || "Standard Access"}
                 </h2>
                 <p className="text-slate-500 mb-8">
                   {user?.tier === "free"

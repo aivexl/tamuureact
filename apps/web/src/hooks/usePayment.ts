@@ -28,13 +28,16 @@ export const usePayment = () => {
             return;
         }
 
-        setProcessingTier(tier);
+        // Normalize legacy tiers
+        const normalizedTier = tier === 'vip' ? 'pro' : (tier === 'platinum' ? 'ultimate' : (tier === 'vvip' ? 'elite' : tier));
+
+        setProcessingTier(normalizedTier);
         const pricing: Record<string, number> = {
             'pro': 99000,
             'ultimate': 149000,
             'elite': 199000
         };
-        const amount = pricing[tier] || 99000;
+        const amount = pricing[normalizedTier] || 99000;
 
         try {
             console.log(`[usePayment] Fetching Midtrans token for amount: ${amount}`);
@@ -48,17 +51,6 @@ export const usePayment = () => {
 
             console.log('[usePayment] API response received:', data);
 
-            if (data.error === 'pending_exists') {
-                showModal({
-                    title: 'Pembayaran Tertunda',
-                    message: data.message || 'Anda masih memiliki pembayaran tertunda. Silakan selesaikan atau batalkan terlebih dahulu di halaman Billing.',
-                    type: 'warning',
-                    confirmText: 'Ke Halaman Billing',
-                    onConfirm: () => navigate('/billing')
-                });
-                setProcessingTier(null);
-                return;
-            }
 
             if (data.token) {
                 console.log('[usePayment] Launching Snap modal with token:', data.token);
