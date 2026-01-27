@@ -99,11 +99,14 @@ export default {
                         });
 
                         const data = await response.json();
-                        if (response.status === 429) {
-                            console.warn("[AI] Gemini Rate Limited (429), falling back...");
+                        if (response.status === 429 || response.status === 400 || response.status === 401) {
+                            console.warn(`[AI] ${provider.name} error (${response.status}), falling back...`);
                             continue;
                         }
-                        if (data.error) throw new Error(data.error.message);
+                        if (data.error) {
+                            console.error(`[AI] ${provider.name} data error:`, data.error.message);
+                            continue;
+                        }
 
                         const candidate = data.candidates?.[0];
                         const parts = candidate?.content?.parts || [];
