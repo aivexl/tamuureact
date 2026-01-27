@@ -1,5 +1,3 @@
-# Tamuu API Worker Configuration
-# Wrangler configuration for Cloudflare Workers deployment
 
 name = "tamuu-api-enhanced"
 main = "tamuu-api-worker-enhanced.js"
@@ -26,30 +24,30 @@ name = "tamuu-api-staging"
 # wrangler secret put ENCRYPTION_KEY --env production
 
 # KV Namespaces (if needed)
-[[kv_namespaces]]
-binding = "CACHE"
-id = "your_kv_namespace_id"
-preview_id = "your_preview_kv_namespace_id"
+# [[kv_namespaces]]
+# binding = "CACHE"
+# id = "your_kv_namespace_id"
+# preview_id = "your_preview_kv_namespace_id"
 
 # D1 Database
 [[d1_databases]]
 binding = "DB"
 database_name = "tamuu-db"
-database_id = "your_d1_database_id"
+database_id = "cb0a336d-c070-49e6-80d4-c198a2df141d"
 
 # R2 Storage
 [[r2_buckets]]
-binding = "STORAGE"
-bucket_name = "tamuu-storage"
+binding = "ASSETS"
+bucket_name = "tamuu-assets"
 
 # AI Model Configuration
 [ai]
 binding = "AI"
 
 # Analytics Engine
-[[analytics_engine_datasets]]
-binding = "ANALYTICS"
-dataset = "tamuu-analytics"
+# [[analytics_engine_datasets]]
+# binding = "ANALYTICS"
+# dataset = "tamuu-analytics"
 
 # Environment-specific configurations
 [env.production.vars]

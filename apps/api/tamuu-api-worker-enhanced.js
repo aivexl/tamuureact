@@ -6,6 +6,7 @@
 
 import { TamuuAIEngine } from './ai-system-v8-enhanced.js';
 import { handleEnhancedChat } from './enhanced-chat-handler.js';
+import { createAdminChatHandler } from './admin-chat-integration.js';
 
 export default {
     async fetch(request, env, ctx) {
@@ -168,8 +169,102 @@ export default {
                 return await handleEnhancedChat(request, env, ctx, corsHeaders);
             }
 
-            // ADMIN: AI Chat Support (Legacy - Maintained for compatibility)
+            // ADMIN: AI Chat Support (Enterprise v8.0 - Enhanced)
             if (path === '/api/admin/chat' && method === 'POST') {
+                try {
+                    const { messages, userId, aiPersonality = 'professional', enableQuickActions = true, enableSettings = true } = await request.json();
+
+                    // Validate required fields
+                    if (!userId || !messages || !Array.isArray(messages) || messages.length === 0) {
+                        return json({ 
+                            success: false, 
+                            error: { code: 'INVALID_REQUEST', message: 'userId dan messages diperlukan' } 
+                        }, { ...corsHeaders, status: 400 });
+                    }
+
+                    // Check API key configuration
+                    if (!env.GEMINI_API_KEY) {
+                        return json({ 
+                            success: false, 
+                            error: { code: 'API_NOT_CONFIGURED', message: 'Gemini API Key tidak dikonfigurasi' } 
+                        }, { ...corsHeaders, status: 500 });
+                    }
+
+                    // Create admin chat handler instance
+                    const adminChatHandler = createAdminChatHandler(env);
+                    
+                    // Get latest message from conversation
+                    const latestMessage = messages[messages.length - 1];
+                    const messageContent = typeof latestMessage === 'string' ? latestMessage : latestMessage.content;
+
+                    // Process with enhanced context
+                    const result = await adminChatHandler.processAdminMessage(userId, messageContent, {
+                        aiPersonality,
+                        enableQuickActions,
+                        enableSettings,
+                        conversationHistory: messages.slice(-10) // Keep last 10 messages for context
+                    });
+
+                    return json(result, corsHeaders);
+
+                } catch (error) {
+                    console.error('Admin Chat v8.0 Error:', error);
+                    
+                    // Enhanced error handling with Indonesian support
+                    const errorResponse = {
+                        success: false,
+                        error: {
+                            code: 'INTERNAL_ERROR',
+                            message: 'Terjadi kesalahan pada sistem AI. Tim teknis telah diberitahu.',
+                            timestamp: new Date().toISOString()
+                        }
+                    };
+
+                    if (error.message?.includes('quota') || error.message?.includes('rate limit')) {
+                        errorResponse.error.message = 'Sistem AI sedang sibuk. Mohon tunggu sejenak dan coba kembali.';
+                        errorResponse.error.code = 'RATE_LIMITED';
+                    }
+
+                    return json(errorResponse, { ...corsHeaders, status: 500 });
+                }
+            }
+
+            // ADMIN: Health Check for AI System v8.0
+            if (path === '/api/admin/health' && method === 'GET') {
+                try {
+                    const adminChatHandler = createAdminChatHandler(env);
+                    const healthStatus = await adminChatHandler.healthCheck();
+                    
+                    return json({
+                        success: true,
+                        service: 'tamuu-admin-ai-v8',
+                        status: healthStatus.status,
+                        timestamp: healthStatus.timestamp,
+                        version: '8.0.0',
+                        environment: env.ENVIRONMENT || 'development',
+                        services: healthStatus.services || {},
+                        features: {
+                            adminChat: true,
+                            aiEngine: !!env.GEMINI_API_KEY,
+                            sessionManagement: true,
+                            rateLimiting: true,
+                            analytics: true,
+                            fallbackSystem: true
+                        }
+                    }, corsHeaders);
+                } catch (error) {
+                    return json({
+                        success: false,
+                        service: 'tamuu-admin-ai-v8',
+                        status: 'error',
+                        error: error.message,
+                        timestamp: new Date().toISOString()
+                    }, { ...corsHeaders, status: 503 });
+                }
+            }
+
+            // ADMIN: Legacy AI Chat Support (v7.0 - Maintained for compatibility)
+            if (path === '/api/admin/chat/legacy' && method === 'POST') {
                 const { messages } = await request.json();
 
                 if (!env.GEMINI_API_KEY) {
