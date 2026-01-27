@@ -493,6 +493,25 @@ export const users = {
     },
 
     /**
+     * Call the V9.0 Agentic Chat Engine
+     */
+    async chatWithAIEnhanced(data: {
+        messages: { role: string; content: string }[],
+        context: Record<string, any>
+    }) {
+        const res = await safeFetch(`${API_BASE}/api/enhanced-chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sanitizeValue(data))
+        });
+        if (!res.ok) {
+            const error = await res.json();
+            throw new Error(error.error || 'Failed to get enhanced AI response');
+        }
+        return res.json();
+    },
+
+    /**
      * ENHANCED: Conversation management with persistent storage
      * Stores chat conversations in database for history and analytics
      */

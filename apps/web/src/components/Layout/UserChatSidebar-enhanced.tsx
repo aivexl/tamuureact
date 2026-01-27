@@ -124,17 +124,17 @@ export const UserChatSidebarEnhanced: React.FC = () => {
     }, [isOpen, session, user]);
 
     // Generate personalized welcome message
-    const generateWelcomeMessage = (userData: any) => {
-        const tier = userData?.tier || 'free';
+    const generateWelcomeMessage = (userData: any): string => {
+        const tier = (userData?.tier as string) || 'free';
         const name = userData?.name || 'Kak';
 
-        const tierMessages = {
+        const tierMessages: Record<string, string> = {
             premium: `Selamat datang ${name}! 🏆 Saya AI Assistant premium Tamuu dengan prioritas tinggi. Siap membantu 24/7 dengan response time <100ms.`,
             business: `Halo ${name}! 💼 Saya AI Assistant bisnis Tamuu. Siap membantu dengan solusi enterprise untuk kebutuhan undangan digital Anda.`,
             free: `Halo ${name}! 😊 Saya AI Assistant Tamuu. Dengan senang hati membantu membuat undangan digital yang menawan untuk acara spesial Anda.`
         };
 
-        return tierMessages[tier as keyof typeof tierMessages] || tierMessages.free;
+        return tierMessages[tier] || tierMessages.free;
     };
 
     // Handle message sending with enterprise features
@@ -150,7 +150,7 @@ export const UserChatSidebarEnhanced: React.FC = () => {
             role: 'user',
             content: messageText,
             timestamp: new Date(),
-            messageId: `user_${Date.now()}_${user?.id}`
+            messageId: `user_${Date.now()}_${user?.id || 'anon'}`
         };
 
         if (!isSilentDiagnostic) {
@@ -322,12 +322,12 @@ export const UserChatSidebarEnhanced: React.FC = () => {
                 <div className={`max-w-[80%] group relative ${isUser ? 'order-2' : 'order-1'
                     }`}>
                     <div className={`px-4 py-3 rounded-2xl shadow-sm ${isUser
-                            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
-                            : isSystem
-                                ? 'bg-gradient-to-r from-purple-100 to-pink-100 text-gray-800 border border-purple-200'
-                                : isError
-                                    ? 'bg-red-50 text-red-800 border border-red-200'
-                                    : 'bg-white text-gray-800 border border-gray-200 shadow-md'
+                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
+                        : isSystem
+                            ? 'bg-gradient-to-r from-purple-100 to-pink-100 text-gray-800 border border-purple-200'
+                            : isError
+                                ? 'bg-red-50 text-red-800 border border-red-200'
+                                : 'bg-white text-gray-800 border border-gray-200 shadow-md'
                         }`}>
                         {message.isIntermediate ? (
                             <div className="flex items-center space-x-2">
@@ -470,7 +470,7 @@ export const UserChatSidebarEnhanced: React.FC = () => {
                                             <div className="flex items-center space-x-2">
                                                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                                                 <span className="text-xs opacity-90">Online</span>
-                                                {user?.tier === 'premium' && <Crown className="w-4 h-4 text-yellow-300" />}
+                                                {(user?.tier as any) === 'premium' && <Crown className="w-4 h-4 text-yellow-300" />}
                                             </div>
                                         </div>
                                     </div>
@@ -517,8 +517,8 @@ export const UserChatSidebarEnhanced: React.FC = () => {
                                                         key={personality}
                                                         onClick={() => setAiPersonality(personality)}
                                                         className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${aiPersonality === personality
-                                                                ? 'bg-blue-500 text-white'
-                                                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                            ? 'bg-blue-500 text-white'
+                                                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                                                             }`}
                                                     >
                                                         {personality.charAt(0).toUpperCase() + personality.slice(1)}
@@ -534,8 +534,8 @@ export const UserChatSidebarEnhanced: React.FC = () => {
                                                         key={speed}
                                                         onClick={() => setResponseSpeed(speed)}
                                                         className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${responseSpeed === speed
-                                                                ? 'bg-blue-500 text-white'
-                                                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                            ? 'bg-blue-500 text-white'
+                                                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                                                             }`}
                                                     >
                                                         {speed.charAt(0).toUpperCase() + speed.slice(1)}
@@ -615,7 +615,7 @@ export const UserChatSidebarEnhanced: React.FC = () => {
                                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                                 disabled={isLoading}
                                             />
-                                            {user?.tier === 'premium' && (
+                                            {(user?.tier as any) === 'premium' && (
                                                 <Crown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-yellow-500" />
                                             )}
                                         </div>
