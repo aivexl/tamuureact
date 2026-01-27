@@ -1,13 +1,68 @@
-name = "tamuuid-cdn"
-main = "tamuuid-cdn-worker.js"
-compatibility_date = "2024-01-01"
+# Tamuu API Worker Configuration
+# Wrangler configuration for Cloudflare Workers deployment
 
-# Custom Domain for CDN
-[[routes]]
-pattern = "cdn.tamuu.id"
-custom_domain = true
+name = "tamuu-api-enhanced"
+main = "tamuu-api-worker-enhanced.js"
+compatibility_date = "2024-01-27"
 
+# Environment Variables Configuration
+# NEVER commit actual values - use wrangler secret commands
+
+[env.production]
+name = "tamuu-api-prod"
+
+# Development environment
+[env.development]
+name = "tamuu-api-dev"
+
+# Staging environment
+[env.staging]
+name = "tamuu-api-staging"
+
+# Secrets Management Commands:
+# wrangler secret put GEMINI_API_KEY --env production
+# wrangler secret put DATABASE_URL --env production
+# wrangler secret put JWT_SECRET --env production
+# wrangler secret put ENCRYPTION_KEY --env production
+
+# KV Namespaces (if needed)
+[[kv_namespaces]]
+binding = "CACHE"
+id = "your_kv_namespace_id"
+preview_id = "your_preview_kv_namespace_id"
+
+# D1 Database
+[[d1_databases]]
+binding = "DB"
+database_name = "tamuu-db"
+database_id = "your_d1_database_id"
+
+# R2 Storage
 [[r2_buckets]]
-binding = "BUCKET"
-bucket_name = "tamuuid-ai-models"
+binding = "STORAGE"
+bucket_name = "tamuu-storage"
 
+# AI Model Configuration
+[ai]
+binding = "AI"
+
+# Analytics Engine
+[[analytics_engine_datasets]]
+binding = "ANALYTICS"
+dataset = "tamuu-analytics"
+
+# Environment-specific configurations
+[env.production.vars]
+ENVIRONMENT = "production"
+DEBUG = "false"
+LOG_LEVEL = "info"
+
+[env.development.vars]
+ENVIRONMENT = "development"
+DEBUG = "true"
+LOG_LEVEL = "debug"
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+DEBUG = "false"
+LOG_LEVEL = "info"

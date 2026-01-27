@@ -1,7 +1,10 @@
 /**
  * Tamuu API Worker
  * Handles all database (D1) and storage (R2) operations
+ * Enhanced with AI System v8.0 - Enterprise Grade
  */
+
+import { TamuuAIEngine } from './ai-system-v8-enhanced.js';
 
 export default {
     async fetch(request, env, ctx) {
