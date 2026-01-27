@@ -181,8 +181,9 @@ class TamuuAIEngine {
     }
 
     /**
-     * Predictive Intent Recognition
+     * Predictive Intent Recognition with Fallback Logic
      * Uses ML-like pattern matching to predict user needs
+     * **CRITICAL FIX**: Added confidence threshold handling and fallback scenarios
      */
     predictIntent(messages, sessionData) {
         const conversationText = messages.map(m => m.content).join(' ').toLowerCase();
@@ -237,10 +238,49 @@ class TamuuAIEngine {
             return a.priority - b.priority;
         });
 
+        // **CRITICAL FIX**: Handle zero-confidence case with fallback logic
+        if (!intents[0] || intents[0].confidence === 0) {
+            const sessionQueryCount = sessionData?.queryPatterns?.length || 0;
+            const isFrustrated = sessionData?.frustrationLevel > 0.5;
+
+            let fallbackIntent = null;
+            
+            if (isFrustrated) {
+                // User is frustrated, likely need support
+                fallbackIntent = intents.find(i => i.name === 'technical_support') || intents[0];
+                if (fallbackIntent) fallbackIntent.confidence = 0.5;
+            } else if (sessionQueryCount > 3) {
+                // Multiple queries, user needs guidance
+                fallbackIntent = intents.find(i => i.name === 'feature_help') || intents[0];
+                if (fallbackIntent) fallbackIntent.confidence = 0.4;
+            } else {
+                // Default intent
+                fallbackIntent = intents[0] || {
+                    name: 'general_inquiry',
+                    patterns: [],
+                    confidence: 0.2,
+                    priority: 10
+                };
+                if (fallbackIntent.confidence === 0) {
+                    fallbackIntent.confidence = 0.2;
+                }
+            }
+
+            intents[0] = fallbackIntent;
+        }
+
+        // Filter valid intents and ensure we always return valid structure
+        const validIntents = intents.filter(i => i && i.name);
+
         return {
-            primary: intents[0],
-            secondary: intents[1],
-            all: intents
+            primary: validIntents[0] || {
+                name: 'general_inquiry',
+                patterns: [],
+                confidence: 0.1,
+                priority: 10
+            },
+            secondary: validIntents[1] || null,
+            all: validIntents.length > 0 ? validIntents : [intents[0]]
         };
     }
 
@@ -421,19 +461,153 @@ class TamuuAIEngine {
         };
     }
 
-    calculateEngagementLevel(userId, env) {
-        // Implementation for engagement calculation
-        return 'medium';
+    /**
+     * Calculate engagement level based on user activity
+     * Returns: 'low' | 'medium' | 'high' | 'power_user'
+     */
+    async calculateEngagementLevel(userId, env) {
+        try {
+            const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+            
+            // Get recent activity metrics
+            const [invitationActivity, transactionActivity, loginActivity] = await Promise.all([
+                env.DB.prepare(`
+                    SELECT COUNT(*) as count, MAX(created_at) as last_activity
+                    FROM invitations
+                    WHERE user_id = ? AND created_at > ?
+                `).bind(userId, thirtyDaysAgo).first(),
+                
+                env.DB.prepare(`
+                    SELECT COUNT(*) as count
+                    FROM billing_transactions
+                    WHERE user_id = ? AND created_at > ? AND status = 'paid'
+                `).bind(userId, thirtyDaysAgo).first(),
+                
+                env.DB.prepare(`
+                    SELECT COUNT(*) as count
+                    FROM audit_logs
+                    WHERE user_id = ? AND action IN ('login', 'page_view') AND created_at > ?
+                `).bind(userId, thirtyDaysAgo).first()
+            ]);
+
+            const totalActivity = (invitationActivity?.count || 0) + 
+                                 (transactionActivity?.count || 0) + 
+                                 (loginActivity?.count || 0);
+
+            if (totalActivity >= 20) return 'power_user';
+            if (totalActivity >= 10) return 'high';
+            if (totalActivity >= 3) return 'medium';
+            return 'low';
+        } catch (error) {
+            console.error('[AI Engine] Engagement calculation failed:', error);
+            return 'medium';
+        }
     }
 
+    /**
+     * Retrieve support history for user
+     * Returns: Array of support tickets/interactions
+     */
     async getSupportHistory(userId, env) {
-        // Implementation for support history
-        return [];
+        try {
+            const supportTickets = await env.DB.prepare(`
+                SELECT 
+                    id,
+                    subject,
+                    status,
+                    created_at,
+                    resolved_at,
+                    category
+                FROM support_tickets
+                WHERE user_id = ?
+                ORDER BY created_at DESC
+                LIMIT 10
+            `).bind(userId).all();
+
+            if (!supportTickets?.results) return [];
+
+            return supportTickets.results.map(ticket => ({
+                id: ticket.id,
+                subject: ticket.subject,
+                status: ticket.status,
+                category: ticket.category,
+                daysOpen: Math.floor((new Date(ticket.resolved_at || new Date()) - new Date(ticket.created_at)) / (1000 * 60 * 60 * 24)),
+                resolved: !!ticket.resolved_at
+            }));
+        } catch (error) {
+            console.error('[AI Engine] Support history retrieval failed:', error);
+            return [];
+        }
     }
 
+    /**
+     * Analyze feature usage patterns
+     * Returns: Object with feature usage metrics
+     */
     async analyzeFeatureUsage(userId, env) {
-        // Implementation for feature usage analysis
-        return {};
+        try {
+            const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+            
+            const [invitations, templates, rsvpTracking, analytics] = await Promise.all([
+                env.DB.prepare(`
+                    SELECT COUNT(*) as total, 
+                           COUNT(DISTINCT DATE(created_at)) as unique_days
+                    FROM invitations
+                    WHERE user_id = ? AND created_at > ?
+                `).bind(userId, thirtyDaysAgo).first(),
+                
+                env.DB.prepare(`
+                    SELECT COUNT(*) as count
+                    FROM templates_used
+                    WHERE user_id = ? AND created_at > ?
+                `).bind(userId, thirtyDaysAgo).first(),
+                
+                env.DB.prepare(`
+                    SELECT COUNT(*) as total_rsvps,
+                           COUNT(CASE WHEN status = 'confirmed' THEN 1 END) as confirmed
+                    FROM rsvp_responses
+                    WHERE invitation_id IN (
+                        SELECT id FROM invitations WHERE user_id = ? AND created_at > ?
+                    )
+                `).bind(userId, thirtyDaysAgo).first(),
+                
+                env.DB.prepare(`
+                    SELECT COUNT(DISTINCT invitation_id) as tracked_invitations
+                    FROM invitation_analytics
+                    WHERE user_id = ? AND created_at > ?
+                `).bind(userId, thirtyDaysAgo).first()
+            ]);
+
+            return {
+                invitations: {
+                    created: invitations?.total || 0,
+                    activeDays: invitations?.unique_days || 0
+                },
+                templates: {
+                    used: templates?.count || 0
+                },
+                rsvpTracking: {
+                    totalResponses: rsvpTracking?.total_rsvps || 0,
+                    confirmedResponses: rsvpTracking?.confirmed || 0,
+                    responseRate: rsvpTracking?.total_rsvps > 0 
+                        ? Math.round((rsvpTracking.confirmed / rsvpTracking.total_rsvps) * 100)
+                        : 0
+                },
+                analytics: {
+                    trackedInvitations: analytics?.tracked_invitations || 0
+                },
+                lastActive: new Date().toISOString()
+            };
+        } catch (error) {
+            console.error('[AI Engine] Feature usage analysis failed:', error);
+            return {
+                invitations: { created: 0, activeDays: 0 },
+                templates: { used: 0 },
+                rsvpTracking: { totalResponses: 0, confirmedResponses: 0, responseRate: 0 },
+                analytics: { trackedInvitations: 0 },
+                lastActive: new Date().toISOString()
+            };
+        }
     }
 
     getToneForPersona(persona) {
@@ -1035,6 +1209,154 @@ Selalu ingat: Kak adalah client VIP yang layak mendapatkan pengalaman terbaik di
             error: 'KESALAHAN_UMUM',
             fallback: true
         };
+    }
+
+    /**
+     * CACHE INVALIDATION - Enhanced cache management with event-driven invalidation
+     * Clears cached context when user data changes
+     */
+    invalidateUserCache(userId) {
+        try {
+            const cacheKey = `context_${userId}`;
+            this.cache.delete(cacheKey);
+            console.log(`[AI Engine] Cache invalidated for user: ${userId}`);
+            return true;
+        } catch (error) {
+            console.error('[AI Engine] Failed to invalidate user cache:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Invalidate all cached data (useful for cache overflow or maintenance)
+     */
+    invalidateAllCache() {
+        try {
+            const cacheSize = this.cache.size;
+            this.cache.clear();
+            console.log(`[AI Engine] All cache cleared. Removed ${cacheSize} entries.`);
+            return cacheSize;
+        } catch (error) {
+            console.error('[AI Engine] Failed to clear all cache:', error);
+            return 0;
+        }
+    }
+
+    /**
+     * Invalidate session context for user
+     */
+    invalidateSessionContext(userId) {
+        try {
+            const sessionId = this.generateSessionId(userId);
+            this.sessionContext.delete(sessionId);
+            console.log(`[AI Engine] Session context invalidated for user: ${userId}`);
+            return true;
+        } catch (error) {
+            console.error('[AI Engine] Failed to invalidate session context:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Invalidate cache by pattern (e.g., all users, all contexts)
+     * @param pattern - Key pattern to match (e.g., 'context_', 'session_')
+     */
+    invalidateCacheByPattern(pattern) {
+        try {
+            let invalidatedCount = 0;
+
+            for (const key of this.cache.keys()) {
+                if (key.includes(pattern)) {
+                    this.cache.delete(key);
+                    invalidatedCount++;
+                }
+            }
+
+            console.log(`[AI Engine] Cache pattern invalidation complete. Removed ${invalidatedCount} entries matching pattern: ${pattern}`);
+            return invalidatedCount;
+        } catch (error) {
+            console.error('[AI Engine] Failed to invalidate cache by pattern:', error);
+            return 0;
+        }
+    }
+
+    /**
+     * Set cache TTL (Time To Live) and automatically cleanup expired entries
+     */
+    setCacheTTL(userId, ttlMs = 300000) {
+        try {
+            const cacheKey = `context_${userId}`;
+            const context = this.cache.get(cacheKey);
+
+            if (context) {
+                // Mark expiry time
+                context.expiresAt = Date.now() + ttlMs;
+                this.cache.set(cacheKey, context);
+                console.log(`[AI Engine] Cache TTL set for user ${userId}: ${ttlMs}ms`);
+                return true;
+            }
+
+            return false;
+        } catch (error) {
+            console.error('[AI Engine] Failed to set cache TTL:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Cleanup expired cache entries (should be called periodically)
+     */
+    cleanupExpiredCache() {
+        try {
+            const now = Date.now();
+            let expiredCount = 0;
+
+            for (const [key, value] of this.cache.entries()) {
+                if (value.expiresAt && value.expiresAt < now) {
+                    this.cache.delete(key);
+                    expiredCount++;
+                }
+            }
+
+            if (expiredCount > 0) {
+                console.log(`[AI Engine] Cache cleanup complete. Removed ${expiredCount} expired entries.`);
+            }
+
+            return expiredCount;
+        } catch (error) {
+            console.error('[AI Engine] Failed to cleanup expired cache:', error);
+            return 0;
+        }
+    }
+
+    /**
+     * Get cache statistics for monitoring and debugging
+     */
+    getCacheStats() {
+        try {
+            let totalEntries = 0;
+            let expiredEntries = 0;
+            const now = Date.now();
+
+            for (const value of this.cache.values()) {
+                totalEntries++;
+                if (value.expiresAt && value.expiresAt < now) {
+                    expiredEntries++;
+                }
+            }
+
+            return {
+                totalEntries,
+                expiredEntries,
+                activeEntries: totalEntries - expiredEntries,
+                cacheSize: this.cache.size,
+                sessionContextSize: this.sessionContext.size,
+                performanceMetrics: this.performanceMetrics
+            };
+        } catch (error) {
+            console.error('[AI Engine] Failed to get cache stats:', error);
+            return null;
+        }
     }
 }
 

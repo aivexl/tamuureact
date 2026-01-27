@@ -3,6 +3,8 @@
  * Enterprise-grade AI system with predictive analytics and intelligent responses
  */
 
+import { TamuuAIEngine } from './ai-system-v8-enhanced.js';
+
 export async function handleEnhancedChat(request, env, ctx, corsHeaders) {
     const startTime = Date.now();
     const aiEngine = new TamuuAIEngine(env);
@@ -43,13 +45,29 @@ export async function handleEnhancedChat(request, env, ctx, corsHeaders) {
         const enhancedContext = await aiEngine.buildEnhancedContext(user?.id, messages, env);
         
         // Predict user intent with high precision
-        const predictedIntent = enhancedContext.predictedIntent;
+        const predictedIntent = enhancedContext?.predictedIntent;
+        
+        // Validate intent exists before proceeding
+        if (!predictedIntent || !predictedIntent.primary) {
+            return json({ 
+                error: 'Failed to analyze user intent',
+                code: 'INTENT_ANALYSIS_FAILED'
+            }, { ...corsHeaders, status: 400 });
+        }
         
         // Execute intelligent tools based on predicted intent
         const toolResults = await executeIntelligentTools(predictedIntent, user?.id, env);
         
         // Generate personalized response using Gemini API
         const geminiResponse = await aiEngine.generateGeminiResponse(messages, enhancedContext);
+        
+        // Validate Gemini response before processing
+        if (!geminiResponse || !geminiResponse.content) {
+            return json({ 
+                error: 'Failed to generate AI response',
+                code: 'RESPONSE_GENERATION_FAILED'
+            }, { ...corsHeaders, status: 500 });
+        }
         
         // Enhance with local intelligence
         const enhancedResponse = {
@@ -134,6 +152,18 @@ async function executeIntelligentTools(predictedIntent, userId, env) {
  */
 async function executePaymentDiagnostics(userId, env) {
     try {
+        if (!userId) {
+            return {
+                tool: 'payment_diagnostics',
+                data: {
+                    recentTransactions: [],
+                    failedPayments: [],
+                    recommendation: 'Saya memerlukan informasi pengguna untuk menganalisis pembayaran Anda.',
+                    autoFixAvailable: false
+                }
+            };
+        }
+
         const recentTransactions = await env.DB.prepare(`
             SELECT * FROM billing_transactions 
             WHERE user_id = ? 
@@ -141,14 +171,19 @@ async function executePaymentDiagnostics(userId, env) {
             LIMIT 5
         `).bind(userId).all();
         
+        // Validate database response
+        if (!recentTransactions || !Array.isArray(recentTransactions.results)) {
+            return null;
+        }
+
         const failedPayments = recentTransactions.results.filter(t => 
-            t.status === 'pending' || t.status === 'failed' || t.status === 'expired'
+            t && (t.status === 'pending' || t.status === 'failed' || t.status === 'expired')
         );
         
         return {
             tool: 'payment_diagnostics',
             data: {
-                recentTransactions: recentTransactions.results,
+                recentTransactions: recentTransactions.results || [],
                 failedPayments,
                 recommendation: failedPayments.length > 0 ? 
                     'Saya menemukan transaksi yang memerlukan perhatian. Mari kita periksa satu per satu.' :
@@ -195,15 +230,47 @@ async function executeTechnicalDiagnostics(userId, env) {
 
 async function executeUpgradeAnalysis(userId, env) {
     try {
+        if (!userId) {
+            return {
+                tool: 'upgrade_analysis',
+                data: {
+                    currentTier: 'free',
+                    nextTier: 'pro',
+                    upgradeHistory: [],
+                    recommendation: 'Saya perlu informasi lebih untuk memberikan saran upgrade.',
+                    benefits: []
+                }
+            };
+        }
+
         const userData = await env.DB.prepare(`
             SELECT * FROM users WHERE id = ?
         `).bind(userId).first();
+
+        // Validate user exists
+        if (!userData) {
+            return {
+                tool: 'upgrade_analysis',
+                data: {
+                    currentTier: 'free',
+                    nextTier: 'pro',
+                    upgradeHistory: [],
+                    recommendation: 'Akun pengguna tidak ditemukan.',
+                    benefits: []
+                }
+            };
+        }
         
         const upgradeHistory = await env.DB.prepare(`
             SELECT * FROM billing_transactions 
             WHERE user_id = ? AND status = 'paid'
             ORDER BY created_at DESC
         `).bind(userId).all();
+
+        // Validate database response
+        if (!upgradeHistory || !Array.isArray(upgradeHistory.results)) {
+            return null;
+        }
         
         const currentTier = userData.tier || 'free';
         const availableTiers = ['free', 'pro', 'ultimate', 'elite'];
@@ -215,8 +282,8 @@ async function executeUpgradeAnalysis(userId, env) {
             data: {
                 currentTier,
                 nextTier,
-                upgradeHistory: upgradeHistory.results,
-                recommendation: generateUpgradeRecommendation(currentTier, nextTier, upgradeHistory.results),
+                upgradeHistory: upgradeHistory.results || [],
+                recommendation: generateUpgradeRecommendation(currentTier, nextTier, upgradeHistory.results || []),
                 benefits: getTierBenefits(nextTier)
             }
         };
@@ -228,21 +295,53 @@ async function executeUpgradeAnalysis(userId, env) {
 
 async function executeAccountDiagnostics(userId, env) {
     try {
+        if (!userId) {
+            return {
+                tool: 'account_diagnostics',
+                data: {
+                    accountAge: 0,
+                    subscriptionStatus: 'unknown',
+                    expiresAt: null,
+                    loginActivity: [],
+                    securityStatus: { status: 'unknown' },
+                    recommendation: 'Saya memerlukan informasi pengguna untuk analisis akun.'
+                }
+            };
+        }
+
         const userData = await env.DB.prepare(`
             SELECT * FROM users WHERE id = ?
         `).bind(userId).first();
+
+        // Validate user exists
+        if (!userData || !userData.created_at) {
+            return {
+                tool: 'account_diagnostics',
+                data: {
+                    accountAge: 0,
+                    subscriptionStatus: 'unknown',
+                    expiresAt: null,
+                    loginActivity: [],
+                    securityStatus: { status: 'unknown' },
+                    recommendation: 'Data akun tidak dapat ditemukan.'
+                }
+            };
+        }
         
         const accountAge = Math.floor((Date.now() - new Date(userData.created_at).getTime()) / (1000 * 60 * 60 * 24));
         const subscriptionStatus = userData.expires_at && new Date(userData.expires_at) > new Date() ? 'active' : 'expired';
+        
+        const loginData = await getLoginActivity(userId, env);
+        const securityData = await checkSecurityStatus(userId, env);
         
         return {
             tool: 'account_diagnostics',
             data: {
                 accountAge,
                 subscriptionStatus,
-                expiresAt: userData.expires_at,
-                loginActivity: await getLoginActivity(userId, env),
-                securityStatus: await checkSecurityStatus(userId, env),
+                expiresAt: userData.expires_at || null,
+                loginActivity: loginData || [],
+                securityStatus: securityData || { status: 'unknown' },
                 recommendation: generateAccountRecommendation(userData, accountAge, subscriptionStatus)
             }
         };

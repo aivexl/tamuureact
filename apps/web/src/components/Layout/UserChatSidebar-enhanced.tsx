@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     MessageCircle,
@@ -9,418 +9,629 @@ import {
     Loader2,
     ChevronRight,
     HelpCircle,
-    Brain,
+    Bot,
     Zap,
-    AlertTriangle
+    Crown,
+    Settings,
+    Maximize2,
+    Minimize2,
+    Copy,
+    ThumbsUp,
+    ThumbsDown,
+    RefreshCw,
+    Volume2,
+    VolumeX
 } from 'lucide-react';
 import { users } from '../../lib/api';
 import { useStore } from '../../store/useStore';
 import { PremiumLoader } from '../ui/PremiumLoader';
-import EnhancedAIService, { MessageFormatter, AIPerformanceMonitor } from '../../lib/enhanced-ai';
 
+// Award-winning UI/UX standards for enterprise applications
 interface Message {
     role: 'user' | 'assistant';
     content: string;
     isIntermediate?: boolean;
-    timestamp?: number;
-    metadata?: {
-        responseTime?: number;
-        contextUsed?: boolean;
-        toolsExecuted?: number;
-        error?: string;
-        fallback?: boolean;
-    };
+    timestamp?: Date;
+    messageId?: string;
+    isError?: boolean;
+    isSystem?: boolean;
+    intent?: string;
+    confidence?: number;
+    responseTime?: number;
 }
 
-export const UserChatSidebar: React.FC = () => {
+interface ChatSession {
+    sessionId: string;
+    startTime: Date;
+    messageCount: number;
+    userTier: string;
+    context: Record<string, any>;
+}
+
+// Enterprise-grade chat interface with world-class UX
+export const UserChatSidebarEnhanced: React.FC = () => {
     const { user, token } = useStore();
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [showSuggestions, setShowSuggestions] = useState(true);
-    const [performanceMetrics, setPerformanceMetrics] = useState<any>(null);
+    const [isMinimized, setIsMinimized] = useState(false);
+    const [isMuted, setIsMuted] = useState(false);
+    const [session, setSession] = useState<ChatSession | null>(null);
+    const [showSettings, setShowSettings] = useState(false);
+    const [aiPersonality, setAiPersonality] = useState<'professional' | 'friendly' | 'casual'>('professional');
+    const [responseSpeed, setResponseSpeed] = useState<'instant' | 'normal' | 'thoughtful'>('normal');
     const scrollRef = useRef<HTMLDivElement>(null);
-    const aiService = EnhancedAIService.getInstance();
+    const inputRef = useRef<HTMLInputElement>(null);
 
-    // Auto scroll to bottom
+    // Auto scroll to bottom with smooth animation
     useEffect(() => {
         if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+            scrollRef.current.scrollTo({
+                top: scrollRef.current.scrollHeight,
+                behavior: 'smooth'
+            });
         }
     }, [messages, isLoading]);
 
-    // Update performance metrics
+    // Focus input when opened
     useEffect(() => {
-        const interval = setInterval(() => {
-            setPerformanceMetrics(AIPerformanceMonitor.getPerformanceReport());
-        }, 5000);
-        
-        return () => clearInterval(interval);
-    }, []);
+        if (isOpen && inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, [isOpen]);
 
-    const handleSend = async (forcedInput?: string) => {
+    // Initialize session
+    useEffect(() => {
+        if (isOpen && !session) {
+            const newSession: ChatSession = {
+                sessionId: `session_${Date.now()}_${user?.id}`,
+                startTime: new Date(),
+                messageCount: 0,
+                userTier: user?.tier || 'free',
+                context: {
+                    userAgent: navigator.userAgent,
+                    screenResolution: `${window.screen.width}x${window.screen.height}`,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    language: navigator.language
+                }
+            };
+            setSession(newSession);
+
+            // Welcome message with personalization
+            const welcomeMessage: Message = {
+                role: 'assistant',
+                content: generateWelcomeMessage(user),
+                timestamp: new Date(),
+                messageId: `welcome_${Date.now()}`,
+                isSystem: true
+            };
+            setMessages([welcomeMessage]);
+        }
+    }, [isOpen, session, user]);
+
+    // Generate personalized welcome message
+    const generateWelcomeMessage = (userData: any) => {
+        const tier = userData?.tier || 'free';
+        const name = userData?.name || 'Kak';
+        
+        const tierMessages = {
+            premium: `Selamat datang ${name}! 🏆 Saya AI Assistant premium Tamuu dengan prioritas tinggi. Siap membantu 24/7 dengan response time <100ms.`,
+            business: `Halo ${name}! 💼 Saya AI Assistant bisnis Tamuu. Siap membantu dengan solusi enterprise untuk kebutuhan undangan digital Anda.`,
+            free: `Halo ${name}! 😊 Saya AI Assistant Tamuu. Dengan senang hati membantu membuat undangan digital yang menawan untuk acara spesial Anda.`
+        };
+
+        return tierMessages[tier as keyof typeof tierMessages] || tierMessages.free;
+    };
+
+    // Handle message sending with enterprise features
+    const handleSend = useCallback(async (forcedInput?: string) => {
         const messageText = forcedInput || input;
         if (!messageText.trim() || isLoading) return;
 
+        const startTime = Date.now();
         const isSilentDiagnostic = forcedInput?.includes("audit diagnostik");
 
-        // Only show user message if not a silent diagnostic
+        // Create user message
+        const userMsg: Message = {
+            role: 'user',
+            content: messageText,
+            timestamp: new Date(),
+            messageId: `user_${Date.now()}_${user?.id}`
+        };
+
         if (!isSilentDiagnostic) {
-            const userMsg: Message = { 
-                role: 'user', 
-                content: messageText,
-                timestamp: Date.now()
-            };
             setMessages(prev => [...prev, userMsg]);
         }
 
         setInput('');
         setIsLoading(true);
-        setShowSuggestions(false);
-
-        // Enhanced acknowledgment message with intelligence indicators
-        if (!isSilentDiagnostic) {
-            const ackMsg: Message = {
-                role: 'assistant',
-                content: MessageFormatter.getTypingIndicator(),
-                isIntermediate: true,
-                timestamp: Date.now()
-            };
-            setMessages(prev => [...prev, ackMsg]);
-        }
 
         try {
-            // Use enhanced AI service
-            const response = await aiService.sendMessage(messageText, user?.id, token || undefined);
-            
-            // Remove intermediate message
-            setMessages(prev => prev.filter(m => !m.isIntermediate));
-            
-            // Add AI response with enhanced formatting
-            const aiMsg: Message = {
+            // Show typing indicator
+            const typingMsg: Message = {
                 role: 'assistant',
-                content: MessageFormatter.formatResponse(response),
-                timestamp: Date.now(),
-                metadata: response.metadata
+                content: '',
+                isIntermediate: true,
+                timestamp: new Date()
             };
-            setMessages(prev => [...prev, aiMsg]);
+            setMessages(prev => [...prev.filter(m => !m.isIntermediate), typingMsg]);
+
+            // Simulate response time based on settings
+            const responseDelay = responseSpeed === 'instant' ? 100 : responseSpeed === 'thoughtful' ? 2000 : 500;
+            await new Promise(resolve => setTimeout(resolve, responseDelay));
+
+            // Call enhanced AI API
+            const response = await users.chatWithAIEnhanced({
+                messages: [{ role: 'user', content: messageText }],
+                context: {
+                    userId: user?.id,
+                    userProfile: user,
+                    sessionId: session?.sessionId,
+                    userTier: user?.tier,
+                    personality: aiPersonality,
+                    responseSpeed: responseSpeed,
+                    isSilentDiagnostic
+                }
+            });
+
+            const responseTime = Date.now() - startTime;
+
+            // Remove typing indicator and add actual response
+            const assistantMsg: Message = {
+                role: 'assistant',
+                content: response.content,
+                timestamp: new Date(),
+                messageId: `assistant_${Date.now()}_${user?.id}`,
+                intent: response.metadata?.intent,
+                confidence: response.metadata?.confidence,
+                responseTime
+            };
+
+            setMessages(prev => [...prev.filter(m => !m.isIntermediate), assistantMsg]);
+
+            // Update session
+            if (session) {
+                setSession(prev => prev ? {
+                    ...prev,
+                    messageCount: prev.messageCount + 2
+                } : null);
+            }
+
+            // Audio feedback (if not muted)
+            if (!isMuted) {
+                playNotificationSound();
+            }
+
+        } catch (error) {
+            console.error('Chat error:', error);
             
-            // Record performance metric
-            AIPerformanceMonitor.recordMetric(
-                response.metadata?.responseTime || 0,
-                !response.error,
-                response.error
-            );
-            
-        } catch (err: any) {
-            // Remove intermediate message
-            setMessages(prev => prev.filter(m => !m.isIntermediate));
-            
-            // Enhanced error handling
-            const errorResponse = aiService.handleAIError(err);
             const errorMsg: Message = {
                 role: 'assistant',
-                content: errorResponse.content,
-                timestamp: Date.now(),
-                metadata: { error: errorResponse.error, fallback: true }
+                content: 'Maaf Kak, terjadi kesalahan. Saya akan coba lagi. Jika masalah berlanjut, silakan hubungi support kami. 🙏',
+                timestamp: new Date(),
+                messageId: `error_${Date.now()}_${user?.id}`,
+                isError: true
             };
-            setMessages(prev => [...prev, errorMsg]);
             
-            console.error('[Enhanced AI Chat] Error:', err);
+            setMessages(prev => [...prev.filter(m => !m.isIntermediate), errorMsg]);
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [input, isLoading, user, session, aiPersonality, responseSpeed, isMuted]);
 
-    const handleQuickAction = (action: string) => {
-        const quickActions = {
-            'payment': 'Cek status pembayaran saya',
-            'invitations': 'Lihat undangan saya',
-            'account': 'Cek status akun saya',
-            'help': 'Bantu saya membuat undangan'
+    // Copy message to clipboard
+    const handleCopyMessage = useCallback(async (message: Message) => {
+        try {
+            await navigator.clipboard.writeText(message.content);
+            // Show toast notification (implementation needed)
+        } catch (error) {
+            console.error('Copy failed:', error);
+        }
+    }, []);
+
+    // Regenerate response
+    const handleRegenerate = useCallback(async (messageId: string) => {
+        const message = messages.find(m => m.messageId === messageId);
+        if (message && message.role === 'assistant') {
+            // Find the corresponding user message
+            const messageIndex = messages.findIndex(m => m.messageId === messageId);
+            if (messageIndex > 0) {
+                const userMessage = messages[messageIndex - 1];
+                if (userMessage.role === 'user') {
+                    // Remove assistant message and regenerate
+                    setMessages(prev => prev.filter(m => m.messageId !== messageId));
+                    await handleSend(userMessage.content);
+                }
+            }
+        }
+    }, [messages, handleSend]);
+
+    // Play notification sound
+    const playNotificationSound = useCallback(() => {
+        try {
+            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        } catch (error) {
+            console.error('Audio notification failed:', error);
+        }
+    }, []);
+
+    // Handle keyboard shortcuts
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                setIsOpen(false);
+            } else if (e.key === 'Enter' && e.ctrlKey && isOpen) {
+                handleSend();
+            } else if (e.key === '/' && e.metaKey && e.shiftKey) {
+                setIsOpen(!isOpen);
+            }
         };
-        
-        handleSend(quickActions[action as keyof typeof quickActions]);
-    };
 
-    const getSuggestions = () => {
-        return aiService.getSuggestions();
-    };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, handleSend]);
 
-    const analyzeSentiment = () => {
-        return aiService.analyzeSentiment();
-    };
-
-    const clearChat = () => {
-        aiService.clearHistory();
-        setMessages([]);
-        setShowSuggestions(true);
-    };
-
+    // Quick action buttons
     const quickActions = [
-        { key: 'payment', label: 'Cek Pembayaran', icon: '💳' },
-        { key: 'invitations', label: 'Undangan Saya', icon: '📧' },
-        { key: 'account', label: 'Status Akun', icon: '👤' },
-        { key: 'help', label: 'Bantuan', icon: '❓' }
+        { icon: HelpCircle, label: 'Bantuan', action: () => handleSend('Saya butuh bantuan') },
+        { icon: Sparkles, label: 'Tips', action: () => handleSend('Beri saya tips terbaik') },
+        { icon: Zap, label: 'Cepat', action: () => handleSend('Bagaimana cara cepat membuat undangan?') }
     ];
 
+    // Message component with enterprise features
+    const MessageComponent = ({ message, index }: { message: Message; index: number }) => {
+        const isUser = message.role === 'user';
+        const isSystem = message.isSystem;
+        const isError = message.isError;
+        
+        return (
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+                className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}
+            >
+                <div className={`max-w-[80%] group relative ${
+                    isUser ? 'order-2' : 'order-1'
+                }`}>
+                    <div className={`px-4 py-3 rounded-2xl shadow-sm ${
+                        isUser 
+                            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white' 
+                            : isSystem
+                            ? 'bg-gradient-to-r from-purple-100 to-pink-100 text-gray-800 border border-purple-200'
+                            : isError
+                            ? 'bg-red-50 text-red-800 border border-red-200'
+                            : 'bg-white text-gray-800 border border-gray-200 shadow-md'
+                    }`}>
+                        {message.isIntermediate ? (
+                            <div className="flex items-center space-x-2">
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <span className="text-sm">Sedang mengetik...</span>
+                            </div>
+                        ) : (
+                            <div>
+                                <p className="text-sm leading-relaxed">{message.content}</p>
+                                {message.responseTime && (
+                                    <div className="mt-2 text-xs opacity-70">
+                                        Response time: {message.responseTime}ms
+                                        {message.confidence && ` • Confidence: ${(message.confidence * 100).toFixed(1)}%`}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                    
+                    {/* Message actions */}
+                    {!isUser && !message.isIntermediate && (
+                        <div className="absolute -bottom-2 left-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex space-x-1 bg-white rounded-full shadow-lg border p-1">
+                                <button
+                                    onClick={() => handleCopyMessage(message)}
+                                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                                    title="Copy message"
+                                >
+                                    <Copy className="w-3 h-3 text-gray-600" />
+                                </button>
+                                <button
+                                    onClick={() => handleRegenerate(message.messageId!)}
+                                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                                    title="Regenerate response"
+                                >
+                                    <RefreshCw className="w-3 h-3 text-gray-600" />
+                                </button>
+                                <button
+                                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                                    title="Like"
+                                >
+                                    <ThumbsUp className="w-3 h-3 text-gray-600" />
+                                </button>
+                                <button
+                                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                                    title="Dislike"
+                                >
+                                    <ThumbsDown className="w-3 h-3 text-gray-600" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {/* Timestamp */}
+                    {message.timestamp && (
+                        <div className="text-xs text-gray-400 mt-1 opacity-70">
+                            {message.timestamp.toLocaleTimeString('id-ID', { 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                            })}
+                        </div>
+                    )}
+                </div>
+            </motion.div>
+        );
+    };
+
+    // Award-winning UI design
     return (
         <>
-            {/* Floating Chat Button */}
-            <motion.button
+            {/* Floating action button */}
+            <motion.div
+                className="fixed bottom-6 right-6 z-50"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setIsOpen(true)}
-                className="fixed bottom-6 right-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white p-4 rounded-full shadow-2xl z-50 hover:shadow-pink-500/25 transition-all duration-300"
+                transition={{ delay: 0.5, type: 'spring', stiffness: 260, damping: 20 }}
             >
-                <MessageCircle className="w-6 h-6" />
-            </motion.button>
+                <motion.button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full p-4 shadow-2xl hover:shadow-3xl transition-all duration-300 group"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                >
+                    <AnimatePresence mode="wait">
+                        {isOpen ? (
+                            <motion.div
+                                key="close"
+                                initial={{ rotate: -90 }}
+                                animate={{ rotate: 0 }}
+                                exit={{ rotate: 90 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                <X className="w-6 h-6" />
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="open"
+                                initial={{ rotate: 90 }}
+                                animate={{ rotate: 0 }}
+                                exit={{ rotate: -90 }}
+                                transition={{ duration: 0.2 }}
+                                className="relative"
+                            >
+                                <Bot className="w-6 h-6" />
+                                <motion.div
+                                    className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full"
+                                    animate={{ scale: [1, 1.2, 1] }}
+                                    transition={{ repeat: Infinity, duration: 2 }}
+                                />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </motion.button>
+            </motion.div>
 
+            {/* Chat sidebar */}
             <AnimatePresence>
                 {isOpen && (
-                    <>
-                        {/* Backdrop */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setIsOpen(false)}
-                            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-                        />
-
-                        {/* Chat Sidebar */}
-                        <motion.div
-                            initial={{ x: '100%' }}
-                            animate={{ x: 0 }}
-                            exit={{ x: '100%' }}
-                            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-                            className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col"
-                        >
+                    <motion.div
+                        className="fixed bottom-24 right-6 z-50"
+                        initial={{ opacity: 0, y: 100, scale: 0.9 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 100, scale: 0.9 }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    >
+                        <div className={`bg-white rounded-3xl shadow-2xl border border-gray-200 flex flex-col ${
+                            isMinimized ? 'w-80 h-16' : 'w-96 h-[600px]'
+                        } transition-all duration-300`}>
                             {/* Header */}
-                            <div className="bg-gradient-to-r from-pink-500 to-purple-600 text-white p-6">
+                            <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-t-3xl">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-3">
-                                        <div className="relative">
-                                            <Sparkles className="w-8 h-8" />
-                                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse" />
-                                        </div>
+                                        <motion.div
+                                            animate={{ rotate: [0, 360] }}
+                                            transition={{ repeat: Infinity, duration: 4, ease: 'linear' }}
+                                        >
+                                            <Bot className="w-8 h-8" />
+                                        </motion.div>
                                         <div>
-                                            <h3 className="font-bold text-lg">Tamuu AI Assistant</h3>
-                                            <p className="text-sm opacity-90">{isLoading ? 'Mengetik...' : 'Online'}</p>
+                                            <h3 className="font-semibold text-lg">Tamuu AI Assistant</h3>
+                                            <div className="flex items-center space-x-2">
+                                                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                                <span className="text-xs opacity-90">Online</span>
+                                                {user?.tier === 'premium' && <Crown className="w-4 h-4 text-yellow-300" />}
+                                            </div>
                                         </div>
                                     </div>
-                                    <button
-                                        onClick={() => setIsOpen(false)}
-                                        className="p-2 hover:bg-white/20 rounded-full transition-colors"
-                                    >
-                                        <X className="w-5 h-5" />
-                                    </button>
+                                    <div className="flex items-center space-x-2">
+                                        <button
+                                            onClick={() => setShowSettings(!showSettings)}
+                                            className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                                            title="Settings"
+                                        >
+                                            <Settings className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => setIsMinimized(!isMinimized)}
+                                            className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                                            title={isMinimized ? 'Maximize' : 'Minimize'}
+                                        >
+                                            {isMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
+                                        </button>
+                                        <button
+                                            onClick={() => setIsOpen(false)}
+                                            className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                                            title="Close"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </div>
-                                
-                                {/* Performance Metrics */}
-                                {performanceMetrics && (
-                                    <div className="mt-3 flex items-center space-x-4 text-xs opacity-80">
-                                        <div className="flex items-center space-x-1">
-                                            <Zap className="w-3 h-3" />
-                                            <span>{Math.round(performanceMetrics.averageResponseTime)}ms</span>
-                                        </div>
-                                        <div className="flex items-center space-x-1">
-                                            <Brain className="w-3 h-3" />
-                                            <span>{Math.round(performanceMetrics.successRate * 100)}%</span>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
 
-                            {/* Chat Messages */}
-                            <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-4">
-                                {messages.length === 0 && (
-                                    <div className="text-center py-8">
-                                        <Sparkles className="w-16 h-16 mx-auto text-pink-500 mb-4" />
-                                        <h4 className="font-semibold text-gray-800 mb-2">Halo Kak {user?.name || ''}! 👋</h4>
-                                        <p className="text-gray-600 text-sm mb-6">
-                                            Saya AI Assistant dari Tamuu, siap membantu Anda 24/7. 
-                                            Tanya apa saja tentang undangan, pembayaran, atau bantuan teknis.
-                                        </p>
-                                        
-                                        {/* Sentiment Analysis */}
-                                        {messages.length > 0 && (
-                                            <div className="bg-gray-50 rounded-lg p-3 text-xs text-gray-600">
-                                                <div className="flex items-center space-x-2 mb-2">
-                                                    <Brain className="w-4 h-4" />
-                                                    <span>Analisis Percakapan:</span>
-                                                </div>
-                                                <div className="text-left">
-                                                    {Object.entries(analyzeSentiment()).map(([key, value]) => (
-                                                        <div key={key} className="flex justify-between">
-                                                            <span>{key}:</span>
-                                                            <span className="font-medium">{typeof value === 'number' ? `${Math.round(value)}%` : value}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {messages.map((message, index) => (
-                                    <motion.div
-                                        key={index}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                                    >
-                                        <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                                            message.role === 'user' 
-                                                ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white' 
-                                                : 'bg-gray-100 text-gray-800'
-                                        } ${message.isIntermediate ? 'opacity-70' : ''}`}>
-                                            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                                            
-                                            {/* Metadata indicators */}
-                                            {message.metadata && (
-                                                <div className="mt-1 flex items-center space-x-2 text-xs opacity-70">
-                                                    {message.metadata.contextUsed && <span title="Context-aware response">🎯</span>}
-                                                    {message.metadata.toolsExecuted && message.metadata.toolsExecuted > 0 && (
-                                                        <span title={`${message.metadata.toolsExecuted} tools executed`}>🔧</span>
-                                                    )}
-                                                    {message.metadata.fallback && <span title="Fallback response">🔄</span>}
-                                                    {message.metadata.responseTime && (
-                                                        <span title="Response time">{message.metadata.responseTime}ms</span>
-                                                    )}
-                                                </div>
-                                            )}
-                                            
-                                            {message.timestamp && (
-                                                <div className="mt-1 text-xs opacity-50">
-                                                    {new Date(message.timestamp).toLocaleTimeString()}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </motion.div>
-                                ))}
-
-                                {isLoading && (
-                                    <div className="flex justify-start">
-                                        <div className="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg">
-                                            <PremiumLoader size="sm" />
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Quick Actions */}
-                            {showSuggestions && (
-                                <div className="px-6 pb-4">
-                                    <div className="flex flex-wrap gap-2">
-                                        {quickActions.map((action) => (
-                                            <button
-                                                key={action.key}
-                                                onClick={() => handleQuickAction(action.key)}
-                                                disabled={isLoading}
-                                                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-medium transition-colors disabled:opacity-50"
-                                            >
-                                                <span className="mr-1">{action.icon}</span>
-                                                {action.label}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    
-                                    {/* Intelligent Suggestions */}
-                                    {messages.length > 0 && (
-                                        <div className="mt-3">
-                                            <div className="text-xs text-gray-500 mb-2 flex items-center">
-                                                <Brain className="w-3 h-3 mr-1" />
-                                                Saran Cerdas:
-                                            </div>
-                                            <div className="flex flex-wrap gap-2">
-                                                {getSuggestions().map((suggestion, index) => (
+                            {/* Settings Panel */}
+                            {showSettings && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="bg-gray-50 p-4 border-b border-gray-200"
+                                >
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">AI Personality</label>
+                                            <div className="flex space-x-2">
+                                                {(['professional', 'friendly', 'casual'] as const).map(personality => (
                                                     <button
-                                                        key={index}
-                                                        onClick={() => handleSend(suggestion)}
-                                                        className="px-2 py-1 bg-pink-50 text-pink-600 rounded text-xs hover:bg-pink-100 transition-colors"
+                                                        key={personality}
+                                                        onClick={() => setAiPersonality(personality)}
+                                                        className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                                                            aiPersonality === personality
+                                                                ? 'bg-blue-500 text-white'
+                                                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                        }`}
                                                     >
-                                                        {suggestion}
+                                                        {personality.charAt(0).toUpperCase() + personality.slice(1)}
                                                     </button>
                                                 ))}
                                             </div>
                                         </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Response Speed</label>
+                                            <div className="flex space-x-2">
+                                                {(['instant', 'normal', 'thoughtful'] as const).map(speed => (
+                                                    <button
+                                                        key={speed}
+                                                        onClick={() => setResponseSpeed(speed)}
+                                                        className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                                                            responseSpeed === speed
+                                                                ? 'bg-blue-500 text-white'
+                                                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                        }`}
+                                                    >
+                                                        {speed.charAt(0).toUpperCase() + speed.slice(1)}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm font-medium text-gray-700">Sound Notifications</span>
+                                            <button
+                                                onClick={() => setIsMuted(!isMuted)}
+                                                className={`p-2 rounded-full transition-colors ${
+                                                    isMuted ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
+                                                }`}
+                                            >
+                                                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {/* Messages */}
+                            {!isMinimized && (
+                                <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
+                                    <AnimatePresence>
+                                        {messages.map((message, index) => (
+                                            <MessageComponent key={message.messageId} message={message} index={index} />
+                                        ))}
+                                    </AnimatePresence>
+                                    
+                                    {isLoading && (
+                                        <motion.div
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            className="flex justify-start"
+                                        >
+                                            <div className="bg-gray-100 text-gray-600 px-4 py-2 rounded-2xl">
+                                                <div className="flex items-center space-x-2">
+                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                    <span className="text-sm">AI sedang berpikir...</span>
+                                                </div>
+                                            </div>
+                                        </motion.div>
                                     )}
                                 </div>
                             )}
 
-                            {/* Input Area */}
-                            <div className="border-t p-6">
-                                <div className="flex items-end space-x-3">
-                                    <div className="flex-1 relative">
-                                        <textarea
-                                            value={input}
-                                            onChange={(e) => setInput(e.target.value)}
-                                            onKeyPress={(e) => {
-                                                if (e.key === 'Enter' && !e.shiftKey) {
-                                                    e.preventDefault();
-                                                    handleSend();
-                                                }
-                                            }}
-                                            placeholder="Tanya tentang undangan, pembayaran, atau bantuan..."
-                                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 resize-none"
-                                            rows={1}
-                                            disabled={isLoading}
-                                        />
-                                        
-                                        {/* AI Intelligence Indicator */}
-                                        <div className="absolute right-2 top-2 flex items-center space-x-1 text-xs text-gray-400">
-                                            <Brain className="w-3 h-3" />
-                                            <span>AI v8.0</span>
-                                        </div>
+                            {/* Quick Actions */}
+                            {!isMinimized && (
+                                <div className="p-4 border-t border-gray-200">
+                                    <div className="flex space-x-2 mb-3">
+                                        {quickActions.map((action, index) => (
+                                            <motion.button
+                                                key={action.label}
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: index * 0.1 }}
+                                                onClick={action.action}
+                                                className="flex items-center space-x-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-medium transition-colors"
+                                            >
+                                                <action.icon className="w-3 h-3" />
+                                                <span>{action.label}</span>
+                                            </motion.button>
+                                        ))}
                                     </div>
-                                    
-                                    <button
-                                        onClick={() => handleSend()}
-                                        disabled={!input.trim() || isLoading}
-                                        className="p-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl hover:from-pink-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                                    >
-                                        {isLoading ? (
-                                            <Loader2 className="w-5 h-5 animate-spin" />
-                                        ) : (
-                                            <Send className="w-5 h-5" />
-                                        )}
-                                    </button>
-                                </div>
-                                
-                                {/* Action Buttons */}
-                                <div className="flex items-center justify-between mt-3">
+
+                                    {/* Input */}
                                     <div className="flex items-center space-x-2">
-                                        <button
-                                            onClick={clearChat}
-                                            className="text-xs text-gray-500 hover:text-gray-700 flex items-center space-x-1"
+                                        <div className="flex-1 relative">
+                                            <input
+                                                ref={inputRef}
+                                                type="text"
+                                                value={input}
+                                                onChange={(e) => setInput(e.target.value)}
+                                                onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                                                placeholder="Ketik pesan... (Ctrl+Enter untuk kirim)"
+                                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                                disabled={isLoading}
+                                            />
+                                            {user?.tier === 'premium' && (
+                                                <Crown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-yellow-500" />
+                                            )}
+                                        </div>
+                                        <motion.button
+                                            onClick={() => handleSend()}
+                                            disabled={isLoading || !input.trim()}
+                                            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-3 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all"
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
                                         >
-                                            <X className="w-3 h-3" />
-                                            <span>Bersihkan chat</span>
-                                        </button>
-                                        
-                                        {performanceMetrics?.errorRate > 0.1 && (
-                                            <div className="flex items-center space-x-1 text-xs text-orange-600">
-                                                <AlertTriangle className="w-3 h-3" />
-                                                <span>Koneksi tidak stabil</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                    
-                                    <div className="text-xs text-gray-400">
-                                        Tekan Enter untuk kirim
+                                            {isLoading ? (
+                                                <Loader2 className="w-5 h-5 animate-spin" />
+                                            ) : (
+                                                <Send className="w-5 h-5" />
+                                            )}
+                                        </motion.button>
                                     </div>
                                 </div>
-                            </div>
-                        </motion.div>
-                    </>
+                            )}
+                        </div>
+                    </motion.div>
                 )}
             </AnimatePresence>
         </>
     );
 };
-
-export default UserChatSidebar;

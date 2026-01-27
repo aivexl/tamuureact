@@ -490,6 +490,108 @@ export const users = {
             throw new Error(error.error || 'Failed to get AI response');
         }
         return res.json();
+    },
+
+    /**
+     * ENHANCED: Conversation management with persistent storage
+     * Stores chat conversations in database for history and analytics
+     */
+    async createConversation(userId: string, title?: string, token?: string) {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await safeFetch(`${API_BASE}/api/chat/conversations`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ userId, title: title || 'New Conversation' })
+        });
+        if (!res.ok) throw new Error('Failed to create conversation');
+        const data = await res.json();
+        return sanitizeValue(data);
+    },
+
+    async getConversation(conversationId: string, token?: string) {
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await safeFetch(`${API_BASE}/api/chat/conversations/${conversationId}`, { headers });
+        if (!res.ok) throw new Error('Failed to fetch conversation');
+        const data = await res.json();
+        return sanitizeValue(data);
+    },
+
+    async listConversations(userId: string, limit: number = 20, offset: number = 0, token?: string) {
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await safeFetch(
+            `${API_BASE}/api/chat/conversations?userId=${userId}&limit=${limit}&offset=${offset}`,
+            { headers }
+        );
+        if (!res.ok) throw new Error('Failed to fetch conversations');
+        const data = await res.json();
+        return sanitizeValue(data);
+    },
+
+    async archiveConversation(conversationId: string, token?: string) {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await safeFetch(`${API_BASE}/api/chat/conversations/${conversationId}/archive`, {
+            method: 'POST',
+            headers
+        });
+        if (!res.ok) throw new Error('Failed to archive conversation');
+        return res.json();
+    },
+
+    async deleteConversation(conversationId: string, token?: string) {
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await safeFetch(`${API_BASE}/api/chat/conversations/${conversationId}`, {
+            method: 'DELETE',
+            headers
+        });
+        if (!res.ok) throw new Error('Failed to delete conversation');
+        return true;
+    },
+
+    async saveMessage(conversationId: string, message: { role: string; content: string }, token?: string) {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await safeFetch(`${API_BASE}/api/chat/conversations/${conversationId}/messages`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(message)
+        });
+        if (!res.ok) throw new Error('Failed to save message');
+        const data = await res.json();
+        return sanitizeValue(data);
+    },
+
+    async getMessages(conversationId: string, limit: number = 50, offset: number = 0, token?: string) {
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await safeFetch(
+            `${API_BASE}/api/chat/conversations/${conversationId}/messages?limit=${limit}&offset=${offset}`,
+            { headers }
+        );
+        if (!res.ok) throw new Error('Failed to fetch messages');
+        const data = await res.json();
+        return sanitizeValue(data);
+    },
+
+    async getConversationAnalytics(conversationId: string, token?: string) {
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await safeFetch(`${API_BASE}/api/chat/conversations/${conversationId}/analytics`, { headers });
+        if (!res.ok) throw new Error('Failed to fetch conversation analytics');
+        const data = await res.json();
+        return sanitizeValue(data);
     }
 };
 
