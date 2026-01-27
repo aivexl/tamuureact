@@ -967,7 +967,7 @@ CONTEXT:
                 while (loopCount < 5) {
                     loopCount++;
                     try {
-                        const response = await fetchAI(sysPrompt, currentMessages, user ? aiTools : null);
+                        const response = await fetchAI(sysPrompt, currentMessages, aiTools);
 
                         // If AI returned a final text response, exit loop and return to user
                         if (response.content) {
@@ -1011,9 +1011,11 @@ CONTEXT:
                             else if (name === "search_order") {
                                 // Atomic Search Strategy:
                                 // User might provide "order-1769272498101-74b5da22"
-                                // DB stores "order-1769272498101"
+                                // DB stores "order-1769272498101" or the full thing.
                                 const rawId = args.order_id.trim();
                                 const searchId = rawId.replace(/^#/, '');
+
+                                console.log(`[AI Agent] search_order searching for: ${searchId}`);
 
                                 // Attempt 1: Exact Match (High Reliability)
                                 let { results: exact } = await env.DB.prepare(
@@ -1021,16 +1023,27 @@ CONTEXT:
                                     'WHERE external_id = ? OR id = ?'
                                 ).bind(searchId, searchId).all();
 
+                                // Attempt 1.5: Prefix/Suffix Resilience
+                                if (exact.length === 0) {
+                                    // Try matching part of external_id
+                                    let { results: partial } = await env.DB.prepare(
+                                        'SELECT id, status, external_id, tier, amount, created_at, payment_channel FROM billing_transactions ' +
+                                        'WHERE external_id LIKE ? OR external_id LIKE ?'
+                                    ).bind(`%${searchId}%`, `${searchId}%`).all();
+
+                                    if (partial.length > 0) exact = partial;
+                                }
+
                                 // Attempt 2: Strip Transaction Suffix (Resilience)
                                 // If searchId matches order-\d+-\w+, try stripping the last part
                                 if (exact.length === 0 && searchId.startsWith('order-')) {
                                     const parts = searchId.split('-');
                                     if (parts.length > 2) {
                                         const strippedId = `${parts[0]}-${parts[1]}`;
-                                        const { results: strippedMatch } = await env.DB.prepare(
+                                        let { results: strippedMatch } = await env.DB.prepare(
                                             'SELECT id, status, external_id, tier, amount, created_at, payment_channel FROM billing_transactions ' +
-                                            'WHERE external_id = ?'
-                                        ).bind(strippedId).all();
+                                            'WHERE external_id = ? OR external_id LIKE ?'
+                                        ).bind(strippedId, `${strippedId}%`).all();
                                         exact = strippedMatch;
                                     }
                                 }
@@ -1088,7 +1101,20 @@ CONTEXT:
                                 }
                             }
                             else if (name === "sync_payment") {
-                                const result = await syncMidtransStatus(args.transaction_id, env);
+                                let txId = args.transaction_id;
+
+                                // If transaction_id looks like an external_id (e.g. starts with order-), resolve it first
+                                if (txId.startsWith('order-')) {
+                                    const tx = await env.DB.prepare('SELECT id FROM billing_transactions WHERE external_id = ?').bind(txId).first();
+                                    if (tx) txId = tx.id;
+                                    else {
+                                        // Try partial match if exact external_id fails
+                                        const txPartial = await env.DB.prepare('SELECT id FROM billing_transactions WHERE external_id LIKE ?').bind(`${txId}%`).first();
+                                        if (txPartial) txId = txPartial.id;
+                                    }
+                                }
+
+                                const result = await syncMidtransStatus(txId, env);
                                 toolResult = JSON.stringify(result);
                             }
                             else if (name === "upgrade_tier") {
