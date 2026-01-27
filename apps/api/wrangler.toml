@@ -2,12 +2,21 @@
 name = "tamuu-api-enhanced"
 main = "tamuu-api-worker-enhanced.js"
 compatibility_date = "2024-01-27"
+workers_dev = true
+
+# Custom domain routing for production API (CRITICAL: routes to api.tamuu.id)
+[[routes]]
+pattern = "api.tamuu.id/*"
+custom_domain = true
 
 # Environment Variables Configuration
 # NEVER commit actual values - use wrangler secret commands
 
 [env.production]
 name = "tamuu-api-prod"
+routes = [
+  { pattern = "api.tamuu.id/*", custom_domain = true }
+]
 
 # Development environment
 [env.development]
