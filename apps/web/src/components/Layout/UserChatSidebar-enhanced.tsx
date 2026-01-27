@@ -103,7 +103,7 @@ export const UserChatSidebarEnhanced: React.FC = () => {
             // but the engine is now auditing their account.
             const triggerSilentAudit = async () => {
                 try {
-                    await users.chatWithAIEnhanced({
+                    await (users as any).chatWithAIEnhanced({
                         messages: [], // Empty messages triggers audit in V9
                         context: {
                             userId: user?.id,
@@ -175,7 +175,7 @@ export const UserChatSidebarEnhanced: React.FC = () => {
             await new Promise(resolve => setTimeout(resolve, responseDelay));
 
             // Call enhanced AI API
-            const response = await users.chatWithAIEnhanced({
+            const response = await (users as any).chatWithAIEnhanced({
                 messages: [{ role: 'user', content: messageText }],
                 context: {
                     userId: user?.id,
