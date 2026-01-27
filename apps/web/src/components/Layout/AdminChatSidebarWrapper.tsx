@@ -14,13 +14,13 @@ interface AdminChatSidebarWrapperProps {
      * Default: false (gunakan original untuk backward compatibility)
      */
     useEnhanced?: boolean;
-    
+
     /**
      * User ID untuk enhanced features
      * Optional: enhanced version akan handle jika tidak disediakan
      */
     userId?: string;
-    
+
     /**
      * Additional props untuk enhanced version
      */
@@ -42,7 +42,7 @@ export const AdminChatSidebarWrapper: React.FC<AdminChatSidebarWrapperProps> = (
     enhancedProps = {}
 }) => {
     // Log untuk monitoring dan audit
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
         console.log(`[AdminChatSidebarWrapper] Rendering ${useEnhanced ? 'enhanced' : 'original'} version`, {
             userId,
             enhancedProps,
@@ -53,7 +53,7 @@ export const AdminChatSidebarWrapper: React.FC<AdminChatSidebarWrapperProps> = (
     // Gunakan enhanced version jika di-enable
     if (useEnhanced) {
         return (
-            <AdminChatSidebarEnhanced 
+            <AdminChatSidebarEnhanced
                 userId={userId}
                 {...enhancedProps}
             />
@@ -75,7 +75,7 @@ export const shouldUseEnhancedVersion = (userContext?: {
     tier?: string;
 }): boolean => {
     // Strategy 1: Environment-based rollout
-    if (process.env.NEXT_PUBLIC_FORCE_ENHANCED_CHAT === 'true') {
+    if (import.meta.env.VITE_FORCE_ENHANCED_CHAT === 'true') {
         return true;
     }
 
@@ -85,7 +85,7 @@ export const shouldUseEnhancedVersion = (userContext?: {
         const hash = userContext.userId.split('').reduce((acc, char) => {
             return acc + char.charCodeAt(0);
         }, 0);
-        
+
         // Rollout 20% user untuk enhanced version
         const rolloutPercentage = 20;
         return (hash % 100) < rolloutPercentage;
@@ -105,8 +105,8 @@ export const shouldUseEnhancedVersion = (userContext?: {
  */
 export const trackChatVersionUsage = (version: 'original' | 'enhanced', userContext?: any) => {
     // Analytics tracking (implementasi sesuai dengan analytics platform)
-    if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'chat_version_usage', {
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'chat_version_usage', {
             version,
             user_id: userContext?.userId,
             timestamp: new Date().toISOString()

@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { admin } from '../../lib/api';
 import { PremiumLoader } from '../ui/PremiumLoader';
-import { useStore } from '../../lib/store';
+import { useStore } from '../../store/useStore';
 
 interface Message {
     id: string;
@@ -88,7 +88,7 @@ export const AdminChatSidebarEnhanced: React.FC<AdminChatSidebarEnhancedProps> =
     const [isMuted, setIsMuted] = useState(false);
     const [session, setSession] = useState<ChatSession | null>(null);
     const [showSettings, setShowSettings] = useState(false);
-    const [aiPersonality, setAiPersonality] = useState<'professional' | 'strategic' | 'analytical'>(aiPersonality);
+    const [personality, setPersonality] = useState<'professional' | 'strategic' | 'analytical'>(aiPersonality);
     const [responseSpeed, setResponseSpeed] = useState<'instant' | 'normal' | 'analytical'>('normal');
     const [copiedMessage, setCopiedMessage] = useState<string | null>(null);
     const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
@@ -122,7 +122,7 @@ export const AdminChatSidebarEnhanced: React.FC<AdminChatSidebarEnhancedProps> =
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (!isOpen) return;
-            
+
             if (e.key === 'Escape') {
                 setIsOpen(false);
             } else if (e.key === 'm' && e.ctrlKey) {
@@ -149,7 +149,7 @@ export const AdminChatSidebarEnhanced: React.FC<AdminChatSidebarEnhancedProps> =
             content: input,
             timestamp: new Date()
         };
-        
+
         setMessages(prev => [...prev, userMsg]);
         setInput('');
         setIsLoading(true);
@@ -157,7 +157,7 @@ export const AdminChatSidebarEnhanced: React.FC<AdminChatSidebarEnhancedProps> =
         try {
             const response = await admin.askAI([...messages.map(m => ({ role: m.role, content: m.content })), { role: 'user', content: input }]);
             const responseTime = Date.now() - startTime;
-            
+
             const assistantMsg: Message = {
                 id: `msg-${Date.now() + 1}`,
                 role: 'assistant',
@@ -166,9 +166,9 @@ export const AdminChatSidebarEnhanced: React.FC<AdminChatSidebarEnhancedProps> =
                 responseTime,
                 metadata: response.metadata || {}
             };
-            
+
             setMessages(prev => [...prev, assistantMsg]);
-            
+
             // Update session stats
             if (session) {
                 const newTotalResponseTime = session.totalResponseTime + responseTime;
@@ -207,7 +207,7 @@ export const AdminChatSidebarEnhanced: React.FC<AdminChatSidebarEnhancedProps> =
     const handleRegenerateMessage = async (messageIndex: number) => {
         const previousMessages = messages.slice(0, messageIndex);
         const lastUserMessage = previousMessages.reverse().find(m => m.role === 'user');
-        
+
         if (lastUserMessage) {
             setMessages(messages.slice(0, messageIndex));
             setInput(lastUserMessage.content);
@@ -260,9 +260,9 @@ export const AdminChatSidebarEnhanced: React.FC<AdminChatSidebarEnhancedProps> =
 
     const getWelcomeMessage = () => {
         const tier = session?.userTier || 'business';
-        const persona = aiPersonality;
-        
-        const messages = {
+        const persona = personality;
+
+        const tierMessages: any = {
             business: {
                 professional: "Selamat datang di Admin Dashboard Tamuu Enterprise! 🏆 Sistem AI analitik kami siap membantu optimasi bisnis Kak dengan data-driven insights.",
                 strategic: "Halo Admin Strategis! 🎯 Mari kita analisis tren market dan strategi pertumbuhan dengan AI-powered business intelligence.",
@@ -274,12 +274,12 @@ export const AdminChatSidebarEnhanced: React.FC<AdminChatSidebarEnhancedProps> =
                 analytical: "Admin Premium Analytics Active! 🔬 Advanced data processing siap memberikan deep insights."
             }
         };
-        
-        return messages[tier]?.[persona] || messages.business.professional;
+
+        return tierMessages[tier]?.[persona] || tierMessages.business.professional;
     };
 
     const getPersonalityIcon = () => {
-        switch (aiPersonality) {
+        switch (personality) {
             case 'strategic': return <Crown className="w-4 h-4" />;
             case 'analytical': return <Brain className="w-4 h-4" />;
             default: return <Star className="w-4 h-4" />;
@@ -374,20 +374,19 @@ export const AdminChatSidebarEnhanced: React.FC<AdminChatSidebarEnhancedProps> =
                                             <div>
                                                 <label className="text-xs font-black uppercase tracking-widest text-slate-400">AI Personality</label>
                                                 <div className="flex gap-2 mt-2">
-                                                    {(['professional', 'strategic', 'analytical'] as const).map((personality) => (
+                                                    {(['professional', 'strategic', 'analytical'] as const).map((pType) => (
                                                         <button
-                                                            key={personality}
-                                                            onClick={() => setAiPersonality(personality)}
-                                                            className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
-                                                                aiPersonality === personality
-                                                                    ? 'bg-teal-500 text-slate-900'
-                                                                    : 'bg-white/5 text-slate-400 hover:bg-white/10'
-                                                            }`}
+                                                            key={pType}
+                                                            onClick={() => setPersonality(pType)}
+                                                            className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${personality === pType
+                                                                ? 'bg-teal-500 text-slate-900'
+                                                                : 'bg-white/5 text-slate-400 hover:bg-white/10'
+                                                                }`}
                                                         >
-                                                            {personality === 'professional' && <Star className="w-3 h-3 inline mr-1" />}
-                                                            {personality === 'strategic' && <Crown className="w-3 h-3 inline mr-1" />}
-                                                            {personality === 'analytical' && <Brain className="w-3 h-3 inline mr-1" />}
-                                                            {personality.charAt(0).toUpperCase() + personality.slice(1)}
+                                                            {pType === 'professional' && <Star className="w-3 h-3 inline mr-1" />}
+                                                            {pType === 'strategic' && <Crown className="w-3 h-3 inline mr-1" />}
+                                                            {pType === 'analytical' && <Brain className="w-3 h-3 inline mr-1" />}
+                                                            {pType.charAt(0).toUpperCase() + pType.slice(1)}
                                                         </button>
                                                     ))}
                                                 </div>
@@ -399,11 +398,10 @@ export const AdminChatSidebarEnhanced: React.FC<AdminChatSidebarEnhancedProps> =
                                                         <button
                                                             key={speed}
                                                             onClick={() => setResponseSpeed(speed)}
-                                                            className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
-                                                                responseSpeed === speed
-                                                                    ? 'bg-emerald-500 text-slate-900'
-                                                                    : 'bg-white/5 text-slate-400 hover:bg-white/10'
-                                                            }`}
+                                                            className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${responseSpeed === speed
+                                                                ? 'bg-emerald-500 text-slate-900'
+                                                                : 'bg-white/5 text-slate-400 hover:bg-white/10'
+                                                                }`}
                                                         >
                                                             {speed === 'instant' && <Zap className="w-3 h-3 inline mr-1" />}
                                                             {speed === 'normal' && <Clock className="w-3 h-3 inline mr-1" />}
@@ -417,9 +415,8 @@ export const AdminChatSidebarEnhanced: React.FC<AdminChatSidebarEnhancedProps> =
                                                 <label className="text-xs font-black uppercase tracking-widest text-slate-400">Sound Notifications</label>
                                                 <button
                                                     onClick={() => setIsMuted(!isMuted)}
-                                                    className={`p-2 rounded-lg transition-all ${
-                                                        isMuted ? 'bg-white/5 text-slate-400' : 'bg-teal-500 text-slate-900'
-                                                    }`}
+                                                    className={`p-2 rounded-lg transition-all ${isMuted ? 'bg-white/5 text-slate-400' : 'bg-teal-500 text-slate-900'
+                                                        }`}
                                                 >
                                                     {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                                                 </button>
@@ -507,7 +504,7 @@ export const AdminChatSidebarEnhanced: React.FC<AdminChatSidebarEnhancedProps> =
                                                 transition={{ delay: 0.4 }}
                                                 className="text-xs text-slate-400 mt-3 max-w-[250px] mx-auto leading-relaxed"
                                             >
-                                                {enableQuickActions 
+                                                {enableQuickActions
                                                     ? "Gunakan quick actions di atas atau tanyakan apapun tentang analytics, system health, user management, dan strategic insights."
                                                     : "Tanyakan apapun tentang analytics, system health, user management, dan strategic insights."
                                                 }
@@ -539,7 +536,7 @@ export const AdminChatSidebarEnhanced: React.FC<AdminChatSidebarEnhancedProps> =
                                                         return part;
                                                     })}
                                                 </div>
-                                                
+
                                                 {/* Message Actions */}
                                                 <div className="flex items-center gap-2 opacity-0 hover:opacity-100 transition-opacity">
                                                     <button
@@ -606,7 +603,7 @@ export const AdminChatSidebarEnhanced: React.FC<AdminChatSidebarEnhancedProps> =
                                                 handleSend();
                                             }
                                         }}
-                                        placeholder={`Tanya sebagai admin... (Personality: ${aiPersonality})`}
+                                        placeholder={`Tanya sebagai admin... (Personality: ${personality})`}
                                         className="w-full bg-white/5 border border-white/10 rounded-2xl pl-5 pr-14 py-4 text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/30 transition-all resize-none max-h-32 backdrop-blur-sm"
                                         rows={2}
                                         autoFocus
@@ -621,7 +618,7 @@ export const AdminChatSidebarEnhanced: React.FC<AdminChatSidebarEnhancedProps> =
                                 </div>
                                 <div className="flex items-center justify-between mt-3">
                                     <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest opacity-50 flex items-center gap-2">
-                                        <HelpCircle className="w-3 h-3" /> 
+                                        <HelpCircle className="w-3 h-3" />
                                         {isMinimized ? 'Press Enter to send' : 'Enter: send • Ctrl+M: mute • Ctrl+S: settings • Esc: close'}
                                     </p>
                                     {session && (
