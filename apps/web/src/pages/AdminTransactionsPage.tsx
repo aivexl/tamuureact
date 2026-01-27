@@ -9,7 +9,9 @@ import {
     CheckCircle,
     XCircle,
     Clock,
-    RefreshCw
+    RefreshCw,
+    Copy,
+    Check
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { admin } from '@/lib/api';
@@ -40,6 +42,13 @@ export const AdminTransactionsPage: React.FC = () => {
     const [dateRange, setDateRange] = useState('all'); // all, week, month, year
     const [customStartDate, setCustomStartDate] = useState('');
     const [customEndDate, setCustomEndDate] = useState('');
+    const [copiedId, setCopiedId] = useState<string | null>(null);
+
+    const handleCopy = (id: string) => {
+        navigator.clipboard.writeText(id);
+        setCopiedId(id);
+        setTimeout(() => setCopiedId(null), 2000);
+    };
 
     const parseDate = (dateStr: string) => {
         if (!dateStr) return new Date();
@@ -333,7 +342,17 @@ export const AdminTransactionsPage: React.FC = () => {
                                 className="border-b border-white/5 hover:bg-white/[0.01] transition-colors group"
                             >
                                 <td className="px-8 py-6">
-                                    <p className="text-white font-mono text-xs mb-1">{t.external_id || t.id.slice(0, 8)}</p>
+                                    <button
+                                        onClick={() => handleCopy(t.external_id || t.id)}
+                                        className="flex items-center gap-2 text-white font-mono text-xs mb-1 hover:text-teal-400 transition-colors group/copy"
+                                    >
+                                        {t.external_id || t.id.slice(0, 8)}
+                                        {copiedId === (t.external_id || t.id) ? (
+                                            <Check className="w-3 h-3 text-emerald-500" />
+                                        ) : (
+                                            <Copy className="w-3 h-3 opacity-0 group-hover/copy:opacity-100 transition-opacity" />
+                                        )}
+                                    </button>
                                     <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-bold uppercase tracking-wide">
                                         <Calendar className="w-3 h-3" />
                                         {formatDate(t.created_at)}

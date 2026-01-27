@@ -13,6 +13,8 @@ import {
   Download,
   X,
   AlertTriangle,
+  Copy,
+  Check,
 } from "lucide-react";
 import { PremiumLoader } from "../components/ui/PremiumLoader";
 import { motion, AnimatePresence } from "framer-motion";
@@ -32,6 +34,13 @@ export const BillingPage: React.FC = () => {
     "success" | "pending" | null
   >(null);
   const [isCancelling, setIsCancelling] = React.useState(false);
+  const [copiedId, setCopiedId] = React.useState<string | null>(null);
+
+  const handleCopy = (id: string) => {
+    navigator.clipboard.writeText(id);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   const fetchTransactions = React.useCallback(async () => {
     if (!user?.id) return;
@@ -469,8 +478,18 @@ export const BillingPage: React.FC = () => {
                           key={tx.id}
                           className="hover:bg-slate-50 transition-colors"
                         >
-                          <td className="px-8 py-5 text-xs text-slate-400 font-mono">
-                            {tx.external_id?.substring(0, 16)}
+                          <td className="px-8 py-5">
+                            <button
+                              onClick={() => handleCopy(tx.external_id)}
+                              className="flex items-center gap-2 text-xs text-slate-400 font-mono hover:text-indigo-600 transition-colors group/copy"
+                            >
+                              {tx.external_id}
+                              {copiedId === tx.external_id ? (
+                                <Check className="w-3 h-3 text-emerald-500" />
+                              ) : (
+                                <Copy className="w-3 h-3 opacity-0 group-hover/copy:opacity-100 transition-opacity" />
+                              )}
+                            </button>
                           </td>
                           <td className="px-6 py-5 text-[11px] text-slate-600 leading-tight">
                             {formatDateFull(tx.created_at)}

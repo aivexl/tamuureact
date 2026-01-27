@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { AdminLayout } from '../components/Layout/AdminLayout';
+import { useSearchParams } from 'react-router-dom';
 import {
     Search,
     Filter,
@@ -52,9 +53,13 @@ interface AdminUsersPageProps {
 }
 
 export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRole }) => {
+    const [searchParams] = useSearchParams();
+    const targetUserId = searchParams.get('id');
+    const targetInvitationId = searchParams.get('invitationId');
+
     const [users, setUsers] = useState<UserData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useState(targetUserId || '');
     const [filterTier, setFilterTier] = useState('all');
     const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -112,6 +117,22 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
             setIsLoading(true);
             const data = await admin.listUsers(initialRole);
             setUsers(data);
+
+            // Auto-select user if ID is in URL
+            if (targetUserId) {
+                const targetUser = data.find((u: UserData) => u.id === targetUserId);
+                if (targetUser) {
+                    setSelectedUser(targetUser);
+                    setEditForm({
+                        tier: targetUser.tier,
+                        expires_at: targetUser.expires_at ? targetUser.expires_at.split('T')[0] : '',
+                        max_invitations: targetUser.max_invitations,
+                        role: targetUser.role,
+                        permissions: targetUser.permissions || []
+                    });
+                    setIsEditModalOpen(true);
+                }
+            }
         } catch (err) {
             console.error('[AdminUsers] Fetch error:', err);
             toast.error('Gagal mengambil data user');

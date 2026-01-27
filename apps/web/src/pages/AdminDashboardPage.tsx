@@ -99,13 +99,25 @@ export const AdminDashboardPage: React.FC = () => {
         const date = new Date(dateStr);
         const now = new Date();
         const diffMs = now.getTime() - date.getTime();
-        const diffMins = Math.floor(diffMs / 60000);
+        const diffSecs = Math.floor(diffMs / 1000);
+        const diffMins = Math.floor(diffSecs / 60);
         const diffHours = Math.floor(diffMins / 60);
-        const diffDays = Math.floor(diffHours / 24);
 
-        if (diffMins < 60) return `${diffMins} mins ago`;
-        if (diffHours < 24) return `${diffHours} hours ago`;
-        return `${diffDays} days ago`;
+        if (diffSecs < 60) return `${diffSecs}s ago`;
+
+        // Return HH:mm:ss for today's activities
+        if (date.toDateString() === now.toDateString()) {
+            return date.toLocaleTimeString('id-ID', { hour12: false });
+        }
+
+        return date.toLocaleString('id-ID', {
+            day: 'numeric',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        });
     };
 
     const getActivityIcon = (type: string) => {
@@ -118,17 +130,24 @@ export const AdminDashboardPage: React.FC = () => {
     };
 
     const handleViewDetail = (activity: any) => {
-        if (!activity.target_id) return;
+        // Log to debug why some buttons might not click
+        console.log('[AdminDashboard] Activity Detail Clicked:', activity);
+
+        if (!activity.target_id) {
+            console.warn('[AdminDashboard] Missing target_id for activity');
+            return;
+        }
 
         switch (activity.type) {
             case 'user':
                 navigate(`/admin/users?id=${activity.target_id}`);
                 break;
             case 'invitation':
-                navigate(`/user/editor/${activity.target_id}`);
+                // Redirect to admin templates or users with that invitation context
+                navigate(`/admin/users?id=${activity.user_id || ''}&invitationId=${activity.target_id}`);
                 break;
             case 'rsvp':
-                navigate(`/guests/${activity.target_id}`);
+                navigate(`/admin/activity?type=rsvp&id=${activity.target_id}`);
                 break;
             default:
                 break;

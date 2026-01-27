@@ -474,6 +474,22 @@ export const users = {
         if (!res.ok) throw new Error('Failed to update profile');
         const updatedData = await res.json();
         return sanitizeValue(updatedData);
+    },
+
+    async askAI(messages: { role: 'user' | 'assistant'; content: string }[], userId?: string, token?: string) {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await safeFetch(`${API_BASE}/api/chat`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ messages, userId })
+        });
+        if (!res.ok) {
+            const error = await res.json();
+            throw new Error(error.error || 'Failed to get AI response');
+        }
+        return res.json();
     }
 };
 
@@ -698,6 +714,19 @@ export const admin = {
         });
         if (!res.ok) throw new Error('Failed to delete user');
         return true;
+    },
+
+    async askAI(messages: { role: 'user' | 'assistant'; content: string }[]) {
+        const res = await safeFetch(`${API_BASE}/api/admin/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages })
+        });
+        if (!res.ok) {
+            const error = await res.json();
+            throw new Error(error.error || 'Failed to get AI response');
+        }
+        return res.json();
     }
 };
 

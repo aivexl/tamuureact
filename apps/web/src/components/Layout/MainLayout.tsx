@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navbar } from './Navbar';
 const Footer = React.lazy(() => import('./Footer').then(m => ({ default: m.Footer })));
+import { UserChatSidebar } from './UserChatSidebar';
 
 interface MainLayoutProps {
     children: React.ReactNode;
@@ -16,6 +17,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             <React.Suspense fallback={null}>
                 <Footer />
             </React.Suspense>
+            <UserChatSidebar />
         </div>
     );
 };

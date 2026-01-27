@@ -372,6 +372,19 @@ Invitations are organized into multiple **Sections** (e.g., Opening, Bride & Gro
 - **Mechanism**: `AnimatedLayer.tsx` calculates a `relativeShift` based on the targeted anchor's height, preventing element overlaps automatically.
 - **Admin Control**: Granular permissions (Text, Style, Image, Position) enforced in `UserElementEditor.tsx` and previewed via **Simulation Mode**.
 
+### 🤖 AI Support Core (Intelligence v5.0)
+- **Proactive Autonomous Agent**: Transitioned from a passive chatbot to an autonomous agent capable of executing business logic via **Function Calling**.
+- **The Expert Persona**: Models the persona of a 30-year technical expert and CSR lead (MIT/Stanford grade).
+- **Proactive Diagnostic Engine**: Performs a silent account audit (Payments, Tiers, RSVPs) on chat initialization to resolve issues before the user asks.
+- **Autonomous Toolset**: AI has permissioned write-access to specialized tools (`sync_payment`, `upgrade_tier`, `repair_invitation`) scoped by user ID.
+- **Dual-Model Logic**: Primary intelligence powered by **Gemini 2.0 Flash** (for tool-use) with a zero-latency fallback to **Groq (Llama-3.3)**.
+- **Tone Enforcement**: Strict adherence to professional Indonesian (EYD) and elite brand tone.
+
+### 🛡️ Data Integrity Shield
+- **Identity Resolver**: Hybrid lookup engine (Email + Canonical UUID) that eliminates data isolation due to authentication provider drift.
+- **Orphan Auto-Repair**: Automated re-linking of unassociated database records during session initialization.
+- **Ghost Resolution**: Backend-level safeguards that ensure data binding even if client-side IDs are temporarily unavailable.
+
 ---
 
 ## 📜 Development Rules

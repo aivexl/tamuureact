@@ -17,6 +17,7 @@ import {
     Briefcase
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
+import { AdminChatSidebar } from './AdminChatSidebar';
 
 interface SidebarItemProps {
     href: string;
@@ -53,7 +54,7 @@ const SidebarItem = ({ href, icon: Icon, label, active, sidebarOpen }: SidebarIt
 export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const location = useLocation();
-    const { user } = useStore();
+    const { user, logout } = useStore();
 
     const hasPermission = (perm: string) => {
         if (!user) return false;
@@ -187,7 +188,10 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
 
                 {/* Footer */}
                 <div className="p-4 border-t border-white/5">
-                    <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors">
+                    <button
+                        onClick={logout}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors"
+                    >
                         <LogOut className="w-5 h-5" />
                         {sidebarOpen && <span className="text-sm font-bold">Sign Out</span>}
                     </button>
@@ -229,6 +233,9 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                     onClick={() => setSidebarOpen(false)}
                 />
             )}
+
+            {/* AI CHATBOT SIDEBAR (PHASE 1) */}
+            <AdminChatSidebar />
         </div>
     );
 };

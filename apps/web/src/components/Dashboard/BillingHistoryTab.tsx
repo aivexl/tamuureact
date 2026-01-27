@@ -10,7 +10,9 @@ import {
     Download,
     ExternalLink,
     CreditCard,
-    XCircle
+    XCircle,
+    Copy,
+    Check
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -29,6 +31,13 @@ interface Transaction {
 export const BillingHistoryTab: React.FC = () => {
     const { user, showModal } = useStore();
     const { data: transactions = [], isLoading, refetch } = useTransactions(user?.id);
+    const [copiedId, setCopiedId] = React.useState<string | null>(null);
+
+    const handleCopy = (id: string) => {
+        navigator.clipboard.writeText(id);
+        setCopiedId(id);
+        setTimeout(() => setCopiedId(null), 2000);
+    };
 
     const handleCancel = async (orderId: string) => {
         showModal({
@@ -239,8 +248,18 @@ export const BillingHistoryTab: React.FC = () => {
                         <tbody className="divide-y divide-slate-100 italic font-medium">
                             {transactions.map((tx: Transaction) => (
                                 <tr key={tx.id} className="hover:bg-slate-50/50 transition-colors group">
-                                    <td className="px-8 py-5 text-[10px] text-slate-400 font-mono">
-                                        #{tx.external_id?.substring(0, 16)}
+                                    <td className="px-8 py-5">
+                                        <button
+                                            onClick={() => handleCopy(tx.external_id)}
+                                            className="flex items-center gap-2 text-[10px] text-slate-400 font-mono hover:text-indigo-600 transition-colors group/copy"
+                                        >
+                                            #{tx.external_id}
+                                            {copiedId === tx.external_id ? (
+                                                <Check className="w-3 h-3 text-emerald-500" />
+                                            ) : (
+                                                <Copy className="w-3 h-3 opacity-0 group-hover/copy:opacity-100 transition-opacity" />
+                                            )}
+                                        </button>
                                     </td>
                                     <td className="px-6 py-5 text-[11px] text-slate-600 leading-tight">
                                         {formatDateFull(tx.created_at)}
@@ -256,12 +275,12 @@ export const BillingHistoryTab: React.FC = () => {
                                     <td className="px-6 py-5">
                                         <div className="flex items-center gap-2">
                                             <div className={`w-2 h-2 rounded-full ${tx.status === "PAID" ? "bg-emerald-500" :
-                                                    tx.status === "PENDING" ? "bg-amber-500 animate-pulse" :
-                                                        tx.status === "EXPIRED" ? "bg-slate-400" : "bg-rose-500"
+                                                tx.status === "PENDING" ? "bg-amber-500 animate-pulse" :
+                                                    tx.status === "EXPIRED" ? "bg-slate-400" : "bg-rose-500"
                                                 }`} />
                                             <span className={`text-[10px] font-black uppercase tracking-widest ${tx.status === "PAID" ? "text-emerald-600" :
-                                                    tx.status === "PENDING" ? "text-amber-600" :
-                                                        tx.status === "EXPIRED" ? "text-slate-500" : "text-rose-600"
+                                                tx.status === "PENDING" ? "text-amber-600" :
+                                                    tx.status === "EXPIRED" ? "text-slate-500" : "text-rose-600"
                                                 }`}>
                                                 {tx.status === "PAID" ? "Paid" :
                                                     tx.status === "PENDING" ? "Pending" :
@@ -290,7 +309,7 @@ export const BillingHistoryTab: React.FC = () => {
                                                 </>
                                             ) : (
                                                 <span className={`text-[10px] font-bold uppercase tracking-widest ${tx.status === "PAID" ? "text-emerald-500" :
-                                                        tx.status === "EXPIRED" ? "text-slate-400" : "text-rose-400"
+                                                    tx.status === "EXPIRED" ? "text-slate-400" : "text-rose-400"
                                                     }`}>
                                                     {tx.status === "PAID" ? "Paid" :
                                                         tx.status === "EXPIRED" ? "Expired" : "Cancelled"}
