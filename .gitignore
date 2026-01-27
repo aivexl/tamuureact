@@ -20,6 +20,19 @@ yarn-error.log*
 .env.local
 .env.*.local
 
+# secrets & api keys - NEVER COMMIT
+*.key
+*.pem
+.wrangler/
+.wrangler/secrets/
+**/.secrets/
+
+# sensitive docs with API keys
+**/API_KEY*
+**/SECRET*
+**/CREDENTIALS*
+.env.*.local
+
 # misc
 .vscode/
 .DS_Store

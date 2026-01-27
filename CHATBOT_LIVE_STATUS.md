@@ -11,11 +11,11 @@ Status:          🟢 LIVE & OPERATIONAL
 🔑 GEMINI API KEY CONFIGURATION
 ═══════════════════════════════════════════════════════════════════════════════
 
-✅ API Key:      AIzaSyAu_ub8Jy5vG23NPEHDXkq6RJEwjFMTOo8
+✅ API Key:      [STORED IN CLOUDFLARE SECRETS - NOT VISIBLE]
 ✅ Storage:      Cloudflare Workers Secrets (GEMINI_API_KEY)
 ✅ Environment:  production
 ✅ Binding:      env.GEMINI_API_KEY (accessible in worker code)
-✅ Deployed:     Yes (Worker version: 32908820-1a46-4250-9441-689b2afd51ee)
+✅ Deployed:     Yes (Worker version: d476a6f5-3cb9-4a09-b4af-94d7907f4462)
 
 ═══════════════════════════════════════════════════════════════════════════════
 📝 TEST RESPONSE FROM API
