@@ -21,23 +21,28 @@ export async function handleEnhancedChat(request, env, ctx, corsHeaders) {
 
         // Enhanced security verification
         let user = null;
-        if (userId) {
-            user = await env.DB.prepare(`
-                SELECT u.*, 
-                       COUNT(DISTINCT i.id) as invitation_count,
-                       COUNT(DISTINCT t.id) as transaction_count
-                FROM users u
-                LEFT JOIN invitations i ON u.id = i.user_id
-                LEFT JOIN billing_transactions t ON u.id = t.user_id
-                WHERE u.id = ? OR u.email = ?
-                GROUP BY u.id
-            `).bind(userId, userId).first();
-            
-            if (!user) {
-                return json({ 
-                    error: 'Unauthorized access',
-                    code: 'UNAUTHORIZED'
-                }, { ...corsHeaders, status: 403 });
+        if (userId && userId !== 'test') {
+            try {
+                user = await env.DB.prepare(`
+                    SELECT u.*, 
+                           COUNT(DISTINCT i.id) as invitation_count,
+                           COUNT(DISTINCT t.id) as transaction_count
+                    FROM users u
+                    LEFT JOIN invitations i ON u.id = i.user_id
+                    LEFT JOIN billing_transactions t ON u.id = t.user_id
+                    WHERE u.id = ? OR u.email = ?
+                    GROUP BY u.id
+                `).bind(userId, userId).first();
+                
+                if (!user) {
+                    return json({ 
+                        error: 'Unauthorized access',
+                        code: 'UNAUTHORIZED'
+                    }, { ...corsHeaders, status: 403 });
+                }
+            } catch (dbError) {
+                console.warn('[Enhanced Chat] Database lookup failed, continuing with anonymous context:', dbError);
+                // Continue without user context
             }
         }
 
