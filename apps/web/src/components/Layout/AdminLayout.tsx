@@ -17,7 +17,7 @@ import {
     Briefcase
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
-import { AdminChatSidebar } from './AdminChatSidebar';
+import { AdminChatSidebarWrapper } from './AdminChatSidebarWrapper';
 
 interface SidebarItemProps {
     href: string;
@@ -234,8 +234,17 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                 />
             )}
 
-            {/* AI CHATBOT SIDEBAR (PHASE 1) */}
-            <AdminChatSidebar />
+            {/* AI CHATBOT SIDEBAR - Enterprise Wrapper for Backward Compatibility */}
+            <AdminChatSidebarWrapper 
+                useEnhanced={false} // Set to true untuk aktifkan enhanced version
+                userId={user?.id}
+                enhancedProps={{
+                    enableSessionTracking: true,
+                    enableQuickActions: true,
+                    enableSettingsPanel: true,
+                    aiPersonality: 'professional'
+                }}
+            />
         </div>
     );
 };

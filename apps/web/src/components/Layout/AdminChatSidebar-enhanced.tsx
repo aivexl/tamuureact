@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     MessageSquare,
@@ -10,38 +10,90 @@ import {
     Sparkles,
     ChevronRight,
     HelpCircle,
-    Brain,
-    Zap,
-    AlertTriangle,
     Settings,
-    BarChart3
+    Volume2,
+    VolumeX,
+    Zap,
+    Brain,
+    Clock,
+    Copy,
+    RotateCcw,
+    Check,
+    Minimize2,
+    Maximize2,
+    BarChart3,
+    Shield,
+    Award,
+    Crown,
+    Star
 } from 'lucide-react';
 import { admin } from '../../lib/api';
 import { PremiumLoader } from '../ui/PremiumLoader';
-import EnhancedAIService, { MessageFormatter, AIPerformanceMonitor } from '../../lib/enhanced-ai';
+import { useStore } from '../../lib/store';
 
 interface Message {
+    id: string;
     role: 'user' | 'assistant';
     content: string;
-    timestamp?: number;
+    timestamp: Date;
+    responseTime?: number;
     metadata?: {
-        responseTime?: number;
-        contextUsed?: boolean;
-        toolsExecuted?: number;
-        error?: string;
+        provider?: string;
+        intent?: string;
+        confidence?: number;
         fallback?: boolean;
+        error?: string;
     };
 }
 
-export const AdminChatSidebar: React.FC = () => {
+interface ChatSession {
+    id: string;
+    startTime: Date;
+    messageCount: number;
+    totalResponseTime: number;
+    averageResponseTime: number;
+    userTier: 'free' | 'premium' | 'business';
+    userPersona: string;
+}
+
+interface AdminChatSidebarEnhancedProps {
+    userId?: string;
+    enableSessionTracking?: boolean;
+    enableQuickActions?: boolean;
+    enableSettingsPanel?: boolean;
+    aiPersonality?: 'professional' | 'strategic' | 'analytical';
+}
+
+interface QuickAction {
+    id: string;
+    label: string;
+    icon: React.ReactNode;
+    action: () => void;
+    category: 'analytics' | 'support' | 'management';
+}
+
+export const AdminChatSidebarEnhanced: React.FC<AdminChatSidebarEnhancedProps> = ({
+    userId,
+    enableSessionTracking = true,
+    enableQuickActions = true,
+    enableSettingsPanel = true,
+    aiPersonality = 'professional'
+}) => {
+    const { user } = useStore();
     const [isOpen, setIsOpen] = useState(false);
+    const [isMinimized, setIsMinimized] = useState(false);
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [showAnalytics, setShowAnalytics] = useState(false);
-    const [performanceMetrics, setPerformanceMetrics] = useState<any>(null);
+    const [isMuted, setIsMuted] = useState(false);
+    const [session, setSession] = useState<ChatSession | null>(null);
+    const [showSettings, setShowSettings] = useState(false);
+    const [aiPersonality, setAiPersonality] = useState<'professional' | 'strategic' | 'analytical'>(aiPersonality);
+    const [responseSpeed, setResponseSpeed] = useState<'instant' | 'normal' | 'analytical'>('normal');
+    const [copiedMessage, setCopiedMessage] = useState<string | null>(null);
+    const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
-    const aiService = EnhancedAIService.getInstance();
+    const inputRef = useRef<HTMLTextAreaElement>(null);
 
     // Auto scroll to bottom
     useEffect(() => {
@@ -50,381 +102,539 @@ export const AdminChatSidebar: React.FC = () => {
         }
     }, [messages, isLoading]);
 
-    // Update performance metrics
+    // Initialize session
     useEffect(() => {
-        const interval = setInterval(() => {
-            setPerformanceMetrics(AIPerformanceMonitor.getPerformanceReport());
-        }, 5000);
-        
-        return () => clearInterval(interval);
-    }, []);
+        if (isOpen && !session) {
+            const newSession: ChatSession = {
+                id: `admin-session-${Date.now()}`,
+                startTime: new Date(),
+                messageCount: 0,
+                totalResponseTime: 0,
+                averageResponseTime: 0,
+                userTier: 'business',
+                userPersona: 'admin_analyst'
+            };
+            setSession(newSession);
+        }
+    }, [isOpen, session]);
+
+    // Keyboard shortcuts
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (!isOpen) return;
+            
+            if (e.key === 'Escape') {
+                setIsOpen(false);
+            } else if (e.key === 'm' && e.ctrlKey) {
+                setIsMuted(!isMuted);
+            } else if (e.key === 's' && e.ctrlKey && enableSettingsPanel) {
+                setShowSettings(!showSettings);
+            } else if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, isMuted, showSettings, input, isLoading, enableSettingsPanel]);
 
     const handleSend = async () => {
         if (!input.trim() || isLoading) return;
 
-        const userMsg: Message = { 
-            role: 'user', 
+        const startTime = Date.now();
+        const userMsg: Message = {
+            id: `msg-${Date.now()}`,
+            role: 'user',
             content: input,
-            timestamp: Date.now()
+            timestamp: new Date()
         };
+        
         setMessages(prev => [...prev, userMsg]);
         setInput('');
         setIsLoading(true);
 
-        // Enhanced acknowledgment message
-        const ackMsg: Message = {
-            role: 'assistant',
-            content: MessageFormatter.getTypingIndicator(),
-            isIntermediate: true,
-            timestamp: Date.now()
-        };
-        setMessages(prev => [...prev, ackMsg]);
-
         try {
-            // Use enhanced AI service
-            const response = await aiService.sendMessage(input);
+            const response = await admin.askAI([...messages.map(m => ({ role: m.role, content: m.content })), { role: 'user', content: input }]);
+            const responseTime = Date.now() - startTime;
             
-            // Remove intermediate message
-            setMessages(prev => prev.filter(m => !m.isIntermediate));
-            
-            // Add AI response with enhanced formatting
-            const aiMsg: Message = {
+            const assistantMsg: Message = {
+                id: `msg-${Date.now() + 1}`,
                 role: 'assistant',
-                content: MessageFormatter.formatResponse(response),
-                timestamp: Date.now(),
-                metadata: response.metadata
+                content: response.content,
+                timestamp: new Date(),
+                responseTime,
+                metadata: response.metadata || {}
             };
-            setMessages(prev => [...prev, aiMsg]);
             
-            // Record performance metric
-            AIPerformanceMonitor.recordMetric(
-                response.metadata?.responseTime || 0,
-                !response.error,
-                response.error
-            );
+            setMessages(prev => [...prev, assistantMsg]);
             
+            // Update session stats
+            if (session) {
+                const newTotalResponseTime = session.totalResponseTime + responseTime;
+                const newMessageCount = session.messageCount + 1;
+                setSession({
+                    ...session,
+                    messageCount: newMessageCount,
+                    totalResponseTime: newTotalResponseTime,
+                    averageResponseTime: newTotalResponseTime / newMessageCount
+                });
+            }
         } catch (err: any) {
-            // Remove intermediate message
-            setMessages(prev => prev.filter(m => !m.isIntermediate));
-            
-            // Enhanced error handling
-            const errorResponse = aiService.handleAIError(err);
             const errorMsg: Message = {
+                id: `msg-${Date.now() + 1}`,
                 role: 'assistant',
-                content: errorResponse.content,
-                timestamp: Date.now(),
-                metadata: { error: errorResponse.error, fallback: true }
+                content: `Maaf Kak, ada kendala teknis: ${err.message}. Tim engineer kami sedang menyelesaikan masalah ini dengan prioritas tinggi. 🙏`,
+                timestamp: new Date(),
+                metadata: { error: 'NETWORK_ERROR', fallback: true }
             };
             setMessages(prev => [...prev, errorMsg]);
-            
-            console.error('[Enhanced Admin AI Chat] Error:', err);
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleQuickAction = (action: string) => {
-        const quickActions = {
-            'analytics': 'Tampilkan analisis performa sistem',
-            'users': 'Berikan statistik pengguna hari ini',
-            'orders': 'Tampilkan ringkasan pesanan',
-            'system': 'Cek status sistem dan kesehatan'
+    const handleCopyMessage = async (content: string, messageId: string) => {
+        try {
+            await navigator.clipboard.writeText(content);
+            setCopiedMessage(messageId);
+            setTimeout(() => setCopiedMessage(null), 2000);
+        } catch (err) {
+            console.error('Failed to copy message:', err);
+        }
+    };
+
+    const handleRegenerateMessage = async (messageIndex: number) => {
+        const previousMessages = messages.slice(0, messageIndex);
+        const lastUserMessage = previousMessages.reverse().find(m => m.role === 'user');
+        
+        if (lastUserMessage) {
+            setMessages(messages.slice(0, messageIndex));
+            setInput(lastUserMessage.content);
+            setTimeout(() => handleSend(), 100);
+        }
+    };
+
+    const quickActions: QuickAction[] = [
+        {
+            id: 'analytics',
+            label: 'Analytics Dashboard',
+            icon: <BarChart3 className="w-4 h-4" />,
+            action: () => {
+                setInput('Tampilkan analytics dashboard untuk hari ini');
+                handleSend();
+            },
+            category: 'analytics'
+        },
+        {
+            id: 'system-health',
+            label: 'System Health',
+            icon: <Shield className="w-4 h-4" />,
+            action: () => {
+                setInput('Cek status kesehatan sistem dan performa API');
+                handleSend();
+            },
+            category: 'analytics'
+        },
+        {
+            id: 'user-management',
+            label: 'User Management',
+            icon: <Crown className="w-4 h-4" />,
+            action: () => {
+                setInput('Tampilkan daftar user premium dan aktivitas mereka');
+                handleSend();
+            },
+            category: 'management'
+        },
+        {
+            id: 'support-tickets',
+            label: 'Support Tickets',
+            icon: <MessageSquare className="w-4 h-4" />,
+            action: () => {
+                setInput('Lihat daftar ticket support yang belum diselesaikan');
+                handleSend();
+            },
+            category: 'support'
+        }
+    ];
+
+    const getWelcomeMessage = () => {
+        const tier = session?.userTier || 'business';
+        const persona = aiPersonality;
+        
+        const messages = {
+            business: {
+                professional: "Selamat datang di Admin Dashboard Tamuu Enterprise! 🏆 Sistem AI analitik kami siap membantu optimasi bisnis Kak dengan data-driven insights.",
+                strategic: "Halo Admin Strategis! 🎯 Mari kita analisis tren market dan strategi pertumbuhan dengan AI-powered business intelligence.",
+                analytical: "Selamat datang di Command Center! 📊 Sistem analitik advanced kami siap memproses big data untuk actionable insights."
+            },
+            premium: {
+                professional: "Welcome Admin Premium! ✨ Tools advanced dan analytics premium siap mendukung decision making Kak.",
+                strategic: "Halo Strategic Partner! 🚀 Mari optimalkan performance dengan premium analytics dan strategic recommendations.",
+                analytical: "Admin Premium Analytics Active! 🔬 Advanced data processing siap memberikan deep insights."
+            }
         };
         
-        handleSend(quickActions[action as keyof typeof quickActions]);
+        return messages[tier]?.[persona] || messages.business.professional;
     };
 
-    const clearChat = () => {
-        aiService.clearHistory();
-        setMessages([]);
+    const getPersonalityIcon = () => {
+        switch (aiPersonality) {
+            case 'strategic': return <Crown className="w-4 h-4" />;
+            case 'analytical': return <Brain className="w-4 h-4" />;
+            default: return <Star className="w-4 h-4" />;
+        }
     };
-
-    const quickActions = [
-        { key: 'analytics', label: 'Analytics', icon: '📊' },
-        { key: 'users', label: 'Users', icon: '👥' },
-        { key: 'orders', label: 'Orders', icon: '📦' },
-        { key: 'system', label: 'System', icon: '⚙️' }
-    ];
 
     return (
         <>
-            {/* Floating Chat Button */}
-            <motion.button
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+            {/* Toggle Button */}
+            <button
                 onClick={() => setIsOpen(true)}
-                className="fixed bottom-6 right-6 bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 rounded-full shadow-2xl z-50 hover:shadow-blue-500/25 transition-all duration-300"
+                className="fixed bottom-8 right-8 z-[60] w-16 h-16 bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-900 rounded-full shadow-[0_20px_50px_rgba(20,184,166,0.3)] flex items-center justify-center hover:scale-110 active:scale-95 transition-all group group-hover:shadow-[0_25px_60px_rgba(20,184,166,0.4)]"
             >
-                <MessageSquare className="w-6 h-6" />
-            </motion.button>
+                <Bot className="w-7 h-7 group-hover:rotate-12 transition-transform" />
+                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-r from-rose-500 to-orange-500 animate-pulse" />
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-teal-400 to-emerald-400 opacity-0 group-hover:opacity-20 transition-opacity" />
+            </button>
 
             <AnimatePresence>
                 {isOpen && (
-                    <>
-                        {/* Backdrop */}
+                    <div className="fixed inset-0 z-[100] flex justify-end">
+                        {/* Overlay */}
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsOpen(false)}
-                            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                         />
 
-                        {/* Chat Sidebar */}
+                        {/* Sidebar */}
                         <motion.div
                             initial={{ x: '100%' }}
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
-                            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-                            className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col"
+                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                            className={`relative bg-[#0A0A0A] border-l border-white/10 shadow-[-20px_0_50px_rgba(0,0,0,0.5)] flex flex-col ${isMinimized ? 'w-80' : 'w-full max-w-md'}`}
                         >
                             {/* Header */}
-                            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-6">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center space-x-3">
-                                        <div className="relative">
-                                            <Bot className="w-8 h-8" />
-                                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse" />
+                            <div className="p-6 border-b border-white/10 bg-gradient-to-r from-teal-500/10 to-emerald-500/10 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="relative">
+                                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-teal-500/20">
+                                            <Bot className="w-6 h-6 text-slate-900" />
                                         </div>
-                                        <div>
-                                            <h3 className="font-bold text-lg">Tamuu Admin AI</h3>
-                                            <p className="text-sm opacity-90">{isLoading ? 'Processing...' : 'Ready'}</p>
-                                        </div>
+                                        <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-[#0A0A0A] animate-pulse" />
                                     </div>
-                                    <div className="flex items-center space-x-2">
-                                        <button
-                                            onClick={() => setShowAnalytics(!showAnalytics)}
-                                            className="p-2 hover:bg-white/20 rounded-full transition-colors"
-                                            title="Toggle Analytics"
-                                        >
-                                            <BarChart3 className="w-5 h-5" />
-                                        </button>
-                                        <button
-                                            onClick={() => setIsOpen(false)}
-                                            className="p-2 hover:bg-white/20 rounded-full transition-colors"
-                                        >
-                                            <X className="w-5 h-5" />
-                                        </button>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-white leading-none">Tamuu Admin AI</h3>
+                                        <div className="flex items-center gap-1.5 mt-1.5">
+                                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Enterprise AI Engine V8</span>
+                                        </div>
                                     </div>
                                 </div>
-                                
-                                {/* Performance Metrics */}
-                                {performanceMetrics && (
-                                    <div className="mt-3 flex items-center space-x-4 text-xs opacity-80">
-                                        <div className="flex items-center space-x-1">
-                                            <Zap className="w-3 h-3" />
-                                            <span>{Math.round(performanceMetrics.averageResponseTime)}ms</span>
-                                        </div>
-                                        <div className="flex items-center space-x-1">
-                                            <Brain className="w-3 h-3" />
-                                            <span>{Math.round(performanceMetrics.successRate * 100)}%</span>
-                                        </div>
-                                    </div>
-                                )}
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => setIsMinimized(!isMinimized)}
+                                        className="p-2 hover:bg-white/5 rounded-xl text-slate-400 transition-colors"
+                                        title={isMinimized ? 'Maximize' : 'Minimize'}
+                                    >
+                                        {isMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
+                                    </button>
+                                    {enableSettingsPanel && (
+                                        <button
+                                            onClick={() => setShowSettings(!showSettings)}
+                                            className="p-2 hover:bg-white/5 rounded-xl text-slate-400 transition-colors"
+                                            title="Settings"
+                                        >
+                                            <Settings className="w-4 h-4" />
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={() => setIsOpen(false)}
+                                        className="p-2 hover:bg-white/5 rounded-xl text-slate-400 transition-colors"
+                                    >
+                                        <X className="w-6 h-6" />
+                                    </button>
+                                </div>
                             </div>
 
-                            {/* Analytics Panel */}
-                            {showAnalytics && performanceMetrics && (
-                                <div className="bg-blue-50 p-4 border-b">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h4 className="font-semibold text-blue-900 flex items-center">
-                                            <BarChart3 className="w-4 h-4 mr-2" />
-                                            AI Performance Analytics
-                                        </h4>
-                                        <button
-                                            onClick={() => setShowAnalytics(false)}
-                                            className="text-blue-600 hover:text-blue-800"
-                                        >
-                                            <X className="w-4 h-4" />
-                                        </button>
+                            {/* Settings Panel */}
+                            <AnimatePresence>
+                                {showSettings && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        className="border-b border-white/10 bg-white/5 overflow-hidden"
+                                    >
+                                        <div className="p-4 space-y-4">
+                                            <div>
+                                                <label className="text-xs font-black uppercase tracking-widest text-slate-400">AI Personality</label>
+                                                <div className="flex gap-2 mt-2">
+                                                    {(['professional', 'strategic', 'analytical'] as const).map((personality) => (
+                                                        <button
+                                                            key={personality}
+                                                            onClick={() => setAiPersonality(personality)}
+                                                            className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
+                                                                aiPersonality === personality
+                                                                    ? 'bg-teal-500 text-slate-900'
+                                                                    : 'bg-white/5 text-slate-400 hover:bg-white/10'
+                                                            }`}
+                                                        >
+                                                            {personality === 'professional' && <Star className="w-3 h-3 inline mr-1" />}
+                                                            {personality === 'strategic' && <Crown className="w-3 h-3 inline mr-1" />}
+                                                            {personality === 'analytical' && <Brain className="w-3 h-3 inline mr-1" />}
+                                                            {personality.charAt(0).toUpperCase() + personality.slice(1)}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-black uppercase tracking-widest text-slate-400">Response Speed</label>
+                                                <div className="flex gap-2 mt-2">
+                                                    {(['instant', 'normal', 'analytical'] as const).map((speed) => (
+                                                        <button
+                                                            key={speed}
+                                                            onClick={() => setResponseSpeed(speed)}
+                                                            className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
+                                                                responseSpeed === speed
+                                                                    ? 'bg-emerald-500 text-slate-900'
+                                                                    : 'bg-white/5 text-slate-400 hover:bg-white/10'
+                                                            }`}
+                                                        >
+                                                            {speed === 'instant' && <Zap className="w-3 h-3 inline mr-1" />}
+                                                            {speed === 'normal' && <Clock className="w-3 h-3 inline mr-1" />}
+                                                            {speed === 'analytical' && <Brain className="w-3 h-3 inline mr-1" />}
+                                                            {speed.charAt(0).toUpperCase() + speed.slice(1)}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-xs font-black uppercase tracking-widest text-slate-400">Sound Notifications</label>
+                                                <button
+                                                    onClick={() => setIsMuted(!isMuted)}
+                                                    className={`p-2 rounded-lg transition-all ${
+                                                        isMuted ? 'bg-white/5 text-slate-400' : 'bg-teal-500 text-slate-900'
+                                                    }`}
+                                                >
+                                                    {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            {/* Session Stats */}
+                            {session && (
+                                <div className="p-4 border-b border-white/10 bg-white/5">
+                                    <div className="flex items-center justify-between text-xs">
+                                        <div className="flex items-center gap-2">
+                                            <Award className="w-4 h-4 text-teal-500" />
+                                            <span className="font-black uppercase tracking-widest text-slate-400">Session Stats</span>
+                                        </div>
+                                        <div className="flex items-center gap-4 text-slate-400">
+                                            <span>{session.messageCount} messages</span>
+                                            <span>•</span>
+                                            <span>{Math.round(session.averageResponseTime)}ms avg</span>
+                                        </div>
                                     </div>
-                                    
-                                    <div className="grid grid-cols-2 gap-3 text-sm">
-                                        <div className="bg-white p-3 rounded-lg">
-                                            <div className="text-blue-600 font-medium">Success Rate</div>
-                                            <div className="text-2xl font-bold text-blue-900">
-                                                {Math.round(performanceMetrics.successRate * 100)}%
-                                            </div>
-                                        </div>
-                                        <div className="bg-white p-3 rounded-lg">
-                                            <div className="text-blue-600 font-medium">Avg Response</div>
-                                            <div className="text-2xl font-bold text-blue-900">
-                                                {Math.round(performanceMetrics.averageResponseTime)}ms
-                                            </div>
-                                        </div>
-                                        <div className="bg-white p-3 rounded-lg">
-                                            <div className="text-blue-600 font-medium">Total Requests</div>
-                                            <div className="text-2xl font-bold text-blue-900">
-                                                {performanceMetrics.totalRequests}
-                                            </div>
-                                        </div>
-                                        <div className="bg-white p-3 rounded-lg">
-                                            <div className="text-blue-600 font-medium">Error Rate</div>
-                                            <div className="text-2xl font-bold text-red-600">
-                                                {Math.round(performanceMetrics.errorRate * 100)}%
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    {performanceMetrics.recentErrors.length > 0 && (
-                                        <div className="mt-3">
-                                            <div className="text-red-600 font-medium text-sm mb-2">Recent Errors:</div>
-                                            <div className="space-y-1">
-                                                {performanceMetrics.recentErrors.map((error, index) => (
-                                                    <div key={index} className="text-xs text-red-700 bg-red-50 p-2 rounded">
-                                                        {error}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
                                 </div>
                             )}
 
-                            {/* Chat Messages */}
-                            <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-4">
-                                {messages.length === 0 && (
-                                    <div className="text-center py-8">
-                                        <Bot className="w-16 h-16 mx-auto text-blue-500 mb-4" />
-                                        <h4 className="font-semibold text-gray-800 mb-2">Admin AI Assistant</h4>
-                                        <p className="text-gray-600 text-sm mb-6">
-                                            Halo Admin! Saya siap membantu mengelola sistem, 
-                                            menganalisis data, dan memberikan insight bisnis.
-                                        </p>
-                                        
-                                        {/* Quick Actions */}
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {quickActions.map((action) => (
-                                                <button
-                                                    key={action.key}
-                                                    onClick={() => handleQuickAction(action.key)}
-                                                    className="p-3 bg-blue-50 hover:bg-blue-100 rounded-lg text-sm font-medium transition-colors"
-                                                >
-                                                    <div className="text-lg mb-1">{action.icon}</div>
-                                                    <div>{action.label}</div>
-                                                </button>
-                                            ))}
-                                        </div>
+                            {/* Quick Actions */}
+                            {enableQuickActions && (
+                                <div className="p-4 border-b border-white/10">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <Zap className="w-4 h-4 text-emerald-500" />
+                                        <span className="text-xs font-black uppercase tracking-widest text-slate-400">Quick Actions</span>
                                     </div>
-                                )}
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {quickActions.map((action) => (
+                                            <motion.button
+                                                key={action.id}
+                                                whileHover={{ scale: 1.02 }}
+                                                whileTap={{ scale: 0.98 }}
+                                                onClick={action.action}
+                                                className="p-3 bg-white/5 hover:bg-white/10 rounded-xl text-left transition-all group"
+                                            >
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <div className="text-emerald-500">{action.icon}</div>
+                                                    <span className="text-xs font-bold text-white">{action.label}</span>
+                                                </div>
+                                                <div className="text-[10px] text-slate-500 uppercase tracking-wider">
+                                                    {action.category}
+                                                </div>
+                                            </motion.button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
-                                {messages.map((message, index) => (
+                            {/* Chat Content */}
+                            <div
+                                ref={scrollRef}
+                                className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar"
+                            >
+                                {messages.length === 0 && (
                                     <motion.div
-                                        key={index}
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                        className="flex flex-col items-center justify-center h-full text-center space-y-6"
                                     >
-                                        <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                                            message.role === 'user' 
-                                                ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white' 
-                                                : 'bg-gray-100 text-gray-800'
-                                        } ${message.metadata?.isIntermediate ? 'opacity-70' : ''}`}>
-                                            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                                            
-                                            {/* Metadata indicators */}
-                                            {message.metadata && (
-                                                <div className="mt-1 flex items-center space-x-2 text-xs opacity-70">
-                                                    {message.metadata.contextUsed && <span title="Context-aware response">🎯</span>}
-                                                    {message.metadata.toolsExecuted && message.metadata.toolsExecuted > 0 && (
-                                                        <span title={`${message.metadata.toolsExecuted} tools executed`}>🔧</span>
+                                        <motion.div
+                                            animate={{ rotate: 360 }}
+                                            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                                        >
+                                            <Award className="w-16 h-16 text-gradient-to-r from-teal-500 to-emerald-500" />
+                                        </motion.div>
+                                        <div>
+                                            <motion.p
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                transition={{ delay: 0.2 }}
+                                                className="text-white font-bold text-lg"
+                                            >
+                                                {getWelcomeMessage()}
+                                            </motion.p>
+                                            <motion.p
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                transition={{ delay: 0.4 }}
+                                                className="text-xs text-slate-400 mt-3 max-w-[250px] mx-auto leading-relaxed"
+                                            >
+                                                {enableQuickActions 
+                                                    ? "Gunakan quick actions di atas atau tanyakan apapun tentang analytics, system health, user management, dan strategic insights."
+                                                    : "Tanyakan apapun tentang analytics, system health, user management, dan strategic insights."
+                                                }
+                                            </motion.p>
+                                        </div>
+                                    </motion.div>
+                                )}
+
+                                {messages.map((msg, i) => (
+                                    <motion.div
+                                        key={msg.id}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                    >
+                                        <div className={`max-w-[85%] flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                                            <div className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center border ${msg.role === 'user' ? 'bg-white/10 border-white/10' : 'bg-gradient-to-r from-teal-500 to-emerald-500 border-teal-500/20'}`}>
+                                                {msg.role === 'user' ? <User className="w-4 h-4 text-white" /> : <Bot className="w-4 h-4 text-white" />}
+                                            </div>
+                                            <div className="space-y-2">
+                                                <div className={`p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${msg.role === 'user'
+                                                    ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-900 font-medium rounded-tr-none shadow-lg'
+                                                    : 'bg-white/5 text-slate-200 border border-white/5 rounded-tl-none backdrop-blur-sm'
+                                                    }`}>
+                                                    {msg.content.split(/(\*\*.*?\*\*)/).map((part, index) => {
+                                                        if (part.startsWith('**') && part.endsWith('**')) {
+                                                            return <strong key={index} className="font-black text-white">{part.slice(2, -2)}</strong>;
+                                                        }
+                                                        return part;
+                                                    })}
+                                                </div>
+                                                
+                                                {/* Message Actions */}
+                                                <div className="flex items-center gap-2 opacity-0 hover:opacity-100 transition-opacity">
+                                                    <button
+                                                        onClick={() => handleCopyMessage(msg.content, msg.id)}
+                                                        className="p-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-slate-400 transition-colors"
+                                                        title="Copy message"
+                                                    >
+                                                        {copiedMessage === msg.id ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                                                    </button>
+                                                    {msg.role === 'assistant' && (
+                                                        <button
+                                                            onClick={() => handleRegenerateMessage(i)}
+                                                            className="p-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-slate-400 transition-colors"
+                                                            title="Regenerate response"
+                                                        >
+                                                            <RotateCcw className="w-3 h-3" />
+                                                        </button>
                                                     )}
-                                                    {message.metadata.fallback && <span title="Fallback response">🔄</span>}
-                                                    {message.metadata.responseTime && (
-                                                        <span title="Response time">{message.metadata.responseTime}ms</span>
+                                                    <span className="text-[10px] text-slate-500">
+                                                        {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                    {msg.responseTime && (
+                                                        <span className="text-[10px] text-emerald-500 font-bold">
+                                                            {msg.responseTime}ms
+                                                        </span>
                                                     )}
                                                 </div>
-                                            )}
-                                            
-                                            {message.timestamp && (
-                                                <div className="mt-1 text-xs opacity-50">
-                                                    {new Date(message.timestamp).toLocaleTimeString()}
-                                                </div>
-                                            )}
+                                            </div>
                                         </div>
                                     </motion.div>
                                 ))}
 
                                 {isLoading && (
-                                    <div className="flex justify-start">
-                                        <div className="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg">
-                                            <PremiumLoader size="sm" />
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        className="flex justify-start"
+                                    >
+                                        <div className="flex gap-3">
+                                            <div className="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center border bg-gradient-to-r from-teal-500 to-emerald-500 border-teal-500/20">
+                                                <Bot className="w-4 h-4 text-white" />
+                                            </div>
+                                            <div className="bg-white/5 border border-white/5 p-4 rounded-2xl rounded-tl-none flex items-center gap-3 backdrop-blur-sm">
+                                                <PremiumLoader variant="inline" size="sm" color="#14b8a6" />
+                                                <span className="text-xs text-slate-400 font-medium">
+                                                    {responseSpeed === 'analytical' ? 'Menganalisis data dengan AI advanced...' : 'Berpikir...'}
+                                                </span>
+                                            </div>
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 )}
                             </div>
 
                             {/* Input Area */}
-                            <div className="border-t p-6">
-                                <div className="flex items-end space-x-3">
-                                    <div className="flex-1 relative">
-                                        <textarea
-                                            value={input}
-                                            onChange={(e) => setInput(e.target.value)}
-                                            onKeyPress={(e) => {
-                                                if (e.key === 'Enter' && !e.shiftKey) {
-                                                    e.preventDefault();
-                                                    handleSend();
-                                                }
-                                            }}
-                                            placeholder="Ask about analytics, users, orders, or system status..."
-                                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                                            rows={1}
-                                            disabled={isLoading}
-                                        />
-                                        
-                                        {/* AI Intelligence Indicator */}
-                                        <div className="absolute right-2 top-2 flex items-center space-x-1 text-xs text-gray-400">
-                                            <Brain className="w-3 h-3" />
-                                            <span>AI v8.0</span>
-                                        </div>
-                                    </div>
-                                    
+                            <div className="p-6 border-t border-white/10 bg-[#0F0F0F]">
+                                <div className="relative">
+                                    <textarea
+                                        ref={inputRef}
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if ((e.key === 'Enter' || e.keyCode === 13) && !e.shiftKey) {
+                                                e.preventDefault();
+                                                handleSend();
+                                            }
+                                        }}
+                                        placeholder={`Tanya sebagai admin... (Personality: ${aiPersonality})`}
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl pl-5 pr-14 py-4 text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/30 transition-all resize-none max-h-32 backdrop-blur-sm"
+                                        rows={2}
+                                        autoFocus
+                                    />
                                     <button
-                                        onClick={() => handleSend()}
+                                        onClick={handleSend}
                                         disabled={!input.trim() || isLoading}
-                                        className="p-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                                        className="absolute right-3 bottom-3 p-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-900 rounded-xl hover:from-teal-400 hover:to-emerald-400 transition-all active:scale-95 disabled:opacity-50 disabled:scale-100 shadow-lg"
                                     >
-                                        {isLoading ? (
-                                            <Loader2 className="w-5 h-5 animate-spin" />
-                                        ) : (
-                                            <Send className="w-5 h-5" />
-                                        )}
+                                        <Send className="w-4 h-4" />
                                     </button>
                                 </div>
-                                
-                                {/* Action Buttons */}
                                 <div className="flex items-center justify-between mt-3">
-                                    <div className="flex items-center space-x-2">
-                                        <button
-                                            onClick={clearChat}
-                                            className="text-xs text-gray-500 hover:text-gray-700 flex items-center space-x-1"
-                                        >
-                                            <X className="w-3 h-3" />
-                                            <span>Clear chat</span>
-                                        </button>
-                                        
-                                        {performanceMetrics?.errorRate > 0.1 && (
-                                            <div className="flex items-center space-x-1 text-xs text-orange-600">
-                                                <AlertTriangle className="w-3 h-3" />
-                                                <span>High error rate detected</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                    
-                                    <div className="text-xs text-gray-400">
-                                        Press Enter to send
-                                    </div>
+                                    <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest opacity-50 flex items-center gap-2">
+                                        <HelpCircle className="w-3 h-3" /> 
+                                        {isMinimized ? 'Press Enter to send' : 'Enter: send • Ctrl+M: mute • Ctrl+S: settings • Esc: close'}
+                                    </p>
+                                    {session && (
+                                        <div className="text-[10px] text-emerald-500 font-black uppercase tracking-widest">
+                                            {getPersonalityIcon()}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </motion.div>
-                    </>
+                    </div>
                 )}
             </AnimatePresence>
         </>
     );
 };
-
-export default AdminChatSidebar;
