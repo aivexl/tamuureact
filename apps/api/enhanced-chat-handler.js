@@ -1,6 +1,6 @@
 /**
- * Enhanced AI Chat Handler v8.0
- * Enterprise-grade AI system with predictive analytics and intelligent responses
+ * Enhanced AI Chat Handler v9.0 (Agentic Enterprise)
+ * Canonical Endpoint: api.tamuu.id/api/enhanced-chat
  */
 
 import { TamuuAIEngine } from './ai-system-v8-enhanced.js';
@@ -8,106 +8,69 @@ import { TamuuAIEngine } from './ai-system-v8-enhanced.js';
 export async function handleEnhancedChat(request, env, ctx, corsHeaders) {
     const startTime = Date.now();
     const aiEngine = new TamuuAIEngine(env);
-    
+
     try {
         const { messages, userId } = await request.json();
-        
+
         if (!env.GEMINI_API_KEY) {
-            return json({ 
+            return json({
                 error: 'AI Support currently unavailable',
                 code: 'AI_UNAVAILABLE'
             }, { ...corsHeaders, status: 503 });
         }
 
-        // Enhanced security verification
-        let user = null;
+        // 1. Security & Profile Lookup
+        let userProfile = null;
         if (userId && userId !== 'test') {
             try {
-                user = await env.DB.prepare(`
-                    SELECT u.*, 
-                           COUNT(DISTINCT i.id) as invitation_count,
-                           COUNT(DISTINCT t.id) as transaction_count
-                    FROM users u
-                    LEFT JOIN invitations i ON u.id = i.user_id
-                    LEFT JOIN billing_transactions t ON u.id = t.user_id
-                    WHERE u.id = ? OR u.email = ?
-                    GROUP BY u.id
+                userProfile = await env.DB.prepare(`
+                    SELECT * FROM users WHERE id = ? OR email = ?
                 `).bind(userId, userId).first();
-                
-                if (!user) {
-                    return json({ 
-                        error: 'Unauthorized access',
-                        code: 'UNAUTHORIZED'
-                    }, { ...corsHeaders, status: 403 });
-                }
             } catch (dbError) {
-                console.warn('[Enhanced Chat] Database lookup failed, continuing with anonymous context:', dbError);
-                // Continue without user context
+                console.warn('[Enhanced Chat] Profile lookup failed:', dbError);
             }
         }
 
-        // Build enhanced context
-        const enhancedContext = await aiEngine.buildEnhancedContext(user?.id, messages, env);
-        
-        // Predict user intent with high precision
-        const predictedIntent = enhancedContext?.predictedIntent;
-        
-        // Validate intent exists before proceeding
-        if (!predictedIntent || !predictedIntent.primary) {
-            return json({ 
-                error: 'Failed to analyze user intent',
-                code: 'INTENT_ANALYSIS_FAILED'
-            }, { ...corsHeaders, status: 400 });
-        }
-        
-        // Execute intelligent tools based on predicted intent
-        const toolResults = await executeIntelligentTools(predictedIntent, user?.id, env);
-        
-        // Generate personalized response using Gemini API
-        const geminiResponse = await aiEngine.generateGeminiResponse(messages, enhancedContext);
-        
-        // Validate Gemini response before processing
-        if (!geminiResponse || !geminiResponse.content) {
-            return json({ 
-                error: 'Failed to generate AI response',
-                code: 'RESPONSE_GENERATION_FAILED'
-            }, { ...corsHeaders, status: 500 });
-        }
-        
-        // Enhance with local intelligence
-        const enhancedResponse = {
-            content: geminiResponse.content,
-            metadata: {
-                ...geminiResponse.metadata,
-                toolsExecuted: toolResults.length,
-                contextUsed: !!enhancedContext.userProfile
-            }
-        };
+        // 2. Build Enhanced Context (Silent Background Audit)
+        // This runs even for passive initiation to prepare the engine
+        const context = await aiEngine.buildEnhancedContext(userProfile?.id, messages, env);
 
-        // Track performance metrics
+        // 3. V9 PASSIVE INITIATION: If no messages, return sysmed primed status
+        if (!messages || messages.length === 0) {
+            return json({
+                status: 'ready',
+                message: 'System primed. Waiting for user to initiate.',
+                has_findings: context.userProfile?.healthScore < 80
+            }, corsHeaders);
+        }
+
+        // 4. Execution Workflow (Agentic Turn)
+        // V9 orchestration is now internal to engine.chat()
+        const aiResponse = await aiEngine.chat(messages, context, env);
+
+        // 5. Track Performance
         const responseTime = Date.now() - startTime;
         aiEngine.trackPerformance('averageResponseTime', responseTime);
-        
+
         return json({
-            content: enhancedResponse.content,
-            provider: enhancedResponse.metadata.provider || 'tamuu-ai-v8',
+            content: aiResponse.content,
+            provider: aiResponse.metadata?.provider || 'tamuu-agent-v9',
             metadata: {
-                ...enhancedResponse.metadata,
+                ...aiResponse.metadata,
                 responseTime,
-                contextUsed: !!enhancedContext.userProfile,
-                toolsExecuted: toolResults.length
+                humanCentric: true
             }
         }, corsHeaders);
 
     } catch (error) {
         console.error('[Enhanced AI] Error:', error);
-        
-        // Intelligent error recovery with Indonesian language
+
+        // Intelligent error recovery
         const recoveryResponse = await aiEngine.handleAIError(error, env);
-        
+
         return json({
             content: recoveryResponse.content,
-            provider: 'tamuu-ai-v8',
+            provider: 'tamuu-recovery-v9',
             error: recoveryResponse.error,
             fallback: true
         }, corsHeaders);
@@ -120,32 +83,32 @@ export async function handleEnhancedChat(request, env, ctx, corsHeaders) {
 async function executeIntelligentTools(predictedIntent, userId, env) {
     const tools = [];
     const intentName = predictedIntent.primary.name;
-    
+
     try {
         switch (intentName) {
             case 'payment_issue':
                 tools.push(await executePaymentDiagnostics(userId, env));
                 break;
-                
+
             case 'technical_support':
                 tools.push(await executeTechnicalDiagnostics(userId, env));
                 break;
-                
+
             case 'upgrade_inquiry':
                 tools.push(await executeUpgradeAnalysis(userId, env));
                 break;
-                
+
             case 'account_management':
                 tools.push(await executeAccountDiagnostics(userId, env));
                 break;
-                
+
             default:
                 // General diagnostics for unknown intents
                 tools.push(await executeGeneralDiagnostics(userId, env));
         }
-        
+
         return tools.filter(tool => tool !== null);
-        
+
     } catch (error) {
         console.error(`[Intelligent Tools] Error executing ${intentName}:`, error);
         return [];
@@ -175,22 +138,22 @@ async function executePaymentDiagnostics(userId, env) {
             ORDER BY created_at DESC 
             LIMIT 5
         `).bind(userId).all();
-        
+
         // Validate database response
         if (!recentTransactions || !Array.isArray(recentTransactions.results)) {
             return null;
         }
 
-        const failedPayments = recentTransactions.results.filter(t => 
+        const failedPayments = recentTransactions.results.filter(t =>
             t && (t.status === 'pending' || t.status === 'failed' || t.status === 'expired')
         );
-        
+
         return {
             tool: 'payment_diagnostics',
             data: {
                 recentTransactions: recentTransactions.results || [],
                 failedPayments,
-                recommendation: failedPayments.length > 0 ? 
+                recommendation: failedPayments.length > 0 ?
                     'Saya menemukan transaksi yang memerlukan perhatian. Mari kita periksa satu per satu.' :
                     'Semua transaksi Anda dalam kondisi baik.',
                 autoFixAvailable: failedPayments.length > 0
@@ -215,9 +178,9 @@ async function executeTechnicalDiagnostics(userId, env) {
             ORDER BY i.created_at DESC
             LIMIT 5
         `).bind(userId).all();
-        
+
         const systemHealth = await checkSystemHealth(env);
-        
+
         return {
             tool: 'technical_diagnostics',
             data: {
@@ -265,7 +228,7 @@ async function executeUpgradeAnalysis(userId, env) {
                 }
             };
         }
-        
+
         const upgradeHistory = await env.DB.prepare(`
             SELECT * FROM billing_transactions 
             WHERE user_id = ? AND status = 'paid'
@@ -276,12 +239,12 @@ async function executeUpgradeAnalysis(userId, env) {
         if (!upgradeHistory || !Array.isArray(upgradeHistory.results)) {
             return null;
         }
-        
+
         const currentTier = userData.tier || 'free';
         const availableTiers = ['free', 'pro', 'ultimate', 'elite'];
         const currentIndex = availableTiers.indexOf(currentTier);
         const nextTier = currentIndex < availableTiers.length - 1 ? availableTiers[currentIndex + 1] : null;
-        
+
         return {
             tool: 'upgrade_analysis',
             data: {
@@ -332,13 +295,13 @@ async function executeAccountDiagnostics(userId, env) {
                 }
             };
         }
-        
+
         const accountAge = Math.floor((Date.now() - new Date(userData.created_at).getTime()) / (1000 * 60 * 60 * 24));
         const subscriptionStatus = userData.expires_at && new Date(userData.expires_at) > new Date() ? 'active' : 'expired';
-        
+
         const loginData = await getLoginActivity(userId, env);
         const securityData = await checkSecurityStatus(userId, env);
-        
+
         return {
             tool: 'account_diagnostics',
             data: {
@@ -361,14 +324,14 @@ async function executeGeneralDiagnostics(userId, env) {
         const userData = await env.DB.prepare(`
             SELECT * FROM users WHERE id = ?
         `).bind(userId).first();
-        
+
         return {
             tool: 'general_diagnostics',
             data: {
                 userStatus: userData ? 'active' : 'not_found',
                 subscription: userData?.tier || 'free',
                 expiresAt: userData?.expires_at,
-                recommendation: userData ? 
+                recommendation: userData ?
                     'Saya telah memindai akun Anda. Semua sistem berfungsi normal.' :
                     'Tidak dapat menemukan informasi akun. Mohon periksa kembali.'
             }
@@ -401,7 +364,7 @@ async function checkSystemHealth(env) {
 
 function identifyPotentialIssues(invitations) {
     const issues = [];
-    
+
     invitations.forEach(inv => {
         if (inv.status === 'draft' && new Date(inv.created_at) < new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)) {
             issues.push({
@@ -410,7 +373,7 @@ function identifyPotentialIssues(invitations) {
                 message: 'Undangan dalam status draft lebih dari 7 hari'
             });
         }
-        
+
         if (inv.rsvp_count === 0 && inv.status === 'published') {
             issues.push({
                 type: 'no_rsvp',
@@ -419,7 +382,7 @@ function identifyPotentialIssues(invitations) {
             });
         }
     });
-    
+
     return issues;
 }
 
@@ -427,15 +390,15 @@ function generateUpgradeRecommendation(currentTier, nextTier, upgradeHistory) {
     if (!nextTier) {
         return 'Anda sudah di tier tertinggi. Terima kasih telah menjadi pelanggan setia!';
     }
-    
+
     const lastUpgrade = upgradeHistory[0];
-    const daysSinceLastUpgrade = lastUpgrade ? 
+    const daysSinceLastUpgrade = lastUpgrade ?
         Math.floor((Date.now() - new Date(lastUpgrade.created_at).getTime()) / (1000 * 60 * 60 * 24)) : 365;
-    
+
     if (daysSinceLastUpgrade > 30) {
         return `Peningkatan ke ${nextTier.toUpperCase()} akan memberikan Anda fitur premium tambahan. Saya rekomendasikan upgrade sekarang.`;
     }
-    
+
     return `Anda dapat meningkatkan ke ${nextTier.toUpperCase()} untuk mendapatkan fitur eksklusif.`;
 }
 
@@ -445,7 +408,7 @@ function getTierBenefits(tier) {
         ultimate: ['Welcome display', 'RSVP unlimited', '2 undangan'],
         elite: ['Support VVIP', '3 undangan', 'Fitur eksklusif']
     };
-    
+
     return benefits[tier] || [];
 }
 
@@ -463,11 +426,11 @@ function generateAccountRecommendation(userData, accountAge, subscriptionStatus)
     if (subscriptionStatus === 'expired') {
         return 'Langganan Anda telah kedaluwarsa. Saya sarankan untuk segera memperpanjang.';
     }
-    
+
     if (accountAge < 7) {
         return 'Selamat datang di Tamuu! Saya akan membantu Anda memaksimalkan platform ini.';
     }
-    
+
     return 'Akun Anda dalam kondisi baik. Teruskan penggunaan platform ini.';
 }
 
@@ -476,26 +439,26 @@ function generateAccountRecommendation(userData, accountAge, subscriptionStatus)
  */
 async function handleAIError(error, env) {
     const errorType = classifyError(error);
-    
+
     switch (errorType) {
         case 'rate_limit':
             return {
                 content: 'Maaf, sistem AI sedang sangat sibuk. Mohon tunggu sebentar dan coba lagi. 🙏',
                 error: 'RATE_LIMIT_EXCEEDED'
             };
-            
+
         case 'service_unavailable':
             return {
                 content: 'Sistem AI sedang dalam pemeliharaan. Tim teknis kami sedang menyelesaikan masalah ini.',
                 error: 'SERVICE_UNAVAILABLE'
             };
-            
+
         case 'authentication_error':
             return {
                 content: 'Terjadi masalah autentikasi. Mohon login kembali untuk melanjutkan.',
                 error: 'AUTH_ERROR'
             };
-            
+
         default:
             return {
                 content: 'Maaf, terjadi masalah teknis. Tim kami telah diberitahu dan sedang menyelesaikannya.',
@@ -506,11 +469,11 @@ async function handleAIError(error, env) {
 
 function classifyError(error) {
     const message = error.message.toLowerCase();
-    
+
     if (message.includes('quota') || message.includes('rate')) return 'rate_limit';
     if (message.includes('unavailable') || message.includes('timeout')) return 'service_unavailable';
     if (message.includes('auth') || message.includes('unauthorized')) return 'authentication_error';
-    
+
     return 'generic';
 }
 

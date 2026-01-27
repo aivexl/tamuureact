@@ -67,6 +67,36 @@ export default {
         const error = (msg, status = 400) => json({ error: msg }, { status });
         const notFound = () => error('Not found', 404);
 
+        // Utility: Parse JSON fields for templates/invitations/billing
+        function parseJsonFields(row) {
+            const jsonFields = ['pan', 'sections', 'layers', 'orbit', 'orbit_layers', 'music'];
+
+            const result = { ...row };
+            for (const field of jsonFields) {
+                if (result[field] && typeof result[field] === 'string') {
+                    try {
+                        result[field] = JSON.parse(result[field]);
+                    } catch (e) {
+                        console.error(`[API] Failed to parse JSON for field ${field}:`, e);
+                        if (field === 'sections' || field === 'layers' || field === 'orbit_layers') {
+                            result[field] = field === 'orbit_layers' ? {} : [];
+                        }
+                    }
+                } else if (!result[field]) {
+                    if (field === 'sections' || field === 'layers') result[field] = [];
+                    else if (field === 'orbit' || field === 'orbit_layers') result[field] = {};
+                }
+            }
+
+            if (result.orbit && (Object.keys(result.orbit).length > 0) && (!result.orbit_layers || Object.keys(result.orbit_layers).length === 0)) {
+                result.orbit_layers = result.orbit;
+            } else if (result.orbit_layers && (Object.keys(result.orbit_layers).length > 0) && (!result.orbit || Object.keys(result.orbit).length === 0)) {
+                result.orbit = result.orbit_layers;
+            }
+
+            return result;
+        }
+
         // Enterprise-safe fetch (legacy domain patching)
         const safeFetch = async (url, options = {}) => {
             const patchedUrl = url.replace('tamuu.pages.dev', 'tamuu.id');
@@ -126,40 +156,7 @@ export default {
 
             } catch (err) {
                 console.error(`[AI] Gemini failed: ${err.message}`);
-                
-                // Fallback to Groq
-                try {
-                    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${env.GROQ_API_KEY}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            model: 'llama-3.3-70b-versatile',
-                            messages: [
-                                { role: 'system', content: systemPrompt },
-                                ...messages
-                            ],
-                            temperature: 0.3,
-                            max_tokens: 2048
-                        })
-                    });
-
-                    if (!groqResponse.ok) {
-                        const errorText = await groqResponse.text();
-                        throw new Error(`Groq API error: ${errorText}`);
-                    }
-
-                    const result = await groqResponse.json();
-                    const text = result.choices?.[0]?.message?.content;
-                    if (!text) throw new Error('Empty Groq response');
-
-                    return { content: text, provider: 'groq' };
-
-                } catch (groqErr) {
-                    throw new Error(`AI Services unavailable: ${groqErr.message}`);
-                }
+                throw new Error(`AI Service unavailable: ${err.message}`);
             }
         };
 
@@ -560,8 +557,180 @@ CONTEXT:
                 return json({ content: "Maaf, terjadi kendala teknis. Mohon coba lagi. 🙏" }, corsHeaders);
             }
 
+            // BILLING: Get User Transactions
+            if (path === '/api/billing/transactions' && method === 'GET') {
+                try {
+                    const userId = url.searchParams.get('userId');
+                    if (!userId) return json({ error: 'User ID required' }, { ...corsHeaders, status: 400 });
+
+                    const { results } = await env.DB.prepare(
+                        'SELECT * FROM billing_transactions WHERE user_id = ? ORDER BY created_at DESC'
+                    ).bind(userId).all();
+
+                    return json(results.map(parseJsonFields), corsHeaders);
+                } catch (err) {
+                    console.error('[Billing] Get transactions error:', err);
+                    return json({ error: 'Failed to fetch transactions' }, { ...corsHeaders, status: 500 });
+                }
+            }
+
+            // BILLING: Create Invoice
+            if (path === '/api/billing/create' && method === 'POST') {
+                try {
+                    const { userId, tier, amount, email } = await request.json();
+                    if (!userId || !tier || !amount || !email) {
+                        return json({ error: 'Missing required fields' }, { ...corsHeaders, status: 400 });
+                    }
+
+                    // Create Xendit invoice (pseudo-implementation)
+                    const invoiceId = `INV-${Date.now()}`;
+                    const result = await env.DB.prepare(
+                        'INSERT INTO billing_transactions (user_id, tier, amount, status, external_id, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+                    ).bind(userId, tier, amount, 'PENDING', invoiceId, new Date().toISOString()).run();
+
+                    return json({ 
+                        success: true, 
+                        invoiceId, 
+                        paymentUrl: `https://xendit.co/invoices/${invoiceId}` 
+                    }, corsHeaders);
+                } catch (err) {
+                    console.error('[Billing] Create invoice error:', err);
+                    return json({ error: 'Failed to create invoice' }, { ...corsHeaders, status: 500 });
+                }
+            }
+
+            // BILLING: Cancel Transaction
+            if (path === '/api/billing/cancel' && method === 'POST') {
+                try {
+                    const { orderId, userId } = await request.json();
+                    if (!orderId || !userId) {
+                        return json({ error: 'Missing orderId or userId' }, { ...corsHeaders, status: 400 });
+                    }
+
+                    const result = await env.DB.prepare(
+                        'UPDATE billing_transactions SET status = ? WHERE id = ? AND user_id = ?'
+                    ).bind('CANCELLED', orderId, userId).run();
+
+                    return json({ success: result.success }, corsHeaders);
+                } catch (err) {
+                    console.error('[Billing] Cancel error:', err);
+                    return json({ error: 'Failed to cancel transaction' }, { ...corsHeaders, status: 500 });
+                }
+            }
+
+            // AUTH: Get User Profile (for Supabase sync)
+            if (path === '/api/auth/me' && method === 'GET') {
+                const email = url.searchParams.get('email');
+                const providedUid = url.searchParams.get('uid');
+                if (!email) return json({ error: 'Email required' }, { headers: corsHeaders, status: 400 });
+
+                try {
+                    const { results } = await env.DB.prepare(
+                        'SELECT * FROM users WHERE email = ?'
+                    ).bind(email).all();
+
+                    let user = results[0];
+
+                    // Auto-create user if not found (for Supabase auth sync)
+                    if (!user) {
+                        const userIdToUse = providedUid || crypto.randomUUID();
+                        const tamuuId = `TAMUU-USER-${userIdToUse.substring(0, 8).toUpperCase()}`;
+
+                        // Extract profile data from params (passed from AuthProvider during sync)
+                        const name = url.searchParams.get('name') || '';
+                        const gender = url.searchParams.get('gender') || null;
+                        const birthDate = url.searchParams.get('birthDate') || null;
+
+                        // SUPER ULTRA: Business Rules for Trial/Subscription
+                        // - Free tier: 30 days (1 month) from signup
+                        // - Special test accounts: Unlimited (no expiry)
+                        const isSpecialAccount = email === 'user@tamuu.id' || email === 'admin@tamuu.id';
+                        let expiresAtString = null;
+
+                        if (!isSpecialAccount) {
+                            const trialEndDate = new Date();
+                            trialEndDate.setDate(trialEndDate.getDate() + 30); // 1 month trial
+                            expiresAtString = trialEndDate.toISOString();
+                        }
+
+                        await env.DB.prepare(
+                            `INSERT INTO users (id, email, tamuu_id, name, gender, birth_date, tier, max_invitations, invitation_count, expires_at) 
+                             VALUES (?, ?, ?, ?, ?, ?, 'free', 1, 0, ?)`
+                        ).bind(userIdToUse, email, tamuuId, name, gender, birthDate, expiresAtString).run();
+
+                        user = {
+                            id: userIdToUse,
+                            email: email,
+                            tamuu_id: tamuuId,
+                            tier: 'free',
+                            max_invitations: 1,
+                            invitation_count: 0,
+                            expires_at: expiresAtString
+                        };
+                    }
+
+                    const normalizedUser = {
+                        ...user,
+                        id: user.id || user.uid, // Handle both naming conventions
+                        maxInvitations: user.max_invitations || 1,
+                        invitationCount: user.invitation_count || 0,
+                        tier: user.tier || 'free',
+                        tamuuId: user.tamuu_id || `TAMUU-USER-${user.id.substring(0, 8)}`,
+                        expires_at: user.expires_at,
+                        birthDate: user.birth_date,
+                        bank1Name: user.bank1_name,
+                        bank1Number: user.bank1_number,
+                        bank1Holder: user.bank1_holder,
+                        bank2Name: user.bank2_name,
+                        bank2Number: user.bank2_number,
+                        bank2Holder: user.bank2_holder,
+                        emoneyType: user.emoney_type,
+                        emoneyNumber: user.emoney_number,
+                        giftAddress: user.gift_address,
+                        role: user.role || 'user',
+                        permissions: JSON.parse(user.permissions || '[]')
+                    };
+
+                    return json(normalizedUser, {
+                        headers: {
+                            ...corsHeaders,
+                            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                            'Pragma': 'no-cache',
+                            'Expires': '0',
+                        }
+                    });
+                } catch (error) {
+                    console.error('Auth/me error:', error);
+                    return json({ error: 'Failed to fetch user', details: error.message }, { headers: corsHeaders, status: 500 });
+                }
+            }
+
+            // INVITATIONS: Get User Invitations
+            if (path === '/api/invitations' && method === 'GET') {
+                const urlObj = new URL(request.url);
+                const userId = urlObj.searchParams.get('user_id');
+
+                let query = 'SELECT * FROM invitations ORDER BY updated_at DESC LIMIT 100';
+                let params = [];
+
+                // Filter by user_id if provided (for dashboard)
+                if (userId) {
+                    query = 'SELECT * FROM invitations WHERE user_id = ? ORDER BY updated_at DESC LIMIT 100';
+                    params = [userId];
+                }
+
+                try {
+                    const { results } = await env.DB.prepare(query).bind(...params).all();
+                    console.log(`[Invitations] Found ${results?.length || 0} invitations for user ${userId || 'all'}`);
+                    return json(results?.map(parseJsonFields) || [], corsHeaders);
+                } catch (dbError) {
+                    console.error(`[Invitations] Database error for user ${userId}:`, dbError);
+                    return json({ error: 'Database error', details: dbError.message }, { ...corsHeaders, status: 500 });
+                }
+            }
+
             // REST OF THE API ENDPOINTS REMAIN UNCHANGED
-            // ... (keep all existing endpoints)
+            // Additional endpoints can be added here as needed
 
             return notFound();
 

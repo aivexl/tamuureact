@@ -55,3 +55,7 @@ node_modules/
 
 # Private Documentation (do not upload to GitHub)
 ENTERPRISE_OPTIMIZATION_REPORT.md
+brain/
+walkthrough.md
+implementation_plan.md
+task.md

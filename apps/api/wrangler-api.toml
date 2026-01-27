@@ -1,7 +1,7 @@
 name = "tamuu-api"
-main = "tamuu-api-worker.js"
-compatibility_date = "2024-01-01"
-workers_dev = true
+main = "tamuu-api-worker-enhanced.js"
+compatibility_date = "2024-01-27"
+workers_dev = false
 
 [[routes]]
 pattern = "api.tamuu.id"

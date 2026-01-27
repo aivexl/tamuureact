@@ -55,7 +55,7 @@ export const UserChatSidebar: React.FC = () => {
         if (!isSilentDiagnostic) {
             const ackMsg: Message = {
                 role: 'assistant',
-                content: "Mohon tunggu sejenak Kak, saya sedang menyisir data Anda... 😊🙏",
+                content: "Mohon tunggu sejenak ya Kak, saya sedang meninjau detail akun Kak untuk memberikan bantuan terbaik... 😊",
                 isIntermediate: true
             };
             setMessages(prev => [...prev, ackMsg]);

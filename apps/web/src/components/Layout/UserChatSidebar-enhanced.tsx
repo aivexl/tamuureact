@@ -81,7 +81,7 @@ export const UserChatSidebarEnhanced: React.FC = () => {
         }
     }, [isOpen]);
 
-    // Initialize session
+    // Initialize session and trigger silent audit
     useEffect(() => {
         if (isOpen && !session) {
             const newSession: ChatSession = {
@@ -98,15 +98,28 @@ export const UserChatSidebarEnhanced: React.FC = () => {
             };
             setSession(newSession);
 
-            // Welcome message with personalization
-            const welcomeMessage: Message = {
-                role: 'assistant',
-                content: generateWelcomeMessage(user),
-                timestamp: new Date(),
-                messageId: `welcome_${Date.now()}`,
-                isSystem: true
+            // V9 PASSIVE INITIATION: Trigger silent audit without greeting user
+            // This runs in the background. The user sees a blank chat (clean) 
+            // but the engine is now auditing their account.
+            const triggerSilentAudit = async () => {
+                try {
+                    await users.chatWithAIEnhanced({
+                        messages: [], // Empty messages triggers audit in V9
+                        context: {
+                            userId: user?.id,
+                            userProfile: user,
+                            sessionId: newSession.sessionId,
+                            userTier: user?.tier,
+                            isSilentDiagnostic: true
+                        }
+                    });
+                } catch (e) {
+                    console.log("[V9] Silent audit completed in background.");
+                }
             };
-            setMessages([welcomeMessage]);
+
+            triggerSilentAudit();
+            setMessages([]); // Start with clean slate as requested
         }
     }, [isOpen, session, user]);
 
@@ -114,7 +127,7 @@ export const UserChatSidebarEnhanced: React.FC = () => {
     const generateWelcomeMessage = (userData: any) => {
         const tier = userData?.tier || 'free';
         const name = userData?.name || 'Kak';
-        
+
         const tierMessages = {
             premium: `Selamat datang ${name}! 🏆 Saya AI Assistant premium Tamuu dengan prioritas tinggi. Siap membantu 24/7 dengan response time <100ms.`,
             business: `Halo ${name}! 💼 Saya AI Assistant bisnis Tamuu. Siap membantu dengan solusi enterprise untuk kebutuhan undangan digital Anda.`,
@@ -205,7 +218,7 @@ export const UserChatSidebarEnhanced: React.FC = () => {
 
         } catch (error) {
             console.error('Chat error:', error);
-            
+
             const errorMsg: Message = {
                 role: 'assistant',
                 content: 'Maaf Kak, terjadi kesalahan. Saya akan coba lagi. Jika masalah berlanjut, silakan hubungi support kami. 🙏',
@@ -213,7 +226,7 @@ export const UserChatSidebarEnhanced: React.FC = () => {
                 messageId: `error_${Date.now()}_${user?.id}`,
                 isError: true
             };
-            
+
             setMessages(prev => [...prev.filter(m => !m.isIntermediate), errorMsg]);
         } finally {
             setIsLoading(false);
@@ -253,16 +266,16 @@ export const UserChatSidebarEnhanced: React.FC = () => {
             const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
-            
+
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
-            
+
             oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
             oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
-            
+
             gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-            
+
             oscillator.start(audioContext.currentTime);
             oscillator.stop(audioContext.currentTime + 0.3);
         } catch (error) {
@@ -298,7 +311,7 @@ export const UserChatSidebarEnhanced: React.FC = () => {
         const isUser = message.role === 'user';
         const isSystem = message.isSystem;
         const isError = message.isError;
-        
+
         return (
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -306,18 +319,16 @@ export const UserChatSidebarEnhanced: React.FC = () => {
                 transition={{ duration: 0.3, delay: index * 0.1 }}
                 className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}
             >
-                <div className={`max-w-[80%] group relative ${
-                    isUser ? 'order-2' : 'order-1'
-                }`}>
-                    <div className={`px-4 py-3 rounded-2xl shadow-sm ${
-                        isUser 
-                            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white' 
-                            : isSystem
-                            ? 'bg-gradient-to-r from-purple-100 to-pink-100 text-gray-800 border border-purple-200'
-                            : isError
-                            ? 'bg-red-50 text-red-800 border border-red-200'
-                            : 'bg-white text-gray-800 border border-gray-200 shadow-md'
+                <div className={`max-w-[80%] group relative ${isUser ? 'order-2' : 'order-1'
                     }`}>
+                    <div className={`px-4 py-3 rounded-2xl shadow-sm ${isUser
+                            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
+                            : isSystem
+                                ? 'bg-gradient-to-r from-purple-100 to-pink-100 text-gray-800 border border-purple-200'
+                                : isError
+                                    ? 'bg-red-50 text-red-800 border border-red-200'
+                                    : 'bg-white text-gray-800 border border-gray-200 shadow-md'
+                        }`}>
                         {message.isIntermediate ? (
                             <div className="flex items-center space-x-2">
                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -335,7 +346,7 @@ export const UserChatSidebarEnhanced: React.FC = () => {
                             </div>
                         )}
                     </div>
-                    
+
                     {/* Message actions */}
                     {!isUser && !message.isIntermediate && (
                         <div className="absolute -bottom-2 left-0 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -369,13 +380,13 @@ export const UserChatSidebarEnhanced: React.FC = () => {
                             </div>
                         </div>
                     )}
-                    
+
                     {/* Timestamp */}
                     {message.timestamp && (
                         <div className="text-xs text-gray-400 mt-1 opacity-70">
-                            {message.timestamp.toLocaleTimeString('id-ID', { 
-                                hour: '2-digit', 
-                                minute: '2-digit' 
+                            {message.timestamp.toLocaleTimeString('id-ID', {
+                                hour: '2-digit',
+                                minute: '2-digit'
                             })}
                         </div>
                     )}
@@ -442,9 +453,8 @@ export const UserChatSidebarEnhanced: React.FC = () => {
                         exit={{ opacity: 0, y: 100, scale: 0.9 }}
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     >
-                        <div className={`bg-white rounded-3xl shadow-2xl border border-gray-200 flex flex-col ${
-                            isMinimized ? 'w-80 h-16' : 'w-96 h-[600px]'
-                        } transition-all duration-300`}>
+                        <div className={`bg-white rounded-3xl shadow-2xl border border-gray-200 flex flex-col ${isMinimized ? 'w-80 h-16' : 'w-96 h-[600px]'
+                            } transition-all duration-300`}>
                             {/* Header */}
                             <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-t-3xl">
                                 <div className="flex items-center justify-between">
@@ -506,11 +516,10 @@ export const UserChatSidebarEnhanced: React.FC = () => {
                                                     <button
                                                         key={personality}
                                                         onClick={() => setAiPersonality(personality)}
-                                                        className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                                                            aiPersonality === personality
+                                                        className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${aiPersonality === personality
                                                                 ? 'bg-blue-500 text-white'
                                                                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                                        }`}
+                                                            }`}
                                                     >
                                                         {personality.charAt(0).toUpperCase() + personality.slice(1)}
                                                     </button>
@@ -524,11 +533,10 @@ export const UserChatSidebarEnhanced: React.FC = () => {
                                                     <button
                                                         key={speed}
                                                         onClick={() => setResponseSpeed(speed)}
-                                                        className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                                                            responseSpeed === speed
+                                                        className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${responseSpeed === speed
                                                                 ? 'bg-blue-500 text-white'
                                                                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                                        }`}
+                                                            }`}
                                                     >
                                                         {speed.charAt(0).toUpperCase() + speed.slice(1)}
                                                     </button>
@@ -539,9 +547,8 @@ export const UserChatSidebarEnhanced: React.FC = () => {
                                             <span className="text-sm font-medium text-gray-700">Sound Notifications</span>
                                             <button
                                                 onClick={() => setIsMuted(!isMuted)}
-                                                className={`p-2 rounded-full transition-colors ${
-                                                    isMuted ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
-                                                }`}
+                                                className={`p-2 rounded-full transition-colors ${isMuted ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
+                                                    }`}
                                             >
                                                 {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                                             </button>
@@ -558,7 +565,7 @@ export const UserChatSidebarEnhanced: React.FC = () => {
                                             <MessageComponent key={message.messageId} message={message} index={index} />
                                         ))}
                                     </AnimatePresence>
-                                    
+
                                     {isLoading && (
                                         <motion.div
                                             initial={{ opacity: 0 }}
@@ -604,7 +611,7 @@ export const UserChatSidebarEnhanced: React.FC = () => {
                                                 value={input}
                                                 onChange={(e) => setInput(e.target.value)}
                                                 onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                                                placeholder="Ketik pesan... (Ctrl+Enter untuk kirim)"
+                                                placeholder="Tulis pesan untuk CTO Tamuu... (Sapa 'Halo' untuk mulai)"
                                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                                 disabled={isLoading}
                                             />

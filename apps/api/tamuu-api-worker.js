@@ -62,12 +62,6 @@ export default {
                     name: 'Gemini',
                     url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${env.GEMINI_API_KEY}`,
                     type: 'google'
-                },
-                {
-                    name: 'Groq',
-                    url: 'https://api.groq.com/openai/v1/chat/completions',
-                    key: env.GROQ_API_KEY,
-                    type: 'openai'
                 }
             ];
 
@@ -621,11 +615,17 @@ export default {
                 const userId = url.searchParams.get('userId');
                 if (!userId) return json({ error: 'User ID required' }, { ...corsHeaders, status: 400 });
 
-                const { results } = await env.DB.prepare(
-                    'SELECT * FROM billing_transactions WHERE user_id = ? ORDER BY created_at DESC'
-                ).bind(userId).all();
+                try {
+                    const { results } = await env.DB.prepare(
+                        'SELECT * FROM billing_transactions WHERE user_id = ? ORDER BY created_at DESC'
+                    ).bind(userId).all();
 
-                return json(results, corsHeaders);
+                    console.log(`[Billing] Found ${results?.length || 0} transactions for user ${userId}`);
+                    return json(results || [], corsHeaders);
+                } catch (dbError) {
+                    console.error(`[Billing] Database error for user ${userId}:`, dbError);
+                    return json({ error: 'Database error', details: dbError.message }, { ...corsHeaders, status: 500 });
+                }
             }
 
             if (path === '/api/admin/stats' && method === 'GET') {
@@ -2139,8 +2139,14 @@ name = COALESCE(?, name),
                     params = [userId];
                 }
 
-                const { results } = await env.DB.prepare(query).bind(...params).all();
-                return json(results.map(parseJsonFields), corsHeaders);
+                try {
+                    const { results } = await env.DB.prepare(query).bind(...params).all();
+                    console.log(`[Invitations] Found ${results?.length || 0} invitations for user ${userId || 'all'}`);
+                    return json(results?.map(parseJsonFields) || [], corsHeaders);
+                } catch (dbError) {
+                    console.error(`[Invitations] Database error for user ${userId}:`, dbError);
+                    return json({ error: 'Database error', details: dbError.message }, { ...corsHeaders, status: 500 });
+                }
             }
 
             if (path === '/api/invitations' && method === 'POST') {
