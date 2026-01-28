@@ -25,6 +25,8 @@ import {
 import { users } from '../../lib/api';
 import { useStore } from '../../store/useStore';
 import { PremiumLoader } from '../ui/PremiumLoader';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 // Award-winning UI/UX standards for enterprise applications
 interface Message {
@@ -320,83 +322,88 @@ export const UserChatSidebarEnhanced: React.FC = () => {
         { icon: Zap, label: 'Cepat', action: () => handleSend('Bagaimana cara cepat membuat undangan?') }
     ];
 
-    // Simple Markdown Parser for Enterprise UI
-    const SimpleMarkdown = ({ content }: { content: string }) => {
-        if (!content) return null;
+    // ReactMarkdown Configuration for Enterprise UI
+    const MarkdownComponents: React.ComponentProps<typeof ReactMarkdown>['components'] = {
+        // Paragraphs
+        p: ({ node, ...props }) => <div className="mb-3 leading-relaxed last:mb-0" {...props} />,
 
-        // Split by blocks (paragraphs or headings)
-        const blocks = content.split(/\n\n+/);
+        // Headings - Ensure block display and clear spacing
+        h1: ({ node, ...props }) => <h1 className="block text-lg font-bold text-gray-900 mt-4 mb-2" {...props} />,
+        h2: ({ node, ...props }) => <h2 className="block text-base font-bold text-gray-900 mt-4 mb-2" {...props} />,
+        h3: ({ node, ...props }) => <h3 className="block text-sm font-bold text-blue-900 mt-4 mb-2" {...props} />,
+        h4: ({ node, ...props }) => <h4 className="block text-xs font-bold text-gray-800 mt-3 mb-1" {...props} />,
 
-        return (
-            <div className="space-y-3">
-                {blocks.map((block, i) => {
-                    const trimmedBlock = block.trim();
-                    if (!trimmedBlock) return null;
+        // Lists
+        ul: ({ node, ...props }) => <ul className="space-y-1 my-2 pl-1 list-none" {...props} />,
+        ol: ({ node, ...props }) => <ol className="list-decimal space-y-1 my-2 pl-4" {...props} />,
+        li: ({ node, ...props }) => {
+            const children = React.Children.toArray(props.children);
+            const content = children.map((child) => {
+                if (React.isValidElement(child) && child.type === 'div' && (child.props as any).className?.includes('mb-3')) {
+                    return (child.props as any).children;
+                }
+                return child;
+            });
 
-                    // 1. Horizontal Rule
-                    if (trimmedBlock === '***' || trimmedBlock === '---') {
-                        return <hr key={i} className="my-4 border-gray-100 opacity-50" />;
-                    }
+            return (
+                <li className="flex items-start space-x-2 text-sm">
+                    {/* Visual Dot - Premium Look */}
+                    <span className="mt-2 w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+                    <span className="flex-1">{content}</span>
+                </li>
+            );
+        },
 
-                    // 2. Headings
-                    if (trimmedBlock.startsWith('### ')) {
-                        return (
-                            <h3 key={i} className="text-sm font-bold text-blue-900 mt-4 mb-2 first:mt-0">
-                                {trimmedBlock.replace('### ', '')}
-                            </h3>
-                        );
-                    }
-                    if (trimmedBlock.startsWith('#### ')) {
-                        return (
-                            <h4 key={i} className="text-xs font-bold text-gray-800 mt-3 mb-1 first:mt-0">
-                                {trimmedBlock.replace('#### ', '')}
-                            </h4>
-                        );
-                    }
+        // Bold/Strong
+        strong: ({ node, ...props }) => <strong className="font-extrabold text-blue-950" {...props} />,
 
-                    // 3. Paragraphs and List Items
-                    const lines = trimmedBlock.split('\n');
-                    return (
-                        <div key={i} className="text-sm leading-relaxed text-gray-800">
-                            {lines.map((line, j) => {
-                                const trimmedLine = line.trim();
-                                if (!trimmedLine) return null;
+        // Links
+        a: ({ node, ...props }) => (
+            <a className="text-blue-600 hover:text-blue-800 underline transition-colors" target="_blank" rel="noopener noreferrer" {...props} />
+        ),
 
-                                // Handle Bold within the line
-                                const renderBold = (text: string) => {
-                                    const parts = text.split(/(\*\*.*?\*\*)/g);
-                                    return parts.map((part, k) => {
-                                        if (part.startsWith('**') && part.endsWith('**')) {
-                                            return <strong key={k} className="font-extrabold text-blue-950">{part.slice(2, -2)}</strong>;
-                                        }
-                                        return part;
-                                    });
-                                };
-
-                                // Handle Bullet Points
-                                if (line.startsWith('•') || line.startsWith('·') || line.startsWith('- ')) {
-                                    return (
-                                        <div key={j} className="flex items-start space-x-2 my-1.5 pl-1">
-                                            <span className="mt-1.5 w-1 h-1 rounded-full bg-blue-400 flex-shrink-0" />
-                                            <span className="flex-1">
-                                                {renderBold(line.replace(/^[•·-]\s*/, ''))}
-                                            </span>
-                                        </div>
-                                    );
-                                }
-
-                                return (
-                                    <React.Fragment key={j}>
-                                        {renderBold(line)}
-                                        {j < lines.length - 1 && <div className="h-1" />}
-                                    </React.Fragment>
-                                );
-                            })}
-                        </div>
-                    );
-                })}
+        // Tables
+        table: ({ node, ...props }) => (
+            <div className="overflow-x-auto my-3 rounded-lg border border-gray-100">
+                <table className="min-w-full divide-y divide-gray-100" {...props} />
             </div>
-        );
+        ),
+        thead: ({ node, ...props }) => <thead className="bg-gray-50" {...props} />,
+        tbody: ({ node, ...props }) => <tbody className="bg-white divide-y divide-gray-100" {...props} />,
+        tr: ({ node, ...props }) => <tr className="hover:bg-gray-50 transition-colors" {...props} />,
+        th: ({ node, ...props }) => (
+            <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider" {...props} />
+        ),
+        td: ({ node, ...props }) => (
+            <td className="px-3 py-2 text-sm text-gray-700 whitespace-nowrap" {...props} />
+        ),
+
+        // Horizontal Rule
+        hr: ({ node, ...props }) => <hr className="my-4 border-gray-100" {...props} />,
+
+        // Blockquote
+        blockquote: ({ node, ...props }) => (
+            <blockquote className="border-l-4 border-blue-200 pl-4 py-1 my-3 bg-blue-50/50 rounded-r-lg italic text-gray-600" {...props} />
+        ),
+    };
+
+
+    // Pre-process content to ensure valid markdown
+    const processContent = (raw: string) => {
+        if (!raw) return '';
+        return raw
+            // 1. Ensure headers have double newlines before them (Safeguard)
+            .replace(/([^\n])\n(#{1,6}\s)/g, '$1\n\n$2')
+
+            // 2. Convert text bullets (•) to markdown bullets (-)
+            .replace(/^•\s/gm, '- ')
+            .replace(/\n•\s/g, '\n- ')
+
+            // 3. Ensure lists have double newlines before them if previous line is text
+            .replace(/([^\n])\n(- \w)/g, '$1\n\n$2')
+
+            // 4. Fix bold spacing
+            .replace(/\*\*\s+([^*]+?)\s+\*\*/g, '**$1**');
     };
 
     // Message component with enterprise features
@@ -404,6 +411,9 @@ export const UserChatSidebarEnhanced: React.FC = () => {
         const isUser = message.role === 'user';
         const isSystem = message.isSystem;
         const isError = message.isError;
+
+        // Process content just before rendering
+        const processedContent = processContent(message.content);
 
         return (
             <motion.div
@@ -429,8 +439,13 @@ export const UserChatSidebarEnhanced: React.FC = () => {
                             </div>
                         ) : (
                             <div>
-                                <div className="text-sm leading-relaxed">
-                                    <SimpleMarkdown content={message.content} />
+                                <div className="text-sm leading-relaxed text-gray-800">
+                                    <ReactMarkdown
+                                        remarkPlugins={[remarkGfm]}
+                                        components={MarkdownComponents}
+                                    >
+                                        {processedContent}
+                                    </ReactMarkdown>
                                 </div>
                                 {message.responseTime && (
                                     <div className="mt-2 text-xs opacity-70">

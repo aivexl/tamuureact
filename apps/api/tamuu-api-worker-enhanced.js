@@ -162,7 +162,8 @@ export default {
 
         try {
             // ENHANCED: AI Chat Support v8.0 - Enterprise Grade
-            if (path === '/api/chat' && method === 'POST') {
+            // Matches apps/web/src/lib/api.ts which calls /api/enhanced-chat
+            if ((path === '/api/chat' || path === '/api/enhanced-chat') && method === 'POST') {
                 return await handleEnhancedChat(request, env, ctx, corsHeaders);
             }
 
@@ -173,23 +174,23 @@ export default {
 
                     // Validate required fields
                     if (!userId || !messages || !Array.isArray(messages) || messages.length === 0) {
-                        return json({ 
-                            success: false, 
-                            error: { code: 'INVALID_REQUEST', message: 'userId dan messages diperlukan' } 
+                        return json({
+                            success: false,
+                            error: { code: 'INVALID_REQUEST', message: 'userId dan messages diperlukan' }
                         }, { ...corsHeaders, status: 400 });
                     }
 
                     // Check API key configuration
                     if (!env.GEMINI_API_KEY) {
-                        return json({ 
-                            success: false, 
-                            error: { code: 'API_NOT_CONFIGURED', message: 'Gemini API Key tidak dikonfigurasi' } 
+                        return json({
+                            success: false,
+                            error: { code: 'API_NOT_CONFIGURED', message: 'Gemini API Key tidak dikonfigurasi' }
                         }, { ...corsHeaders, status: 500 });
                     }
 
                     // Create admin chat handler instance
                     const adminChatHandler = createAdminChatHandler(env);
-                    
+
                     // Get latest message from conversation
                     const latestMessage = messages[messages.length - 1];
                     const messageContent = typeof latestMessage === 'string' ? latestMessage : latestMessage.content;
@@ -206,7 +207,7 @@ export default {
 
                 } catch (error) {
                     console.error('Admin Chat v8.0 Error:', error);
-                    
+
                     // Enhanced error handling with Indonesian support
                     const errorResponse = {
                         success: false,
@@ -231,7 +232,7 @@ export default {
                 try {
                     const adminChatHandler = createAdminChatHandler(env);
                     const healthStatus = await adminChatHandler.healthCheck();
-                    
+
                     return json({
                         success: true,
                         service: 'tamuu-admin-ai-v8',
@@ -321,7 +322,7 @@ USER CONTEXT: You are chatting with a Tamuu Super Admin. Assist them with system
                     return json({ content: text }, corsHeaders);
                 } catch (err) {
                     const friendlyMsg = err.message.includes('quota') || err.message.includes('padat')
-                        ? "Maaf, sistem AI sedang sangat padat. Mohon tunggu sejenak dan coba kembali ya. 🙏"
+                        ? "Maaf, sistem AI sedang sibuk. Silakan coba sesaat lagi. 🙏"
                         : `Admin AI Error: ${err.message}`;
                     return json({ content: friendlyMsg }, corsHeaders);
                 }
@@ -344,7 +345,7 @@ USER CONTEXT: You are chatting with a Tamuu Super Admin. Assist them with system
                 }
 
                 const canonicalId = user?.id || userId;
-                
+
                 // Legacy v7.0 system prompt and tools
                 const KNOWLEDGE = {
                     PRODUCT: `
@@ -588,10 +589,10 @@ CONTEXT:
                         'INSERT INTO billing_transactions (user_id, tier, amount, status, external_id, created_at) VALUES (?, ?, ?, ?, ?, ?)'
                     ).bind(userId, tier, amount, 'PENDING', invoiceId, new Date().toISOString()).run();
 
-                    return json({ 
-                        success: true, 
-                        invoiceId, 
-                        paymentUrl: `https://xendit.co/invoices/${invoiceId}` 
+                    return json({
+                        success: true,
+                        invoiceId,
+                        paymentUrl: `https://xendit.co/invoices/${invoiceId}`
                     }, corsHeaders);
                 } catch (err) {
                     console.error('[Billing] Create invoice error:', err);
