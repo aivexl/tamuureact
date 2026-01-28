@@ -210,9 +210,20 @@ class TamuuAIEngine {
                 parameters: {
                     type: "object",
                     properties: {
-                        transactionId: { type: "string", description: "ID Transaksi yang ingin disinkronkan" }
+                        transactionId: { type: "string", description: "ID Transaksi atau Nomor Order yang ingin disinkronkan" }
                     },
                     required: ["transactionId"]
+                }
+            },
+            {
+                name: "search_order",
+                description: "Mencari status transaksi spesifik berdasarkan ID order atau external ID.",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        orderId: { type: "string", description: "Nomor #order-id atau external_id yang dicari." }
+                    },
+                    required: ["orderId"]
                 }
             },
             {

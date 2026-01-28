@@ -74,16 +74,65 @@ export const v9Tools = {
         // In a real scenario, this would call Midtrans API.
         // For now, we simulate a database refresh.
         try {
-            const tx = await env.DB.prepare('SELECT * FROM billing_transactions WHERE id = ?').bind(transactionId).first();
-            if (!tx) return { status: 'error', message: 'Transaksi tidak ditemukan.' };
+            // Search by ID or External ID (Order Number)
+            const tx = await env.DB.prepare('SELECT * FROM billing_transactions WHERE id = ? OR external_id = ?').bind(transactionId, transactionId).first();
+            if (!tx) return { status: 'error', message: 'Transaksi tidak ditemukan. Pastikan nomor order benar.' };
 
             // Simulate sync logic
             return {
                 status: 'success',
-                transaction_id: transactionId,
+                transaction_id: tx.id,
+                external_id: tx.external_id,
                 new_status: tx.status,
                 message: 'Status sinkronisasi berhasil diperbarui dari sistem pusat.'
             };
+        } catch (error) {
+            return { status: 'error', error: error.message };
+        }
+    },
+
+    /**
+     * Search for a specific transaction status by order ID or external ID.
+     */
+    async search_order({ orderId, env }) {
+        if (!orderId) return { status: 'error', message: 'Nomor order diperlukan.' };
+
+        const cleanId = orderId.trim().replace(/^#/, '');
+
+        try {
+            // Try exact match first
+            let { results } = await env.DB.prepare(
+                'SELECT id, status, external_id, tier, amount, created_at, payment_channel FROM billing_transactions ' +
+                'WHERE external_id = ? OR id = ?'
+            ).bind(cleanId, cleanId).all();
+
+            // If no exact match, try partial match for external_id
+            if (results.length === 0) {
+                const partial = await env.DB.prepare(
+                    'SELECT id, status, external_id, tier, amount, created_at, payment_channel FROM billing_transactions ' +
+                    'WHERE external_id LIKE ?'
+                ).bind(`%${cleanId}%`).all();
+
+                if (partial.results && partial.results.length > 0) {
+                    results = partial.results;
+                }
+            }
+
+            if (results.length > 0) {
+                return {
+                    status: 'success',
+                    findings: results.map(t => ({
+                        ...t,
+                        midtrans_url: `https://dashboard.midtrans.com/transactions/${t.external_id}`
+                    })),
+                    note: `Ditemukan ${results.length} transaksi terkait.`
+                };
+            } else {
+                return {
+                    status: 'error',
+                    message: `Transaksi "${orderId}" tidak ditemukan di database Tamuu.`
+                };
+            }
         } catch (error) {
             return { status: 'error', error: error.message };
         }

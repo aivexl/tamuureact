@@ -24,6 +24,7 @@ describe('AI V9.0 Agentic System', () => {
 
         expect(tools).toContainEqual(expect.objectContaining({ name: 'audit_account' }));
         expect(tools).toContainEqual(expect.objectContaining({ name: 'sync_payment' }));
+        expect(tools).toContainEqual(expect.objectContaining({ name: 'search_order' }));
         expect(tools).toContainEqual(expect.objectContaining({ name: 'get_product_knowledge' }));
     });
 
@@ -62,5 +63,27 @@ describe('AI V9.0 Agentic System', () => {
 
         expect(response.content).toContain('kondisi prima');
         expect(mockGenerate).toHaveBeenCalledTimes(2);
+    });
+
+    it('should correctly execute search_order tool', async () => {
+        const mockTx = { id: 'tx_123', status: 'paid', external_id: 'order-123', tier: 'pro', amount: 99000 };
+        mockEnv.DB.all.mockResolvedValueOnce({ results: [mockTx] });
+
+        const result = await v9Tools.search_order({ orderId: 'order-123', env: mockEnv });
+
+        expect(result.status).toBe('success');
+        expect(result.findings[0].external_id).toBe('order-123');
+        expect(result.findings[0].status).toBe('paid');
+    });
+
+    it('should correctly execute sync_payment with external_id', async () => {
+        const mockTx = { id: 'tx_123', status: 'paid', external_id: 'order-123' };
+        mockEnv.DB.first.mockResolvedValueOnce(mockTx);
+
+        const result = await v9Tools.sync_payment({ transactionId: 'order-123', env: mockEnv });
+
+        expect(result.status).toBe('success');
+        expect(result.external_id).toBe('order-123');
+        expect(result.new_status).toBe('paid');
     });
 });
