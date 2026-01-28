@@ -86,4 +86,25 @@ describe('AI V9.0 Agentic System', () => {
         expect(result.external_id).toBe('order-123');
         expect(result.new_status).toBe('paid');
     });
+
+    it('should report "not found" correctly without hallucination', async () => {
+        const engine = new TamuuAIEngine(mockEnv);
+        const mockGenerate = vi.spyOn(engine, 'generateGeminiResponse');
+
+        mockGenerate
+            .mockResolvedValueOnce({
+                toolCalls: [{ functionCall: { name: 'search_order', args: { orderId: 'wrong-id' } } }],
+                metadata: { provider: 'gemini-agent' }
+            })
+            .mockResolvedValueOnce({
+                content: 'Mohon maaf Kak, saya sudah memeriksa database dan pesanan tersebut tidak ditemukan.',
+                metadata: { provider: 'gemini-2.0-flash' }
+            });
+
+        const response = await engine.chat([{ role: 'user', content: 'Cek order wrong-id' }], { userProfile: { id: 'user_123' } }, mockEnv);
+
+        expect(response.content).toContain('tidak ditemukan');
+        expect(response.content).not.toContain('SUCCESS');
+        expect(mockGenerate).toHaveBeenCalledTimes(2);
+    });
 });

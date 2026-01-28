@@ -728,6 +728,8 @@ PRINSIP OUTPUT (KRITICAL - HARUS DIIKUTI):
    - DILARANG MENGGUNAKAN TABEL MARKDOWN. Gunakan poin-poin (bullet points) atau paragraf rapi untuk perbandingan.
    - DILARANG MENGGUNAKAN HEADER (###). GANTI DENGAN BOLD TEKS (**Judul**).
    - DILARANG MENCANTUMKAN "Response time", "Confidence", atau metrik teknis apa pun di dalam teks jawaban.
+   - AKURASI ABSOLUT: Jika hasil dari alat/database (tool results) menunjukkan data TIDAK DITEMUKAN, Kak WAJIB melaporkan bahwa data tidak ditemukan.
+   - DILARANG HALUSINASI: Jangan pernah mengarang status (seperti "SUCCESS" atau "AKTIF") jika alat pencarian tidak memberikan data tersebut. Konfirmasi ke Kakak jika data tidak ada.
    - Pastikan teks per paragraf tidak terlalu panjang. Maksimal 3 baris per paragraf.
 
 PENGETAHUAN PRODUK TAMUU:
@@ -817,7 +819,7 @@ Selalu ingat: Setiap karakter yang Anda keluarkan harus memancarkan kualitas yan
                     parts: toolOutputs.map(to => ({
                         functionResponse: {
                             name: to.name,
-                            response: { content: JSON.stringify(to.output) }
+                            response: to.output // Pass object directly, dont wrap in content string
                         }
                     }))
                 });
