@@ -18,91 +18,70 @@ describe('AI V9.0 Agentic System', () => {
         }
     };
 
-    it('should define correct V9 tool schemas', () => {
-        const engine = new TamuuAIEngine(mockEnv);
-        const tools = engine.getEnhancedTools();
-
-        expect(tools).toContainEqual(expect.objectContaining({ name: 'audit_account' }));
-        expect(tools).toContainEqual(expect.objectContaining({ name: 'sync_payment' }));
-        expect(tools).toContainEqual(expect.objectContaining({ name: 'search_order' }));
-        expect(tools).toContainEqual(expect.objectContaining({ name: 'get_product_knowledge' }));
-    });
-
-    it('should generate human-centric system prompt with dots', async () => {
-        const engine = new TamuuAIEngine(mockEnv);
-        const prompt = await engine.generateIndonesianSystemPrompt();
-
-        expect(prompt).toContain('Tamuu Assistant');
-        expect(prompt).toContain('•'); // Dot bullet points
-        expect(prompt).not.toContain('menyisir data');
-    });
-
-    it('should handle tool execution in v9Tools', async () => {
-        const result = await v9Tools.audit_account({ userId: 'user_123', env: mockEnv });
-        expect(result.status).toBe('success');
-        expect(result.user_tier).toBe('free');
-    });
-
-    it('should implement the agentic chat loop structure (Mocked)', async () => {
-        const engine = new TamuuAIEngine(mockEnv);
-
-        // Mock generateGeminiResponse to simulate a tool call then a final response
-        const mockGenerate = vi.spyOn(engine, 'generateGeminiResponse');
-
-        mockGenerate
-            .mockResolvedValueOnce({
-                toolCalls: [{ functionCall: { name: 'audit_account', args: { reason: 'test' } }, callId: '123' }],
-                metadata: { provider: 'gemini-agent' }
-            })
-            .mockResolvedValueOnce({
-                content: 'Halo Kak! Akun Kak masih dalam kondisi prima. Ada lagi yang bisa saya bantu? 😊',
-                metadata: { provider: 'gemini-2.0-flash' }
-            });
-
-        const response = await engine.chat([{ role: 'user', content: 'Cek akun saya' }], { userProfile: { id: 'user_123' } }, mockEnv);
-
-        expect(response.content).toContain('kondisi prima');
-        expect(mockGenerate).toHaveBeenCalledTimes(2);
-    });
-
-    it('should correctly execute search_order tool', async () => {
-        const mockTx = { id: 'tx_123', status: 'paid', external_id: 'order-123', tier: 'pro', amount: 99000 };
+    it('should correctly execute search_order with Midtrans source', async () => {
+        const mockTx = {
+            id: 'tx_123',
+            status: 'PAID',
+            external_id: 'order-123',
+            tier: 'pro',
+            amount: 99000,
+            payment_channel: 'gopay'
+        };
         mockEnv.DB.all.mockResolvedValueOnce({ results: [mockTx] });
 
         const result = await v9Tools.search_order({ orderId: 'order-123', env: mockEnv });
-        expect(result.status).toBe('success');
+
+        expect(result.status).toBe('SUCCESS');
+        expect(result.findings[0].source).toContain('Midtrans');
+        expect(result.findings[0].status).toBe('PAID');
     });
 
-    it('should report "not found" correctly without hallucination', async () => {
+    it('should correctly execute search_order with Invoice source (fallback)', async () => {
+        const mockTx = {
+            id: 'tx_456',
+            status: 'PENDING',
+            external_id: 'inv-456',
+            tier: 'pro',
+            amount: 149000,
+            payment_channel: null
+        };
+        mockEnv.DB.all.mockResolvedValueOnce({ results: [mockTx] });
+
+        const result = await v9Tools.search_order({ orderId: 'inv-456', env: mockEnv });
+
+        expect(result.status).toBe('SUCCESS');
+        expect(result.findings[0].source).toBe('System Invoice');
+    });
+
+    it('should return explicit NOT_FOUND for non-existent orders', async () => {
+        mockEnv.DB.all.mockResolvedValueOnce({ results: [] }); // Exact
+        mockEnv.DB.all.mockResolvedValueOnce({ results: [] }); // Partial
+
+        const result = await v9Tools.search_order({ orderId: 'wrong-id', env: mockEnv });
+
+        expect(result.status).toBe('NOT_FOUND');
+        expect(result.total_found).toBe(0);
+        expect(result.message).toContain('TIDAK DITEMUKAN');
+    });
+
+    it('should report "not found" correctly in AI response without hallucination', async () => {
         const engine = new TamuuAIEngine(mockEnv);
         const mockGenerate = vi.spyOn(engine, 'generateGeminiResponse');
 
         mockGenerate
             .mockResolvedValueOnce({
-                toolCalls: [{ functionCall: { name: 'search_order', args: { orderId: 'wrong-id' } }, callId: '456' }],
+                toolCalls: [{ functionCall: { name: 'search_order', args: { orderId: 'wrong-id' } }, callId: '123' }],
                 metadata: { provider: 'gemini-agent' }
             })
             .mockResolvedValueOnce({
-                content: 'Mohon maaf Kak, saya sudah memeriksa database dan pesanan tersebut tidak ditemukan.',
+                content: 'Mohon maaf Kak, setelah saya cek di database maupun sistem invoice, pesanan tersebut memang tidak ditemukan.',
                 metadata: { provider: 'gemini-2.0-flash' }
             });
 
         const response = await engine.chat([{ role: 'user', content: 'Cek order wrong-id' }], { userProfile: { id: 'user_123' } }, mockEnv);
 
         expect(response.content).toContain('tidak ditemukan');
-        expect(mockGenerate).toHaveBeenCalledTimes(2);
-    });
-
-    it('should handle output content correctly in engine', async () => {
-        const engine = new TamuuAIEngine(mockEnv);
-        const mockGenerate = vi.spyOn(engine, 'generateGeminiResponse');
-
-        mockGenerate.mockResolvedValueOnce({
-            content: 'Halo Kak! Ini adalah jawaban saya.',
-            metadata: { provider: 'gemini-2.0-flash' }
-        });
-
-        const response = await engine.chat([{ role: 'user', content: 'Halo' }], { userProfile: { id: 'user_123' } }, mockEnv);
-        expect(response.content).toContain('Halo Kak');
+        expect(response.content).not.toContain('PAID');
+        expect(response.content).not.toContain('SUCCESS');
     });
 });

@@ -93,20 +93,21 @@ export const v9Tools = {
 
     /**
      * Search for a specific transaction status by order ID or external ID.
+     * Prioritizes "Midtrans" results and falls back to system "Invoice" records.
      */
     async search_order({ orderId, env }) {
-        if (!orderId) return { status: 'error', message: 'Nomor order diperlukan.' };
+        if (!orderId) return { status: 'NOT_FOUND', message: 'Nomor order diperlukan.' };
 
         const cleanId = orderId.trim().replace(/^#/, '');
 
         try {
-            // Try exact match first
+            // Priority 1: Exact Match (usually from the payment gateway/external_id)
             let { results } = await env.DB.prepare(
                 'SELECT id, status, external_id, tier, amount, created_at, payment_channel FROM billing_transactions ' +
                 'WHERE external_id = ? OR id = ?'
             ).bind(cleanId, cleanId).all();
 
-            // If no exact match, try partial match for external_id
+            // Priority 2: Partial Match for external_id
             if (results.length === 0) {
                 const partial = await env.DB.prepare(
                     'SELECT id, status, external_id, tier, amount, created_at, payment_channel FROM billing_transactions ' +
@@ -120,21 +121,32 @@ export const v9Tools = {
 
             if (results.length > 0) {
                 return {
-                    status: 'success',
-                    findings: results.map(t => ({
-                        ...t,
-                        midtrans_url: `https://dashboard.midtrans.com/transactions/${t.external_id}`
-                    })),
-                    note: `Ditemukan ${results.length} transaksi terkait.`
+                    status: 'SUCCESS',
+                    source: 'DATABASE_PRIMARY',
+                    total_found: results.length,
+                    findings: results.map(t => {
+                        // Distinguish source based on payment_channel or presence of external_id
+                        const source = t.payment_channel ? `Midtrans (${t.payment_channel})` : 'System Invoice';
+                        return {
+                            ...t,
+                            source,
+                            midtrans_url: t.external_id ? `https://dashboard.midtrans.com/transactions/${t.external_id}` : null
+                        };
+                    })
                 };
             } else {
+                // Return very explicit NOT_FOUND structure
                 return {
-                    status: 'error',
-                    message: `Transaksi "${orderId}" tidak ditemukan di database Tamuu.`
+                    status: 'NOT_FOUND',
+                    source: 'NONE',
+                    total_found: 0,
+                    message: `CRITICAL: Transaksi "${orderId}" TIDAK DITEMUKAN di sumber manapun (Midtrans maupun Invoice).`,
+                    action: 'Mohon informasikan kepada pengguna bahwa data tidak ada.'
                 };
             }
         } catch (error) {
-            return { status: 'error', error: error.message };
+            console.error('[V9 Tools] Search failed:', error);
+            return { status: 'ERROR', error: error.message };
         }
     },
 

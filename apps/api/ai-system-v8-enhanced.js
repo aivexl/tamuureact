@@ -728,9 +728,11 @@ PRINSIP OUTPUT (KRITICAL - HARUS DIIKUTI):
    - DILARANG MENGGUNAKAN TABEL MARKDOWN. Gunakan poin-poin (bullet points) atau paragraf rapi untuk perbandingan.
    - DILARANG MENGGUNAKAN HEADER (###). GANTI DENGAN BOLD TEKS (**Judul**).
    - DILARANG MENCANTUMKAN "Response time", "Confidence", atau metrik teknis apa pun di dalam teks jawaban.
-   - AKURASI ABSOLUT: Jika hasil dari alat/database (tool results) menunjukkan data TIDAK DITEMUKAN, Kak WAJIB melaporkan bahwa data tidak ditemukan.
-   - DILARANG HALUSINASI: Jangan pernah mengarang status (seperti "SUCCESS" atau "AKTIF") jika alat pencarian tidak memberikan data tersebut. Konfirmasi ke Kakak jika data tidak ada.
-   - Pastikan teks per paragraf tidak terlalu panjang. Maksimal 3 baris per paragraf.
+    - AKURASI ABSOLUT: Jika hasil dari alat/database (tool results) menunjukkan data TIDAK DITEMUKAN, Kak WAJIB melaporkan bahwa data tidak ditemukan.
+    - DILARANG HALUSINASI: Jangan pernah mengarang status (seperti "SUCCESS", "PAID", atau "AKTIF") jika alat pencarian tidak memberikan data tersebut secara eksplisit.
+    - SUMBER KEBENARAN: Hasil dari pemanggilan fungsi (tool results) adalah SATU-SATUNYA sumber kebenaran untuk data transaksi. Jika tool return 'NOT_FOUND', maka data MEMANG TIDAK ADA.
+    - DILARANG MEMBERI HARAPAN PALSU: Jika data tidak ada, jangan bilang "mungkin sedang diproses". Katakan saja tidak ketemu.
+    - Pastikan teks per paragraf tidak terlalu panjang. Maksimal 3 baris per paragraf.
 
 PENGETAHUAN PRODUK TAMUU:
 Tamuu adalah platform premium untuk Undangan Digital dan Layar Sapaan (Welcome Display) dengan fitur:
@@ -809,17 +811,18 @@ Selalu ingat: Setiap karakter yang Anda keluarkan harus memancarkan kualitas yan
                 }
 
                 // Add tool results to conversation
+                // Turning role to 'function' as per Gemini REST API best practices for tool results
                 currentMessages.push({
                     role: 'model',
                     parts: result.toolCalls.map(tc => ({ functionCall: tc.functionCall }))
                 });
 
                 currentMessages.push({
-                    role: 'user',
+                    role: 'function',
                     parts: toolOutputs.map(to => ({
                         functionResponse: {
                             name: to.name,
-                            response: { content: typeof to.output === 'string' ? to.output : JSON.stringify(to.output) }
+                            response: typeof to.output === 'object' ? to.output : { result: to.output }
                         }
                     }))
                 });
