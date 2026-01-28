@@ -174,9 +174,20 @@ export const UserChatSidebarEnhanced: React.FC = () => {
             const responseDelay = responseSpeed === 'instant' ? 100 : responseSpeed === 'thoughtful' ? 2000 : 500;
             await new Promise(resolve => setTimeout(resolve, responseDelay));
 
+            // V9.0: Send full history for agentic context
+            const history = messages
+                .filter(m => !m.isIntermediate && !m.isError)
+                .map(m => ({
+                    role: m.role,
+                    content: m.content
+                }));
+
+            // Add the current user message to history
+            history.push({ role: 'user', content: messageText });
+
             // Call enhanced AI API
             const response = await (users as any).chatWithAIEnhanced({
-                messages: [{ role: 'user', content: messageText }],
+                messages: history,
                 context: {
                     userId: user?.id,
                     userProfile: user,
@@ -184,7 +195,10 @@ export const UserChatSidebarEnhanced: React.FC = () => {
                     userTier: user?.tier,
                     personality: aiPersonality,
                     responseSpeed: responseSpeed,
-                    isSilentDiagnostic
+                    isSilentDiagnostic,
+                    // Additional enterprise context
+                    currentPath: window.location.pathname,
+                    lastAction: 'chat_sent'
                 }
             });
 

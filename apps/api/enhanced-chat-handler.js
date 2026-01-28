@@ -13,11 +13,14 @@ export async function handleEnhancedChat(request, env, ctx, corsHeaders) {
         const { messages, userId } = await request.json();
 
         if (!env.GEMINI_API_KEY) {
+            console.error('[Enhanced AI] GEMINI_API_KEY is MISSING in environment.');
             return json({
                 error: 'AI Support currently unavailable',
                 code: 'AI_UNAVAILABLE'
             }, { ...corsHeaders, status: 503 });
         }
+
+        console.log(`[Enhanced AI] GEMINI_API_KEY present (Length: ${env.GEMINI_API_KEY.length})`);
 
         // 1. Security & Profile Lookup
         let userProfile = null;
@@ -47,6 +50,11 @@ export async function handleEnhancedChat(request, env, ctx, corsHeaders) {
         // 4. Execution Workflow (Agentic Turn)
         // V9 orchestration is now internal to engine.chat()
         const aiResponse = await aiEngine.chat(messages, context, env);
+        console.log('[Enhanced AI] Chat response received:', {
+            hasContent: !!aiResponse.content,
+            error: aiResponse.error,
+            fallback: aiResponse.fallback
+        });
 
         // 5. Track Performance
         const responseTime = Date.now() - startTime;
@@ -69,9 +77,9 @@ export async function handleEnhancedChat(request, env, ctx, corsHeaders) {
         const recoveryResponse = await aiEngine.handleAIError(error, env);
 
         return json({
-            content: recoveryResponse.content,
+            content: `CRITICAL ERROR: ${error.message}. STACK: ${error.stack}`,
             provider: 'tamuu-recovery-v9',
-            error: recoveryResponse.error,
+            error: error.message,
             fallback: true
         }, corsHeaders);
     }

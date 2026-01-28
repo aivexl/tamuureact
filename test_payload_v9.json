@@ -1,0 +1,9 @@
+{
+    "messages": [
+        {
+            "role": "user",
+            "content": "Halo, tolong bandingkan paket Tamuu secara rapi"
+        }
+    ],
+    "userId": "test_user_v9"
+}
