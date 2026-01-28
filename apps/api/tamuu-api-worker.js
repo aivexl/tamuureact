@@ -60,7 +60,7 @@ export default {
             const providers = [
                 {
                     name: 'Gemini',
-                    url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${env.GEMINI_API_KEY}`,
+                    url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${env.GEMINI_API_KEY}`,
                     type: 'google'
                 }
             ];

@@ -50,6 +50,181 @@ interface ChatSession {
     context: Record<string, any>;
 }
 
+// ReactMarkdown Configuration for Enterprise UI
+const MarkdownComponents: React.ComponentProps<typeof ReactMarkdown>['components'] = {
+    // Paragraphs
+    p: ({ node, ...props }) => <div className="mb-3 leading-relaxed last:mb-0 text-gray-800" {...props} />,
+
+    // Headings - Ensure block display and clear spacing
+    h1: ({ node, ...props }) => <h1 className="block text-lg font-bold text-gray-900 mt-4 mb-2" {...props} />,
+    h2: ({ node, ...props }) => <h2 className="block text-base font-bold text-gray-900 mt-4 mb-2" {...props} />,
+    h3: ({ node, ...props }) => <h3 className="block text-sm font-bold text-blue-900 mt-4 mb-2" {...props} />,
+    h4: ({ node, ...props }) => <h4 className="block text-xs font-bold text-gray-800 mt-3 mb-1" {...props} />,
+
+    // Lists
+    ul: ({ node, ...props }) => <ul className="space-y-1 my-2 pl-1 list-none" {...props} />,
+    ol: ({ node, ...props }) => <ol className="list-decimal space-y-1 my-2 pl-4" {...props} />,
+    li: ({ node, ...props }) => {
+        const children = React.Children.toArray(props.children);
+        const content = children.map((child) => {
+            if (React.isValidElement(child) && child.type === 'div' && (child.props as any).className?.includes('mb-3')) {
+                return (child.props as any).children;
+            }
+            return child;
+        });
+
+        return (
+            <li className="flex items-start space-x-2 text-sm text-gray-800">
+                {/* Visual Dot - Premium Look */}
+                <span className="mt-2 w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+                <span className="flex-1">{content}</span>
+            </li>
+        );
+    },
+
+    // Bold/Strong
+    strong: ({ node, ...props }) => <strong className="font-extrabold text-blue-950" {...props} />,
+
+    // Links
+    a: ({ node, ...props }) => (
+        <a className="text-blue-600 hover:text-blue-800 underline transition-colors" target="_blank" rel="noopener noreferrer" {...props} />
+    ),
+
+    // Tables
+    table: ({ node, ...props }) => (
+        <div className="overflow-x-auto my-3 rounded-lg border border-gray-100">
+            <table className="min-w-full divide-y divide-gray-100" {...props} />
+        </div>
+    ),
+    thead: ({ node, ...props }) => <thead className="bg-gray-50" {...props} />,
+    tbody: ({ node, ...props }) => <tbody className="bg-white divide-y divide-gray-100" {...props} />,
+    tr: ({ node, ...props }) => <tr className="hover:bg-gray-50 transition-colors" {...props} />,
+    th: ({ node, ...props }) => (
+        <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider" {...props} />
+    ),
+    td: ({ node, ...props }) => (
+        <td className="px-3 py-2 text-sm text-gray-700 whitespace-nowrap" {...props} />
+    ),
+
+    // Horizontal Rule
+    hr: ({ node, ...props }) => <hr className="my-4 border-gray-100" {...props} />,
+
+    // Blockquote
+    blockquote: ({ node, ...props }) => (
+        <blockquote className="border-l-4 border-blue-200 pl-4 py-1 my-3 bg-blue-50/50 rounded-r-lg italic text-gray-600" {...props} />
+    ),
+};
+
+// Pre-process content to ensure valid markdown
+const processContent = (raw: string) => {
+    if (!raw) return '';
+
+    // Normalize content for premium rendering
+    let content = raw
+        // 1. Strip technical noise if it leaks through the prompt
+        .replace(/Response time: \d+ms/gi, '')
+        .replace(/Confidence: \d+(\.\d+)?%/gi, '')
+        .replace(/• Confidence: \d+(\.\d+)?%/gi, '')
+
+        // 2. Ensure absolute double spacing between major blocks
+        .replace(/([^\n])\n(#{1,6}\s)/g, '$1\n\n$2')
+        .replace(/([^\n])\n(\*\*.*?\*\*)/g, '$1\n\n$2')
+
+        // 3. Standardize bullet points
+        .replace(/^•\s/gm, '- ')
+        .replace(/\n•\s/g, '\n- ')
+
+        // 4. Force newlines after bold headers if text follows directly
+        // This handles cases like "**Paket ULTIMATE**Paket ini..." -> "**Paket ULTIMATE**\n\nPaket ini..."
+        .replace(/(\*\*.*?\*\*)([^\n\s\-\d])/g, '$1\n\n$2')
+        .replace(/(\*\*.*?\*\*)(\s*[^\n\-\d])/g, (match, p1, p2) => {
+            if (p2.trim() === '') return match;
+            return p1 + '\n\n' + p2.trim();
+        })
+
+        // 5. Aggressive repair for unclosed bold tags
+        // If a line starts with ** but doesn't end with it, close it
+        .split('\n').map(line => {
+            const trimmed = line.trim();
+            if (trimmed.startsWith('**') && (trimmed.match(/\*\*/g) || []).length === 1) {
+                return line + '**';
+            }
+            return line;
+        }).join('\n')
+
+        // 6. Fix list-to-paragraph transitions (ensure spacing when moving from list to text)
+        .replace(/(- .*?)\n([^\n*-])/g, '$1\n\n$2')
+
+        // 7. Final cleanup of spacing
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+
+    return content;
+};
+
+// Memoized Message Component to prevent blinking
+const MessageComponent = React.memo(({
+    message,
+    index,
+    onCopy,
+    onRegenerate
+}: {
+    message: Message;
+    index: number;
+    onCopy: (m: Message) => void;
+    onRegenerate: (id: string) => void;
+}) => {
+    const isUser = message.role === 'user';
+    const isSystem = message.isSystem;
+    const isError = message.isError;
+    const processedContent = processContent(message.content);
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.05 }}
+            className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}
+        >
+            <div className={`max-w-[85%] group relative ${isUser ? 'order-2' : 'order-1'}`}>
+                <div className={`px-4 py-3 rounded-2xl shadow-sm ${isUser
+                    ? 'bg-blue-600 text-white'
+                    : isSystem
+                        ? 'bg-purple-100 text-gray-800 border border-purple-200'
+                        : isError
+                            ? 'bg-red-50 text-red-800 border border-red-200'
+                            : 'bg-white text-gray-800 border border-gray-200 shadow-md'
+                    }`}>
+                    {message.isIntermediate ? (
+                        <div className="flex items-center space-x-3 py-1">
+                            <PremiumLoader variant="inline" size="sm" color="#3b82f6" />
+                            <span className="text-sm font-medium text-gray-500">Sedang mengetik...</span>
+                        </div>
+                    ) : (
+                        <div className="text-sm leading-relaxed text-gray-800">
+                            <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                components={MarkdownComponents}
+                            >
+                                {processedContent}
+                            </ReactMarkdown>
+                        </div>
+                    )}
+                </div>
+
+                {message.timestamp && (
+                    <div className="text-[10px] text-gray-400 mt-1 px-1 opacity-70">
+                        {message.timestamp.toLocaleTimeString('id-ID', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })}
+                    </div>
+                )}
+            </div>
+        </motion.div>
+    );
+});
+
 // Enterprise-grade chat interface with world-class UX
 export const UserChatSidebar: React.FC = () => {
     const { user, token } = useStore();
@@ -131,9 +306,9 @@ export const UserChatSidebar: React.FC = () => {
         const name = userData?.name || 'Kak';
 
         const tierMessages: Record<string, string> = {
-            premium: `Selamat datang ${name}! 🏆 Saya AI Assistant premium Tamuu dengan prioritas tinggi. Siap membantu 24/7 dengan response time <100ms.`,
-            business: `Halo ${name}! 💼 Saya AI Assistant bisnis Tamuu. Siap membantu dengan solusi enterprise untuk kebutuhan undangan digital Anda.`,
-            free: `Halo ${name}! 😊 Saya AI Assistant Tamuu. Dengan senang hati membantu membuat undangan digital yang menawan untuk acara spesial Anda.`
+            premium: `Selamat datang ${name}! 🏆 Saya Assistant premium Tamuu dengan prioritas tinggi. Siap membantu 24/7 dengan response time cepat.`,
+            business: `Halo ${name}! 💼 Saya Assistant bisnis Tamuu. Siap membantu dengan solusi enterprise untuk kebutuhan undangan digital Anda.`,
+            free: `Halo ${name}! 😊 Saya Assistant Tamuu. Dengan senang hati membantu membuat undangan digital yang menawan untuk acara spesial Anda.`
         };
 
         return tierMessages[tier] || tierMessages.free;
@@ -322,188 +497,7 @@ export const UserChatSidebar: React.FC = () => {
         { icon: Zap, label: 'Cepat', action: () => handleSend('Bagaimana cara cepat membuat undangan?') }
     ];
 
-    // ReactMarkdown Configuration for Enterprise UI
-    const MarkdownComponents: React.ComponentProps<typeof ReactMarkdown>['components'] = {
-        // Paragraphs
-        p: ({ node, ...props }) => <div className="mb-3 leading-relaxed last:mb-0" {...props} />,
 
-        // Headings - Ensure block display and clear spacing
-        h1: ({ node, ...props }) => <h1 className="block text-lg font-bold text-gray-900 mt-4 mb-2" {...props} />,
-        h2: ({ node, ...props }) => <h2 className="block text-base font-bold text-gray-900 mt-4 mb-2" {...props} />,
-        h3: ({ node, ...props }) => <h3 className="block text-sm font-bold text-blue-900 mt-4 mb-2" {...props} />,
-        h4: ({ node, ...props }) => <h4 className="block text-xs font-bold text-gray-800 mt-3 mb-1" {...props} />,
-
-        // Lists
-        ul: ({ node, ...props }) => <ul className="space-y-1 my-2 pl-1 list-none" {...props} />,
-        ol: ({ node, ...props }) => <ol className="list-decimal space-y-1 my-2 pl-4" {...props} />,
-        li: ({ node, ...props }) => {
-            const children = React.Children.toArray(props.children);
-            const content = children.map((child) => {
-                if (React.isValidElement(child) && child.type === 'div' && (child.props as any).className?.includes('mb-3')) {
-                    return (child.props as any).children;
-                }
-                return child;
-            });
-
-            return (
-                <li className="flex items-start space-x-2 text-sm">
-                    {/* Visual Dot - Premium Look */}
-                    <span className="mt-2 w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
-                    <span className="flex-1">{content}</span>
-                </li>
-            );
-        },
-
-        // Bold/Strong
-        strong: ({ node, ...props }) => <strong className="font-extrabold text-blue-950" {...props} />,
-
-        // Links
-        a: ({ node, ...props }) => (
-            <a className="text-blue-600 hover:text-blue-800 underline transition-colors" target="_blank" rel="noopener noreferrer" {...props} />
-        ),
-
-        // Tables
-        table: ({ node, ...props }) => (
-            <div className="overflow-x-auto my-3 rounded-lg border border-gray-100">
-                <table className="min-w-full divide-y divide-gray-100" {...props} />
-            </div>
-        ),
-        thead: ({ node, ...props }) => <thead className="bg-gray-50" {...props} />,
-        tbody: ({ node, ...props }) => <tbody className="bg-white divide-y divide-gray-100" {...props} />,
-        tr: ({ node, ...props }) => <tr className="hover:bg-gray-50 transition-colors" {...props} />,
-        th: ({ node, ...props }) => (
-            <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider" {...props} />
-        ),
-        td: ({ node, ...props }) => (
-            <td className="px-3 py-2 text-sm text-gray-700 whitespace-nowrap" {...props} />
-        ),
-
-        // Horizontal Rule
-        hr: ({ node, ...props }) => <hr className="my-4 border-gray-100" {...props} />,
-
-        // Blockquote
-        blockquote: ({ node, ...props }) => (
-            <blockquote className="border-l-4 border-blue-200 pl-4 py-1 my-3 bg-blue-50/50 rounded-r-lg italic text-gray-600" {...props} />
-        ),
-    };
-
-
-    // Pre-process content to ensure valid markdown
-    const processContent = (raw: string) => {
-        if (!raw) return '';
-        return raw
-            // 1. Ensure headers have double newlines before them (Safeguard)
-            .replace(/([^\n])\n(#{1,6}\s)/g, '$1\n\n$2')
-
-            // 2. Convert text bullets (•) to markdown bullets (-)
-            .replace(/^•\s/gm, '- ')
-            .replace(/\n•\s/g, '\n- ')
-
-            // 3. Ensure lists have double newlines before them if previous line is text
-            .replace(/([^\n])\n(- \w)/g, '$1\n\n$2')
-
-            // 4. Fix bold spacing
-            .replace(/\*\*\s+([^*]+?)\s+\*\*/g, '**$1**');
-    };
-
-    // Message component with enterprise features
-    const MessageComponent = ({ message, index }: { message: Message; index: number }) => {
-        const isUser = message.role === 'user';
-        const isSystem = message.isSystem;
-        const isError = message.isError;
-
-        // Process content just before rendering
-        const processedContent = processContent(message.content);
-
-        return (
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-                className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}
-            >
-                <div className={`max-w-[80%] group relative ${isUser ? 'order-2' : 'order-1'
-                    }`}>
-                    <div className={`px-4 py-3 rounded-2xl shadow-sm ${isUser
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
-                        : isSystem
-                            ? 'bg-gradient-to-r from-purple-100 to-pink-100 text-gray-800 border border-purple-200'
-                            : isError
-                                ? 'bg-red-50 text-red-800 border border-red-200'
-                                : 'bg-white text-gray-800 border border-gray-200 shadow-md'
-                        }`}>
-                        {message.isIntermediate ? (
-                            <div className="flex items-center space-x-2">
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                <span className="text-sm">Sedang mengetik...</span>
-                            </div>
-                        ) : (
-                            <div>
-                                <div className="text-sm leading-relaxed text-gray-800">
-                                    <ReactMarkdown
-                                        remarkPlugins={[remarkGfm]}
-                                        components={MarkdownComponents}
-                                    >
-                                        {processedContent}
-                                    </ReactMarkdown>
-                                </div>
-                                {message.responseTime && (
-                                    <div className="mt-2 text-xs opacity-70">
-                                        Response time: {message.responseTime}ms
-                                        {message.confidence && ` • Confidence: ${(message.confidence * 100).toFixed(1)}%`}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Message actions */}
-                    {!isUser && !message.isIntermediate && (
-                        <div className="absolute -bottom-2 left-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <div className="flex space-x-1 bg-white rounded-full shadow-lg border p-1">
-                                <button
-                                    onClick={() => handleCopyMessage(message)}
-                                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                                    title="Copy message"
-                                >
-                                    <Copy className="w-3 h-3 text-gray-600" />
-                                </button>
-                                <button
-                                    onClick={() => handleRegenerate(message.messageId!)}
-                                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                                    title="Regenerate response"
-                                >
-                                    <RefreshCw className="w-3 h-3 text-gray-600" />
-                                </button>
-                                <button
-                                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                                    title="Like"
-                                >
-                                    <ThumbsUp className="w-3 h-3 text-gray-600" />
-                                </button>
-                                <button
-                                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                                    title="Dislike"
-                                >
-                                    <ThumbsDown className="w-3 h-3 text-gray-600" />
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Timestamp */}
-                    {message.timestamp && (
-                        <div className="text-xs text-gray-400 mt-1 opacity-70">
-                            {message.timestamp.toLocaleTimeString('id-ID', {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            })}
-                        </div>
-                    )}
-                </div>
-            </motion.div>
-        );
-    };
 
     // Award-winning UI design
     return (
@@ -517,7 +511,7 @@ export const UserChatSidebar: React.FC = () => {
             >
                 <motion.button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full p-4 shadow-2xl hover:shadow-3xl transition-all duration-300 group"
+                    className="bg-blue-600 text-white rounded-full p-4 shadow-2xl hover:shadow-3xl transition-all duration-300 group"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                 >
@@ -566,7 +560,7 @@ export const UserChatSidebar: React.FC = () => {
                         <div className={`bg-white rounded-3xl shadow-2xl border border-gray-200 flex flex-col ${isMinimized ? 'w-80 h-16' : 'w-96 h-[600px]'
                             } transition-all duration-300`}>
                             {/* Header */}
-                            <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-t-3xl">
+                            <div className="bg-blue-600 text-white p-4 rounded-t-3xl border-b border-white/10">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-3">
                                         <motion.div
@@ -576,7 +570,7 @@ export const UserChatSidebar: React.FC = () => {
                                             <Bot className="w-8 h-8" />
                                         </motion.div>
                                         <div>
-                                            <h3 className="font-semibold text-lg">Tamuu AI Assistant</h3>
+                                            <h3 className="font-semibold text-lg">Tamuu Assistant</h3>
                                             <div className="flex items-center space-x-2">
                                                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                                                 <span className="text-xs opacity-90">Online</span>
@@ -672,24 +666,15 @@ export const UserChatSidebar: React.FC = () => {
                                 <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
                                     <AnimatePresence>
                                         {messages.map((message, index) => (
-                                            <MessageComponent key={message.messageId} message={message} index={index} />
+                                            <MessageComponent
+                                                key={message.messageId || index}
+                                                message={message}
+                                                index={index}
+                                                onCopy={handleCopyMessage}
+                                                onRegenerate={handleRegenerate}
+                                            />
                                         ))}
                                     </AnimatePresence>
-
-                                    {isLoading && (
-                                        <motion.div
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            className="flex justify-start"
-                                        >
-                                            <div className="bg-gray-100 text-gray-600 px-4 py-2 rounded-2xl">
-                                                <div className="flex items-center space-x-2">
-                                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                                    <span className="text-sm">AI sedang berpikir...</span>
-                                                </div>
-                                            </div>
-                                        </motion.div>
-                                    )}
                                 </div>
                             )}
 
@@ -704,7 +689,7 @@ export const UserChatSidebar: React.FC = () => {
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ delay: index * 0.1 }}
                                                 onClick={action.action}
-                                                className="flex items-center space-x-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-medium transition-colors"
+                                                className="flex items-center space-x-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-medium text-gray-700 transition-colors"
                                             >
                                                 <action.icon className="w-3 h-3" />
                                                 <span>{action.label}</span>
@@ -721,8 +706,8 @@ export const UserChatSidebar: React.FC = () => {
                                                 value={input}
                                                 onChange={(e) => setInput(e.target.value)}
                                                 onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                                                placeholder="Tulis pesan untuk CTO Tamuu... (Sapa 'Halo' untuk mulai)"
-                                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                                placeholder="Tulis pesan untuk Tamuu Assistant... (Sapa 'Halo' untuk mulai)"
+                                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                                 disabled={isLoading}
                                             />
                                             {(user?.tier as any) === 'premium' && (
@@ -732,7 +717,7 @@ export const UserChatSidebar: React.FC = () => {
                                         <motion.button
                                             onClick={() => handleSend()}
                                             disabled={isLoading || !input.trim()}
-                                            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-3 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all"
+                                            className="bg-blue-600 text-white p-3 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all"
                                             whileHover={{ scale: 1.05 }}
                                             whileTap={{ scale: 0.95 }}
                                         >

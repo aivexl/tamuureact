@@ -105,7 +105,7 @@ export default {
         };
 
         // AI Model Fallback System (Gemini 2.0 -> Groq)
-        const fetchAI = async (systemPrompt, messages, tools = [], model = 'gemini-2.0-flash-exp') => {
+        const fetchAI = async (systemPrompt, messages, tools = [], model = 'gemini-2.5-flash-lite') => {
             const payload = {
                 contents: [
                     { role: 'user', parts: [{ text: systemPrompt }] },

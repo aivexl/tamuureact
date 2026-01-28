@@ -377,7 +377,7 @@ Invitations are organized into multiple **Sections** (e.g., Opening, Bride & Gro
 - **The Expert Persona**: Models the persona of a 30-year technical expert and CSR lead (MIT/Stanford grade).
 - **Proactive Diagnostic Engine**: Performs a silent account audit (Payments, Tiers, RSVPs) on chat initialization to resolve issues before the user asks.
 - **Autonomous Toolset**: AI has permissioned write-access to specialized tools (`sync_payment`, `upgrade_tier`, `repair_invitation`) scoped by user ID.
-- **Dual-Model Logic**: Primary intelligence powered by **Gemini 2.0 Flash** (for tool-use) with a zero-latency fallback to **Groq (Llama-3.3)**.
+- **Dual-Model Logic**: Primary intelligence powered by **Gemini 2.5 Flash Lite** (for tool-use) with a zero-latency fallback to **Groq (Llama-3.3)**.
 - **Tone Enforcement**: Strict adherence to professional Indonesian (EYD) and elite brand tone.
 
 ### 🛡️ Data Integrity Shield
@@ -394,7 +394,7 @@ Invitations are organized into multiple **Sections** (e.g., Opening, Bride & Gro
 The Tamuu AI Chat System is an enterprise-grade conversational AI platform built on Cloudflare Workers with multi-layer intelligence, predictive analytics, and production-grade reliability standards.
 
 #### Technology Stack
-- **Primary LLM**: Google Gemini 2.0 Flash (latest, tool-use enabled)
+- **Primary LLM**: Google Gemini 2.5 Flash Lite (latest, tool-use enabled)
 - **Fallback LLM**: Groq Llama-3.3-70b-versatile (zero-latency failover)
 - **Session Management**: Cloudflare Durable Objects (real-time, low-latency state)
 - **Persistence**: Supabase D1 + PostgreSQL (chat history, analytics)

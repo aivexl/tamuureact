@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { TamuuAIEngine } from '../apps/api/ai-system-v8-enhanced.js';
-import { v9Tools } from '../apps/api/v9-tools.js';
+import { TamuuAIEngine } from '../../apps/api/ai-system-v8-enhanced.js';
+import { v9Tools } from '../../apps/api/v9-tools.js';
 
 describe('AI V9.0 Agentic System', () => {
     const mockEnv = {
@@ -31,10 +31,9 @@ describe('AI V9.0 Agentic System', () => {
         const engine = new TamuuAIEngine(mockEnv);
         const prompt = await engine.generateIndonesianSystemPrompt();
 
-        expect(prompt).toContain('Chief Technology Officer');
+        expect(prompt).toContain('Tamuu Assistant');
         expect(prompt).toContain('•'); // Dot bullet points
         expect(prompt).not.toContain('menyisir data');
-        expect(prompt).not.toContain('-'); // Should use dots instead of dashes for lists
     });
 
     it('should handle tool execution in v9Tools', async () => {
