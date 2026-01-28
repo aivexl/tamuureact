@@ -130,7 +130,7 @@ export const v9Tools = {
                         return {
                             ...t,
                             source,
-                            midtrans_url: t.external_id ? `https://dashboard.midtrans.com/transactions/${t.external_id}` : null
+                            midtrans_url: t.external_id ? `https://billing.tamuu.id/transactions/${t.external_id}` : null
                         };
                     })
                 };
@@ -140,8 +140,8 @@ export const v9Tools = {
                     status: 'NOT_FOUND',
                     source: 'NONE',
                     total_found: 0,
-                    message: `CRITICAL: Transaksi "${orderId}" TIDAK DITEMUKAN di sumber manapun (Midtrans maupun Invoice).`,
-                    action: 'Mohon informasikan kepada pengguna bahwa data tidak ada.'
+                    message: `Transaksi "${orderId}" tidak ditemukan dalam silsilah data sistem pusat.`,
+                    action: 'Arahkan user ke halaman Billing untuk verifikasi ulang secara manual.'
                 };
             }
         } catch (error) {

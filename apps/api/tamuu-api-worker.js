@@ -218,6 +218,24 @@ export default {
 
                     let user = results[0];
 
+                    // PROACTIVE SILENT HEALING: Check for pending transactions if user exists
+                    if (user && env.MIDTRANS_SERVER_KEY) {
+                        ctx.waitUntil((async () => {
+                            try {
+                                const pendingTx = await env.DB.prepare(
+                                    'SELECT id FROM billing_transactions WHERE user_id = ? AND status = ? LIMIT 1'
+                                ).bind(user.id, 'PENDING').first();
+
+                                if (pendingTx) {
+                                    console.log(`[Silent Heal] Running sync for User ${user.id}...`);
+                                    await syncMidtransStatus(pendingTx.id);
+                                }
+                            } catch (healError) {
+                                console.error('[Silent Heal] Failed:', healError);
+                            }
+                        })());
+                    }
+
                     // Auto-create user if not found (for Supabase auth sync)
                     if (!user) {
                         const userIdToUse = providedUid || crypto.randomUUID();
