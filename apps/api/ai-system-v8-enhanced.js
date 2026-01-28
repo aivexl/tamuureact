@@ -819,7 +819,7 @@ Selalu ingat: Setiap karakter yang Anda keluarkan harus memancarkan kualitas yan
                     parts: toolOutputs.map(to => ({
                         functionResponse: {
                             name: to.name,
-                            response: to.output // Pass object directly, dont wrap in content string
+                            response: { content: typeof to.output === 'string' ? to.output : JSON.stringify(to.output) }
                         }
                     }))
                 });
@@ -897,7 +897,11 @@ Selalu ingat: Setiap karakter yang Anda keluarkan harus memancarkan kualitas yan
 
             const data = await response.json();
             const candidate = data.candidates?.[0];
-            const part = candidate?.content?.parts?.[0];
+
+            // Log for debugging (only in development or specific env)
+            if (env?.DEBUG_AI) {
+                console.log(`[Gemini Response] Data:`, JSON.stringify(data).substring(0, 500));
+            }
 
             // Check for tool calls (Gemini 2.0 format)
             const toolCalls = candidate?.content?.parts?.filter(p => p.functionCall) || [];
@@ -906,21 +910,25 @@ Selalu ingat: Setiap karakter yang Anda keluarkan harus memancarkan kualitas yan
                 return {
                     toolCalls: toolCalls.map(tc => ({
                         functionCall: tc.functionCall,
-                        // Gemini may not provide callId in simple REST, we map it for the chat loop
-                        callId: tc.functionCall.name + '_' + Date.now()
+                        // Match callId if provided, otherwise generate
+                        callId: tc.functionCall.id || tc.functionCall.name + '_' + Date.now()
                     })),
                     metadata: { provider: 'gemini-agent', toolCount: toolCalls.length }
                 };
             }
 
-            const responseText = part?.text || 'Maaf Kak, saya tidak dapat merespons saat ini.';
+            // Find parts with text (Gemini 2.0+ can return thought parts before text)
+            const textParts = candidate?.content?.parts?.filter(p => p.text) || [];
+            const responseText = textParts.map(p => p.text).join('\n') || 'Maaf Kak, saya tidak dapat merespons saat ini.';
+
             const optimizedResponse = this.optimizeIndonesianResponse(responseText, context);
 
             return {
                 content: optimizedResponse,
                 metadata: {
                     provider: 'gemini-2.0-flash',
-                    responseTime: Date.now() - startTime
+                    responseTime: Date.now() - startTime,
+                    finishReason: candidate?.finishReason
                 }
             };
 
