@@ -1226,6 +1226,177 @@ CONTEXT:
 
 
 
+            // ============================================
+            // BLOG SYSTEM ENDPOINTS (Phase 1)
+            // ============================================
+
+            // PUBLIC: List Blog Posts
+            if (path === '/api/blog' && method === 'GET') {
+                // Edge Cache Control: 60 seconds
+                const cacheControl = { ...corsHeaders, 'Cache-Control': 'public, max-age=60, s-maxage=60' };
+                const limit = parseInt(url.searchParams.get('limit') || '10');
+                const offset = parseInt(url.searchParams.get('offset') || '0');
+                const tag = url.searchParams.get('tag');
+
+                let query = `
+                    SELECT id, slug, title, excerpt, featured_image, published_at, author_id, view_count, created_at 
+                    FROM blog_posts 
+                    WHERE is_published = 1 
+                `;
+                const params = [];
+
+                if (tag) {
+                    query += ` AND seo_keywords LIKE ? `;
+                    params.push(`%${tag}%`);
+                }
+
+                query += ` ORDER BY published_at DESC LIMIT ? OFFSET ?`;
+                params.push(limit, offset);
+
+                const { results } = await env.DB.prepare(query).bind(...params).all();
+                return json(results, cacheControl);
+            }
+
+            // PUBLIC: Get Single Post by Slug
+            if (path.startsWith('/api/blog/post/') && method === 'GET') {
+                const slug = path.split('/').pop();
+                // Edge Cache Control: 5 minutes
+                const cacheControl = { ...corsHeaders, 'Cache-Control': 'public, max-age=300, s-maxage=300' };
+
+                const post = await env.DB.prepare(
+                    'SELECT * FROM blog_posts WHERE slug = ? AND is_published = 1'
+                ).bind(slug).first();
+
+                if (!post) return json({ error: 'Post not found' }, { ...corsHeaders, status: 404 });
+
+                // Async View Count Update (Fire and forget)
+                ctx.waitUntil(
+                    env.DB.prepare('UPDATE blog_posts SET view_count = view_count + 1 WHERE id = ?').bind(post.id).run()
+                );
+
+                return json(post, cacheControl);
+            }
+
+            // PUBLIC: Check Slug Availability
+            if (path === '/api/blog/check-slug' && method === 'GET') {
+                const slug = url.searchParams.get('slug');
+                if (!slug) return json({ error: 'Slug required' }, corsHeaders);
+
+                const existing = await env.DB.prepare('SELECT id FROM blog_posts WHERE slug = ?').bind(slug).first();
+                return json({ available: !existing }, corsHeaders);
+            }
+
+            // PUBLIC: Subscribe
+            if (path === '/api/blog/subscribe' && method === 'POST') {
+                const { email } = await request.json();
+                if (!email) return json({ error: 'Email required' }, { ...corsHeaders, status: 400 });
+
+                try {
+                    await env.DB.prepare(
+                        'INSERT INTO blog_subscribers (id, email) VALUES (?, ?)'
+                    ).bind(crypto.randomUUID(), email).run();
+                    return json({ success: true }, corsHeaders);
+                } catch (e) {
+                    if (e.message.includes('UNIQUE')) {
+                        return json({ success: true, message: 'Already subscribed' }, corsHeaders);
+                    }
+                    return json({ error: 'Database error' }, { ...corsHeaders, status: 500 });
+                }
+            }
+
+            // PUBLIC: Analytics (Record Read)
+            if (path === '/api/blog/analytics' && method === 'POST') {
+                const { post_id, type } = await request.json(); // type: 'view' or 'read'
+                const date = new Date().toISOString().split('T')[0];
+
+                if (type === 'read') {
+                    await env.DB.prepare(`
+                        INSERT INTO blog_daily_stats (date, post_id, reads) VALUES (?, ?, 1)
+                        ON CONFLICT(date, post_id) DO UPDATE SET reads = reads + 1
+                    `).bind(date, post_id).run();
+                } else {
+                    await env.DB.prepare(`
+                        INSERT INTO blog_daily_stats (date, post_id, views, visitors) VALUES (?, ?, 1, 1)
+                        ON CONFLICT(date, post_id) DO UPDATE SET views = views + 1, visitors = visitors + 1
+                    `).bind(date, post_id).run();
+                }
+
+                return json({ success: true }, corsHeaders);
+            }
+
+            // PUBLIC: Related Posts
+            if (path.startsWith('/api/blog/related/') && method === 'GET') {
+                const id = path.split('/').pop();
+                const { results } = await env.DB.prepare(
+                    `SELECT id, slug, title, featured_image FROM blog_posts 
+                     WHERE is_published = 1 AND id != ?
+                     ORDER BY published_at DESC LIMIT 3`
+                ).bind(id).all();
+
+                return json(results, { ...corsHeaders, 'Cache-Control': 'public, max-age=300' });
+            }
+
+            // ADMIN: List Posts
+            if (path === '/api/admin/blog/posts' && method === 'GET') {
+                const { results } = await env.DB.prepare(
+                    'SELECT * FROM blog_posts ORDER BY created_at DESC'
+                ).all();
+                return json(results, corsHeaders);
+            }
+
+            // ADMIN: Create Post
+            if (path === '/api/admin/blog/posts' && method === 'POST') {
+                const body = await request.json();
+                const { slug, title, content, excerpt, featured_image, author_id, seo_title, seo_description, seo_keywords } = body;
+
+                const id = crypto.randomUUID();
+                await env.DB.prepare(`
+                    INSERT INTO blog_posts (id, slug, title, content, excerpt, featured_image, author_id, is_published, published_at, seo_title, seo_description, seo_keywords)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, 0, NULL, ?, ?, ?)
+                 `).bind(id, slug, title, content, excerpt, featured_image, author_id, seo_title, seo_description, seo_keywords).run();
+
+                return json({ success: true, id }, corsHeaders);
+            }
+
+            // ADMIN: Update Post
+            if (path.startsWith('/api/admin/blog/posts/') && method === 'PUT') {
+                const id = path.split('/').pop();
+                const body = await request.json();
+
+                const updates = [];
+                const values = [];
+
+                const fields = ['slug', 'title', 'content', 'excerpt', 'featured_image', 'seo_title', 'seo_description', 'seo_keywords'];
+                fields.forEach(f => {
+                    if (body[f] !== undefined) {
+                        updates.push(`${f} = ?`);
+                        values.push(body[f]);
+                    }
+                });
+
+                if (body.is_published !== undefined) {
+                    updates.push('is_published = ?');
+                    values.push(body.is_published);
+                    if (body.is_published === 1) {
+                        updates.push("published_at = COALESCE(published_at, datetime('now'))");
+                    }
+                }
+
+                if (updates.length > 0) {
+                    updates.push("updated_at = datetime('now')");
+                    values.push(id);
+                    await env.DB.prepare(`UPDATE blog_posts SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
+                }
+
+                return json({ success: true }, corsHeaders);
+            }
+
+            if (path.startsWith('/api/admin/blog/posts/') && method === 'DELETE') {
+                const id = path.split('/').pop();
+                await env.DB.prepare('DELETE FROM blog_posts WHERE id = ?').bind(id).run();
+                return json({ success: true }, corsHeaders);
+            }
+
             // ADMIN: List Transactions (with filtering)
             if (path.startsWith('/api/admin/transactions') && method === 'GET') {
                 const url = new URL(request.url);

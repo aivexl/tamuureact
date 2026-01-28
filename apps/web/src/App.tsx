@@ -58,6 +58,11 @@ const RefundPage = lazy(() => import('./pages/RefundPage').then(m => ({ default:
 const AboutPage = lazy(() => import('./pages/AboutPage').then(m => ({ default: m.AboutPage })));
 const ContactPage = lazy(() => import('./pages/ContactPage').then(m => ({ default: m.ContactPage })));
 const InactivePage = lazy(() => import('./pages/InactivePage').then(m => ({ default: m.InactivePage })));
+const BlogRouter = lazy(() => import('./pages/blog/BlogRouter'));
+const AdminBlogListPage = lazy(() => import('./pages/blog/AdminBlogListPage').then(m => ({ default: m.AdminBlogListPage })));
+const AdminBlogEditor = lazy(() => import('./pages/blog/AdminBlogEditor').then(m => ({ default: m.AdminBlogEditor })));
+
+
 
 const App: React.FC = () => {
     // Memoize domain check to avoid recalculation
@@ -136,6 +141,10 @@ const App: React.FC = () => {
                         {/* Public Store */}
                         <Route path="/invitations" element={<MainLayout><InvitationsStorePage /></MainLayout>} />
 
+                        {/* Public Blog */}
+                        <Route path="/blog/*" element={<MainLayout><BlogRouter /></MainLayout>} />
+
+
                         {/* Preview Routes - Public for sharing */}
                         <Route path="/preview/:slug" element={<PreviewPage />} />
                         <Route path="/v/:slug" element={<PreviewPage />} />
@@ -180,6 +189,12 @@ const App: React.FC = () => {
                                 <Route path="/admin/activity" element={<ProtectedRoute requiredRole="admin"><AdminActivityPage /></ProtectedRoute>} />
                                 <Route path="/admin/templates" element={<ProtectedRoute requiredRole="admin"><AdminTemplatesPage /></ProtectedRoute>} />
                                 <Route path="/admin/templates/:type" element={<ProtectedRoute requiredRole="admin"><AdminTemplatesPage /></ProtectedRoute>} />
+
+                                {/* Admin Blog */}
+                                <Route path="/admin/blog" element={<ProtectedRoute requiredRole="admin"><AdminBlogListPage /></ProtectedRoute>} />
+                                <Route path="/admin/blog/new" element={<ProtectedRoute requiredRole="admin"><AdminBlogEditor /></ProtectedRoute>} />
+                                <Route path="/admin/blog/:id" element={<ProtectedRoute requiredRole="admin"><AdminBlogEditor /></ProtectedRoute>} />
+
 
                                 {/* Editor Routes */}
                                 <Route path="/editor" element={<ProtectedRoute><EditorPage /></ProtectedRoute>} />

@@ -36,6 +36,7 @@ Platform undangan digital dengan arsitektur multi-domain dan monorepo.
 - `/upgrade` - Pricing Plans & Tier Selection
 - `/billing` - Payment Status & History / Status
 - `/preview/:slug` - Public Invitation Preview (Mobile-optimized)
+- `/blog` / `/blog/:slug` - Super Ultra Blog System (Performance Optimized)
 - `/terms` / `/privacy` - Legal & Policy pages
 
 ### 🚀 App Domain Exclusive (`app.tamuu.id`)
@@ -47,6 +48,8 @@ Platform undangan digital dengan arsitektur multi-domain dan monorepo.
 - `/admin/templates/invitation` - Mobile Template Management
 - `/admin/templates/display` - TV Display Template Management
 - `/admin/editor/:slug` - Template Builder (System Level)
+- `/admin/blog` - Blog Management Dashboard
+- `/admin/blog/new` / `/admin/blog/:id` - TipTap Blog Editor with SEO Engine
 
 ### 📡 API & Services
 - `api.tamuu.id/v1/...` - Core API (Cloudflare D1 & Workers)
@@ -176,6 +179,11 @@ npm run deploy:api         # Deploy API to Cloudflare Workers
   - Usage tracking (invitation counts)
 - **Liquid Auto-Layout Engine**: Dynamic vertical shifting based on real-time content height.
 - **Granular Admin Permissions**: Per-element control over user editability and visibility.
+- **Super Ultra Blog System**:
+  - Instant perception loading (Prefetching)
+  - 100/100 PageSpeed optimization
+  - AI-powered SEO & Evergreen content management
+  - Integrated Monetization (AdSense + Internal Banners)
 
 ---
 
