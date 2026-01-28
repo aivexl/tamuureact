@@ -320,6 +320,85 @@ export const UserChatSidebarEnhanced: React.FC = () => {
         { icon: Zap, label: 'Cepat', action: () => handleSend('Bagaimana cara cepat membuat undangan?') }
     ];
 
+    // Simple Markdown Parser for Enterprise UI
+    const SimpleMarkdown = ({ content }: { content: string }) => {
+        if (!content) return null;
+
+        // Split by blocks (paragraphs or headings)
+        const blocks = content.split(/\n\n+/);
+
+        return (
+            <div className="space-y-3">
+                {blocks.map((block, i) => {
+                    const trimmedBlock = block.trim();
+                    if (!trimmedBlock) return null;
+
+                    // 1. Horizontal Rule
+                    if (trimmedBlock === '***' || trimmedBlock === '---') {
+                        return <hr key={i} className="my-4 border-gray-100 opacity-50" />;
+                    }
+
+                    // 2. Headings
+                    if (trimmedBlock.startsWith('### ')) {
+                        return (
+                            <h3 key={i} className="text-sm font-bold text-blue-900 mt-4 mb-2 first:mt-0">
+                                {trimmedBlock.replace('### ', '')}
+                            </h3>
+                        );
+                    }
+                    if (trimmedBlock.startsWith('#### ')) {
+                        return (
+                            <h4 key={i} className="text-xs font-bold text-gray-800 mt-3 mb-1 first:mt-0">
+                                {trimmedBlock.replace('#### ', '')}
+                            </h4>
+                        );
+                    }
+
+                    // 3. Paragraphs and List Items
+                    const lines = trimmedBlock.split('\n');
+                    return (
+                        <div key={i} className="text-sm leading-relaxed text-gray-800">
+                            {lines.map((line, j) => {
+                                const trimmedLine = line.trim();
+                                if (!trimmedLine) return null;
+
+                                // Handle Bold within the line
+                                const renderBold = (text: string) => {
+                                    const parts = text.split(/(\*\*.*?\*\*)/g);
+                                    return parts.map((part, k) => {
+                                        if (part.startsWith('**') && part.endsWith('**')) {
+                                            return <strong key={k} className="font-extrabold text-blue-950">{part.slice(2, -2)}</strong>;
+                                        }
+                                        return part;
+                                    });
+                                };
+
+                                // Handle Bullet Points
+                                if (line.startsWith('•') || line.startsWith('·') || line.startsWith('- ')) {
+                                    return (
+                                        <div key={j} className="flex items-start space-x-2 my-1.5 pl-1">
+                                            <span className="mt-1.5 w-1 h-1 rounded-full bg-blue-400 flex-shrink-0" />
+                                            <span className="flex-1">
+                                                {renderBold(line.replace(/^[•·-]\s*/, ''))}
+                                            </span>
+                                        </div>
+                                    );
+                                }
+
+                                return (
+                                    <React.Fragment key={j}>
+                                        {renderBold(line)}
+                                        {j < lines.length - 1 && <div className="h-1" />}
+                                    </React.Fragment>
+                                );
+                            })}
+                        </div>
+                    );
+                })}
+            </div>
+        );
+    };
+
     // Message component with enterprise features
     const MessageComponent = ({ message, index }: { message: Message; index: number }) => {
         const isUser = message.role === 'user';
@@ -350,7 +429,9 @@ export const UserChatSidebarEnhanced: React.FC = () => {
                             </div>
                         ) : (
                             <div>
-                                <p className="text-sm leading-relaxed">{message.content}</p>
+                                <div className="text-sm leading-relaxed">
+                                    <SimpleMarkdown content={message.content} />
+                                </div>
                                 {message.responseTime && (
                                     <div className="mt-2 text-xs opacity-70">
                                         Response time: {message.responseTime}ms
