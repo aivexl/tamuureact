@@ -22,7 +22,7 @@ Tamuu adalah platform ekosistem event digital terpadu yang menyediakan **Undanga
 ### Fitur Unggulan "Super Ultra":
 - **Liquid Layout Engine**: Desain undangan yang sangat responsif dan tetap indah di perangkat apapun.
 - **Instant Activation**: Infrastruktur high-availability kami memastikan layanan aktif seketika setelah pembayaran divalidasi oleh sistem.
-- **Custom Music & Assets**: Mendukung pengunggahan aset audio dan visual berkualitas tinggi dengan teknologi kompresi cerdas di server internal.
+- **Custom Music & Assets**: Mendukung pengunggahan aset audio dan visual berkualitas.
 - **Enterprise-Grade Security**: Perlindungan data tamu dan enkripsi transaksi yang aman di dalam ekosistem Tamuu.
 
 ---
@@ -30,12 +30,12 @@ Tamuu adalah platform ekosistem event digital terpadu yang menyediakan **Undanga
 ## 2. Paket & Pembayaran (Exclusive Tiers)
 
 ### Daftar Paket:
-| Nama Paket | Target Pengguna | Benefit Unggulan |
-| :--- | :--- | :--- |
-| **FREE** | Trial / Personal | Eksplorasi fitur dasar, 1 slot undangan aktif. |
-| **PRO** | Pernikahan / Acara Intim | Bebas Iklan, Custom Music, Akses semua tema premium. |
-| **ULTIMATE** | Acara Skala Besar | **Smart Welcome Display**, RSVP Unlimited, Export Data Tamu. |
-| **ELITE (VVIP)** | Exclusive / VIP Event | Prioritas Dukungan Utama, Penyimpanan Media Berkualitas Tinggi. |
+| Nama Paket | Harga | Target Pengguna | Benefit Unggulan |
+| :--- | :--- | :--- | :--- |
+| **FREE** | Rp 0 | Trial / Personal | Eksplorasi fitur dasar, 1 slot undangan aktif. |
+| **PRO** | Rp 99.000 | Pernikahan / Acara Intim | Bebas Iklan, Custom Music, Akses semua tema premium. |
+| **ULTIMATE** | Rp 149.000 | Acara Skala Besar | **Smart Welcome Display**, RSVP Unlimited, Export Data Tamu. |
+| **ELITE (VVIP)** | Rp 199.000 | Exclusive / VIP Event | Prioritas Dukungan Utama, Penyimpanan Media Berkualitas Tinggi. |
 
 ### Ekosistem Pembayaran:
 Tamuu terintegrasi dengan gateway pembayaran terpercaya untuk memastikan keamanan dana Anda:
