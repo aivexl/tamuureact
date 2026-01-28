@@ -4,7 +4,7 @@ import { Calendar, Clock, Upload, ExternalLink, Copy, Check, Share2, Settings, C
 import { getPublicDomain } from '@/lib/utils';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SubscriptionStatusWidget } from '../ui/SubscriptionStatusWidget';
-import { useProfileStore } from '@/store/useProfileStore';
+import { useStore } from '@/store/useStore';
 
 interface InvitationInfoCardProps {
     invitation: {
@@ -22,7 +22,7 @@ interface InvitationInfoCardProps {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const InvitationInfoCard: React.FC<InvitationInfoCardProps> = ({ invitation, onShare, onSettings }) => {
     const navigate = useNavigate();
-    const { profile } = useProfileStore();
+    const { user } = useStore();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [copied, setCopied] = useState(false);
 
@@ -146,14 +146,14 @@ export const InvitationInfoCard: React.FC<InvitationInfoCardProps> = ({ invitati
                     {/* Meta Info: Active Date */}
                     <div className="flex items-center justify-center lg:justify-start gap-2 text-slate-500">
                         <Clock className="w-4 h-4 text-slate-400" />
-                        <span className="text-xs font-medium">Masa aktif hingga <span className="text-slate-700 font-bold">{invitation.activeUntil}</span></span>
+                        <span className="text-xs font-medium">Masa aktif hingga <span className="text-slate-700 font-bold">{invitation.activeUntil || (user?.expiresAt ? new Date(user.expiresAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Lifetime Access')}</span></span>
                     </div>
 
                     {/* Subscription Widget (Inline) */}
                     <div className="max-w-md">
                         <SubscriptionStatusWidget
-                            expiresAt={profile?.expires_at || null}
-                            email={profile?.email}
+                            expiresAt={user?.expiresAt || null}
+                            email={user?.email}
                             variant="editor"
                         />
                     </div>

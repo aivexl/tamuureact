@@ -33,7 +33,7 @@ import { invitations as invitationsApi } from '@/lib/api';
 import { Sparkles, AlertCircle, Clock } from 'lucide-react';
 import { useRef } from 'react';
 import { useSubscriptionTimer } from '../hooks/useSubscriptionTimer';
-import { useProfileStore } from '../store/useProfileStore';
+
 
 import { SubscriptionStatusWidget } from '../components/ui/SubscriptionStatusWidget';
 
@@ -76,8 +76,8 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
     const [error, setError] = useState<string | null>(null);
     const [invitation, setInvitation] = useState<any>(null);
 
-    const { profile } = useProfileStore();
-    const subStatus = useSubscriptionTimer(profile?.expires_at || null);
+    const user = useStore(s => s.user);
+    const subStatus = useSubscriptionTimer(user?.expiresAt || null);
     const [activePanel, setActivePanel] = useState<string | null>(null);
     const previewRef = useRef<HTMLDivElement>(null);
     const hasAttemptedRef = useRef<string | null>(null);
