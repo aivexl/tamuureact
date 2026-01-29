@@ -1412,10 +1412,10 @@ CONTEXT:
                     // 2. Insert Post
                     await env.DB.prepare(`
                         INSERT INTO blog_posts (
-                            id, slug, title, content, excerpt, featured_image, category, author_id, status, 
+                            id, slug, title, content, excerpt, featured_image, category, author_id, status, is_published,
                             published_at, seo_title, seo_description, seo_keywords, image_meta, image_alt
                         )
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     `).bind(
                         id,
                         slug || '',
@@ -1426,6 +1426,7 @@ CONTEXT:
                         category || '',
                         finalAuthorId,
                         finalStatus || 'draft',
+                        finalStatus === 'published' ? 1 : 0,
                         finalStatus === 'published' ? new Date().toISOString() : null,
                         seo_title || '',
                         seo_description || '',
