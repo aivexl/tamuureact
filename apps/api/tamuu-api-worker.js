@@ -1238,23 +1238,28 @@ CONTEXT:
                 const offset = parseInt(url.searchParams.get('offset') || '0');
                 const tag = url.searchParams.get('tag');
 
-                let query = `
-                    SELECT id, slug, title, excerpt, featured_image, category, published_at, author_id, view_count, created_at 
-                    FROM blog_posts 
-                    WHERE is_published = 1 
-                `;
-                const params = [];
+                try {
+                    let query = `
+                        SELECT id, slug, title, excerpt, featured_image, category, published_at, author_id, view_count, created_at 
+                        FROM blog_posts 
+                        WHERE is_published = 1 
+                    `;
+                    const params = [];
 
-                if (tag) {
-                    query += ` AND seo_keywords LIKE ? `;
-                    params.push(`%${tag}%`);
+                    if (tag) {
+                        query += ` AND seo_keywords LIKE ? `;
+                        params.push(`%${tag}%`);
+                    }
+
+                    query += ` ORDER BY published_at DESC LIMIT ? OFFSET ?`;
+                    params.push(limit, offset);
+
+                    const { results } = await env.DB.prepare(query).bind(...params).all();
+                    return json(results, cacheControl);
+                } catch (err) {
+                    console.error('[API] Blog List failure:', err.message);
+                    return json({ success: false, error: 'Database error', message: err.message }, { ...corsHeaders, status: 500 });
                 }
-
-                query += ` ORDER BY published_at DESC LIMIT ? OFFSET ?`;
-                params.push(limit, offset);
-
-                const { results } = await env.DB.prepare(query).bind(...params).all();
-                return json(results, cacheControl);
             }
 
             // PUBLIC: Get Single Post by Slug
@@ -1263,18 +1268,26 @@ CONTEXT:
                 // Edge Cache Control: 5 minutes
                 const cacheControl = { ...corsHeaders, 'Cache-Control': 'public, max-age=300, s-maxage=300' };
 
-                const post = await env.DB.prepare(
-                    'SELECT * FROM blog_posts WHERE slug = ? AND is_published = 1'
-                ).bind(slug).first();
+                try {
+                    const post = await env.DB.prepare(
+                        'SELECT * FROM blog_posts WHERE slug = ? AND is_published = 1'
+                    ).bind(slug).first();
 
-                if (!post) return json({ error: 'Post not found' }, { ...corsHeaders, status: 404 });
+                    if (!post) {
+                        return json({ error: 'Post not found' }, { ...corsHeaders, status: 404 });
+                    }
 
-                // Async View Count Update (Fire and forget)
-                ctx.waitUntil(
-                    env.DB.prepare('UPDATE blog_posts SET view_count = view_count + 1 WHERE id = ?').bind(post.id).run()
-                );
+                    // Async View Count Update (Fire and forget)
+                    ctx.waitUntil(
+                        env.DB.prepare('UPDATE blog_posts SET view_count = view_count + 1 WHERE id = ?').bind(post.id).run()
+                            .catch(err => console.error('[API] View Count failed:', err.message))
+                    );
 
-                return json(post, cacheControl);
+                    return json(post, cacheControl);
+                } catch (err) {
+                    console.error('[API] Blog Post failure:', err.message);
+                    return json({ success: false, error: 'Database error', message: err.message }, { ...corsHeaders, status: 500 });
+                }
             }
 
             // PUBLIC: Check Slug Availability
@@ -1306,22 +1319,29 @@ CONTEXT:
 
             // PUBLIC: Analytics (Record Read)
             if (path === '/api/blog/analytics' && method === 'POST') {
-                const { post_id, type } = await request.json(); // type: 'view' or 'read'
-                const date = new Date().toISOString().split('T')[0];
+                try {
+                    const { post_id, type } = await request.json(); // type: 'view' or 'read'
+                    if (!post_id) return json({ success: false, error: 'post_id required' }, { ...corsHeaders, status: 400 });
 
-                if (type === 'read') {
-                    await env.DB.prepare(`
-                        INSERT INTO blog_daily_stats (date, post_id, reads) VALUES (?, ?, 1)
-                        ON CONFLICT(date, post_id) DO UPDATE SET reads = reads + 1
-                    `).bind(date, post_id).run();
-                } else {
-                    await env.DB.prepare(`
-                        INSERT INTO blog_daily_stats (date, post_id, views, visitors) VALUES (?, ?, 1, 1)
-                        ON CONFLICT(date, post_id) DO UPDATE SET views = views + 1, visitors = visitors + 1
-                    `).bind(date, post_id).run();
+                    const date = new Date().toISOString().split('T')[0];
+
+                    if (type === 'read') {
+                        await env.DB.prepare(`
+                            INSERT INTO blog_daily_stats (date, post_id, reads) VALUES (?, ?, 1)
+                            ON CONFLICT(date, post_id) DO UPDATE SET reads = reads + 1
+                        `).bind(date, post_id).run();
+                    } else {
+                        await env.DB.prepare(`
+                            INSERT INTO blog_daily_stats (date, post_id, views, visitors) VALUES (?, ?, 1, 1)
+                            ON CONFLICT(date, post_id) DO UPDATE SET views = views + 1, visitors = visitors + 1
+                        `).bind(date, post_id).run();
+                    }
+
+                    return json({ success: true }, corsHeaders);
+                } catch (err) {
+                    console.error('[API] Blog Analytics failure:', err.message);
+                    return json({ success: false, error: 'Analytics error', message: err.message }, { ...corsHeaders, status: 500 });
                 }
-
-                return json({ success: true }, corsHeaders);
             }
 
             // PUBLIC: Related Posts
