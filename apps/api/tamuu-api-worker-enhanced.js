@@ -270,10 +270,12 @@ export default {
                 }
 
                 // Fetch Real-time Stats for Context
-                const usersCount = await env.DB.prepare('SELECT COUNT(*) as count FROM users').first('count');
-                const templatesCount = await env.DB.prepare("SELECT COUNT(*) as count FROM templates WHERE type = 'invitation'").first('count');
-                const invitationsCount = await env.DB.prepare('SELECT COUNT(*) as count FROM invitations').first('count');
-                const rsvpCount = await env.DB.prepare('SELECT COUNT(*) as count FROM rsvp_responses').first('count');
+                const [usersCount, templatesCount, invitationsCount, rsvpCount] = await Promise.all([
+                    env.DB.prepare('SELECT COUNT(*) as count FROM users').first('count'),
+                    env.DB.prepare("SELECT COUNT(*) as count FROM templates WHERE type = 'invitation'").first('count'),
+                    env.DB.prepare('SELECT COUNT(*) as count FROM invitations').first('count'),
+                    env.DB.prepare('SELECT COUNT(*) as count FROM rsvp_responses').first('count')
+                ]);
 
                 const systemPrompt = `You are Tamuu Smart CS, a professional and efficient assistant for the Tamuu platform.
 Your goal is to help administrators manage the platform and answer questions about products, payments, and troubleshooting.
