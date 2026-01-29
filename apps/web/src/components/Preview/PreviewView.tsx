@@ -67,7 +67,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
     const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
     const zoomTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
-    // Interaction Poller (Dev/Local Sync)
+    // Interaction Poller (Dev/Local Sync) - Optimized with Event Listener
     useEffect(() => {
         if (!isOpen) return;
 
@@ -83,27 +83,38 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
             } catch (e) { }
         }
 
-        const checkInteraction = () => {
-            try {
-                const stored = localStorage.getItem('tamuu_interaction_event');
-                if (stored) {
-                    const event = JSON.parse(stored);
+        const handleSync = (e: StorageEvent) => {
+            if (e.key === 'tamuu_interaction_event' && e.newValue) {
+                try {
+                    const event = JSON.parse(e.newValue);
+                    const now = Date.now();
                     const lastTimestamp = lastTriggerRef.current?.timestamp || 0;
 
-                    // If new event (within last 5 seconds)
-                    if (event.timestamp > lastTimestamp && Date.now() - event.timestamp < 5000) {
+                    // If new event (within last 5 seconds) AND after the last handled event
+                    if (now - event.timestamp < 5000 && event.timestamp > lastTimestamp) {
+                        console.log('[PreviewView] Remote trigger detected:', event);
                         lastTriggerRef.current = { effect: event.effect, timestamp: event.timestamp };
-                        useStore.getState().triggerInteraction(event.name, event.effect, event.style);
+
+                        if (event.interactions && event.interactions.length > 0) {
+                            triggerBatchInteractions(event.name, event.interactions);
+                        } else if (event.effect) {
+                            // Legacy single effect support
+                            triggerBatchInteractions(event.name, [{
+                                effect: event.effect,
+                                style: event.style,
+                                origin: event.origin
+                            }]);
+                        }
                     }
+                } catch (err) {
+                    console.error('[PreviewView] Sync parse error:', err);
                 }
-            } catch (e) {
-                console.error('Interaction poll error:', e);
             }
         };
 
-        const interval = setInterval(checkInteraction, 200);
-        return () => clearInterval(interval);
-    }, []);
+        window.addEventListener('storage', handleSync);
+        return () => window.removeEventListener('storage', handleSync);
+    }, [isOpen, resetInteractions, triggerBatchInteractions]);
 
     // Sort sections by order
     const sortedSections = useMemo(() => {
