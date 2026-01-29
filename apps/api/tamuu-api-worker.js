@@ -1063,19 +1063,25 @@ CONTEXT:
                                     toolResult = "No user session found.";
                                 } else {
                                     const { results: txs } = await env.DB.prepare('SELECT id, status, external_id, tier, amount, created_at FROM billing_transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 5').bind(canonicalId).all();
-                                    const { results: invs } = await env.DB.prepare('SELECT id, name, slug, status FROM invitations WHERE user_id = ?').bind(canonicalId).all();
+                                    const { results: rawInvs } = await env.DB.prepare(`
+                                        SELECT
+                                            i.name,
+                                            i.slug,
+                                            i.status,
+                                            COUNT(r.id) as rsvp_count
+                                        FROM invitations i
+                                        LEFT JOIN rsvp_responses r ON i.id = r.invitation_id
+                                        WHERE i.user_id = ?
+                                        GROUP BY i.id
+                                    `).bind(canonicalId).all();
 
-                                    let invDetails = [];
-                                    for (const inv of invs) {
-                                        const rsvp = await env.DB.prepare('SELECT COUNT(*) as total FROM rsvp_responses WHERE invitation_id = ?').bind(inv.id).first();
-                                        invDetails.push({
-                                            name: inv.name,
-                                            slug: inv.slug,
-                                            url: `https://tamuu.id/${inv.slug}`,
-                                            status: inv.status,
-                                            rsvp_count: rsvp.total
-                                        });
-                                    }
+                                    const invDetails = rawInvs.map(inv => ({
+                                        name: inv.name,
+                                        slug: inv.slug,
+                                        url: `https://tamuu.id/${inv.slug}`,
+                                        status: inv.status,
+                                        rsvp_count: inv.rsvp_count
+                                    }));
 
                                     toolResult = JSON.stringify({
                                         profile: { name: user.name, email: user.email, tier: user.tier, expires_at: user.expires_at },
