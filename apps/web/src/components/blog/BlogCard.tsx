@@ -12,6 +12,7 @@ export interface BlogPost {
     author_id: string;
     view_count: number;
     content: string; // Markdown content
+    category?: string;
     // SEO Fields
     seo_title?: string;
     seo_description?: string;
@@ -61,7 +62,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, className = '' }) => {
 
             <div className="flex flex-col flex-grow p-6">
                 <div className="flex items-center gap-2 text-xs font-semibold tracking-wide text-indigo-600 mb-2 uppercase">
-                    <span>Article</span>
+                    <span>{post.category || 'Article'}</span>
                     <span>•</span>
                     <span>{new Date(post.published_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                 </div>

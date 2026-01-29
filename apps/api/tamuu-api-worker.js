@@ -1239,7 +1239,7 @@ CONTEXT:
                 const tag = url.searchParams.get('tag');
 
                 let query = `
-                    SELECT id, slug, title, excerpt, featured_image, published_at, author_id, view_count, created_at 
+                    SELECT id, slug, title, excerpt, featured_image, category, published_at, author_id, view_count, created_at 
                     FROM blog_posts 
                     WHERE is_published = 1 
                 `;
@@ -1328,7 +1328,7 @@ CONTEXT:
             if (path.startsWith('/api/blog/related/') && method === 'GET') {
                 const id = path.split('/').pop();
                 const { results } = await env.DB.prepare(
-                    `SELECT id, slug, title, featured_image FROM blog_posts 
+                    `SELECT id, slug, title, featured_image, category FROM blog_posts 
                      WHERE is_published = 1 AND id != ?
                      ORDER BY published_at DESC LIMIT 3`
                 ).bind(id).all();
@@ -1347,26 +1347,38 @@ CONTEXT:
             // ADMIN: Create Post
             if (path === '/api/admin/blog/posts' && method === 'POST') {
                 const body = await request.json();
-                const { slug, title, content, excerpt, featured_image, author_id, seo_title, seo_description, seo_keywords } = body;
+                const { slug, title, content, excerpt, featured_image, category, author_id, author_email, status, seo_title, seo_description, seo_keywords } = body;
+
+                let finalStatus = status || 'draft';
+                // Enforcement: Only admin@tamuu.id can publish directly
+                if (finalStatus === 'published' && author_email !== 'admin@tamuu.id') {
+                    finalStatus = 'pending';
+                }
 
                 const id = crypto.randomUUID();
                 await env.DB.prepare(`
-                    INSERT INTO blog_posts (id, slug, title, content, excerpt, featured_image, author_id, is_published, published_at, seo_title, seo_description, seo_keywords)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, 0, NULL, ?, ?, ?)
-                 `).bind(id, slug, title, content, excerpt, featured_image, author_id, seo_title, seo_description, seo_keywords).run();
+                    INSERT INTO blog_posts (id, slug, title, content, excerpt, featured_image, category, author_id, status, is_published, published_at, seo_title, seo_description, seo_keywords)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 `).bind(
+                    id, slug, title, content, excerpt, featured_image, category, author_id, finalStatus,
+                    finalStatus === 'published' ? 1 : 0,
+                    finalStatus === 'published' ? new Date().toISOString() : null,
+                    seo_title, seo_description, seo_keywords
+                ).run();
 
-                return json({ success: true, id }, corsHeaders);
+                return json({ success: true, id, status: finalStatus }, corsHeaders);
             }
 
             // ADMIN: Update Post
             if (path.startsWith('/api/admin/blog/posts/') && method === 'PUT') {
                 const id = path.split('/').pop();
                 const body = await request.json();
+                const { author_email } = body;
 
                 const updates = [];
                 const values = [];
 
-                const fields = ['slug', 'title', 'content', 'excerpt', 'featured_image', 'seo_title', 'seo_description', 'seo_keywords'];
+                const fields = ['slug', 'title', 'content', 'excerpt', 'featured_image', 'category', 'seo_title', 'seo_description', 'seo_keywords'];
                 fields.forEach(f => {
                     if (body[f] !== undefined) {
                         updates.push(`${f} = ?`);
@@ -1374,10 +1386,20 @@ CONTEXT:
                     }
                 });
 
-                if (body.is_published !== undefined) {
+                if (body.status !== undefined) {
+                    let newStatus = body.status;
+                    // Enforcement: Only admin@tamuu.id can publish
+                    if (newStatus === 'published' && author_email !== 'admin@tamuu.id') {
+                        newStatus = 'pending';
+                    }
+
+                    updates.push('status = ?');
+                    values.push(newStatus);
+
                     updates.push('is_published = ?');
-                    values.push(body.is_published);
-                    if (body.is_published === 1) {
+                    values.push(newStatus === 'published' ? 1 : 0);
+
+                    if (newStatus === 'published') {
                         updates.push("published_at = COALESCE(published_at, datetime('now'))");
                     }
                 }

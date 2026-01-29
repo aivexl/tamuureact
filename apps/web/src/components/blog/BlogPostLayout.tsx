@@ -141,7 +141,7 @@ export const BlogPostLayout: React.FC<BlogPostLayoutProps> = ({ post, relatedPos
                     </div>
 
                     <div className="flex items-center justify-center gap-4 text-sm text-gray-500 mb-6 font-medium uppercase tracking-wider">
-                        <span>Article</span>
+                        <span>{post.category || 'Article'}</span>
                         <span>•</span>
                         <span>{new Date(post.published_at).toLocaleDateString('id-ID', { dateStyle: 'long' })}</span>
                         <span>•</span>

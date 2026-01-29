@@ -889,6 +889,66 @@ export const preview = {
     }
 };
 
+// ============================================
+// BLOG API
+// ============================================
+export const blog = {
+    async list(options?: { limit?: number; offset?: number; category?: string; tag?: string }) {
+        const params = new URLSearchParams();
+        if (options?.limit) params.append('limit', options.limit.toString());
+        if (options?.offset) params.append('offset', options.offset.toString());
+        if (options?.category) params.append('category', options.category);
+        if (options?.tag) params.append('tag', options.tag);
+
+        const res = await safeFetch(`${API_BASE}/api/blog?${params.toString()}`);
+        if (!res.ok) throw new Error('Failed to fetch blog posts');
+        const data = await res.json();
+        return sanitizeValue(data);
+    },
+
+    async getPost(slug: string) {
+        const res = await safeFetch(`${API_BASE}/api/blog/post/${slug}`);
+        if (!res.ok) throw new Error('Post not found');
+        const data = await res.json();
+        return sanitizeValue(data);
+    },
+
+    async adminList() {
+        const res = await safeFetch(`${API_BASE}/api/admin/blog/posts`);
+        if (!res.ok) throw new Error('Failed to fetch admin posts');
+        const data = await res.json();
+        return sanitizeValue(data);
+    },
+
+    async adminCreate(data: any) {
+        const res = await safeFetch(`${API_BASE}/api/admin/blog/posts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sanitizeValue(data))
+        });
+        if (!res.ok) throw new Error('Failed to create post');
+        return res.json();
+    },
+
+    async adminUpdate(id: string, data: any) {
+        const res = await safeFetch(`${API_BASE}/api/admin/blog/posts/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sanitizeValue(data))
+        });
+        if (!res.ok) throw new Error('Failed to update post');
+        return res.json();
+    },
+
+    async adminDelete(id: string) {
+        const res = await safeFetch(`${API_BASE}/api/admin/blog/posts/${id}`, {
+            method: 'DELETE'
+        });
+        if (!res.ok) throw new Error('Failed to delete post');
+        return true;
+    }
+};
+
 export async function healthCheck() {
     const res = await safeFetch(`${API_BASE}/api/health`);
     const data = await res.json();
@@ -909,5 +969,6 @@ export default {
     admin,
     assets,
     preview,
+    blog,
     healthCheck
 };

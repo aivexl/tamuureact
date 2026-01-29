@@ -14,7 +14,8 @@ import {
     CreditCard,
     Music,
     ShieldCheck,
-    Briefcase
+    Briefcase,
+    FileText
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { AdminChatSidebarWrapper } from './AdminChatSidebarWrapper';
@@ -118,6 +119,16 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                         active={location.pathname === '/admin/templates/display'}
                         sidebarOpen={sidebarOpen}
                     />
+
+                    {(user?.email === 'admin@tamuu.id' || hasPermission('blog:manage')) && (
+                        <SidebarItem
+                            href="/admin/blog"
+                            icon={FileText}
+                            label="Blog Artikel"
+                            active={location.pathname.startsWith('/admin/blog')}
+                            sidebarOpen={sidebarOpen}
+                        />
+                    )}
 
                     {hasPermission('management:music') && (
                         <SidebarItem
@@ -235,7 +246,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
             )}
 
             {/* AI CHATBOT SIDEBAR - Enterprise Wrapper for Backward Compatibility */}
-            <AdminChatSidebarWrapper 
+            <AdminChatSidebarWrapper
                 useEnhanced={false} // Set to true untuk aktifkan enhanced version
                 userId={user?.id}
                 enhancedProps={{
