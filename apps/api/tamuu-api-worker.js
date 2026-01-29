@@ -1060,20 +1060,35 @@ CONTEXT:
                                 if (!user) {
                                     toolResult = "No user session found.";
                                 } else {
-                                    const { results: txs } = await env.DB.prepare('SELECT id, status, external_id, tier, amount, created_at FROM billing_transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 5').bind(canonicalId).all();
-                                    const { results: invs } = await env.DB.prepare('SELECT id, name, slug, status FROM invitations WHERE user_id = ?').bind(canonicalId).all();
+                                    // 1. Parallelize main queries
+                                    const txsPromise = env.DB.prepare('SELECT id, status, external_id, tier, amount, created_at FROM billing_transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 5').bind(canonicalId).all();
+                                    const invsPromise = env.DB.prepare('SELECT id, name, slug, status FROM invitations WHERE user_id = ?').bind(canonicalId).all();
 
-                                    let invDetails = [];
-                                    for (const inv of invs) {
-                                        const rsvp = await env.DB.prepare('SELECT COUNT(*) as total FROM rsvp_responses WHERE invitation_id = ?').bind(inv.id).first();
-                                        invDetails.push({
-                                            name: inv.name,
-                                            slug: inv.slug,
-                                            url: `https://tamuu.id/${inv.slug}`,
-                                            status: inv.status,
-                                            rsvp_count: rsvp.total
-                                        });
-                                    }
+                                    // 2. Optimized RSVP fetch (Single Query)
+                                    const rsvpPromise = env.DB.prepare(`
+                                        SELECT invitation_id, COUNT(*) as total
+                                        FROM rsvp_responses
+                                        WHERE invitation_id IN (SELECT id FROM invitations WHERE user_id = ?)
+                                        GROUP BY invitation_id
+                                    `).bind(canonicalId).all();
+
+                                    const [txsResult, invsResult, rsvpResult] = await Promise.all([txsPromise, invsPromise, rsvpPromise]);
+
+                                    const txs = txsResult.results;
+                                    const invs = invsResult.results;
+                                    const rsvpCounts = rsvpResult.results || [];
+
+                                    // Map RSVPs for O(1) lookup
+                                    const rsvpMap = new Map();
+                                    rsvpCounts.forEach(r => rsvpMap.set(r.invitation_id, r.total));
+
+                                    const invDetails = invs.map(inv => ({
+                                        name: inv.name,
+                                        slug: inv.slug,
+                                        url: `https://tamuu.id/${inv.slug}`,
+                                        status: inv.status,
+                                        rsvp_count: rsvpMap.get(inv.id) || 0
+                                    }));
 
                                     toolResult = JSON.stringify({
                                         profile: { name: user.name, email: user.email, tier: user.tier, expires_at: user.expires_at },
