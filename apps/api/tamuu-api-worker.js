@@ -1385,12 +1385,12 @@ CONTEXT:
                     if (user) {
                         finalAuthorId = user.id;
                     } else {
-                        finalAuthorId = '4778ed3f-6fe5-4862-b4e7-2483688f4dd0';
+                        finalAuthorId = null;
                     }
                 }
 
                 if (!finalAuthorId || finalAuthorId === 'placeholder') {
-                    finalAuthorId = '4778ed3f-6fe5-4862-b4e7-2483688f4dd0';
+                    finalAuthorId = null;
                 }
 
                 if (!id || !slug) {

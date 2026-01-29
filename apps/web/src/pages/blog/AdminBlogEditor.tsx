@@ -379,7 +379,9 @@ export const AdminBlogEditor = () => {
     const extensions = useMemo(() => [
         StarterKit.configure({
             // Ensure no duplicate extensions from StarterKit
-            heading: { levels: [1, 2, 3] }
+            heading: { levels: [1, 2, 3] },
+            link: false,
+            underline: false,
         }),
         Image.configure({ inline: true }),
         Link.configure({ openOnClick: false }),

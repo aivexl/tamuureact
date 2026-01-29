@@ -955,8 +955,11 @@ export const blog = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(sanitizeValue(data))
         });
-        if (!res.ok) throw new Error('Failed to create post');
-        return res.json();
+        const json = await res.json();
+        if (!res.ok || (json && json.success === false)) {
+            throw new Error(json.error || 'Failed to create post');
+        }
+        return json;
     },
 
     async adminUpdate(id: string, data: any) {
@@ -965,8 +968,11 @@ export const blog = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(sanitizeValue(data))
         });
-        if (!res.ok) throw new Error('Failed to update post');
-        return res.json();
+        const json = await res.json();
+        if (!res.ok || (json && json.success === false)) {
+            throw new Error(json.error || 'Failed to update post');
+        }
+        return json;
     },
 
     async adminDelete(id: string) {
