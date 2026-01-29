@@ -44,7 +44,8 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
         sanitizeAllSectionElements,
         isSimulationMode,
         setIsSimulationMode,
-        isTemplate
+        isTemplate,
+        setProjectName
     } = useStore();
     const { undo, redo } = useTemporalStore();
 
@@ -138,8 +139,9 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
 
     const handleNameSubmit = useCallback(() => {
         setIsEditingName(false);
-        // TODO: Save name via API
-    }, []);
+        setProjectName(editedName);
+        handleSave();
+    }, [editedName, setProjectName, handleSave]);
 
     const handleNameKeyDown = useCallback((e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
