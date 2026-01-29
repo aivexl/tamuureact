@@ -701,11 +701,13 @@ export default {
                 const filter = url.searchParams.get('filter') || 'all';
 
                 // In a real app, verify admin role from session/token
-                const usersCount = await env.DB.prepare('SELECT COUNT(*) as count FROM users').first('count');
-                const templatesCount = await env.DB.prepare("SELECT COUNT(*) as count FROM templates WHERE type = 'invitation'").first('count');
-                const invitationsCount = await env.DB.prepare('SELECT COUNT(*) as count FROM invitations').first('count');
-                const displaysCount = await env.DB.prepare("SELECT COUNT(*) as count FROM templates WHERE type = 'display'").first('count');
-                const rsvpCount = await env.DB.prepare('SELECT COUNT(*) as count FROM rsvp_responses').first('count');
+                const [usersCount, templatesCount, invitationsCount, displaysCount, rsvpCount] = await Promise.all([
+                    env.DB.prepare('SELECT COUNT(*) as count FROM users').first('count'),
+                    env.DB.prepare("SELECT COUNT(*) as count FROM templates WHERE type = 'invitation'").first('count'),
+                    env.DB.prepare('SELECT COUNT(*) as count FROM invitations').first('count'),
+                    env.DB.prepare("SELECT COUNT(*) as count FROM templates WHERE type = 'display'").first('count'),
+                    env.DB.prepare('SELECT COUNT(*) as count FROM rsvp_responses').first('count')
+                ]);
 
                 // Real Recent Activity with Search & Filter
                 const searchQuery = `%${search}%`;
