@@ -1,5 +1,5 @@
 name = "tamuu-api"
-main = "tamuu-api-worker-enhanced.js"
+main = "tamuu-api-worker.js"
 compatibility_date = "2024-01-27"
 workers_dev = false
 
