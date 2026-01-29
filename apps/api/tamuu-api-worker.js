@@ -1417,11 +1417,21 @@ CONTEXT:
                         )
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     `).bind(
-                        id, slug, title, content, excerpt, featured_image, category, finalAuthorId, finalStatus,
+                        id,
+                        slug || '',
+                        title || '',
+                        content || '',
+                        excerpt || '',
+                        featured_image || '',
+                        category || '',
+                        finalAuthorId,
+                        finalStatus || 'draft',
                         finalStatus === 'published' ? new Date().toISOString() : null,
-                        seo_title, seo_description, seo_keywords,
-                        typeof image_meta === 'object' ? JSON.stringify(image_meta) : image_meta,
-                        image_alt || (image_meta?.alt) || ''
+                        seo_title || '',
+                        seo_description || '',
+                        seo_keywords || '',
+                        typeof image_meta === 'object' ? JSON.stringify(image_meta) : (image_meta || ''),
+                        image_alt || ''
                     ).run();
 
                 } catch (dbError) {
