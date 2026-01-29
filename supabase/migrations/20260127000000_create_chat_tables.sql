@@ -6,14 +6,14 @@
 -- Create chat_conversations table
 CREATE TABLE IF NOT EXISTS chat_conversations (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
+  user_id UUID NOT NULL,
   title TEXT,
   description TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  last_message_at TIMESTAMP,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  last_message_at TIMESTAMPTZ,
   archived BOOLEAN DEFAULT FALSE,
-  archived_at TIMESTAMP,
+  archived_at TIMESTAMPTZ,
   message_count INTEGER DEFAULT 0,
   total_tokens_used INTEGER DEFAULT 0,
   sentiment_summary TEXT CHECK(sentiment_summary IN ('positive', 'neutral', 'negative')),
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS chat_conversations (
   error_count INTEGER DEFAULT 0,
   
   -- Foreign keys and constraints
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
 );
 
 -- Create indexes for chat_conversations
@@ -45,14 +45,14 @@ CREATE INDEX IF NOT EXISTS idx_chat_conversations_user_created ON chat_conversat
 CREATE TABLE IF NOT EXISTS chat_messages (
   id TEXT PRIMARY KEY,
   conversation_id TEXT NOT NULL,
-  user_id TEXT NOT NULL,
+  user_id UUID NOT NULL,
   role TEXT NOT NULL CHECK(role IN ('user', 'assistant', 'system')),
   content TEXT NOT NULL,
   content_length INTEGER,
   
   -- Metadata
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
   
   -- AI response metadata
   ai_provider TEXT CHECK(ai_provider IN ('gemini', 'groq', 'fallback')),
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS chat_messages (
   
   -- Foreign keys
   FOREIGN KEY (conversation_id) REFERENCES chat_conversations(id) ON DELETE CASCADE,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
 );
 
 -- Create indexes for chat_messages
@@ -92,14 +92,14 @@ CREATE INDEX IF NOT EXISTS idx_chat_messages_flagged ON chat_messages(flagged_fo
 -- Create chat_session_cache table for quick session lookup
 CREATE TABLE IF NOT EXISTS chat_session_cache (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
+  user_id UUID NOT NULL,
   conversation_id TEXT NOT NULL,
   session_context TEXT, -- JSON
-  cache_expires_at TIMESTAMP NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  cache_expires_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
   
   FOREIGN KEY (conversation_id) REFERENCES chat_conversations(id) ON DELETE CASCADE,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
 );
 
 -- Create indexes for chat_session_cache
@@ -110,16 +110,16 @@ CREATE INDEX IF NOT EXISTS idx_chat_session_cache_expires_at ON chat_session_cac
 -- Create chat_diagnostics_log table for tracking diagnostics
 CREATE TABLE IF NOT EXISTS chat_diagnostics_log (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
+  user_id UUID NOT NULL,
   conversation_id TEXT,
   diagnostic_type TEXT NOT NULL CHECK(diagnostic_type IN ('payment', 'technical', 'account', 'general')),
   diagnostic_data TEXT, -- JSON
   findings TEXT, -- JSON array
   recommendations TEXT, -- JSON array
   auto_fix_applied BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
   
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE,
   FOREIGN KEY (conversation_id) REFERENCES chat_conversations(id) ON DELETE SET NULL
 );
 
@@ -131,7 +131,7 @@ CREATE INDEX IF NOT EXISTS idx_chat_diagnostics_log_type ON chat_diagnostics_log
 -- Create chat_analytics table for aggregated metrics
 CREATE TABLE IF NOT EXISTS chat_analytics (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
+  user_id UUID NOT NULL,
   date_key TEXT NOT NULL, -- YYYY-MM-DD format
   total_conversations INTEGER DEFAULT 0,
   total_messages INTEGER DEFAULT 0,
@@ -141,10 +141,10 @@ CREATE TABLE IF NOT EXISTS chat_analytics (
   fallback_rate FLOAT,
   common_intents TEXT, -- JSON
   user_tier TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
   
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE,
   UNIQUE(user_id, date_key)
 );
 
@@ -156,18 +156,18 @@ CREATE INDEX IF NOT EXISTS idx_chat_analytics_user_date ON chat_analytics(user_i
 -- Create admin_chat_audit_log table for audit trail
 CREATE TABLE IF NOT EXISTS admin_chat_audit_log (
   id TEXT PRIMARY KEY,
-  admin_id TEXT NOT NULL,
+  admin_id UUID,
   admin_level TEXT NOT NULL CHECK(admin_level IN ('moderator', 'admin', 'super_admin')),
-  target_user_id TEXT NOT NULL,
+  target_user_id UUID NOT NULL,
   action TEXT NOT NULL,
   affected_conversation_id TEXT,
   details TEXT, -- JSON
   ip_address TEXT,
   user_agent TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
   
-  FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE SET NULL,
-  FOREIGN KEY (target_user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (admin_id) REFERENCES auth.users(id) ON DELETE SET NULL,
+  FOREIGN KEY (target_user_id) REFERENCES auth.users(id) ON DELETE CASCADE,
   FOREIGN KEY (affected_conversation_id) REFERENCES chat_conversations(id) ON DELETE SET NULL
 );
 
@@ -178,25 +178,25 @@ CREATE INDEX IF NOT EXISTS idx_admin_chat_audit_log_created_at ON admin_chat_aud
 
 -- Add triggers for automatic timestamp updates
 -- For chat_conversations
-CREATE TRIGGER IF NOT EXISTS update_chat_conversations_timestamp
-AFTER UPDATE ON chat_conversations
-BEGIN
-  UPDATE chat_conversations SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
-END;
+DROP TRIGGER IF EXISTS update_chat_conversations_timestamp ON chat_conversations;
+CREATE TRIGGER update_chat_conversations_timestamp
+    BEFORE UPDATE ON chat_conversations
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
 
 -- For chat_messages
-CREATE TRIGGER IF NOT EXISTS update_chat_messages_timestamp
-AFTER UPDATE ON chat_messages
-BEGIN
-  UPDATE chat_messages SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
-END;
+DROP TRIGGER IF EXISTS update_chat_messages_timestamp ON chat_messages;
+CREATE TRIGGER update_chat_messages_timestamp
+    BEFORE UPDATE ON chat_messages
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
 
 -- For chat_analytics
-CREATE TRIGGER IF NOT EXISTS update_chat_analytics_timestamp
-AFTER UPDATE ON chat_analytics
-BEGIN
-  UPDATE chat_analytics SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
-END;
+DROP TRIGGER IF EXISTS update_chat_analytics_timestamp ON chat_analytics;
+CREATE TRIGGER update_chat_analytics_timestamp
+    BEFORE UPDATE ON chat_analytics
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
 
 -- Grant appropriate permissions (if using user roles)
 -- Note: Adjust based on your actual user/role setup
