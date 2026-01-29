@@ -79,7 +79,9 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
             try {
                 const event = JSON.parse(stored);
                 lastTriggerRef.current = { effect: event.effect, timestamp: event.timestamp };
-                console.log('[PreviewView] Initialized interaction ref from storage:', event.timestamp);
+                if (import.meta.env.DEV) {
+                    console.log('[PreviewView] Initialized interaction ref from storage:', event.timestamp);
+                }
             } catch (e) { }
         }
 
@@ -388,7 +390,9 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
     const handleClick = (e: React.MouseEvent) => {
         if (!isDisplay) return;
 
-        console.log('[PreviewView] Click detected');
+        if (import.meta.env.DEV) {
+            console.log('[PreviewView] Click detected');
+        }
         e.stopPropagation();
 
         const allBlastData = getAllBlastElementsData();
@@ -423,7 +427,9 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
             // Use the test name from the first blast element or fallback
             const testName = allBlastData[0].config?.testName || 'Guest Name';
 
-            console.log('[PreviewView] Triggering batch interactions:', interactions.length);
+            if (import.meta.env.DEV) {
+                console.log('[PreviewView] Triggering batch interactions:', interactions.length);
+            }
             triggerBatchInteractions(testName, interactions);
         } else {
             // Fallback for click anywhere if no interaction elements exist
