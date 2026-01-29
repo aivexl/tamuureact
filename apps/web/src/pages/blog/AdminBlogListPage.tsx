@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { toast } from 'react-hot-toast';
-import { blog as blogApi } from '../../lib/api';
+import api from '@/lib/api';
 
 export interface BlogPost {
     id: string;
@@ -39,7 +39,7 @@ export const AdminBlogListPage = () => {
 
     const fetchPosts = async () => {
         try {
-            const data = await blogApi.adminList();
+            const data = await api.blog.adminList();
             setPosts(data);
         } catch (err) {
             toast.error('Gagal mengambil data artikel');
@@ -54,7 +54,7 @@ export const AdminBlogListPage = () => {
 
     const handleApprove = async (id: string) => {
         try {
-            await blogApi.adminUpdate(id, {
+            await api.blog.adminUpdate(id, {
                 status: 'published',
                 author_email: user?.email // Should be admin@tamuu.id
             });
@@ -68,7 +68,7 @@ export const AdminBlogListPage = () => {
     const handleDelete = async (id: string) => {
         if (!window.confirm('Hapus artikel ini selamanya?')) return;
         try {
-            await blogApi.adminDelete(id);
+            await api.blog.adminDelete(id);
             toast.success('Artikel dihapus');
             fetchPosts();
         } catch (err) {
