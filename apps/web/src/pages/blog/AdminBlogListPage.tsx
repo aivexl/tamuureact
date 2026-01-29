@@ -13,11 +13,13 @@ import {
     Trash2,
     CheckCircle2,
     Clock,
-    AlertCircle
+    AlertCircle,
+    ExternalLink
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { toast } from 'react-hot-toast';
 import api from '@/lib/api';
+import { getPublicDomain } from '@/lib/utils';
 
 export interface BlogPost {
     id: string;
@@ -173,7 +175,15 @@ export const AdminBlogListPage = () => {
                                             </div>
                                             <div>
                                                 <div className="text-xs font-bold text-white group-hover:text-teal-400 transition-colors line-clamp-1">{post.title}</div>
-                                                <div className="text-[10px] text-slate-500 font-mono mt-0.5">/{post.slug}</div>
+                                                <a
+                                                    href={`https://${getPublicDomain()}/blog/${post.slug}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-[10px] text-slate-500 font-mono mt-0.5 hover:text-teal-500 transition-colors flex items-center gap-1 group/slug"
+                                                >
+                                                    /{post.slug}
+                                                    <ExternalLink className="w-2 h-2 opacity-0 group-hover/slug:opacity-100 transition-opacity" />
+                                                </a>
                                             </div>
                                         </div>
                                     </td>
@@ -211,6 +221,15 @@ export const AdminBlogListPage = () => {
                                                     <CheckCircle2 className="w-4 h-4" />
                                                 </button>
                                             )}
+                                            <a
+                                                href={`https://${getPublicDomain()}/blog/${post.slug}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="p-2 bg-white/5 text-slate-400 rounded-lg hover:bg-teal-500 hover:text-white transition-all"
+                                                title="Lihat Live"
+                                            >
+                                                <ExternalLink className="w-4 h-4" />
+                                            </a>
                                             <Link
                                                 to={`/admin/blog/${post.id}`}
                                                 className="p-2 bg-white/5 text-slate-400 rounded-lg hover:bg-white/10 hover:text-white transition-all"
