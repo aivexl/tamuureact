@@ -20,6 +20,15 @@ export const safeFetch = async (url: string, options?: RequestInit) => {
     return fetch(patchedUrl, options);
 };
 
+const getAdminHeaders = () => {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    const secret = import.meta.env.VITE_ADMIN_SECRET;
+    if (secret) {
+        headers['X-Admin-Secret'] = secret;
+    }
+    return headers;
+};
+
 // ============================================
 // TEMPLATES API
 // ============================================
@@ -744,7 +753,9 @@ export const admin = {
         if (options?.search) params.append('search', options.search);
         if (options?.filter) params.append('filter', options.filter);
         const url = params.toString() ? `${API_BASE}/api/admin/stats?${params.toString()}` : `${API_BASE}/api/admin/stats`;
-        const res = await safeFetch(url);
+        const res = await safeFetch(url, {
+            headers: getAdminHeaders()
+        });
         if (!res.ok) throw new Error('Failed to fetch admin stats');
         const data = await res.json();
         return sanitizeValue(data);
@@ -753,7 +764,7 @@ export const admin = {
     async triggerDisplay(displayId: string, data: { name: string; effect?: string; style?: string; timestamp: number }) {
         const res = await safeFetch(`${API_BASE}/api/trigger/${displayId}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAdminHeaders(),
             body: JSON.stringify(sanitizeValue(data))
         });
         if (!res.ok) throw new Error('Failed to trigger display');
@@ -764,7 +775,9 @@ export const admin = {
     async listUsers(role?: string) {
         let url = `${API_BASE}/api/admin/users`;
         if (role) url += `?role=${role}`;
-        const res = await safeFetch(url);
+        const res = await safeFetch(url, {
+            headers: getAdminHeaders()
+        });
         if (!res.ok) throw new Error('Failed to fetch users');
         const data = await res.json();
         return sanitizeValue(data);
@@ -785,7 +798,7 @@ export const admin = {
     }) {
         const res = await safeFetch(`${API_BASE}/api/admin/users`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAdminHeaders(),
             body: JSON.stringify(sanitizeValue(data))
         });
         if (!res.ok) {
@@ -798,7 +811,7 @@ export const admin = {
     async updateAccess(userId: string, data: { role?: string; permissions?: string[] }) {
         const res = await safeFetch(`${API_BASE}/api/admin/users/${userId}/access`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAdminHeaders(),
             body: JSON.stringify(sanitizeValue(data))
         });
         if (!res.ok) throw new Error('Failed to update access');
@@ -808,7 +821,7 @@ export const admin = {
     async updateUserSubscription(userId: string, data: { tier?: string; expires_at?: string | null; max_invitations?: number }) {
         const res = await safeFetch(`${API_BASE}/api/admin/users/${userId}/subscription`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAdminHeaders(),
             body: JSON.stringify(sanitizeValue(data))
         });
         if (!res.ok) throw new Error('Failed to update user subscription');
@@ -818,20 +831,25 @@ export const admin = {
 
     async listTransactions(filters?: { status?: string; startDate?: string; endDate?: string }) {
         const query = new URLSearchParams(filters as any).toString();
-        const res = await safeFetch(`${API_BASE}/api/admin/transactions?${query}`);
+        const res = await safeFetch(`${API_BASE}/api/admin/transactions?${query}`, {
+            headers: getAdminHeaders()
+        });
         if (!res.ok) throw new Error('Failed to fetch transactions');
         return res.json();
     },
 
     async syncTransaction(transactionId: string) {
-        const res = await safeFetch(`${API_BASE}/api/admin/transactions/${transactionId}/sync`);
+        const res = await safeFetch(`${API_BASE}/api/admin/transactions/${transactionId}/sync`, {
+            headers: getAdminHeaders() // GET request needs headers too
+        });
         if (!res.ok) throw new Error('Failed to sync transaction');
         return res.json();
     },
 
     async deleteUser(userId: string) {
         const res = await safeFetch(`${API_BASE}/api/admin/users/${userId}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: getAdminHeaders()
         });
         if (!res.ok) throw new Error('Failed to delete user');
         return true;
@@ -840,7 +858,7 @@ export const admin = {
     async askAI(messages: { role: 'user' | 'assistant'; content: string }[]) {
         const res = await safeFetch(`${API_BASE}/api/admin/chat`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAdminHeaders(),
             body: JSON.stringify({ messages })
         });
         if (!res.ok) {
@@ -929,21 +947,27 @@ export const blog = {
     },
 
     async adminList() {
-        const res = await safeFetch(`${API_BASE}/api/admin/blog/posts`);
+        const res = await safeFetch(`${API_BASE}/api/admin/blog/posts`, {
+            headers: getAdminHeaders()
+        });
         if (!res.ok) throw new Error('Failed to fetch admin posts');
         const data = await res.json();
         return sanitizeValue(data);
     },
 
     async adminGetPost(id: string) {
-        const res = await safeFetch(`${API_BASE}/api/admin/blog/posts/${id}`);
+        const res = await safeFetch(`${API_BASE}/api/admin/blog/posts/${id}`, {
+            headers: getAdminHeaders()
+        });
         if (!res.ok) throw new Error('Post not found');
         const data = await res.json();
         return sanitizeValue(data);
     },
 
     async adminGetCategories() {
-        const res = await safeFetch(`${API_BASE}/api/admin/blog/categories`);
+        const res = await safeFetch(`${API_BASE}/api/admin/blog/categories`, {
+            headers: getAdminHeaders()
+        });
         if (!res.ok) throw new Error('Failed to fetch categories');
         const data = await res.json();
         return sanitizeValue(data);
@@ -952,7 +976,7 @@ export const blog = {
     async adminCreate(data: any) {
         const res = await safeFetch(`${API_BASE}/api/admin/blog/posts`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAdminHeaders(),
             body: JSON.stringify(sanitizeValue(data))
         });
         const json = await res.json();
@@ -965,7 +989,7 @@ export const blog = {
     async adminUpdate(id: string, data: any) {
         const res = await safeFetch(`${API_BASE}/api/admin/blog/posts/${id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAdminHeaders(),
             body: JSON.stringify(sanitizeValue(data))
         });
         const json = await res.json();
@@ -977,7 +1001,8 @@ export const blog = {
 
     async adminDelete(id: string) {
         const res = await safeFetch(`${API_BASE}/api/admin/blog/posts/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: getAdminHeaders()
         });
         if (!res.ok) throw new Error('Failed to delete post');
         return true;

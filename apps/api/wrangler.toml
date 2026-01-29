@@ -46,6 +46,7 @@ name = "tamuu-api-staging"
 # wrangler secret put DATABASE_URL --env production
 # wrangler secret put JWT_SECRET --env production
 # wrangler secret put ENCRYPTION_KEY --env production
+# wrangler secret put ADMIN_SECRET --env production
 
 # KV Namespaces (if needed)
 # [[kv_namespaces]]

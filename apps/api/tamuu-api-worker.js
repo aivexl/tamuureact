@@ -7,6 +7,7 @@
 import { TamuuAIEngine } from './ai-system-v8-enhanced.js';
 import { handleEnhancedChat } from './enhanced-chat-handler.js';
 import { createAdminChatHandler } from './admin-chat-integration.js';
+import { sanitizationMiddleware, verifyAdmin } from './security-utils.js';
 
 export default {
     async fetch(request, env, ctx) {
@@ -62,7 +63,7 @@ export default {
             const providers = [
                 {
                     name: 'Gemini',
-                    url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${env.GEMINI_API_KEY}`,
+                    url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent`,
                     type: 'google'
                 }
             ];
@@ -77,6 +78,10 @@ export default {
 
                     let response;
                     if (provider.type === 'google') {
+                        // Pass API key via query param but ensure it's not hardcoded in the URL object
+                        const apiUrl = new URL(provider.url);
+                        apiUrl.searchParams.set('key', env.GEMINI_API_KEY);
+
                         const body = {
                             system_instruction: { parts: [{ text: sysPrompt }] },
                             contents: (userMsgs || []).map(m => ({
@@ -91,7 +96,7 @@ export default {
 
                         if (tools) body.tools = [{ function_declarations: tools }];
 
-                        response = await fetch(provider.url, {
+                        response = await fetch(apiUrl.toString(), {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(body)
@@ -211,13 +216,35 @@ export default {
 
             // ENHANCED: AI Chat Support v8.0 - Enterprise Grade
             if ((path === '/api/chat' || path === '/api/enhanced-chat') && method === 'POST') {
-                return await handleEnhancedChat(request, env, ctx, corsHeaders);
+                // Apply input sanitization
+                const body = await request.clone().json();
+                const clean = sanitizationMiddleware(body);
+                if (!clean.valid) {
+                    return json({ error: 'Input validation failed', details: clean.violations }, { ...corsHeaders, status: 400 });
+                }
+
+                // Use sanitized data
+                const sanitizedRequest = new Request(request.url, {
+                    method: request.method,
+                    headers: request.headers,
+                    body: JSON.stringify(clean.sanitized)
+                });
+
+                return await handleEnhancedChat(sanitizedRequest, env, ctx, corsHeaders);
             }
 
             // ADMIN: AI Chat Support (Enterprise v8.0 - Enhanced)
             if (path === '/api/admin/chat' && method === 'POST') {
+                if (!verifyAdmin(request, env)) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
+
                 try {
                     const { messages, userId, aiPersonality = 'professional', enableQuickActions = true, enableSettings = true } = await request.json();
+
+                    // Sanitization check
+                    const clean = sanitizationMiddleware({ messages, userId });
+                    if (!clean.valid) {
+                        return json({ error: 'Input validation failed', details: clean.violations }, { ...corsHeaders, status: 400 });
+                    }
 
                     if (!userId || !messages || !Array.isArray(messages) || messages.length === 0) {
                         return json({ success: false, error: { code: 'INVALID_REQUEST', message: 'userId dan messages diperlukan' } }, { ...corsHeaders, status: 400 });
@@ -244,6 +271,7 @@ export default {
 
             // ADMIN: Health Check for AI System v8.0
             if (path === '/api/admin/health' && method === 'GET') {
+                if (!verifyAdmin(request, env)) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
                 try {
                     const adminChatHandler = createAdminChatHandler(env);
                     const healthStatus = await adminChatHandler.healthCheck();
@@ -697,10 +725,11 @@ export default {
             }
 
             if (path === '/api/admin/stats' && method === 'GET') {
+                if (!verifyAdmin(request, env)) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
+
                 const search = url.searchParams.get('search') || '';
                 const filter = url.searchParams.get('filter') || 'all';
 
-                // In a real app, verify admin role from session/token
                 const usersCount = await env.DB.prepare('SELECT COUNT(*) as count FROM users').first('count');
                 const templatesCount = await env.DB.prepare("SELECT COUNT(*) as count FROM templates WHERE type = 'invitation'").first('count');
                 const invitationsCount = await env.DB.prepare('SELECT COUNT(*) as count FROM invitations').first('count');
@@ -741,6 +770,8 @@ export default {
 
             // ADMIN: Update User Subscription (expires_at)
             if (path.startsWith('/api/admin/users/') && path.endsWith('/subscription') && method === 'PUT') {
+                if (!verifyAdmin(request, env)) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
+
                 const userId = path.split('/')[4];
                 const { expires_at, tier, max_invitations } = await request.json();
 
@@ -789,6 +820,8 @@ export default {
 
             // ADMIN: Create New Account (Manual)
             if (path === '/api/admin/users' && method === 'POST') {
+                if (!verifyAdmin(request, env)) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
+
                 const { email, name, gender, birthDate, role, tier, permissions, expires_at, max_invitations, uid } = await request.json();
 
                 if (!email) return json({ error: 'Email required' }, { ...corsHeaders, status: 400 });
@@ -817,77 +850,17 @@ export default {
                 return json({ success: true, user: newUser }, corsHeaders);
             }
 
-            // ADMIN: AI Chat Support (Internal CS)
-            if (path === '/api/admin/chat' && method === 'POST') {
-                const { messages } = await request.json();
-
-                if (!env.GEMINI_API_KEY) {
-                    return json({ error: 'Gemini API Key not configured' }, { ...corsHeaders, status: 500 });
-                }
-
-                // Fetch Real-time Stats for Context
-                const usersCount = await env.DB.prepare('SELECT COUNT(*) as count FROM users').first('count');
-                const templatesCount = await env.DB.prepare("SELECT COUNT(*) as count FROM templates WHERE type = 'invitation'").first('count');
-                const invitationsCount = await env.DB.prepare('SELECT COUNT(*) as count FROM invitations').first('count');
-                const rsvpCount = await env.DB.prepare('SELECT COUNT(*) as count FROM rsvp_responses').first('count');
-
-
-                const systemPrompt = `You are Tamuu Smart CS, a professional and efficient assistant for the Tamuu platform.
-Your goal is to help administrators manage the platform and answer questions about products, payments, and troubleshooting.
-
-CURRENT PLATFORM STATS (REAL-TIME):
-- Total Users: ${usersCount}
-- Total Invitations Created: ${invitationsCount}
-- Total Templates Available: ${templatesCount}
-- Total RSVP Responses: ${rsvpCount}
-
-PRODUCT KNOWLEDGE:
-- Tamuu is a premium platform for Digital Invitations and Welcome Displays.
-- Features: Instant deployment, Premium Themes, Responsive Editor.
-
-PRICING & TIERS:
-- FREE: 1 invitation, basic features.
-- PRO (Rp 99k): No ads, custom music.
-- ULTIMATE (Rp 149k): Welcome display, unlimited RSVP.
-- ELITE/VVIP (Rp 199k): Full support, premium R2 assets.
-
-PAYMENTS:
-- Uses Midtrans (VA, E-Wallet, QRIS, CC).
-- Auto-cancels abandoned payments on retry.
-
-TROUBLESHOOTING:
-- Pending Payment: Check Billing page, refresh, or "Sync Status" in Admin.
-- QR Not Reading: Check screen brightness, screen cleanliness.
-- Welcome Display Sync: Check internet stability, refresh page.
-
-TONE & EMOJI RULES (STRICT):
-1. NEVER use the word "Boss" or "Bos". Use "Kak" or professional terminology.
-2. Emojis allowed ONLY: 😊, 🙏, 🥰, ❤️. PROHIBITED: ✨, 👋, 🚀, 🤖, etc.
-3. Tone: Professional, authoritative, yet friendly and helpful.
-
-FORMATTING & GRAMMAR RULES:
-1. Use DOUBLE NEWLINES between paragraphs.
-2. Use BULLET POINTS (-) or NUMBERED LISTS for steps and features. NEVER use asterisks (*) as literal bullet characters.
-3. Use **BOLD** for important terms, buttons, or page names.
-4. Keep responses concise and structured. Avoid long blocks of text.
-5. INDONESIAN GRAMMAR (EYD): Use professional, formal Indonesian. Avoid excessive commas. Never place a comma before "yang" or "dan" unless grammatically required for parenthetical clauses. Avoid redundant phrases.
-
-USER CONTEXT: You are chatting with a Tamuu Super Admin. Assist them with system monitoring and technical operations.`;
-
-                try {
-                    const text = await fetchAI(systemPrompt, messages);
-                    return json({ content: text }, corsHeaders);
-                } catch (err) {
-                    const friendlyMsg = err.message.includes('quota') || err.message.includes('padat')
-                        ? "Maaf, sistem AI sedang sangat padat. Mohon tunggu sejenak dan coba kembali ya. 🙏"
-                        : `Admin AI Error: ${err.message}`;
-                    return json({ content: friendlyMsg }, corsHeaders);
-                }
-            }
+            // Removed redundant /api/admin/chat handler (it was defined twice)
 
             // USER: AI Chat Support (Intelligence v5.0 - Proactive Agent)
             if (path === '/api/chat' && method === 'POST') {
-                const { messages, userId } = await request.json();
+                const body = await request.clone().json();
+                const clean = sanitizationMiddleware(body);
+                if (!clean.valid) {
+                    return json({ error: 'Input validation failed', details: clean.violations }, { ...corsHeaders, status: 400 });
+                }
+
+                const { messages, userId } = clean.sanitized;
 
                 if (!env.GEMINI_API_KEY) {
                     return json({ error: 'AI Support currently unavailable' }, { ...corsHeaders, status: 503 });
@@ -1359,6 +1332,7 @@ CONTEXT:
             // ADMIN: List Posts
             // ADMIN: Get Categories
             if (path === '/api/admin/blog/categories' && method === 'GET') {
+                if (!verifyAdmin(request, env)) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
                 const { results } = await env.DB.prepare(
                     'SELECT * FROM blog_categories ORDER BY name ASC'
                 ).all();
@@ -1367,6 +1341,7 @@ CONTEXT:
 
             // ADMIN: Get Posts
             if (path === '/api/admin/blog/posts' && method === 'GET') {
+                if (!verifyAdmin(request, env)) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
                 const { results } = await env.DB.prepare(
                     'SELECT * FROM blog_posts ORDER BY created_at DESC'
                 ).all();
@@ -1375,6 +1350,7 @@ CONTEXT:
 
             // ADMIN: Get Single Post
             if (path.match(/^\/api\/admin\/blog\/posts\/[^/]+$/) && method === 'GET') {
+                if (!verifyAdmin(request, env)) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
                 const id = path.split('/').pop();
                 const { results } = await env.DB.prepare(
                     'SELECT * FROM blog_posts WHERE id = ?'
@@ -1388,6 +1364,7 @@ CONTEXT:
 
             // ADMIN: Create Post
             if (path === '/api/admin/blog/posts' && method === 'POST') {
+                if (!verifyAdmin(request, env)) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
                 const body = await request.json();
                 const { slug, title, content, excerpt, featured_image, category, author_id, author_email, status, seo_title, seo_description, seo_keywords, image_meta, image_alt } = body;
 
@@ -1465,6 +1442,7 @@ CONTEXT:
 
             // ADMIN: Update Post
             if (path.startsWith('/api/admin/blog/posts/') && method === 'PUT') {
+                if (!verifyAdmin(request, env)) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
                 const id = path.split('/').pop();
                 const body = await request.json();
                 const { author_email } = body;
@@ -1525,6 +1503,7 @@ CONTEXT:
             }
 
             if (path.startsWith('/api/admin/blog/posts/') && method === 'DELETE') {
+                if (!verifyAdmin(request, env)) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
                 const id = path.split('/').pop();
                 await env.DB.prepare('DELETE FROM blog_posts WHERE id = ?').bind(id).run();
                 return json({ success: true }, corsHeaders);
@@ -1532,6 +1511,7 @@ CONTEXT:
 
             // ADMIN: List Transactions (with filtering)
             if (path.startsWith('/api/admin/transactions') && method === 'GET') {
+                if (!verifyAdmin(request, env)) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
                 const url = new URL(request.url);
                 const status = url.searchParams.get('status');
                 const startDate = url.searchParams.get('startDate');
@@ -1668,6 +1648,7 @@ t.*,
 
             // ADMIN: Sync Midtrans Transaction Status
             if (path.startsWith('/api/admin/transactions/') && path.endsWith('/sync') && method === 'GET') {
+                if (!verifyAdmin(request, env)) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
                 const transactionId = path.split('/')[4];
                 const result = await syncMidtransStatus(transactionId, env);
                 if (!result.success) {
@@ -1679,6 +1660,7 @@ t.*,
 
             // ADMIN: Update User Access (Role & Permissions)
             if (path.startsWith('/api/admin/users/') && path.endsWith('/access') && method === 'PUT') {
+                if (!verifyAdmin(request, env)) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
                 const userId = path.split('/')[4];
                 const { role, permissions } = await request.json();
 
@@ -1709,6 +1691,7 @@ t.*,
 
             // ADMIN: List All Users
             if (path === '/api/admin/users' && method === 'GET') {
+                if (!verifyAdmin(request, env)) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
                 const roleFilter = url.searchParams.get('role');
                 let query = 'SELECT id, email, name, role, permissions, tier, expires_at, max_invitations, invitation_count, created_at FROM users';
                 let params = [];
@@ -1733,6 +1716,7 @@ t.*,
 
             // ADMIN: Delete User (Permanent Removal)
             if (path.startsWith('/api/admin/users/') && method === 'DELETE') {
+                if (!verifyAdmin(request, env)) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
                 const userId = path.split('/')[4];
                 if (!userId) return json({ error: 'User ID required' }, { ...corsHeaders, status: 400 });
 
@@ -2129,6 +2113,7 @@ name = COALESCE(?, name),
 
             // Create category (Admin only)
             if (path === '/api/categories' && method === 'POST') {
+                if (!verifyAdmin(request, env)) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
                 const body = await request.json();
                 const { name, icon, color } = body;
 
@@ -3000,13 +2985,23 @@ function json(data, options = {}) {
     let headers = {};
     let status = 200;
 
-    if (options['Access-Control-Allow-Origin']) {
-        // corsHeaders was passed directly
+    // Check if options has status property (explicit options object)
+    if (options.status !== undefined || options.headers !== undefined) {
+         headers = options.headers || {};
+         status = options.status || 200;
+         // If headers are missing CORS, mix them in if they were passed in the root (rare case but handled below)
+    } else if (options['Access-Control-Allow-Origin']) {
+        // corsHeaders was passed directly as the options object
         headers = options;
     } else {
-        // Options object was passed
-        headers = options.headers || {};
-        status = options.status || 200;
+        headers = options;
+    }
+
+    // Merge CORS headers if not present (simple check)
+    if (!headers['Access-Control-Allow-Origin']) {
+        headers['Access-Control-Allow-Origin'] = '*';
+        headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
+        headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
     }
 
     return new Response(JSON.stringify(data), {
