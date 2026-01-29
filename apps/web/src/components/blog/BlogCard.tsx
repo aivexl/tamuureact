@@ -64,7 +64,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, className = '' }) => {
                 <div className="flex items-center gap-2 text-xs font-semibold tracking-wide text-indigo-600 mb-2 uppercase">
                     <span>{post.category || 'Article'}</span>
                     <span>•</span>
-                    <span>{new Date(post.published_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                    <span>{post.published_at ? new Date(post.published_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Draft'}</span>
                 </div>
 
                 <Link to={`/blog/${post.slug}`} className="block group-hover:text-indigo-600 transition-colors duration-200">
