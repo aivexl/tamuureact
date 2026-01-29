@@ -2193,8 +2193,8 @@ name = COALESCE(?, name),
             // TEMPLATES ENDPOINTS
             // ============================================
             if (path === '/api/templates' && method === 'GET') {
-                // No cache for templates list to ensure real-time admin updates
-                const fetcher = async () => {
+                // Use smart cache with 60s TTL
+                return await smart_cache(request, 60, async () => {
                     // [MIGRATION] Auto-correct Display templates from early V5.1
                     // This fixes templates created before the type separation was fully enforced
                     await env.DB.prepare(
@@ -2220,8 +2220,7 @@ name = COALESCE(?, name),
                             ? `https://tamuu-api.shafania57.workers.dev/assets/${t.thumbnail}`
                             : t.thumbnail
                     }));
-                };
-                return json(await fetcher(), corsHeaders);
+                });
             }
 
 
