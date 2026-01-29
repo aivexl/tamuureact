@@ -20,6 +20,8 @@
 
 import { v9Tools } from './v9-tools.js';
 
+let GLOBAL_KNOWLEDGE_CACHE = null;
+
 class TamuuAIEngine {
     constructor(env) {
         this.env = env;
@@ -550,6 +552,11 @@ class TamuuAIEngine {
      * Reads and combines knowledge base files for AI training
      */
     async loadKnowledgeBase() {
+        if (GLOBAL_KNOWLEDGE_CACHE) {
+            console.log('[Knowledge Base] Returning from memory cache');
+            return GLOBAL_KNOWLEDGE_CACHE;
+        }
+
         try {
             console.log('[Knowledge Base] Loading from local files...');
 
@@ -614,11 +621,13 @@ class TamuuAIEngine {
             const packageInfo = this.extractPackageInfo(userKbText, tamuuKbText);
             console.log('[Knowledge Base] Extracted Package Info:', JSON.stringify(packageInfo, null, 2));
 
-            return {
+            GLOBAL_KNOWLEDGE_CACHE = {
                 userKnowledgeBase: userKbText,
                 tamuuKnowledgeBase: tamuuKbText,
                 packageInfo: packageInfo
             };
+
+            return GLOBAL_KNOWLEDGE_CACHE;
         } catch (error) {
             console.error('[Knowledge Base] Failed to load:', error.message);
             console.error('[Knowledge Base] Error Stack:', error.stack);
