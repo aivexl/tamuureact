@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
@@ -359,7 +359,9 @@ export const AdminBlogEditor = () => {
     const [slug, setSlug] = useState('');
     const [excerpt, setExcerpt] = useState('');
     const [featuredImage, setFeaturedImage] = useState('');
+    const [imageAlt, setImageAlt] = useState('');
     const [category, setCategory] = useState('');
+    const [categories, setCategories] = useState<{ id: string, name: string }[]>([]);
     const [status, setStatus] = useState<'draft' | 'pending' | 'published'>('draft');
     const [uploading, setUploading] = useState(false);
     const [seoTitle, setSeoTitle] = useState('');
@@ -368,29 +370,40 @@ export const AdminBlogEditor = () => {
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // Fetch Categories
+    useEffect(() => {
+        api.blog.adminGetCategories().then(setCategories).catch(console.error);
+    }, []);
+
+    // Memoize extensions to prevent duplicate instance warnings on re-render
+    const extensions = useMemo(() => [
+        StarterKit.configure({
+            // Ensure no duplicate extensions from StarterKit
+            heading: { levels: [1, 2, 3] }
+        }),
+        Image.configure({ inline: true }),
+        Link.configure({ openOnClick: false }),
+        Underline,
+        TextAlign.configure({ types: ['heading', 'paragraph'] }),
+        Highlight.configure({ multicolor: true }),
+        TextStyle,
+        FontFamily,
+        FontSize,
+        Color,
+        TaskList,
+        TaskItem.configure({ nested: true }),
+        Youtube.configure({ width: 840, height: 480 }),
+        Table.configure({ resizable: true }),
+        TableRow,
+        TableCell,
+        TableHeader,
+        Subscript,
+        Superscript,
+        Placeholder.configure({ placeholder: 'Mulai menulis kisah legendaris Anda disini...' })
+    ], []);
+
     const editor = useEditor({
-        extensions: [
-            StarterKit,
-            Image.configure({ inline: true }),
-            Link.configure({ openOnClick: false }),
-            Underline,
-            TextAlign.configure({ types: ['heading', 'paragraph'] }),
-            Highlight.configure({ multicolor: true }),
-            TextStyle,
-            FontFamily,
-            FontSize,
-            Color,
-            TaskList,
-            TaskItem.configure({ nested: true }),
-            Youtube.configure({ width: 840, height: 480 }),
-            Table.configure({ resizable: true }),
-            TableRow,
-            TableCell,
-            TableHeader,
-            Subscript,
-            Superscript,
-            Placeholder.configure({ placeholder: 'Mulai menulis kisah legendaris Anda disini...' })
-        ],
+        extensions,
         content: '',
         editorProps: {
             attributes: {
@@ -411,26 +424,36 @@ export const AdminBlogEditor = () => {
 
     // Load Existing Data
     useEffect(() => {
-        if (id) {
+        if (id && editor) {
             const fetchPost = async () => {
+                setLoading(true);
                 try {
-                    const res = await fetch(`/api/admin/blog/posts`);
-                    const allPosts = await res.json();
-                    const post = allPosts.find((p: any) => p.id === id);
+                    const post = await api.blog.adminGetPost(id);
                     if (post) {
                         setTitle(post.title);
                         setSlug(post.slug);
                         setExcerpt(post.excerpt || '');
                         setFeaturedImage(post.featured_image || '');
+                        setImageAlt(post.image_alt || (typeof post.image_meta === 'object' ? post.image_meta?.alt : '') || '');
                         setCategory(post.category || '');
                         setStatus(post.status || 'draft');
                         setSeoTitle(post.seo_title || '');
                         setSeoDesc(post.seo_description || '');
                         setSeoKeywords(post.seo_keywords || '');
-                        editor?.commands.setContent(post.content || '');
+
+                        // ENHANCED HYDRATION: Ensure editor is ready before setting content
+                        setTimeout(() => {
+                            if (editor && !editor.isDestroyed) {
+                                editor.commands.setContent(post.content || '');
+                                console.log('[BlogEditor] Content hydrated:', post.id);
+                            }
+                        }, 100);
                     }
                 } catch (err) {
+                    console.error('[BlogEditor] Load Error:', err);
                     toast.error('Gagal memuat artikel');
+                } finally {
+                    setLoading(false);
                 }
             };
             fetchPost();
@@ -445,6 +468,7 @@ export const AdminBlogEditor = () => {
         try {
             const payload = {
                 title, slug, content, excerpt, featured_image: featuredImage,
+                image_alt: imageAlt,
                 category,
                 seo_title: seoTitle, seo_description: seoDesc, seo_keywords: seoKeywords,
                 status: targetStatus,
@@ -642,6 +666,15 @@ export const AdminBlogEditor = () => {
                                 )}
                                 <input type="file" ref={fileInputRef} onChange={handleUpload} accept="image/*" className="hidden" />
                             </div>
+
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mt-4 block">Alt Text (Deskripsi Gambar)</label>
+                            <input
+                                type="text"
+                                placeholder="Deskripsi untuk SEO..."
+                                value={imageAlt}
+                                onChange={e => setImageAlt(e.target.value)}
+                                className="w-full bg-black/40 border border-white/5 rounded-2xl px-5 py-4 text-xs text-white focus:border-teal-500 focus:ring-0 outline-none transition-all shadow-inner"
+                            />
                         </div>
 
                         <div className="space-y-3">
@@ -650,11 +683,17 @@ export const AdminBlogEditor = () => {
                             </label>
                             <input
                                 type="text"
+                                list="category-list"
                                 value={category}
                                 onChange={e => setCategory(e.target.value)}
                                 className="w-full bg-black/40 border border-white/5 rounded-2xl px-5 py-4 text-xs text-white focus:border-teal-500 focus:ring-0 outline-none transition-all shadow-inner"
-                                placeholder="Contoh: Wedding Tips, Lifestyle..."
+                                placeholder="Pilih atau ketik kategori baru..."
                             />
+                            <datalist id="category-list">
+                                {categories.map(c => (
+                                    <option key={c.id} value={c.name} />
+                                ))}
+                            </datalist>
                         </div>
 
                         <div className="space-y-3">

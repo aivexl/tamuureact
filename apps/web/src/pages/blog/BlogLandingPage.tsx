@@ -1,23 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { BlogCard, BlogPost } from '../../components/blog/BlogCard';
+import api from '@/lib/api';
 
 export const BlogLandingPage = () => {
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Fetch posts from Edge API
-        fetch('/api/blog?limit=20')
-            .then(res => res.json())
-            .then(data => {
+        const fetchPosts = async () => {
+            try {
+                const data = await api.blog.list({ limit: 20 });
                 setPosts(data);
-                setLoading(false);
-            })
-            .catch(err => {
+            } catch (err) {
                 console.error("[Blog] Load error:", err);
+            } finally {
                 setLoading(false);
-            });
+            }
+        };
+
+        fetchPosts();
     }, []);
 
     return (

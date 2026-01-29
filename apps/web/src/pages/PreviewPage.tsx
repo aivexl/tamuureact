@@ -6,6 +6,7 @@ import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { generateId } from '@/lib/utils';
 import { usePreviewData } from '@/hooks/queries';
 import { useSEO } from '@/hooks/useSEO';
+import api from '@/lib/api';
 
 export const PreviewPage: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
@@ -14,22 +15,40 @@ export const PreviewPage: React.FC = () => {
 
     useEffect(() => {
         // GHOST V4.0: UNICORN REDIRECT GUARD
-        // If query definitively failed, provide a grace period then bounce
-        if (isError) {
+        // If query definitively failed, check if it might be a blog post first
+        if (isError && slug) {
             console.error('[PreviewPage] Failed to resolve slug:', slug, {
                 error,
                 timestamp: new Date().toISOString()
             });
 
-            // Only redirect if not in development to allow debugging
-            if (import.meta.env.PROD) {
-                const timer = setTimeout(() => {
-                    navigate('/', { replace: true });
-                }, 3000); // 3 second grace period
-                return () => clearTimeout(timer);
-            }
+            // Try to check if this is a blog post slug
+            const checkBlogPost = async () => {
+                try {
+                    const blogPost = await api.blog.getPost(slug);
+                    if (blogPost) {
+                        // Redirect to blog page
+                        console.log('[PreviewPage] Slug is a blog post, redirecting to /blog/' + slug);
+                        navigate(`/blog/${slug}`, { replace: true });
+                        return;
+                    }
+                } catch {
+                    // Not a blog post either, proceed with normal fallback
+                }
+
+                // Only redirect to home if not in development
+                if (import.meta.env.PROD) {
+                    const timer = setTimeout(() => {
+                        navigate('/', { replace: true });
+                    }, 3000); // 3 second grace period
+                    return () => clearTimeout(timer);
+                }
+            };
+
+            checkBlogPost();
             return; // Added return here to prevent further execution if there's an error
         }
+
 
         if (slug === 'draft' || !previewResponse) return;
 

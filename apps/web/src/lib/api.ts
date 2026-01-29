@@ -913,9 +913,38 @@ export const blog = {
         return sanitizeValue(data);
     },
 
+    async getRelated(id: string) {
+        const res = await safeFetch(`${API_BASE}/api/blog/related/${id}`);
+        if (!res.ok) throw new Error('Failed to fetch related posts');
+        const data = await res.json();
+        return sanitizeValue(data);
+    },
+
+    async trackEvent(postId: string, type: 'view' | 'read') {
+        const res = await safeFetch(`${API_BASE}/api/blog/analytics`, {
+            method: 'POST',
+            body: JSON.stringify({ post_id: postId, type })
+        });
+        return res.ok;
+    },
+
     async adminList() {
         const res = await safeFetch(`${API_BASE}/api/admin/blog/posts`);
         if (!res.ok) throw new Error('Failed to fetch admin posts');
+        const data = await res.json();
+        return sanitizeValue(data);
+    },
+
+    async adminGetPost(id: string) {
+        const res = await safeFetch(`${API_BASE}/api/admin/blog/posts/${id}`);
+        if (!res.ok) throw new Error('Post not found');
+        const data = await res.json();
+        return sanitizeValue(data);
+    },
+
+    async adminGetCategories() {
+        const res = await safeFetch(`${API_BASE}/api/admin/blog/categories`);
+        if (!res.ok) throw new Error('Failed to fetch categories');
         const data = await res.json();
         return sanitizeValue(data);
     },

@@ -1337,6 +1337,15 @@ CONTEXT:
             }
 
             // ADMIN: List Posts
+            // ADMIN: Get Categories
+            if (path === '/api/admin/blog/categories' && method === 'GET') {
+                const { results } = await env.DB.prepare(
+                    'SELECT * FROM blog_categories ORDER BY name ASC'
+                ).all();
+                return json(results, corsHeaders);
+            }
+
+            // ADMIN: Get Posts
             if (path === '/api/admin/blog/posts' && method === 'GET') {
                 const { results } = await env.DB.prepare(
                     'SELECT * FROM blog_posts ORDER BY created_at DESC'
@@ -1344,27 +1353,81 @@ CONTEXT:
                 return json(results, corsHeaders);
             }
 
+            // ADMIN: Get Single Post
+            if (path.match(/^\/api\/admin\/blog\/posts\/[^/]+$/) && method === 'GET') {
+                const id = path.split('/').pop();
+                const { results } = await env.DB.prepare(
+                    'SELECT * FROM blog_posts WHERE id = ?'
+                ).bind(id).all();
+
+                if (results && results.length > 0) {
+                    return json(results[0], corsHeaders);
+                }
+                return notFound(corsHeaders);
+            }
+
             // ADMIN: Create Post
             if (path === '/api/admin/blog/posts' && method === 'POST') {
                 const body = await request.json();
-                const { slug, title, content, excerpt, featured_image, category, author_id, author_email, status, seo_title, seo_description, seo_keywords } = body;
+                const { slug, title, content, excerpt, featured_image, category, author_id, author_email, status, seo_title, seo_description, seo_keywords, image_meta, image_alt } = body;
 
                 let finalStatus = status || 'draft';
-                // Enforcement: Only admin@tamuu.id can publish directly
+                // Enforcement: Only admin can publish directly
                 if (finalStatus === 'published' && author_email !== 'admin@tamuu.id') {
                     finalStatus = 'pending';
                 }
 
-                const id = crypto.randomUUID();
-                await env.DB.prepare(`
-                    INSERT INTO blog_posts (id, slug, title, content, excerpt, featured_image, category, author_id, status, is_published, published_at, seo_title, seo_description, seo_keywords)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                 `).bind(
-                    id, slug, title, content, excerpt, featured_image, category, author_id, finalStatus,
-                    finalStatus === 'published' ? 1 : 0,
-                    finalStatus === 'published' ? new Date().toISOString() : null,
-                    seo_title, seo_description, seo_keywords
-                ).run();
+                const id = crypto.randomUUID ? crypto.randomUUID() : `alt-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+                let finalAuthorId = author_id;
+
+                if ((!finalAuthorId || finalAuthorId === 'placeholder') && author_email) {
+                    const user = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(author_email).first();
+                    if (user) {
+                        finalAuthorId = user.id;
+                    } else {
+                        finalAuthorId = '4778ed3f-6fe5-4862-b4e7-2483688f4dd0';
+                    }
+                }
+
+                if (!finalAuthorId || finalAuthorId === 'placeholder') {
+                    finalAuthorId = '4778ed3f-6fe5-4862-b4e7-2483688f4dd0';
+                }
+
+                if (!id || !slug) {
+                    return json({ success: false, error: 'Missing ID or Slug' }, corsHeaders);
+                }
+
+                try {
+                    // 1. Upsert Category if provided
+                    if (category) {
+                        const catSlug = category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                        const catId = `cat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+                        // Insert or Ignore (name/slug unique)
+                        await env.DB.prepare(`
+                            INSERT INTO blog_categories (id, name, slug) VALUES (?, ?, ?)
+                            ON CONFLICT(name) DO NOTHING
+                        `).bind(catId, category, catSlug).run();
+                    }
+
+                    // 2. Insert Post
+                    await env.DB.prepare(`
+                        INSERT INTO blog_posts (
+                            id, slug, title, content, excerpt, featured_image, category, author_id, status, 
+                            published_at, seo_title, seo_description, seo_keywords, image_meta, image_alt
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    `).bind(
+                        id, slug, title, content, excerpt, featured_image, category, finalAuthorId, finalStatus,
+                        finalStatus === 'published' ? new Date().toISOString() : null,
+                        seo_title, seo_description, seo_keywords,
+                        typeof image_meta === 'object' ? JSON.stringify(image_meta) : image_meta,
+                        image_alt || (image_meta?.alt) || ''
+                    ).run();
+
+                } catch (dbError) {
+                    console.error('D1 Insert Error:', dbError.message);
+                    return json({ success: false, error: dbError.message }, corsHeaders);
+                }
 
                 return json({ success: true, id, status: finalStatus }, corsHeaders);
             }
@@ -1375,20 +1438,37 @@ CONTEXT:
                 const body = await request.json();
                 const { author_email } = body;
 
+                // Upsert Category if provided in update
+                if (body.category) {
+                    const catSlug = body.category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                    const catId = `cat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+                    try {
+                        await env.DB.prepare(`
+                             INSERT INTO blog_categories (id, name, slug) VALUES (?, ?, ?)
+                             ON CONFLICT(name) DO NOTHING
+                        `).bind(catId, body.category, catSlug).run();
+                    } catch (e) { console.error('Category upsert error:', e); }
+                }
+
                 const updates = [];
                 const values = [];
 
-                const fields = ['slug', 'title', 'content', 'excerpt', 'featured_image', 'category', 'seo_title', 'seo_description', 'seo_keywords'];
+                const fields = ['slug', 'title', 'content', 'excerpt', 'featured_image', 'category', 'seo_title', 'seo_description', 'seo_keywords', 'image_meta', 'image_alt'];
                 fields.forEach(f => {
                     if (body[f] !== undefined) {
                         updates.push(`${f} = ?`);
-                        values.push(body[f]);
+                        // Special handling for JSON fields if needed, but client sends string or obj
+                        if (f === 'image_meta' && typeof body[f] === 'object') {
+                            values.push(JSON.stringify(body[f]));
+                        } else {
+                            values.push(body[f]);
+                        }
                     }
                 });
 
                 if (body.status !== undefined) {
                     let newStatus = body.status;
-                    // Enforcement: Only admin@tamuu.id can publish
+                    // Enforcement: Only admin can publish
                     if (newStatus === 'published' && author_email !== 'admin@tamuu.id') {
                         newStatus = 'pending';
                     }

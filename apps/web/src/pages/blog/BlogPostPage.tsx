@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { BlogPost } from '../../components/blog/BlogCard';
 import { BlogPostLayout } from '../../components/blog/BlogPostLayout';
+import api from '@/lib/api';
 
 export const BlogPostPage = () => {
     const { slug } = useParams<{ slug: string }>();
@@ -14,50 +15,38 @@ export const BlogPostPage = () => {
         if (!slug) return;
 
         setLoading(true);
-        // Parallel Fetch Strategy
-        Promise.all([
-            fetch(`/api/blog/post/${slug}`).then(r => r.ok ? r.json() : Promise.reject('Post not found')),
-            // We fetch related posts *after* finding the ID, or ideally the API supports related-by-slug.
-            // But our current plan logic is related/:id. 
-            // So we chain it.
-        ]).then(async ([postData]) => {
-            setPost(postData);
-
-            // Analytics: Track "View" immediately
-            fetch('/api/blog/analytics', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ post_id: postData.id, type: 'view' })
-            }).catch(() => { });
-
-            // Fetch Related
+        const fetchAll = async () => {
             try {
-                const relRes = await fetch(`/api/blog/related/${postData.id}`);
-                const relData = await relRes.json();
-                setRelated(relData);
-            } catch (e) {
-                console.warn("Related posts failed", e);
+                const postData = await api.blog.getPost(slug);
+                setPost(postData);
+
+                // Analytics: Track "View" immediately
+                api.blog.trackEvent(postData.id, 'view').catch(() => { });
+
+                // Fetch Related and Handle Analytics in parallel
+                try {
+                    const relData = await api.blog.getRelated(postData.id);
+                    setRelated(relData);
+                } catch (e) {
+                    console.warn("Related posts failed", e);
+                }
+
+                setLoading(false);
+
+                // Analytics: Track "Read" after 5 seconds
+                const timer = setTimeout(() => {
+                    api.blog.trackEvent(postData.id, 'read').catch(() => { });
+                }, 5000);
+
+                return () => clearTimeout(timer);
+            } catch (err) {
+                console.error(err);
+                setError(true);
+                setLoading(false);
             }
+        };
 
-            setLoading(false);
-
-            // Analytics: Track "Read" after 5 seconds
-            const timer = setTimeout(() => {
-                fetch('/api/blog/analytics', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ post_id: postData.id, type: 'read' })
-                }).catch(() => { });
-            }, 5000);
-
-            return () => clearTimeout(timer);
-
-        }).catch(err => {
-            console.error(err);
-            setError(true);
-            setLoading(false);
-        });
-
+        fetchAll();
     }, [slug]);
 
     if (loading) {
