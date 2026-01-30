@@ -514,6 +514,7 @@ export const UserChatSidebar: React.FC = () => {
                     className="bg-blue-600 text-white rounded-full p-4 shadow-2xl hover:shadow-3xl transition-all duration-300 group"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
+                    aria-label="Open AI Assistant"
                 >
                     <AnimatePresence mode="wait">
                         {isOpen ? (
