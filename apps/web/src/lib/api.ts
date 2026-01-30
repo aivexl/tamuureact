@@ -22,7 +22,12 @@ export const safeFetch = async (url: string, options?: RequestInit) => {
 
 const getAdminHeaders = () => {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+
+    // SECURITY WARNING: VITE_ADMIN_SECRET is exposed in the client bundle.
+    // This protects against casual unauthorized access (bots, accidental clicks) but is NOT secure against determined attackers who inspect source code.
+    // For true enterprise security, Admin endpoints should be protected by a secure backend session (e.g. JWT) or Cloudflare Access.
     const secret = import.meta.env.VITE_ADMIN_SECRET;
+
     if (secret) {
         headers['X-Admin-Secret'] = secret;
     }

@@ -730,11 +730,14 @@ export default {
                 const search = url.searchParams.get('search') || '';
                 const filter = url.searchParams.get('filter') || 'all';
 
-                const usersCount = await env.DB.prepare('SELECT COUNT(*) as count FROM users').first('count');
-                const templatesCount = await env.DB.prepare("SELECT COUNT(*) as count FROM templates WHERE type = 'invitation'").first('count');
-                const invitationsCount = await env.DB.prepare('SELECT COUNT(*) as count FROM invitations').first('count');
-                const displaysCount = await env.DB.prepare("SELECT COUNT(*) as count FROM templates WHERE type = 'display'").first('count');
-                const rsvpCount = await env.DB.prepare('SELECT COUNT(*) as count FROM rsvp_responses').first('count');
+                // In a real app, verify admin role from session/token
+                const [usersCount, templatesCount, invitationsCount, displaysCount, rsvpCount] = await Promise.all([
+                    env.DB.prepare('SELECT COUNT(*) as count FROM users').first('count'),
+                    env.DB.prepare("SELECT COUNT(*) as count FROM templates WHERE type = 'invitation'").first('count'),
+                    env.DB.prepare('SELECT COUNT(*) as count FROM invitations').first('count'),
+                    env.DB.prepare("SELECT COUNT(*) as count FROM templates WHERE type = 'display'").first('count'),
+                    env.DB.prepare('SELECT COUNT(*) as count FROM rsvp_responses').first('count')
+                ]);
 
                 // Real Recent Activity with Search & Filter
                 const searchQuery = `%${search}%`;
@@ -1034,19 +1037,25 @@ CONTEXT:
                                     toolResult = "No user session found.";
                                 } else {
                                     const { results: txs } = await env.DB.prepare('SELECT id, status, external_id, tier, amount, created_at FROM billing_transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 5').bind(canonicalId).all();
-                                    const { results: invs } = await env.DB.prepare('SELECT id, name, slug, status FROM invitations WHERE user_id = ?').bind(canonicalId).all();
+                                    const { results: rawInvs } = await env.DB.prepare(`
+                                        SELECT
+                                            i.name,
+                                            i.slug,
+                                            i.status,
+                                            COUNT(r.id) as rsvp_count
+                                        FROM invitations i
+                                        LEFT JOIN rsvp_responses r ON i.id = r.invitation_id
+                                        WHERE i.user_id = ?
+                                        GROUP BY i.id
+                                    `).bind(canonicalId).all();
 
-                                    let invDetails = [];
-                                    for (const inv of invs) {
-                                        const rsvp = await env.DB.prepare('SELECT COUNT(*) as total FROM rsvp_responses WHERE invitation_id = ?').bind(inv.id).first();
-                                        invDetails.push({
-                                            name: inv.name,
-                                            slug: inv.slug,
-                                            url: `https://tamuu.id/${inv.slug}`,
-                                            status: inv.status,
-                                            rsvp_count: rsvp.total
-                                        });
-                                    }
+                                    const invDetails = rawInvs.map(inv => ({
+                                        name: inv.name,
+                                        slug: inv.slug,
+                                        url: `https://tamuu.id/${inv.slug}`,
+                                        status: inv.status,
+                                        rsvp_count: inv.rsvp_count
+                                    }));
 
                                     toolResult = JSON.stringify({
                                         profile: { name: user.name, email: user.email, tier: user.tier, expires_at: user.expires_at },
@@ -2170,8 +2179,8 @@ name = COALESCE(?, name),
             // TEMPLATES ENDPOINTS
             // ============================================
             if (path === '/api/templates' && method === 'GET') {
-                // No cache for templates list to ensure real-time admin updates
-                const fetcher = async () => {
+                // Use smart cache with 60s TTL
+                return await smart_cache(request, 60, async () => {
                     // [MIGRATION] Auto-correct Display templates from early V5.1
                     // This fixes templates created before the type separation was fully enforced
                     await env.DB.prepare(
@@ -2197,8 +2206,7 @@ name = COALESCE(?, name),
                             ? `https://tamuu-api.shafania57.workers.dev/assets/${t.thumbnail}`
                             : t.thumbnail
                     }));
-                };
-                return json(await fetcher(), corsHeaders);
+                });
             }
 
 

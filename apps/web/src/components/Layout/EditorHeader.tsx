@@ -6,6 +6,7 @@ import {
     Undo2, Redo2, Edit2, X, ExternalLink, Zap, Link, Wand2, Shield, Monitor
 } from 'lucide-react';
 import { PremiumLoader } from '../ui/PremiumLoader';
+import { templates, invitations, userDisplayDesigns } from '@/lib/api';
 
 // ============================================
 // TYPES
@@ -18,6 +19,7 @@ interface EditorHeaderProps {
     onSave?: () => Promise<void>;
     onPublish?: () => Promise<void>;
     isSyncing?: boolean;
+    editorType?: 'template' | 'invitation' | 'display_design';
 }
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
@@ -33,7 +35,8 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
     onPreview,
     onSave,
     onPublish,
-    isSyncing
+    isSyncing,
+    editorType
 }) => {
     const {
         layers,
@@ -44,7 +47,9 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
         sanitizeAllSectionElements,
         isSimulationMode,
         setIsSimulationMode,
-        isTemplate
+        isTemplate,
+        setProjectName,
+        id
     } = useStore();
     const { undo, redo } = useTemporalStore();
 
@@ -136,10 +141,45 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
         }
     }, [onPreview, templateId, slug]);
 
-    const handleNameSubmit = useCallback(() => {
+    const handleNameSubmit = useCallback(async () => {
         setIsEditingName(false);
-        // TODO: Save name via API
-    }, []);
+        const targetId = id || templateId;
+
+        // Skip API call if name hasn't changed or ID is missing
+        if (!targetId || !editedName || editedName === templateName) {
+            // Ensure local state is consistent if we cancel
+            if (editedName !== templateName) setProjectName(editedName);
+            return;
+        }
+
+        // Optimistic update
+        const previousName = templateName;
+        setProjectName(editedName);
+        setSaveStatus('saving');
+
+        try {
+            // Determine API based on editorType or fallback logic
+            if (editorType === 'template' || (!editorType && isTemplate)) {
+                await templates.update(targetId, { name: editedName });
+            } else if (editorType === 'display_design') {
+                await userDisplayDesigns.update(targetId, { name: editedName });
+            } else {
+                await invitations.update(targetId, { name: editedName });
+            }
+
+            setSaveStatus('saved');
+            setLastSavedAt(new Date());
+
+            // Reset to idle after showing success
+            setTimeout(() => setSaveStatus('idle'), 2000);
+        } catch (error) {
+            console.error('Failed to update name:', error);
+            setSaveStatus('error');
+            // Revert optimistic update
+            setProjectName(previousName || 'Untitled Template');
+            setTimeout(() => setSaveStatus('idle'), 3000);
+        }
+    }, [editedName, id, templateId, templateName, editorType, isTemplate, setProjectName]);
 
     const handleNameKeyDown = useCallback((e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {

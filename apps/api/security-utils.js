@@ -177,7 +177,12 @@ class InputSanitizer {
 function sanitizationMiddleware(request) {
   try {
     if (request.messages && request.userId !== undefined) {
-      return InputSanitizer.validateChatRequest(request);
+      const result = InputSanitizer.validateChatRequest(request);
+      return {
+        valid: result.valid,
+        sanitized: result, // Wrap the result so clean.sanitized is accessible
+        violations: result.violations
+      };
     }
 
     return {

@@ -17,15 +17,34 @@ export const usePayment = () => {
             return;
         }
 
-        // @ts-ignore
+        // Dynamically load Snap Script if not present
         if (!window.snap) {
-            console.error('[usePayment] Midtrans Snap.js not found in window');
-            showModal({
-                title: 'Loading Sistem',
-                message: 'Sistem pembayaran sedang loading. Mohon tunggu beberapa detik atau muat ulang halaman.',
-                type: 'info'
-            });
-            return;
+            try {
+                const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY;
+                if (!clientKey) {
+                    throw new Error("Sistem pembayaran belum dikonfigurasi (Client Key Missing)");
+                }
+
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    const isProd = import.meta.env.VITE_MIDTRANS_IS_PRODUCTION === 'true';
+                    script.src = isProd
+                        ? 'https://app.midtrans.com/snap/snap.js'
+                        : 'https://app.sandbox.midtrans.com/snap/snap.js';
+                    script.setAttribute('data-client-key', clientKey);
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error("Gagal memuat sistem pembayaran"));
+                    document.body.appendChild(script);
+                });
+            } catch (err) {
+                console.error('[usePayment] Failed to load Snap:', err);
+                 showModal({
+                    title: 'Konfigurasi Error',
+                    message: 'Sistem pembayaran tidak dapat dimuat. Hubungi admin.',
+                    type: 'error'
+                });
+                return;
+            }
         }
 
         // Normalize legacy tiers

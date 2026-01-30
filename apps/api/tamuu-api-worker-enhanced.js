@@ -164,7 +164,21 @@ export default {
             // ENHANCED: AI Chat Support v8.0 - Enterprise Grade
             // Matches apps/web/src/lib/api.ts which calls /api/enhanced-chat
             if ((path === '/api/chat' || path === '/api/enhanced-chat') && method === 'POST') {
-                return await handleEnhancedChat(request, env, ctx, corsHeaders);
+                // Apply input sanitization
+                const body = await request.clone().json();
+                const clean = sanitizationMiddleware(body);
+                if (!clean.valid) {
+                    return json({ error: 'Input validation failed', details: clean.violations }, { ...corsHeaders, status: 400 });
+                }
+
+                // Use sanitized data
+                const sanitizedRequest = new Request(request.url, {
+                    method: request.method,
+                    headers: request.headers,
+                    body: JSON.stringify(clean.sanitized)
+                });
+
+                return await handleEnhancedChat(sanitizedRequest, env, ctx, corsHeaders);
             }
 
             // ADMIN: AI Chat Support (Enterprise v8.0 - Enhanced)
@@ -229,6 +243,7 @@ export default {
 
             // ADMIN: Health Check for AI System v8.0
             if (path === '/api/admin/health' && method === 'GET') {
+                if (!verifyAdmin(request, env)) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
                 try {
                     const adminChatHandler = createAdminChatHandler(env);
                     const healthStatus = await adminChatHandler.healthCheck();
@@ -263,6 +278,7 @@ export default {
 
             // ADMIN: Legacy AI Chat Support (v7.0 - Maintained for compatibility)
             if (path === '/api/admin/chat/legacy' && method === 'POST') {
+                if (!verifyAdmin(request, env)) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
                 const { messages } = await request.json();
 
                 if (!env.GEMINI_API_KEY) {
@@ -270,10 +286,12 @@ export default {
                 }
 
                 // Fetch Real-time Stats for Context
-                const usersCount = await env.DB.prepare('SELECT COUNT(*) as count FROM users').first('count');
-                const templatesCount = await env.DB.prepare("SELECT COUNT(*) as count FROM templates WHERE type = 'invitation'").first('count');
-                const invitationsCount = await env.DB.prepare('SELECT COUNT(*) as count FROM invitations').first('count');
-                const rsvpCount = await env.DB.prepare('SELECT COUNT(*) as count FROM rsvp_responses').first('count');
+                const [usersCount, templatesCount, invitationsCount, rsvpCount] = await Promise.all([
+                    env.DB.prepare('SELECT COUNT(*) as count FROM users').first('count'),
+                    env.DB.prepare("SELECT COUNT(*) as count FROM templates WHERE type = 'invitation'").first('count'),
+                    env.DB.prepare('SELECT COUNT(*) as count FROM invitations').first('count'),
+                    env.DB.prepare('SELECT COUNT(*) as count FROM rsvp_responses').first('count')
+                ]);
 
                 const systemPrompt = `You are Tamuu Smart CS, a professional and efficient assistant for the Tamuu platform.
 Your goal is to help administrators manage the platform and answer questions about products, payments, and troubleshooting.
@@ -332,7 +350,13 @@ USER CONTEXT: You are chatting with a Tamuu Super Admin. Assist them with system
             if (path === '/api/chat/legacy' && method === 'POST') {
                 // Original v7.0 implementation moved here for backward compatibility
                 // This maintains the existing functionality while new v8.0 is used by default
-                const { messages, userId } = await request.json();
+                const body = await request.clone().json();
+                const clean = sanitizationMiddleware(body);
+                if (!clean.valid) {
+                    return json({ error: 'Input validation failed', details: clean.violations }, { ...corsHeaders, status: 400 });
+                }
+
+                const { messages, userId } = clean.sanitized;
 
                 if (!env.GEMINI_API_KEY) {
                     return json({ error: 'AI Support currently unavailable' }, { ...corsHeaders, status: 503 });
@@ -498,19 +522,21 @@ CONTEXT:
                                     toolResult = "No user session found.";
                                 } else {
                                     const { results: txs } = await env.DB.prepare('SELECT id, status, external_id, tier, amount, created_at FROM billing_transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 5').bind(canonicalId).all();
-                                    const { results: invs } = await env.DB.prepare('SELECT id, name, slug, status FROM invitations WHERE user_id = ?').bind(canonicalId).all();
+                                    const { results: invs } = await env.DB.prepare(
+                                        `SELECT i.id, i.name, i.slug, i.status, COUNT(r.id) as rsvp_count
+                                         FROM invitations i
+                                         LEFT JOIN rsvp_responses r ON i.id = r.invitation_id
+                                         WHERE i.user_id = ?
+                                         GROUP BY i.id`
+                                    ).bind(canonicalId).all();
 
-                                    let invDetails = [];
-                                    for (const inv of invs) {
-                                        const rsvp = await env.DB.prepare('SELECT COUNT(*) as total FROM rsvp_responses WHERE invitation_id = ?').bind(inv.id).first();
-                                        invDetails.push({
-                                            name: inv.name,
-                                            slug: inv.slug,
-                                            url: `https://tamuu.id/${inv.slug}`,
-                                            status: inv.status,
-                                            rsvp_count: rsvp.total
-                                        });
-                                    }
+                                    let invDetails = invs.map(inv => ({
+                                        name: inv.name,
+                                        slug: inv.slug,
+                                        url: `https://tamuu.id/${inv.slug}`,
+                                        status: inv.status,
+                                        rsvp_count: inv.rsvp_count
+                                    }));
 
                                     toolResult = JSON.stringify({
                                         profile: { name: user.name, email: user.email, tier: user.tier, expires_at: user.expires_at },
@@ -575,28 +601,107 @@ CONTEXT:
                 }
             }
 
-            // BILLING: Create Invoice
-            if (path === '/api/billing/create' && method === 'POST') {
+            // BILLING: Get Midtrans Token (Secure Implementation)
+            // Replaces /api/billing/create with server-side pricing and Midtrans integration
+            if (path === '/api/billing/midtrans/token' && method === 'POST') {
                 try {
-                    const { userId, tier, amount, email } = await request.json();
-                    if (!userId || !tier || !amount || !email) {
+                    const { userId, tier, email, name } = await request.json();
+                    if (!userId || !tier || !email) {
                         return json({ error: 'Missing required fields' }, { ...corsHeaders, status: 400 });
                     }
 
-                    // Create Xendit invoice (pseudo-implementation)
-                    const invoiceId = `INV-${Date.now()}`;
-                    const result = await env.DB.prepare(
-                        'INSERT INTO billing_transactions (user_id, tier, amount, status, external_id, created_at) VALUES (?, ?, ?, ?, ?, ?)'
-                    ).bind(userId, tier, amount, 'PENDING', invoiceId, new Date().toISOString()).run();
+                    // 1. Server-Side Price Validation (Security Fix)
+                    const TIER_PRICES = {
+                        'pro': 99000,
+                        'ultimate': 149000,
+                        'elite': 199000,
+                        'vip': 99000, // Legacy support
+                        'platinum': 149000,
+                        'vvip': 199000
+                    };
 
+                    const normalizedTier = tier.toLowerCase();
+                    const amount = TIER_PRICES[normalizedTier];
+
+                    if (!amount) {
+                         return json({ error: 'Invalid tier selected' }, { ...corsHeaders, status: 400 });
+                    }
+
+                    // 2. Create Order ID
+                    const orderId = `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+                    // 3. Insert Pending Transaction
+                    // Note: 'payment_channel' column assumed to exist based on legacy code. If not, this might fail, so we'll try to handle that.
+                    try {
+                        await env.DB.prepare(
+                            'INSERT INTO billing_transactions (user_id, tier, amount, status, external_id, created_at, payment_channel) VALUES (?, ?, ?, ?, ?, ?, ?)'
+                        ).bind(userId, normalizedTier, amount, 'PENDING', orderId, new Date().toISOString(), 'midtrans').run();
+                    } catch (dbErr) {
+                         // Fallback if payment_channel column is missing
+                         await env.DB.prepare(
+                            'INSERT INTO billing_transactions (user_id, tier, amount, status, external_id, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+                        ).bind(userId, normalizedTier, amount, 'PENDING', orderId, new Date().toISOString()).run();
+                    }
+
+                    // 4. Call Midtrans Snap API
+                    const serverKey = env.MIDTRANS_SERVER_KEY;
+
+                    // SECURITY: If key is missing, DO NOT return a fake token in production.
+                    // However, to prevent the app from crashing during this audit if the user hasn't set it yet:
+                    if (!serverKey) {
+                        console.error('[Billing] Missing MIDTRANS_SERVER_KEY');
+                        return json({
+                            error: 'System Configuration Error: Midtrans Server Key is missing.'
+                        }, { ...corsHeaders, status: 500 });
+                    }
+
+                    const authString = btoa(serverKey + ':');
+                    const isProduction = env.ENVIRONMENT === 'production';
+                    const midtransUrl = isProduction
+                        ? 'https://app.midtrans.com/snap/v1/transactions'
+                        : 'https://app.sandbox.midtrans.com/snap/v1/transactions';
+
+                    const snapResponse = await fetch(midtransUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'Authorization': `Basic ${authString}`
+                        },
+                        body: JSON.stringify({
+                            transaction_details: {
+                                order_id: orderId,
+                                gross_amount: amount
+                            },
+                            customer_details: {
+                                first_name: name || 'User',
+                                email: email
+                            },
+                            item_details: [{
+                                id: normalizedTier,
+                                price: amount,
+                                quantity: 1,
+                                name: `Tamuu ${normalizedTier.toUpperCase()} Package`
+                            }]
+                        })
+                    });
+
+                    if (!snapResponse.ok) {
+                        const errorText = await snapResponse.text();
+                        console.error('[Billing] Midtrans Error:', errorText);
+                        throw new Error(`Midtrans API Error: ${snapResponse.status}`);
+                    }
+
+                    const snapData = await snapResponse.json();
                     return json({
-                        success: true,
-                        invoiceId,
-                        paymentUrl: `https://xendit.co/invoices/${invoiceId}`
+                        token: snapData.token,
+                        redirect_url: snapData.redirect_url,
+                        orderId: orderId
                     }, corsHeaders);
+
                 } catch (err) {
-                    console.error('[Billing] Create invoice error:', err);
-                    return json({ error: 'Failed to create invoice' }, { ...corsHeaders, status: 500 });
+                    console.error('[Billing] Token generation error:', err);
+                    return json({ error: err.message || 'Failed to generate payment token' }, { ...corsHeaders, status: 500 });
                 }
             }
 
