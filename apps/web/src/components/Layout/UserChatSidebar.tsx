@@ -543,10 +543,10 @@ export const UserChatSidebar: React.FC = () => {
                                         alt="Linda"
                                         className="w-[125%] h-[125%] object-cover transform scale-x-[-1] translate-y-1.5"
                                         style={{
-                                            imageRendering: 'high-quality',
+                                            // @ts-ignore
+                                            imageRendering: 'auto',
                                             backfaceVisibility: 'hidden',
-                                            WebkitBackfaceVisibility: 'hidden',
-                                            willChange: 'transform'
+                                            WebkitBackfaceVisibility: 'hidden'
                                         }}
                                     />
                                 </div>
@@ -583,10 +583,10 @@ export const UserChatSidebar: React.FC = () => {
                                                 alt="Linda"
                                                 className="w-[120%] h-[120%] object-cover translate-y-1.5"
                                                 style={{
-                                                    imageRendering: 'high-quality',
+                                                    // @ts-ignore
+                                                    imageRendering: 'auto',
                                                     backfaceVisibility: 'hidden',
-                                                    WebkitBackfaceVisibility: 'hidden',
-                                                    willChange: 'transform'
+                                                    WebkitBackfaceVisibility: 'hidden'
                                                 }}
                                             />
                                         </div>
