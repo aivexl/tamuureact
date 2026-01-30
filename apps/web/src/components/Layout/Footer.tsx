@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, Instagram, Twitter, Facebook, Mail, Phone, MapPin } from 'lucide-react';
+import { Sparkles, Instagram, Twitter, Facebook, Mail, MapPin } from 'lucide-react';
 
 export const Footer: React.FC = () => {
     return (
@@ -60,10 +60,6 @@ export const Footer: React.FC = () => {
                                 <Mail className="w-4 h-4 text-[#FFBF00] flex-shrink-0" aria-hidden="true" />
                                 <span className="text-xs font-bold uppercase tracking-tight break-all">cs@tamuu.id</span>
                             </li>
-                            <li className="flex items-center gap-3 text-slate-300">
-                                <Phone className="w-4 h-4 text-[#FFBF00]" aria-hidden="true" />
-                                <span className="text-xs font-bold uppercase tracking-tight">+62 812 3456 7890</span>
-                            </li>
                             <li className="flex items-start gap-3 text-slate-300">
                                 <MapPin className="w-4 h-4 text-[#FFBF00] mt-1" aria-hidden="true" />
                                 <span className="text-xs font-bold uppercase tracking-tight">BSD, Tangerang, Banten, Indonesia</span>
@@ -78,9 +74,6 @@ export const Footer: React.FC = () => {
                     <p className="text-slate-300 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-center sm:text-left">
                         &copy; {new Date().getFullYear()} Tamuu.id. All rights reserved.
                     </p>
-                    <div className="flex items-center gap-8">
-                        <span className="text-slate-300 text-[10px] font-black uppercase tracking-[0.3em]">Crafted by Unicorn Team</span>
-                    </div>
                 </div>
             </div>
         </footer>
