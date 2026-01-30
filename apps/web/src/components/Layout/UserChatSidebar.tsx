@@ -537,11 +537,11 @@ export const UserChatSidebar: React.FC = () => {
                                 transition={{ duration: 0.2 }}
                                 className="relative"
                             >
-                                <div className="w-10 h-10 rounded-full overflow-hidden border border-white/30 shadow-inner flex items-center justify-center bg-blue-500/30 p-0.5">
+                                <div className="w-12 h-12 flex items-center justify-center overflow-hidden">
                                     <img
                                         src="/images/linda.png"
                                         alt="Linda"
-                                        className="w-full h-full object-contain transform scale-x-[-1] scale-[1.3] translate-y-0.5"
+                                        className="w-full h-full object-contain transform scale-x-[-1] scale-[1.6] translate-y-1.5"
                                     />
                                 </div>
                                 <motion.div
@@ -571,11 +571,11 @@ export const UserChatSidebar: React.FC = () => {
                             <div className="bg-blue-600 text-white p-4 rounded-t-3xl border-b border-white/10">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-3">
-                                        <div className="w-10 h-10 rounded-full overflow-hidden border border-white/30 shadow-md flex items-center justify-center bg-white/10 p-0.5">
+                                        <div className="w-12 h-12 flex items-center justify-center overflow-hidden">
                                             <img
                                                 src="/images/linda.png"
                                                 alt="Linda"
-                                                className="w-full h-full object-contain scale-[1.3] translate-y-0.5"
+                                                className="w-full h-full object-contain scale-[1.6] translate-y-1.5"
                                             />
                                         </div>
                                         <div>
