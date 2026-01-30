@@ -3,13 +3,40 @@ import { motion } from 'framer-motion';
 import { Mail, MapPin, Send, Instagram, Twitter, MessageSquare, CheckCircle2 } from 'lucide-react';
 
 export const ContactPage: React.FC = () => {
-    const [isSubmitted, setIsSubmitted] = React.useState(false);
+    const [formData, setFormData] = React.useState({
+        fullName: '',
+        email: '',
+        subject: 'General Inquiry',
+        message: ''
+    });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Construct mailto URL
+        const mailtoRecipient = 'cs@tamuu.id';
+        const mailtoSubject = encodeURIComponent(`Contact: ${formData.subject} - from ${formData.fullName}`);
+        const mailtoBody = encodeURIComponent(
+            `Name: ${formData.fullName}\n` +
+            `Email: ${formData.email}\n` +
+            `Subject: ${formData.subject}\n\n` +
+            `Message:\n${formData.message}`
+        );
+
+        const mailtoUrl = `mailto:${mailtoRecipient}?subject=${mailtoSubject}&body=${mailtoBody}`;
+
+        // Trigger email client
+        window.location.href = mailtoUrl;
+
         setIsSubmitted(true);
         setTimeout(() => setIsSubmitted(false), 5000);
     };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
     return (
         <div className="min-h-screen bg-slate-50 pt-24 pb-20 px-4">
             <div className="max-w-6xl mx-auto">
@@ -105,17 +132,38 @@ export const ContactPage: React.FC = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
                                         <label className="text-xs font-black text-white/40 uppercase tracking-widest ml-4">Full Name</label>
-                                        <input required type="text" className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all" placeholder="John Doe" />
+                                        <input
+                                            required
+                                            type="text"
+                                            name="fullName"
+                                            value={formData.fullName}
+                                            onChange={handleInputChange}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                                            placeholder="John Doe"
+                                        />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-xs font-black text-white/40 uppercase tracking-widest ml-4">Email Address</label>
-                                        <input required type="email" className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all" placeholder="john@example.com" />
+                                        <input
+                                            required
+                                            type="email"
+                                            name="email"
+                                            value={formData.email}
+                                            onChange={handleInputChange}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                                            placeholder="john@example.com"
+                                        />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
                                     <label className="text-xs font-black text-white/40 uppercase tracking-widest ml-4">Subject</label>
-                                    <select className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer">
+                                    <select
+                                        name="subject"
+                                        value={formData.subject}
+                                        onChange={handleInputChange}
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
+                                    >
                                         <option className="bg-slate-950">General Inquiry</option>
                                         <option className="bg-slate-950">Partnership</option>
                                         <option className="bg-slate-950">Technical Support</option>
@@ -125,7 +173,15 @@ export const ContactPage: React.FC = () => {
 
                                 <div className="space-y-2">
                                     <label className="text-xs font-black text-white/40 uppercase tracking-widest ml-4">Message</label>
-                                    <textarea required rows={4} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all resize-none" placeholder="How can we help you?" />
+                                    <textarea
+                                        required
+                                        name="message"
+                                        value={formData.message}
+                                        onChange={handleInputChange}
+                                        rows={4}
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all resize-none"
+                                        placeholder="How can we help you?"
+                                    />
                                 </div>
 
                                 <button type="submit" className="w-full bg-white text-slate-950 font-black py-5 rounded-2xl flex items-center justify-center gap-3 hover:bg-slate-50 transition-all shadow-xl group uppercase tracking-widest text-sm">
