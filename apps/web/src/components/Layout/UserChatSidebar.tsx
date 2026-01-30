@@ -511,7 +511,7 @@ export const UserChatSidebar: React.FC = () => {
             >
                 <motion.button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="bg-blue-600 text-white rounded-full p-4 shadow-2xl hover:shadow-3xl transition-all duration-300 group"
+                    className="bg-blue-600 text-white rounded-full p-2 shadow-2xl hover:shadow-3xl transition-all duration-300 group"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                     aria-label="Open AI Assistant"
@@ -537,11 +537,11 @@ export const UserChatSidebar: React.FC = () => {
                                 transition={{ duration: 0.2 }}
                                 className="relative"
                             >
-                                <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center">
+                                <div className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center">
                                     <img
                                         src="/images/linda.png"
                                         alt="Linda"
-                                        className="w-[110%] h-[110%] object-cover transform scale-x-[-1] translate-y-1"
+                                        className="w-[125%] h-[125%] object-cover transform scale-x-[-1] translate-y-1.5"
                                     />
                                 </div>
                                 <motion.div
@@ -571,11 +571,11 @@ export const UserChatSidebar: React.FC = () => {
                             <div className="bg-blue-600 text-white p-4 rounded-t-3xl border-b border-white/10">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-3">
-                                        <div className="w-10 h-10 rounded-full overflow-hidden shadow-md flex items-center justify-center">
+                                        <div className="w-12 h-12 rounded-full overflow-hidden shadow-md flex items-center justify-center">
                                             <img
                                                 src="/images/linda.png"
                                                 alt="Linda"
-                                                className="w-[110%] h-[110%] object-cover translate-y-1"
+                                                className="w-[120%] h-[120%] object-cover translate-y-1.5"
                                             />
                                         </div>
                                         <div>
