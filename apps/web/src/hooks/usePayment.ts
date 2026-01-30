@@ -18,7 +18,7 @@ export const usePayment = () => {
         }
 
         // Dynamically load Snap Script if not present
-        if (!window.snap) {
+        if (!(window as any).snap) {
             try {
                 const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY;
                 if (!clientKey) {
@@ -38,7 +38,7 @@ export const usePayment = () => {
                 });
             } catch (err) {
                 console.error('[usePayment] Failed to load Snap:', err);
-                 showModal({
+                showModal({
                     title: 'Konfigurasi Error',
                     message: 'Sistem pembayaran tidak dapat dimuat. Hubungi admin.',
                     type: 'error'
