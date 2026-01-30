@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Mail, MapPin, Send, Instagram, Twitter, MessageSquare, CheckCircle2 } from 'lucide-react';
 
 export const ContactPage: React.FC = () => {
+    const [isSubmitted, setIsSubmitted] = React.useState(false);
     const [formData, setFormData] = React.useState({
         fullName: '',
         email: '',
