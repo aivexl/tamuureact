@@ -542,6 +542,12 @@ export const UserChatSidebar: React.FC = () => {
                                         src="/images/linda.png"
                                         alt="Linda"
                                         className="w-[125%] h-[125%] object-cover transform scale-x-[-1] translate-y-1.5"
+                                        style={{
+                                            imageRendering: 'high-quality',
+                                            backfaceVisibility: 'hidden',
+                                            WebkitBackfaceVisibility: 'hidden',
+                                            willChange: 'transform'
+                                        }}
                                     />
                                 </div>
                                 <motion.div
@@ -576,6 +582,12 @@ export const UserChatSidebar: React.FC = () => {
                                                 src="/images/linda.png"
                                                 alt="Linda"
                                                 className="w-[120%] h-[120%] object-cover translate-y-1.5"
+                                                style={{
+                                                    imageRendering: 'high-quality',
+                                                    backfaceVisibility: 'hidden',
+                                                    WebkitBackfaceVisibility: 'hidden',
+                                                    willChange: 'transform'
+                                                }}
                                             />
                                         </div>
                                         <div>
