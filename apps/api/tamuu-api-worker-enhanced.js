@@ -579,28 +579,107 @@ CONTEXT:
                 }
             }
 
-            // BILLING: Create Invoice
-            if (path === '/api/billing/create' && method === 'POST') {
+            // BILLING: Get Midtrans Token (Secure Implementation)
+            // Replaces /api/billing/create with server-side pricing and Midtrans integration
+            if (path === '/api/billing/midtrans/token' && method === 'POST') {
                 try {
-                    const { userId, tier, amount, email } = await request.json();
-                    if (!userId || !tier || !amount || !email) {
+                    const { userId, tier, email, name } = await request.json();
+                    if (!userId || !tier || !email) {
                         return json({ error: 'Missing required fields' }, { ...corsHeaders, status: 400 });
                     }
 
-                    // Create Xendit invoice (pseudo-implementation)
-                    const invoiceId = `INV-${Date.now()}`;
-                    const result = await env.DB.prepare(
-                        'INSERT INTO billing_transactions (user_id, tier, amount, status, external_id, created_at) VALUES (?, ?, ?, ?, ?, ?)'
-                    ).bind(userId, tier, amount, 'PENDING', invoiceId, new Date().toISOString()).run();
+                    // 1. Server-Side Price Validation (Security Fix)
+                    const TIER_PRICES = {
+                        'pro': 99000,
+                        'ultimate': 149000,
+                        'elite': 199000,
+                        'vip': 99000, // Legacy support
+                        'platinum': 149000,
+                        'vvip': 199000
+                    };
 
+                    const normalizedTier = tier.toLowerCase();
+                    const amount = TIER_PRICES[normalizedTier];
+
+                    if (!amount) {
+                         return json({ error: 'Invalid tier selected' }, { ...corsHeaders, status: 400 });
+                    }
+
+                    // 2. Create Order ID
+                    const orderId = `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+                    // 3. Insert Pending Transaction
+                    // Note: 'payment_channel' column assumed to exist based on legacy code. If not, this might fail, so we'll try to handle that.
+                    try {
+                        await env.DB.prepare(
+                            'INSERT INTO billing_transactions (user_id, tier, amount, status, external_id, created_at, payment_channel) VALUES (?, ?, ?, ?, ?, ?, ?)'
+                        ).bind(userId, normalizedTier, amount, 'PENDING', orderId, new Date().toISOString(), 'midtrans').run();
+                    } catch (dbErr) {
+                         // Fallback if payment_channel column is missing
+                         await env.DB.prepare(
+                            'INSERT INTO billing_transactions (user_id, tier, amount, status, external_id, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+                        ).bind(userId, normalizedTier, amount, 'PENDING', orderId, new Date().toISOString()).run();
+                    }
+
+                    // 4. Call Midtrans Snap API
+                    const serverKey = env.MIDTRANS_SERVER_KEY;
+
+                    // SECURITY: If key is missing, DO NOT return a fake token in production.
+                    // However, to prevent the app from crashing during this audit if the user hasn't set it yet:
+                    if (!serverKey) {
+                        console.error('[Billing] Missing MIDTRANS_SERVER_KEY');
+                        return json({
+                            error: 'System Configuration Error: Midtrans Server Key is missing.'
+                        }, { ...corsHeaders, status: 500 });
+                    }
+
+                    const authString = btoa(serverKey + ':');
+                    const isProduction = env.ENVIRONMENT === 'production';
+                    const midtransUrl = isProduction
+                        ? 'https://app.midtrans.com/snap/v1/transactions'
+                        : 'https://app.sandbox.midtrans.com/snap/v1/transactions';
+
+                    const snapResponse = await fetch(midtransUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'Authorization': `Basic ${authString}`
+                        },
+                        body: JSON.stringify({
+                            transaction_details: {
+                                order_id: orderId,
+                                gross_amount: amount
+                            },
+                            customer_details: {
+                                first_name: name || 'User',
+                                email: email
+                            },
+                            item_details: [{
+                                id: normalizedTier,
+                                price: amount,
+                                quantity: 1,
+                                name: `Tamuu ${normalizedTier.toUpperCase()} Package`
+                            }]
+                        })
+                    });
+
+                    if (!snapResponse.ok) {
+                        const errorText = await snapResponse.text();
+                        console.error('[Billing] Midtrans Error:', errorText);
+                        throw new Error(`Midtrans API Error: ${snapResponse.status}`);
+                    }
+
+                    const snapData = await snapResponse.json();
                     return json({
-                        success: true,
-                        invoiceId,
-                        paymentUrl: `https://xendit.co/invoices/${invoiceId}`
+                        token: snapData.token,
+                        redirect_url: snapData.redirect_url,
+                        orderId: orderId
                     }, corsHeaders);
+
                 } catch (err) {
-                    console.error('[Billing] Create invoice error:', err);
-                    return json({ error: 'Failed to create invoice' }, { ...corsHeaders, status: 500 });
+                    console.error('[Billing] Token generation error:', err);
+                    return json({ error: err.message || 'Failed to generate payment token' }, { ...corsHeaders, status: 500 });
                 }
             }
 

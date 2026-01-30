@@ -5,6 +5,7 @@
  */
 
 import { TamuuAIEngine } from './ai-system-v8-enhanced.js';
+import { InputSanitizer } from './input-sanitizer.js';
 
 /**
  * Admin Chat Handler - Enterprise Grade
@@ -97,34 +98,18 @@ export class AdminChatHandler {
     }
 
     /**
-     * Validate input with enterprise security standards
+     * Validate input with enterprise security standards (Standardized)
      */
     validateInput(userId, message) {
-        if (!userId || typeof userId !== 'string' || userId.length < 1) {
-            return false;
-        }
+        // Use central InputSanitizer
+        const userCheck = InputSanitizer.sanitizeUserId(userId);
+        if (!userCheck.isSafe) return false;
 
-        if (!message || typeof message !== 'string' || message.length < 1) {
-            return false;
-        }
+        const messageCheck = InputSanitizer.sanitizeChatMessage(message);
+        if (!messageCheck.isSafe) return false;
 
-        if (message.length > this.config.maxMessageLength) {
-            return false;
-        }
-
-        // XSS prevention
-        const dangerousPatterns = [
-            /<script[^>]*>.*?<\/script>/gi,
-            /javascript:/gi,
-            /on\w+\s*=/gi,
-            /<iframe[^>]*>.*?<\/iframe>/gi
-        ];
-
-        for (const pattern of dangerousPatterns) {
-            if (pattern.test(message)) {
-                return false;
-            }
-        }
+        // Additional length check from config
+        if (message.length > this.config.maxMessageLength) return false;
 
         return true;
     }
