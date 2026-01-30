@@ -20,7 +20,6 @@
 
 import { v9Tools } from './v9-tools.js';
 
-// Module-level cache for knowledge base (shared across requests in same worker isolate)
 let GLOBAL_KNOWLEDGE_CACHE = null;
 
 class TamuuAIEngine {
