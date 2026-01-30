@@ -514,7 +514,9 @@ export const UserChatSidebar: React.FC = () => {
                     className="bg-blue-600 text-white rounded-full p-4 shadow-2xl hover:shadow-3xl transition-all duration-300 group"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
+                    aria-label="Open AI Assistant"
                 >
+                    <span className="sr-only">Open AI Assistant</span>
                     <AnimatePresence mode="wait">
                         {isOpen ? (
                             <motion.div
@@ -583,6 +585,7 @@ export const UserChatSidebar: React.FC = () => {
                                             onClick={() => setShowSettings(!showSettings)}
                                             className="p-2 hover:bg-white/20 rounded-full transition-colors"
                                             title="Settings"
+                                            aria-label="Settings"
                                         >
                                             <Settings className="w-4 h-4" />
                                         </button>
@@ -590,6 +593,7 @@ export const UserChatSidebar: React.FC = () => {
                                             onClick={() => setIsMinimized(!isMinimized)}
                                             className="p-2 hover:bg-white/20 rounded-full transition-colors"
                                             title={isMinimized ? 'Maximize' : 'Minimize'}
+                                            aria-label={isMinimized ? 'Maximize chat' : 'Minimize chat'}
                                         >
                                             {isMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
                                         </button>
@@ -597,6 +601,7 @@ export const UserChatSidebar: React.FC = () => {
                                             onClick={() => setIsOpen(false)}
                                             className="p-2 hover:bg-white/20 rounded-full transition-colors"
                                             title="Close"
+                                            aria-label="Close chat"
                                         >
                                             <X className="w-4 h-4" />
                                         </button>
@@ -653,6 +658,7 @@ export const UserChatSidebar: React.FC = () => {
                                                 onClick={() => setIsMuted(!isMuted)}
                                                 className={`p-2 rounded-full transition-colors ${isMuted ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
                                                     }`}
+                                                aria-label={isMuted ? 'Unmute sound' : 'Mute sound'}
                                             >
                                                 {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                                             </button>
@@ -720,6 +726,7 @@ export const UserChatSidebar: React.FC = () => {
                                             className="bg-blue-600 text-white p-3 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all"
                                             whileHover={{ scale: 1.05 }}
                                             whileTap={{ scale: 0.95 }}
+                                            aria-label="Send message"
                                         >
                                             {isLoading ? (
                                                 <Loader2 className="w-5 h-5 animate-spin" />

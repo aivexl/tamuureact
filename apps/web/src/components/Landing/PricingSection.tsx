@@ -117,7 +117,7 @@ const PricingSection: React.FC = () => {
                         <h3 className="text-2xl font-black mb-2 tracking-tight">{plan.name}</h3>
                         <div className="flex flex-col mb-8">
                             {plan.originalPrice && (
-                                <span className="text-sm font-medium opacity-50 line-through">
+                                <span className="text-sm font-medium text-slate-500 line-through">
                                     Rp {formatPrice(plan.originalPrice)}
                                 </span>
                             )}

@@ -3,14 +3,19 @@
 
 <head>
   <!-- Google Tag Manager -->
-  <script>(function (w, d, s, l, i) {
-      w[l] = w[l] || []; w[l].push({
-        'gtm.start':
-          new Date().getTime(), event: 'gtm.js'
-      }); var f = d.getElementsByTagName(s)[0],
-        j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
-          'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
-    })(window, document, 'script', 'dataLayer', 'GTM-P984Q87P');</script>
+  <script>
+    // Defer GTM to prioritize LCP
+    setTimeout(function () {
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || []; w[l].push({
+          'gtm.start':
+            new Date().getTime(), event: 'gtm.js'
+        }); var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-P984Q87P');
+    }, 2500); // 2.5s delay
+  </script>
   <!-- End Google Tag Manager -->
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
@@ -18,10 +23,23 @@
   <title>Tamuu - Platform Undangan Digital Premium & Eksklusif</title>
   <meta name="description"
     content="Tingkatkan momen spesial Anda dengan undangan digital premium dari Tamuu. Desain eksklusif, fitur RSVP modern, dan kemudahan bagi para pasangan pengantin." />
+
+  <!-- Preload LCP Image -->
+  <link rel="preload" as="image" href="/images/hero-bride.webp" fetchpriority="high">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Preload Fonts to prevent blocking/FOIT -->
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Josefin+Sans:wght@300;400;500;600;700&family=Poiret+One&display=swap">
+
   <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Josefin+Sans:wght@300;400;500;600;700&family=Poiret+One&display=swap">
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Josefin+Sans:wght@300;400;500;600;700&family=Poiret+One&display=swap"
+    media="print" onload="this.media='all'">
+  <noscript>
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Josefin+Sans:wght@300;400;500;600;700&family=Poiret+One&display=swap">
+  </noscript>
   <style>
     /* Premium Loader - CSS Native Implementation */
     @keyframes dot-pulse {
