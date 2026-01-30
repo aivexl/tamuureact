@@ -68,41 +68,8 @@ const App: React.FC = () => {
     // Memoize domain check to avoid recalculation
     const isAppDomain = useMemo(() => getIsAppDomain(), []);
 
-    useEffect(() => {
-        // Optimization: Detect if we are on landing/store or in the heavy app
-        // We include /v, /preview, /welcome, /user, and basically anything that isn't the root landing/store
-        const path = window.location.pathname;
-        const isAppPath = path.startsWith('/editor') ||
-            path.startsWith('/admin') ||
-            path.startsWith('/onboarding') ||
-            path.startsWith('/inactive') ||
-            path.startsWith('/tools') ||
-            path.startsWith('/guests') ||
-            path.startsWith('/profile') ||
-            path.startsWith('/user') ||
-            path.startsWith('/preview') ||
-            path.startsWith('/v') ||
-            path.startsWith('/welcome') ||
-            path.startsWith('/display') ||
-            // Catch-all for slug routes: if it's not root, it's likely an invitation
-            (path !== '/' && path !== '/login' && path !== '/signup' && path !== '/invitations');
-
-        // Only inject dynamic stylesheet if we are in the heavy app (editor/admin) or any invitation/preview route
-        // Public pages (landing/store) now use the static stylesheet in index.html for 100/100 performance
-        if (isAppPath) {
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            // CTO FIX: Only load CORE_FONTS globally to avoid massive URL overhead
-            // Individual fonts for designs are loaded via SmartFontInjector
-            import('./lib/fonts').then(({ CORE_FONTS, getGoogleFontsUrl }) => {
-                link.href = getGoogleFontsUrl(CORE_FONTS);
-                document.head.appendChild(link);
-            });
-            return () => {
-                if (link.parentNode) document.head.removeChild(link);
-            };
-        }
-    }, []);
+    // Optimization: Fonts are now handled via index.html with display=swap for best performance (PSI 100).
+    // The previous dynamic injection logic was redundant as index.html already includes CORE_FONTS.
 
     return (
         <BrowserRouter>
