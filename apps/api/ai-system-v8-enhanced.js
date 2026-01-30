@@ -21,7 +21,7 @@
 import { v9Tools } from './v9-tools.js';
 
 // Module-level cache for knowledge base (shared across requests in same worker isolate)
-let cachedKnowledgeBase = null;
+let GLOBAL_KNOWLEDGE_CACHE = null;
 
 class TamuuAIEngine {
     constructor(env) {
@@ -555,9 +555,9 @@ class TamuuAIEngine {
     async loadKnowledgeBase(forceRefresh = false) {
         try {
             // Check in-memory cache first
-            if (cachedKnowledgeBase && !forceRefresh) {
+            if (GLOBAL_KNOWLEDGE_CACHE && !forceRefresh) {
                 console.log('[Knowledge Base] Returning cached Knowledge Base');
-                return cachedKnowledgeBase;
+                return GLOBAL_KNOWLEDGE_CACHE;
             }
 
             console.log('[Knowledge Base] Loading from local files...');
@@ -624,13 +624,13 @@ class TamuuAIEngine {
             console.log('[Knowledge Base] Extracted Package Info:', JSON.stringify(packageInfo, null, 2));
 
             // Store in cache
-            cachedKnowledgeBase = {
+            GLOBAL_KNOWLEDGE_CACHE = {
                 userKnowledgeBase: userKbText,
                 tamuuKnowledgeBase: tamuuKbText,
                 packageInfo: packageInfo
             };
 
-            return cachedKnowledgeBase;
+            return GLOBAL_KNOWLEDGE_CACHE;
         } catch (error) {
             console.error('[Knowledge Base] Failed to load:', error.message);
             console.error('[Knowledge Base] Error Stack:', error.stack);
