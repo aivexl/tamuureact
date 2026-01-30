@@ -306,9 +306,9 @@ export const UserChatSidebar: React.FC = () => {
         const name = userData?.name || 'Kak';
 
         const tierMessages: Record<string, string> = {
-            premium: `Selamat datang ${name}! 🏆 Saya Assistant premium Tamuu dengan prioritas tinggi. Siap membantu 24/7 dengan response time cepat.`,
-            business: `Halo ${name}! 💼 Saya Assistant bisnis Tamuu. Siap membantu dengan solusi enterprise untuk kebutuhan undangan digital Anda.`,
-            free: `Halo ${name}! 😊 Saya Assistant Tamuu. Dengan senang hati membantu membuat undangan digital yang menawan untuk acara spesial Anda.`
+            premium: `Selamat datang ${name}! 🏆 Saya Linda, assistant premium Tamuu dengan prioritas tinggi. Siap membantu 24/7 dengan response time cepat.`,
+            business: `Halo ${name}! 💼 Saya Linda, assistant bisnis Tamuu. Siap membantu dengan solusi enterprise untuk kebutuhan undangan digital Anda.`,
+            free: `Halo ${name}! 😊 Saya Linda, assistant Tamuu. Dengan senang hati membantu membuat undangan digital yang menawan untuk acara spesial Anda.`
         };
 
         return tierMessages[tier] || tierMessages.free;
@@ -537,9 +537,15 @@ export const UserChatSidebar: React.FC = () => {
                                 transition={{ duration: 0.2 }}
                                 className="relative"
                             >
-                                <Bot className="w-6 h-6" />
+                                <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/20 shadow-inner flex items-center justify-center bg-blue-500/50">
+                                    <img
+                                        src="/images/linda.png"
+                                        alt="Linda"
+                                        className="w-full h-full object-cover transform scale-x-[-1]"
+                                    />
+                                </div>
                                 <motion.div
-                                    className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full"
+                                    className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-blue-600"
                                     animate={{ scale: [1, 1.2, 1] }}
                                     transition={{ repeat: Infinity, duration: 2 }}
                                 />
@@ -565,14 +571,15 @@ export const UserChatSidebar: React.FC = () => {
                             <div className="bg-blue-600 text-white p-4 rounded-t-3xl border-b border-white/10">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-3">
-                                        <motion.div
-                                            animate={{ rotate: [0, 360] }}
-                                            transition={{ repeat: Infinity, duration: 4, ease: 'linear' }}
-                                        >
-                                            <Bot className="w-8 h-8" />
-                                        </motion.div>
+                                        <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/20 shadow-md">
+                                            <img
+                                                src="/images/linda.png"
+                                                alt="Linda"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
                                         <div>
-                                            <h3 className="font-semibold text-lg">Tamuu Assistant</h3>
+                                            <h3 className="font-semibold text-lg">Linda</h3>
                                             <div className="flex items-center space-x-2">
                                                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                                                 <span className="text-xs opacity-90">Online</span>
@@ -712,7 +719,7 @@ export const UserChatSidebar: React.FC = () => {
                                                 value={input}
                                                 onChange={(e) => setInput(e.target.value)}
                                                 onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                                                placeholder="Tulis pesan untuk Tamuu Assistant... (Sapa 'Halo' untuk mulai)"
+                                                placeholder="Tulis pesan untuk Linda... (Sapa 'Halo' untuk mulai)"
                                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                                 disabled={isLoading}
                                             />
