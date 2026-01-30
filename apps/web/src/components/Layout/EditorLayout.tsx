@@ -296,6 +296,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                 onPreview={handlePreview}
                 onSave={handleSave}
                 onPublish={handlePublish}
+                editorType={isTemplate ? 'template' : (isDisplayDesign ? 'display_design' : 'invitation')}
             />
 
             {/* Main Content Area */}
