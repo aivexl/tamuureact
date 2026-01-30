@@ -27,16 +27,23 @@ export const PremiumLoader: React.FC<PremiumLoaderProps> = ({
     color = 'white',
     labelColor
 }) => {
-    // Diagonal wave logic for 4x4 grid
+    // S-Pattern / Snake sequence for a 4x4 grid (16 dots)
+    const snakeIndices = [0, 1, 2, 3, 7, 11, 15, 14, 13, 12, 8, 4, 5, 6, 10, 9];
+
+    // Map index to its position in the snake sequence (0-15)
+    const sequenceMap = new Array(16).fill(0);
+    snakeIndices.forEach((gridIndex, seqIndex) => {
+        sequenceMap[gridIndex] = seqIndex;
+    });
+
     const blockVariants = {
-        animate: (i: number) => ({
-            opacity: [0.15, 1, 0.15],
-            scale: [0.85, 1, 0.85],
+        animate: (seqIndex: number) => ({
+            opacity: [0.1, 1, 0.1],
             transition: {
-                duration: 2,
+                duration: 1.5,
                 repeat: Infinity,
-                delay: i * 0.12,
-                ease: [0.45, 0, 0.55, 1]
+                delay: seqIndex * 0.08,
+                ease: "linear"
             }
         })
     };
@@ -49,52 +56,28 @@ export const PremiumLoader: React.FC<PremiumLoaderProps> = ({
             ${variant === 'full' ? 'fixed inset-0 z-[9999] bg-[#000000] flex flex-col items-center justify-center' : 'inline-flex items-center justify-center'}
             select-none overflow-hidden ${className}
         `}>
-            {/* Volumetric Background Light (Only for full view) */}
-            {variant === 'full' && (
-                <m.div
-                    animate={{
-                        opacity: [0.1, 0.2, 0.1],
-                        scale: [1, 1.1, 1]
-                    }}
-                    transition={{
-                        duration: 5,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                    }}
-                    className="absolute w-[600px] h-[600px] bg-white/[0.03] blur-[100px] rounded-full pointer-events-none"
-                    style={{ backgroundColor: color === 'white' ? undefined : `${color}1A` }}
-                />
-            )}
-
             <div className={`flex flex-col items-center ${isInline ? (isSm ? 'gap-1.5' : 'gap-3') : 'gap-6'} relative`}>
-                <div className={`grid grid-cols-4 ${isSm ? 'gap-[1.5px]' : (isInline ? 'gap-2' : 'gap-2.5')} ${isSm ? 'p-0.5' : 'p-1'}`}>
-                    {[...Array(16)].map((_, i) => {
-                        const x = i % 4;
-                        const y = Math.floor(i / 4);
-                        return (
-                            <m.div
-                                key={i}
-                                custom={x + y}
-                                variants={blockVariants}
-                                animate="animate"
-                                style={{
-                                    backgroundColor: color,
-                                    boxShadow: color === 'white' ? '0 0 12px rgba(255,255,255,0.15)' : `0 0 12px ${color}4D`
-                                }}
-                                className={`
-                                    ${isSm ? 'w-[2px] h-[2px]' : (isInline ? 'w-[4px] h-[4px]' : 'w-[6px] h-[6px]')}
-                                    rounded-[1.5px]
-                                `}
-                            />
-                        );
-                    })}
+                <div className={`grid grid-cols-4 ${isSm ? 'gap-[1.5px]' : (isInline ? 'gap-1' : 'gap-1.5')} ${isSm ? 'p-0.5' : 'p-1'}`}>
+                    {[...Array(16)].map((_, i) => (
+                        <m.div
+                            key={i}
+                            custom={sequenceMap[i]}
+                            variants={blockVariants}
+                            animate="animate"
+                            style={{ backgroundColor: color }}
+                            className={`
+                                ${isSm ? 'w-[2px] h-[2px]' : (isInline ? 'w-[3px] h-[3px]' : 'w-[4px] h-[4px]')}
+                                rounded-none
+                            `}
+                        />
+                    ))}
                 </div>
 
                 {showLabel && (
                     <m.p
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className={`font-mono uppercase tracking-[0.3em] ${isSm ? 'text-[7px]' : (isInline ? 'text-[8px]' : 'text-[10px] text-white/40')}`}
+                        className={`font-mono uppercase tracking-[0.3em] ${isSm ? 'text-[7px]' : (isInline ? 'text-[8px]' : 'text-[9px] text-white/30')}`}
                         style={{ color: labelColor || (isInline ? color : undefined) }}
                     >
                         {label}
