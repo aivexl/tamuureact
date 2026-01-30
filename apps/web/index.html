@@ -31,7 +31,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <!-- Preload Fonts to prevent blocking/FOIT -->
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Josefin+Sans:wght@300;400;500;600;700&family=Poiret+One&display=swap">
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Josefin+Sans:wght@300;400;500;600;700&family=Poiret+One&display=swap">
 
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Josefin+Sans:wght@300;400;500;600;700&family=Poiret+One&display=swap"
@@ -85,70 +86,105 @@
     }
 
     /* Snake Sequence Delays (matching PremiumLoader.tsx snakeIndices) */
-    /* [0, 1, 2, 3, 7, 11, 15, 14, 13, 12, 8, 4, 5, 6, 10, 9] */
+    /* snakeIndices = [0, 1, 2, 3, 7, 11, 15, 14, 13, 12, 8, 4, 5, 6, 10, 9] */
+    /* This maps each grid position to its order in the snake sequence */
+    /* Grid position 0 is sequence 0, position 1 is sequence 1, etc. */
+    /* Grid position 4 is sequence 11, position 5 is sequence 12, etc. */
     .dot-0 {
       animation-delay: 0.00s;
     }
+
+    /* seq 0 */
 
     .dot-1 {
       animation-delay: 0.08s;
     }
 
+    /* seq 1 */
+
     .dot-2 {
       animation-delay: 0.16s;
     }
+
+    /* seq 2 */
 
     .dot-3 {
       animation-delay: 0.24s;
     }
 
-    .dot-7 {
-      animation-delay: 0.32s;
-    }
-
-    .dot-11 {
-      animation-delay: 0.40s;
-    }
-
-    .dot-15 {
-      animation-delay: 0.48s;
-    }
-
-    .dot-14 {
-      animation-delay: 0.56s;
-    }
-
-    .dot-13 {
-      animation-delay: 0.64s;
-    }
-
-    .dot-12 {
-      animation-delay: 0.72s;
-    }
-
-    .dot-8 {
-      animation-delay: 0.80s;
-    }
+    /* seq 3 */
 
     .dot-4 {
       animation-delay: 0.88s;
     }
 
+    /* seq 11 */
+
     .dot-5 {
       animation-delay: 0.96s;
     }
+
+    /* seq 12 */
 
     .dot-6 {
       animation-delay: 1.04s;
     }
 
-    .dot-10 {
-      animation-delay: 1.12s;
+    /* seq 13 */
+
+    .dot-7 {
+      animation-delay: 0.32s;
     }
+
+    /* seq 4 */
+
+    .dot-8 {
+      animation-delay: 0.80s;
+    }
+
+    /* seq 10 */
 
     .dot-9 {
       animation-delay: 1.20s;
     }
+
+    /* seq 15 */
+
+    .dot-10 {
+      animation-delay: 1.12s;
+    }
+
+    /* seq 14 */
+
+    .dot-11 {
+      animation-delay: 0.40s;
+    }
+
+    /* seq 5 */
+
+    .dot-12 {
+      animation-delay: 0.72s;
+    }
+
+    /* seq 9 */
+
+    .dot-13 {
+      animation-delay: 0.64s;
+    }
+
+    /* seq 8 */
+
+    .dot-14 {
+      animation-delay: 0.56s;
+    }
+
+    /* seq 7 */
+
+    .dot-15 {
+      animation-delay: 0.48s;
+    }
+
+    /* seq 6 */
   </style>
 </head>
 
