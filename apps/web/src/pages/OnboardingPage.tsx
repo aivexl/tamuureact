@@ -13,6 +13,8 @@ import { invitations } from '../lib/api';
 import { useStore } from '../store/useStore';
 import { useProfileStore } from '../store/useProfileStore';
 import { PremiumLoader } from '../components/ui/PremiumLoader';
+import { SUPPORTED_BANKS } from '../lib/banks';
+import { BankCard } from '../components/Elements/BankCard';
 
 // ============================================
 // DATA & TYPES
@@ -581,13 +583,44 @@ export const OnboardingPage: React.FC = () => {
                                 <p className="text-slate-500">Kakak mau cantumkan nomor rekening untuk kado digital?</p>
                             </div>
 
+                            {/* Preview Card */}
+                            <div className="flex flex-col items-center gap-4 mb-4">
+                                <div className="w-full max-w-[320px] mx-auto perspective-1000">
+                                    <BankCard
+                                        bankName={bankName}
+                                        accountNumber={accountNumber}
+                                        accountHolder={accountHolder}
+                                        isPreview={true}
+                                    />
+                                </div>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Preview Kartu Digitalmu</p>
+                            </div>
+
                             {/* Bank 1 */}
-                            <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-50 space-y-3 text-left">
+                            <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-50 space-y-4 text-left">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Landmark className="w-4 h-4 text-amber-500" />
-                                    <span className="text-xs font-black uppercase tracking-widest text-slate-600">Rekening 1</span>
+                                    <span className="text-xs font-black uppercase tracking-widest text-slate-600">Rekening Utama</span>
                                 </div>
-                                <input type="text" value={bankName} onChange={e => setBankName(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Nama Bank (BCA, Mandiri, dll)" />
+                                <div className="relative">
+                                    <select
+                                        value={bankName}
+                                        onChange={e => setBankName(e.target.value)}
+                                        className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 appearance-none cursor-pointer"
+                                    >
+                                        <option value="">Pilih Bank...</option>
+                                        {SUPPORTED_BANKS.filter(b => b.id !== 'custom').map(bank => (
+                                            <option key={bank.id} value={bank.name}>{bank.name}</option>
+                                        ))}
+                                        <option value="Custom">Lainnya (Custom)</option>
+                                    </select>
+                                    <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none opacity-20">
+                                        <Plus className="w-4 h-4 rotate-45" />
+                                    </div>
+                                </div>
+                                {bankName === 'Custom' && (
+                                    <input type="text" placeholder="Nama Bank Manual" className="w-full px-5 py-3 bg-teal-500/5 border border-teal-500/10 rounded-xl outline-none font-bold text-slate-900 text-sm" onChange={e => setBankName(e.target.value)} />
+                                )}
                                 <input type="text" value={accountNumber} onChange={e => setAccountNumber(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Nomor Rekening" />
                                 <input type="text" value={accountHolder} onChange={e => setAccountHolder(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Atas Nama" />
                             </div>
@@ -599,7 +632,7 @@ export const OnboardingPage: React.FC = () => {
                                     Tambah Rekening Kedua
                                 </button>
                             ) : (
-                                <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-50 space-y-3 text-left">
+                                <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-50 space-y-4 text-left">
                                     <div className="flex items-center justify-between mb-2">
                                         <div className="flex items-center gap-2">
                                             <Landmark className="w-4 h-4 text-blue-500" />
@@ -609,24 +642,57 @@ export const OnboardingPage: React.FC = () => {
                                             <X className="w-4 h-4" />
                                         </button>
                                     </div>
-                                    <input type="text" value={bank2Name} onChange={e => setBank2Name(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Nama Bank" />
+                                    <div className="relative">
+                                        <select
+                                            value={bank2Name}
+                                            onChange={e => setBank2Name(e.target.value)}
+                                            className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 appearance-none cursor-pointer"
+                                        >
+                                            <option value="">Pilih Bank...</option>
+                                            {SUPPORTED_BANKS.filter(b => b.id !== 'custom').map(bank => (
+                                                <option key={bank.id} value={bank.name}>{bank.name}</option>
+                                            ))}
+                                            <option value="Custom">Lainnya (Custom)</option>
+                                        </select>
+                                        <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none opacity-20">
+                                            <Plus className="w-4 h-4 rotate-45" />
+                                        </div>
+                                    </div>
+                                    {bank2Name === 'Custom' && (
+                                        <input type="text" placeholder="Nama Bank Manual" className="w-full px-5 py-3 bg-teal-500/5 border border-teal-500/10 rounded-xl outline-none font-bold text-slate-900 text-sm" onChange={e => setBank2Name(e.target.value)} />
+                                    )}
                                     <input type="text" value={bank2Number} onChange={e => setBank2Number(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Nomor Rekening" />
                                     <input type="text" value={bank2Holder} onChange={e => setBank2Holder(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Atas Nama" />
                                 </div>
                             )}
 
                             {/* E-Money */}
-                            <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-50 space-y-3 text-left">
+                            <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-50 space-y-4 text-left">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Smartphone className="w-4 h-4 text-green-500" />
                                     <span className="text-xs font-black uppercase tracking-widest text-slate-600">E-Wallet (Opsional)</span>
                                 </div>
-                                <input type="text" value={emoneyType} onChange={e => setEmoneyType(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Jenis (GoPay, OVO, DANA, dll)" />
+                                <div className="relative">
+                                    <select
+                                        value={emoneyType}
+                                        onChange={e => setEmoneyType(e.target.value)}
+                                        className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 appearance-none cursor-pointer"
+                                    >
+                                        <option value="">Pilih E-Wallet...</option>
+                                        {SUPPORTED_BANKS.filter(b => ['dana', 'ovo', 'gopay', 'shopeepay', 'linkaja'].includes(b.id)).map(bank => (
+                                            <option key={bank.id} value={bank.name}>{bank.name}</option>
+                                        ))}
+                                        <option value="Custom">Lainnya</option>
+                                    </select>
+                                    <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none opacity-20">
+                                        <Plus className="w-4 h-4 rotate-45" />
+                                    </div>
+                                </div>
                                 <input type="text" value={emoneyNumber} onChange={e => setEmoneyNumber(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Nomor E-Wallet" />
                             </div>
 
                             {/* Gift Address */}
-                            <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-50 space-y-3 text-left">
+                            <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-50 space-y-4 text-left">
                                 <div className="flex items-center gap-2 mb-2">
                                     <MapPin className="w-4 h-4 text-rose-500" />
                                     <span className="text-xs font-black uppercase tracking-widest text-slate-600">Alamat Pengiriman Kado (Opsional)</span>

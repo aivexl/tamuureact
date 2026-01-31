@@ -5,6 +5,7 @@ import { Layer, AnimationType, TextStyle, CountdownConfig, ButtonConfig, ShapeCo
 import { generateId } from '@/lib/utils';
 import { RSVP_VARIANTS, DEFAULT_RSVP_WISHES_CONFIG } from '@/lib/rsvp-variants';
 import { SUPPORTED_FONTS } from '@/lib/fonts';
+import { SUPPORTED_BANKS } from '@/lib/banks';
 
 import {
     AlignLeft, AlignCenter, AlignRight,
@@ -13,7 +14,7 @@ import {
     ChevronUp, ChevronDown, Copy,
     Eye, EyeOff, FlipHorizontal, FlipVertical,
     FlipHorizontal2, FlipVertical2,
-    Heart, ImageIcon, Layout, Layers,
+    Gift, Heart, ImageIcon, Layout, Layers,
     Shield, Anchor, UserCheck, Lock, Unlock, MailOpen, MapPin, MessageSquare,
     Maximize2, Monitor, MousePointer2, Move, MoveHorizontal,
     Palette, Plane, Settings2, Sliders,
@@ -2064,6 +2065,100 @@ export const PropertyPanel: React.FC = () => {
                         </SectionComponent>
                     )
                 }
+
+                {/* Digital Gift (Angpao) Settings */}
+                {layer.type === 'digital_gift' && (
+                    <SectionComponent title="Angpao Settings" icon={<Gift className="w-4 h-4 text-red-400" />}>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Title</label>
+                                <input
+                                    type="text"
+                                    value={layer.digitalGiftConfig?.title || 'Kado Digital'}
+                                    onChange={(e) => handleUpdate({ digitalGiftConfig: { ...layer.digitalGiftConfig!, title: e.target.value } })}
+                                    className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none text-white"
+                                />
+                            </div>
+                            <SelectInput
+                                label="Bank Name"
+                                value={layer.digitalGiftConfig?.bankName || ''}
+                                options={SUPPORTED_BANKS.map(bank => ({ value: bank.name, label: bank.name }))}
+                                onChange={(v) => handleUpdate({ digitalGiftConfig: { ...layer.digitalGiftConfig!, bankName: v } })}
+                            />
+                            <div>
+                                <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Account Number</label>
+                                <input
+                                    type="text"
+                                    value={layer.digitalGiftConfig?.accountNumber || ''}
+                                    onChange={(e) => handleUpdate({ digitalGiftConfig: { ...layer.digitalGiftConfig!, accountNumber: e.target.value } })}
+                                    className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none text-white"
+                                    placeholder="1234567890"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Account Holder</label>
+                                <input
+                                    type="text"
+                                    value={layer.digitalGiftConfig?.accountHolder || ''}
+                                    onChange={(e) => handleUpdate({ digitalGiftConfig: { ...layer.digitalGiftConfig!, accountHolder: e.target.value } })}
+                                    className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none text-white"
+                                    placeholder="John Doe"
+                                />
+                            </div>
+                            <SelectInput
+                                label="Theme"
+                                value={layer.digitalGiftConfig?.theme || 'gold'}
+                                options={[
+                                    { value: 'gold', label: 'Gold Premium' },
+                                    { value: 'silver', label: 'Silver Elegant' },
+                                    { value: 'glass', label: 'Glassmorphism' }
+                                ]}
+                                onChange={(v) => handleUpdate({ digitalGiftConfig: { ...layer.digitalGiftConfig!, theme: v as any } })}
+                            />
+                        </div>
+                    </SectionComponent>
+                )}
+
+                {/* Permissions & Visibility - Mandatory for Master Templates (Admin Only) */}
+                {isTemplate && (
+                    <SectionComponent title="Permissions & Visibility" icon={<Shield className="w-4 h-4 text-orange-400" />}>
+                        <div className="space-y-4">
+                            <p className="text-[10px] text-white/40 italic leading-relaxed">
+                                Control what the end-user can see and modify in their own editor.
+                            </p>
+
+                            <div className="space-y-3">
+                                {[
+                                    { key: 'isVisibleInUserEditor', label: 'Visible in User Editor' },
+                                    { key: 'canEditContent', label: 'Can Edit Content/Text' },
+                                    { key: 'canEditImage', label: 'Can Edit Image/Media' },
+                                    { key: 'canEditStyle', label: 'Can Edit Styling' },
+                                    { key: 'canEditPosition', label: 'Can Edit Position' },
+                                    { key: 'canDelete', label: 'Can User Delete' },
+                                ].map((perm) => (
+                                    <div key={perm.key} className="flex items-center justify-between">
+                                        <span className="text-[10px] text-white/70">{perm.label}</span>
+                                        <motion.button
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => handleUpdate({
+                                                permissions: {
+                                                    ...(layer.permissions || {}),
+                                                    [perm.key]: !(layer.permissions?.[perm.key as keyof LayerPermissions] ?? true)
+                                                }
+                                            })}
+                                            className={`w-10 h-5 rounded-full transition-colors ${(layer.permissions?.[perm.key as keyof LayerPermissions] ?? true) ? 'bg-orange-500' : 'bg-white/10'}`}
+                                        >
+                                            <motion.div
+                                                className="w-4 h-4 bg-white rounded-full shadow-sm"
+                                                animate={{ x: (layer.permissions?.[perm.key as keyof LayerPermissions] ?? true) ? 22 : 2 }}
+                                            />
+                                        </motion.button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </SectionComponent>
+                )}
 
                 {/* Flying Bird Config */}
                 {layer.type === 'flying_bird' && (

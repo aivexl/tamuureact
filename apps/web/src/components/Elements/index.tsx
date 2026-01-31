@@ -151,6 +151,8 @@ export const ParticlesElement: React.FC<{ layer: Layer, onContentLoad?: () => vo
 // ============================================
 // DIGITAL GIFT ELEMENT (Angpao)
 // ============================================
+import { BankCard } from './BankCard';
+
 export const DigitalGiftElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
     useEffect(() => {
         onContentLoad?.();
@@ -166,33 +168,45 @@ export const DigitalGiftElement: React.FC<{ layer: Layer, isEditor?: boolean, on
         theme: 'gold'
     };
 
+    const handleCopy = () => {
+        if (isEditor) return;
+        navigator.clipboard.writeText(config.accountNumber);
+        // We could add a toast notification here if available
+    };
+
     return (
-        <m.div
-            className="w-full h-full glass-panel p-4 flex flex-col items-center justify-center text-center gap-3 border border-premium-accent/20"
-            style={{ borderRadius: 20 }}
-            whileHover={!isEditor ? { scale: 1.02 } : {}}
+        <div
+            className="w-full h-full flex flex-col items-center justify-center p-2 sm:p-4"
         >
-            <div className="w-12 h-12 rounded-full bg-premium-accent/10 flex items-center justify-center mb-1">
-                <span className="text-2xl">🎁</span>
-            </div>
-            <h3 className="text-premium-accent font-bold text-sm tracking-wide uppercase">{config.title}</h3>
-            <p className="text-[10px] text-white/60 leading-relaxed max-w-[80%]">{config.description}</p>
+            <div className="w-full max-w-[400px] flex flex-col items-center gap-4 sm:gap-6">
+                <div className="text-center space-y-1 sm:space-y-2 mb-2 sm:mb-4">
+                    <h3 className="text-sm sm:text-lg font-black tracking-tight text-white uppercase drop-shadow-md">
+                        {config.title}
+                    </h3>
+                    <p className="text-[9px] sm:text-[11px] text-white/60 leading-relaxed font-medium">
+                        {config.description}
+                    </p>
+                </div>
 
-            <div className="w-full mt-2 p-3 rounded-xl bg-white/5 border border-white/10 flex flex-col gap-1">
-                <span className="text-[10px] text-white/40 font-mono tracking-tighter uppercase">{config.bankName}</span>
-                <span className="text-md font-bold text-white tracking-widest">{config.accountNumber}</span>
-                <span className="text-[10px] text-white/60">a.n {config.accountHolder}</span>
-            </div>
+                <BankCard
+                    bankName={config.bankName}
+                    accountNumber={config.accountNumber}
+                    accountHolder={config.accountHolder}
+                    isPreview={isEditor}
+                />
 
-            {!isEditor && (
-                <m.button
-                    whileTap={{ scale: 0.95 }}
-                    className="mt-2 text-[10px] bg-premium-accent text-black font-bold py-2 px-6 rounded-full uppercase tracking-widest shadow-lg shadow-premium-accent/20"
-                >
-                    {config.buttonText}
-                </m.button>
-            )}
-        </m.div>
+                {!isEditor && (
+                    <m.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={handleCopy}
+                        className="mt-2 text-[10px] sm:text-[12px] bg-white text-black font-black py-2.5 sm:py-3 px-8 sm:px-12 rounded-full uppercase tracking-[0.2em] shadow-xl hover:bg-opacity-90 transition-all border border-black/5"
+                    >
+                        {config.buttonText}
+                    </m.button>
+                )}
+            </div>
+        </div>
     );
 };
 

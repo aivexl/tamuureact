@@ -7,7 +7,7 @@ import {
     Heart, Square, Film, MapPin, Video, Sparkles, X,
     MessageSquare, Users, Circle, Triangle, Diamond, Star, Zap, Wind, Layout,
     Gift, Music, QrCode, Waves, Layers, Monitor, Share2, Sun, Hash, PlaySquare,
-    Component, Palette, Eye
+    Component, Palette, Eye, Shield, CreditCard
 } from 'lucide-react';
 
 const CANVAS_WIDTH = 414;
@@ -398,25 +398,6 @@ const elementConfigs: ElementConfig[] = [
         })
     },
     {
-        type: 'digital_gift',
-        icon: <Gift className="w-5 h-5" />,
-        label: 'Angpao',
-        color: 'hover:bg-red-500/10 hover:border-red-500/30',
-        createDefault: () => ({
-            width: 280,
-            height: 220,
-            digitalGiftConfig: {
-                title: 'Kado Digital',
-                description: 'Doa restu Anda adalah kado terindah...',
-                bankName: 'Bank Central Asia',
-                accountNumber: '1234567890',
-                accountHolder: 'John Doe',
-                buttonText: 'Salin Rekening',
-                theme: 'gold'
-            }
-        })
-    },
-    {
         type: 'music_player',
         icon: <Music className="w-5 h-5" />,
         label: 'Music',
@@ -614,6 +595,25 @@ const elementConfigs: ElementConfig[] = [
                 effect: 'confetti',
                 greetingStyle: 'cinematic',
                 duration: 5000
+            }
+        })
+    },
+    {
+        type: 'digital_gift',
+        icon: <CreditCard className="w-5 h-5" />,
+        label: 'Cards',
+        color: 'hover:bg-red-500/10 hover:border-red-500/30',
+        createDefault: () => ({
+            width: 280,
+            height: 220,
+            digitalGiftConfig: {
+                title: 'Kado Digital',
+                description: 'Doa restu Anda adalah kado terindah...',
+                bankName: 'Bank Central Asia',
+                accountNumber: '1234567890',
+                accountHolder: 'John Doe',
+                buttonText: 'Salin Rekening',
+                theme: 'gold'
             }
         })
     },
