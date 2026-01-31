@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
+import { useParams } from 'react-router-dom';
 import { Type, Image as ImageIcon, MapPin, Copy, Shield, Clock, Lock, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignStartVertical, AlignCenterVertical, AlignEndVertical, Plus, Minus, Palette, ChevronDown, Settings2, Type as FontIcon } from 'lucide-react';
 import { useStore, Layer } from '@/store/useStore';
 import { SUPPORTED_FONTS } from '@/lib/fonts';
@@ -11,7 +12,9 @@ interface UserElementEditorProps {
 
 export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, sectionId }) => {
     const [showStyling, setShowStyling] = useState(false);
-    const { updateElementInSection, elementDimensions } = useStore();
+    const { updateElementInSection, elementDimensions, sections, updateSectionsBatch } = useStore();
+    const { id: invitationId } = useParams<{ id: string }>();
+
     const permissions = element.permissions || {
         canEditText: false,
         canEditImage: false,
@@ -28,6 +31,41 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
     const handleUpdate = (updates: Partial<Layer>) => {
         if (!sectionId) return;
         updateElementInSection(sectionId, element.id, updates);
+
+        // UNICORN BIDIRECTIONAL SYNC: 
+        // If updating a countdown's target date, sync it to ALL other countdowns 
+        // AND potentially the database (Global Event Date)
+        if (updates.countdownConfig?.targetDate) {
+            const newDate = updates.countdownConfig.targetDate;
+
+            // 1. Sync other countdowns in UI
+            const updatedSections = sections.map(s => ({
+                ...s,
+                elements: s.elements.map(el => {
+                    const isCountdown = el.type === 'countdown' || el.name?.toLowerCase().includes('countdown');
+                    if (isCountdown && el.countdownConfig) {
+                        return {
+                            ...el,
+                            countdownConfig: {
+                                ...el.countdownConfig,
+                                targetDate: newDate
+                            }
+                        };
+                    }
+                    return el;
+                })
+            }));
+            updateSectionsBatch(updatedSections);
+
+            // 2. Sync to DB (if we have invitationId)
+            if (invitationId) {
+                import('@/lib/api').then(({ invitations }) => {
+                    invitations.update(invitationId, { event_date: newDate }).catch(err => {
+                        console.error('[Sync] Failed to update global event date:', err);
+                    });
+                });
+            }
+        }
     };
 
     // Helper to get icon based on element type

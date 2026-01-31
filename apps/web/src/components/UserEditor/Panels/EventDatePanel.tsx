@@ -3,6 +3,7 @@ import { m } from 'framer-motion';
 import { Calendar, Save, Check } from 'lucide-react';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { invitations } from '../../../lib/api';
+import { useStore } from '@/store/useStore';
 
 interface EventDatePanelProps {
     invitationId: string;
@@ -37,6 +38,8 @@ export const EventDatePanel: React.FC<EventDatePanelProps> = ({ invitationId, on
         loadEventDate();
     }, [invitationId]);
 
+    const { sections, updateSectionsBatch } = useStore();
+
     const handleSave = async () => {
         try {
             setSaving(true);
@@ -52,6 +55,27 @@ export const EventDatePanel: React.FC<EventDatePanelProps> = ({ invitationId, on
             await invitations.update(invitationId, {
                 event_date: eventDateTime
             });
+
+            // UNICORN SYNC: Update all countdown elements in the canvas
+            if (eventDateTime) {
+                const updatedSections = sections.map(section => ({
+                    ...section,
+                    elements: section.elements.map(el => {
+                        const isCountdown = el.type === 'countdown' || el.name?.toLowerCase().includes('countdown');
+                        if (isCountdown && el.countdownConfig) {
+                            return {
+                                ...el,
+                                countdownConfig: {
+                                    ...el.countdownConfig,
+                                    targetDate: eventDateTime
+                                }
+                            };
+                        }
+                        return el;
+                    })
+                }));
+                updateSectionsBatch(updatedSections);
+            }
 
             setSuccess(true);
             setTimeout(() => {
