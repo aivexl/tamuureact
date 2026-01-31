@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
-import { Layer, AnimationType, TextStyle, CountdownConfig, ButtonConfig, ShapeConfig, IconStyle, RSVPWishesConfig, RSVPVariantId } from '@/store/layersSlice';
+import { Layer, AnimationType, TextStyle, CountdownConfig, ButtonConfig, ShapeConfig, IconStyle, RSVPWishesConfig, RSVPVariantId, LayerPermissions } from '@/store/layersSlice';
 import { generateId } from '@/lib/utils';
 import { RSVP_VARIANTS, DEFAULT_RSVP_WISHES_CONFIG } from '@/lib/rsvp-variants';
 import { SUPPORTED_FONTS } from '@/lib/fonts';
