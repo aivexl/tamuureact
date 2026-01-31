@@ -69,6 +69,7 @@ export const OnboardingPage: React.FC = () => {
 
     // Logistics
     const [eventDate, setEventDate] = useState('');
+    const [eventTime, setEventTime] = useState('09:00');
     const [eventLocation, setEventLocation] = useState('');
 
     // Gift/Bank (Master data states)
@@ -141,6 +142,7 @@ export const OnboardingPage: React.FC = () => {
                 if (data.bridePhoto) setBridePhoto(data.bridePhoto);
                 if (data.galleryPhotos) setGalleryPhotos(data.galleryPhotos);
                 if (data.eventDate) setEventDate(data.eventDate);
+                if (data.eventTime) setEventTime(data.eventTime);
                 if (data.eventLocation) setEventLocation(data.eventLocation);
                 if (data.bankName) setBankName(data.bankName);
                 if (data.accountNumber) setAccountNumber(data.accountNumber);
@@ -167,14 +169,14 @@ export const OnboardingPage: React.FC = () => {
         const data = {
             currentStep, selectedCategory, groomName, brideName, celebrantName,
             photoPreview, groomPhoto, bridePhoto, galleryPhotos,
-            eventDate, eventLocation, bankName, accountNumber, accountHolder,
+            eventDate, eventTime, eventLocation, bankName, accountNumber, accountHolder,
             bank2Name, bank2Number, bank2Holder, emoneyType, emoneyNumber, giftAddress,
             slug, invitationName
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     }, [isRestored, currentStep, selectedCategory, groomName, brideName, celebrantName,
         photoPreview, groomPhoto, bridePhoto, galleryPhotos,
-        eventDate, eventLocation, bankName, accountNumber, accountHolder,
+        eventDate, eventTime, eventLocation, bankName, accountNumber, accountHolder,
         bank2Name, bank2Number, bank2Holder, emoneyType, emoneyNumber, giftAddress,
         slug, invitationName]);
 
@@ -286,6 +288,7 @@ export const OnboardingPage: React.FC = () => {
             bridePhoto,
             galleryPhotos,
             eventDate,
+            eventTime,
             eventLocation,
             // primary bank (from form)
             bank1Name: bankName,
@@ -540,11 +543,20 @@ export const OnboardingPage: React.FC = () => {
                             </div>
 
                             <div className="bg-white rounded-[3rem] p-10 shadow-2xl border border-slate-50 space-y-6">
-                                <div className="text-left space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Tanggal Acara</label>
-                                    <div className="relative">
-                                        <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
-                                        <input type="date" value={eventDate} onChange={e => setEventDate(e.target.value)} className="w-full pl-16 pr-8 py-5 bg-slate-50 border-none rounded-[1.5rem] focus:ring-4 focus:ring-teal-500/10 text-lg font-bold text-slate-900" />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="text-left space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Tanggal Acara</label>
+                                        <div className="relative">
+                                            <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
+                                            <input type="date" value={eventDate} onChange={e => setEventDate(e.target.value)} className="w-full pl-16 pr-8 py-5 bg-slate-50 border-none rounded-[1.5rem] focus:ring-4 focus:ring-teal-500/10 text-lg font-bold text-slate-900" />
+                                        </div>
+                                    </div>
+                                    <div className="text-left space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Pukul (Waktu)</label>
+                                        <div className="relative">
+                                            <Smartphone className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 transform rotate-90" />
+                                            <input type="time" value={eventTime} onChange={e => setEventTime(e.target.value)} className="w-full pl-16 pr-8 py-5 bg-slate-50 border-none rounded-[1.5rem] focus:ring-4 focus:ring-teal-500/10 text-lg font-bold text-slate-900" />
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="text-left space-y-2">

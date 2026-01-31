@@ -40,6 +40,21 @@ const getIsAppDomain = (): boolean => {
 };
 
 
+const formatIndonesianDate = (dateStr: string) => {
+    if (!dateStr) return '';
+    try {
+        const date = new Date(dateStr);
+        return new Intl.DateTimeFormat('id-ID', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        }).format(date);
+    } catch (e) {
+        return dateStr;
+    }
+};
+
 export const InvitationsStorePage: React.FC = () => {
     const { search } = useLocation();
     const { isAuthenticated, user, showModal } = useStore();
@@ -134,6 +149,8 @@ export const InvitationsStorePage: React.FC = () => {
                 if (magic) {
                     let magicJson = JSON.stringify(sections);
 
+                    const formattedDate = magic.eventDate ? formatIndonesianDate(magic.eventDate) : 'Lokasi Acara';
+
                     // A. Text Replacement
                     magicJson = magicJson
                         .replace(/Mempelai Pria/g, magic.groomName || 'Mempelai Pria')
@@ -142,7 +159,8 @@ export const InvitationsStorePage: React.FC = () => {
                         .replace(/0000000000/g, magic.bank1Number || '0000000000')
                         .replace(/Nama Bank/g, magic.bank1Name || 'Nama Bank')
                         .replace(/Atas Nama/g, magic.bank1Holder || 'Atas Nama')
-                        .replace(/Lokasi Acara/g, magic.eventLocation || 'Lokasi Acara');
+                        .replace(/Lokasi Acara/g, magic.eventLocation || 'Lokasi Acara')
+                        .replace(/Tanggal Acara/g, formattedDate);
 
                     // B. Photo Injection (Heuristic-based)
                     try {
@@ -170,6 +188,21 @@ export const InvitationsStorePage: React.FC = () => {
                                             if (magic.galleryPhotos[idx]) {
                                                 layer.url = magic.galleryPhotos[idx];
                                             }
+                                        }
+                                    }
+
+                                    // Countdown Sync
+                                    const targetDateTime = magic.eventDate && magic.eventTime
+                                        ? new Date(`${magic.eventDate}T${magic.eventTime}`).toISOString()
+                                        : magic.eventDate
+                                            ? new Date(`${magic.eventDate}T09:00:00`).toISOString()
+                                            : null;
+
+                                    if (targetDateTime && (layer.type === 'countdown' || layer.name?.toLowerCase().includes('countdown'))) {
+                                        if (layer.countdownConfig) {
+                                            layer.countdownConfig.targetDate = targetDateTime;
+                                        } else {
+                                            layer.countdownConfig = { targetDate: targetDateTime };
                                         }
                                     }
                                 });
