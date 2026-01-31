@@ -2081,10 +2081,31 @@ export const PropertyPanel: React.FC = () => {
                             </div>
                             <SelectInput
                                 label="Bank Name"
-                                value={layer.digitalGiftConfig?.bankName || ''}
-                                options={SUPPORTED_BANKS.map(bank => ({ value: bank.name, label: bank.name }))}
-                                onChange={(v) => handleUpdate({ digitalGiftConfig: { ...layer.digitalGiftConfig!, bankName: v } })}
+                                value={((layer.digitalGiftConfig?.bankName && SUPPORTED_BANKS.find(b => b.name === layer.digitalGiftConfig?.bankName)) ? layer.digitalGiftConfig.bankName : 'other') as string}
+                                options={[
+                                    ...SUPPORTED_BANKS.map(bank => ({ value: bank.name, label: bank.name })),
+                                    { value: 'other', label: 'Other / Custom Bank' }
+                                ]}
+                                onChange={(v) => {
+                                    if (v === 'other') {
+                                        handleUpdate({ digitalGiftConfig: { ...layer.digitalGiftConfig!, bankName: 'Custom Bank' } });
+                                    } else {
+                                        handleUpdate({ digitalGiftConfig: { ...layer.digitalGiftConfig!, bankName: v } });
+                                    }
+                                }}
                             />
+                            {(!SUPPORTED_BANKS.find(b => b.name === layer.digitalGiftConfig?.bankName)) && (
+                                <div className="animate-in fade-in slide-in-from-top-1 duration-200">
+                                    <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Custom Bank Name</label>
+                                    <input
+                                        type="text"
+                                        value={layer.digitalGiftConfig?.bankName || ''}
+                                        onChange={(e) => handleUpdate({ digitalGiftConfig: { ...layer.digitalGiftConfig!, bankName: e.target.value } })}
+                                        className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none text-white"
+                                        placeholder="Enter Bank Name"
+                                    />
+                                </div>
+                            )}
                             <div>
                                 <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Account Number</label>
                                 <input
@@ -2105,8 +2126,17 @@ export const PropertyPanel: React.FC = () => {
                                     placeholder="John Doe"
                                 />
                             </div>
+
+                            <div className="pt-2 border-t border-white/5">
+                                <ColorInput
+                                    label="Custom Card Color"
+                                    value={layer.digitalGiftConfig?.customColor || ''}
+                                    onChange={(v) => handleUpdate({ digitalGiftConfig: { ...layer.digitalGiftConfig!, customColor: v } })}
+                                />
+                            </div>
+
                             <SelectInput
-                                label="Theme"
+                                label="Theme Preset"
                                 value={layer.digitalGiftConfig?.theme || 'gold'}
                                 options={[
                                     { value: 'gold', label: 'Gold Premium' },

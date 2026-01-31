@@ -521,6 +521,7 @@ export interface DigitalGiftConfig {
     qrImage?: string;
     buttonText: string;
     theme: 'gold' | 'silver' | 'glass' | 'custom';
+    customColor?: string;
 }
 
 export interface MusicPlayerConfig {

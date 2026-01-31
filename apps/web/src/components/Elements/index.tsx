@@ -192,6 +192,7 @@ export const DigitalGiftElement: React.FC<{ layer: Layer, isEditor?: boolean, on
                     bankName={config.bankName}
                     accountNumber={config.accountNumber}
                     accountHolder={config.accountHolder}
+                    customColor={config.customColor}
                     isPreview={isEditor}
                 />
 
