@@ -17,12 +17,12 @@ export const BankCard: React.FC<BankCardProps> = ({
     className = '',
     isPreview = false
 }) => {
-    const bank = getBankByName(bankName);
+    const bank = getBankByName(bankName || '');
     const brandColor = bank?.brandColor || '#1a1a1a';
     const textColor = bank?.textColor || '#ffffff';
 
-    // Format account number: Group by 4
-    const formattedNumber = accountNumber.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
+    // Format account number: Group by 4 (with null-safe fallback)
+    const formattedNumber = (accountNumber || '').replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
 
     return (
         <m.div
