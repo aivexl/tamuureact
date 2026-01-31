@@ -72,7 +72,7 @@ export const BankCard: React.FC<BankCardProps> = ({
 
                     {/* Network Logo Emoji Placeholder */}
                     <div className="text-xl sm:text-2xl opacity-40 grayscale">
-                        {bankName.toLowerCase().includes('dana') || bankName.toLowerCase().includes('ovo') || bankName.toLowerCase().includes('pay') ? '💳' : '🏦'}
+                        {(bankName || '').toLowerCase().includes('dana') || (bankName || '').toLowerCase().includes('ovo') || (bankName || '').toLowerCase().includes('pay') ? '💳' : '🏦'}
                     </div>
                 </div>
 
