@@ -61,7 +61,7 @@ export const BankCard: React.FC<BankCardProps> = ({
                 </div>
 
                 {/* 2. MIDDLE BLOCK: CHIP -> BANK NAME (Stacked Vertically) - LOWERED */}
-                <div className="flex flex-col items-start gap-[6%] mt-[12%] mb-auto">
+                <div className="flex flex-col items-start gap-[6%] mt-[8%] mb-auto">
                     {/* EMV CHIP */}
                     <div className="w-[13%] aspect-[1.2/1] flex-shrink-0 flex items-center justify-center">
                         <img
@@ -72,7 +72,7 @@ export const BankCard: React.FC<BankCardProps> = ({
                     </div>
 
                     {/* BANK NAME (Below Chip, Bold, Single Line) */}
-                    <div className="w-full mt-[3%]">
+                    <div className="w-full mt-[2%]">
                         <span className="text-[11px] sm:text-[15px] font-black uppercase tracking-widest leading-none drop-shadow-md opacity-95 block truncate">
                             {bank?.name || bankName || 'BANK NAME'}
                         </span>
