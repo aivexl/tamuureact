@@ -1,7 +1,9 @@
-import React, { useMemo } from 'react';
-import { m } from 'framer-motion';
+import React, { useMemo, useState } from 'react';
+import { m, AnimatePresence } from 'framer-motion';
 import { getBankByName } from '@/lib/banks';
 import { BankLogos } from './BankLogos';
+import { Copy, Check } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 interface BankCardProps {
     bankName: string;
@@ -29,6 +31,29 @@ export const BankCard: React.FC<BankCardProps> = ({
     // 2. Resolve Logo Component
     const LogoComponent = BankLogos[safeBankId] as any;
     const shouldForceWhite = bank?.forceWhiteLogo;
+
+    // 3. Copy State Logic
+    const [copiedField, setCopiedField] = useState<string | null>(null);
+
+    const handleCopy = (text: string, fieldName: string) => {
+        if (!text || isPreview) return;
+        navigator.clipboard.writeText(text);
+        setCopiedField(fieldName);
+        toast.success(`${fieldName} copied!`, {
+            id: `copy-${fieldName}`,
+        });
+        setTimeout(() => setCopiedField(null), 2000);
+    };
+
+    const CopyIcon = ({ fieldName, size = 12 }: { fieldName: string, size?: number }) => (
+        <div className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0 flex items-center justify-center">
+            {copiedField === fieldName ? (
+                <Check size={size} className="text-green-400" />
+            ) : (
+                <Copy size={size} className="opacity-60" />
+            )}
+        </div>
+    );
 
     return (
         <m.div
@@ -72,26 +97,38 @@ export const BankCard: React.FC<BankCardProps> = ({
                     </div>
 
                     {/* BANK NAME -> Uniform Gap below */}
-                    <div className="w-full mb-[2.5%]">
-                        <span className="text-[10px] sm:text-[13px] font-black uppercase tracking-widest leading-none drop-shadow-sm opacity-90 block truncate">
+                    <button
+                        onClick={() => handleCopy(bank?.name || bankName || '', 'Bank Name')}
+                        className={`w-full mb-[2.5%] text-left group flex items-center outline-none transition-transform active:scale-[0.98] ${isPreview ? 'cursor-default' : 'cursor-pointer'}`}
+                    >
+                        <span className="text-[10px] sm:text-[13px] font-black uppercase tracking-widest leading-none drop-shadow-sm opacity-90 block truncate flex-1">
                             {bank?.name || bankName || 'BANK NAME'}
                         </span>
-                    </div>
+                        {!isPreview && <CopyIcon fieldName="Bank Name" />}
+                    </button>
 
                     {/* ACCOUNT HOLDER -> Uniform Gap below */}
-                    <div className="w-full mb-[2.5%]">
-                        <span className="text-[12px] sm:text-[16px] font-bold uppercase tracking-widest leading-none text-shadow-md block truncate">
+                    <button
+                        onClick={() => handleCopy(accountHolder, 'Account Holder')}
+                        className={`w-full mb-[2.5%] text-left group flex items-center outline-none transition-transform active:scale-[0.98] ${isPreview ? 'cursor-default' : 'cursor-pointer'}`}
+                    >
+                        <span className="text-[12px] sm:text-[16px] font-bold uppercase tracking-widest leading-none text-shadow-md block truncate flex-1">
                             {accountHolder || 'NAMA LENGKAP'}
                         </span>
-                    </div>
+                        {!isPreview && <CopyIcon fieldName="Account Holder" size={14} />}
+                    </button>
 
                     {/* ACCOUNT NUMBER */}
-                    <div className="w-full">
-                        <span className="text-[15px] sm:text-[22px] font-semibold leading-none whitespace-nowrap tracking-widest block overflow-hidden text-ellipsis drop-shadow-lg"
+                    <button
+                        onClick={() => handleCopy(accountNumber, 'Account Number')}
+                        className={`w-full text-left group flex items-center outline-none transition-transform active:scale-[0.98] ${isPreview ? 'cursor-default' : 'cursor-pointer'}`}
+                    >
+                        <span className="text-[15px] sm:text-[22px] font-semibold leading-none whitespace-nowrap tracking-widest block overflow-hidden text-ellipsis drop-shadow-lg flex-1"
                             style={{ fontFamily: 'monospace' }}>
                             {accountNumber || '0000000000000000'}
                         </span>
-                    </div>
+                        {!isPreview && <CopyIcon fieldName="Account Number" size={18} />}
+                    </button>
                 </div>
             </div>
         </m.div>
