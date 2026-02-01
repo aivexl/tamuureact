@@ -32,16 +32,16 @@ export const BankLogos: Record<string, React.FC<{ className?: string }>> = {
 
     // --- Payment Gateways & E-Money (Using Veritrans Assets) ---
     gopay: ({ className }) => (
-        <img src="/images/logos/payment-gateways/gopay.svg" alt="GoPay" className={`${className} h-full w-auto object-contain`} />
+        <img src="/images/logos/payment-gateways/gopay.png" alt="GoPay" className={`${className} h-full w-auto object-contain`} />
     ),
     shopeepay: ({ className }) => (
         <img src="/images/logos/payment-gateways/shopeepay.png" alt="ShopeePay" className={`${className} h-full w-auto object-contain`} />
     ),
     akulaku: ({ className }) => (
-        <img src="/images/logos/payment-gateways/akulaku.svg" alt="Akulaku" className={`${className} h-full w-auto object-contain`} />
+        <img src="/images/logos/payment-gateways/akulaku.png" alt="Akulaku" className={`${className} h-full w-auto object-contain`} />
     ),
     kredivo: ({ className }) => (
-        <img src="/images/logos/payment-gateways/kredivo.svg" alt="Kredivo" className={`${className} h-full w-auto object-contain`} />
+        <img src="/images/logos/payment-gateways/kredivo.png" alt="Kredivo" className={`${className} h-full w-auto object-contain`} />
     ),
 
     // --- Existing SVG Fallbacks (Keeping for Coverage) ---
