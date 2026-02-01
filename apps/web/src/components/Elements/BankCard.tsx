@@ -34,88 +34,61 @@ export const BankCard: React.FC<BankCardProps> = ({
 
     return (
         <m.div
-            className={`relative w-full aspect-[1.586/1] rounded-[28px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] group select-none ${className}`}
-            initial={!isPreview ? { opacity: 0, scale: 0.9 } : {}}
+            className={`relative w-full aspect-[1.586/1] rounded-[22px] overflow-hidden shadow-2xl select-none ${className}`}
+            style={{ backgroundColor: brandColor }}
+            initial={!isPreview ? { opacity: 0, scale: 0.98 } : {}}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
         >
-            {/* A. BASE GRADIENT & GLASS LAYER */}
-            <div
-                className="absolute inset-0 z-0 transition-colors duration-1000"
-                style={{
-                    background: `linear-gradient(135deg, ${brandColor} 0%, #000000 100%)`,
-                }}
-            />
+            {/* A. CONTENT LAYER: STRICT VERTICAL HIERARCHY */}
+            <div className="relative z-10 h-full w-full p-6 sm:p-8 flex flex-col" style={{ color: textColor }}>
 
-            {/* B. DYNAMIC GLOW EFFECTS (Stitch-Inspired) */}
-            <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-white/5 rounded-full blur-[80px] z-10 pointer-events-none" />
-            <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-black/40 rounded-full blur-[60px] z-10 pointer-events-none" />
+                {/* 1. TOP-LEFT: LOGO & CHIP ALIGNMENT */}
+                <div className="flex flex-col gap-4 mb-auto">
+                    {/* A. BANK LOGO (TOPMOST) */}
+                    <div className="h-4 sm:h-6 w-fit flex items-center justify-start opacity-90">
+                        <LogoComponent className="h-full w-auto" />
+                    </div>
 
-            {/* C. GLASS OVERLAY */}
-            <div className="absolute inset-0 z-20 backdrop-blur-[2px] bg-white/[0.02] border border-white/10 rounded-[28px] pointer-events-none" />
-
-            {/* D. NOISE TEXTURE (For that 'Deep Design' feel) */}
-            <div className="absolute inset-0 z-30 opacity-[0.03] pointer-events-none mix-blend-overlay"
-                style={{ backgroundImage: `url("https://www.transparenttextures.com/patterns/asfalt-dark.png")` }} />
-
-            {/* E. CONTENT LAYER */}
-            <div className="relative z-40 h-full w-full p-8 flex flex-col justify-between" style={{ color: textColor }}>
-
-                {/* 1. TOP SECTION: CHIP & LOGO */}
-                <div className="flex justify-between items-start">
-                    {/* PHYSICAL CHIP ASSET */}
-                    <div className="w-12 sm:w-16 h-auto drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] transition-transform group-hover:scale-105 duration-500">
+                    {/* B. EMV CHIP (BELOW LOGO) - Realistic proportioned size */}
+                    <div className="w-10 sm:w-14 h-auto drop-shadow-md">
                         <img
                             src="/images/card-chip.png"
-                            alt="Card Chip"
+                            alt="EMV Chip"
                             className="w-full h-full object-contain"
                         />
                     </div>
-
-                    {/* BANK LOGO */}
-                    <div className="h-6 sm:h-9 w-fit flex items-center justify-end opacity-90 brightness-110">
-                        <LogoComponent className="h-full w-auto drop-shadow-md" />
-                    </div>
                 </div>
 
-                {/* 2. BOTTOM SECTION: IDENTITY & NUMBER */}
-                <div className="space-y-6 sm:space-y-8 mb-2">
-                    {/* Account Number */}
-                    <div className="flex flex-col gap-1">
-                        <span className="text-[7px] sm:text-[9px] uppercase tracking-[0.4em] font-black opacity-30">
-                            Secure Account Number
+                {/* 2. BOTTOM SECTION: ACCOUNT INFORMATION (BELOW CHIP) */}
+                <div className="space-y-4 sm:space-y-6">
+                    {/* Account Holder */}
+                    <div className="flex flex-col">
+                        <span className="text-[6px] sm:text-[8px] uppercase tracking-[0.3em] font-black opacity-30 mb-0.5">
+                            Card Holder
                         </span>
-                        <span className="text-xl sm:text-3xl font-mono tracking-[0.18em] font-black drop-shadow-2xl">
-                            {formattedNumber || '0000 0000 0000 0000'}
+                        <span className="text-sm sm:text-lg font-bold uppercase tracking-widest truncate">
+                            {accountHolder || 'ALEXANDER PIERCE'}
                         </span>
                     </div>
 
-                    {/* Account Holder */}
+                    {/* Footer Row: Account Number & Bank Name */}
                     <div className="flex justify-between items-end">
-                        <div className="flex flex-col">
-                            <span className="text-[7px] sm:text-[9px] uppercase tracking-[0.4em] font-black opacity-30 mb-1">
-                                Account Holder
+                        <div className="flex flex-col gap-1">
+                            <span className="text-[6px] sm:text-[8px] uppercase tracking-[0.3em] font-black opacity-30">
+                                {bankName || 'Premium Bank'}
                             </span>
-                            <span className="text-sm sm:text-xl font-bold uppercase tracking-widest truncate max-w-[200px] drop-shadow-lg">
-                                {accountHolder || 'YOUR NAME'}
+                            <span className="text-base sm:text-2xl font-mono tracking-[0.1em] font-black drop-shadow-sm">
+                                {formattedNumber || '0000 0000 0000 0000'}
                             </span>
-                        </div>
-
-                        {/* SUBTLE BRAND MARK */}
-                        <div className="opacity-20 flex flex-col items-end">
-                            <span className="text-[6px] sm:text-[8px] font-black tracking-[0.5em] uppercase">Private</span>
-                            <span className="text-[8px] sm:text-[10px] font-black italic tracking-tighter">Edition</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* F. PREMIUM REFLECTION & SHINE */}
-            <m.div
-                className="absolute inset-0 z-50 pointer-events-none bg-gradient-to-tr from-transparent via-white/[0.05] to-transparent skew-x-[-20deg]"
-                animate={{ x: ['-200%', '200%'] }}
-                transition={{ duration: 7, repeat: Infinity, ease: "linear" }}
-            />
+            {/* B. LIGHTING & DEPTH (Ultra-Realistic Subtle Shadow/Highlight) */}
+            <div className="absolute inset-0 z-0 ring-1 ring-white/5 pointer-events-none rounded-[22px]" />
+            <div className="absolute inset-0 z-20 pointer-events-none shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]" />
         </m.div>
     );
 };
