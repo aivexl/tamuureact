@@ -201,17 +201,6 @@ export const DigitalGiftElement: React.FC<{ layer: Layer, isEditor?: boolean, on
                     customColor={config.customColor}
                     isPreview={isEditor}
                 />
-
-                {!isEditor && (
-                    <m.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={handleCopy}
-                        className="mt-2 text-[10px] sm:text-[12px] bg-white text-black font-black py-2.5 sm:py-3 px-8 sm:px-12 rounded-full uppercase tracking-[0.2em] shadow-xl hover:bg-opacity-90 transition-all border border-black/5"
-                    >
-                        {config.buttonText}
-                    </m.button>
-                )}
             </div>
         </div>
     );
