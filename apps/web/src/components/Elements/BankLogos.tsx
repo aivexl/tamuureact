@@ -3,45 +3,45 @@ import React from 'react';
 export const BankLogos: Record<string, React.FC<{ className?: string }>> = {
     // --- Major Banks (Using Veritrans Assets) ---
     bca: ({ className }) => (
-        <img src="/images/logos/banks/bca.png" alt="BCA" className={`${className} h-full w-auto object-contain`} />
+        <img src="/images/logos/banks/bca.png?v=restored" alt="BCA" className={`${className} h-full w-auto object-contain`} />
     ),
     bni: ({ className }) => (
-        <img src="/images/logos/banks/bni.png" alt="BNI" className={`${className} h-full w-auto object-contain`} />
+        <img src="/images/logos/banks/bni.png?v=restored" alt="BNI" className={`${className} h-full w-auto object-contain`} />
     ),
     bri: ({ className }) => (
-        <img src="/images/logos/banks/bri.png" alt="BRI" className={`${className} h-full w-auto object-contain`} />
+        <img src="/images/logos/banks/bri.png?v=restored" alt="BRI" className={`${className} h-full w-auto object-contain`} />
     ),
     mandiri: ({ className }) => (
-        <img src="/images/logos/banks/mandiri.png" alt="Mandiri" className={`${className} h-full w-auto object-contain`} />
+        <img src="/images/logos/banks/mandiri.png?v=restored" alt="Mandiri" className={`${className} h-full w-auto object-contain`} />
     ),
     danamon: ({ className }) => (
-        <img src="/images/logos/banks/danamon.png" alt="Danamon" className={`${className} h-full w-auto object-contain`} />
+        <img src="/images/logos/banks/danamon.png?v=restored" alt="Danamon" className={`${className} h-full w-auto object-contain`} />
     ),
     permata: ({ className }) => (
-        <img src="/images/logos/banks/permata.png" alt="Permata" className={`${className} h-full w-auto object-contain`} />
+        <img src="/images/logos/banks/permata.png?v=restored" alt="Permata" className={`${className} h-full w-auto object-contain`} />
     ),
     cimb: ({ className }) => (
-        <img src="/images/logos/banks/cimb.png" alt="CIMB" className={`${className} h-full w-auto object-contain`} />
+        <img src="/images/logos/banks/cimb.png?v=restored" alt="CIMB" className={`${className} h-full w-auto object-contain`} />
     ),
     maybank: ({ className }) => (
-        <img src="/images/logos/banks/maybank.png" alt="Maybank" className={`${className} h-full w-auto object-contain`} />
+        <img src="/images/logos/banks/maybank.png?v=restored" alt="Maybank" className={`${className} h-full w-auto object-contain`} />
     ),
     mega: ({ className }) => (
-        <img src="/images/logos/banks/mega.png" alt="Bank Mega" className={`${className} h-full w-auto object-contain`} />
+        <img src="/images/logos/banks/mega.png?v=restored" alt="Bank Mega" className={`${className} h-full w-auto object-contain`} />
     ),
 
     // --- Payment Gateways & E-Money (Using Veritrans Assets) ---
     gopay: ({ className }) => (
-        <img src="/images/logos/payment-gateways/gopay.png" alt="GoPay" className={`${className} h-full w-auto object-contain`} />
+        <img src="/images/logos/payment-gateways/gopay.png?v=restored" alt="GoPay" className={`${className} h-full w-auto object-contain`} />
     ),
     shopeepay: ({ className }) => (
-        <img src="/images/logos/payment-gateways/shopeepay.png" alt="ShopeePay" className={`${className} h-full w-auto object-contain`} />
+        <img src="/images/logos/payment-gateways/shopeepay.png?v=restored" alt="ShopeePay" className={`${className} h-full w-auto object-contain`} />
     ),
     akulaku: ({ className }) => (
-        <img src="/images/logos/payment-gateways/akulaku.png" alt="Akulaku" className={`${className} h-full w-auto object-contain`} />
+        <img src="/images/logos/payment-gateways/akulaku.png?v=restored" alt="Akulaku" className={`${className} h-full w-auto object-contain`} />
     ),
     kredivo: ({ className }) => (
-        <img src="/images/logos/payment-gateways/kredivo.png" alt="Kredivo" className={`${className} h-full w-auto object-contain`} />
+        <img src="/images/logos/payment-gateways/kredivo.png?v=restored" alt="Kredivo" className={`${className} h-full w-auto object-contain`} />
     ),
 
     // --- Existing SVG Fallbacks (Keeping for Coverage) ---

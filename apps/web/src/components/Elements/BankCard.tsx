@@ -51,7 +51,7 @@ export const BankCard: React.FC<BankCardProps> = ({
                     {/* 1. EMV CHIP - ORIGINAL QUALITY */}
                     <div className="w-[14%] aspect-[1.2/1] flex items-center justify-center">
                         <img
-                            src="/images/card-chip.png"
+                            src="/images/card-chip.png?v=restored"
                             alt="EMV Chip"
                             className="w-full h-auto block select-none pointer-events-none"
                         />
