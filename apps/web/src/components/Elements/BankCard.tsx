@@ -43,10 +43,10 @@ export const BankCard: React.FC<BankCardProps> = ({
             animate={{ opacity: 1, scale: 1 }}
         >
             {/* CONTENT LAYER */}
-            <div className="relative z-10 h-full w-full p-[8%] flex flex-col justify-between" style={{ color: textColor }}>
+            <div className="relative z-10 h-full w-full p-[6%] flex flex-col justify-between" style={{ color: textColor }}>
 
-                {/* 1. TOP ROW: BANK LOGO (Left) - PROPORTIONALLY ENLARGED */}
-                <div className="w-full flex justify-start items-center h-[28%] min-h-[32px]">
+                {/* 1. TOP ROW: BANK LOGO (Left) - REFINED SIZE */}
+                <div className="w-full flex justify-start items-center h-[18%] min-h-[24px]">
                     {LogoComponent ? (
                         <div className="h-full">
                             <LogoComponent
