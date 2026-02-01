@@ -3,45 +3,45 @@ import React from 'react';
 export const BankLogos: Record<string, React.FC<{ className?: string }>> = {
     // --- Major Banks (Using Veritrans Assets) ---
     bca: ({ className }) => (
-        <img src="/images/logos/banks/bca.png" alt="BCA" className={`${className} object-contain`} />
+        <img src="/images/logos/banks/bca.png" alt="BCA" className={`${className} h-full w-auto object-contain`} />
     ),
     bni: ({ className }) => (
-        <img src="/images/logos/banks/bni.png" alt="BNI" className={`${className} object-contain`} />
+        <img src="/images/logos/banks/bni.png" alt="BNI" className={`${className} h-full w-auto object-contain`} />
     ),
     bri: ({ className }) => (
-        <img src="/images/logos/banks/bri.png" alt="BRI" className={`${className} object-contain`} />
+        <img src="/images/logos/banks/bri.png" alt="BRI" className={`${className} h-full w-auto object-contain`} />
     ),
     mandiri: ({ className }) => (
-        <img src="/images/logos/banks/mandiri.png" alt="Mandiri" className={`${className} object-contain`} />
+        <img src="/images/logos/banks/mandiri.png" alt="Mandiri" className={`${className} h-full w-auto object-contain`} />
     ),
     danamon: ({ className }) => (
-        <img src="/images/logos/banks/danamon.png" alt="Danamon" className={`${className} object-contain`} />
+        <img src="/images/logos/banks/danamon.png" alt="Danamon" className={`${className} h-full w-auto object-contain`} />
     ),
     permata: ({ className }) => (
-        <img src="/images/logos/banks/permata.png" alt="Permata" className={`${className} object-contain`} />
+        <img src="/images/logos/banks/permata.png" alt="Permata" className={`${className} h-full w-auto object-contain`} />
     ),
     cimb: ({ className }) => (
-        <img src="/images/logos/banks/cimb.png" alt="CIMB" className={`${className} object-contain`} />
+        <img src="/images/logos/banks/cimb.png" alt="CIMB" className={`${className} h-full w-auto object-contain`} />
     ),
     maybank: ({ className }) => (
-        <img src="/images/logos/banks/maybank.png" alt="Maybank" className={`${className} object-contain`} />
+        <img src="/images/logos/banks/maybank.png" alt="Maybank" className={`${className} h-full w-auto object-contain`} />
     ),
     mega: ({ className }) => (
-        <img src="/images/logos/banks/mega.png" alt="Bank Mega" className={`${className} object-contain`} />
+        <img src="/images/logos/banks/mega.png" alt="Bank Mega" className={`${className} h-full w-auto object-contain`} />
     ),
 
     // --- Payment Gateways & E-Money (Using Veritrans Assets) ---
     gopay: ({ className }) => (
-        <img src="/images/logos/payment-gateways/gopay.svg" alt="GoPay" className={`${className} object-contain`} />
+        <img src="/images/logos/payment-gateways/gopay.svg" alt="GoPay" className={`${className} h-full w-auto object-contain`} />
     ),
     shopeepay: ({ className }) => (
-        <img src="/images/logos/payment-gateways/shopeepay.png" alt="ShopeePay" className={`${className} object-contain`} />
+        <img src="/images/logos/payment-gateways/shopeepay.png" alt="ShopeePay" className={`${className} h-full w-auto object-contain`} />
     ),
     akulaku: ({ className }) => (
-        <img src="/images/logos/payment-gateways/akulaku.svg" alt="Akulaku" className={`${className} object-contain`} />
+        <img src="/images/logos/payment-gateways/akulaku.svg" alt="Akulaku" className={`${className} h-full w-auto object-contain`} />
     ),
     kredivo: ({ className }) => (
-        <img src="/images/logos/payment-gateways/kredivo.svg" alt="Kredivo" className={`${className} object-contain`} />
+        <img src="/images/logos/payment-gateways/kredivo.svg" alt="Kredivo" className={`${className} h-full w-auto object-contain`} />
     ),
 
     // --- Existing SVG Fallbacks (Keeping for Coverage) ---

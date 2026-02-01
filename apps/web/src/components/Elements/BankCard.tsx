@@ -40,55 +40,53 @@ export const BankCard: React.FC<BankCardProps> = ({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
         >
-            {/* A. CONTENT LAYER: STRICT VERTICAL HIERARCHY */}
-            <div className="relative z-10 h-full w-full p-6 sm:p-8 flex flex-col" style={{ color: textColor }}>
+            {/* A. CONTENT LAYER: ULTRA-PRECISION HIERARCHY */}
+            <div className="relative z-10 h-full w-full p-[8%] flex flex-col" style={{ color: textColor }}>
 
-                {/* 1. TOP-LEFT: LOGO & CHIP ALIGNMENT */}
-                <div className="flex flex-col gap-4 mb-auto">
-                    {/* A. BANK LOGO (TOPMOST) */}
-                    <div className="h-4 sm:h-6 w-fit flex items-center justify-start opacity-90">
-                        <LogoComponent className="h-full w-auto" />
+                {/* 1. TOP SECTION: LOGO & CHIP */}
+                <div className="flex flex-col gap-[8%] mb-auto">
+                    {/* A. BANK LOGO (TOP) */}
+                    <div className="h-[12%] sm:h-[15%] w-fit flex items-center justify-start">
+                        <LogoComponent className="h-full w-auto opacity-90" />
                     </div>
 
-                    {/* B. EMV CHIP (BELOW LOGO) - Realistic proportioned size */}
-                    <div className="w-10 sm:w-14 h-auto drop-shadow-md">
+                    {/* B. EMV CHIP (BELOW LOGO) - Realistic scaled size (12-14% width) */}
+                    <div className="w-[14%] aspect-square drop-shadow-md">
                         <img
                             src="/images/card-chip.png"
-                            alt="EMV Chip"
+                            alt="EMV"
                             className="w-full h-full object-contain"
                         />
                     </div>
                 </div>
 
-                {/* 2. BOTTOM SECTION: ACCOUNT INFORMATION (BELOW CHIP) */}
-                <div className="space-y-4 sm:space-y-6">
+                {/* 2. BOTTOM SECTION: IDENTITY & NUMBER (BELOW CHIP) */}
+                <div className="space-y-[4%] sm:space-y-[6%]">
                     {/* Account Holder */}
                     <div className="flex flex-col">
-                        <span className="text-[6px] sm:text-[8px] uppercase tracking-[0.3em] font-black opacity-30 mb-0.5">
+                        <span className="text-[7px] sm:text-[9px] uppercase tracking-[0.3em] font-black opacity-30 mb-0.5">
                             Card Holder
                         </span>
-                        <span className="text-sm sm:text-lg font-bold uppercase tracking-widest truncate">
+                        <span className="text-sm sm:text-xl font-bold uppercase tracking-widest truncate leading-none">
                             {accountHolder || 'ALEXANDER PIERCE'}
                         </span>
                     </div>
 
-                    {/* Footer Row: Account Number & Bank Name */}
-                    <div className="flex justify-between items-end">
-                        <div className="flex flex-col gap-1">
-                            <span className="text-[6px] sm:text-[8px] uppercase tracking-[0.3em] font-black opacity-30">
-                                {bankName || 'Premium Bank'}
-                            </span>
-                            <span className="text-base sm:text-2xl font-mono tracking-[0.1em] font-black drop-shadow-sm">
-                                {formattedNumber || '0000 0000 0000 0000'}
-                            </span>
-                        </div>
+                    {/* Account Number */}
+                    <div className="flex flex-col">
+                        <span className="text-[7px] sm:text-[9px] uppercase tracking-[0.3em] font-black opacity-30 mb-0.5">
+                            {bankName || 'Premium Bank'}
+                        </span>
+                        <span className="text-lg sm:text-3xl font-mono tracking-[0.12em] font-black drop-shadow-sm leading-none">
+                            {formattedNumber || '0000 0000 0000 0000'}
+                        </span>
                     </div>
                 </div>
             </div>
 
-            {/* B. LIGHTING & DEPTH (Ultra-Realistic Subtle Shadow/Highlight) */}
-            <div className="absolute inset-0 z-0 ring-1 ring-white/5 pointer-events-none rounded-[22px]" />
-            <div className="absolute inset-0 z-20 pointer-events-none shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]" />
+            {/* B. SUBTLE DEPTH (Professional Detail) */}
+            <div className="absolute inset-0 z-0 ring-1 ring-white/10 pointer-events-none rounded-[22px]" />
+            <div className="absolute inset-0 z-20 pointer-events-none shadow-[inset_0_1px_2px_rgba(255,255,255,0.05)]" />
         </m.div>
     );
 };
