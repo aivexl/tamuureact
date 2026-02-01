@@ -65,8 +65,8 @@ export const BankLogos: Record<string, React.FC<{ className?: string }>> = {
     ),
     unknown: ({ className }) => (
         <svg viewBox="0 0 100 32" className={className} fill="currentColor">
-            <rect x="5" y="6" width="20" height="20" rx="3" fillOpacity="0.3" />
-            <path d="M30 6h5v20h-5V6zm10 0h5l9 12V6h5v20h-5l-9-12v12h-5V6zm20 0h5v20h-5V6zm10 0h5l8 12V6h5v20h-5l-8-12v12h-5V6z" />
+            <rect x="5" y="4" width="90" height="24" rx="4" fillOpacity="0.1" />
+            <text x="50" y="21" fontFamily="Inter, sans-serif" fontWeight="900" fontSize="14" textAnchor="middle" fill="currentColor">BANK</text>
         </svg>
     )
 };

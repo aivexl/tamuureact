@@ -14,7 +14,7 @@ export const SUPPORTED_BANKS: BankInfo[] = [
         name: 'Bank Central Asia',
         brandColor: '#005dab',
         textColor: '#ffffff',
-        logoType: 'text',
+        logoType: 'svg',
         logoContent: 'BCA'
     },
     {
@@ -22,7 +22,7 @@ export const SUPPORTED_BANKS: BankInfo[] = [
         name: 'Bank Mandiri',
         brandColor: '#003d79',
         textColor: '#ffc220',
-        logoType: 'text',
+        logoType: 'svg',
         logoContent: 'mandiri'
     },
     {
@@ -30,7 +30,7 @@ export const SUPPORTED_BANKS: BankInfo[] = [
         name: 'Bank Negara Indonesia',
         brandColor: '#005e6a',
         textColor: '#ffffff',
-        logoType: 'text',
+        logoType: 'svg',
         logoContent: 'BNI'
     },
     {
@@ -38,7 +38,7 @@ export const SUPPORTED_BANKS: BankInfo[] = [
         name: 'Bank Rakyat Indonesia',
         brandColor: '#00529c',
         textColor: '#ffffff',
-        logoType: 'text',
+        logoType: 'svg',
         logoContent: 'BRI'
     },
     {
@@ -46,7 +46,7 @@ export const SUPPORTED_BANKS: BankInfo[] = [
         name: 'Bank Syariah Indonesia',
         brandColor: '#00a491',
         textColor: '#ffffff',
-        logoType: 'text',
+        logoType: 'svg',
         logoContent: 'BSI'
     },
     {
@@ -70,7 +70,7 @@ export const SUPPORTED_BANKS: BankInfo[] = [
         name: 'DANA',
         brandColor: '#008ced',
         textColor: '#ffffff',
-        logoType: 'text',
+        logoType: 'svg',
         logoContent: 'DANA'
     },
     {
@@ -78,7 +78,7 @@ export const SUPPORTED_BANKS: BankInfo[] = [
         name: 'OVO',
         brandColor: '#4d2a86',
         textColor: '#ffffff',
-        logoType: 'text',
+        logoType: 'svg',
         logoContent: 'OVO'
     },
     {
@@ -86,15 +86,15 @@ export const SUPPORTED_BANKS: BankInfo[] = [
         name: 'GoPay',
         brandColor: '#00bbd3',
         textColor: '#ffffff',
-        logoType: 'text',
-        logoContent: 'gopay'
+        logoType: 'svg',
+        logoContent: 'GoPay'
     },
     {
         id: 'shopeepay',
         name: 'ShopeePay',
         brandColor: '#ee4d2d',
         textColor: '#ffffff',
-        logoType: 'text',
+        logoType: 'svg',
         logoContent: 'ShopeePay'
     },
     {
@@ -102,8 +102,24 @@ export const SUPPORTED_BANKS: BankInfo[] = [
         name: 'LinkAja',
         brandColor: '#e12127',
         textColor: '#ffffff',
-        logoType: 'text',
+        logoType: 'svg',
         logoContent: 'LinkAja!'
+    },
+    {
+        id: 'jenius',
+        name: 'Jenius',
+        brandColor: '#00adef',
+        textColor: '#ffffff',
+        logoType: 'svg',
+        logoContent: 'Jenius'
+    },
+    {
+        id: 'jago',
+        name: 'Bank Jago',
+        brandColor: '#ff9800',
+        textColor: '#ffffff',
+        logoType: 'svg',
+        logoContent: 'Jago'
     }
 ];
 
