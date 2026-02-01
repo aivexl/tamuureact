@@ -176,17 +176,23 @@ export const DigitalGiftElement: React.FC<{ layer: Layer, isEditor?: boolean, on
 
     return (
         <div
-            className="w-full h-full flex flex-col items-center justify-center p-2 sm:p-4"
+            className={`w-full h-full flex flex-col items-center justify-center ${isEditor ? 'p-0' : 'p-2 sm:p-4'}`}
         >
-            <div className="w-full max-w-[400px] flex flex-col items-center gap-4 sm:gap-6">
-                <div className="text-center space-y-1 sm:space-y-2 mb-2 sm:mb-4">
-                    <h3 className="text-sm sm:text-lg font-black tracking-tight text-white uppercase drop-shadow-md">
-                        {config.title}
-                    </h3>
-                    <p className="text-[9px] sm:text-[11px] text-white/60 leading-relaxed font-medium">
-                        {config.description}
-                    </p>
-                </div>
+            <div className={`w-full flex flex-col items-center ${isEditor ? 'max-w-none gap-1' : 'max-w-[400px] gap-4 sm:gap-6'}`}>
+                {(config.title || config.description) && (
+                    <div className={`text-center space-y-1 sm:space-y-2 ${isEditor ? 'mb-1' : 'mb-2 sm:mb-4'}`}>
+                        {config.title && (
+                            <h3 className="text-sm sm:text-lg font-black tracking-tight text-white uppercase drop-shadow-md">
+                                {config.title}
+                            </h3>
+                        )}
+                        {config.description && (
+                            <p className="text-[9px] sm:text-[11px] text-white/60 leading-relaxed font-medium">
+                                {config.description}
+                            </p>
+                        )}
+                    </div>
+                )}
 
                 <BankCard
                     bankName={config.bankName}
