@@ -23,15 +23,12 @@ export const BankCard: React.FC<BankCardProps> = ({
     // 1. Resolve Bank Data safely
     const bank = useMemo(() => getBankByName(bankName || ''), [bankName]);
     const safeBankId = bank?.id || 'unknown';
-    const brandColor = customColor || bank?.brandColor || '#005dab';
+    const brandColor = customColor || bank?.brandColor || bankName ? '#005dab' : '#005dab'; // Default blue if unknown
     const textColor = '#ffffff';
 
     // 2. Resolve Logo Component
     const LogoComponent = BankLogos[safeBankId] as any;
     const shouldForceWhite = bank?.forceWhiteLogo;
-
-    // 3. Raw Account Number
-    const displayAccountNumber = accountNumber || '0000000000000000';
 
     return (
         <m.div
@@ -77,7 +74,7 @@ export const BankCard: React.FC<BankCardProps> = ({
                     {/* BANK NAME (Below Chip, Bold, Single Line) */}
                     <div className="w-full mt-[3%]">
                         <span className="text-[11px] sm:text-[15px] font-black uppercase tracking-widest leading-none drop-shadow-md opacity-95 block truncate">
-                            {bank?.name || bankName || 'Bank Name'}
+                            {bank?.name || bankName || 'BANK NAME'}
                         </span>
                     </div>
                 </div>
@@ -95,7 +92,7 @@ export const BankCard: React.FC<BankCardProps> = ({
                     <div className="w-full">
                         <span className="text-[14px] sm:text-[20px] font-semibold leading-none whitespace-nowrap tracking-[0.15em] block overflow-hidden text-ellipsis drop-shadow-lg"
                             style={{ fontFamily: 'monospace' }}>
-                            {displayAccountNumber}
+                            {accountNumber || '0000000000000000'}
                         </span>
                     </div>
                 </div>

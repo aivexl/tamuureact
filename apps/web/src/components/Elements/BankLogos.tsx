@@ -73,9 +73,10 @@ export const BankLogos: Record<string, React.FC<{ className?: string }>> = {
         </svg>
     ),
     unknown: ({ className }) => (
-        <svg viewBox="0 0 100 32" className={className} fill="currentColor">
-            <rect x="5" y="4" width="90" height="24" rx="4" fillOpacity="0.1" />
-            <text x="50" y="21" fontFamily="Inter, sans-serif" fontWeight="900" fontSize="14" textAnchor="middle">BANK</text>
-        </svg>
+        <div className={`${className} flex items-center`}>
+            <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded px-2 py-1">
+                <span className="text-white font-black text-[10px] tracking-widest leading-none">BANK</span>
+            </div>
+        </div>
     )
 };
