@@ -118,7 +118,7 @@ export const GiftPanel: React.FC<GiftPanelProps> = ({ onClose }) => {
                     <Check className="w-5 h-5 text-emerald-600" />
                     <h4 className="font-black text-slate-800 uppercase tracking-widest text-xs">Preview Kartu Digital</h4>
                 </div>
-                <div className="w-full max-w-[360px] transform hover:scale-[1.02] transition-transform duration-500">
+                <div className="w-full max-w-[480px] transform hover:scale-[1.02] transition-transform duration-500">
                     <BankCard
                         bankName={bank1Name}
                         accountNumber={bank1Number}

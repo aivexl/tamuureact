@@ -585,7 +585,7 @@ export const OnboardingPage: React.FC = () => {
 
                             {/* Preview Card */}
                             <div className="flex flex-col items-center gap-4 mb-4">
-                                <div className="w-full max-w-[320px] mx-auto perspective-1000">
+                                <div className="w-full max-w-[480px] mx-auto perspective-1000 transform hover:scale-[1.02] transition-transform duration-500">
                                     <BankCard
                                         bankName={bankName}
                                         accountNumber={accountNumber}
