@@ -35,11 +35,12 @@ export const BankCard: React.FC<BankCardProps> = ({
 
     return (
         <m.div
-            className={`relative w-full aspect-[1.586/1] rounded-[16px] overflow-hidden shadow-2xl select-none antialiased ${className}`}
+            className={`relative w-full aspect-[1.586/1] rounded-[16px] overflow-hidden shadow-2xl select-none antialiased transform-gpu ${className}`}
             style={{
                 backgroundColor: brandColor,
                 WebkitFontSmoothing: 'antialiased',
-                MozOsxFontSmoothing: 'grayscale'
+                MozOsxFontSmoothing: 'grayscale',
+                imageRendering: 'high-quality'
             } as any}
             initial={!isPreview ? { opacity: 0, scale: 0.98 } : {}}
             animate={{ opacity: 1, scale: 1 }}
@@ -47,8 +48,8 @@ export const BankCard: React.FC<BankCardProps> = ({
             {/* CONTENT LAYER */}
             <div className="relative z-10 h-full w-full p-[8%] flex flex-col justify-between" style={{ color: textColor }}>
 
-                {/* 1. TOP ROW: BANK LOGO (Slightly larger as requested) */}
-                <div className="w-full flex justify-start items-center h-[14%] min-h-[16px] mb-[2%]">
+                {/* 1. TOP ROW: BANK LOGO (Left) */}
+                <div className="w-full flex justify-start items-center h-[16%] min-h-[20px]">
                     {LogoComponent ? (
                         <div className="h-full">
                             <LogoComponent
@@ -56,41 +57,43 @@ export const BankCard: React.FC<BankCardProps> = ({
                             />
                         </div>
                     ) : (
-                        <span className="text-[12px] sm:text-[14px] font-black uppercase tracking-widest opacity-90 leading-none">
+                        <span className="text-[14px] sm:text-[18px] font-black uppercase tracking-widest opacity-90 leading-none shadow-sm">
                             {bank?.name || bankName || ''}
                         </span>
                     )}
                 </div>
 
-                {/* 2. MIDDLE ROW: CHIP & BANK NAME (Aligned) */}
-                <div className="flex items-center gap-[4%] mb-auto mt-[2%] max-w-full overflow-hidden">
+                {/* 2. MIDDLE BLOCK: CHIP -> BANK NAME (Stacked Vertically) */}
+                <div className="flex flex-col items-start gap-[6%] mt-[4%] mb-auto">
                     {/* EMV CHIP */}
-                    <div className="w-[12%] aspect-[1.2/1] flex-shrink-0 flex items-center justify-center">
+                    <div className="w-[13%] aspect-[1.2/1] flex-shrink-0 flex items-center justify-center">
                         <img
                             src="/images/card-chip.png?v=restored"
                             alt="EMV Chip"
-                            className="w-full h-auto block select-none pointer-events-none"
+                            className="w-full h-auto block select-none pointer-events-none drop-shadow-md"
                         />
                     </div>
 
-                    {/* BANK NAME (Proportional, Bold, Single Row Only) */}
-                    <span className="text-[10px] sm:text-[12px] font-bold uppercase tracking-widest leading-none drop-shadow-sm opacity-90 whitespace-nowrap overflow-hidden text-ellipsis flex-1">
-                        {bank?.name || bankName || 'Bank Name'}
-                    </span>
+                    {/* BANK NAME (Below Chip, Bold, Single Line) */}
+                    <div className="w-full mt-[3%]">
+                        <span className="text-[11px] sm:text-[15px] font-black uppercase tracking-widest leading-none drop-shadow-md opacity-95 block truncate">
+                            {bank?.name || bankName || 'Bank Name'}
+                        </span>
+                    </div>
                 </div>
 
-                {/* 3. BOTTOM BLOCK: HOLDER (REMOVED) -> ACCOUNT NUMBER */}
-                <div className="w-full flex flex-col items-start gap-[1%] mt-auto">
-                    {/* NAME (Formerly Holder Name position, now just Name but bigger) */}
+                {/* 3. BOTTOM BLOCK: NAME -> ACCOUNT NUMBER (Proportional) */}
+                <div className="w-full flex flex-col items-start gap-[2%] mt-auto">
+                    {/* NAME (Large & Bold) */}
                     <div className="w-full mb-[2%]">
-                        <span className="text-[10px] sm:text-[14px] font-bold uppercase tracking-widest leading-none text-shadow-sm block truncate">
+                        <span className="text-[12px] sm:text-[16px] font-bold uppercase tracking-widest leading-none text-shadow-md block truncate opacity-90">
                             {accountHolder || 'NAMA LENGKAP'}
                         </span>
                     </div>
 
-                    {/* ACCOUNT NUMBER (Proportional Font) */}
+                    {/* ACCOUNT NUMBER (Monospaced, Clean) */}
                     <div className="w-full">
-                        <span className="text-[13px] sm:text-[18px] font-medium leading-none whitespace-nowrap tracking-[0.14em] block overflow-hidden text-ellipsis drop-shadow-md"
+                        <span className="text-[14px] sm:text-[20px] font-semibold leading-none whitespace-nowrap tracking-[0.15em] block overflow-hidden text-ellipsis drop-shadow-lg"
                             style={{ fontFamily: 'monospace' }}>
                             {displayAccountNumber}
                         </span>
