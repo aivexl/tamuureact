@@ -46,11 +46,11 @@ export const BankCard: React.FC<BankCardProps> = ({
     };
 
     const CopyIcon = ({ fieldName, size = 12 }: { fieldName: string, size?: number }) => (
-        <div className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0 flex items-center justify-center">
+        <div className="ml-2 transition-opacity duration-200 flex-shrink-0 flex items-center justify-center">
             {copiedField === fieldName ? (
                 <Check size={size} className="text-green-400" />
             ) : (
-                <Copy size={size} className="opacity-60" />
+                <Copy size={size} className="opacity-40 group-hover:opacity-100 transition-opacity" />
             )}
         </div>
     );
