@@ -62,8 +62,8 @@ export const BankCard: React.FC<BankCardProps> = ({
 
                 {/* 2. BOTTOM STACK: CHIP -> BANK NAME -> HOLDER -> NUMBER (Perfectly Proportional) */}
                 <div className="w-full flex flex-col items-start gap-[1%] mt-auto">
-                    {/* EMV CHIP */}
-                    <div className="w-[14%] aspect-[1.3/1] mb-[2%]">
+                    {/* EMV CHIP -> ELEVATED */}
+                    <div className="w-[14%] aspect-[1.3/1] mb-[8%]">
                         <img
                             src="/images/card-chip.png?v=restored"
                             alt="EMV Chip"
