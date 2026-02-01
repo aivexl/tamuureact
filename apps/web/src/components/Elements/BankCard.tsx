@@ -45,8 +45,8 @@ export const BankCard: React.FC<BankCardProps> = ({
             {/* CONTENT LAYER */}
             <div className="relative z-10 h-full w-full p-[8%] flex flex-col justify-between" style={{ color: textColor }}>
 
-                {/* 1. TOP ROW: BANK LOGO (Left) - ENLARGED */}
-                <div className="w-full flex justify-start items-center h-[25%] min-h-[28px] mb-2">
+                {/* 1. TOP ROW: BANK LOGO (Left) */}
+                <div className="w-full flex justify-start items-center h-[16%] min-h-[20px]">
                     {LogoComponent ? (
                         <div className="h-full">
                             <LogoComponent
@@ -60,8 +60,8 @@ export const BankCard: React.FC<BankCardProps> = ({
                     )}
                 </div>
 
-                {/* 2. MIDDLE BLOCK: CHIP -> BANK NAME (Stacked Vertically) - LOWERED */}
-                <div className="flex flex-col items-start gap-[6%] mt-[8%] mb-auto">
+                {/* 2. MIDDLE BLOCK: CHIP -> BANK NAME (Stacked Vertically) */}
+                <div className="flex flex-col items-start gap-[6%] mt-[6%] mb-auto">
                     {/* EMV CHIP */}
                     <div className="w-[13%] aspect-[1.2/1] flex-shrink-0 flex items-center justify-center">
                         <img
