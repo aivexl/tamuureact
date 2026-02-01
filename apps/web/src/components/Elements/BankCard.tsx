@@ -41,7 +41,7 @@ export const BankCard: React.FC<BankCardProps> = ({
                 backgroundColor: brandColor,
                 WebkitFontSmoothing: 'antialiased',
                 MozOsxFontSmoothing: 'grayscale'
-            }}
+            } as any}
             initial={!isPreview ? { opacity: 0, scale: 0.98 } : {}}
             animate={{ opacity: 1, scale: 1 }}
         >
@@ -56,7 +56,7 @@ export const BankCard: React.FC<BankCardProps> = ({
                             src="/images/card-chip.png"
                             alt="EMV Chip"
                             className="w-full h-auto block select-none pointer-events-none filter-none"
-                            style={{ imageRendering: 'high-quality' }}
+                            style={{ imageRendering: 'auto' }}
                         />
                     </div>
 
@@ -100,7 +100,7 @@ export const BankCard: React.FC<BankCardProps> = ({
                     {/* ACCOUNT NUMBER (SINGLE HORIZONTAL ROW) */}
                     <div className="mt-[6%] w-full">
                         <span className="text-[12px] sm:text-[18px] font-medium leading-none whitespace-nowrap tracking-[0.15em] block overflow-hidden text-ellipsis"
-                            style={{ fontFamily: '"Roboto Mono", monospace' }}>
+                            style={{ fontFamily: 'monospace' }}>
                             {displayAccountNumber}
                         </span>
                     </div>
