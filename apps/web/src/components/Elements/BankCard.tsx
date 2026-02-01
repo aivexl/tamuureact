@@ -23,92 +23,73 @@ export const BankCard: React.FC<BankCardProps> = ({
     // 1. Resolve Bank Data safely
     const bank = useMemo(() => getBankByName(bankName || ''), [bankName]);
     const safeBankId = bank?.id || 'unknown';
-    const brandColor = customColor || bank?.brandColor || '#0B132B';
+    const brandColor = customColor || bank?.brandColor || '#0066AE';
     const textColor = bank?.textColor || '#ffffff';
 
     // 2. Resolve Logo Component
     const LogoComponent = BankLogos[safeBankId] || BankLogos.unknown;
 
-    // 3. Format account number: Group by 4
-    const formattedNumber = (accountNumber || '').replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
+    // 3. Format account number: Split into two rows of 8 digits each
+    const cleanNumber = (accountNumber || '0000000000000000').replace(/\s/g, '');
+    const row1 = cleanNumber.slice(0, 8).replace(/(.{4})/g, '$1 ').trim();
+    const row2 = cleanNumber.slice(8, 16).replace(/(.{4})/g, '$1 ').trim();
 
     return (
         <m.div
-            className={`relative w-full aspect-[1.586/1] rounded-[18px] overflow-hidden shadow-2xl select-none group ${className}`}
+            className={`relative w-full aspect-[1.586/1] rounded-2xl overflow-hidden shadow-2xl select-none ${className}`}
             style={{ backgroundColor: brandColor }}
             initial={!isPreview ? { opacity: 0, scale: 0.98 } : {}}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
         >
-            {/* A. DECORATIVE LAYER: Subtle Diagonal Pattern (Inspired by Reference) */}
-            <div className="absolute inset-0 z-0 opacity-[0.05] pointer-events-none">
-                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <pattern id="diagonalLines" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                            <line x1="0" y1="0" x2="0" y2="40" stroke="white" strokeWidth="20" />
-                        </pattern>
-                    </defs>
-                    <rect width="100%" height="100%" fill="url(#diagonalLines)" />
-                </svg>
-            </div>
+            {/* CONTENT LAYER */}
+            <div className="relative z-10 h-full w-full p-6 flex flex-col justify-between" style={{ color: textColor }}>
 
-            {/* B. CONTENT LAYER: ASYMMETRIC PROFESSIONAL LAYOUT */}
-            <div className="relative z-10 h-full w-full p-[8%] flex flex-col justify-between" style={{ color: textColor }}>
-
-                {/* 1. TOP-LEFT: BRANDING */}
-                <div className="flex flex-col gap-[10%]">
-                    {/* BANK LOGO (Top-most, small and elegant) */}
-                    <div className="h-[10%] sm:h-[12%] w-fit flex items-center justify-start min-h-[16px]">
-                        <LogoComponent className="h-full w-auto opacity-100" />
-                        {!bank && (
-                            <span className="ml-2 text-[10px] sm:text-[12px] font-bold tracking-widest uppercase opacity-80">
-                                {bankName || 'Premium Bank'}
+                {/* TOP SECTION */}
+                <div className="flex flex-col gap-4">
+                    {/* BANK LOGO - Fixed height container */}
+                    <div className="h-6 sm:h-8 flex items-center">
+                        <LogoComponent className="h-full w-auto max-w-[120px]" />
+                        {!bank && bankName && (
+                            <span className="text-sm sm:text-base font-bold tracking-wide uppercase">
+                                {bankName}
                             </span>
                         )}
                     </div>
 
-                    {/* EMV CHIP (Directly below logo, realistic size) */}
-                    <div className="w-[15%] aspect-[1.2/1] drop-shadow-md brightness-110">
+                    {/* EMV CHIP - Original quality, no filters */}
+                    <div className="w-12 sm:w-14">
                         <img
                             src="/images/card-chip.png"
-                            alt="EMV"
-                            className="w-full h-full object-contain"
+                            alt="EMV Chip"
+                            className="w-full h-auto"
                         />
                     </div>
                 </div>
 
-                {/* 2. BOTTOM SECTION: IDENTITY & NUMBER */}
-                <div className="space-y-[6%] mb-1">
-                    {/* Account Number (Spacious, mono) */}
-                    <div className="flex flex-col">
-                        <span className="text-sm sm:text-2xl font-mono tracking-[0.15em] font-medium drop-shadow-md text-white/95">
-                            {formattedNumber || '0000 0000 0000 0000'}
+                {/* BOTTOM SECTION */}
+                <div className="flex flex-col gap-3">
+                    {/* ACCOUNT NUMBER - Two rows */}
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-lg sm:text-xl font-mono tracking-[0.2em] font-medium">
+                            {row1 || '0000 0000'}
+                        </span>
+                        <span className="text-lg sm:text-xl font-mono tracking-[0.2em] font-medium">
+                            {row2 || '0000 0000'}
                         </span>
                     </div>
 
-                    {/* Bottom Row: Holder & Network Watermark */}
-                    <div className="flex justify-between items-end">
-                        <div className="flex flex-col">
-                            <span className="text-[6px] sm:text-[8px] uppercase tracking-[0.4em] font-black opacity-30 mb-0.5">
-                                Card Holder
-                            </span>
-                            <span className="text-[10px] sm:text-[14px] font-semibold uppercase tracking-widest truncate leading-tight">
-                                {accountHolder || 'ALEXANDER PIERCE'}
-                            </span>
-                        </div>
-
-                        {/* Subtle Network Placeholder (Right Bottom) */}
-                        <div className="flex -space-x-2 opacity-20">
-                            <div className="w-6 h-6 rounded-full bg-white/40" />
-                            <div className="w-6 h-6 rounded-full bg-white/20" />
-                        </div>
+                    {/* CARD HOLDER */}
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[8px] sm:text-[10px] uppercase tracking-[0.3em] opacity-50">
+                            Card Holder
+                        </span>
+                        <span className="text-sm sm:text-base font-semibold uppercase tracking-wider">
+                            {accountHolder || 'NAMA LENGKAP'}
+                        </span>
                     </div>
                 </div>
             </div>
-
-            {/* C. DEPTH DETAILS */}
-            <div className="absolute inset-0 z-0 ring-1 ring-white/5 pointer-events-none rounded-[18px]" />
-            <div className="absolute inset-0 z-20 pointer-events-none shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]" />
         </m.div>
     );
 };
