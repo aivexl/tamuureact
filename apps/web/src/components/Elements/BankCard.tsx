@@ -29,6 +29,9 @@ export const BankCard: React.FC<BankCardProps> = ({
     // 2. Resolve Logo Component (Direct lookup, no hidden detectors)
     const LogoComponent = BankLogos[safeBankId] as any;
 
+    // Check if we need to force white logo for contrast
+    const shouldForceWhite = bank?.forceWhiteLogo;
+
     // 3. Raw Account Number (Single Horizontal Row)
     const displayAccountNumber = accountNumber || '0000000000000000';
 
@@ -57,10 +60,12 @@ export const BankCard: React.FC<BankCardProps> = ({
                         />
                     </div>
 
-                    {/* 2. BANK LOGO (TOP RIGHT) - FIX: Absolute height, no hidden detector */}
-                    <div className="h-6 sm:h-8 flex items-center">
+                    {/* 2. BANK LOGO (TOP RIGHT) - FIX: Reduced size, strict alignment, and auto-white filter */}
+                    <div className="h-5 sm:h-7 flex items-center justify-end">
                         {LogoComponent ? (
-                            <LogoComponent className="h-full w-auto" />
+                            <LogoComponent
+                                className={`h-full w-auto object-right-top ${shouldForceWhite ? 'brightness-0 invert' : ''}`}
+                            />
                         ) : (
                             <span className="text-[10px] sm:text-[12px] font-black uppercase tracking-widest opacity-90 leading-none text-right">
                                 {bank?.name || bankName || ''}

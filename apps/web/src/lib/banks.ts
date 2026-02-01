@@ -6,6 +6,7 @@ export interface BankInfo {
     textColor: string;
     logoType: 'text' | 'svg';
     logoContent: string;
+    forceWhiteLogo?: boolean;
 }
 
 export const SUPPORTED_BANKS: BankInfo[] = [
@@ -15,7 +16,8 @@ export const SUPPORTED_BANKS: BankInfo[] = [
         brandColor: '#005dab',
         textColor: '#ffffff',
         logoType: 'svg',
-        logoContent: 'BCA'
+        logoContent: 'BCA',
+        forceWhiteLogo: true
     },
     {
         id: 'mandiri',
@@ -23,7 +25,8 @@ export const SUPPORTED_BANKS: BankInfo[] = [
         brandColor: '#003d79',
         textColor: '#ffc220',
         logoType: 'svg',
-        logoContent: 'mandiri'
+        logoContent: 'mandiri',
+        forceWhiteLogo: true
     },
     {
         id: 'bni',
@@ -31,7 +34,8 @@ export const SUPPORTED_BANKS: BankInfo[] = [
         brandColor: '#005e6a',
         textColor: '#ffffff',
         logoType: 'svg',
-        logoContent: 'BNI'
+        logoContent: 'BNI',
+        forceWhiteLogo: true
     },
     {
         id: 'bri',
@@ -39,7 +43,8 @@ export const SUPPORTED_BANKS: BankInfo[] = [
         brandColor: '#00529c',
         textColor: '#ffffff',
         logoType: 'svg',
-        logoContent: 'BRI'
+        logoContent: 'BRI',
+        forceWhiteLogo: true
     },
     {
         id: 'bsi',
@@ -47,7 +52,8 @@ export const SUPPORTED_BANKS: BankInfo[] = [
         brandColor: '#00a491',
         textColor: '#ffffff',
         logoType: 'svg',
-        logoContent: 'BSI'
+        logoContent: 'BSI',
+        forceWhiteLogo: true
     },
     {
         id: 'cimb',
@@ -55,7 +61,8 @@ export const SUPPORTED_BANKS: BankInfo[] = [
         brandColor: '#da251c',
         textColor: '#ffffff',
         logoType: 'text',
-        logoContent: 'CIMB NIAGA'
+        logoContent: 'CIMB NIAGA',
+        forceWhiteLogo: true
     },
     {
         id: 'permata',
@@ -63,7 +70,8 @@ export const SUPPORTED_BANKS: BankInfo[] = [
         brandColor: '#afc045',
         textColor: '#ffffff',
         logoType: 'text',
-        logoContent: 'Permata'
+        logoContent: 'Permata',
+        forceWhiteLogo: true
     },
     {
         id: 'dana',
@@ -71,7 +79,8 @@ export const SUPPORTED_BANKS: BankInfo[] = [
         brandColor: '#008ced',
         textColor: '#ffffff',
         logoType: 'svg',
-        logoContent: 'DANA'
+        logoContent: 'DANA',
+        forceWhiteLogo: true
     },
     {
         id: 'ovo',
@@ -79,7 +88,8 @@ export const SUPPORTED_BANKS: BankInfo[] = [
         brandColor: '#4d2a86',
         textColor: '#ffffff',
         logoType: 'svg',
-        logoContent: 'OVO'
+        logoContent: 'OVO',
+        forceWhiteLogo: true
     },
     {
         id: 'gopay',
@@ -95,7 +105,8 @@ export const SUPPORTED_BANKS: BankInfo[] = [
         brandColor: '#ee4d2d',
         textColor: '#ffffff',
         logoType: 'svg',
-        logoContent: 'ShopeePay'
+        logoContent: 'ShopeePay',
+        forceWhiteLogo: true
     },
     {
         id: 'linkaja',
@@ -103,7 +114,8 @@ export const SUPPORTED_BANKS: BankInfo[] = [
         brandColor: '#e12127',
         textColor: '#ffffff',
         logoType: 'svg',
-        logoContent: 'LinkAja!'
+        logoContent: 'LinkAja!',
+        forceWhiteLogo: true
     },
     {
         id: 'jenius',
@@ -111,7 +123,8 @@ export const SUPPORTED_BANKS: BankInfo[] = [
         brandColor: '#00adef',
         textColor: '#ffffff',
         logoType: 'svg',
-        logoContent: 'Jenius'
+        logoContent: 'Jenius',
+        forceWhiteLogo: true
     },
     {
         id: 'jago',
@@ -119,7 +132,8 @@ export const SUPPORTED_BANKS: BankInfo[] = [
         brandColor: '#ff9800',
         textColor: '#ffffff',
         logoType: 'svg',
-        logoContent: 'Jago'
+        logoContent: 'Jago',
+        forceWhiteLogo: true
     }
 ];
 
