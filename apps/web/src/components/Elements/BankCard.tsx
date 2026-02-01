@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { m } from 'framer-motion';
 import { getBankByName } from '@/lib/banks';
 import { BankLogos } from './BankLogos';
@@ -20,15 +20,13 @@ export const BankCard: React.FC<BankCardProps> = ({
     className = '',
     isPreview = false
 }) => {
-    const [logoError, setLogoError] = useState(false);
-
     // 1. Resolve Bank Data safely
     const bank = useMemo(() => getBankByName(bankName || ''), [bankName]);
     const safeBankId = bank?.id || 'unknown';
     const brandColor = customColor || bank?.brandColor || '#005dab';
     const textColor = '#ffffff';
 
-    // 2. Resolve Logo Component 
+    // 2. Resolve Logo Component (Direct lookup, no hidden detectors)
     const LogoComponent = BankLogos[safeBankId] as any;
 
     // 3. Raw Account Number (Single Horizontal Row)
@@ -55,23 +53,14 @@ export const BankCard: React.FC<BankCardProps> = ({
                         <img
                             src="/images/card-chip.png"
                             alt="EMV Chip"
-                            className="w-full h-auto block select-none pointer-events-none filter-none"
-                            style={{ imageRendering: 'auto' }}
+                            className="w-full h-auto block select-none pointer-events-none"
                         />
                     </div>
 
-                    {/* 2. BANK LOGO (TOP RIGHT) */}
-                    <div className="h-[10%] flex items-center min-h-[14px]">
-                        {LogoComponent && !logoError ? (
-                            <div className="h-full relative flex justify-end">
-                                <LogoComponent className="h-full w-auto block filter-none" />
-                                <img
-                                    src={`/images/logos/banks/${safeBankId}.png`}
-                                    className="absolute inset-0 opacity-0 pointer-events-none"
-                                    onError={() => setLogoError(true)}
-                                    alt=""
-                                />
-                            </div>
+                    {/* 2. BANK LOGO (TOP RIGHT) - FIX: Absolute height, no hidden detector */}
+                    <div className="h-6 sm:h-8 flex items-center">
+                        {LogoComponent ? (
+                            <LogoComponent className="h-full w-auto" />
                         ) : (
                             <span className="text-[10px] sm:text-[12px] font-black uppercase tracking-widest opacity-90 leading-none text-right">
                                 {bank?.name || bankName || ''}
