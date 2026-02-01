@@ -115,7 +115,7 @@ export const BankCard: React.FC<BankCardProps> = ({
                         <span className="text-[12px] sm:text-[16px] font-bold uppercase tracking-widest leading-none text-shadow-md block truncate flex-1">
                             {accountHolder || 'NAMA LENGKAP'}
                         </span>
-                        {!isPreview && <CopyIcon fieldName="Account Holder" size={14} />}
+                        {!isPreview && <CopyIcon fieldName="Account Holder" />}
                     </button>
 
                     {/* ACCOUNT NUMBER */}
@@ -127,7 +127,7 @@ export const BankCard: React.FC<BankCardProps> = ({
                             style={{ fontFamily: 'monospace' }}>
                             {accountNumber || '0000000000000000'}
                         </span>
-                        {!isPreview && <CopyIcon fieldName="Account Number" size={18} />}
+                        {!isPreview && <CopyIcon fieldName="Account Number" />}
                     </button>
                 </div>
             </div>
