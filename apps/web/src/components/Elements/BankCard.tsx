@@ -63,7 +63,7 @@ export const BankCard: React.FC<BankCardProps> = ({
                 {/* 2. BOTTOM STACK: CHIP -> BANK NAME -> HOLDER -> NUMBER (Perfectly Proportional) */}
                 <div className="w-full flex flex-col items-start gap-[1%] mt-auto">
                     {/* EMV CHIP */}
-                    <div className="w-[14%] aspect-[1.3/1] mb-[3%]">
+                    <div className="w-[14%] aspect-[1.3/1] mb-[2%]">
                         <img
                             src="/images/card-chip.png?v=restored"
                             alt="EMV Chip"
@@ -71,15 +71,15 @@ export const BankCard: React.FC<BankCardProps> = ({
                         />
                     </div>
 
-                    {/* BANK NAME (Consolidated for uniform gap) */}
-                    <div className="w-full mb-[1%]">
+                    {/* BANK NAME -> Uniform Gap below */}
+                    <div className="w-full mb-[2.5%]">
                         <span className="text-[10px] sm:text-[13px] font-black uppercase tracking-widest leading-none drop-shadow-sm opacity-90 block truncate">
                             {bank?.name || bankName || 'BANK NAME'}
                         </span>
                     </div>
 
-                    {/* ACCOUNT HOLDER */}
-                    <div className="w-full mb-[2%]">
+                    {/* ACCOUNT HOLDER -> Uniform Gap below */}
+                    <div className="w-full mb-[2.5%]">
                         <span className="text-[12px] sm:text-[16px] font-bold uppercase tracking-widest leading-none text-shadow-md block truncate">
                             {accountHolder || 'NAMA LENGKAP'}
                         </span>
