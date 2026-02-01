@@ -45,8 +45,8 @@ export const BankCard: React.FC<BankCardProps> = ({
             {/* CONTENT LAYER */}
             <div className="relative z-10 h-full w-full p-[8%] flex flex-col justify-between" style={{ color: textColor }}>
 
-                {/* 1. TOP ROW: BANK LOGO (Left) */}
-                <div className="w-full flex justify-start items-center h-[16%] min-h-[20px]">
+                {/* 1. TOP ROW: BANK LOGO (Left) - PROPORTIONALLY ENLARGED */}
+                <div className="w-full flex justify-start items-center h-[28%] min-h-[32px]">
                     {LogoComponent ? (
                         <div className="h-full">
                             <LogoComponent
@@ -54,16 +54,16 @@ export const BankCard: React.FC<BankCardProps> = ({
                             />
                         </div>
                     ) : (
-                        <span className="text-[14px] sm:text-[18px] font-black uppercase tracking-widest opacity-90 leading-none shadow-sm">
+                        <span className="text-[14px] sm:text-[18px] font-black uppercase tracking-widest opacity-90 leading-none drop-shadow-sm">
                             {bank?.name || bankName || ''}
                         </span>
                     )}
                 </div>
 
-                {/* 2. MIDDLE BLOCK: CHIP -> BANK NAME (Stacked Vertically) */}
-                <div className="flex flex-col items-start gap-[6%] mt-[6%] mb-auto">
+                {/* 2. BOTTOM STACK: CHIP -> BANK NAME -> HOLDER -> NUMBER (Perfectly Proportional) */}
+                <div className="w-full flex flex-col items-start gap-[1%] mt-auto">
                     {/* EMV CHIP */}
-                    <div className="w-[13%] aspect-[1.2/1] flex-shrink-0 flex items-center justify-center">
+                    <div className="w-[14%] aspect-[1.3/1] mb-[3%]">
                         <img
                             src="/images/card-chip.png?v=restored"
                             alt="EMV Chip"
@@ -71,26 +71,23 @@ export const BankCard: React.FC<BankCardProps> = ({
                         />
                     </div>
 
-                    {/* BANK NAME (Below Chip, Bold, Single Line) */}
-                    <div className="w-full mt-[2%]">
-                        <span className="text-[11px] sm:text-[15px] font-black uppercase tracking-widest leading-none drop-shadow-md opacity-95 block truncate">
+                    {/* BANK NAME (Consolidated for uniform gap) */}
+                    <div className="w-full mb-[1%]">
+                        <span className="text-[10px] sm:text-[13px] font-black uppercase tracking-widest leading-none drop-shadow-sm opacity-90 block truncate">
                             {bank?.name || bankName || 'BANK NAME'}
                         </span>
                     </div>
-                </div>
 
-                {/* 3. BOTTOM BLOCK: NAME -> ACCOUNT NUMBER (Proportional) */}
-                <div className="w-full flex flex-col items-start gap-[2%] mt-auto">
-                    {/* NAME (Large & Bold) */}
+                    {/* ACCOUNT HOLDER */}
                     <div className="w-full mb-[2%]">
-                        <span className="text-[12px] sm:text-[16px] font-bold uppercase tracking-widest leading-none text-shadow-md block truncate opacity-90">
+                        <span className="text-[12px] sm:text-[16px] font-bold uppercase tracking-widest leading-none text-shadow-md block truncate">
                             {accountHolder || 'NAMA LENGKAP'}
                         </span>
                     </div>
 
-                    {/* ACCOUNT NUMBER (Monospaced, Clean) */}
+                    {/* ACCOUNT NUMBER */}
                     <div className="w-full">
-                        <span className="text-[13px] sm:text-[19px] font-semibold leading-none whitespace-nowrap tracking-widest block overflow-hidden text-ellipsis drop-shadow-lg"
+                        <span className="text-[15px] sm:text-[22px] font-semibold leading-none whitespace-nowrap tracking-widest block overflow-hidden text-ellipsis drop-shadow-lg"
                             style={{ fontFamily: 'monospace' }}>
                             {accountNumber || '0000000000000000'}
                         </span>
