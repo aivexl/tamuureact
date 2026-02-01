@@ -604,8 +604,8 @@ const elementConfigs: ElementConfig[] = [
         label: 'Cards',
         color: 'hover:bg-red-500/10 hover:border-red-500/30',
         createDefault: () => ({
-            width: 280,
-            height: 220,
+            width: 380,
+            height: 240,
             digitalGiftConfig: {
                 title: 'Kado Digital',
                 description: 'Doa restu Anda adalah kado terindah...',

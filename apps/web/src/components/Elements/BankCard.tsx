@@ -90,7 +90,7 @@ export const BankCard: React.FC<BankCardProps> = ({
 
                     {/* ACCOUNT NUMBER (Monospaced, Clean) */}
                     <div className="w-full">
-                        <span className="text-[14px] sm:text-[20px] font-semibold leading-none whitespace-nowrap tracking-[0.15em] block overflow-hidden text-ellipsis drop-shadow-lg"
+                        <span className="text-[13px] sm:text-[19px] font-semibold leading-none whitespace-nowrap tracking-widest block overflow-hidden text-ellipsis drop-shadow-lg"
                             style={{ fontFamily: 'monospace' }}>
                             {accountNumber || '0000000000000000'}
                         </span>
