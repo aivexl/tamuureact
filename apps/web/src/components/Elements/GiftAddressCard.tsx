@@ -45,7 +45,10 @@ export const GiftAddressCard: React.FC<GiftAddressCardProps> = ({
             className={`relative w-full aspect-[1.586/1] rounded-[16px] overflow-hidden shadow-2xl select-none antialiased border border-slate-100 transform-gpu ${className}`}
             style={{
                 backgroundColor: customColor,
-            }}
+                WebkitFontSmoothing: 'antialiased',
+                MozOsxFontSmoothing: 'grayscale',
+                imageRendering: 'high-quality'
+            } as any}
             initial={!isPreview ? { opacity: 0, scale: 0.98 } : {}}
             animate={{ opacity: 1, scale: 1 }}
         >
@@ -54,7 +57,7 @@ export const GiftAddressCard: React.FC<GiftAddressCardProps> = ({
                 <Home size={240} />
             </div>
 
-            <div className="relative z-10 h-full w-full p-[8%] flex flex-col justify-between">
+            <div className="relative z-10 h-full w-full p-[6%] flex flex-col justify-between">
                 {/* HEADER */}
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg shadow-slate-900/10">
@@ -67,34 +70,36 @@ export const GiftAddressCard: React.FC<GiftAddressCardProps> = ({
                 </div>
 
                 {/* CONTENT */}
-                <div className="flex flex-col gap-4 mt-auto">
+                <div className="w-full flex flex-col items-start gap-[1%] mt-auto">
                     {/* RECIPIENT */}
                     <button
                         onClick={() => handleCopy(recipientName, 'Recipient Name')}
                         className={`w-full group flex flex-col items-start outline-none transition-transform active:scale-[0.98] ${isPreview ? 'cursor-default' : 'cursor-pointer'}`}
                     >
+                        <span className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 mb-1">Penerima</span>
                         <div className="flex items-center w-full">
-                            <span className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 mb-1">Penerima</span>
-                            {!isPreview && <CopyIcon fieldName="Recipient Name" size={10} />}
+                            <span className="text-[16px] sm:text-[20px] font-bold text-slate-900 uppercase tracking-wide truncate flex-1 text-left">
+                                {recipientName || 'NAMA PENERIMA'}
+                            </span>
+                            {!isPreview && <CopyIcon fieldName="Recipient Name" size={14} />}
                         </div>
-                        <span className="text-[14px] sm:text-[18px] font-bold text-slate-800 uppercase tracking-wide truncate w-full text-left">
-                            {recipientName || 'NAMA PENERIMA'}
-                        </span>
                     </button>
 
                     {/* ADDRESS */}
                     <button
                         onClick={() => handleCopy(address, 'Address')}
-                        className={`w-full group flex flex-col items-start outline-none transition-transform active:scale-[0.98] ${isPreview ? 'cursor-default' : 'cursor-pointer'}`}
+                        className={`w-full group flex flex-col items-start outline-none transition-transform active:scale-[0.98] mt-2 ${isPreview ? 'cursor-default' : 'cursor-pointer'}`}
                     >
-                        <div className="flex items-center w-full">
+                        <div className="flex items-center w-full mb-1">
                             <MapPin size={10} className="text-rose-500 mr-1.5" />
                             <span className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Alamat Lengkap</span>
-                            {!isPreview && <CopyIcon fieldName="Address" size={10} />}
                         </div>
-                        <span className="text-[10px] sm:text-[12px] font-medium text-slate-500 mt-1 leading-relaxed text-left line-clamp-2 w-full">
-                            {address || 'Masukkan alamat lengkap di sini...'}
-                        </span>
+                        <div className="flex items-center w-full">
+                            <span className="text-[10px] sm:text-[13px] font-medium text-slate-600 leading-relaxed text-left line-clamp-2 flex-1">
+                                {address || 'Masukkan alamat lengkap di sini...'}
+                            </span>
+                            {!isPreview && <CopyIcon fieldName="Address" size={12} />}
+                        </div>
                     </button>
                 </div>
             </div>

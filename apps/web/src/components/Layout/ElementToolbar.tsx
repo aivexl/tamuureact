@@ -623,8 +623,8 @@ const elementConfigs: ElementConfig[] = [
         label: 'Gift Addr',
         color: 'hover:bg-slate-500/10 hover:border-slate-500/30',
         createDefault: () => ({
-            width: 320,
-            height: 200,
+            width: 380,
+            height: 240,
             giftAddressConfig: {
                 title: 'Kirim Kado',
                 recipientName: 'Nama Penerima',
