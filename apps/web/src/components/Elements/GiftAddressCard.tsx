@@ -57,7 +57,7 @@ export const GiftAddressCard: React.FC<GiftAddressCardProps> = ({
                 <Home size={240} />
             </div>
 
-            <div className="relative z-10 h-full w-full p-[6%] flex flex-col justify-start gap-[12%]">
+            <div className="relative z-10 h-full w-full p-[6%] flex flex-col justify-start gap-[0.5%]">
                 {/* HEADER */}
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg shadow-slate-900/10">
@@ -70,7 +70,7 @@ export const GiftAddressCard: React.FC<GiftAddressCardProps> = ({
                 </div>
 
                 {/* CONTENT */}
-                <div className="w-full flex flex-col items-start gap-[1%]">
+                <div className="w-full flex flex-col items-start gap-0">
                     {/* RECIPIENT */}
                     <button
                         onClick={() => handleCopy(recipientName, 'Recipient Name')}
@@ -88,7 +88,7 @@ export const GiftAddressCard: React.FC<GiftAddressCardProps> = ({
                     {/* ADDRESS */}
                     <button
                         onClick={() => handleCopy(address, 'Address')}
-                        className={`w-full group flex flex-col items-start outline-none transition-transform active:scale-[0.98] mt-2 ${isPreview ? 'cursor-default' : 'cursor-pointer'}`}
+                        className={`w-full group flex flex-col items-start outline-none transition-transform active:scale-[0.98] mt-0 ${isPreview ? 'cursor-default' : 'cursor-pointer'}`}
                     >
                         <div className="flex items-center w-full mb-1">
                             <MapPin size={10} className="text-rose-500 mr-1.5" />
