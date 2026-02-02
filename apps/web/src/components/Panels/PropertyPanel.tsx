@@ -14,7 +14,7 @@ import {
     ChevronUp, ChevronDown, Copy,
     Eye, EyeOff, FlipHorizontal, FlipVertical,
     FlipHorizontal2, FlipVertical2,
-    Gift, Heart, ImageIcon, Layout, Layers,
+    Gift, Heart, Home, ImageIcon, Layout, Layers,
     Shield, Anchor, UserCheck, Lock, Unlock, MailOpen, MapPin, MessageSquare,
     Maximize2, Monitor, MousePointer2, Move, MoveHorizontal,
     Palette, Plane, Settings2, Sliders,
@@ -2145,6 +2145,42 @@ export const PropertyPanel: React.FC = () => {
                                 ]}
                                 onChange={(v) => handleUpdate({ digitalGiftConfig: { ...layer.digitalGiftConfig!, theme: v as any } })}
                             />
+                        </div>
+                    </SectionComponent>
+                )}
+
+                {/* Gift Address Settings */}
+                {layer.type === 'gift_address' && (
+                    <SectionComponent title="Gift Address Settings" icon={<Home className="w-4 h-4 text-emerald-400" />}>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Recipient Name</label>
+                                <input
+                                    type="text"
+                                    value={layer.giftAddressConfig?.recipientName || ''}
+                                    onChange={(e) => handleUpdate({ giftAddressConfig: { ...layer.giftAddressConfig!, recipientName: e.target.value } })}
+                                    className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none text-white"
+                                    placeholder="Nama Penerima"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Full Address</label>
+                                <textarea
+                                    value={layer.giftAddressConfig?.address || ''}
+                                    onChange={(e) => handleUpdate({ giftAddressConfig: { ...layer.giftAddressConfig!, address: e.target.value } })}
+                                    className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none text-white resize-none"
+                                    rows={4}
+                                    placeholder="Alamat lengkap pengiriman..."
+                                />
+                            </div>
+
+                            <div className="pt-2 border-t border-white/5">
+                                <ColorInput
+                                    label="Custom Card Color"
+                                    value={layer.giftAddressConfig?.customColor || ''}
+                                    onChange={(v) => handleUpdate({ giftAddressConfig: { ...layer.giftAddressConfig!, customColor: v } })}
+                                />
+                            </div>
                         </div>
                     </SectionComponent>
                 )}

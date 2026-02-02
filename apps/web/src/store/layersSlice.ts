@@ -46,7 +46,8 @@ export type LayerType =
     | 'directions_hub'
     | 'share_context'
     | 'interaction'
-    | 'name_board';
+    | 'name_board'
+    | 'gift_address';
 
 
 // ============================================
@@ -524,6 +525,12 @@ export interface DigitalGiftConfig {
     customColor?: string;
 }
 
+export interface GiftAddressConfig {
+    recipientName: string;
+    address: string;
+    customColor?: string;
+}
+
 export interface MusicPlayerConfig {
     audioUrl: string;
     title: string;
@@ -704,6 +711,7 @@ export interface Layer {
     hologramConfig?: any;
     gradientMeshConfig?: any;
     nameBoardConfig?: NameBoardConfig;
+    giftAddressConfig?: GiftAddressConfig;
 
     // ENTERPRISE V2 FEATURES
     maskConfig?: MaskConfig;

@@ -23,7 +23,8 @@ import {
     TiltCardElement,
     CalendarSyncElement,
     DirectionsHubElement,
-    ShareContextElement
+    ShareContextElement,
+    GiftAddressElement
 } from '@/components/Elements';
 
 // ============================================
@@ -84,6 +85,8 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenI
                 return <ParticlesElement layer={layer} onContentLoad={onContentLoad} />;
             case 'digital_gift':
                 return <DigitalGiftElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
+            case 'gift_address':
+                return <GiftAddressElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             case 'music_player':
                 return <MusicPlayerElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             case 'qr_code':

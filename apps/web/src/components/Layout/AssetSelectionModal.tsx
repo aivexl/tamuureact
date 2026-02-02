@@ -5,7 +5,7 @@ import {
     Type, Image as ImageIcon, Clock, MailOpen,
     Heart, Square, Film, MapPin, Video, Sparkles, X,
     MessageSquare, Users, Circle, Triangle, Diamond, Star,
-    Music, Camera, Gift, Flower2, Bell, Check, Cloud,
+    Music, Camera, Gift, Flower2, Bell, Check, Cloud, Home,
     Sun, Moon, Smile, ThumbsUp, Upload, Monitor,
     Waves, Zap, Component, Share2, Layers
 } from 'lucide-react';
@@ -441,6 +441,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
             case 'music_player': return 'Music Library';
             case 'svg_wave': return 'Wave & Blob Presets';
             case 'digital_gift': return 'Angpao Theme';
+            case 'gift_address': return 'Gift Address Design';
             case 'social_mockup': return 'Social Platform';
             case 'interaction': return 'Select Cinematic Effect';
             default: {
@@ -862,6 +863,24 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                         >
                             <span className="text-xs font-bold text-white uppercase tracking-widest">Modern Glass</span>
                             <p className="text-[10px] text-white/60 mt-1">Clean and professional design</p>
+                        </button>
+                    </div>
+                )}
+
+                {/* GIFT ADDRESS */}
+                {type === 'gift_address' && (
+                    <div className="grid gap-3">
+                        <button
+                            onClick={() => onSelect({ giftAddressConfig: { customColor: '#f8fafc' } })}
+                            className="w-full p-4 rounded-xl bg-slate-50/50 border border-slate-200 text-left relative overflow-hidden group"
+                        >
+                            <div className="absolute -right-4 -bottom-4 opacity-[0.05] pointer-events-none">
+                                <Home size={80} className="text-slate-900" />
+                            </div>
+                            <div className="relative z-10">
+                                <span className="text-xs font-bold text-slate-900 uppercase tracking-widest">Minimalist Home</span>
+                                <p className="text-[10px] text-slate-500 mt-1">Clean white card with house icon</p>
+                            </div>
                         </button>
                     </div>
                 )}

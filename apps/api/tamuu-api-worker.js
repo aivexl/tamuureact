@@ -341,6 +341,7 @@ export default {
                         bank2Holder: user.bank2_holder,
                         emoneyType: user.emoney_type,
                         emoneyNumber: user.emoney_number,
+                        giftRecipient: user.gift_recipient,
                         giftAddress: user.gift_address,
                         role: user.role || 'user',
                         permissions: JSON.parse(user.permissions || '[]')
@@ -366,7 +367,7 @@ export default {
                     id, name, phone, gender, birthDate,
                     bank1Name, bank1Number, bank1Holder,
                     bank2Name, bank2Number, bank2Holder,
-                    emoneyType, emoneyNumber, giftAddress
+                    emoneyType, emoneyNumber, giftRecipient, giftAddress
                 } = body;
 
                 if (!id) return json({ error: 'User ID required' }, { ...corsHeaders, status: 400 });
@@ -385,6 +386,7 @@ export default {
                         bank2_holder = COALESCE(?, bank2_holder),
                         emoney_type = COALESCE(?, emoney_type),
                         emoney_number = COALESCE(?, emoney_number),
+                        gift_recipient = COALESCE(?, gift_recipient),
                         gift_address = COALESCE(?, gift_address),
                         updated_at = datetime('now')
                     WHERE id = ?
@@ -392,7 +394,7 @@ export default {
                     name ?? null, phone ?? null, gender ?? null, birthDate ?? null,
                     bank1Name ?? null, bank1Number ?? null, bank1Holder ?? null,
                     bank2Name ?? null, bank2Number ?? null, bank2Holder ?? null,
-                    emoneyType ?? null, emoneyNumber ?? null, giftAddress ?? null,
+                    emoneyType ?? null, emoneyNumber ?? null, giftRecipient ?? null, giftAddress ?? null,
                     id
                 ).run();
 

@@ -6,6 +6,7 @@ import { users } from '@/lib/api';
 import { useStore } from '@/store/useStore';
 import { SUPPORTED_BANKS } from '@/lib/banks';
 import { BankCard } from '@/components/Elements/BankCard';
+import { GiftAddressCard } from '@/components/Elements/GiftAddressCard';
 
 interface GiftPanelProps {
     onClose: () => void;
@@ -33,6 +34,7 @@ export const GiftPanel: React.FC<GiftPanelProps> = ({ onClose }) => {
     const [emoneyNumber, setEmoneyNumber] = useState('');
 
     // Address
+    const [giftRecipient, setGiftRecipient] = useState('');
     const [giftAddress, setGiftAddress] = useState('');
 
     useEffect(() => {
@@ -55,6 +57,7 @@ export const GiftPanel: React.FC<GiftPanelProps> = ({ onClose }) => {
 
                     setEmoneyType(data.emoneyType || '');
                     setEmoneyNumber(data.emoneyNumber || '');
+                    setGiftRecipient(data.giftRecipient || '');
                     setGiftAddress(data.giftAddress || '');
                 }
             } catch (error) {
@@ -82,8 +85,9 @@ export const GiftPanel: React.FC<GiftPanelProps> = ({ onClose }) => {
                 bank2Holder: showBank2 ? bank2Holder : '',
                 emoneyType,
                 emoneyNumber,
+                giftRecipient,
                 giftAddress
-            });
+            } as any);
 
             setSuccess(true);
             setTimeout(() => {
@@ -118,16 +122,27 @@ export const GiftPanel: React.FC<GiftPanelProps> = ({ onClose }) => {
                     <Check className="w-5 h-5 text-emerald-600" />
                     <h4 className="font-black text-slate-800 uppercase tracking-widest text-xs">Preview Kartu Digital</h4>
                 </div>
-                <div className="w-full max-w-[480px] transform hover:scale-[1.02] transition-transform duration-500">
-                    <BankCard
-                        bankName={bank1Name}
-                        accountNumber={bank1Number}
-                        accountHolder={bank1Holder}
-                        isPreview={true}
-                    />
+                <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 max-w-[800px]">
+                    <div className="space-y-3">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center block">Kartu Angpao</span>
+                        <BankCard
+                            bankName={bank1Name}
+                            accountNumber={bank1Number}
+                            accountHolder={bank1Holder}
+                            isPreview={true}
+                        />
+                    </div>
+                    <div className="space-y-3">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center block">Kartu Alamat</span>
+                        <GiftAddressCard
+                            recipientName={giftRecipient}
+                            address={giftAddress}
+                            isPreview={true}
+                        />
+                    </div>
                 </div>
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-center">
-                    Tampilan kartu akan menyesuaikan dengan brand bank yang dipilih
+                    Tampilan kartu akan menyesuaikan dengan brand dan data yang Anda masukkan
                 </p>
             </div>
 
@@ -272,9 +287,15 @@ export const GiftPanel: React.FC<GiftPanelProps> = ({ onClose }) => {
                         <MapPin className="w-5 h-5 text-rose-600" />
                         <h4 className="font-black text-slate-800 uppercase tracking-widest text-xs">Alamat Kado Fisik</h4>
                     </div>
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Alamat Lengkap</label>
-                        <textarea value={giftAddress} onChange={e => setGiftAddress(e.target.value)} rows={4} placeholder="Masukkan alamat untuk pengiriman kado..." className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-rose-500/10 outline-none font-bold text-slate-700 resize-none" />
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Nama Penerima</label>
+                            <input value={giftRecipient} onChange={e => setGiftRecipient(e.target.value)} type="text" placeholder="Masukkan nama penerima..." className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-rose-500/10 outline-none font-bold text-slate-700" />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Alamat Lengkap</label>
+                            <textarea value={giftAddress} onChange={e => setGiftAddress(e.target.value)} rows={4} placeholder="Masukkan alamat untuk pengiriman kado..." className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-rose-500/10 outline-none font-bold text-slate-700 resize-none" />
+                        </div>
                     </div>
                 </div>
             </div>

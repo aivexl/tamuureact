@@ -464,6 +464,7 @@ export const users = {
         bank2Holder?: string;
         emoneyType?: string;
         emoneyNumber?: string;
+        giftRecipient?: string;
         giftAddress?: string;
     }) {
         const res = await safeFetch(`${API_BASE}/api/user/profile`, {
