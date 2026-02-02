@@ -57,7 +57,7 @@ export const GiftAddressCard: React.FC<GiftAddressCardProps> = ({
                 <Home size={240} />
             </div>
 
-            <div className="relative z-10 h-full w-full p-[6%] flex flex-col justify-start gap-[0.5%]">
+            <div className="relative z-10 h-full w-full p-[6%] flex flex-col justify-start gap-[4%]">
                 {/* HEADER */}
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg shadow-slate-900/10">
