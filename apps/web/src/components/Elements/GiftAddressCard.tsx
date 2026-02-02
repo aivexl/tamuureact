@@ -105,7 +105,7 @@ export const GiftAddressCard: React.FC<GiftAddressCardProps> = ({
             </div>
 
             {/* DECORATIVE LINE */}
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-slate-200 via-emerald-400 to-slate-200 opacity-30" />
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-slate-200 opacity-50" />
         </m.div>
     );
 };
