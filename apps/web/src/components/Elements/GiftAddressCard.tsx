@@ -57,7 +57,7 @@ export const GiftAddressCard: React.FC<GiftAddressCardProps> = ({
                 <Home size={240} />
             </div>
 
-            <div className="relative z-10 h-full w-full p-[6%] flex flex-col justify-between">
+            <div className="relative z-10 h-full w-full p-[6%] flex flex-col justify-start gap-[12%]">
                 {/* HEADER */}
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg shadow-slate-900/10">
@@ -70,7 +70,7 @@ export const GiftAddressCard: React.FC<GiftAddressCardProps> = ({
                 </div>
 
                 {/* CONTENT */}
-                <div className="w-full flex flex-col items-start gap-[1%] mt-auto">
+                <div className="w-full flex flex-col items-start gap-[1%]">
                     {/* RECIPIENT */}
                     <button
                         onClick={() => handleCopy(recipientName, 'Recipient Name')}
@@ -95,7 +95,7 @@ export const GiftAddressCard: React.FC<GiftAddressCardProps> = ({
                             <span className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Alamat Lengkap</span>
                         </div>
                         <div className="flex items-center w-full">
-                            <span className="text-[10px] sm:text-[13px] font-medium text-slate-600 leading-relaxed text-left line-clamp-2 flex-1">
+                            <span className="text-[10px] sm:text-[13px] font-medium text-slate-600 leading-relaxed text-left line-clamp-4 flex-1">
                                 {address || 'Masukkan alamat lengkap di sini...'}
                             </span>
                             {!isPreview && <CopyIcon fieldName="Address" size={12} />}
