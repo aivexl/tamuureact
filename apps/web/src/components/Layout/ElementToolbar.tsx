@@ -618,6 +618,25 @@ const elementConfigs: ElementConfig[] = [
         })
     },
     {
+        type: 'gift_address',
+        icon: <Gift className="w-5 h-5" />,
+        label: 'Gift Addr',
+        color: 'hover:bg-slate-500/10 hover:border-slate-500/30',
+        createDefault: () => ({
+            width: 320,
+            height: 200,
+            giftAddressConfig: {
+                title: 'Kirim Kado',
+                recipientName: 'Nama Penerima',
+                phoneNumber: '081234567890',
+                address: 'Jl. Alamat Lengkap No. 123, Kota, Provinsi',
+                note: 'Mohon konfirmasi sebelum mengirim.',
+                buttonText: 'Salin Alamat',
+                customColor: '#f8fafc'
+            }
+        })
+    },
+    {
         type: 'name_board' as LayerType,
         icon: <Users className="w-5 h-5" />,
         label: 'Name Board',
