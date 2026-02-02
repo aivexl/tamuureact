@@ -164,15 +164,11 @@ export const DigitalGiftElement: React.FC<{ layer: Layer, isEditor?: boolean, on
         bankName: 'Bank Central Asia',
         accountNumber: '1234567890',
         accountHolder: 'John Doe',
-        buttonText: 'Salin Rekening',
-        theme: 'gold'
+        buttonText: '',
+        theme: 'gold',
+        customColor: undefined
     };
 
-    const handleCopy = () => {
-        if (isEditor) return;
-        navigator.clipboard.writeText(config.accountNumber);
-        // We could add a toast notification here if available
-    };
 
     return (
         <div
