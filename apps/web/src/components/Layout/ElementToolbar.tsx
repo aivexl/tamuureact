@@ -679,8 +679,6 @@ const elementConfigs: ElementConfig[] = [
                 gradientEnd: '#764ba2'
             }
         })
-    },
-        })
     }
 ];
 
