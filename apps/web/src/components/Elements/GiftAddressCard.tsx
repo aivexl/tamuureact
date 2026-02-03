@@ -57,7 +57,7 @@ export const GiftAddressCard: React.FC<GiftAddressCardProps> = ({
                 <Home size={240} />
             </div>
 
-            <div className="relative z-10 h-full w-full p-[6%] flex flex-col justify-start gap-[3%]">
+            <div className="relative z-10 h-full w-full p-[6%] flex flex-col justify-start gap-[1%]">
                 {/* HEADER */}
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg shadow-slate-900/10">
@@ -74,7 +74,7 @@ export const GiftAddressCard: React.FC<GiftAddressCardProps> = ({
                     {/* RECIPIENT */}
                     <button
                         onClick={() => handleCopy(recipientName, 'Recipient Name')}
-                        className={`w-full group flex flex-col items-start outline-none transition-transform active:scale-[0.98] mt-[1%] ${isPreview ? 'cursor-default' : 'cursor-pointer'}`}
+                        className={`w-full group flex flex-col items-start outline-none transition-transform active:scale-[0.98] mt-0 ${isPreview ? 'cursor-default' : 'cursor-pointer'}`}
                     >
                         <span className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 mb-1">Penerima</span>
                         <div className="flex items-center w-full">

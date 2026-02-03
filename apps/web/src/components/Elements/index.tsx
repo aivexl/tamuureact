@@ -206,6 +206,7 @@ export const DigitalGiftElement: React.FC<{ layer: Layer, isEditor?: boolean, on
 // GIFT ADDRESS ELEMENT
 // ============================================
 import { GiftAddressCard } from './GiftAddressCard';
+export * from './LoveStoryElement';
 
 export const GiftAddressElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
     useEffect(() => {

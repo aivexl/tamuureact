@@ -47,7 +47,8 @@ export type LayerType =
     | 'share_context'
     | 'interaction'
     | 'name_board'
-    | 'gift_address';
+    | 'gift_address'
+    | 'love_story';
 
 
 // ============================================
@@ -526,9 +527,25 @@ export interface DigitalGiftConfig {
 }
 
 export interface GiftAddressConfig {
+    title: string;
     recipientName: string;
+    phoneNumber: string;
     address: string;
+    note?: string;
+    buttonText: string;
     customColor?: string;
+}
+
+export interface LoveStoryConfig {
+    variant: 'elegant' | 'modern' | 'zigzag' | 'cards';
+    themeColor: string;
+    markerStyle: 'heart' | 'dot' | 'diamond' | 'star';
+    events: Array<{
+        id: string;
+        date: string;
+        title: string;
+        description: string;
+    }>;
 }
 
 export interface MusicPlayerConfig {
@@ -712,6 +729,7 @@ export interface Layer {
     gradientMeshConfig?: any;
     nameBoardConfig?: NameBoardConfig;
     giftAddressConfig?: GiftAddressConfig;
+    loveStoryConfig?: LoveStoryConfig;
 
     // ENTERPRISE V2 FEATURES
     maskConfig?: MaskConfig;

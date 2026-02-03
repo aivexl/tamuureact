@@ -342,7 +342,6 @@ const INTERACTIVE_QR_PRESETS = [
         ]
     }
 ];
-
 const PARTICLE_PRESETS = {
     fireworks: [
         { label: 'Victory Gold', colors: ['#FFD700', '#FFA500'], icon: '🚀' },
@@ -357,6 +356,13 @@ const PARTICLE_PRESETS = {
         { label: 'Mist Glow', color: '#e2e8f0', icon: '🌫️' },
     ]
 };
+
+const LOVE_STORY_PRESETS = [
+    { label: 'Elegant', variant: 'elegant', description: 'Sophisticated vertical timeline', icon: '✨' },
+    { label: 'Modern', variant: 'modern', description: 'Clean and bold card style', icon: '📱' },
+    { label: 'Zigzag', variant: 'zigzag', description: 'Dynamic alternating flow', icon: '⚡' },
+    { label: 'Cards', variant: 'cards', description: 'Minimalist stacked cards', icon: '🎴' },
+];
 
 export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, onSelect, onClose, direction = 'right' }) => {
 
@@ -442,6 +448,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
             case 'svg_wave': return 'Wave & Blob Presets';
             case 'digital_gift': return 'Angpao Theme';
             case 'gift_address': return 'Gift Address Design';
+            case 'love_story': return 'Pilih Gaya Kisah Cinta';
             case 'social_mockup': return 'Social Platform';
             case 'interaction': return 'Select Cinematic Effect';
             default: {
@@ -1248,6 +1255,23 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                         <p className="text-[10px] text-white/30 text-center mt-4">
                             Pilih style lalu kustomisasi di Property Panel
                         </p>
+                    </div>
+                )}
+
+                {/* LOVE STORY */}
+                {type === 'love_story' && (
+                    <div className="grid grid-cols-2 gap-3">
+                        {LOVE_STORY_PRESETS.map((preset, i) => (
+                            <button
+                                key={i}
+                                onClick={() => onSelect({ loveStoryConfig: { variant: preset.variant } })}
+                                className="flex flex-col items-center justify-center p-4 rounded-xl bg-white/5 hover:bg-premium-accent/20 border border-white/5 hover:border-premium-accent/40 transition-all gap-2 text-center"
+                            >
+                                <span className="text-2xl">{preset.icon}</span>
+                                <span className="text-[10px] font-bold text-white/80">{preset.label}</span>
+                                <span className="text-[8px] text-white/40 leading-tight">{preset.description}</span>
+                            </button>
+                        ))}
                     </div>
                 )}
 

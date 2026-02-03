@@ -24,7 +24,8 @@ import {
     CalendarSyncElement,
     DirectionsHubElement,
     ShareContextElement,
-    GiftAddressElement
+    GiftAddressElement,
+    LoveStoryElement
 } from '@/components/Elements';
 
 // ============================================
@@ -87,6 +88,8 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenI
                 return <DigitalGiftElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             case 'gift_address':
                 return <GiftAddressElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
+            case 'love_story':
+                return <LoveStoryElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             case 'music_player':
                 return <MusicPlayerElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             case 'qr_code':

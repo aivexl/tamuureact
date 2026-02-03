@@ -76,6 +76,7 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
             case 'gif': return <ImageIcon className="w-4 h-4" />;
             case 'maps_point': return <MapPin className="w-4 h-4" />;
             case 'countdown': return <Clock className="w-4 h-4" />;
+            case 'love_story': return <Heart className="w-4 h-4" />;
             default: return <Type className="w-4 h-4" />;
         }
     };
@@ -463,6 +464,83 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                             </a>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* Love Story Field */}
+            {element.type === 'love_story' && (
+                <div className="space-y-4">
+                    <button
+                        onClick={() => {
+                            // Find the event handler to open a panel from Parent
+                            // In this architecture, we might need a custom event or store action
+                            // But for now, let's look for how panels are opened.
+                            // In UserEditorPage, activePanel is local state.
+                            // We might need to use a Store action if we want to open it from here.
+                            const event = new CustomEvent('open-panel', { detail: 'lovestory' });
+                            window.dispatchEvent(event);
+                        }}
+                        className="w-full flex items-center justify-between px-4 py-4 bg-premium-accent/10 border border-premium-accent/20 rounded-2xl text-premium-accent hover:bg-premium-accent/20 transition-all group"
+                    >
+                        <div className="flex items-center gap-3">
+                            <Heart className="w-5 h-5 fill-current" />
+                            <div className="text-left">
+                                <div className="text-[10px] font-black uppercase tracking-widest leading-none mb-1 opacity-70">Kelola Cerita</div>
+                                <div className="text-sm font-black uppercase tracking-tighter">Edit Momen Bahagia</div>
+                            </div>
+                        </div>
+                        <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
+                    </button>
+
+                    {/* Admin Design Settings (Locked for regular users) */}
+                    {permissions.canEditStyle && (
+                        <div className="pt-4 border-t border-slate-100 space-y-4">
+                            <div className="flex items-center gap-2">
+                                <Settings2 className="w-3.5 h-3.5 text-slate-400" />
+                                <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Design Settings (Admin)</span>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                                {(['elegant', 'modern', 'zigzag', 'cards'] as const).map(v => (
+                                    <button
+                                        key={v}
+                                        onClick={() => handleUpdate({ loveStoryConfig: { ...element.loveStoryConfig!, variant: v } })}
+                                        className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${element.loveStoryConfig?.variant === v ? 'bg-slate-900 text-white border-slate-900' : 'bg-slate-50 text-slate-400 border-slate-100 hover:bg-slate-200'}`}
+                                    >
+                                        {v}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="flex items-center justify-between bg-slate-50 p-3 rounded-xl">
+                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Theme Color</span>
+                                <div className="relative w-8 h-8 rounded-full border-2 border-white shadow-sm overflow-hidden">
+                                    <div className="absolute inset-0" style={{ backgroundColor: element.loveStoryConfig?.themeColor }} />
+                                    <input
+                                        type="color"
+                                        value={element.loveStoryConfig?.themeColor || '#db2777'}
+                                        onChange={(e) => handleUpdate({ loveStoryConfig: { ...element.loveStoryConfig!, themeColor: e.target.value } })}
+                                        className="absolute inset-0 opacity-0 cursor-pointer"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between bg-slate-50 p-3 rounded-xl">
+                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Marker Style</span>
+                                <div className="flex gap-2">
+                                    {(['heart', 'dot', 'diamond', 'star'] as const).map(m => (
+                                        <button
+                                            key={m}
+                                            onClick={() => handleUpdate({ loveStoryConfig: { ...element.loveStoryConfig!, markerStyle: m } })}
+                                            className={`w-6 h-6 flex items-center justify-center rounded-lg border transition-all ${element.loveStoryConfig?.markerStyle === m ? 'bg-white border-slate-300 shadow-sm' : 'bg-transparent border-transparent opacity-30 hover:opacity-100'}`}
+                                        >
+                                            <div className="text-[8px] font-bold">{m.charAt(0).toUpperCase()}</div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
         </m.div>

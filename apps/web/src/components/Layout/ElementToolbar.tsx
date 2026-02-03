@@ -96,6 +96,24 @@ const elementConfigs: ElementConfig[] = [
         })
     },
     {
+        type: 'love_story',
+        icon: <Heart className="w-5 h-5 text-premium-accent" />,
+        label: 'Kisah Cinta',
+        color: 'hover:bg-premium-accent/10 hover:border-premium-accent/30',
+        createDefault: () => ({
+            width: 414,
+            height: 600,
+            loveStoryConfig: {
+                variant: 'elegant',
+                themeColor: '#db2777',
+                markerStyle: 'heart',
+                events: [
+                    { id: '1', date: '2023', title: 'Pertama Bertemu', description: 'Di sinilah segalanya dimulai...' }
+                ]
+            }
+        })
+    },
+    {
         type: 'button',
         icon: <MailOpen className="w-5 h-5" />,
         label: 'Button',
@@ -660,6 +678,8 @@ const elementConfigs: ElementConfig[] = [
                 gradientStart: '#667eea',
                 gradientEnd: '#764ba2'
             }
+        })
+    },
         })
     }
 ];
