@@ -1,0 +1,27 @@
+# Force MIME types for modules and assets
+/assets/*.js
+  Content-Type: application/javascript; charset=utf-8
+  X-Content-Type-Options: nosniff
+/assets/*.mjs
+  Content-Type: application/javascript; charset=utf-8
+  X-Content-Type-Options: nosniff
+/assets/*.css
+  Content-Type: text/css; charset=utf-8
+  X-Content-Type-Options: nosniff
+/assets/*.wasm
+  Content-Type: application/wasm
+  X-Content-Type-Options: nosniff
+
+# Prevent stale index.html caching
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0
+
+# Global Security & Performance Headers
+/*
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: credentialless
+  X-XSS-Protection: 1; mode=block
