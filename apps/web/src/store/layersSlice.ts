@@ -47,6 +47,7 @@ export type LayerType =
     | 'share_context'
     | 'interaction'
     | 'name_board'
+    | 'love_story'
     | 'gift_address';
 
 
@@ -599,6 +600,22 @@ export interface GlassCardConfig {
     saturation: number;
 }
 
+export interface LoveStoryMoment {
+    id: string;
+    date: string;
+    title: string;
+    description: string;
+    imageUrl?: string;
+}
+
+export interface LoveStoryConfig {
+    variant: 'elegant' | 'modern' | 'zigzag' | 'cards';
+    markerStyle: 'heart' | 'dot' | 'diamond';
+    themeColor: string;
+    lineThickness: number;
+    events: LoveStoryMoment[];
+}
+
 export interface SocialMockupConfig {
     platform: 'instagram' | 'twitter' | 'whatsapp' | 'tiktok';
     username: string;
@@ -703,6 +720,8 @@ export interface Layer {
     qrCodeConfig?: QRCodeConfig;
     waveConfig?: WaveConfig;
     glassCardConfig?: GlassCardConfig;
+    loveStoryConfig?: LoveStoryConfig;
+
     socialMockupConfig?: SocialMockupConfig;
     weatherConfig?: WeatherConfig;
     calendarSyncConfig?: any;

@@ -30,8 +30,11 @@ import {
     ChevronsUp,
     ArrowUp,
     ArrowDown,
-    ChevronsDown
+    ChevronsDown,
+    Heart as HeartIcon
 } from 'lucide-react';
+import { LoveStoryPanel } from './LoveStoryPanel';
+
 
 export const PropertyInspector: React.FC = () => {
     const { layers, selectedLayerId, updateLayer, removeLayer, selectLayer, activeSectionId, sections, updateElementInSection, removeElementFromSection, showModal } = useStore();
@@ -88,6 +91,7 @@ export const PropertyInspector: React.FC = () => {
                     {layer.type === 'gif' && <Smile className="w-4 h-4" />}
                     {layer.type === 'countdown' && <Clock className="w-4 h-4" />}
                     {layer.type === 'button' && <MousePointerClick className="w-4 h-4" />}
+                    {layer.type === 'love_story' && <HeartIcon className="w-4 h-4" />}
                     <span className="text-xs font-bold uppercase tracking-widest">{layer.type}</span>
                 </div>
                 <div className="flex items-center gap-1">
@@ -567,7 +571,22 @@ export const PropertyInspector: React.FC = () => {
                 </>
             )}
 
+            {/* Love Story Config */}
+            {layer.type === 'love_story' && (
+                <>
+                    <section className="space-y-4">
+                        <div className="flex items-center gap-2 text-white/60 mb-2">
+                            <HeartIcon className="w-4 h-4" />
+                            <h4 className="text-[10px] font-bold uppercase tracking-widest">Love Story Timeline</h4>
+                        </div>
+                        <LoveStoryPanel layer={layer} handleUpdate={handleUpdate} />
+                    </section>
+                    <div className="h-[1px] bg-white/10" />
+                </>
+            )}
+
             {/* Visual Effects Section */}
+
             <section className="space-y-4">
                 <div className="flex items-center gap-2 text-white/60 mb-2">
                     <Palette className="w-4 h-4" />

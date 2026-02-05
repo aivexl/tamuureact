@@ -661,7 +661,38 @@ const elementConfigs: ElementConfig[] = [
                 gradientEnd: '#764ba2'
             }
         })
+    },
+    {
+        type: 'love_story',
+        icon: <Heart className="w-5 h-5" />,
+        label: 'Kisah Cinta',
+        color: 'hover:bg-premium-accent/10 hover:border-premium-accent/30',
+        createDefault: () => ({
+            width: 380,
+            height: 600,
+            loveStoryConfig: {
+                variant: 'zigzag',
+                markerStyle: 'heart',
+                themeColor: '#bfa181',
+                lineThickness: 2,
+                events: [
+                    {
+                        id: generateId('event'),
+                        date: '2023-01-01',
+                        title: 'Pertemuan Pertama',
+                        description: 'Di sinilah segalanya dimulai, di sebuah kafe kecil di sudut kota.',
+                    },
+                    {
+                        id: generateId('event'),
+                        date: '2024-05-20',
+                        title: 'Lamaran',
+                        description: 'Momen tak terlupakan saat janji suci diucapkan di bawah langit berbintang.',
+                    }
+                ]
+            }
+        })
     }
+
 ];
 
 

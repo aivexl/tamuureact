@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { useParams } from 'react-router-dom';
-import { Type, Image as ImageIcon, MapPin, Copy, Shield, Clock, Lock, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignStartVertical, AlignCenterVertical, AlignEndVertical, Plus, Minus, Palette, ChevronDown, Settings2, Type as FontIcon } from 'lucide-react';
+import { Type, Image as ImageIcon, MapPin, Copy, Shield, Clock, Lock, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignStartVertical, AlignCenterVertical, AlignEndVertical, Plus, Minus, Palette, ChevronDown, Settings2, Trash2, Calendar, Type as FontIcon } from 'lucide-react';
 import { useStore, Layer } from '@/store/useStore';
 import { SUPPORTED_FONTS } from '@/lib/fonts';
 
@@ -66,7 +66,18 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                 });
             }
         }
+
+        // UNICORN BIDIRECTIONAL SYNC: Love Story Moments
+        if (updates.loveStoryConfig?.events && invitationId) {
+            const newEvents = updates.loveStoryConfig.events;
+            import('@/lib/api').then(({ invitations }) => {
+                invitations.update(invitationId, { love_story: JSON.stringify(newEvents) }).catch(err => {
+                    console.error('[Sync] Failed to update global love story:', err);
+                });
+            });
+        }
     };
+
 
     // Helper to get icon based on element type
     const getIcon = () => {
@@ -76,7 +87,9 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
             case 'gif': return <ImageIcon className="w-4 h-4" />;
             case 'maps_point': return <MapPin className="w-4 h-4" />;
             case 'countdown': return <Clock className="w-4 h-4" />;
+            case 'love_story': return <Heart className="w-4 h-4 text-pink-500" />;
             default: return <Type className="w-4 h-4" />;
+
         }
     };
 
@@ -462,6 +475,95 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                                 <MapPin className="w-5 h-5" />
                             </a>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Love Story Management */}
+            {element.type === 'love_story' && (
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between px-1">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            Momen Kisah Cinta
+                        </label>
+                        <button
+                            onClick={() => {
+                                const newMoment = { id: Date.now().toString(), date: '2024', title: 'Momen Baru', description: '' };
+                                handleUpdate({
+                                    loveStoryConfig: {
+                                        ...(element.loveStoryConfig || {}),
+                                        events: [...(element.loveStoryConfig?.events || []), newMoment]
+                                    }
+                                });
+                            }}
+                            className="flex items-center gap-1.5 text-[9px] font-black text-teal-600 uppercase tracking-widest hover:text-teal-700 transition-colors"
+                        >
+                            <Plus className="w-3 h-3" />
+                            Tambah
+                        </button>
+                    </div>
+
+                    <div className="space-y-3">
+                        {(element.loveStoryConfig?.events || []).map((event, idx) => (
+                            <div key={event.id} className="p-4 bg-slate-50 border border-slate-100 rounded-2xl space-y-4 group/event relative">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">#{idx + 1}</span>
+                                    <button
+                                        onClick={() => {
+                                            handleUpdate({
+                                                loveStoryConfig: {
+                                                    ...(element.loveStoryConfig || {}),
+                                                    events: element.loveStoryConfig?.events.filter(e => e.id !== event.id)
+                                                }
+                                            });
+                                        }}
+                                        className="p-1 text-slate-300 hover:text-red-500 transition-colors"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Tahun/Tanggal</label>
+                                        <input
+                                            type="text"
+                                            value={event.date}
+                                            onChange={(e) => {
+                                                const updatedEvents = element.loveStoryConfig?.events.map(ev => ev.id === event.id ? { ...ev, date: e.target.value } : ev);
+                                                handleUpdate({ loveStoryConfig: { ...(element.loveStoryConfig || {}), events: updatedEvents } });
+                                            }}
+                                            className="w-full px-3 py-2 bg-white border border-slate-100 rounded-lg text-xs font-bold text-slate-700 focus:ring-2 focus:ring-teal-500/20 outline-none"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Judul Momen</label>
+                                        <input
+                                            type="text"
+                                            value={event.title}
+                                            onChange={(e) => {
+                                                const updatedEvents = element.loveStoryConfig?.events.map(ev => ev.id === event.id ? { ...ev, title: e.target.value } : ev);
+                                                handleUpdate({ loveStoryConfig: { ...(element.loveStoryConfig || {}), events: updatedEvents } });
+                                            }}
+                                            className="w-full px-3 py-2 bg-white border border-slate-100 rounded-lg text-xs font-bold text-slate-700 focus:ring-2 focus:ring-teal-500/20 outline-none"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Cerita Singkat</label>
+                                    <textarea
+                                        value={event.description}
+                                        onChange={(e) => {
+                                            const updatedEvents = element.loveStoryConfig?.events.map(ev => ev.id === event.id ? { ...ev, description: e.target.value } : ev);
+                                            handleUpdate({ loveStoryConfig: { ...(element.loveStoryConfig || {}), events: updatedEvents } });
+                                        }}
+                                        className="w-full px-3 py-2 bg-white border border-slate-100 rounded-lg text-xs font-medium text-slate-600 focus:ring-2 focus:ring-teal-500/20 outline-none resize-none"
+                                        rows={2}
+                                    />
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             )}

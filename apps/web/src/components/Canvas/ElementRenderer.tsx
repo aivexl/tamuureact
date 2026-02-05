@@ -24,8 +24,11 @@ import {
     CalendarSyncElement,
     DirectionsHubElement,
     ShareContextElement,
-    GiftAddressElement
+    GiftAddressElement,
+    LoveStoryElement
+
 } from '@/components/Elements';
+
 
 // ============================================
 // ELEMENT RENDERER
@@ -114,6 +117,8 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenI
                 return <InteractionElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             case 'name_board':
                 return <NameBoardElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
+            case 'love_story':
+                return <LoveStoryElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             default:
                 return <PlaceholderElement layer={layer} onContentLoad={onContentLoad} />;
         }
