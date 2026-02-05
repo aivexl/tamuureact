@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { temporal } from 'zundo';
 import { persist } from 'zustand/middleware';
 import { createCanvasSlice, CanvasState } from './canvasSlice';
-import { createLayersSlice, LayersState, Layer, LayerType, AnimationType, TextStyle, IconStyle, CountdownConfig, ButtonConfig, ShapeConfig, MapsConfig, MotionPathPoint, MotionPathConfig } from './layersSlice';
+import { createLayersSlice, LayersState, Layer, LayerType, AnimationType, TextStyle, IconStyle, CountdownConfig, ButtonConfig, ShapeConfig, MapsConfig, MotionPathPoint, MotionPathConfig, LoveStoryMoment, LoveStoryConfig } from './layersSlice';
 import { createUISlice, UIState } from './uiSlice';
 import { createModalSlice, ModalState } from './modalSlice';
 import { createSectionsSlice, SectionsState, Section, PredefinedSectionType, SECTION_ICONS, SECTION_LABELS, PREDEFINED_SECTION_TYPES, ZoomPoint, ZoomConfig } from './sectionsSlice';
@@ -160,6 +160,8 @@ export type {
     MapsConfig,
     MotionPathPoint,
     MotionPathConfig,
+    LoveStoryMoment,
+    LoveStoryConfig,
     Section,
     PredefinedSectionType,
     ZoomPoint,

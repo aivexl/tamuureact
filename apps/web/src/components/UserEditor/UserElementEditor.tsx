@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { useParams } from 'react-router-dom';
-import { Type, Image as ImageIcon, MapPin, Copy, Shield, Clock, Lock, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignStartVertical, AlignCenterVertical, AlignEndVertical, Plus, Minus, Palette, ChevronDown, Settings2, Trash2, Calendar, Type as FontIcon } from 'lucide-react';
-import { useStore, Layer } from '@/store/useStore';
+import { Type, Image as ImageIcon, MapPin, Copy, Shield, Clock, Lock, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignStartVertical, AlignCenterVertical, AlignEndVertical, Plus, Minus, Palette, ChevronDown, Settings2, Trash2, Calendar, Heart, Type as FontIcon } from 'lucide-react';
+import { useStore, Layer, LoveStoryMoment, LoveStoryConfig } from '@/store/useStore';
 import { SUPPORTED_FONTS } from '@/lib/fonts';
 
 interface UserElementEditorProps {
@@ -488,11 +488,23 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                         </label>
                         <button
                             onClick={() => {
-                                const newMoment = { id: Date.now().toString(), date: '2024', title: 'Momen Baru', description: '' };
+                                const newMoment: LoveStoryMoment = {
+                                    id: Date.now().toString(),
+                                    date: '2024',
+                                    title: 'Momen Baru',
+                                    description: ''
+                                };
+                                const currentConfig = element.loveStoryConfig || {
+                                    variant: 'zigzag',
+                                    markerStyle: 'heart',
+                                    themeColor: '#bfa181',
+                                    lineThickness: 2,
+                                    events: []
+                                };
                                 handleUpdate({
                                     loveStoryConfig: {
-                                        ...(element.loveStoryConfig || {}),
-                                        events: [...(element.loveStoryConfig?.events || []), newMoment]
+                                        ...currentConfig,
+                                        events: [...currentConfig.events, newMoment]
                                     }
                                 });
                             }}
@@ -510,10 +522,11 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                                     <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">#{idx + 1}</span>
                                     <button
                                         onClick={() => {
+                                            if (!element.loveStoryConfig) return;
                                             handleUpdate({
                                                 loveStoryConfig: {
-                                                    ...(element.loveStoryConfig || {}),
-                                                    events: element.loveStoryConfig?.events.filter(e => e.id !== event.id)
+                                                    ...element.loveStoryConfig,
+                                                    events: element.loveStoryConfig.events.filter(e => e.id !== event.id)
                                                 }
                                             });
                                         }}
@@ -530,8 +543,9 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                                             type="text"
                                             value={event.date}
                                             onChange={(e) => {
-                                                const updatedEvents = element.loveStoryConfig?.events.map(ev => ev.id === event.id ? { ...ev, date: e.target.value } : ev);
-                                                handleUpdate({ loveStoryConfig: { ...(element.loveStoryConfig || {}), events: updatedEvents } });
+                                                if (!element.loveStoryConfig) return;
+                                                const updatedEvents = element.loveStoryConfig.events.map(ev => ev.id === event.id ? { ...ev, date: e.target.value } : ev);
+                                                handleUpdate({ loveStoryConfig: { ...element.loveStoryConfig, events: updatedEvents } });
                                             }}
                                             className="w-full px-3 py-2 bg-white border border-slate-100 rounded-lg text-xs font-bold text-slate-700 focus:ring-2 focus:ring-teal-500/20 outline-none"
                                         />
@@ -542,8 +556,9 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                                             type="text"
                                             value={event.title}
                                             onChange={(e) => {
-                                                const updatedEvents = element.loveStoryConfig?.events.map(ev => ev.id === event.id ? { ...ev, title: e.target.value } : ev);
-                                                handleUpdate({ loveStoryConfig: { ...(element.loveStoryConfig || {}), events: updatedEvents } });
+                                                if (!element.loveStoryConfig) return;
+                                                const updatedEvents = element.loveStoryConfig.events.map(ev => ev.id === event.id ? { ...ev, title: e.target.value } : ev);
+                                                handleUpdate({ loveStoryConfig: { ...element.loveStoryConfig, events: updatedEvents } });
                                             }}
                                             className="w-full px-3 py-2 bg-white border border-slate-100 rounded-lg text-xs font-bold text-slate-700 focus:ring-2 focus:ring-teal-500/20 outline-none"
                                         />
@@ -555,8 +570,9 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                                     <textarea
                                         value={event.description}
                                         onChange={(e) => {
-                                            const updatedEvents = element.loveStoryConfig?.events.map(ev => ev.id === event.id ? { ...ev, description: e.target.value } : ev);
-                                            handleUpdate({ loveStoryConfig: { ...(element.loveStoryConfig || {}), events: updatedEvents } });
+                                            if (!element.loveStoryConfig) return;
+                                            const updatedEvents = element.loveStoryConfig.events.map(ev => ev.id === event.id ? { ...ev, description: e.target.value } : ev);
+                                            handleUpdate({ loveStoryConfig: { ...element.loveStoryConfig, events: updatedEvents } });
                                         }}
                                         className="w-full px-3 py-2 bg-white border border-slate-100 rounded-lg text-xs font-medium text-slate-600 focus:ring-2 focus:ring-teal-500/20 outline-none resize-none"
                                         rows={2}
