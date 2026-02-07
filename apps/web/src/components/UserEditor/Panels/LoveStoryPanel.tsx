@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { invitations as invitationsApi } from '@/lib/api';
+import { useStore } from '@/store/useStore';
 
 interface LoveStoryPanelProps {
     invitationId: string;
@@ -36,6 +37,8 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ invitationId, on
     const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const { sections, updateElementInSection } = useStore();
 
     // Load existing love story
     useEffect(() => {
@@ -60,6 +63,31 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ invitationId, on
             loadData();
         }
     }, [invitationId]);
+
+    // SYNC TO CANVAS: Real-time store update
+    useEffect(() => {
+        if (!sections || events.length === 0) return;
+
+        // Find all love_story layers across all sections
+        sections.forEach(section => {
+            section.elements.forEach(el => {
+                if (el.type === 'love_story') {
+                    updateElementInSection(section.id, el.id, {
+                        loveStoryConfig: {
+                            ...(el.loveStoryConfig || {
+                                variant: 'zigzag',
+                                themeColor: '#db2777',
+                                markerStyle: 'heart',
+                                lineThickness: 2,
+                                events: []
+                            }),
+                            events: events as any
+                        }
+                    });
+                }
+            });
+        });
+    }, [events]);
 
     // Add new event
     const addEvent = () => {

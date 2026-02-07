@@ -1,0 +1,3 @@
+﻿src/components/Elements/LoveStoryElement.tsx(35,18): error TS2678: Type '"circle"' is not comparable to type '"dot" | "diamond" | "heart" | "star"'.
+src/components/UserEditor/Panels/LoveStoryPanel.tsx(76,25): error TS2322: Type '{ events: StoryEvent[]; variant: "elegant" | "modern" | "zigzag" | "cards"; themeColor: string; markerStyle: "dot" | "diamond" | "heart" | "star"; lineThickness: number; } | { ...; }' is not assignable to type 'LoveStoryConfig | undefined'.
+  Property 'lineThickness' is missing in type '{ events: StoryEvent[]; variant: "elegant"; themeColor: string; markerStyle: "heart"; }' but required in type 'LoveStoryConfig'.

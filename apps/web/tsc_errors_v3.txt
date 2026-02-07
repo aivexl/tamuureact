@@ -1,0 +1,3 @@
+﻿src/components/Panels/LayersSidebar.tsx(12,7): error TS2741: Property 'love_story' is missing in type '{ text: JSX.Element; image: JSX.Element; gif: JSX.Element; sticker: JSX.Element; icon: JSX.Element; countdown: JSX.Element; button: JSX.Element; video: JSX.Element; ... 33 more ...; gift_address: JSX.Element; }' but required in type 'Record<LayerType, ReactNode>'.
+src/components/UserEditor/UserElementEditor.tsx(79,40): error TS2304: Cannot find name 'Heart'.
+src/components/UserEditor/UserElementEditor.tsx(486,30): error TS2304: Cannot find name 'Heart'.

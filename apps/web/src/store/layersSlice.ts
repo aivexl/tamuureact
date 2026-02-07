@@ -39,7 +39,6 @@ export type LayerType =
     | 'parallax_layer'
     | 'hologram_overlay'
     | 'gradient_mesh'
-    | 'qr_code'
     | 'info_ticker'
     | 'social_mockup'
     | 'weather_widget'
@@ -48,6 +47,7 @@ export type LayerType =
     | 'interaction'
     | 'name_board'
     | 'love_story'
+    | 'qr_code'
     | 'gift_address';
 
 
@@ -527,9 +527,29 @@ export interface DigitalGiftConfig {
 }
 
 export interface GiftAddressConfig {
+    title: string;
     recipientName: string;
+    phoneNumber: string;
     address: string;
+    note?: string;
+    buttonText: string;
     customColor?: string;
+}
+
+export interface LoveStoryMoment {
+    id: string;
+    date: string;
+    title: string;
+    description: string;
+    imageUrl?: string;
+}
+
+export interface LoveStoryConfig {
+    variant: 'elegant' | 'modern' | 'zigzag' | 'cards';
+    themeColor: string;
+    markerStyle: 'heart' | 'dot' | 'diamond' | 'star';
+    lineThickness: number;
+    events: LoveStoryMoment[];
 }
 
 export interface MusicPlayerConfig {
@@ -600,21 +620,6 @@ export interface GlassCardConfig {
     saturation: number;
 }
 
-export interface LoveStoryMoment {
-    id: string;
-    date: string;
-    title: string;
-    description: string;
-    imageUrl?: string;
-}
-
-export interface LoveStoryConfig {
-    variant: 'elegant' | 'modern' | 'zigzag' | 'cards';
-    markerStyle: 'heart' | 'dot' | 'diamond';
-    themeColor: string;
-    lineThickness: number;
-    events: LoveStoryMoment[];
-}
 
 export interface SocialMockupConfig {
     platform: 'instagram' | 'twitter' | 'whatsapp' | 'tiktok';

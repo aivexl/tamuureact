@@ -26,7 +26,6 @@ import {
     ShareContextElement,
     GiftAddressElement,
     LoveStoryElement
-
 } from '@/components/Elements';
 
 
@@ -90,6 +89,8 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenI
                 return <DigitalGiftElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             case 'gift_address':
                 return <GiftAddressElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
+            case 'love_story':
+                return <LoveStoryElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             case 'music_player':
                 return <MusicPlayerElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             case 'qr_code':
@@ -117,8 +118,6 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenI
                 return <InteractionElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             case 'name_board':
                 return <NameBoardElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
-            case 'love_story':
-                return <LoveStoryElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             default:
                 return <PlaceholderElement layer={layer} onContentLoad={onContentLoad} />;
         }

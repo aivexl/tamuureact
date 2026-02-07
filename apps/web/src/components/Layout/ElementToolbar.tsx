@@ -96,6 +96,25 @@ const elementConfigs: ElementConfig[] = [
         })
     },
     {
+        type: 'digital_gift',
+        icon: <CreditCard className="w-5 h-5" />,
+        label: 'Cards',
+        color: 'hover:bg-red-500/10 hover:border-red-500/30',
+        createDefault: () => ({
+            width: 380,
+            height: 240,
+            digitalGiftConfig: {
+                title: 'Kado Digital',
+                description: 'Doa restu Anda adalah kado terindah...',
+                bankName: 'Bank Central Asia',
+                accountNumber: '1234567890',
+                accountHolder: 'John Doe',
+                buttonText: 'Salin Rekening',
+                theme: 'gold'
+            }
+        })
+    },
+    {
         type: 'button',
         icon: <MailOpen className="w-5 h-5" />,
         label: 'Button',
@@ -325,9 +344,6 @@ const elementConfigs: ElementConfig[] = [
             }
         })
     },
-    // ============================================
-    // ENTERPRISE V3 ELEMENTS (Unicorn Standard)
-    // ============================================
     {
         type: 'confetti',
         icon: <Sparkles className="w-5 h-5" />,
@@ -610,25 +626,6 @@ const elementConfigs: ElementConfig[] = [
         })
     },
     {
-        type: 'digital_gift',
-        icon: <CreditCard className="w-5 h-5" />,
-        label: 'Cards',
-        color: 'hover:bg-red-500/10 hover:border-red-500/30',
-        createDefault: () => ({
-            width: 380,
-            height: 240,
-            digitalGiftConfig: {
-                title: 'Kado Digital',
-                description: 'Doa restu Anda adalah kado terindah...',
-                bankName: 'Bank Central Asia',
-                accountNumber: '1234567890',
-                accountHolder: 'John Doe',
-                buttonText: 'Salin Rekening',
-                theme: 'gold'
-            }
-        })
-    },
-    {
         type: 'gift_address',
         icon: <Gift className="w-5 h-5" />,
         label: 'Gift Addr',
@@ -673,7 +670,6 @@ const elementConfigs: ElementConfig[] = [
             }
         })
     },
-
 ];
 
 

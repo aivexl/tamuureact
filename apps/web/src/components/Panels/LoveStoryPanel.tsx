@@ -80,7 +80,7 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ layer, handleUpd
                         <label className="text-[9px] text-white/30 uppercase font-bold">Variant</label>
                         <select
                             value={config.variant}
-                            onChange={(e) => updateConfig({ variant: e.target.value })}
+                            onChange={(e) => updateConfig({ variant: e.target.value as any })}
                             className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none appearance-none"
                         >
                             <option value="zigzag" className="bg-premium-dark text-white">Zig-Zag</option>
@@ -93,7 +93,7 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ layer, handleUpd
                         <label className="text-[9px] text-white/30 uppercase font-bold">Marker</label>
                         <select
                             value={config.markerStyle}
-                            onChange={(e) => updateConfig({ markerStyle: e.target.value })}
+                            onChange={(e) => updateConfig({ markerStyle: e.target.value as any })}
                             className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none appearance-none"
                         >
                             <option value="heart" className="bg-premium-dark text-white">Heart</option>
@@ -164,14 +164,14 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ layer, handleUpd
                                 className="w-full flex items-center justify-between p-3"
                             >
                                 <div className="flex items-center gap-3 min-w-0">
-                                    <div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-[10px] font-black opacity-30">
+                                    <div className="w-6 h-6 rounded-full bg-premium-accent/10 flex items-center justify-center text-[10px] font-black text-premium-accent border border-premium-accent/20">
                                         {index + 1}
                                     </div>
                                     <div className="text-left min-w-0">
-                                        <h5 className="text-xs font-black text-white/90 truncate uppercase tracking-tight">
+                                        <h5 className="text-xs font-bold text-white/90 truncate uppercase tracking-tight font-display">
                                             {event.title || 'Untitled Moment'}
                                         </h5>
-                                        <span className="text-[9px] font-black text-white/30 uppercase tracking-widest">
+                                        <span className="text-[9px] font-medium text-premium-accent/60 uppercase tracking-widest">
                                             {event.date || 'No Date'}
                                         </span>
                                     </div>
@@ -198,7 +198,7 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ layer, handleUpd
                                         exit={{ height: 0, opacity: 0 }}
                                         className="overflow-hidden"
                                     >
-                                        <div className="p-4 border-t border-white/5 space-y-4">
+                                        <div className="p-4 border-t border-white/5 space-y-4 bg-white/[0.01]">
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="space-y-2">
                                                     <label className="text-[9px] text-white/30 uppercase font-bold">Date / Label</label>
@@ -207,7 +207,7 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ layer, handleUpd
                                                         value={event.date}
                                                         onChange={(e) => updateEvent(event.id, { date: e.target.value })}
                                                         placeholder="e.g. 2024"
-                                                        className="w-full bg-black/20 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none"
+                                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none transition-all"
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
@@ -217,7 +217,7 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ layer, handleUpd
                                                         value={event.title}
                                                         onChange={(e) => updateEvent(event.id, { title: e.target.value })}
                                                         placeholder="First Meet"
-                                                        className="w-full bg-black/20 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none"
+                                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none transition-all font-display"
                                                     />
                                                 </div>
                                             </div>
@@ -229,7 +229,7 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ layer, handleUpd
                                                     onChange={(e) => updateEvent(event.id, { description: e.target.value })}
                                                     placeholder="Share the story..."
                                                     rows={2}
-                                                    className="w-full bg-black/20 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none resize-none"
+                                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none resize-none transition-all"
                                                 />
                                             </div>
 
@@ -241,13 +241,13 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ layer, handleUpd
                                                         value={event.imageUrl || ''}
                                                         onChange={(e) => updateEvent(event.id, { imageUrl: e.target.value })}
                                                         placeholder="https://..."
-                                                        className="flex-1 bg-black/20 border border-white/5 rounded-lg px-3 py-2 text-xs focus:border-premium-accent/50 focus:outline-none font-mono"
+                                                        className="flex-1 bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs focus:border-premium-accent/50 focus:outline-none font-mono"
                                                     />
-                                                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center border border-white/5 overflow-hidden">
+                                                    <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 overflow-hidden shadow-inner">
                                                         {event.imageUrl ? (
                                                             <img src={event.imageUrl} className="w-full h-full object-cover" />
                                                         ) : (
-                                                            <ImageIcon className="w-4 h-4 text-white/20" />
+                                                            <ImageIcon className="w-4 h-4 text-white/10" />
                                                         )}
                                                     </div>
                                                 </div>

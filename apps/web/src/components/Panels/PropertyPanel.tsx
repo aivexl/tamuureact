@@ -24,6 +24,7 @@ import {
 
 import { ElementToolbar } from '@/components/Layout/ElementToolbar';
 import { UserElementEditor } from '@/components/UserEditor/UserElementEditor';
+import { LoveStoryPanel } from './LoveStoryPanel';
 
 export const PropertyPanel: React.FC = () => {
     const {
@@ -1628,6 +1629,15 @@ export const PropertyPanel: React.FC = () => {
                                     </motion.button>
                                 </div>
                             </div>
+                        </SectionComponent>
+                    )
+                }
+
+                {/* Love Story Config - Only for love_story elements */}
+                {
+                    layer.type === 'love_story' && (
+                        <SectionComponent title="Love Story Timeline" icon={<Heart className="w-4 h-4 text-premium-accent" />}>
+                            <LoveStoryPanel layer={layer} handleUpdate={handleUpdate} />
                         </SectionComponent>
                     )
                 }

@@ -490,7 +490,7 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                             onClick={() => {
                                 const newMoment: LoveStoryMoment = {
                                     id: Date.now().toString(),
-                                    date: '2024',
+                                    date: new Date().getFullYear().toString(),
                                     title: 'Momen Baru',
                                     description: ''
                                 };

@@ -1,0 +1,502 @@
+﻿node.exe : 2026-01-29T
+05:51:20.571Z 
+vite:config bundled 
+config file loaded in 
+198.47ms
+At C:\Program Files\no
+dejs\npx.ps1:29 char:3
++   & $NODE_EXE 
+$NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (2026-01-29   
+ T05:5...ded in 19    
+8.47ms:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+2026-01-29T05:51:20.66
+2Z vite:config using 
+resolved config: {
+  plugins: [
+    
+'vite:build-metadata',
+    'vite:watch-packag
+e-data',
+    'vite:pre-alias',
+    'alias',
+    
+'vite:react-babel',
+    
+'vite:react-refresh',
+    'vite:modulepreloa
+d-polyfill',
+    'vite:resolve',
+    'vite:html-inline-
+proxy',
+    'vite:css',
+    'vite:esbuild',
+    'vite:json',
+    
+'vite:wasm-helper',
+    'vite:worker',
+    'vite:asset',
+    
+'vite:wasm-fallback',
+    'vite:define',
+    'vite:css-post',
+    'vite:build-html',
+    'vite:worker-impor
+t-meta-url',
+    'vite:asset-import
+-meta-url',
+    'vite:force-system
+js-wrap-complete',
+    'commonjs',
+    'vite:data-uri',
+    'vite:dynamic-impo
+rt-vars',
+    
+'vite:import-glob',
+    'vite:build-import
+-analysis',
+    'vite:esbuild-tran
+spile',
+    'vite:terser',
+    'vite:reporter',
+    
+'vite:load-fallback'
+  ],
+  resolve: {
+    mainFields: [ 
+'browser', 'module', 
+'jsnext:main', 
+'jsnext' ],
+    conditions: [],
+    extensions: [
+      '.mjs',  '.js',
+      '.mts',  '.ts',
+      '.jsx',  '.tsx',
+      '.json'
+    ],
+    dedupe: [ 
+'react', 'react-dom' 
+],
+    preserveSymlinks: 
+false,
+    alias: [ 
+[Object], [Object], 
+[Object] ]
+  },
+  server: {
+    
+preTransformRequests: 
+true,
+    proxy: { '/api': 
+[Object] },
+    headers: {
+      'Cross-Origin-Op
+ener-Policy': 
+'same-origin',
+      'Cross-Origin-Em
+bedder-Policy': 
+'credentialless'
+    },
+    
+sourcemapIgnoreList: 
+[Function: 
+isInNodeModules$1],
+    middlewareMode: 
+false,
+    fs: {
+      strict: true,
+      allow: [Array],
+      deny: [Array],
+      cachedChecks: 
+undefined
+    }
+  },
+  build: {
+    target: [ 
+'es2020', 'edge88', 
+'firefox78', 
+'chrome87', 
+'safari14' ],
+    cssTarget: [ 
+'es2020', 'edge88', 
+'firefox78', 
+'chrome87', 
+'safari14' ],
+    outDir: 'dist',
+    assetsDir: 
+'assets',
+    
+assetsInlineLimit: 
+4096,
+    cssCodeSplit: 
+true,
+    sourcemap: false,
+    rollupOptions: { 
+onwarn: [Function: 
+onwarn] },
+    minify: 'esbuild',
+    terserOptions: {},
+    write: true,
+    emptyOutDir: null,
+    copyPublicDir: 
+true,
+    manifest: false,
+    lib: false,
+    ssr: false,
+    ssrManifest: 
+false,
+    ssrEmitAssets: 
+false,
+    
+reportCompressedSize: 
+true,
+    chunkSizeWarningLi
+mit: 500,
+    watch: null,
+    commonjsOptions: 
+{ include: [Array], 
+extensions: [Array] },
+    dynamicImportVarsO
+ptions: { 
+warnOnError: true, 
+exclude: [Array] },
+    modulePreload: { 
+polyfill: true },
+    cssMinify: true
+  },
+  esbuild: { jsxDev: 
+false, jsx: 
+'automatic', 
+jsxImportSource: 
+undefined },
+  optimizeDeps: {
+    
+holdUntilCrawlEnd: 
+true,
+    esbuildOptions: { 
+preserveSymlinks: 
+false, jsx: 
+'automatic' },
+    include: [
+      'react',
+      'react-dom',
+      'react/jsx-dev-r
+untime',
+      
+'react/jsx-runtime'
+    ]
+  },
+  configFile: 'C:/User
+s/62896/Documents/tamu
+ureact/apps/web/vite.c
+onfig.ts',
+  configFileDependenci
+es: [ 'C:/Users/62896/
+Documents/tamuureact/a
+pps/web/vite.config.ts
+' ],
+  inlineConfig: {
+    root: undefined,
+    base: undefined,
+    mode: undefined,
+    configFile: 
+undefined,
+    logLevel: 
+undefined,
+    clearScreen: 
+undefined,
+    build: {}
+  },
+  root: 'C:/Users/6289
+6/Documents/tamuureact
+/apps/web',
+  base: '/',
+  decodedBase: '/',
+  rawBase: '/',
+  publicDir: 'C:/Users
+/62896/Documents/tamuu
+react/apps/web/public'
+,
+  cacheDir: 'C:/Users/
+62896/Documents/tamuur
+eact/apps/web/node_mod
+ules/.vite',
+  command: 'build',
+  mode: 'production',
+  ssr: {
+    target: 'node',
+    optimizeDeps: { 
+noDiscovery: true, 
+esbuildOptions: 
+[Object] }
+  },
+  isWorker: false,
+  mainConfig: null,
+  bundleChain: [],
+  isProduction: true,
+  css: { 
+lightningcss: 
+undefined },
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+  preview: {
+    port: undefined,
+    strictPort: 
+undefined,
+    host: undefined,
+    allowedHosts: 
+undefined,
+    https: undefined,
+    open: undefined,
+    proxy: { '/api': 
+[Object] },
+    cors: undefined,
+    headers: {
+      'Cross-Origin-Op
+ener-Policy': 
+'same-origin',
+      'Cross-Origin-Em
+bedder-Policy': 
+'credentialless'
+    }
+  },
+  envDir: 'C:/Users/62
+896/Documents/tamuurea
+ct/apps/web',
+  env: {
+    
+VITE_SUPABASE_URL: 'ht
+tps://mqbgpulironhtvzf
+pzfp.supabase.co',
+    VITE_SUPABASE_PUBL
+ISHABLE_DEFAULT_KEY: '
+sb_publishable_t_Hpvfr
+soiBwzEyy-LN3Ug_VWfPaq
+Ij',
+    
+VITE_BG_REMOVER_URL: '
+https://bg-remover.sha
+fania57.workers.dev',
+    VITE_SUPABASE_ANON
+_KEY: 'eyJhbGciOiJIUzI
+1NiIsInR5cCI6IkpXVCJ9.
+eyJpc3MiOiJzdXBhYmFzZS
+IsInJlZiI6Im1xYmdwdWxp
+cm9uaHR2emZwemZwIiwicm
+9sZSI6ImFub24iLCJpYXQi
+OjE3NjY3MzcwNDksImV4cC
+I6MjA4MjMxMzA0OX0.wFmT
+RftjHuBj-vQ2gcZ_pJzVNk
+cJCAPbWl7fnfWUniU',
+    BASE_URL: '/',
+    MODE: 
+'production',
+    DEV: false,
+    PROD: true
+  },
+  assetsInclude: 
+[Function: 
+assetsInclude],
+  logger: {
+    hasWarned: false,
+    info: [Function: 
+info],
+    warn: [Function: 
+warn],
+    warnOnce: 
+[Function: warnOnce],
+    error: [Function: 
+error],
+    clearScreen: 
+[Function: 
+clearScreen],
+    hasErrorLogged: 
+[Function: 
+hasErrorLogged]
+  },
+  packageCache: 
+Map(1) {
+    'fnpd_C:/Users/628
+96/Documents/tamuureac
+t/apps/web' => {
+      dir: 'C:/Users/6
+2896/Documents/tamuure
+act/apps/web',
+      data: [Object],
+      hasSideEffects: 
+[Function: 
+hasSideEffects],
+      
+webResolvedImports: 
+{},
+      
+nodeResolvedImports: 
+{},
+      
+setResolvedCache: 
+[Function: 
+setResolvedCache],
+      
+getResolvedCache: 
+[Function: 
+getResolvedCache]
+    },
+    set: [Function 
+(anonymous)]
+  },
+  createResolver: 
+[Function: 
+createResolver],
+  worker: { format: 
+'iife', plugins: '() 
+=> plugins', 
+rollupOptions: {} },
+  appType: 'spa',
+  experimental: { impo
+rtGlobRestoreExtension
+: false, 
+hmrPartialAccept: 
+false },
+  webSocketToken: 
+'wnSlArR82z25',
+  additionalAllowedHos
+ts: [],
+  getSortedPlugins: 
+[Function: 
+getSortedPlugins],
+  
+getSortedPluginHooks: 
+[Function: 
+getSortedPluginHooks]
+}
+transforming...
+[32mÔ£ô[39m 2925 modules transformed.
+../../node_modules/@da
+ybrush/utils/dist/util
+s.esm.js (158:30): A 
+comment
+
+"/*#__PURE__*/"
+
+in "../../node_modules
+/@daybrush/utils/dist/
+utils.esm.js" 
+contains an 
+annotation that 
+Rollup cannot 
+interpret due to the 
+position of the 
+comment. The comment 
+will be removed to 
+avoid issues.
+[31mx[39m Build 
+failed in 11.86s
+[31merror during 
+build:
+[31msrc/pages/blog/Ad
+minBlogEditor.tsx 
+(10:7): "default" is 
+not exported by "../..
+/node_modules/@tiptap/
+extension-text-style/d
+ist/index.js", 
+imported by "src/pages
+/blog/AdminBlogEditor.
+tsx".[31m
+file: [36mC:/Users/62
+896/Documents/tamuurea
+ct/apps/web/src/pages/
+blog/AdminBlogEditor.t
+sx:10:7[31m
+[33m
+ 8: import Highlight 
+from '@tiptap/extensio
+n-highlight';
+ 9: import Color from 
+'@tiptap/extension-col
+or';
+10: import TextStyle 
+from '@tiptap/extensio
+n-text-style';
+           ^
+11: import FontFamily 
+from '@tiptap/extensio
+n-font-family';
+12: import TaskList 
+from '@tiptap/extensio
+n-task-list';
+[31m
+    at getRollupError 
+(file:///C:/Users/6289
+6/Documents/tamuureact
+/node_modules/rollup/d
+ist/es/shared/parseAst
+.js:401:41)
+    at error (file:///
+C:/Users/62896/Documen
+ts/tamuureact/node_mod
+ules/rollup/dist/es/sh
+ared/parseAst.js:397:4
+2)
+    at Module.error (f
+ile:///C:/Users/62896/
+Documents/tamuureact/n
+ode_modules/rollup/dis
+t/es/shared/node-entry
+.js:17022:16)
+    at 
+Module.traceVariable (
+file:///C:/Users/62896
+/Documents/tamuureact/
+node_modules/rollup/di
+st/es/shared/node-entr
+y.js:17478:29)
+    at ModuleScope.fin
+dVariable (file:///C:/
+Users/62896/Documents/
+tamuureact/node_module
+s/rollup/dist/es/share
+d/node-entry.js:15141:
+39)
+    at ReturnValueScop
+e.findVariable (file:/
+//C:/Users/62896/Docum
+ents/tamuureact/node_m
+odules/rollup/dist/es/
+shared/node-entry.js:5
+688:38)
+    at FunctionBodySco
+pe.findVariable (file:
+///C:/Users/62896/Docu
+ments/tamuureact/node_
+modules/rollup/dist/es
+/shared/node-entry.js:
+5688:38)
+    at 
+Identifier.bind (file:
+///C:/Users/62896/Docu
+ments/tamuureact/node_
+modules/rollup/dist/es
+/shared/node-entry.js:
+5462:40)
+    at 
+ArrayExpression.bind (
+file:///C:/Users/62896
+/Documents/tamuureact/
+node_modules/rollup/di
+st/es/shared/node-entr
+y.js:2825:28)
+    at Property.bind (
+file:///C:/Users/62896
+/Documents/tamuureact/
+node_modules/rollup/di
+st/es/shared/node-entr
+y.js:2829:23)[39m

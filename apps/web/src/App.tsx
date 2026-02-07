@@ -68,6 +68,10 @@ const App: React.FC = () => {
     // Memoize domain check to avoid recalculation
     const isAppDomain = useMemo(() => getIsAppDomain(), []);
 
+    useEffect(() => {
+        console.log("Tamuu v2.0.2 - Grid Sync & Love Story Fixed");
+    }, []);
+
     // Optimization: Fonts are now handled via index.html with display=swap for best performance (PSI 100).
     // The previous dynamic injection logic was redundant as index.html already includes CORE_FONTS.
 
