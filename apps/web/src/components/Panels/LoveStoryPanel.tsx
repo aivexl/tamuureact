@@ -106,8 +106,11 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ layer, handleUpd
                         >
                             <option value="zigzag" className="bg-premium-dark text-white">Zigzag</option>
                             <option value="elegant" className="bg-premium-dark text-white">Elegant</option>
-                            <option value="modern" className="bg-premium-dark text-white">Modern</option>
+                            <option value="modern" className="bg-premium-dark text-white">Modern Icons</option>
                             <option value="cards" className="bg-premium-dark text-white">Cards</option>
+                            <option value="numbered_list" className="bg-premium-dark text-white">Numbered List</option>
+                            <option value="premium_zigzag" className="bg-premium-dark text-white">Premium Zigzag</option>
+                            <option value="floating_glass" className="bg-premium-dark text-white">Floating Glass</option>
                         </select>
                     </div>
 

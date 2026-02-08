@@ -545,7 +545,7 @@ export interface LoveStoryMoment {
 }
 
 export interface LoveStoryConfig {
-    variant: 'elegant' | 'modern' | 'zigzag' | 'cards';
+    variant: 'elegant' | 'modern' | 'zigzag' | 'cards' | 'premium_zigzag' | 'floating_glass' | 'numbered_list';
     themeColor: string;
     markerStyle: 'heart' | 'dot' | 'diamond' | 'star';
     lineThickness: number;

@@ -47,7 +47,10 @@ export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onCo
         elegant: 40,
         modern: 24,
         zigzag: 32,
-        cards: 16
+        cards: 16,
+        numbered_list: 32,
+        premium_zigzag: 48,
+        floating_glass: 24
     }[variant] || 24;
 
     const scaledGap = baseGap * densityRatio;
@@ -223,6 +226,127 @@ export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onCo
         </div>
     );
 
+    const renderNumberedList = () => (
+        <div className="w-full flex flex-col" style={{ gap: scaledGap, paddingBlock: scaledPadding }}>
+            {events.map((event, index) => (
+                <m.div
+                    key={event.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    className="flex items-start gap-6 px-8 group relative"
+                >
+                    <div className="flex flex-col items-center shrink-0 pt-1">
+                        <span
+                            className="font-black opacity-10 group-hover:opacity-20 transition-opacity leading-none select-none"
+                            style={{ color: themeColor, fontSize: '40px' }}
+                        >
+                            {(index + 1).toString().padStart(2, '0')}
+                        </span>
+                        <div className="w-px h-full bg-slate-200 mt-2 opacity-50 absolute left-8 top-12 bottom-0" />
+                    </div>
+                    <div className="flex-1 min-w-0 pb-6 border-b border-slate-100 last:border-0 text-left">
+                        <span className="font-black uppercase tracking-widest block" style={{ color: config.dateColor || '#94a3b8', fontSize: fontSizes.date, marginBottom: 4 }}>
+                            {event.date}
+                        </span>
+                        <h3 className="font-bold leading-tight" style={{ color: config.titleColor || '#0f172a', fontSize: fontSizes.title, marginBottom: 4, ...wrapStyle }}>
+                            {event.title}
+                        </h3>
+                        <p className="leading-relaxed font-medium" style={{ color: config.descriptionColor || '#64748b', fontSize: fontSizes.description, ...wrapStyle }}>
+                            {event.description}
+                        </p>
+                    </div>
+                </m.div>
+            ))}
+        </div>
+    );
+
+    const renderPremiumZigzag = () => (
+        <div className="relative w-full flex flex-col" style={{ gap: scaledGap * 1.5, paddingBlock: scaledPadding }}>
+            {/* Curved Path Background */}
+            <svg className="absolute left-1/2 -translate-x-1/2 top-0 w-full h-full opacity-10 pointer-events-none overflow-visible" viewBox="0 0 100 1000" preserveAspectRatio="none">
+                <path
+                    d="M50,0 Q60,50 50,100 T50,200 T50,300 T50,400 T50,500 T50,600 T50,700 T50,800 T50,900 T50,1000"
+                    fill="none"
+                    stroke={themeColor}
+                    strokeWidth="2"
+                />
+            </svg>
+
+            {events.map((event, index) => {
+                const isEven = index % 2 === 0;
+                return (
+                    <div key={event.id} className={`flex items-center w-full relative ${isEven ? 'flex-row' : 'flex-row-reverse'}`}>
+                        {/* Centered Marker */}
+                        <div className="absolute left-1/2 -translate-x-1/2 z-10">
+                            <m.div
+                                className="rounded-full bg-white shadow-xl flex items-center justify-center border-2"
+                                style={{
+                                    width: 36 * iconSize,
+                                    height: 36 * iconSize,
+                                    borderColor: themeColor,
+                                    boxShadow: `0 0 15px ${themeColor}33`
+                                }}
+                                whileHover={{ scale: 1.1 }}
+                            >
+                                <MarkerIcon size={16} />
+                            </m.div>
+                        </div>
+
+                        <m.div
+                            initial={{ opacity: 0, x: isEven ? -30 : 30 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            className={`w-1/2 ${isEven ? 'pr-10 text-right' : 'pl-10 text-left'}`}
+                        >
+                            <span className="font-black uppercase tracking-[0.2em] block" style={{ color: config.dateColor || themeColor, fontSize: fontSizes.date, marginBottom: 6 }}>
+                                {event.date}
+                            </span>
+                            <h4 className="font-black leading-tight uppercase tracking-tight" style={{ color: config.titleColor || '#0f172a', fontSize: fontSizes.title, marginBottom: 6, ...wrapStyle }}>
+                                {event.title}
+                            </h4>
+                            <div className={`h-1 w-12 mb-3 bg-gradient-to-r ${isEven ? 'from-transparent to-current ml-auto' : 'from-current to-transparent'}`} style={{ color: themeColor }} />
+                            <p className="leading-relaxed font-serif italic" style={{ color: config.descriptionColor || '#64748b', fontSize: fontSizes.description, ...wrapStyle }}>
+                                {event.description}
+                            </p>
+                        </m.div>
+                        <div className="w-1/2" />
+                    </div>
+                );
+            })}
+        </div>
+    );
+
+    const renderFloatingGlass = () => (
+        <div className="w-full flex flex-col items-center" style={{ gap: scaledGap * 0.8, paddingBlock: scaledPadding }}>
+            {events.map((event) => (
+                <m.div
+                    key={event.id}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    className="backdrop-blur-md bg-white/40 rounded-[2rem] border border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.08)] flex flex-col items-center text-center w-[85%] overflow-hidden"
+                    whileHover={{ y: -5 }}
+                >
+                    <div className="w-full bg-gradient-to-b from-white/60 to-transparent p-6 flex flex-col items-center">
+                        <span className="font-black uppercase tracking-[0.3em] block opacity-40 mb-2" style={{ color: config.dateColor || '#000', fontSize: '9px' }}>
+                            {event.date}
+                        </span>
+                        <div className="h-px w-12 bg-black/10 mb-4" />
+                        <h3 className="font-bold tracking-tight px-4" style={{ color: config.titleColor || '#0f172a', fontSize: fontSizes.title, marginBottom: 4, ...wrapStyle }}>
+                            {event.title}
+                        </h3>
+                    </div>
+                    <div className="p-6 pt-0">
+                        <p className="leading-relaxed font-medium opacity-70" style={{ color: config.descriptionColor || '#475569', fontSize: fontSizes.description, ...wrapStyle }}>
+                            {event.description}
+                        </p>
+                    </div>
+                </m.div>
+            ))}
+        </div>
+    );
+
     // --- SMART CONTAINER AUTO-SCALE ---
     // Instead of shrinking individual font components to illegible levels, 
     // we render the container and use a last-resort transform scale if density is extremely high.
@@ -239,6 +363,9 @@ export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onCo
                 {variant === 'modern' && renderModern()}
                 {variant === 'zigzag' && renderZigzag()}
                 {variant === 'cards' && renderCards()}
+                {variant === 'numbered_list' && renderNumberedList()}
+                {variant === 'premium_zigzag' && renderPremiumZigzag()}
+                {variant === 'floating_glass' && renderFloatingGlass()}
             </div>
         </div>
     );
