@@ -56,13 +56,13 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ layer, handleUpd
 
     const updateEvent = (id: string, updates: Partial<LoveStoryMoment>) => {
         updateConfig({
-            events: config.events.map(e => e.id === id ? { ...e, ...updates } : e)
+            events: (config.events || []).map(e => e.id === id ? { ...e, ...updates } : e)
         });
     };
 
     const removeEvent = (id: string) => {
         updateConfig({
-            events: config.events.filter(e => e.id !== id)
+            events: (config.events || []).filter(e => e.id !== id)
         });
     };
 
@@ -154,7 +154,7 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ layer, handleUpd
                 </div>
 
                 <div className="space-y-3">
-                    {config.events.map((event, index) => (
+                    {(config.events || []).map((event, index) => (
                         <div
                             key={event.id}
                             className={`rounded-2xl border transition-all ${expandedEventId === event.id ? 'bg-white/5 border-white/20' : 'bg-white/[0.02] border-white/5 hover:border-white/10'}`}
@@ -259,7 +259,7 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ layer, handleUpd
                         </div>
                     ))}
 
-                    {config.events.length === 0 && (
+                    {(config.events || []).length === 0 && (
                         <div className="flex flex-col items-center justify-center py-8 rounded-2xl border-2 border-dashed border-white/5 text-white/20">
                             <Heart className="w-8 h-8 mb-2 opacity-10" />
                             <p className="text-[10px] uppercase font-black tracking-widest">No events added</p>
