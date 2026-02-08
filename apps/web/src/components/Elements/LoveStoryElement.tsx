@@ -2,8 +2,16 @@ import React, { useEffect } from 'react';
 import { m } from 'framer-motion';
 import { Layer } from '@/store/layersSlice';
 import { Heart, Star, Circle, Calendar, MapPin, Image as ImageIcon } from 'lucide-react';
+import { useStore } from '@/store/useStore';
+
+// Tier limits for preview rendering
+const LOVE_STORY_LIMITS: Record<string, number> = {
+    free: 1, pro: 3, vip: 3, ultimate: 5, platinum: 5, elite: 7, vvip: 7
+};
 
 export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
+    const { user } = useStore();
+
     useEffect(() => {
         onContentLoad?.();
     }, []);
@@ -16,7 +24,17 @@ export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onCo
         events: []
     };
 
-    const { variant = 'elegant', themeColor = '#db2777', markerStyle = 'heart', events = [] } = config;
+    const userTier = user?.tier || 'free';
+    const maxEvents = LOVE_STORY_LIMITS[userTier] || 1;
+
+    // Filter: only filled events, sliced to tier limit (skip filter in admin editor)
+    const rawEvents = config.events || [];
+    const filledEvents = isEditor
+        ? rawEvents  // Admin editor sees all
+        : rawEvents.filter(e => e.title || e.description).slice(0, maxEvents);
+
+    const { variant = 'elegant', themeColor = '#db2777', markerStyle = 'heart' } = config;
+    const events = filledEvents;
 
     if (events.length === 0 && isEditor) {
         return (
@@ -26,6 +44,11 @@ export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onCo
                 <p className="text-slate-300 text-xs mt-2">Tambahkan momen spesial di panel editor</p>
             </div>
         );
+    }
+
+    // Don't render anything if no filled events in preview mode
+    if (events.length === 0 && !isEditor) {
+        return null;
     }
 
     const MarkerIcon = () => {

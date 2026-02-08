@@ -13,11 +13,24 @@ import {
     Plus,
     Trash2,
     GripVertical,
-    Calendar
+    Calendar,
+    Lock,
+    Sparkles
 } from 'lucide-react';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { invitations as invitationsApi } from '@/lib/api';
 import { useStore } from '@/store/useStore';
+
+// Tier-based limits for Love Story timeline
+const LOVE_STORY_LIMITS: Record<string, number> = {
+    free: 1,
+    pro: 3,
+    vip: 3,
+    ultimate: 5,
+    platinum: 5,
+    elite: 7,
+    vvip: 7
+};
 
 interface LoveStoryPanelProps {
     invitationId: string;
@@ -38,7 +51,13 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ invitationId, on
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const { sections, updateElementInSection } = useStore();
+    const { sections, updateElementInSection, user } = useStore();
+
+    // Tier-based limits
+    const userTier = user?.tier || 'free';
+    const maxEvents = LOVE_STORY_LIMITS[userTier] || 1;
+    const displayedEvents = events.slice(0, maxEvents);
+    const canAddMore = displayedEvents.length < maxEvents;
 
     // Load existing love story
     useEffect(() => {
@@ -91,6 +110,8 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ invitationId, on
 
     // Add new event
     const addEvent = () => {
+        if (!canAddMore) return; // Block if limit reached
+
         const newEvent: StoryEvent = {
             id: `event-${Date.now()}`,
             date: '',
@@ -149,7 +170,7 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ invitationId, on
                     <div>
                         <h3 className="text-lg font-black text-slate-800 tracking-tight">Kisah Cinta</h3>
                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                            {events.length} Momen
+                            {displayedEvents.length}/{maxEvents} Momen
                         </p>
                     </div>
                 </div>
@@ -194,9 +215,9 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ invitationId, on
 
             {/* Timeline Events */}
             <div className="space-y-4">
-                <Reorder.Group axis="y" values={events} onReorder={setEvents} className="space-y-4">
+                <Reorder.Group axis="y" values={displayedEvents} onReorder={(newOrder) => setEvents(newOrder)} className="space-y-4">
                     <AnimatePresence mode="popLayout">
-                        {events.map((event, index) => (
+                        {displayedEvents.map((event, index) => (
                             <Reorder.Item
                                 key={event.id}
                                 value={event}
@@ -275,17 +296,36 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ invitationId, on
                 </Reorder.Group>
             </div>
 
-            {/* Add Button */}
-            <button
-                onClick={addEvent}
-                className="w-full py-4 border-2 border-dashed border-pink-200 hover:border-pink-400 rounded-2xl text-pink-500 hover:text-pink-600 font-bold text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all hover:bg-pink-50/50"
-            >
-                <Plus className="w-5 h-5" />
-                Tambah Momen
-            </button>
+            {/* Add Button or Upgrade Prompt */}
+            {canAddMore ? (
+                <button
+                    onClick={addEvent}
+                    className="w-full py-4 border-2 border-dashed border-pink-200 hover:border-pink-400 rounded-2xl text-pink-500 hover:text-pink-600 font-bold text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all hover:bg-pink-50/50"
+                >
+                    <Plus className="w-5 h-5" />
+                    Tambah Momen
+                </button>
+            ) : (
+                <div className="w-full py-4 px-6 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl text-center space-y-2">
+                    <div className="flex items-center justify-center gap-2 text-amber-600">
+                        <Lock className="w-4 h-4" />
+                        <span className="font-bold text-xs uppercase tracking-widest">Batas Tercapai</span>
+                    </div>
+                    <p className="text-[10px] text-amber-500">
+                        Paket {userTier.toUpperCase()} hanya bisa {maxEvents} momen.
+                    </p>
+                    <a
+                        href="/upgrade"
+                        className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 hover:underline"
+                    >
+                        <Sparkles className="w-3 h-3" />
+                        Upgrade untuk lebih banyak
+                    </a>
+                </div>
+            )}
 
             {/* Empty State */}
-            {events.length === 0 && (
+            {displayedEvents.length === 0 && (
                 <div className="text-center py-6 space-y-3">
                     <p className="text-slate-400 text-sm">Belum ada momen yang ditambahkan</p>
                     <p className="text-slate-300 text-xs">Klik "Tambah Momen" untuk memulai kisah cintamu</p>
