@@ -359,9 +359,12 @@ const PARTICLE_PRESETS = {
 
 const LOVE_STORY_PRESETS = [
     { label: 'Elegant', variant: 'elegant', description: 'Sophisticated vertical timeline', icon: '✨' },
-    { label: 'Modern', variant: 'modern', description: 'Clean and bold card style', icon: '📱' },
+    { label: 'Modern', variant: 'modern', description: 'Clean and bold icon style', icon: '📱' },
     { label: 'Zigzag', variant: 'zigzag', description: 'Dynamic alternating flow', icon: '⚡' },
     { label: 'Cards', variant: 'cards', description: 'Minimalist stacked cards', icon: '🎴' },
+    { label: 'Numbered', variant: 'numbered_list', description: 'Modern numbered sequence', icon: '🔢' },
+    { label: 'Premium', variant: 'premium_zigzag', description: 'Curved luxury timeline', icon: '💎' },
+    { label: 'Floating', variant: 'floating_glass', description: 'Elegant glass cards', icon: '🫧' },
 ];
 
 export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, onSelect, onClose, direction = 'right' }) => {
