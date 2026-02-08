@@ -104,9 +104,10 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ layer, handleUpd
                             onChange={(e) => updateConfig({ variant: e.target.value as any })}
                             className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none appearance-none"
                         >
-                            <option value="zigzag" className="bg-premium-dark text-white">Zig-Zag</option>
-                            <option value="elegant" className="bg-premium-dark text-white">Elegant (Left)</option>
-                            <option value="cards" className="bg-premium-dark text-white">Modern Cards</option>
+                            <option value="zigzag" className="bg-premium-dark text-white">Zigzag</option>
+                            <option value="elegant" className="bg-premium-dark text-white">Elegant</option>
+                            <option value="modern" className="bg-premium-dark text-white">Modern</option>
+                            <option value="cards" className="bg-premium-dark text-white">Cards</option>
                         </select>
                     </div>
 
@@ -172,8 +173,8 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ layer, handleUpd
                         onClick={addEvent}
                         disabled={!canAddMore}
                         className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest transition-all ${canAddMore
-                                ? 'bg-premium-accent/10 border border-premium-accent/20 text-premium-accent hover:bg-premium-accent/20'
-                                : 'bg-white/5 border border-white/10 text-white/30 cursor-not-allowed'
+                            ? 'bg-premium-accent/10 border border-premium-accent/20 text-premium-accent hover:bg-premium-accent/20'
+                            : 'bg-white/5 border border-white/10 text-white/30 cursor-not-allowed'
                             }`}
                     >
                         {canAddMore ? <Plus className="w-3 h-3" /> : <Lock className="w-3 h-3" />}

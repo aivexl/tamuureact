@@ -17,7 +17,7 @@ export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onCo
     }, []);
 
     const config = layer.loveStoryConfig || {
-        variant: 'elegant',
+        variant: 'zigzag',
         markerStyle: 'heart',
         themeColor: '#db2777',
         lineThickness: 2,
@@ -33,8 +33,27 @@ export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onCo
         ? rawEvents  // Admin editor sees all
         : rawEvents.filter(e => e.title || e.description).slice(0, maxEvents);
 
-    const { variant = 'elegant', themeColor = '#db2777', markerStyle = 'heart' } = config;
+    const { variant = 'zigzag', themeColor = '#db2777', markerStyle = 'heart' } = config;
     const events = filledEvents;
+
+    // --- SMART SCALING LOGIC ---
+    // Proportional scaling to fit canvas without cropping
+    const count = Math.max(1, events.length);
+    const scaleFactor = count <= 2 ? 1 : count <= 4 ? 0.85 : count <= 6 ? 0.75 : 0.65;
+
+    // Base dimensions that will be scaled
+    const baseGap = {
+        elegant: 64,  // space-y-16
+        modern: 48,   // space-y-12
+        zigzag: 80,   // space-y-20
+        cards: 24     // gap-6
+    }[variant] || 40;
+
+    const basePadding = 40; // py-10
+    const scaledGap = baseGap * scaleFactor;
+    const scaledPadding = basePadding * scaleFactor;
+    const scaledFontSize = scaleFactor < 0.8 ? '0.9em' : '1em';
+    const scaledIconSize = scaleFactor < 0.8 ? 0.8 : 1;
 
     if (events.length === 0 && isEditor) {
         return (
@@ -51,13 +70,14 @@ export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onCo
         return null;
     }
 
-    const MarkerIcon = () => {
+    const MarkerIcon = ({ size = 16 }: { size?: number }) => {
+        const adjustedSize = size * (scaledIconSize || 1);
         switch (markerStyle) {
-            case 'star': return <Star size={16} fill={themeColor} />;
+            case 'star': return <Star size={adjustedSize} fill={themeColor} />;
             case 'dot':
-                return <div className="w-2.5 h-2.5 rounded-full shadow-lg" style={{ backgroundColor: themeColor, border: '2px solid white' }} />;
-            case 'diamond': return <div className="w-3 h-3 rotate-45" style={{ backgroundColor: themeColor }} />;
-            default: return <Heart size={16} fill={themeColor} />;
+                return <div className="rounded-full shadow-lg" style={{ width: adjustedSize * 0.6, height: adjustedSize * 0.6, backgroundColor: themeColor, border: '2px solid white' }} />;
+            case 'diamond': return <div className="rotate-45" style={{ width: adjustedSize * 0.7, height: adjustedSize * 0.7, backgroundColor: themeColor }} />;
+            default: return <Heart size={adjustedSize} fill={themeColor} />;
         }
     };
 
@@ -66,41 +86,44 @@ export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onCo
     // -------------------------------------------------------------------------
 
     const renderElegant = () => (
-        <div className="relative w-full py-10 px-6">
+        <div className="relative w-full h-full px-6 flex flex-col items-center justify-center" style={{ paddingBlock: scaledPadding }}>
             <div
                 className="absolute left-1/2 top-0 bottom-0 w-[1px] -translate-x-1/2 opacity-20"
                 style={{ backgroundColor: themeColor }}
             />
 
-            <div className="space-y-16">
+            <div className="w-full flex flex-col items-center" style={{ gap: scaledGap, fontSize: scaledFontSize }}>
                 {events.map((event, index) => (
                     <m.div
                         key={event.id}
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="relative flex flex-col items-center"
+                        className="relative flex flex-col items-center w-full"
                     >
-                        <div className="relative z-10 w-10 h-10 rounded-full bg-white shadow-xl flex items-center justify-center mb-6 border border-slate-100">
+                        <div
+                            className="relative z-10 rounded-full bg-white shadow-xl flex items-center justify-center border border-slate-100"
+                            style={{ width: 40 * scaledIconSize, height: 40 * scaledIconSize, marginBottom: 24 * scaleFactor }}
+                        >
                             <m.div
                                 animate={{ scale: [1, 1.2, 1] }}
                                 transition={{ duration: 2, repeat: Infinity }}
                             >
-                                <MarkerIcon />
+                                <MarkerIcon size={16} />
                             </m.div>
                         </div>
 
-                        <div className="text-center max-w-[85%]">
+                        <div className="text-center max-w-[90%]">
                             <span
-                                className="text-[10px] font-black uppercase tracking-[0.2em] mb-2 block"
-                                style={{ color: themeColor }}
+                                className="font-black uppercase tracking-[0.2em] block"
+                                style={{ color: themeColor, fontSize: '10px', marginBottom: 8 * scaleFactor }}
                             >
                                 {event.date}
                             </span>
-                            <h3 className="text-lg font-bold text-slate-900 mb-3 leading-tight uppercase tracking-tight">
+                            <h3 className="font-bold text-slate-900 leading-tight uppercase tracking-tight" style={{ fontSize: scaleFactor < 0.8 ? '14px' : '18px', marginBottom: 12 * scaleFactor }}>
                                 {event.title}
                             </h3>
-                            <p className="text-sm text-slate-500 leading-relaxed font-medium">
+                            <p className="text-slate-500 leading-relaxed font-medium" style={{ fontSize: scaleFactor < 0.8 ? '11px' : '14px' }}>
                                 {event.description}
                             </p>
                         </div>
@@ -111,34 +134,36 @@ export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onCo
     );
 
     const renderModern = () => (
-        <div className="w-full py-8 px-6 space-y-12">
+        <div className="w-full h-full px-6 flex flex-col justify-center" style={{ paddingBlock: scaledPadding, gap: scaledGap, fontSize: scaledFontSize }}>
             {events.map((event, index) => (
                 <m.div
                     key={event.id}
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
-                    className="flex gap-6"
+                    className="flex gap-6 items-center"
                 >
-                    <div className="flex flex-col items-center">
+                    <div className="flex flex-col items-center shrink-0">
                         <div
-                            className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-black text-lg shadow-lg"
-                            style={{ backgroundColor: themeColor }}
+                            className="rounded-2xl flex items-center justify-center text-white font-black shadow-lg"
+                            style={{
+                                backgroundColor: themeColor,
+                                width: 48 * scaledIconSize,
+                                height: 48 * scaledIconSize,
+                                fontSize: scaleFactor < 0.8 ? '14px' : '18px'
+                            }}
                         >
                             {index + 1}
                         </div>
-                        {index !== events.length - 1 && (
-                            <div className="w-1 h-full bg-slate-100 my-2 rounded-full" />
-                        )}
                     </div>
-                    <div className="flex-1 pb-4">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">
+                    <div className="flex-1 min-w-0">
+                        <span className="font-black text-slate-400 uppercase tracking-widest block" style={{ fontSize: '9px', marginBottom: 4 * scaleFactor }}>
                             {event.date}
                         </span>
-                        <h3 className="text-lg font-bold text-slate-900 mb-2">
+                        <h3 className="font-bold text-slate-900 truncate" style={{ fontSize: scaleFactor < 0.8 ? '14px' : '18px', marginBottom: 8 * scaleFactor }}>
                             {event.title}
                         </h3>
-                        <p className="text-sm text-slate-600 leading-relaxed">
+                        <p className="text-slate-600 leading-relaxed line-clamp-2" style={{ fontSize: scaleFactor < 0.8 ? '11px' : '14px' }}>
                             {event.description}
                         </p>
                     </div>
@@ -148,13 +173,13 @@ export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onCo
     );
 
     const renderZigzag = () => (
-        <div className="relative w-full py-12 px-4">
+        <div className="relative w-full h-full px-4 flex flex-col justify-center" style={{ paddingBlock: scaledPadding }}>
             <div
                 className="absolute left-1/2 top-4 bottom-4 -translate-x-1/2 opacity-20"
                 style={{ width: config.lineThickness || 2, backgroundColor: themeColor }}
             />
 
-            <div className="space-y-20 relative z-10">
+            <div className="relative z-10 w-full flex flex-col" style={{ gap: scaledGap, fontSize: scaledFontSize }}>
                 {events.map((event, index) => {
                     const isEven = index % 2 === 0;
                     return (
@@ -164,8 +189,11 @@ export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onCo
                         >
                             {/* Marker */}
                             <div className="absolute left-1/2 -translate-x-1/2 top-0">
-                                <div className="w-8 h-8 rounded-full bg-white shadow-lg border border-slate-100 flex items-center justify-center">
-                                    <MarkerIcon />
+                                <div
+                                    className="rounded-full bg-white shadow-lg border border-slate-100 flex items-center justify-center"
+                                    style={{ width: 32 * scaledIconSize, height: 32 * scaledIconSize }}
+                                >
+                                    <MarkerIcon size={14} />
                                 </div>
                             </div>
 
@@ -174,15 +202,15 @@ export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onCo
                                 initial={{ opacity: 0, x: isEven ? -30 : 30 }}
                                 whileInView={{ opacity: 1, x: 0 }}
                                 viewport={{ once: true }}
-                                className={`w-1/2 ${isEven ? 'pr-10 text-right' : 'pl-10 text-left'}`}
+                                className={`w-1/2 ${isEven ? 'pr-8 text-right' : 'pl-8 text-left'}`}
                             >
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">
+                                <span className="font-black text-slate-400 uppercase tracking-widest block" style={{ fontSize: '9px', marginBottom: 8 * scaleFactor }}>
                                     {event.date}
                                 </span>
-                                <h4 className="text-base font-black text-slate-900 leading-tight mb-2 uppercase tracking-tight">
+                                <h4 className="font-black text-slate-900 leading-tight uppercase tracking-tight" style={{ fontSize: scaleFactor < 0.8 ? '13px' : '16px', marginBottom: 8 * scaleFactor }}>
                                     {event.title}
                                 </h4>
-                                <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
+                                <p className="text-slate-500 leading-relaxed font-medium line-clamp-2" style={{ fontSize: scaleFactor < 0.8 ? '10px' : '11px' }}>
                                     {event.description}
                                 </p>
                             </m.div>
@@ -196,28 +224,32 @@ export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onCo
     );
 
     const renderCards = () => (
-        <div className="w-full py-10 px-4 flex flex-col gap-6">
+        <div className="w-full h-full px-4 flex flex-col justify-center" style={{ paddingBlock: scaledPadding, gap: scaledGap }}>
             {events.map((event, index) => (
                 <m.div
                     key={event.id}
                     initial={{ opacity: 0, scale: 0.95 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
-                    className="p-8 bg-white rounded-[32px] shadow-2xl border border-slate-50 flex flex-col items-center text-center"
+                    className="bg-white rounded-[24px] shadow-2xl border border-slate-50 flex flex-col items-center text-center w-full"
+                    style={{ padding: 24 * scaleFactor }}
                 >
-                    <div className="w-16 h-16 rounded-3xl bg-slate-50 flex items-center justify-center mb-6">
-                        <MarkerIcon />
+                    <div
+                        className="rounded-2xl bg-slate-50 flex items-center justify-center self-center"
+                        style={{ width: 48 * scaledIconSize, height: 48 * scaledIconSize, marginBottom: 16 * scaleFactor }}
+                    >
+                        <MarkerIcon size={20} />
                     </div>
                     <span
-                        className="text-[11px] font-black uppercase tracking-[0.2em] mb-3"
-                        style={{ color: themeColor }}
+                        className="font-black uppercase tracking-[0.2em]"
+                        style={{ color: themeColor, fontSize: '10px', marginBottom: 8 * scaleFactor }}
                     >
                         {event.date}
                     </span>
-                    <h3 className="text-xl font-bold text-slate-900 mb-4 px-2 tracking-tight">
+                    <h3 className="font-bold text-slate-900 px-2 tracking-tight truncate w-full" style={{ fontSize: scaleFactor < 0.8 ? '16px' : '20px', marginBottom: 4 * scaleFactor }}>
                         {event.title}
                     </h3>
-                    <p className="text-sm text-slate-500 leading-relaxed">
+                    <p className="text-slate-500 leading-relaxed line-clamp-1" style={{ fontSize: scaleFactor < 0.8 ? '11px' : '14px' }}>
                         {event.description}
                     </p>
                 </m.div>
@@ -226,7 +258,7 @@ export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onCo
     );
 
     return (
-        <div className="w-full h-full overflow-y-auto hide-scrollbar bg-transparent select-none antialiased">
+        <div className="w-full h-full bg-transparent select-none antialiased flex flex-col overflow-hidden">
             {variant === 'elegant' && renderElegant()}
             {variant === 'modern' && renderModern()}
             {variant === 'zigzag' && renderZigzag()}
@@ -234,3 +266,4 @@ export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onCo
         </div>
     );
 };
+
