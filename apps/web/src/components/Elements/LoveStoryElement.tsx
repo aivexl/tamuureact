@@ -41,20 +41,20 @@ export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onCo
 
     // 1. Adaptive Base Sizing (benchmark: Image 5)
     // We start with larger, more readable bases and scale down gaps/padding slightly for density
-    const densityRatio = count <= 3 ? 1 : count <= 5 ? 0.85 : 0.75;
+    const densityRatio = count <= 3 ? 1 : count <= 5 ? 0.7 : 0.55;
 
     const baseGap = {
-        elegant: 40,
-        modern: 24,
-        zigzag: 32,
-        cards: 16,
-        numbered_list: 32,
-        premium_zigzag: 48,
-        floating_glass: 24
-    }[variant] || 24;
+        elegant: 32,
+        modern: 20,
+        zigzag: 24,
+        cards: 12,
+        numbered_list: 20,
+        premium_zigzag: 28,
+        floating_glass: 16
+    }[variant] || 20;
 
     const scaledGap = baseGap * densityRatio;
-    const scaledPadding = 20 * densityRatio;
+    const scaledPadding = 16 * densityRatio;
 
     // Font benchmarks from Image 5 (perfect visibility)
     const fontSizes = {
@@ -348,10 +348,9 @@ export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onCo
     );
 
     // --- SMART CONTAINER AUTO-SCALE ---
-    // Instead of shrinking individual font components to illegible levels, 
-    // we render the container and use a last-resort transform scale if density is extremely high.
-    // This maintains internal proportions while ensuring zero-cropping.
-    const outerScale = count <= 5 ? 1 : count === 6 ? 0.95 : 0.88;
+    // More aggressive scaling for high-density scenarios to guarantee zero-cropping.
+    // This maintains internal proportions while ensuring no content is cut off.
+    const outerScale = count <= 4 ? 1 : count === 5 ? 0.9 : count === 6 ? 0.8 : 0.7;
 
     return (
         <div className="w-full h-full bg-transparent select-none antialiased flex flex-col items-center justify-center overflow-hidden">
