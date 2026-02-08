@@ -155,6 +155,62 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ layer, handleUpd
                         />
                     </div>
                 </div>
+
+                {/* ADVANCED TYPOGRAPHY COLORS */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <label className="text-[9px] text-white/30 uppercase font-bold">Date Color</label>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="color"
+                                value={config.dateColor || '#94a3b8'}
+                                onChange={(e) => updateConfig({ dateColor: e.target.value })}
+                                className="w-8 h-8 rounded cursor-pointer bg-transparent border-none p-0"
+                            />
+                            <input
+                                type="text"
+                                value={config.dateColor || '#94a3b8'}
+                                onChange={(e) => updateConfig({ dateColor: e.target.value })}
+                                className="w-full bg-white/5 border border-white/5 rounded-lg px-2 py-1 text-xs focus:border-premium-accent/50 focus:outline-none transition-colors font-mono"
+                            />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[9px] text-white/30 uppercase font-bold">Title Color</label>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="color"
+                                value={config.titleColor || '#0f172a'}
+                                onChange={(e) => updateConfig({ titleColor: e.target.value })}
+                                className="w-8 h-8 rounded cursor-pointer bg-transparent border-none p-0"
+                            />
+                            <input
+                                type="text"
+                                value={config.titleColor || '#0f172a'}
+                                onChange={(e) => updateConfig({ titleColor: e.target.value })}
+                                className="w-full bg-white/5 border border-white/5 rounded-lg px-2 py-1 text-xs focus:border-premium-accent/50 focus:outline-none transition-colors font-mono"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-[9px] text-white/30 uppercase font-bold">Description Color</label>
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="color"
+                            value={config.descriptionColor || '#64748b'}
+                            onChange={(e) => updateConfig({ descriptionColor: e.target.value })}
+                            className="w-8 h-8 rounded cursor-pointer bg-transparent border-none p-0"
+                        />
+                        <input
+                            type="text"
+                            value={config.descriptionColor || '#64748b'}
+                            onChange={(e) => updateConfig({ descriptionColor: e.target.value })}
+                            className="w-full bg-white/5 border border-white/5 rounded-lg px-2 py-1 text-xs focus:border-premium-accent/50 focus:outline-none transition-colors font-mono"
+                        />
+                    </div>
+                </div>
             </section>
 
             <div className="h-[1px] bg-white/10" />

@@ -549,6 +549,9 @@ export interface LoveStoryConfig {
     themeColor: string;
     markerStyle: 'heart' | 'dot' | 'diamond' | 'star';
     lineThickness: number;
+    titleColor?: string;
+    descriptionColor?: string;
+    dateColor?: string;
     events: LoveStoryMoment[];
 }
 
