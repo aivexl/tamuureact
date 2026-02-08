@@ -28,7 +28,8 @@ export const templates = {
         const res = await safeFetch(`${API_BASE}/api/templates`);
         if (!res.ok) throw new Error('Failed to fetch templates');
         const data = await res.json();
-        return sanitizeValue(data);
+        const sanitized = sanitizeValue(data);
+        return Array.isArray(sanitized) ? sanitized : [];
     },
 
     async get(id: string) {
@@ -86,7 +87,8 @@ export const categories = {
         const res = await safeFetch(`${API_BASE}/api/categories`);
         if (!res.ok) throw new Error('Failed to fetch categories');
         const data = await res.json();
-        return sanitizeValue(data);
+        const sanitized = sanitizeValue(data);
+        return Array.isArray(sanitized) ? sanitized : [];
     },
 
     async create(data: { name: string; icon?: string; color?: string }) {
@@ -182,7 +184,8 @@ export const invitations = {
         const res = await safeFetch(url);
         if (!res.ok) throw new Error('Failed to fetch invitations');
         const data = await res.json();
-        return sanitizeValue(data);
+        const sanitized = sanitizeValue(data);
+        return Array.isArray(sanitized) ? sanitized : [];
     },
 
     async get(idOrSlug: string) {

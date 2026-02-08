@@ -110,7 +110,7 @@ export const SettingsSidebar: React.FC = () => {
     };
 
     // Get active section's background color
-    const activeSection = sections.find(s => s.id === activeSectionId);
+    const activeSection = (sections || []).find(s => s.id === activeSectionId);
     const backgroundColor = activeSection?.backgroundColor || '#0a0a0a';
 
     const setBackgroundColor = (color: string) => {
@@ -207,18 +207,30 @@ export const SettingsSidebar: React.FC = () => {
 
                             {!showCategoryManager ? (
                                 <div className="space-y-2">
-                                    <select
-                                        value={category || ''}
-                                        onChange={(e) => setCategory(e.target.value)}
-                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none appearance-none cursor-pointer"
-                                    >
-                                        <option value="" className="bg-slate-900">Select category...</option>
-                                        {categoryList.map(cat => (
-                                            <option key={cat.id} value={cat.name} className="bg-slate-900">
-                                                {cat.icon} {cat.name}
+                                    <div className="relative">
+                                        <select
+                                            value={category || ''}
+                                            onChange={(e) => setCategory(e.target.value)}
+                                            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none appearance-none cursor-pointer pr-10"
+                                            disabled={loadingCategories}
+                                        >
+                                            <option value="" className="bg-slate-900">
+                                                {loadingCategories ? 'Loading categories...' : 'Select category...'}
                                             </option>
-                                        ))}
-                                    </select>
+                                            {categoryList.map(cat => (
+                                                <option key={cat.id} value={cat.name} className="bg-slate-900">
+                                                    {cat.icon} {cat.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/20">
+                                            {loadingCategories ? (
+                                                <PremiumLoader variant="inline" size="sm" color="#bfa181" />
+                                            ) : (
+                                                <ChevronDown className="w-4 h-4" />
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             ) : (
                                 <div className="space-y-2 bg-white/5 rounded-lg p-3 border border-white/10">

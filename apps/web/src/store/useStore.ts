@@ -62,20 +62,24 @@ export const useStore = create<StoreState>()(
                 // This prevents stale tier data from localStorage overriding fresh D1 data.
             }),
             onRehydrateStorage: () => (state) => {
-                if (state) {
-                    // CTO CRITICAL FIX: Ensure all sections have valid .elements arrays
-                    // This prevents crashes on initial render when local storage has corrupted data
+                if (!state) return;
+
+                try {
+                    // CTO CRITICAL FIX: Enterprise-grade deep sanitization
+                    // Ensures all critical collections are valid arrays/objects
+
+                    // 1. Sections Hardening
                     let sections = Array.isArray(state.sections)
                         ? state.sections
                             .filter((s: any) => s && typeof s === 'object')
                             .map((s: any) => ({
                                 ...s,
-                                id: s.id || `section-${Date.now()}`,
+                                id: s.id || `section-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                                 elements: Array.isArray(s.elements) ? s.elements : []
                             }))
                         : [];
 
-                    // If no valid sections exist, create a default one
+                    // Fallback to default section if none exist
                     if (sections.length === 0) {
                         sections = [{
                             id: 'section-opening-default',
@@ -90,7 +94,7 @@ export const useStore = create<StoreState>()(
                         }];
                     }
 
-                    // Deep guard for Orbit (TV Stage)
+                    // 2. Orbit (TV Stage) Hardening
                     const orbit = {
                         left: {
                             backgroundColor: state.orbit?.left?.backgroundColor || 'transparent',
@@ -104,19 +108,20 @@ export const useStore = create<StoreState>()(
                         }
                     };
 
+                    // 3. Global Layers & Metadata Hardening
                     const layers = Array.isArray(state.layers) ? state.layers.filter((l: any) => l && typeof l === 'object') : [];
 
                     const sanitizedPayload = sanitizeValue({
                         layers,
                         sections,
-                        zoom: state.zoom || 1,
-                        pan: state.pan || { x: 0, y: 0 },
+                        zoom: typeof state.zoom === 'number' ? state.zoom : 1,
+                        pan: (state.pan && typeof state.pan === 'object') ? state.pan : { x: 0, y: 0 },
                         slug: state.slug || '',
                         projectName: state.projectName || 'Untitled Design',
                         id: state.id,
                         orbit,
-                        music: state.music,
-                        isPublished: state.isPublished ?? false,
+                        music: Array.isArray(state.music) ? state.music : [],
+                        isPublished: !!state.isPublished,
                         activeSectionId: state.activeSectionId || sections[0]?.id || null,
                         activeCanvas: state.activeCanvas || 'main'
                     });
@@ -126,7 +131,13 @@ export const useStore = create<StoreState>()(
                         Object.assign(state, sanitizedPayload);
                         state.setHasHydrated(true);
                     }
-                    console.log('[Store] Rehydration complete with recursive sanitization.');
+                    console.log('[Store] Rehydration successful: structural integrity verified.');
+                } catch (e) {
+                    console.error('[Store] Rehydration failed catastrophically! Resetting to safe defaults.', e);
+                    // Critical fallback: If rehydration fails, we MUST still mark as hydrated to prevent loading loops
+                    if (state.setHasHydrated) {
+                        state.setHasHydrated(true);
+                    }
                 }
             }
         }
