@@ -11,10 +11,23 @@ import {
     Image as ImageIcon,
     Settings2,
     Layout,
-    Palette
+    Palette,
+    Lock
 } from 'lucide-react';
 import { Layer, LoveStoryMoment } from '@/store/layersSlice';
 import { generateId } from '@/lib/utils';
+import { useStore } from '@/store/useStore';
+
+// Tier-based limits for Love Story timeline events
+const LOVE_STORY_LIMITS: Record<string, number> = {
+    free: 1,
+    pro: 3,
+    vip: 3,
+    ultimate: 5,
+    platinum: 5,
+    elite: 7,
+    vvip: 7
+};
 
 interface LoveStoryPanelProps {
     layer: Layer;
@@ -22,6 +35,12 @@ interface LoveStoryPanelProps {
 }
 
 export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ layer, handleUpdate }) => {
+    const { user } = useStore();
+    const userTier = user?.tier || 'free';
+    const maxEvents = LOVE_STORY_LIMITS[userTier] || 1;
+    const currentEventCount = (layer.loveStoryConfig?.events || []).length;
+    const canAddMore = currentEventCount < maxEvents;
+
     const config = layer.loveStoryConfig || {
         variant: 'zigzag',
         markerStyle: 'heart',
@@ -42,6 +61,8 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ layer, handleUpd
     };
 
     const addEvent = () => {
+        if (!canAddMore) return; // Block if limit reached
+
         const newEvent: LoveStoryMoment = {
             id: generateId(),
             date: '2024',
@@ -143,13 +164,20 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ layer, handleUpd
                     <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
                         <h4 className="text-[10px] font-bold uppercase tracking-widest">Timeline Events</h4>
+                        <span className="text-[9px] font-mono text-premium-accent/60">
+                            {currentEventCount}/{maxEvents}
+                        </span>
                     </div>
                     <button
                         onClick={addEvent}
-                        className="flex items-center gap-1.5 px-3 py-1 bg-premium-accent/10 border border-premium-accent/20 rounded-full text-[9px] font-black text-premium-accent uppercase tracking-widest hover:bg-premium-accent/20 transition-all"
+                        disabled={!canAddMore}
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest transition-all ${canAddMore
+                                ? 'bg-premium-accent/10 border border-premium-accent/20 text-premium-accent hover:bg-premium-accent/20'
+                                : 'bg-white/5 border border-white/10 text-white/30 cursor-not-allowed'
+                            }`}
                     >
-                        <Plus className="w-3 h-3" />
-                        Add Moment
+                        {canAddMore ? <Plus className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+                        {canAddMore ? 'Add Moment' : 'Limit Reached'}
                     </button>
                 </div>
 
