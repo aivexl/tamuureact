@@ -318,27 +318,34 @@ export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onCo
     );
 
     const renderFloatingGlass = () => (
-        <div className="w-full flex flex-col items-center" style={{ gap: scaledGap * 0.8, paddingBlock: scaledPadding }}>
+        <div className="w-full flex flex-col items-center" style={{ gap: scaledGap * 0.6, paddingBlock: scaledPadding }}>
             {events.map((event) => (
                 <m.div
                     key={event.id}
                     initial={{ opacity: 0, scale: 0.95 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
-                    className="backdrop-blur-md bg-white/40 rounded-[2rem] border border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.08)] flex flex-col items-center text-center w-[85%] overflow-hidden"
+                    className="backdrop-blur-md rounded-[1.5rem] border shadow-[0_8px_32px_rgba(0,0,0,0.08)] flex flex-col items-center text-center w-[88%] overflow-hidden"
+                    style={{
+                        backgroundColor: `${themeColor}26`, // ~15% opacity
+                        borderColor: `${themeColor}40`,     // ~25% opacity
+                    }}
                     whileHover={{ y: -5 }}
                 >
-                    <div className="w-full bg-gradient-to-b from-white/60 to-transparent p-6 flex flex-col items-center">
-                        <span className="font-black uppercase tracking-[0.3em] block opacity-40 mb-2" style={{ color: config.dateColor || '#000', fontSize: '9px' }}>
+                    <div
+                        className="w-full p-4 flex flex-col items-center"
+                        style={{ background: `linear-gradient(to bottom, ${themeColor}33, transparent)` }}
+                    >
+                        <span className="font-black uppercase tracking-[0.3em] block opacity-60 mb-1" style={{ color: config.dateColor || '#000', fontSize: '8px' }}>
                             {event.date}
                         </span>
-                        <div className="h-px w-12 bg-black/10 mb-4" />
-                        <h3 className="font-bold tracking-tight px-4" style={{ color: config.titleColor || '#0f172a', fontSize: fontSizes.title, marginBottom: 4, ...wrapStyle }}>
+                        <div className="h-px w-10 mb-3" style={{ backgroundColor: `${themeColor}40` }} />
+                        <h3 className="font-bold tracking-tight px-2" style={{ color: config.titleColor || '#0f172a', fontSize: fontSizes.title, marginBottom: 2, ...wrapStyle }}>
                             {event.title}
                         </h3>
                     </div>
-                    <div className="p-6 pt-0">
-                        <p className="leading-relaxed font-medium opacity-70" style={{ color: config.descriptionColor || '#475569', fontSize: fontSizes.description, ...wrapStyle }}>
+                    <div className="p-4 pt-0">
+                        <p className="leading-relaxed font-medium opacity-80" style={{ color: config.descriptionColor || '#475569', fontSize: fontSizes.description, ...wrapStyle }}>
                             {event.description}
                         </p>
                     </div>
