@@ -7,15 +7,20 @@ import React, { useState, useEffect } from 'react';
 import { m } from 'framer-motion';
 import {
     Video,
-    Save,
     Check,
     AlertCircle,
     ExternalLink,
     Youtube,
-    Link2
+    Instagram,
+    Link2,
+    Monitor,
+    Camera,
+    Cast,
+    Info
 } from 'lucide-react';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { invitations as invitationsApi } from '@/lib/api';
+import { useStore } from '@/store/useStore';
 
 interface LiveStreamPanelProps {
     invitationId: string;
@@ -23,7 +28,10 @@ interface LiveStreamPanelProps {
 }
 
 export const LiveStreamPanel: React.FC<LiveStreamPanelProps> = ({ invitationId, onClose }) => {
+    const { sections, updateElementInSection } = useStore();
     const [streamUrl, setStreamUrl] = useState('');
+    const [platform, setPlatform] = useState<string | null>(null);
+    const [isManualPlatform, setIsManualPlatform] = useState(false);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -37,6 +45,15 @@ export const LiveStreamPanel: React.FC<LiveStreamPanelProps> = ({ invitationId, 
                 const data = await invitationsApi.get(invitationId);
                 if (data?.livestream_url) {
                     setStreamUrl(data.livestream_url);
+                    // Try to find the platform from the canvas elements first
+                    const liveLayer = sections
+                        .flatMap(s => s.elements)
+                        .find(el => el.type === 'live_streaming');
+
+                    if (liveLayer?.liveStreamingConfig?.platform) {
+                        setPlatform(liveLayer.liveStreamingConfig.platform);
+                        setIsManualPlatform(true);
+                    }
                 }
             } catch (err) {
                 console.error('[LiveStreamPanel] Load error:', err);
@@ -50,18 +67,60 @@ export const LiveStreamPanel: React.FC<LiveStreamPanelProps> = ({ invitationId, 
         }
     }, [invitationId]);
 
-    // Detect platform from URL
-    const detectPlatform = (url: string) => {
+    // Detect platform from URL (if not manually overridden)
+    const detectedPlatform = (url: string) => {
         if (!url) return null;
-        if (url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube';
-        if (url.includes('zoom.us')) return 'zoom';
-        if (url.includes('meet.google.com')) return 'google-meet';
-        if (url.includes('teams.microsoft.com')) return 'teams';
-        if (url.includes('twitch.tv')) return 'twitch';
+        const lowUrl = url.toLowerCase();
+        if (lowUrl.includes('youtube.com') || lowUrl.includes('youtu.be')) return 'youtube';
+        if (lowUrl.includes('zoom.us')) return 'zoom';
+        if (lowUrl.includes('meet.google.com')) return 'meet';
+        if (lowUrl.includes('teams.microsoft.com')) return 'teams';
+        if (lowUrl.includes('twitch.tv')) return 'twitch';
+        if (lowUrl.includes('tiktok.com')) return 'tiktok';
+        if (lowUrl.includes('instagram.com')) return 'instagram';
         return 'other';
     };
 
-    const platform = detectPlatform(streamUrl);
+    // Auto-detect if not manually selected
+    useEffect(() => {
+        if (!isManualPlatform) {
+            const detected = detectedPlatform(streamUrl);
+            setPlatform(detected);
+        }
+    }, [streamUrl, isManualPlatform]);
+
+    // REAL-TIME SYNC: Update Store when local state changes
+    useEffect(() => {
+        if (!loading) {
+            // Find any live_streaming layer across all sections
+            sections.forEach(section => {
+                section.elements.forEach(el => {
+                    if (el.type === 'live_streaming') {
+                        updateElementInSection(section.id, el.id, {
+                            liveStreamingConfig: {
+                                ...el.liveStreamingConfig,
+                                url: streamUrl,
+                                platform: (platform as any) || 'other',
+                                title: el.liveStreamingConfig?.title || 'Live Streaming',
+                                themeColor: el.liveStreamingConfig?.themeColor || '#e11d48',
+                                isLive: el.liveStreamingConfig?.isLive || false
+                            }
+                        });
+                    }
+                });
+            });
+        }
+    }, [streamUrl, platform, loading]);
+
+    const PLATFORMS = [
+        { id: 'youtube', label: 'YouTube', icon: Youtube, color: 'text-red-600', bg: 'bg-red-50' },
+        { id: 'zoom', label: 'Zoom', icon: Video, color: 'text-blue-600', bg: 'bg-blue-50' },
+        { id: 'meet', label: 'Meet', icon: Monitor, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+        { id: 'instagram', label: 'Instagram', icon: Instagram, color: 'text-pink-600', bg: 'bg-pink-50' },
+        { id: 'tiktok', label: 'TikTok', icon: Camera, color: 'text-slate-900', bg: 'bg-slate-100' },
+        { id: 'twitch', label: 'Twitch', icon: Cast, color: 'text-purple-600', bg: 'bg-purple-50' },
+        { id: 'other', label: 'Other', icon: ExternalLink, color: 'text-slate-500', bg: 'bg-slate-50' }
+    ];
 
     // Save handler
     const handleSave = async () => {
@@ -161,36 +220,81 @@ export const LiveStreamPanel: React.FC<LiveStreamPanelProps> = ({ invitationId, 
                     />
                 </div>
 
-                {/* Platform Detection */}
-                {platform && streamUrl && (
+                {/* Platform Selection Buttons */}
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between ml-4">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                            Pilih Provider
+                        </label>
+                        {isManualPlatform && (
+                            <button
+                                onClick={() => setIsManualPlatform(false)}
+                                className="text-[9px] font-black text-rose-500 uppercase tracking-widest hover:underline"
+                            >
+                                Reset Auto-Detect
+                            </button>
+                        )}
+                    </div>
+                    <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                        {PLATFORMS.map((p) => {
+                            const Icon = p.icon;
+                            const isActive = platform === p.id;
+                            return (
+                                <button
+                                    key={p.id}
+                                    onClick={() => {
+                                        setPlatform(p.id);
+                                        setIsManualPlatform(true);
+                                    }}
+                                    className={`flex flex-col items-center justify-center p-3 rounded-2xl border-2 transition-all gap-2 ${isActive
+                                        ? 'border-rose-500 bg-rose-50 ring-4 ring-rose-500/10'
+                                        : 'border-slate-50 bg-slate-50 hover:bg-white hover:border-slate-200'
+                                        }`}
+                                >
+                                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${isActive ? 'bg-white shadow-sm' : 'bg-transparent'}`}>
+                                        <Icon className={`w-5 h-5 ${isActive ? p.color : 'text-slate-400'}`} />
+                                    </div>
+                                    <span className={`text-[8px] font-black uppercase tracking-tighter ${isActive ? 'text-rose-600' : 'text-slate-400'}`}>
+                                        {p.label}
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Test Link Card */}
+                {streamUrl && (
                     <m.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex items-center gap-2 ml-4"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100"
                     >
-                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${platform === 'youtube' ? 'bg-red-100 text-red-600' :
-                            platform === 'zoom' ? 'bg-blue-100 text-blue-600' :
-                                platform === 'google-meet' ? 'bg-green-100 text-green-600' :
-                                    platform === 'teams' ? 'bg-purple-100 text-purple-600' :
-                                        'bg-slate-100 text-slate-600'
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${PLATFORMS.find(p => p.id === platform)?.bg || 'bg-slate-200'
                             }`}>
-                            <Video className="w-3.5 h-3.5" />
+                            {(() => {
+                                const activeP = PLATFORMS.find(p => p.id === platform);
+                                const Icon = activeP?.icon || ExternalLink;
+                                return <Icon className={`w-6 h-6 ${activeP?.color || 'text-slate-500'}`} />;
+                            })()}
                         </div>
-                        <span className="text-xs font-bold text-slate-500 capitalize">
-                            {platform === 'youtube' ? 'YouTube Live' :
-                                platform === 'zoom' ? 'Zoom Meeting' :
-                                    platform === 'google-meet' ? 'Google Meet' :
-                                        platform === 'teams' ? 'Microsoft Teams' :
-                                            'Live Streaming'}
-                        </span>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1 text-ellipsis overflow-hidden">
+                                {streamUrl}
+                            </p>
+                            <h5 className="font-bold text-slate-800 flex items-center gap-1.5">
+                                {PLATFORMS.find(p => p.id === platform)?.label || 'Link Streaming'}
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                            </h5>
+                        </div>
                         <a
                             href={streamUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="ml-auto flex items-center gap-1 text-xs font-bold text-rose-600 hover:text-rose-700 transition-colors"
+                            className="w-10 h-10 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-rose-600 hover:text-rose-700 hover:shadow-sm transition-all shrink-0"
+                            title="Buka Link di Tab Baru"
                         >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                            Test Link
+                            <ExternalLink className="w-5 h-5" />
                         </a>
                     </m.div>
                 )}
