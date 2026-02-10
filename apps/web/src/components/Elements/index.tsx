@@ -610,3 +610,4 @@ export const ShareContextElement: React.FC<{ layer: Layer, onContentLoad?: () =>
 // LOVE STORY ELEMENT
 // ============================================
 export * from './LoveStoryElement';
+export * from './LiveStreamingElement';

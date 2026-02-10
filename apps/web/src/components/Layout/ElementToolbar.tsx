@@ -670,6 +670,24 @@ const elementConfigs: ElementConfig[] = [
             }
         })
     },
+    {
+        type: 'live_streaming',
+        icon: <Monitor className="w-5 h-5" />,
+        label: 'Live Stream',
+        color: 'hover:bg-rose-500/10 hover:border-rose-500/30',
+        createDefault: () => ({
+            width: 380,
+            height: 280,
+            liveStreamingConfig: {
+                url: '',
+                title: 'Live Streaming Undangan',
+                startTime: '',
+                platform: 'other',
+                themeColor: '#14b8a6',
+                isLive: true
+            }
+        })
+    },
 ];
 
 
@@ -695,8 +713,10 @@ export const ElementToolbar: React.FC<ElementToolbarProps> = ({ embedded = false
         addElementToSection,
         addOrbitElement,
         activeCanvas,
-        selectLayer
+        selectLayer,
+        user
     } = useStore();
+
     const [isExpanded, setIsExpanded] = useState(false);
     const [activeTool, setActiveTool] = useState<LayerType | null>(null);
 
@@ -744,6 +764,7 @@ export const ElementToolbar: React.FC<ElementToolbarProps> = ({ embedded = false
             ...(additionalConfig.shapeConfig && defaults.shapeConfig ? { shapeConfig: { ...defaults.shapeConfig, ...additionalConfig.shapeConfig } } : {}),
             ...(additionalConfig.iconStyle && defaults.iconStyle ? { iconStyle: { ...defaults.iconStyle, ...additionalConfig.iconStyle } } : {}),
             ...(additionalConfig.countdownConfig && defaults.countdownConfig ? { countdownConfig: { ...defaults.countdownConfig, ...additionalConfig.countdownConfig } } : {}),
+            ...(additionalConfig.liveStreamingConfig && defaults.liveStreamingConfig ? { liveStreamingConfig: { ...defaults.liveStreamingConfig, ...additionalConfig.liveStreamingConfig } } : {}),
         };
 
         // Unified Injection Engine
@@ -760,7 +781,11 @@ export const ElementToolbar: React.FC<ElementToolbarProps> = ({ embedded = false
         setIsExpanded(false);
     };
 
-    const allTools = elementConfigs; // Use all tools if embedded
+    const isAdmin = user?.role === 'admin';
+    const allTools = elementConfigs.filter(c => {
+        if (c.type === 'live_streaming') return isAdmin;
+        return true;
+    });
 
     if (embedded) {
         return (
@@ -801,8 +826,8 @@ export const ElementToolbar: React.FC<ElementToolbarProps> = ({ embedded = false
         );
     }
 
-    const quickTools = elementConfigs.slice(0, 5);
-    const moreTools = elementConfigs.slice(5);
+    const quickTools = allTools.slice(0, 5);
+    const moreTools = allTools.slice(5);
 
     return (
         <div className="absolute left-4 top-1/2 -translate-y-1/2 z-50">

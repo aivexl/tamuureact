@@ -108,6 +108,34 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
         return Object.keys(newErrors).length === 0;
     };
 
+    // Handle incoming search/filter from URL and auto-select user
+    useEffect(() => {
+        if (isLoading || users.length === 0) return;
+
+        const urlId = searchParams.get('id');
+        const urlInvitationId = searchParams.get('invitationId');
+
+        if (urlId) {
+            setSearchQuery(urlId);
+            const matchingUser = users.find(u => u.id === urlId || (u as any).tamuu_id === urlId);
+            if (matchingUser) {
+                setSelectedUser(matchingUser);
+                setEditForm({
+                    tier: matchingUser.tier,
+                    expires_at: matchingUser.expires_at ? matchingUser.expires_at.split('T')[0] : '',
+                    max_invitations: matchingUser.max_invitations,
+                    role: matchingUser.role,
+                    permissions: matchingUser.permissions || []
+                });
+                setIsEditModalOpen(true);
+            }
+        }
+
+        if (urlInvitationId) {
+            // Further logic for invitationId could be added here if needed
+        }
+    }, [isLoading, users, searchParams]);
+
     useEffect(() => {
         fetchUsers();
     }, [initialRole]);
@@ -117,22 +145,6 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
             setIsLoading(true);
             const data = await admin.listUsers(initialRole);
             setUsers(data);
-
-            // Auto-select user if ID is in URL
-            if (targetUserId) {
-                const targetUser = data.find((u: UserData) => u.id === targetUserId);
-                if (targetUser) {
-                    setSelectedUser(targetUser);
-                    setEditForm({
-                        tier: targetUser.tier,
-                        expires_at: targetUser.expires_at ? targetUser.expires_at.split('T')[0] : '',
-                        max_invitations: targetUser.max_invitations,
-                        role: targetUser.role,
-                        permissions: targetUser.permissions || []
-                    });
-                    setIsEditModalOpen(true);
-                }
-            }
         } catch (err) {
             console.error('[AdminUsers] Fetch error:', err);
             toast.error('Gagal mengambil data user');
@@ -218,7 +230,11 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
     };
 
     const filteredUsers = users.filter(user => {
-        const matchesSearch = (user.email + user.name).toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesSearch = !searchQuery ||
+            user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (user as any).tamuu_id?.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesTier = filterTier === 'all' || user.tier === filterTier;
         return matchesSearch && matchesTier;
     });

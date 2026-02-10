@@ -53,7 +53,8 @@ const layerIcons: Record<LayerType, React.ReactNode> = {
     share_context: <Share2 className="w-4 h-4" />,
     name_board: <Users className="w-4 h-4" />,
     gift_address: <Gift className="w-4 h-4" />,
-    love_story: <Heart className="w-4 h-4" />
+    love_story: <Heart className="w-4 h-4" />,
+    live_streaming: <Monitor className="w-4 h-4" />
 };
 
 // Placeholder for missing Palette import usage in layerIcons

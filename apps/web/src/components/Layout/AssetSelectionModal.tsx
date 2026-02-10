@@ -7,7 +7,7 @@ import {
     MessageSquare, Users, Circle, Triangle, Diamond, Star,
     Music, Camera, Gift, Flower2, Bell, Check, Cloud, Home,
     Sun, Moon, Smile, ThumbsUp, Upload, Monitor,
-    Waves, Zap, Component, Share2, Layers
+    Waves, Zap, Component, Share2, Layers, Youtube, Instagram
 } from 'lucide-react';
 import { PremiumLoader } from '../ui/PremiumLoader';
 import { LayerType } from '@/store/useStore';
@@ -454,6 +454,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
             case 'love_story': return 'Pilih Gaya Kisah Cinta';
             case 'social_mockup': return 'Social Platform';
             case 'interaction': return 'Select Cinematic Effect';
+            case 'live_streaming': return 'Pilih Platform Live Stream';
             default: {
                 const label = type?.replace('_', ' ') || '';
                 return `Add ${label.charAt(0).toUpperCase() + label.slice(1)}`;
@@ -1255,30 +1256,33 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                             </button>
                         </div>
 
-                        <p className="text-[10px] text-white/30 text-center mt-4">
-                            Pilih style lalu kustomisasi di Property Panel
-                        </p>
                     </div>
                 )}
 
-                {/* LOVE STORY */}
-                {type === 'love_story' && (
+                {/* LIVE STREAMING */}
+                {type === 'live_streaming' && (
                     <div className="grid grid-cols-2 gap-3">
-                        {LOVE_STORY_PRESETS.map((preset, i) => (
+                        {[
+                            { id: 'youtube', label: 'YouTube', icon: <Youtube className="w-6 h-6 text-[#FF0000]" /> },
+                            { id: 'instagram', label: 'Instagram', icon: <Instagram className="w-6 h-6 text-[#E4405F]" /> },
+                            { id: 'zoom', label: 'Zoom', icon: <Video className="w-6 h-6 text-[#2D8CFF]" /> },
+                            { id: 'meet', label: 'Google Meet', icon: <Monitor className="w-6 h-6 text-[#00AC47]" /> },
+                            { id: 'tiktok', label: 'TikTok', icon: <Camera className="w-6 h-6 text-white" /> },
+                            { id: 'twitch', label: 'Twitch', icon: <Monitor className="w-6 h-6 text-[#9146FF]" /> },
+                        ].map((p) => (
                             <button
-                                key={i}
-                                onClick={() => onSelect({ loveStoryConfig: { variant: preset.variant } })}
-                                className="flex flex-col items-center justify-center p-4 rounded-xl bg-white/5 hover:bg-premium-accent/20 border border-white/5 hover:border-premium-accent/40 transition-all gap-2 text-center"
+                                key={p.id}
+                                onClick={() => onSelect({ liveStreamingConfig: { platform: p.id as any, title: `${p.label} Wedding Live` } })}
+                                className="flex flex-col items-center justify-center p-4 rounded-xl bg-white/5 hover:bg-premium-accent/20 border border-white/5 hover:border-premium-accent/40 transition-all gap-2"
                             >
-                                <span className="text-2xl">{preset.icon}</span>
-                                <span className="text-[10px] font-bold text-white/80">{preset.label}</span>
-                                <span className="text-[8px] text-white/40 leading-tight">{preset.description}</span>
+                                {p.icon}
+                                <span className="text-[10px] font-bold text-white/80">{p.label}</span>
                             </button>
                         ))}
                     </div>
                 )}
 
-                {/* Others (Generic fallback) - EXCLUDING open_invitation_button */}
+                {/* Others (Generic fallback) - EXCLUDING open_invitation_button, live_streaming */}
                 {['maps_point', 'lottie', 'flying_bird', 'guest_wishes', 'rsvp_form'].includes(type) && (
                     <div className="flex flex-col items-center justify-center py-8 text-center">
                         <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
@@ -1299,3 +1303,10 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
         document.body
     );
 };
+
+// Assuming this is part of a separate file like `useStore.ts` or `types.ts`
+// This part of the instruction is applied conceptually as it's outside the provided JSX snippet.
+// For example, if there's an export statement like:
+// export { MotionPathPoint, MotionPathConfig, LoveStoryMoment, LoveStoryConfig, Section, PredefinedSectionType, ZoomPoint, ZoomConfig };
+// It would be updated to include LiveStreamingConfig:
+// export { MotionPathPoint, MotionPathConfig, LoveStoryMoment, LoveStoryConfig, LiveStreamingConfig, Section, PredefinedSectionType, ZoomPoint, ZoomConfig };

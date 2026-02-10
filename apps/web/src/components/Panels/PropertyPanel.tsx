@@ -1829,6 +1829,91 @@ export const PropertyPanel: React.FC = () => {
                     </SectionComponent>
                 )}
 
+                {/* Live Streaming Config */}
+                {layer.type === 'live_streaming' && (
+                    <SectionComponent title="Live Stream Settings" icon={<Video className="w-4 h-4 text-rose-500" />}>
+                        <div className="space-y-4">
+                            {/* Title */}
+                            <div>
+                                <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Stream Title</label>
+                                <input
+                                    type="text"
+                                    value={layer.liveStreamingConfig?.title || ''}
+                                    onChange={(e) => handleUpdate({ liveStreamingConfig: { ...layer.liveStreamingConfig!, title: e.target.value } })}
+                                    className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none"
+                                    placeholder="Wedding Live Stream"
+                                />
+                            </div>
+
+                            {/* URL */}
+                            <div>
+                                <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Live URL</label>
+                                <input
+                                    type="text"
+                                    value={layer.liveStreamingConfig?.url || ''}
+                                    onChange={(e) => handleUpdate({ liveStreamingConfig: { ...layer.liveStreamingConfig!, url: e.target.value } })}
+                                    className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none"
+                                    placeholder="https://youtube.com/live/..."
+                                />
+                            </div>
+
+                            {/* Platform */}
+                            <SelectInput
+                                label="Platform"
+                                value={layer.liveStreamingConfig?.platform || 'other'}
+                                options={[
+                                    { value: 'youtube', label: 'YouTube' },
+                                    { value: 'instagram', label: 'Instagram' },
+                                    { value: 'zoom', label: 'Zoom' },
+                                    { value: 'meet', label: 'Google Meet' },
+                                    { value: 'tiktok', label: 'TikTok' },
+                                    { value: 'twitch', label: 'Twitch' },
+                                    { value: 'other', label: 'Other' }
+                                ]}
+                                onChange={(v) => handleUpdate({ liveStreamingConfig: { ...layer.liveStreamingConfig!, platform: v as any } })}
+                            />
+
+                            {/* Start Time */}
+                            <div>
+                                <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Start Time</label>
+                                <input
+                                    type="datetime-local"
+                                    value={layer.liveStreamingConfig?.startTime?.slice(0, 16) || ''}
+                                    onChange={(e) => handleUpdate({
+                                        liveStreamingConfig: {
+                                            ...layer.liveStreamingConfig!,
+                                            startTime: e.target.value ? new Date(e.target.value).toISOString() : ''
+                                        }
+                                    })}
+                                    className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none"
+                                />
+                            </div>
+
+                            {/* Theme Color */}
+                            <ColorInput
+                                label="Theme Color"
+                                value={layer.liveStreamingConfig?.themeColor || '#14b8a6'}
+                                onChange={(v) => handleUpdate({ liveStreamingConfig: { ...layer.liveStreamingConfig!, themeColor: v } })}
+                            />
+
+                            {/* Live Status Toggle */}
+                            <div className="flex items-center justify-between">
+                                <span className="text-[9px] text-white/30 uppercase font-bold">Is Live Now</span>
+                                <motion.button
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleUpdate({ liveStreamingConfig: { ...layer.liveStreamingConfig!, isLive: !layer.liveStreamingConfig?.isLive } })}
+                                    className={`relative w-10 h-5 rounded-full transition-colors ${layer.liveStreamingConfig?.isLive ? 'bg-rose-500' : 'bg-white/10'}`}
+                                >
+                                    <motion.div
+                                        animate={{ x: layer.liveStreamingConfig?.isLive ? 20 : 2 }}
+                                        className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow"
+                                    />
+                                </motion.button>
+                            </div>
+                        </div>
+                    </SectionComponent>
+                )}
+
                 {/* Interaction Config - Only for interaction elements */}
                 {
                     layer.type === 'interaction' && (

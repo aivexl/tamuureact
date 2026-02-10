@@ -25,7 +25,8 @@ import {
     DirectionsHubElement,
     ShareContextElement,
     GiftAddressElement,
-    LoveStoryElement
+    LoveStoryElement,
+    LiveStreamingElement
 } from '@/components/Elements';
 
 
@@ -91,6 +92,8 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenI
                 return <GiftAddressElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             case 'love_story':
                 return <LoveStoryElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
+            case 'live_streaming':
+                return <LiveStreamingElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             case 'music_player':
                 return <MusicPlayerElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             case 'qr_code':

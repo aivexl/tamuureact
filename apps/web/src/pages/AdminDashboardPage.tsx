@@ -147,7 +147,7 @@ export const AdminDashboardPage: React.FC = () => {
                 navigate(`/admin/users?id=${activity.user_id || ''}&invitationId=${activity.target_id}`);
                 break;
             case 'rsvp':
-                navigate(`/admin/activity?type=rsvp&id=${activity.target_id}`);
+                navigate(`/admin/users?id=${activity.user_id || ''}&invitationId=${activity.target_id}`);
                 break;
             default:
                 break;

@@ -48,7 +48,8 @@ export type LayerType =
     | 'name_board'
     | 'love_story'
     | 'qr_code'
-    | 'gift_address';
+    | 'gift_address'
+    | 'live_streaming';
 
 
 // ============================================
@@ -599,6 +600,16 @@ export interface InteractionConfig {
     testName?: string;
 }
 
+export interface LiveStreamingConfig {
+    url: string;
+    title: string;
+    startTime?: string;
+    platform?: 'youtube' | 'instagram' | 'zoom' | 'meet' | 'tiktok' | 'twitch' | 'other';
+    customLabel?: string;
+    themeColor: string;
+    isLive: boolean;
+}
+
 export interface NameBoardConfig {
     variant: number;
     displayText: string;
@@ -739,6 +750,7 @@ export interface Layer {
     gradientMeshConfig?: any;
     nameBoardConfig?: NameBoardConfig;
     giftAddressConfig?: GiftAddressConfig;
+    liveStreamingConfig?: LiveStreamingConfig;
 
     // ENTERPRISE V2 FEATURES
     maskConfig?: MaskConfig;

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { useParams } from 'react-router-dom';
-import { Type, Image as ImageIcon, MapPin, Copy, Shield, Clock, Lock, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignStartVertical, AlignCenterVertical, AlignEndVertical, Plus, Minus, Palette, ChevronDown, Settings2, Trash2, Calendar, Heart, Type as FontIcon } from 'lucide-react';
+import { Type, Image as ImageIcon, MapPin, Copy, Shield, Clock, Lock, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignStartVertical, AlignCenterVertical, AlignEndVertical, Plus, Minus, Palette, ChevronDown, Settings2, Trash2, Calendar, Heart, Type as FontIcon, Monitor } from 'lucide-react';
 import { useStore, Layer, LoveStoryMoment, LoveStoryConfig } from '@/store/useStore';
 import { SUPPORTED_FONTS } from '@/lib/fonts';
 
@@ -88,6 +88,7 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
             case 'maps_point': return <MapPin className="w-4 h-4" />;
             case 'countdown': return <Clock className="w-4 h-4" />;
             case 'love_story': return <Heart className="w-4 h-4 text-pink-500" />;
+            case 'live_streaming': return <Monitor className="w-4 h-4" />;
             default: return <Type className="w-4 h-4" />;
 
         }
@@ -475,6 +476,50 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                                 <MapPin className="w-5 h-5" />
                             </a>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Live Streaming Configuration */}
+            {element.type === 'live_streaming' && element.liveStreamingConfig && (
+                <div className="space-y-4">
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Platform Streaming</label>
+                        <div className="grid grid-cols-2 gap-2">
+                            {[
+                                { id: 'youtube', label: 'YouTube' },
+                                { id: 'zoom', label: 'Zoom' },
+                                { id: 'meet', label: 'Meet' },
+                                { id: 'instagram', label: 'Instagram' },
+                                { id: 'tiktok', label: 'TikTok' },
+                                { id: 'other', label: 'Lainnya' }
+                            ].map((p) => (
+                                <button
+                                    key={p.id}
+                                    onClick={() => handleUpdate({
+                                        liveStreamingConfig: { ...element.liveStreamingConfig!, platform: p.id as any }
+                                    })}
+                                    className={`px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all border ${element.liveStreamingConfig?.platform === p.id
+                                        ? 'bg-rose-50 border-rose-200 text-rose-600'
+                                        : 'bg-slate-50 border-slate-100 text-slate-400 hover:bg-slate-100'
+                                        }`}
+                                >
+                                    {p.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Link Live Streaming</label>
+                        <input
+                            type="url"
+                            value={element.liveStreamingConfig.url || ''}
+                            onChange={(e) => handleUpdate({
+                                liveStreamingConfig: { ...element.liveStreamingConfig!, url: e.target.value }
+                            })}
+                            placeholder="https://youtube.com/live/..."
+                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all outline-none"
+                        />
                     </div>
                 </div>
             )}

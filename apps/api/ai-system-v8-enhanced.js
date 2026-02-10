@@ -238,6 +238,18 @@ class TamuuAIEngine {
                     },
                     required: ["query"]
                 }
+            },
+            {
+                name: "stitch_design_suggest",
+                description: "Mendapatkan saran desain premium untuk kartu Live Streaming berdasarkan tema undangan.",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        themeColor: { type: "string", description: "Warna tema utama undangan (Hex)" },
+                        invitationTitle: { type: "string", description: "Judul undangan untuk disesuaikan" },
+                        platform: { type: "string", description: "Platform streaming (youtube, instagram, dll)" }
+                    }
+                }
             }
         ];
     }
