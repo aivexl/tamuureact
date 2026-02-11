@@ -118,7 +118,7 @@ export const QuoteElement: React.FC<{ layer: Layer, isEditor?: boolean, onConten
     return (
         <div
             ref={containerRef}
-            className={`w-full h-full flex flex-col items-center justify-center ${padding} relative overflow-hidden transition-all duration-500`}
+            className={`w-full min-h-full flex flex-col items-center justify-center ${padding} py-4 relative transition-all duration-500`}
             style={{
                 ...getStyles(),
                 borderRadius: layer.borderRadius || 24
@@ -129,7 +129,7 @@ export const QuoteElement: React.FC<{ layer: Layer, isEditor?: boolean, onConten
                 <div className="absolute -top-12 -left-12 w-32 h-32 bg-primary/10 blur-[60px] rounded-full pointer-events-none" />
             )}
 
-            <div className="relative z-10 w-full text-center flex flex-col items-center gap-4">
+            <div className="relative z-10 w-full text-center flex flex-col items-center gap-2 flex-grow justify-center">
                 {/* Large Decorative Quote Marks (Only for non-Quran OR if it's the start) */}
                 {config.variant !== 'transparent' && !isQuran && (
                     <div
@@ -146,12 +146,12 @@ export const QuoteElement: React.FC<{ layer: Layer, isEditor?: boolean, onConten
                 {/* Arabic Text Block */}
                 {config.textArabic && (
                     <div
-                        className="w-full text-center mb-2 px-1 whitespace-pre-wrap"
+                        className="w-full text-center px-1 whitespace-pre-wrap"
                         style={{
                             fontFamily: 'Amiri, New Amsterdam, serif',
                             fontSize: `${arabicFontSize}px`,
                             color: config.quoteColor || '#ffffff',
-                            lineHeight: 1.6,
+                            lineHeight: 1.4,
                             direction: 'rtl'
                         }}
                     >
