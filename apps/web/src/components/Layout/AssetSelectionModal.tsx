@@ -456,6 +456,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
             case 'interaction': return 'Select Cinematic Effect';
             case 'live_streaming': return 'Pilih Platform Live Stream';
             case 'quote': return 'Pilih Gaya Quote';
+            case 'profile_card': return 'Pilih Peran Profil';
             default: {
                 const label = type?.replace('_', ' ') || '';
                 return `Add ${label.charAt(0).toUpperCase() + label.slice(1)}`;
@@ -1383,6 +1384,45 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                                     <span className="text-[8px] text-white/30">Blends with background</span>
                                 </div>
                             </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* PROFILE CARD PRESETS */}
+                {type === 'profile_card' && (
+                    <div className="space-y-6">
+                        <p className="text-xs text-white/50 text-center">Pilih peran profil yang ingin ditambahkan</p>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            {[
+                                { id: 'mempelai_pria', label: 'Mempelai Pria', icon: '🤵' },
+                                { id: 'mempelai_wanita', label: 'Mempelai Wanita', icon: '👰' },
+                                { id: 'ayah_pria', label: 'Ayah Pria', icon: '🧔' },
+                                { id: 'ibu_pria', label: 'Ibu Pria', icon: '👩' },
+                                { id: 'ayah_wanita', label: 'Ayah Wanita', icon: '🧔' },
+                                { id: 'ibu_wanita', label: 'Ibu Wanita', icon: '👩' },
+                            ].map((role) => (
+                                <button
+                                    key={role.id}
+                                    onClick={() => onSelect({
+                                        profileCardConfig: {
+                                            role: role.id,
+                                            name: role.label,
+                                            variant: 'luxury',
+                                            backgroundColor: '#bfa181',
+                                            textColor: '#ffffff',
+                                            fontFamily: 'Playfair Display',
+                                            fontSize: 24,
+                                            textAlign: 'center',
+                                            showTitle: true
+                                        }
+                                    })}
+                                    className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white/5 hover:bg-premium-accent/20 border border-white/5 hover:border-premium-accent/40 transition-all gap-2 group"
+                                >
+                                    <span className="text-2xl group-hover:scale-110 transition-transform">{role.icon}</span>
+                                    <span className="text-[10px] font-bold text-white/80">{role.label}</span>
+                                </button>
+                            ))}
                         </div>
                     </div>
                 )}
