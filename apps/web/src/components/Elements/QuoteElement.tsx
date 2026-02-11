@@ -34,9 +34,9 @@ export const QuoteElement: React.FC<{ layer: Layer, isEditor?: boolean, onConten
     useEffect(() => {
         if (!containerRef.current) return;
 
-        const resizeObserver = new ResizeObserver((entries) => {
-            for (const entry of entries) {
-                const { height } = entry.contentRect;
+        const resizeObserver = new ResizeObserver(() => {
+            if (containerRef.current) {
+                const height = containerRef.current.offsetHeight;
                 if (height > 0 && Math.abs(layer.height - height) > 1) {
                     updateElementDimensions(layer.id, layer.width, height);
                 }
@@ -149,7 +149,7 @@ export const QuoteElement: React.FC<{ layer: Layer, isEditor?: boolean, onConten
     return (
         <div
             ref={containerRef}
-            className={`w-full min-h-full flex flex-col items-center justify-center ${padding} py-4 relative transition-all duration-500`}
+            className={`w-full h-full flex flex-col items-center justify-center ${padding} relative transition-all duration-500`}
             style={{
                 ...getStyles(),
                 borderRadius: layer.borderRadius || 24
