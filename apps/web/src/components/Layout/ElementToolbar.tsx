@@ -561,7 +561,7 @@ const elementConfigs: ElementConfig[] = [
         color: 'hover:bg-sky-500/10 hover:border-sky-500/30',
         createDefault: () => ({
             width: 320,
-            height: 120,
+            height: 60,
             socialMockupConfig: {
                 platform: 'instagram',
                 username: 'tamuu_id',

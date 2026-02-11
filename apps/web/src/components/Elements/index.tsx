@@ -527,10 +527,7 @@ export const SocialMockupElement: React.FC<{ layer: Layer, onContentLoad?: () =>
                     </div>
                 )}
                 <div className="flex flex-col min-w-0 leading-tight">
-                    <span className={`text-[9px] uppercase tracking-wider opacity-70 ${styles.text}`}>
-                        {info.name}
-                    </span>
-                    <span className={`text-xs truncate ${styles.handle}`}>
+                    <span className={`text-base truncate ${styles.handle}`}>
                         @{username}
                     </span>
                 </div>
