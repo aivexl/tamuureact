@@ -515,7 +515,12 @@ export const SocialMockupElement: React.FC<{ layer: Layer, onContentLoad?: () =>
     return (
         <div
             className="w-full h-full px-4 flex items-center justify-between overflow-hidden transition-all group"
-            style={{ ...styles.container, borderRadius: 12 }}
+            style={{
+                ...styles.container,
+                borderRadius: 12,
+                maxHeight: layer.height > 80 ? 60 : undefined,
+                margin: 'auto 0'
+            }}
         >
             <div className="flex items-center gap-2.5 min-w-0">
                 {showIcon && (
