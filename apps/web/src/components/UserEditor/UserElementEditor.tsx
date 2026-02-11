@@ -552,7 +552,19 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                                 className="space-y-4"
                             >
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Teks Kutipan</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Teks Arab (Opsional)</label>
+                                    <textarea
+                                        value={element.quoteConfig.textArabic || ''}
+                                        onChange={(e) => handleUpdate({
+                                            quoteConfig: { ...element.quoteConfig!, textArabic: e.target.value }
+                                        })}
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none resize-none h-20 font-arabic text-right"
+                                        dir="rtl"
+                                        placeholder="Tuliskan teks Arab jika ada..."
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Terjemahan / Kutipan</label>
                                     <textarea
                                         value={element.quoteConfig.text || ''}
                                         onChange={(e) => handleUpdate({
@@ -587,7 +599,9 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                                         onClick={() => handleUpdate({
                                             quoteConfig: {
                                                 ...element.quoteConfig!,
-                                                text: quote.textArabic ? `${quote.textArabic}\n\n${quote.text}` : quote.text,
+                                                text: quote.text,
+                                                textArabic: quote.textArabic,
+                                                category: quote.category,
                                                 author: quote.author
                                             }
                                         })}

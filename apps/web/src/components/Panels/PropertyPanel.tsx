@@ -1261,16 +1261,39 @@ export const PropertyPanel: React.FC = () => {
                                     onChange={(v) => handleUpdate({ quoteConfig: { ...layer.quoteConfig!, variant: v as any } })}
                                 />
 
-                                {/* Content */}
+                                {/* Arabic Content */}
                                 <div>
-                                    <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Quote Text</label>
+                                    <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block font-arabic">Teks Arab (Optional)</label>
+                                    <textarea
+                                        value={layer.quoteConfig?.textArabic || ''}
+                                        onChange={(e) => handleUpdate({ quoteConfig: { ...layer.quoteConfig!, textArabic: e.target.value } })}
+                                        className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none resize-none h-20 font-arabic text-right"
+                                        dir="rtl"
+                                        placeholder="Tuliskan teks Arab..."
+                                    />
+                                </div>
+
+                                {/* Translation/Main Content */}
+                                <div>
+                                    <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Teks Kutipan / Terjemahan</label>
                                     <textarea
                                         value={layer.quoteConfig?.text || ''}
                                         onChange={(e) => handleUpdate({ quoteConfig: { ...layer.quoteConfig!, text: e.target.value } })}
                                         className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none resize-none h-24"
-                                        placeholder="Enter quote..."
+                                        placeholder="Tuliskan terjemahan atau kutipan..."
                                     />
                                 </div>
+
+                                {/* Category Selection */}
+                                <SelectInput
+                                    label="Kategori"
+                                    value={layer.quoteConfig?.category || 'international'}
+                                    options={[
+                                        { value: 'international', label: '🌍 Kutipan Internasional' },
+                                        { value: 'quran', label: '📖 Ayat Suci / Quran' }
+                                    ]}
+                                    onChange={(v) => handleUpdate({ quoteConfig: { ...layer.quoteConfig!, category: v as any } })}
+                                />
 
                                 {/* Author */}
                                 <div>
@@ -1405,8 +1428,10 @@ export const PropertyPanel: React.FC = () => {
                                                 onClick={() => handleUpdate({
                                                     quoteConfig: {
                                                         ...layer.quoteConfig!,
-                                                        text: quote.textArabic ? `${quote.textArabic}\n\n${quote.text}` : quote.text,
-                                                        author: quote.author
+                                                        text: quote.text,
+                                                        textArabic: quote.textArabic,
+                                                        author: quote.author,
+                                                        category: quote.category
                                                     }
                                                 })}
                                                 className="w-full text-left p-3 rounded-lg bg-white/5 border border-white/5 hover:border-premium-accent/50 hover:bg-white/10 transition-all space-y-2 group"

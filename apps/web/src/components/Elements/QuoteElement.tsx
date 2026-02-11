@@ -74,10 +74,38 @@ export const QuoteElement: React.FC<{ layer: Layer, isEditor?: boolean, onConten
         }
     };
 
+    // PROPORTIONAL SCALING ENGINE
+    const getProportionalStyles = () => {
+        const fullText = (config.textArabic || '') + (config.text || '');
+        const charCount = fullText.length;
+
+        let fontSize = config.fontSize || 24;
+        let arabicFontSize = (config.fontSize || 24) * 1.5;
+        let padding = 'p-6 sm:p-10';
+
+        if (charCount > 300) {
+            fontSize = Math.min(fontSize, 16);
+            arabicFontSize = Math.min(arabicFontSize, 24);
+            padding = 'p-4 sm:p-6';
+        } else if (charCount > 150) {
+            fontSize = Math.min(fontSize, 20);
+            arabicFontSize = Math.min(arabicFontSize, 30);
+            padding = 'p-5 sm:p-8';
+        } else {
+            fontSize = Math.max(fontSize, 24);
+            arabicFontSize = Math.max(arabicFontSize, 36);
+        }
+
+        return { fontSize, arabicFontSize, padding };
+    };
+
+    const { fontSize, arabicFontSize, padding } = getProportionalStyles();
+    const isQuran = config.category === 'quran';
+
     return (
         <div
             ref={containerRef}
-            className="w-full h-full flex flex-col items-center justify-center p-6 sm:p-10 relative overflow-hidden transition-all duration-500"
+            className={`w-full h-full flex flex-col items-center justify-center ${padding} relative overflow-hidden transition-all duration-500`}
             style={{
                 ...getStyles(),
                 borderRadius: layer.borderRadius || 24
@@ -88,32 +116,51 @@ export const QuoteElement: React.FC<{ layer: Layer, isEditor?: boolean, onConten
                 <div className="absolute -top-12 -left-12 w-32 h-32 bg-primary/10 blur-[60px] rounded-full pointer-events-none" />
             )}
 
-            <div className="relative z-10 w-full text-center flex flex-col items-center">
-                {/* Large Decorative Quote Marks */}
-                {config.variant !== 'transparent' && (
+            <div className="relative z-10 w-full text-center flex flex-col items-center gap-4">
+                {/* Large Decorative Quote Marks (Only for non-Quran OR if it's the start) */}
+                {config.variant !== 'transparent' && !isQuran && (
                     <div
-                        className="text-6xl leading-none mb-4 select-none opacity-30 italic"
-                        style={{ fontFamily: config.fontFamily === 'serif' ? 'Playfair Display, serif' : 'Inter, sans-serif', color: config.quoteColor }}
+                        className="text-6xl leading-none select-none opacity-30 italic"
+                        style={{
+                            fontFamily: config.fontFamily === 'serif' ? 'Playfair Display, serif' : 'Inter, sans-serif',
+                            color: config.quoteColor
+                        }}
                     >
                         “
                     </div>
                 )}
 
-                {/* The Quote Text */}
+                {/* Arabic Text Block */}
+                {config.textArabic && (
+                    <div
+                        className="w-full text-center mb-2"
+                        style={{
+                            fontFamily: 'Amiri, New Amsterdam, serif',
+                            fontSize: `${arabicFontSize}px`,
+                            color: config.quoteColor || '#ffffff',
+                            lineHeight: 1.6,
+                            direction: 'rtl'
+                        }}
+                    >
+                        {config.textArabic}
+                    </div>
+                )}
+
+                {/* Translation / Main Text Block */}
                 <blockquote
-                    className="italic leading-relaxed drop-shadow-sm mb-6 px-2 w-full"
+                    className="italic leading-relaxed drop-shadow-sm w-full whitespace-pre-wrap"
                     style={{
                         fontFamily: config.fontFamily === 'serif' ? 'Playfair Display, serif' : 'inherit',
-                        fontSize: config.fontSize || (isEditor ? 18 : 24),
+                        fontSize: `${fontSize}px`,
                         color: config.quoteColor || '#ffffff'
                     }}
                 >
-                    {config.text}
+                    {isQuran ? `“${config.text}”` : config.text}
                 </blockquote>
 
                 {/* The Author Section */}
                 {config.author && (
-                    <div className="flex flex-col items-center w-full">
+                    <div className="flex flex-col items-center w-full mt-4">
                         <div
                             className="h-[1px] w-8 mb-4 opacity-60"
                             style={{ backgroundColor: config.authorColor || '#eebd2b' }}

@@ -638,7 +638,9 @@ export interface GlassCardConfig {
 
 export interface QuoteConfig {
     text: string;
+    textArabic?: string;
     author: string;
+    category?: 'quran' | 'international';
     variant: 'cinematic' | 'minimal' | 'serif' | 'modern' | 'solid' | 'transparent';
     backgroundColor?: string; // Hex for Solid variant
     textColor?: string;
