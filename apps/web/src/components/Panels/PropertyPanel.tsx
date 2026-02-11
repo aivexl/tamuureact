@@ -2100,24 +2100,11 @@ export const PropertyPanel: React.FC = () => {
                             </div>
 
                             {/* Theme Color */}
-                            <div className="space-y-3">
-                                <SelectInput
-                                    label="Background Variant"
-                                    value={layer.liveStreamingConfig?.variant || 'transparent'}
-                                    options={[
-                                        { value: 'solid', label: 'Solid Accent' },
-                                        { value: 'transparent', label: 'Transparent (Glass)' }
-                                    ]}
-                                    onChange={(v) => handleUpdate({ liveStreamingConfig: { ...layer.liveStreamingConfig!, variant: v as any } })}
-                                />
-                                {layer.liveStreamingConfig?.variant !== 'transparent' && (
-                                    <ColorInput
-                                        label="Accent/Background"
-                                        value={layer.liveStreamingConfig?.themeColor || '#14b8a6'}
-                                        onChange={(v) => handleUpdate({ liveStreamingConfig: { ...layer.liveStreamingConfig!, themeColor: v } })}
-                                    />
-                                )}
-                            </div>
+                            <ColorInput
+                                label="Accent/Background"
+                                value={layer.liveStreamingConfig?.themeColor || '#14b8a6'}
+                                onChange={(v) => handleUpdate({ liveStreamingConfig: { ...layer.liveStreamingConfig!, themeColor: v } })}
+                            />
 
                             {/* Live Status Toggle */}
                             <div className="flex items-center justify-between">
@@ -2492,23 +2479,12 @@ export const PropertyPanel: React.FC = () => {
                                 />
                             </div>
 
-                            <div className="space-y-3 pt-2 border-t border-white/5">
-                                <SelectInput
-                                    label="Background Variant"
-                                    value={layer.giftAddressConfig?.variant || 'solid'}
-                                    options={[
-                                        { value: 'solid', label: 'Solid Color' },
-                                        { value: 'transparent', label: 'Transparent (Glass)' }
-                                    ]}
-                                    onChange={(v) => handleUpdate({ giftAddressConfig: { ...layer.giftAddressConfig!, variant: v as any } })}
+                            <div className="pt-2 border-t border-white/5">
+                                <ColorInput
+                                    label="Custom Card Color"
+                                    value={layer.giftAddressConfig?.customColor || ''}
+                                    onChange={(v) => handleUpdate({ giftAddressConfig: { ...layer.giftAddressConfig!, customColor: v } })}
                                 />
-                                {layer.giftAddressConfig?.variant !== 'transparent' && (
-                                    <ColorInput
-                                        label="Custom Card Color"
-                                        value={layer.giftAddressConfig?.customColor || ''}
-                                        onChange={(v) => handleUpdate({ giftAddressConfig: { ...layer.giftAddressConfig!, customColor: v } })}
-                                    />
-                                )}
                             </div>
                         </div>
                     </SectionComponent>

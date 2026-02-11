@@ -526,7 +526,6 @@ export interface DigitalGiftConfig {
     buttonText: string;
     theme: 'gold' | 'silver' | 'glass' | 'custom';
     customColor?: string;
-    variant?: 'solid' | 'transparent';
 }
 
 export interface GiftAddressConfig {
@@ -537,7 +536,6 @@ export interface GiftAddressConfig {
     note?: string;
     buttonText: string;
     customColor?: string;
-    variant?: 'solid' | 'transparent';
 }
 
 export interface LoveStoryMoment {
@@ -611,7 +609,6 @@ export interface LiveStreamingConfig {
     customLabel?: string;
     themeColor: string;
     isLive: boolean;
-    variant?: 'solid' | 'transparent';
 }
 
 export interface NameBoardConfig {

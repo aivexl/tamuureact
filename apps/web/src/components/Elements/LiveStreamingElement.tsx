@@ -42,8 +42,7 @@ export const LiveStreamingElement: React.FC<LiveStreamingElementProps> = ({ laye
         platform: manualPlatform,
         customLabel,
         themeColor = '#14b8a6', // Default Tamuu Teal
-        isLive = true, // Default to true for visual impact
-        variant = 'transparent' // Default changed to transparent for better look in stream
+        isLive = true // Default to true for visual impact
     } = config || {};
 
     // Smart platform detection
@@ -73,16 +72,6 @@ export const LiveStreamingElement: React.FC<LiveStreamingElementProps> = ({ laye
         window.open(googleUrl, '_blank');
     };
 
-    const cardStyles = variant === 'solid'
-        ? {
-            backgroundColor: themeColor,
-            backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.1) 100%)',
-        }
-        : {
-            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-            backdropFilter: 'blur(16px)',
-        };
-
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -90,10 +79,7 @@ export const LiveStreamingElement: React.FC<LiveStreamingElementProps> = ({ laye
             className="w-full max-w-sm mx-auto relative group"
         >
             {/* Main Glass Card */}
-            <div
-                className={`relative overflow-hidden rounded-3xl border border-white/10 p-6 shadow-2xl transition-all duration-500 group-hover:border-white/20 group-hover:bg-white/10`}
-                style={cardStyles}
-            >
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-2xl transition-all duration-500 group-hover:border-white/20 group-hover:bg-white/10">
                 {/* Background Glow */}
                 <div
                     className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[80px] opacity-20 transition-colors duration-500"
