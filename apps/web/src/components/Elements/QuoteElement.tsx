@@ -81,32 +81,35 @@ export const QuoteElement: React.FC<{ layer: Layer, isEditor?: boolean, onConten
         const charCount = fullText.length;
         const arabicCharCount = arabicText.length;
 
-        let fontSize = config.fontSize || 24;
+        // USER REQUEST: Default font size 12
+        let fontSize = config.fontSize || 12;
         let arabicFontSize = (config.fontSize || 24) * 1.5;
         let padding = 'p-6 sm:p-10';
 
         // Base scaling based on total content
         if (charCount > 300) {
-            fontSize = Math.min(fontSize, 16);
-            arabicFontSize = Math.min(arabicFontSize, 24);
+            fontSize = Math.min(fontSize, 10); // Even smaller for very long translations
+            arabicFontSize = Math.min(arabicFontSize, 20);
             padding = 'p-4 sm:p-6';
         } else if (charCount > 150) {
-            fontSize = Math.min(fontSize, 20);
-            arabicFontSize = Math.min(arabicFontSize, 30);
+            fontSize = Math.min(fontSize, 11);
+            arabicFontSize = Math.min(arabicFontSize, 24);
             padding = 'p-5 sm:p-8';
         } else {
-            fontSize = Math.max(fontSize, 24);
-            arabicFontSize = Math.max(arabicFontSize, 36);
+            fontSize = Math.max(fontSize, 12);
+            arabicFontSize = Math.max(arabicFontSize, 32);
         }
 
-        // AGGRESSIVE ARABIC SCALING: Enforce single-line horizontal space
-        // If Arabic is very long, it must scale down significantly to stay on one line
-        if (arabicCharCount > 80) {
+        // AGGRESSIVE ARABIC SCALING: Enforce single-line horizontal space (NO EXCEPTIONS)
+        // We scale down based on character count more drastically now
+        if (arabicCharCount > 100) {
+            arabicFontSize = Math.min(arabicFontSize, 14);
+        } else if (arabicCharCount > 80) {
+            arabicFontSize = Math.min(arabicFontSize, 16);
+        } else if (arabicCharCount > 60) {
             arabicFontSize = Math.min(arabicFontSize, 18);
-        } else if (arabicCharCount > 50) {
+        } else if (arabicCharCount > 40) {
             arabicFontSize = Math.min(arabicFontSize, 24);
-        } else if (arabicCharCount > 30) {
-            arabicFontSize = Math.min(arabicFontSize, 30);
         }
 
         return { fontSize, arabicFontSize, padding };
@@ -146,7 +149,7 @@ export const QuoteElement: React.FC<{ layer: Layer, isEditor?: boolean, onConten
                 {/* Arabic Text Block */}
                 {config.textArabic && (
                     <div
-                        className="w-full text-center px-1 whitespace-pre-wrap"
+                        className="w-full text-center px-1 whitespace-nowrap overflow-hidden"
                         style={{
                             fontFamily: 'Amiri, New Amsterdam, serif',
                             fontSize: `${arabicFontSize}px`,
