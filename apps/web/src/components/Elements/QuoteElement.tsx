@@ -77,12 +77,15 @@ export const QuoteElement: React.FC<{ layer: Layer, isEditor?: boolean, onConten
     // PROPORTIONAL SCALING ENGINE
     const getProportionalStyles = () => {
         const fullText = (config.textArabic || '') + (config.text || '');
+        const arabicText = config.textArabic || '';
         const charCount = fullText.length;
+        const arabicCharCount = arabicText.length;
 
         let fontSize = config.fontSize || 24;
         let arabicFontSize = (config.fontSize || 24) * 1.5;
         let padding = 'p-6 sm:p-10';
 
+        // Base scaling based on total content
         if (charCount > 300) {
             fontSize = Math.min(fontSize, 16);
             arabicFontSize = Math.min(arabicFontSize, 24);
@@ -94,6 +97,16 @@ export const QuoteElement: React.FC<{ layer: Layer, isEditor?: boolean, onConten
         } else {
             fontSize = Math.max(fontSize, 24);
             arabicFontSize = Math.max(arabicFontSize, 36);
+        }
+
+        // AGGRESSIVE ARABIC SCALING: Enforce single-line horizontal space
+        // If Arabic is very long, it must scale down significantly to stay on one line
+        if (arabicCharCount > 80) {
+            arabicFontSize = Math.min(arabicFontSize, 18);
+        } else if (arabicCharCount > 50) {
+            arabicFontSize = Math.min(arabicFontSize, 24);
+        } else if (arabicCharCount > 30) {
+            arabicFontSize = Math.min(arabicFontSize, 30);
         }
 
         return { fontSize, arabicFontSize, padding };
@@ -133,7 +146,7 @@ export const QuoteElement: React.FC<{ layer: Layer, isEditor?: boolean, onConten
                 {/* Arabic Text Block */}
                 {config.textArabic && (
                     <div
-                        className="w-full text-center mb-2"
+                        className="w-full text-center mb-2 whitespace-nowrap overflow-hidden text-ellipsis px-1"
                         style={{
                             fontFamily: 'Amiri, New Amsterdam, serif',
                             fontSize: `${arabicFontSize}px`,
