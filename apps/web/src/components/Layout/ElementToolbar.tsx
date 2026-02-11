@@ -568,7 +568,10 @@ const elementConfigs: ElementConfig[] = [
                 avatarUrl: '',
                 content: 'Special invitation for our closest friends...',
                 timestamp: '2h ago',
-                verified: true
+                verified: true,
+                fontFamily: 'Inter',
+                fontSize: 18,
+                textColor: '#ffffff'
             }
         })
     },

@@ -668,6 +668,9 @@ export interface SocialMockupConfig {
     timestamp: string;
     likes?: string;
     verified?: boolean;
+    fontFamily?: string;
+    fontSize?: number;
+    textColor?: string;
 }
 
 export interface WeatherConfig {

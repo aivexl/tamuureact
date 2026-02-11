@@ -2539,6 +2539,29 @@ export const PropertyPanel: React.FC = () => {
                                     />
                                 </motion.button>
                             </div>
+
+                            <div className="space-y-3 p-3 bg-white/5 rounded-lg border border-white/10 mt-2">
+                                <h4 className="text-[8px] text-white/40 uppercase font-bold">Typography</h4>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <SelectInput
+                                        label="Font Family"
+                                        value={layer.socialMockupConfig?.fontFamily || 'Inter'}
+                                        options={SUPPORTED_FONTS.map(f => ({ value: f.name, label: f.name }))}
+                                        isFontPicker
+                                        onChange={(v) => handleUpdate({ socialMockupConfig: { ...layer.socialMockupConfig!, fontFamily: v } })}
+                                    />
+                                    <NumberInput
+                                        label="Font Size"
+                                        value={layer.socialMockupConfig?.fontSize || 18}
+                                        onChange={(v) => handleUpdate({ socialMockupConfig: { ...layer.socialMockupConfig!, fontSize: v } })}
+                                    />
+                                </div>
+                                <ColorInput
+                                    label="Text Color"
+                                    value={layer.socialMockupConfig?.textColor || '#ffffff'}
+                                    onChange={(v) => handleUpdate({ socialMockupConfig: { ...layer.socialMockupConfig!, textColor: v } })}
+                                />
+                            </div>
                         </div>
                     </SectionComponent>
                 )}

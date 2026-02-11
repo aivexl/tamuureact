@@ -451,8 +451,24 @@ export const SocialMockupElement: React.FC<{ layer: Layer, onContentLoad?: () =>
         onContentLoad?.();
     }, []);
 
-    const config = (layer.socialMockupConfig || { platform: 'instagram', username: 'tamuu.id', variant: 'luxury', showIcon: true }) as any;
-    const { platform = 'instagram', username = 'tamuu.id', variant = 'luxury', showIcon = true } = config;
+    const config = (layer.socialMockupConfig || {
+        platform: 'instagram',
+        username: 'tamuu.id',
+        variant: 'luxury',
+        showIcon: true,
+        fontFamily: 'Inter',
+        fontSize: 18,
+        textColor: '#ffffff'
+    }) as any;
+    const {
+        platform = 'instagram',
+        username = 'tamuu.id',
+        variant = 'luxury',
+        showIcon = true,
+        fontFamily = 'Inter',
+        fontSize,
+        textColor
+    } = config;
 
     const getPlatformInfo = () => {
         switch (platform) {
@@ -532,7 +548,14 @@ export const SocialMockupElement: React.FC<{ layer: Layer, onContentLoad?: () =>
                     </div>
                 )}
                 <div className="flex flex-col min-w-0 leading-tight">
-                    <span className={`text-lg truncate ${styles.handle}`}>
+                    <span
+                        className={`truncate ${styles.handle}`}
+                        style={{
+                            fontFamily,
+                            fontSize: fontSize || (layer.height > 80 ? 18 : 16),
+                            color: textColor || undefined
+                        }}
+                    >
                         @{username}
                     </span>
                 </div>
