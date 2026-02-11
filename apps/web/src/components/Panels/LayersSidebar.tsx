@@ -5,7 +5,7 @@ import {
     Layers, Eye, EyeOff, GripVertical, Trash2, Lock, Unlock,
     Type, Image, Clock, MailOpen, Heart, Square, MapPin, Film, Video,
     Settings, Palette, Zap, Wind, Upload, Link as LinkIcon, Grid, MessageSquare,
-    Sparkles, Circle, Gift, Music, Waves, Component, Hash, QrCode, Monitor, Sun, Share2, Users
+    Sparkles, Circle, Gift, Music, Waves, Component, Hash, QrCode, Monitor, Sun, Share2, Users, Quote
 } from 'lucide-react';
 import { LayerType, Layer } from '@/store/layersSlice';
 
@@ -54,7 +54,8 @@ const layerIcons: Record<LayerType, React.ReactNode> = {
     name_board: <Users className="w-4 h-4" />,
     gift_address: <Gift className="w-4 h-4" />,
     love_story: <Heart className="w-4 h-4" />,
-    live_streaming: <Monitor className="w-4 h-4" />
+    live_streaming: <Monitor className="w-4 h-4" />,
+    quote: <Quote className="w-4 h-4" />
 };
 
 // Placeholder for missing Palette import usage in layerIcons

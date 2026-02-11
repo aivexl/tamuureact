@@ -140,8 +140,38 @@ tamuureact/
 
 ---
 
-## 🚀 Scripts
+## 🚀 Deployment & Scripts
 
+> [!CAUTION]
+> **PERINGATAN KERAS:** Jangan gunakan operator `&&` saat menjalankan command di terminal (terutama di Windows/PowerShell) untuk menghindari error build atau deployment yang terpotong. Jalankan command satu per satu secara berurutan.
+
+### 📡 Backend Deployment (`api.tamuu.id`)
+Jalankan command ini dari root directory:
+```bash
+npm run deploy:api
+```
+
+### 🎨 Frontend Deployment (`tamuu.id` & `app.tamuu.id`)
+Jalankan build terlebih dahulu, kemudian deploy ke masing-masing project:
+
+1. **Build All Apps:**
+   ```bash
+   npm run build:web
+   ```
+
+2. **Deploy Landing Page (`tamuu.id`):**
+   ```bash
+   npx wrangler pages deploy apps/web/dist --project-name tamuu
+   ```
+
+3. **Deploy Dashboard/Editor (`app.tamuu.id`):**
+   ```bash
+   npx wrangler pages deploy apps/web/dist --project-name tamuu-app
+   ```
+
+---
+
+## 🛠️ Development Scripts
 ```bash
 # Development
 npm run dev           # Run all apps (Turbo)
@@ -151,11 +181,6 @@ npm run dev:api       # Run API only
 # Build
 npm run build         # Build all
 npm run build:web     # Build web only
-
-# Deploy
-npm run deploy:web:app     # Deploy Editor to Cloudflare Pages
-npm run deploy:web:landing # Deploy Landing to Cloudflare Pages
-npm run deploy:api         # Deploy API to Cloudflare Workers
 ```
 
 ---

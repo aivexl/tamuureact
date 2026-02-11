@@ -49,6 +49,7 @@ export type LayerType =
     | 'love_story'
     | 'qr_code'
     | 'gift_address'
+    | 'quote'
     | 'live_streaming';
 
 
@@ -635,6 +636,25 @@ export interface GlassCardConfig {
 }
 
 
+export interface QuoteConfig {
+    text: string;
+    author: string;
+    variant: 'cinematic' | 'minimal' | 'serif' | 'modern' | 'solid' | 'transparent';
+    backgroundColor?: string; // Hex for Solid variant
+    textColor?: string;
+    quoteColor?: string;       // Quote text color
+    authorColor?: string;
+    decorativeColor?: string;  // Accent/decorative marks color
+    fontFamily?: string;       // Admin-only edit
+    authorFontFamily?: string; // Admin-only edit
+    fontSize?: number;
+    authorFontSize?: number;
+    glassBlur?: number;
+    showWatermark?: boolean;
+    tiltEnabled?: boolean;
+}
+
+
 export interface SocialMockupConfig {
     platform: 'instagram' | 'twitter' | 'whatsapp' | 'tiktok';
     username: string;
@@ -740,6 +760,7 @@ export interface Layer {
     waveConfig?: WaveConfig;
     glassCardConfig?: GlassCardConfig;
     loveStoryConfig?: LoveStoryConfig;
+    quoteConfig?: QuoteConfig;
 
     socialMockupConfig?: SocialMockupConfig;
     weatherConfig?: WeatherConfig;

@@ -688,6 +688,29 @@ const elementConfigs: ElementConfig[] = [
             }
         })
     },
+    {
+        type: 'quote',
+        icon: <MessageSquare className="w-5 h-5" />,
+        label: 'Quote',
+        color: 'hover:bg-amber-500/10 hover:border-amber-500/30',
+        createDefault: () => ({
+            width: 340,
+            height: 200,
+            quoteConfig: {
+                text: 'Grow old along with me! The best is yet to be.',
+                author: 'Robert Browning',
+                variant: 'cinematic',
+                backgroundColor: 'rgba(34, 29, 16, 0.4)',
+                textColor: '#ffffff',
+                authorColor: '#eebd2b',
+                fontFamily: 'serif',
+                authorFontFamily: 'sans-serif',
+                glassBlur: 24,
+                showWatermark: true,
+                tiltEnabled: true
+            }
+        })
+    },
 ];
 
 
@@ -765,6 +788,7 @@ export const ElementToolbar: React.FC<ElementToolbarProps> = ({ embedded = false
             ...(additionalConfig.iconStyle && defaults.iconStyle ? { iconStyle: { ...defaults.iconStyle, ...additionalConfig.iconStyle } } : {}),
             ...(additionalConfig.countdownConfig && defaults.countdownConfig ? { countdownConfig: { ...defaults.countdownConfig, ...additionalConfig.countdownConfig } } : {}),
             ...(additionalConfig.liveStreamingConfig && defaults.liveStreamingConfig ? { liveStreamingConfig: { ...defaults.liveStreamingConfig, ...additionalConfig.liveStreamingConfig } } : {}),
+            ...(additionalConfig.quoteConfig && defaults.quoteConfig ? { quoteConfig: { ...defaults.quoteConfig, ...additionalConfig.quoteConfig } } : {}),
         };
 
         // Unified Injection Engine
@@ -783,7 +807,7 @@ export const ElementToolbar: React.FC<ElementToolbarProps> = ({ embedded = false
 
     const isAdmin = user?.role === 'admin';
     const allTools = elementConfigs.filter(c => {
-        if (c.type === 'live_streaming') return isAdmin;
+        if (c.type === 'live_streaming' || c.type === 'quote') return isAdmin;
         return true;
     });
 

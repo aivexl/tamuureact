@@ -26,7 +26,8 @@ import {
     ShareContextElement,
     GiftAddressElement,
     LoveStoryElement,
-    LiveStreamingElement
+    LiveStreamingElement,
+    QuoteElement
 } from '@/components/Elements';
 
 
@@ -121,6 +122,9 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenI
                 return <InteractionElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             case 'name_board':
                 return <NameBoardElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
+            case 'quote':
+                return <QuoteElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
+
             default:
                 return <PlaceholderElement layer={layer} onContentLoad={onContentLoad} />;
         }

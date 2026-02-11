@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
-import { Layer, AnimationType, TextStyle, CountdownConfig, ButtonConfig, ShapeConfig, IconStyle, RSVPWishesConfig, RSVPVariantId, LayerPermissions } from '@/store/layersSlice';
+import { Layer, AnimationType, TextStyle, CountdownConfig, ButtonConfig, QuoteConfig, ShapeConfig, IconStyle, RSVPWishesConfig, RSVPVariantId, LayerPermissions } from '@/store/layersSlice';
 import { generateId } from '@/lib/utils';
 import { RSVP_VARIANTS, DEFAULT_RSVP_WISHES_CONFIG } from '@/lib/rsvp-variants';
 import { SUPPORTED_FONTS } from '@/lib/fonts';
@@ -17,7 +17,7 @@ import {
     Gift, Heart, Home, ImageIcon, Layout, Layers,
     Shield, Anchor, UserCheck, Lock, Unlock, MailOpen, MapPin, MessageSquare,
     Maximize2, Monitor, MousePointer2, Move, MoveHorizontal,
-    Palette, Plane, Settings2, Sliders,
+    Palette, Plane, Quote, Settings2, Sliders,
     Sparkles, Square, Star, Trash2,
     Type, Users, Video, Wind, Zap
 } from 'lucide-react';
@@ -1238,6 +1238,157 @@ export const PropertyPanel: React.FC = () => {
                                         </div>
                                     </div>
                                 )}
+                            </div>
+                        </SectionComponent>
+                    )
+                }
+
+                {/* Quote Config - Only for quote elements */}
+                {
+                    layer.type === 'quote' && (
+                        <SectionComponent title="Quote Settings" icon={<Quote className="w-4 h-4" />}>
+                            <div className="space-y-4">
+                                {/* Variant Selection */}
+                                <SelectInput
+                                    label="Variant"
+                                    value={layer.quoteConfig?.variant || 'cinematic'}
+                                    options={[
+                                        { value: 'cinematic', label: '🎬 Cinematic Glass' },
+                                        { value: 'solid', label: '🎨 Solid Color' },
+                                        { value: 'transparent', label: '👻 Transparent' }
+                                    ]}
+                                    onChange={(v) => handleUpdate({ quoteConfig: { ...layer.quoteConfig!, variant: v as any } })}
+                                />
+
+                                {/* Content */}
+                                <div>
+                                    <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Quote Text</label>
+                                    <textarea
+                                        value={layer.quoteConfig?.text || ''}
+                                        onChange={(e) => handleUpdate({ quoteConfig: { ...layer.quoteConfig!, text: e.target.value } })}
+                                        className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none resize-none h-24"
+                                        placeholder="Enter quote..."
+                                    />
+                                </div>
+
+                                {/* Author */}
+                                <div>
+                                    <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Author</label>
+                                    <input
+                                        type="text"
+                                        value={layer.quoteConfig?.author || ''}
+                                        onChange={(e) => handleUpdate({ quoteConfig: { ...layer.quoteConfig!, author: e.target.value } })}
+                                        className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none"
+                                        placeholder="Author name..."
+                                    />
+                                </div>
+
+                                {/* Typography Group */}
+                                <div className="space-y-3 p-3 bg-white/5 rounded-lg border border-white/10">
+                                    <h4 className="text-[8px] text-white/40 uppercase font-bold">Typography</h4>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <SelectInput
+                                            label="Quote Font"
+                                            value={layer.quoteConfig?.fontFamily || 'Outfit'}
+                                            options={SUPPORTED_FONTS.map(f => ({ value: f.name, label: f.name }))}
+                                            isFontPicker
+                                            onChange={(v) => handleUpdate({ quoteConfig: { ...layer.quoteConfig!, fontFamily: v } })}
+                                        />
+                                        <NumberInput
+                                            label="Quote Size"
+                                            value={layer.quoteConfig?.fontSize || 24}
+                                            onChange={(v) => handleUpdate({ quoteConfig: { ...layer.quoteConfig!, fontSize: v } })}
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <SelectInput
+                                            label="Author Font"
+                                            value={layer.quoteConfig?.authorFontFamily || 'Outfit'}
+                                            options={SUPPORTED_FONTS.map(f => ({ value: f.name, label: f.name }))}
+                                            isFontPicker
+                                            onChange={(v) => handleUpdate({ quoteConfig: { ...layer.quoteConfig!, authorFontFamily: v } })}
+                                        />
+                                        <NumberInput
+                                            label="Author Size"
+                                            value={layer.quoteConfig?.authorFontSize || 16}
+                                            onChange={(v) => handleUpdate({ quoteConfig: { ...layer.quoteConfig!, authorFontSize: v } })}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Colors Group */}
+                                <div className="space-y-3 p-3 bg-white/5 rounded-lg border border-white/10">
+                                    <h4 className="text-[8px] text-white/40 uppercase font-bold">Colors</h4>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <ColorInput
+                                            label="Quote Text"
+                                            value={layer.quoteConfig?.quoteColor || '#ffffff'}
+                                            onChange={(v) => handleUpdate({ quoteConfig: { ...layer.quoteConfig!, quoteColor: v } })}
+                                        />
+                                        <ColorInput
+                                            label="Author Text"
+                                            value={layer.quoteConfig?.authorColor || '#ffffff'}
+                                            onChange={(v) => handleUpdate({ quoteConfig: { ...layer.quoteConfig!, authorColor: v } })}
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <ColorInput
+                                            label="Accent/Quotes"
+                                            value={layer.quoteConfig?.decorativeColor || '#bfa181'}
+                                            onChange={(v) => handleUpdate({ quoteConfig: { ...layer.quoteConfig!, decorativeColor: v } })}
+                                        />
+                                        {layer.quoteConfig?.variant === 'solid' && (
+                                            <ColorInput
+                                                label="Background"
+                                                value={layer.quoteConfig?.backgroundColor || '#bfa181'}
+                                                onChange={(v) => handleUpdate({ quoteConfig: { ...layer.quoteConfig!, backgroundColor: v } })}
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Advanced Group */}
+                                <div className="space-y-3 p-3 bg-white/5 rounded-lg border border-white/10">
+                                    <h4 className="text-[8px] text-white/40 uppercase font-bold">Advanced Effects</h4>
+
+                                    {layer.quoteConfig?.variant === 'cinematic' && (
+                                        <NumberInput
+                                            label="Glass Blur"
+                                            value={layer.quoteConfig?.glassBlur || 20}
+                                            min={0}
+                                            max={100}
+                                            onChange={(v) => handleUpdate({ quoteConfig: { ...layer.quoteConfig!, glassBlur: v } })}
+                                        />
+                                    )}
+
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[9px] text-white/30 uppercase font-bold">Show Watermark</span>
+                                        <motion.button
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => handleUpdate({ quoteConfig: { ...layer.quoteConfig!, showWatermark: !layer.quoteConfig?.showWatermark } })}
+                                            className={`relative w-10 h-5 rounded-full transition-colors ${layer.quoteConfig?.showWatermark ? 'bg-premium-accent' : 'bg-white/10'}`}
+                                        >
+                                            <motion.div
+                                                animate={{ x: layer.quoteConfig?.showWatermark ? 20 : 2 }}
+                                                className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow"
+                                            />
+                                        </motion.button>
+                                    </div>
+
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[9px] text-white/30 uppercase font-bold">3D Tilt Effect</span>
+                                        <motion.button
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => handleUpdate({ quoteConfig: { ...layer.quoteConfig!, tiltEnabled: !layer.quoteConfig?.tiltEnabled } })}
+                                            className={`relative w-10 h-5 rounded-full transition-colors ${layer.quoteConfig?.tiltEnabled ? 'bg-premium-accent' : 'bg-white/10'}`}
+                                        >
+                                            <motion.div
+                                                animate={{ x: layer.quoteConfig?.tiltEnabled ? 20 : 2 }}
+                                                className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow"
+                                            />
+                                        </motion.button>
+                                    </div>
+                                </div>
                             </div>
                         </SectionComponent>
                     )

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { invitations as invitationsApi } from '@/lib/api';
+import { useStore } from '@/store/useStore';
 
 interface QuotesPanelProps {
     invitationId: string;
@@ -145,6 +146,8 @@ export const QuotesPanel: React.FC<QuotesPanelProps> = ({ invitationId, onClose 
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'custom' | 'quran' | 'international'>('custom');
 
+    const { sections, updateSectionsBatch } = useStore();
+
     // Load existing quote
     useEffect(() => {
         const loadData = async () => {
@@ -184,6 +187,26 @@ export const QuotesPanel: React.FC<QuotesPanelProps> = ({ invitationId, onClose 
                 quote_text: quoteText,
                 quote_author: quoteAuthor
             });
+
+            // Sync with any Quote elements on the canvas
+            const updatedSections = sections.map(s => ({
+                ...s,
+                elements: s.elements.map(el => {
+                    if (el.type === 'quote' && el.quoteConfig) {
+                        return {
+                            ...el,
+                            quoteConfig: {
+                                ...el.quoteConfig,
+                                text: quoteText,
+                                author: quoteAuthor
+                            }
+                        };
+                    }
+                    return el;
+                })
+            }));
+            updateSectionsBatch(updatedSections);
+
             setSuccess(true);
             setTimeout(() => setSuccess(false), 2000);
         } catch (err) {
