@@ -807,7 +807,7 @@ export const ElementToolbar: React.FC<ElementToolbarProps> = ({ embedded = false
 
     const isAdmin = user?.role === 'admin';
     const allTools = elementConfigs.filter(c => {
-        if (c.type === 'live_streaming' || c.type === 'quote') return isAdmin;
+        if (c.type === 'live_streaming' || c.type === 'quote' || c.type === 'social_mockup') return isAdmin;
         return true;
     });
 

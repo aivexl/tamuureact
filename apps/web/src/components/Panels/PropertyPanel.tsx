@@ -9,18 +9,14 @@ import { SUPPORTED_BANKS } from '@/lib/banks';
 import { QUOTES_LIBRARY } from '@/constants/quotes';
 
 import {
-    AlignLeft, AlignCenter, AlignRight,
-    ArrowUpToLine, ArrowDownToLine,
-    Bold, Italic, Calendar, Clock,
-    ChevronUp, ChevronDown, Copy,
-    Eye, EyeOff, FlipHorizontal, FlipVertical,
-    FlipHorizontal2, FlipVertical2,
-    Gift, Heart, Home, ImageIcon, Layout, Layers,
-    Shield, Anchor, UserCheck, Lock, Unlock, MailOpen, MapPin, MessageSquare,
-    Maximize2, Monitor, MousePointer2, Move, MoveHorizontal,
-    Palette, Plane, Quote, Check, Settings2, Sliders,
-    Sparkles, Square, Star, Trash2,
-    Type, Users, Video, Wind, Zap
+    Type, Image as ImageIcon, Clock, MailOpen,
+    Heart, Square, Film, MapPin, Video, Sparkles, X,
+    MessageSquare, Users, Circle, Triangle, Diamond, Star, Zap, Wind, Layout,
+    Gift, Music, QrCode, Waves, Layers, Monitor, Share2, Sun, Hash, PlaySquare,
+    Component, Palette, Eye, Shield, CreditCard,
+    ChevronDown, ChevronUp, GripVertical, Settings2, Trash2, Copy, Lock, Unlock,
+    Maximize2, Minimize2, Move, RotateCw, Type as TextIcon, Plus, Info, Home,
+    MousePointer2, FlipHorizontal2, FlipVertical2, Anchor, Bold, Italic, AlignLeft, AlignCenter, AlignRight, Quote, Check, Calendar, Sliders, MoveHorizontal, ArrowUpToLine, ArrowDownToLine
 } from 'lucide-react';
 
 import { ElementToolbar } from '@/components/Layout/ElementToolbar';
@@ -2104,11 +2100,24 @@ export const PropertyPanel: React.FC = () => {
                             </div>
 
                             {/* Theme Color */}
-                            <ColorInput
-                                label="Theme Color"
-                                value={layer.liveStreamingConfig?.themeColor || '#14b8a6'}
-                                onChange={(v) => handleUpdate({ liveStreamingConfig: { ...layer.liveStreamingConfig!, themeColor: v } })}
-                            />
+                            <div className="space-y-3">
+                                <SelectInput
+                                    label="Background Variant"
+                                    value={layer.liveStreamingConfig?.variant || 'transparent'}
+                                    options={[
+                                        { value: 'solid', label: 'Solid Accent' },
+                                        { value: 'transparent', label: 'Transparent (Glass)' }
+                                    ]}
+                                    onChange={(v) => handleUpdate({ liveStreamingConfig: { ...layer.liveStreamingConfig!, variant: v as any } })}
+                                />
+                                {layer.liveStreamingConfig?.variant !== 'transparent' && (
+                                    <ColorInput
+                                        label="Accent/Background"
+                                        value={layer.liveStreamingConfig?.themeColor || '#14b8a6'}
+                                        onChange={(v) => handleUpdate({ liveStreamingConfig: { ...layer.liveStreamingConfig!, themeColor: v } })}
+                                    />
+                                )}
+                            </div>
 
                             {/* Live Status Toggle */}
                             <div className="flex items-center justify-between">
@@ -2483,13 +2492,63 @@ export const PropertyPanel: React.FC = () => {
                                 />
                             </div>
 
-                            <div className="pt-2 border-t border-white/5">
-                                <ColorInput
-                                    label="Custom Card Color"
-                                    value={layer.giftAddressConfig?.customColor || ''}
-                                    onChange={(v) => handleUpdate({ giftAddressConfig: { ...layer.giftAddressConfig!, customColor: v } })}
+                            <div className="space-y-3 pt-2 border-t border-white/5">
+                                <SelectInput
+                                    label="Background Variant"
+                                    value={layer.giftAddressConfig?.variant || 'solid'}
+                                    options={[
+                                        { value: 'solid', label: 'Solid Color' },
+                                        { value: 'transparent', label: 'Transparent (Glass)' }
+                                    ]}
+                                    onChange={(v) => handleUpdate({ giftAddressConfig: { ...layer.giftAddressConfig!, variant: v as any } })}
+                                />
+                                {layer.giftAddressConfig?.variant !== 'transparent' && (
+                                    <ColorInput
+                                        label="Custom Card Color"
+                                        value={layer.giftAddressConfig?.customColor || ''}
+                                        onChange={(v) => handleUpdate({ giftAddressConfig: { ...layer.giftAddressConfig!, customColor: v } })}
+                                    />
+                                )}
+                            </div>
+                        </div>
+                    </SectionComponent>
+                )}
+
+                {/* Social Mockup Settings */}
+                {layer.type === 'social_mockup' && (
+                    <SectionComponent title="Social Link Settings" icon={<Share2 className="w-4 h-4 text-sky-400" />}>
+                        <div className="space-y-4">
+                            <SelectInput
+                                label="Platform"
+                                value={layer.socialMockupConfig?.platform || 'instagram'}
+                                options={[
+                                    { value: 'instagram', label: 'Instagram' },
+                                    { value: 'twitter', label: 'Twitter' },
+                                    { value: 'tiktok', label: 'TikTok' },
+                                    { value: 'whatsapp', label: 'WhatsApp' },
+                                    { value: 'other', label: 'Other/Custom' }
+                                ]}
+                                onChange={(v) => handleUpdate({ socialMockupConfig: { ...layer.socialMockupConfig!, platform: v as any } })}
+                            />
+                            <div>
+                                <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Username / ID</label>
+                                <input
+                                    type="text"
+                                    value={layer.socialMockupConfig?.username || ''}
+                                    onChange={(e) => handleUpdate({ socialMockupConfig: { ...layer.socialMockupConfig!, username: e.target.value } })}
+                                    className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none text-white"
+                                    placeholder="tamuu.id"
                                 />
                             </div>
+                            <SelectInput
+                                label="Background Variant"
+                                value={layer.socialMockupConfig?.variant || 'transparent'}
+                                options={[
+                                    { value: 'solid', label: 'Solid White' },
+                                    { value: 'transparent', label: 'Transparent (Glass)' }
+                                ]}
+                                onChange={(v) => handleUpdate({ socialMockupConfig: { ...layer.socialMockupConfig!, variant: v as any } })}
+                            />
                         </div>
                     </SectionComponent>
                 )}

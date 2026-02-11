@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { useParams } from 'react-router-dom';
-import { Type, Image as ImageIcon, MapPin, Copy, Shield, Clock, Lock, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignStartVertical, AlignCenterVertical, AlignEndVertical, Plus, Minus, Palette, ChevronDown, Settings2, Trash2, Calendar, Heart, Type as FontIcon, Monitor, Quote, Check } from 'lucide-react';
+import { Type, Image as ImageIcon, MapPin, Copy, Shield, Clock, Lock, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignStartVertical, AlignCenterVertical, AlignEndVertical, Plus, Minus, Palette, ChevronDown, Settings2, Trash2, Calendar, Heart, Type as FontIcon, Monitor, Quote, Check, ExternalLink, Mail, Phone, Share2 } from 'lucide-react';
 import { useStore, Layer, LoveStoryMoment, LoveStoryConfig } from '@/store/useStore';
 import { SUPPORTED_FONTS } from '@/lib/fonts';
 import { QUOTES_LIBRARY } from '@/constants/quotes';
@@ -91,6 +91,7 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
             case 'love_story': return <Heart className="w-4 h-4 text-pink-500" />;
             case 'live_streaming': return <Monitor className="w-4 h-4" />;
             case 'quote': return <Quote className="w-4 h-4" />;
+            case 'social_mockup': return <Share2 className="w-4 h-4" />;
             default: return <Type className="w-4 h-4" />;
 
         }
@@ -522,6 +523,31 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                             placeholder="https://youtube.com/live/..."
                             className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all outline-none"
                         />
+                    </div>
+                </div>
+            )}
+
+            {element.type === 'social_mockup' && element.socialMockupConfig && (
+                <div className="space-y-4">
+                    <div className="space-y-3">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                            Social Username
+                        </label>
+                        <div className="relative">
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">@</div>
+                            <input
+                                type="text"
+                                value={element.socialMockupConfig.username || ''}
+                                onChange={(e) => handleUpdate({
+                                    socialMockupConfig: {
+                                        ...element.socialMockupConfig!,
+                                        username: e.target.value
+                                    }
+                                })}
+                                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
+                                placeholder="username"
+                            />
+                        </div>
                     </div>
                 </div>
             )}

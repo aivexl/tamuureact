@@ -2,7 +2,14 @@ import React, { useEffect, useRef } from 'react';
 import { Layer } from '@/store/layersSlice';
 import { useStore } from '@/store/useStore';
 import { m } from 'framer-motion';
-import { Music, MessageSquare, Share2, Sun, Image as ImageIcon, Heart, Clock, MapPin, Star, Play, Pause } from 'lucide-react';
+import {
+    Type, Image as ImageIcon, Clock, MailOpen,
+    Heart, Square, Film, MapPin, Video, Sparkles, X,
+    MessageSquare, Users, Circle, Triangle, Diamond, Star, Zap, Wind, Layout,
+    Gift, Music, QrCode, Waves, Layers, Monitor, Share2, Sun, Hash, PlaySquare,
+    Component, Palette, Eye, Shield, CreditCard, ExternalLink, Instagram, Twitter,
+    Play, Pause
+} from 'lucide-react';
 import { useAudioController } from '@/hooks/useAudioController';
 
 // ============================================
@@ -440,33 +447,62 @@ export const GlassCardElement: React.FC<{ layer: Layer, onContentLoad?: () => vo
 // SOCIAL MOCKUP ELEMENT
 // ============================================
 export const SocialMockupElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ layer, onContentLoad }) => {
-    useEffect(() => { onContentLoad?.(); }, []);
-    const config = layer.socialMockupConfig || { platform: 'instagram', username: 'tamuu_id' };
+    useEffect(() => {
+        onContentLoad?.();
+    }, []);
+
+    const config = (layer.socialMockupConfig || { platform: 'instagram', username: 'tamuu.id', variant: 'transparent' }) as any;
+    const { platform = 'instagram', username = 'tamuu.id', variant = 'transparent' } = config;
+
+    const getPlatformInfo = () => {
+        switch (platform) {
+            case 'instagram': return { icon: <Instagram className="w-5 h-5" />, color: '#E4405F', name: 'Instagram' };
+            case 'twitter': return { icon: <Twitter className="w-5 h-5" />, color: '#1DA1F2', name: 'Twitter' };
+            case 'tiktok': return { icon: <div className="w-5 h-5 flex items-center justify-center bg-black rounded-full"><Twitter className="w-3 h-3 text-white" /></div>, color: '#000000', name: 'TikTok' };
+            case 'whatsapp': return { icon: <div className="w-5 h-5 flex items-center justify-center bg-[#25D366] rounded-full text-white"><ExternalLink className="w-3 h-3" /></div>, color: '#25D366', name: 'WhatsApp' };
+            default: return { icon: <Monitor className="w-5 h-5" />, color: '#6366f1', name: 'Social' };
+        }
+    };
+
+    const info = getPlatformInfo();
+    const isTransparent = variant === 'transparent';
+
+    const cardStyles = isTransparent
+        ? {
+            background: 'rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+        }
+        : {
+            backgroundColor: '#ffffff',
+            border: '1px solid rgba(0, 0, 0, 0.05)',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+        };
 
     return (
-        <div className="w-full h-full glass-panel border border-white/10 p-4 flex flex-col gap-2 overflow-hidden" style={{ borderRadius: 16 }}>
-            <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 p-0.5">
-                    <div className="w-full h-full rounded-full bg-premium-dark border border-white/20" />
-                </div>
-                <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-white leading-none">{config.username || 'user'}</span>
-                    <span className="text-[8px] text-white/40">{config.platform || 'Social'}</span>
-                </div>
-                <div className="ml-auto flex gap-0.5">
-                    <div className="w-1 h-1 rounded-full bg-white/40" />
-                    <div className="w-1 h-1 rounded-full bg-white/40" />
-                    <div className="w-1 h-1 rounded-full bg-white/40" />
-                </div>
+        <div
+            className="w-full h-full p-4 flex items-center gap-3 overflow-hidden transition-all"
+            style={{ ...cardStyles, borderRadius: 16 }}
+        >
+            <div
+                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: isTransparent ? 'rgba(255,255,255,0.1)' : `${info.color}10`, color: info.color }}
+            >
+                {info.icon}
             </div>
-            <div className="flex-1 bg-white/5 rounded-lg flex items-center justify-center border border-white/5">
-                <ImageIcon className="w-8 h-8 text-white/10" />
+            <div className="flex flex-col min-w-0">
+                <span className={`text-[10px] font-black uppercase tracking-widest ${isTransparent ? 'text-white/40' : 'text-slate-400'} leading-none mb-1`}>
+                    {info.name}
+                </span>
+                <span className={`text-sm font-bold truncate ${isTransparent ? 'text-white' : 'text-slate-900'}`}>
+                    @{username}
+                </span>
             </div>
-            <div className="flex items-center gap-2 mt-1">
-                <Heart className="w-3.5 h-3.5 text-white/60" />
-                <MessageSquare className="w-3.5 h-3.5 text-white/60" />
-                <Share2 className="w-3.5 h-3.5 text-white/60" />
-            </div>
+            {isTransparent && (
+                <div className="ml-auto w-6 h-6 rounded-full bg-white/5 flex items-center justify-center">
+                    <ExternalLink className="w-3 h-3 text-white/20" />
+                </div>
+            )}
         </div>
     );
 };
