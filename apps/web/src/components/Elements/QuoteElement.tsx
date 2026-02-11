@@ -1,10 +1,12 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useLayoutEffect } from 'react';
 import { Layer } from '@/store/layersSlice';
-import { m } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 
 export const QuoteElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
     const containerRef = useRef<HTMLDivElement>(null);
+    const arabicRef = useRef<HTMLDivElement>(null);
+    const [arabicScale, setArabicScale] = useState(1);
     const { updateElementDimensions } = useStore();
 
     const rawConfig = layer.quoteConfig || {
@@ -38,6 +40,8 @@ export const QuoteElement: React.FC<{ layer: Layer, isEditor?: boolean, onConten
                 if (height > 0 && Math.abs(layer.height - height) > 1) {
                     updateElementDimensions(layer.id, layer.width, height);
                 }
+                // Also trigger arabic scale re-calc on container resize
+                calculateArabicScale();
             }
         });
 
@@ -46,6 +50,30 @@ export const QuoteElement: React.FC<{ layer: Layer, isEditor?: boolean, onConten
 
         return () => resizeObserver.disconnect();
     }, [layer.id, layer.height, updateElementDimensions, onContentLoad]);
+
+    const calculateArabicScale = () => {
+        if (!arabicRef.current || !containerRef.current) return;
+
+        // Reset scale for measurement
+        arabicRef.current.style.transform = 'scale(1)';
+
+        const containerWidth = containerRef.current.clientWidth - 48; // Account for padding
+        const contentWidth = arabicRef.current.scrollWidth;
+
+        if (contentWidth > containerWidth) {
+            const scale = containerWidth / contentWidth;
+            setArabicScale(Math.max(0.3, scale)); // Don't go below 0.3 for legibility
+        } else {
+            setArabicScale(1);
+        }
+    };
+
+    useLayoutEffect(() => {
+        calculateArabicScale();
+        // Add a small delay for font loading if necessary
+        const timer = setTimeout(calculateArabicScale, 500);
+        return () => clearTimeout(timer);
+    }, [layer.quoteConfig?.textArabic, layer.width]);
 
     const getStyles = () => {
         switch (config.variant) {
@@ -103,13 +131,13 @@ export const QuoteElement: React.FC<{ layer: Layer, isEditor?: boolean, onConten
         // AGGRESSIVE ARABIC SCALING: Enforce single-line horizontal space (NO EXCEPTIONS)
         // We scale down based on character count more drastically now
         if (arabicCharCount > 100) {
-            arabicFontSize = Math.min(arabicFontSize, 14);
+            arabicFontSize = Math.min(arabicFontSize, 12);
         } else if (arabicCharCount > 80) {
-            arabicFontSize = Math.min(arabicFontSize, 16);
+            arabicFontSize = Math.min(arabicFontSize, 14);
         } else if (arabicCharCount > 60) {
-            arabicFontSize = Math.min(arabicFontSize, 18);
+            arabicFontSize = Math.min(arabicFontSize, 16);
         } else if (arabicCharCount > 40) {
-            arabicFontSize = Math.min(arabicFontSize, 24);
+            arabicFontSize = Math.min(arabicFontSize, 20);
         }
 
         return { fontSize, arabicFontSize, padding };
@@ -149,16 +177,23 @@ export const QuoteElement: React.FC<{ layer: Layer, isEditor?: boolean, onConten
                 {/* Arabic Text Block */}
                 {config.textArabic && (
                     <div
-                        className="w-full text-center px-1 whitespace-nowrap overflow-hidden"
-                        style={{
-                            fontFamily: 'Amiri, New Amsterdam, serif',
-                            fontSize: `${arabicFontSize}px`,
-                            color: config.quoteColor || '#ffffff',
-                            lineHeight: 1.4,
-                            direction: 'rtl'
-                        }}
+                        className="w-full flex justify-center items-center overflow-visible mb-1"
+                        style={{ height: `${arabicFontSize * 1.4 * arabicScale}px` }}
                     >
-                        {config.textArabic}
+                        <div
+                            ref={arabicRef}
+                            className="whitespace-nowrap inline-block origin-center transition-transform duration-300"
+                            style={{
+                                fontFamily: 'Amiri, New Amsterdam, serif',
+                                fontSize: `${arabicFontSize}px`,
+                                color: config.quoteColor || '#ffffff',
+                                lineHeight: 1.4,
+                                direction: 'rtl',
+                                transform: `scale(${arabicScale})`,
+                            }}
+                        >
+                            {config.textArabic}
+                        </div>
                     </div>
                 )}
 
