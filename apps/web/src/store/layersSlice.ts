@@ -660,7 +660,8 @@ export interface QuoteConfig {
 export interface SocialMockupConfig {
     platform: 'instagram' | 'twitter' | 'whatsapp' | 'tiktok' | 'other';
     username: string;
-    variant?: 'solid' | 'transparent';
+    variant?: 'luxury' | 'solid' | 'transparent';
+    showIcon?: boolean;
     handle?: string;
     avatarUrl: string;
     content: string;

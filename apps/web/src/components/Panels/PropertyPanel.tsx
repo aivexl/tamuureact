@@ -2518,13 +2518,27 @@ export const PropertyPanel: React.FC = () => {
                             </div>
                             <SelectInput
                                 label="Background Variant"
-                                value={layer.socialMockupConfig?.variant || 'transparent'}
+                                value={layer.socialMockupConfig?.variant || 'luxury'}
                                 options={[
+                                    { value: 'luxury', label: 'Luxury (Premium)' },
                                     { value: 'solid', label: 'Solid White' },
-                                    { value: 'transparent', label: 'Transparent (Glass)' }
+                                    { value: 'transparent', label: 'Transparent (No BG)' }
                                 ]}
                                 onChange={(v) => handleUpdate({ socialMockupConfig: { ...layer.socialMockupConfig!, variant: v as any } })}
                             />
+                            <div className="flex items-center justify-between">
+                                <span className="text-[9px] text-white/30 uppercase font-bold">Show Platform Icon</span>
+                                <motion.button
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleUpdate({ socialMockupConfig: { ...layer.socialMockupConfig!, showIcon: !(layer.socialMockupConfig?.showIcon ?? true) } })}
+                                    className={`w-10 h-5 rounded-full transition-colors ${layer.socialMockupConfig?.showIcon !== false ? 'bg-premium-accent' : 'bg-white/10'}`}
+                                >
+                                    <motion.div
+                                        className="w-4 h-4 bg-white rounded-full shadow-sm"
+                                        animate={{ x: layer.socialMockupConfig?.showIcon !== false ? 22 : 2 }}
+                                    />
+                                </motion.button>
+                            </div>
                         </div>
                     </SectionComponent>
                 )}

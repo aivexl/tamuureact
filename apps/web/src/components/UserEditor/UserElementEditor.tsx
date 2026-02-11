@@ -528,13 +528,41 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
             )}
 
             {element.type === 'social_mockup' && element.socialMockupConfig && (
-                <div className="space-y-4">
-                    <div className="space-y-3">
+                <div className="space-y-5">
+                    {/* Platform Selection */}
+                    <div className="space-y-2.5">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Platform</label>
+                        <div className="grid grid-cols-2 gap-2">
+                            {[
+                                { id: 'instagram', label: 'Instagram' },
+                                { id: 'whatsapp', label: 'WhatsApp' },
+                                { id: 'tiktok', label: 'TikTok' },
+                                { id: 'twitter', label: 'Twitter (X)' },
+                                { id: 'other', label: 'Lainnya' }
+                            ].map((platform) => (
+                                <button
+                                    key={platform.id}
+                                    onClick={() => handleUpdate({
+                                        socialMockupConfig: { ...element.socialMockupConfig!, platform: platform.id as any }
+                                    })}
+                                    className={`px-3 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all border text-center ${element.socialMockupConfig?.platform === platform.id
+                                        ? 'bg-teal-50 border-teal-200 text-teal-600 shadow-sm'
+                                        : 'bg-slate-50 border-slate-100 text-slate-400 hover:bg-slate-100'
+                                        }`}
+                                >
+                                    {platform.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Username Input */}
+                    <div className="space-y-2.5">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                            Social Username
+                            Username / ID
                         </label>
-                        <div className="relative">
-                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">@</div>
+                        <div className="relative group">
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm transition-colors group-focus-within:text-teal-500">@</div>
                             <input
                                 type="text"
                                 value={element.socialMockupConfig.username || ''}
@@ -544,10 +572,29 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                                         username: e.target.value
                                     }
                                 })}
-                                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
+                                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all outline-none"
                                 placeholder="username"
                             />
                         </div>
+                    </div>
+
+                    {/* Icon Visibility Toggle */}
+                    <div className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-100 rounded-xl group hover:border-teal-200 transition-colors">
+                        <div className="flex flex-col">
+                            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Tampilkan Icon</span>
+                            <span className="text-[9px] text-slate-400">Aktifkan logo sosial media</span>
+                        </div>
+                        <button
+                            onClick={() => handleUpdate({
+                                socialMockupConfig: {
+                                    ...element.socialMockupConfig!,
+                                    showIcon: !(element.socialMockupConfig?.showIcon ?? true)
+                                }
+                            })}
+                            className={`w-11 h-6 rounded-full transition-all flex items-center px-1 ${element.socialMockupConfig?.showIcon !== false ? 'bg-teal-500' : 'bg-slate-300'}`}
+                        >
+                            <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${element.socialMockupConfig?.showIcon !== false ? 'translate-x-5' : 'translate-x-0'}`} />
+                        </button>
                     </div>
                 </div>
             )}
