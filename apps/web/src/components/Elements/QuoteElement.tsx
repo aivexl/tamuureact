@@ -146,7 +146,7 @@ export const QuoteElement: React.FC<{ layer: Layer, isEditor?: boolean, onConten
                 {/* Arabic Text Block */}
                 {config.textArabic && (
                     <div
-                        className="w-full text-center mb-2 whitespace-nowrap overflow-hidden text-ellipsis px-1"
+                        className="w-full text-center mb-2 px-1 whitespace-pre-wrap"
                         style={{
                             fontFamily: 'Amiri, New Amsterdam, serif',
                             fontSize: `${arabicFontSize}px`,
