@@ -6,6 +6,7 @@ import { generateId } from '@/lib/utils';
 import { RSVP_VARIANTS, DEFAULT_RSVP_WISHES_CONFIG } from '@/lib/rsvp-variants';
 import { SUPPORTED_FONTS } from '@/lib/fonts';
 import { SUPPORTED_BANKS } from '@/lib/banks';
+import { QUOTES_LIBRARY } from '@/constants/quotes';
 
 import {
     AlignLeft, AlignCenter, AlignRight,
@@ -17,7 +18,7 @@ import {
     Gift, Heart, Home, ImageIcon, Layout, Layers,
     Shield, Anchor, UserCheck, Lock, Unlock, MailOpen, MapPin, MessageSquare,
     Maximize2, Monitor, MousePointer2, Move, MoveHorizontal,
-    Palette, Plane, Quote, Settings2, Sliders,
+    Palette, Plane, Quote, Check, Settings2, Sliders,
     Sparkles, Square, Star, Trash2,
     Type, Users, Video, Wind, Zap
 } from 'lucide-react';
@@ -1387,6 +1388,43 @@ export const PropertyPanel: React.FC = () => {
                                                 className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow"
                                             />
                                         </motion.button>
+                                    </div>
+                                </div>
+
+                                {/* Quote Library Integration */}
+                                <div className="space-y-3 p-3 bg-white/5 rounded-lg border border-white/10">
+                                    <h4 className="text-[8px] text-white/40 uppercase font-bold flex items-center gap-2">
+                                        <Sparkles className="w-3 h-3" />
+                                        Quote Library
+                                    </h4>
+
+                                    <div className="grid grid-cols-1 gap-2 max-h-[250px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10">
+                                        {QUOTES_LIBRARY.map((quote) => (
+                                            <button
+                                                key={quote.id}
+                                                onClick={() => handleUpdate({
+                                                    quoteConfig: {
+                                                        ...layer.quoteConfig!,
+                                                        text: quote.textArabic ? `${quote.textArabic}\n\n${quote.text}` : quote.text,
+                                                        author: quote.author
+                                                    }
+                                                })}
+                                                className="w-full text-left p-3 rounded-lg bg-white/5 border border-white/5 hover:border-premium-accent/50 hover:bg-white/10 transition-all space-y-2 group"
+                                            >
+                                                {quote.textArabic && (
+                                                    <p className="text-xs text-white/90 font-arabic text-right leading-relaxed" dir="rtl">
+                                                        {quote.textArabic}
+                                                    </p>
+                                                )}
+                                                <p className="text-[9px] text-white/60 italic leading-relaxed line-clamp-2">
+                                                    {quote.text}
+                                                </p>
+                                                <div className="flex items-center justify-between pt-1 border-t border-white/5">
+                                                    <span className="text-[8px] font-bold text-premium-accent uppercase tracking-widest">{quote.author}</span>
+                                                    <Check className="w-2.5 h-2.5 text-premium-accent opacity-0 group-hover:opacity-100" />
+                                                </div>
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
                             </div>

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { useParams } from 'react-router-dom';
-import { Type, Image as ImageIcon, MapPin, Copy, Shield, Clock, Lock, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignStartVertical, AlignCenterVertical, AlignEndVertical, Plus, Minus, Palette, ChevronDown, Settings2, Trash2, Calendar, Heart, Type as FontIcon, Monitor, Quote } from 'lucide-react';
+import { Type, Image as ImageIcon, MapPin, Copy, Shield, Clock, Lock, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignStartVertical, AlignCenterVertical, AlignEndVertical, Plus, Minus, Palette, ChevronDown, Settings2, Trash2, Calendar, Heart, Type as FontIcon, Monitor, Quote, Check } from 'lucide-react';
 import { useStore, Layer, LoveStoryMoment, LoveStoryConfig } from '@/store/useStore';
 import { SUPPORTED_FONTS } from '@/lib/fonts';
+import { QUOTES_LIBRARY } from '@/constants/quotes';
 
 interface UserElementEditorProps {
     element: Layer;
@@ -525,114 +526,115 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                 </div>
             )}
 
-            {/* Quote Configuration */}
             {element.type === 'quote' && element.quoteConfig && (
                 <>
                     <div className="space-y-4">
-                        <div className="space-y-1.5">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Teks Kutipan</label>
-                            <textarea
-                                value={element.quoteConfig.text || ''}
-                                onChange={(e) => handleUpdate({
-                                    quoteConfig: { ...element.quoteConfig!, text: e.target.value }
-                                })}
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none resize-none h-24"
-                                placeholder="Tuliskan kata-kata mutiara atau kutipan..."
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Penulis / Nama</label>
-                            <input
-                                type="text"
-                                value={element.quoteConfig.author || ''}
-                                onChange={(e) => handleUpdate({
-                                    quoteConfig: { ...element.quoteConfig!, author: e.target.value }
-                                })}
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
-                                placeholder="Contoh: Anonymous, Nama Pasangan, dsb."
-                            />
-                        </div>
-
-                        {/* Color Settings for Users */}
-                        <div className="pt-2 border-t border-slate-100">
+                        {/* Tab Switcher for Quote Editor */}
+                        <div className="flex gap-1 p-1 bg-slate-100 rounded-xl">
                             <button
-                                onClick={() => setShowStyling(!showStyling)}
-                                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all ${showStyling ? 'bg-teal-50 text-teal-600' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
+                                onClick={() => setShowStyling(false)}
+                                className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${!showStyling ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                             >
-                                <div className="flex items-center gap-2">
-                                    <Palette className="w-4 h-4" />
-                                    <span className="text-xs font-bold uppercase tracking-wider">Warna Kustom</span>
-                                </div>
-                                <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${showStyling ? 'rotate-180' : ''}`} />
+                                Kustom
                             </button>
+                            <button
+                                onClick={() => setShowStyling(true)}
+                                className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${showStyling ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                            >
+                                Dari Library
+                            </button>
+                        </div>
 
-                            <AnimatePresence>
-                                {showStyling && (
-                                    <m.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: 'auto', opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        className="overflow-hidden"
+                        {!showStyling ? (
+                            <m.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="space-y-4"
+                            >
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Teks Kutipan</label>
+                                    <textarea
+                                        value={element.quoteConfig.text || ''}
+                                        onChange={(e) => handleUpdate({
+                                            quoteConfig: { ...element.quoteConfig!, text: e.target.value }
+                                        })}
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none resize-none h-24"
+                                        placeholder="Tuliskan kata-kata mutiara atau kutipan..."
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Penulis / Nama</label>
+                                    <input
+                                        type="text"
+                                        value={element.quoteConfig.author || ''}
+                                        onChange={(e) => handleUpdate({
+                                            quoteConfig: { ...element.quoteConfig!, author: e.target.value }
+                                        })}
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
+                                        placeholder="Contoh: Anonymous, Nama Pasangan, dsb."
+                                    />
+                                </div>
+                            </m.div>
+                        ) : (
+                            <m.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="space-y-3 max-h-[300px] overflow-y-auto pr-1"
+                            >
+                                {QUOTES_LIBRARY.map((quote) => (
+                                    <button
+                                        key={quote.id}
+                                        onClick={() => handleUpdate({
+                                            quoteConfig: {
+                                                ...element.quoteConfig!,
+                                                text: quote.textArabic ? `${quote.textArabic}\n\n${quote.text}` : quote.text,
+                                                author: quote.author
+                                            }
+                                        })}
+                                        className="w-full text-left p-4 bg-slate-50 border border-slate-100 rounded-xl hover:border-teal-300 hover:bg-teal-50/50 transition-all space-y-2 group"
                                     >
-                                        <div className="pt-4 space-y-4">
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-1.5">
-                                                    <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Warna Teks</label>
-                                                    <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-100">
-                                                        <input
-                                                            type="color"
-                                                            value={element.quoteConfig.quoteColor || '#ffffff'}
-                                                            onChange={(e) => handleUpdate({ quoteConfig: { ...element.quoteConfig!, quoteColor: e.target.value } })}
-                                                            className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-none"
-                                                        />
-                                                        <span className="text-[10px] font-mono text-slate-500">{element.quoteConfig.quoteColor}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="space-y-1.5">
-                                                    <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Warna Penulis</label>
-                                                    <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-100">
-                                                        <input
-                                                            type="color"
-                                                            value={element.quoteConfig.authorColor || '#ffffff'}
-                                                            onChange={(e) => handleUpdate({ quoteConfig: { ...element.quoteConfig!, authorColor: e.target.value } })}
-                                                            className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-none"
-                                                        />
-                                                        <span className="text-[10px] font-mono text-slate-500">{element.quoteConfig.authorColor}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-1.5">
-                                                    <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Warna Aksen</label>
-                                                    <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-100">
-                                                        <input
-                                                            type="color"
-                                                            value={element.quoteConfig.decorativeColor || '#bfa181'}
-                                                            onChange={(e) => handleUpdate({ quoteConfig: { ...element.quoteConfig!, decorativeColor: e.target.value } })}
-                                                            className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-none"
-                                                        />
-                                                        <span className="text-[10px] font-mono text-slate-500">{element.quoteConfig.decorativeColor}</span>
-                                                    </div>
-                                                </div>
-                                                {element.quoteConfig.variant === 'solid' && (
-                                                    <div className="space-y-1.5">
-                                                        <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Warna Background</label>
-                                                        <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-100">
-                                                            <input
-                                                                type="color"
-                                                                value={element.quoteConfig.backgroundColor || '#bfa181'}
-                                                                onChange={(e) => handleUpdate({ quoteConfig: { ...element.quoteConfig!, backgroundColor: e.target.value } })}
-                                                                className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-none"
-                                                            />
-                                                            <span className="text-[10px] font-mono text-slate-500">{element.quoteConfig.backgroundColor}</span>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
+                                        {quote.textArabic && (
+                                            <p className="text-sm text-slate-800 font-arabic text-right leading-relaxed" dir="rtl">
+                                                {quote.textArabic}
+                                            </p>
+                                        )}
+                                        <p className="text-[10px] text-slate-600 italic leading-relaxed line-clamp-3">
+                                            {quote.text}
+                                        </p>
+                                        <div className="flex items-center justify-between pt-1 border-t border-slate-200/50">
+                                            <span className="text-[9px] font-black text-teal-600 uppercase tracking-widest">{quote.author}</span>
+                                            <Check className="w-3 h-3 text-teal-500 opacity-0 group-hover:opacity-100" />
                                         </div>
-                                    </m.div>
-                                )}
-                            </AnimatePresence>
+                                    </button>
+                                ))}
+                            </m.div>
+                        )}
+
+                        {/* Color Settings for Users - Always accessible below */}
+                        <div className="pt-2 border-t border-slate-100">
+                            <div className="bg-slate-50 rounded-xl p-3 space-y-3">
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block ml-1">Warna & Gaya</span>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-1">
+                                        <input
+                                            type="color"
+                                            value={element.quoteConfig.quoteColor || '#ffffff'}
+                                            onChange={(e) => handleUpdate({ quoteConfig: { ...element.quoteConfig!, quoteColor: e.target.value } })}
+                                            className="w-full h-8 rounded-lg cursor-pointer bg-transparent border-none"
+                                        />
+                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter block text-center">Teks</span>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <input
+                                            type="color"
+                                            value={element.quoteConfig.authorColor || '#ffffff'}
+                                            onChange={(e) => handleUpdate({ quoteConfig: { ...element.quoteConfig!, authorColor: e.target.value } })}
+                                            className="w-full h-8 rounded-lg cursor-pointer bg-transparent border-none"
+                                        />
+                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter block text-center">Penulis</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
