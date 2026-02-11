@@ -455,6 +455,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
             case 'social_mockup': return 'Social Platform';
             case 'interaction': return 'Select Cinematic Effect';
             case 'live_streaming': return 'Pilih Platform Live Stream';
+            case 'quote': return 'Pilih Gaya Quote';
             default: {
                 const label = type?.replace('_', ' ') || '';
                 return `Add ${label.charAt(0).toUpperCase() + label.slice(1)}`;
@@ -1279,6 +1280,110 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                                 <span className="text-[10px] font-bold text-white/80">{p.label}</span>
                             </button>
                         ))}
+                    </div>
+                )}
+
+                {/* QUOTE VARIANTS */}
+                {type === 'quote' && (
+                    <div className="space-y-3">
+                        <p className="text-xs text-white/50 text-center">Pilih gaya visual kutipan</p>
+                        <div className="grid grid-cols-1 gap-3">
+                            {/* Cinematic Glass */}
+                            <button
+                                onClick={() => onSelect({
+                                    quoteConfig: {
+                                        text: 'Grow old along with me! The best is yet to be.',
+                                        author: 'Robert Browning',
+                                        variant: 'cinematic',
+                                        quoteColor: '#ffffff',
+                                        authorColor: '#eebd2b',
+                                        decorativeColor: '#bfa181',
+                                        fontFamily: 'Playfair Display',
+                                        authorFontFamily: 'Outfit',
+                                        fontSize: 20,
+                                        authorFontSize: 14,
+                                        glassBlur: 24,
+                                        showWatermark: true,
+                                        tiltEnabled: true
+                                    }
+                                })}
+                                className="w-full p-4 rounded-xl border border-amber-500/30 hover:border-amber-500/60 transition-all text-left group relative overflow-hidden"
+                                style={{ background: 'rgba(34, 29, 16, 0.6)', backdropFilter: 'blur(12px)' }}
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent pointer-events-none" />
+                                <div className="relative">
+                                    <div className="text-amber-400/60 text-2xl font-serif leading-none mb-1">❝</div>
+                                    <div className="text-white/90 text-sm italic font-serif">The best is yet to be...</div>
+                                    <div className="text-amber-400 text-[10px] mt-2 font-medium tracking-wider">— Robert Browning</div>
+                                    <div className="mt-3 flex items-center gap-2">
+                                        <span className="text-[9px] font-bold uppercase tracking-widest text-amber-400">🎬 Cinematic Glass</span>
+                                        <span className="text-[8px] text-white/30">Premium glassmorphism</span>
+                                    </div>
+                                </div>
+                            </button>
+
+                            {/* Solid Color */}
+                            <button
+                                onClick={() => onSelect({
+                                    quoteConfig: {
+                                        text: 'And in the end, the love you take is equal to the love you make.',
+                                        author: 'The Beatles',
+                                        variant: 'solid',
+                                        backgroundColor: '#1a1a2e',
+                                        quoteColor: '#f8f9fa',
+                                        authorColor: '#a78bfa',
+                                        decorativeColor: '#a78bfa',
+                                        fontFamily: 'Outfit',
+                                        authorFontFamily: 'Outfit',
+                                        fontSize: 18,
+                                        authorFontSize: 13,
+                                        glassBlur: 0,
+                                        showWatermark: false,
+                                        tiltEnabled: false
+                                    }
+                                })}
+                                className="w-full p-4 rounded-xl border border-indigo-500/30 hover:border-indigo-500/60 transition-all text-left group"
+                                style={{ background: '#1a1a2e' }}
+                            >
+                                <div className="text-indigo-400/60 text-2xl font-serif leading-none mb-1">❝</div>
+                                <div className="text-white/90 text-sm">The love you take is equal to the love you make.</div>
+                                <div className="text-indigo-400 text-[10px] mt-2 font-medium tracking-wider">— The Beatles</div>
+                                <div className="mt-3 flex items-center gap-2">
+                                    <span className="text-[9px] font-bold uppercase tracking-widest text-indigo-400">🎨 Solid Color</span>
+                                    <span className="text-[8px] text-white/30">Customizable background</span>
+                                </div>
+                            </button>
+
+                            {/* Transparent */}
+                            <button
+                                onClick={() => onSelect({
+                                    quoteConfig: {
+                                        text: 'Two souls, one heart.',
+                                        author: 'Anonymous',
+                                        variant: 'transparent',
+                                        quoteColor: '#ffffff',
+                                        authorColor: '#94a3b8',
+                                        decorativeColor: '#64748b',
+                                        fontFamily: 'Playfair Display',
+                                        authorFontFamily: 'Outfit',
+                                        fontSize: 22,
+                                        authorFontSize: 13,
+                                        glassBlur: 0,
+                                        showWatermark: false,
+                                        tiltEnabled: false
+                                    }
+                                })}
+                                className="w-full p-4 rounded-xl border border-white/10 hover:border-white/30 transition-all text-left group bg-white/[0.03]"
+                            >
+                                <div className="text-white/30 text-2xl font-serif leading-none mb-1">❝</div>
+                                <div className="text-white/70 text-sm italic font-serif">Two souls, one heart.</div>
+                                <div className="text-white/40 text-[10px] mt-2 font-medium tracking-wider">— Anonymous</div>
+                                <div className="mt-3 flex items-center gap-2">
+                                    <span className="text-[9px] font-bold uppercase tracking-widest text-white/50">👻 Transparent</span>
+                                    <span className="text-[8px] text-white/30">Blends with background</span>
+                                </div>
+                            </button>
+                        </div>
                     </div>
                 )}
 

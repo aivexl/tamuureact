@@ -7,18 +7,25 @@ export const QuoteElement: React.FC<{ layer: Layer, isEditor?: boolean, onConten
     const containerRef = useRef<HTMLDivElement>(null);
     const { updateElementDimensions } = useStore();
 
-    const config = layer.quoteConfig || {
+    const rawConfig = layer.quoteConfig || {
         text: 'Grow old along with me! The best is yet to be.',
         author: 'Robert Browning',
         variant: 'cinematic',
         backgroundColor: 'rgba(34, 29, 16, 0.4)',
-        textColor: '#ffffff',
+        quoteColor: '#ffffff',
         authorColor: '#eebd2b',
+        decorativeColor: '#bfa181',
         fontFamily: 'serif',
         authorFontFamily: 'sans-serif',
         glassBlur: 24,
         showWatermark: true,
         tiltEnabled: true
+    };
+
+    // Normalize: prefer quoteColor, fallback to legacy textColor
+    const config = {
+        ...rawConfig,
+        quoteColor: rawConfig.quoteColor || (rawConfig as any).textColor || '#ffffff',
     };
 
     // CTO: Liquid Layout Engine height reporting
@@ -86,7 +93,7 @@ export const QuoteElement: React.FC<{ layer: Layer, isEditor?: boolean, onConten
                 {config.variant !== 'transparent' && (
                     <div
                         className="text-6xl leading-none mb-4 select-none opacity-30 italic"
-                        style={{ fontFamily: config.fontFamily === 'serif' ? 'Playfair Display, serif' : 'Inter, sans-serif', color: config.textColor }}
+                        style={{ fontFamily: config.fontFamily === 'serif' ? 'Playfair Display, serif' : 'Inter, sans-serif', color: config.quoteColor }}
                     >
                         “
                     </div>
@@ -98,7 +105,7 @@ export const QuoteElement: React.FC<{ layer: Layer, isEditor?: boolean, onConten
                     style={{
                         fontFamily: config.fontFamily === 'serif' ? 'Playfair Display, serif' : 'inherit',
                         fontSize: config.fontSize || (isEditor ? 18 : 24),
-                        color: config.textColor || '#ffffff'
+                        color: config.quoteColor || '#ffffff'
                     }}
                 >
                     {config.text}
