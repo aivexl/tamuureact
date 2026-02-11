@@ -2566,6 +2566,102 @@ export const PropertyPanel: React.FC = () => {
                     </SectionComponent>
                 )}
 
+                {/* Profile Card Config */}
+                {layer.type === 'profile_card' && (
+                    <SectionComponent title="Profile Card Settings" icon={<Users className="w-4 h-4 text-emerald-400" />}>
+                        <div className="space-y-4">
+                            <SelectInput
+                                label="Individual Role"
+                                value={layer.profileCardConfig?.role || 'mempelai_pria'}
+                                options={[
+                                    { value: 'mempelai_pria', label: 'Mempelai Pria' },
+                                    { value: 'mempelai_wanita', label: 'Mempelai Wanita' },
+                                    { value: 'ayah_wanita', label: 'Ayah Wanita' },
+                                    { value: 'ibu_wanita', label: 'Ibu Wanita' },
+                                    { value: 'ayah_pria', label: 'Ayah Pria' },
+                                    { value: 'ibu_pria', label: 'Ibu Pria' }
+                                ]}
+                                onChange={(v) => handleUpdate({ profileCardConfig: { ...layer.profileCardConfig!, role: v as any } })}
+                            />
+                            <div>
+                                <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Full Name</label>
+                                <input
+                                    type="text"
+                                    value={layer.profileCardConfig?.name || ''}
+                                    onChange={(e) => handleUpdate({ profileCardConfig: { ...layer.profileCardConfig!, name: e.target.value } })}
+                                    className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none text-white"
+                                    placeholder="Enter full name"
+                                />
+                            </div>
+                            <SelectInput
+                                label="Design Variant"
+                                value={layer.profileCardConfig?.variant || 'luxury'}
+                                options={[
+                                    { value: 'luxury', label: 'Luxury (Glassmorphism)' },
+                                    { value: 'solid', label: 'Solid Color' },
+                                    { value: 'transparent', label: 'Transparent' }
+                                ]}
+                                onChange={(v) => handleUpdate({ profileCardConfig: { ...layer.profileCardConfig!, variant: v as any } })}
+                            />
+                            {layer.profileCardConfig?.variant === 'solid' && (
+                                <ColorInput
+                                    label="Background Color"
+                                    value={layer.profileCardConfig?.backgroundColor || '#bfa181'}
+                                    onChange={(v) => handleUpdate({ profileCardConfig: { ...layer.profileCardConfig!, backgroundColor: v } })}
+                                />
+                            )}
+
+                            <div className="space-y-3 p-3 bg-white/5 rounded-lg border border-white/10 mt-2">
+                                <h4 className="text-[8px] text-white/40 uppercase font-bold">Typography</h4>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <SelectInput
+                                        label="Font Family"
+                                        value={layer.profileCardConfig?.fontFamily || 'Playfair Display'}
+                                        options={SUPPORTED_FONTS.map(f => ({ value: f.name, label: f.name }))}
+                                        isFontPicker
+                                        onChange={(v) => handleUpdate({ profileCardConfig: { ...layer.profileCardConfig!, fontFamily: v } })}
+                                    />
+                                    <NumberInput
+                                        label="Font Size"
+                                        value={layer.profileCardConfig?.fontSize || 24}
+                                        onChange={(v) => handleUpdate({ profileCardConfig: { ...layer.profileCardConfig!, fontSize: v } })}
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <ColorInput
+                                        label="Text Color"
+                                        value={layer.profileCardConfig?.textColor || '#ffffff'}
+                                        onChange={(v) => handleUpdate({ profileCardConfig: { ...layer.profileCardConfig!, textColor: v } })}
+                                    />
+                                    <SelectInput
+                                        label="Alignment"
+                                        value={layer.profileCardConfig?.textAlign || 'center'}
+                                        options={[
+                                            { value: 'left', label: 'Left' },
+                                            { value: 'center', label: 'Center' },
+                                            { value: 'right', label: 'Right' }
+                                        ]}
+                                        onChange={(v) => handleUpdate({ profileCardConfig: { ...layer.profileCardConfig!, textAlign: v as any } })}
+                                    />
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[9px] text-white/30 uppercase font-bold">Show Role Title</span>
+                                    <motion.button
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => handleUpdate({ profileCardConfig: { ...layer.profileCardConfig!, showTitle: !(layer.profileCardConfig?.showTitle ?? true) } })}
+                                        className={`w-10 h-5 rounded-full transition-colors ${layer.profileCardConfig?.showTitle !== false ? 'bg-premium-accent' : 'bg-white/10'}`}
+                                    >
+                                        <motion.div
+                                            className="w-4 h-4 bg-white rounded-full shadow-sm"
+                                            animate={{ x: layer.profileCardConfig?.showTitle !== false ? 22 : 2 }}
+                                        />
+                                    </motion.button>
+                                </div>
+                            </div>
+                        </div>
+                    </SectionComponent>
+                )}
+
                 {/* Permissions & Visibility - Mandatory for Master Templates (Admin Only) */}
                 {isTemplate && (
                     <SectionComponent title="Permissions & Visibility" icon={<Shield className="w-4 h-4 text-orange-400" />}>

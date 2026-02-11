@@ -50,7 +50,8 @@ export type LayerType =
     | 'qr_code'
     | 'gift_address'
     | 'quote'
-    | 'live_streaming';
+    | 'live_streaming'
+    | 'profile_card';
 
 
 // ============================================
@@ -673,6 +674,20 @@ export interface SocialMockupConfig {
     textColor?: string;
 }
 
+export interface ProfileCardConfig {
+    role: 'mempelai_pria' | 'mempelai_wanita' | 'ayah_wanita' | 'ibu_wanita' | 'ayah_pria' | 'ibu_pria';
+    name: string;
+    parentName1?: string;
+    parentName2?: string;
+    variant: 'luxury' | 'solid' | 'transparent';
+    backgroundColor: string;
+    textColor: string;
+    fontFamily: string;
+    fontSize: number;
+    textAlign: 'left' | 'center' | 'right';
+    showTitle: boolean;
+}
+
 export interface WeatherConfig {
     city: string;
     temp?: string;
@@ -779,6 +794,7 @@ export interface Layer {
     nameBoardConfig?: NameBoardConfig;
     giftAddressConfig?: GiftAddressConfig;
     liveStreamingConfig?: LiveStreamingConfig;
+    profileCardConfig?: ProfileCardConfig;
 
     // ENTERPRISE V2 FEATURES
     maskConfig?: MaskConfig;

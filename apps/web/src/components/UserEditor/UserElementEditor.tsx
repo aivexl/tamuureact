@@ -599,6 +599,87 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                 </div>
             )}
 
+            {element.type === 'profile_card' && element.profileCardConfig && (
+                <div className="space-y-6">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                            Nama Lengkap
+                        </label>
+                        <input
+                            type="text"
+                            disabled={!permissions.canEditText}
+                            value={element.profileCardConfig.name || ''}
+                            onChange={(e) => handleUpdate({
+                                profileCardConfig: {
+                                    ...element.profileCardConfig!,
+                                    name: e.target.value
+                                }
+                            })}
+                            className={`w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none ${!permissions.canEditText ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            placeholder="Contoh: Budi Santoso"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                                Ukuran Font
+                            </label>
+                            <input
+                                type="number"
+                                disabled={!permissions.canEditStyle}
+                                value={element.profileCardConfig.fontSize || 24}
+                                onChange={(e) => handleUpdate({
+                                    profileCardConfig: {
+                                        ...element.profileCardConfig!,
+                                        fontSize: parseInt(e.target.value) || 16
+                                    }
+                                })}
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/20 transition-all disabled:opacity-50"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                                Perataan Teks
+                            </label>
+                            <div className="flex bg-slate-50 border border-slate-100 rounded-xl p-1 gap-1">
+                                {(['left', 'center', 'right'] as const).map((align) => (
+                                    <button
+                                        key={align}
+                                        disabled={!permissions.canEditStyle}
+                                        onClick={() => handleUpdate({
+                                            profileCardConfig: {
+                                                ...element.profileCardConfig!,
+                                                textAlign: align
+                                            }
+                                        })}
+                                        className={`flex-1 flex items-center justify-center p-2 rounded-lg transition-all ${element.profileCardConfig?.textAlign === align
+                                            ? 'bg-white text-teal-600 shadow-sm border border-slate-100'
+                                            : 'text-slate-400 hover:text-slate-600'
+                                            } disabled:opacity-50`}
+                                    >
+                                        {align === 'left' && <AlignLeft className="w-4 h-4" />}
+                                        {align === 'center' && <AlignCenter className="w-4 h-4" />}
+                                        {align === 'right' && <AlignRight className="w-4 h-4" />}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Designer Note */}
+                    <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-2xl border border-amber-100/50">
+                        <Lock className="w-4 h-4 text-amber-500 mt-0.5" />
+                        <div className="flex flex-col gap-0.5">
+                            <span className="text-[10px] font-black text-amber-700 uppercase tracking-widest">Desain Dikunci</span>
+                            <span className="text-[10px] text-amber-600/80 leading-relaxed font-medium">
+                                Varian background dan warna diatur oleh Admin untuk menjaga keindahan desain undangan Anda.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {element.type === 'quote' && element.quoteConfig && (
                 <>
                     <div className="space-y-4">

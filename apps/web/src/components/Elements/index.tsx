@@ -709,4 +709,5 @@ export const ShareContextElement: React.FC<{ layer: Layer, onContentLoad?: () =>
 export * from './LoveStoryElement';
 export * from './LiveStreamingElement';
 export * from './QuoteElement';
+export * from './ProfileCardElement';
 

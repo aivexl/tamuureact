@@ -27,7 +27,8 @@ import {
     GiftAddressElement,
     LoveStoryElement,
     LiveStreamingElement,
-    QuoteElement
+    QuoteElement,
+    ProfileCardElement
 } from '@/components/Elements';
 
 
@@ -124,6 +125,8 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenI
                 return <NameBoardElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             case 'quote':
                 return <QuoteElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
+            case 'profile_card':
+                return <ProfileCardElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
 
             default:
                 return <PlaceholderElement layer={layer} onContentLoad={onContentLoad} />;

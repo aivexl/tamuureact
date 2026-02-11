@@ -576,6 +576,27 @@ const elementConfigs: ElementConfig[] = [
         })
     },
     {
+        type: 'profile_card',
+        icon: <Users className="w-5 h-5" />,
+        label: 'Profile Card',
+        color: 'hover:bg-emerald-500/10 hover:border-emerald-500/30',
+        createDefault: () => ({
+            width: 320,
+            height: 120,
+            profileCardConfig: {
+                role: 'mempelai_pria',
+                name: 'Nama Mempelai',
+                variant: 'luxury',
+                backgroundColor: '#bfa181',
+                textColor: '#ffffff',
+                fontFamily: 'Playfair Display',
+                fontSize: 24,
+                textAlign: 'center',
+                showTitle: true
+            }
+        })
+    },
+    {
         type: 'weather_widget',
         icon: <Sun className="w-5 h-5" />,
         label: 'Weather',
