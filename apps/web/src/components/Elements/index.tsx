@@ -532,7 +532,7 @@ export const SocialMockupElement: React.FC<{ layer: Layer, onContentLoad?: () =>
                     </div>
                 )}
                 <div className="flex flex-col min-w-0 leading-tight">
-                    <span className={`text-base truncate ${styles.handle}`}>
+                    <span className={`text-lg truncate ${styles.handle}`}>
                         @{username}
                     </span>
                 </div>
