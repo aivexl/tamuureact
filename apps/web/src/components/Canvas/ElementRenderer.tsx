@@ -28,7 +28,8 @@ import {
     LoveStoryElement,
     LiveStreamingElement,
     QuoteElement,
-    ProfileCardElement
+    ProfileCardElement,
+    ProfilePhotoElement
 } from '@/components/Elements';
 
 
@@ -127,6 +128,8 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenI
                 return <QuoteElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             case 'profile_card':
                 return <ProfileCardElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
+            case 'profile_photo':
+                return <ProfilePhotoElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
 
             default:
                 return <PlaceholderElement layer={layer} onContentLoad={onContentLoad} />;

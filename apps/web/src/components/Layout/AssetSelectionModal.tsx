@@ -7,7 +7,8 @@ import {
     MessageSquare, Users, Circle, Triangle, Diamond, Star,
     Music, Camera, Gift, Flower2, Bell, Check, Cloud, Home,
     Sun, Moon, Smile, ThumbsUp, Upload, Monitor,
-    Waves, Zap, Component, Share2, Layers, Youtube, Instagram
+    Waves, Zap, Component, Share2, Layers, Youtube, Instagram,
+    Layout, Shield
 } from 'lucide-react';
 import { PremiumLoader } from '../ui/PremiumLoader';
 import { LayerType } from '@/store/useStore';
@@ -367,6 +368,15 @@ const LOVE_STORY_PRESETS = [
     { label: 'Floating', variant: 'floating_glass', description: 'Elegant glass cards', icon: '🫧' },
 ];
 
+const PROFILE_PHOTO_PRESETS = [
+    { label: 'Circle (Classic)', shape: 'circle', icon: <Circle className="w-8 h-8" /> },
+    { label: 'Square (Modern)', shape: 'square', icon: <Square className="w-8 h-8" /> },
+    { label: 'Luxury (Elegant)', shape: 'luxury', icon: <Shield className="w-8 h-8 text-amber-500" /> },
+    { label: 'Romance (Heart)', shape: 'heart', icon: <Heart className="w-8 h-8 text-rose-500" /> },
+    { label: 'Modern (Arch)', shape: 'arch', icon: <Layout className="w-8 h-8 text-sky-500" /> },
+    { label: 'Tech (Hexagon)', shape: 'hexagon', icon: <Zap className="w-8 h-8 text-amber-400" /> },
+];
+
 export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, onSelect, onClose, direction = 'right' }) => {
 
     const { showModal } = useStore();
@@ -457,9 +467,10 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
             case 'live_streaming': return 'Pilih Platform Live Stream';
             case 'quote': return 'Pilih Gaya Quote';
             case 'profile_card': return 'Pilih Peran Profil';
+            case 'profile_photo': return 'Pilih Bentuk Foto Profil';
             default: {
                 const label = type?.replace('_', ' ') || '';
-                return `Add ${label.charAt(0).toUpperCase() + label.slice(1)}`;
+                return `MISSING_TYPE: Add ${label.charAt(0).toUpperCase() + label.slice(1)}`;
             }
         }
     };
@@ -1421,6 +1432,39 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                                 >
                                     <span className="text-2xl group-hover:scale-110 transition-transform">{role.icon}</span>
                                     <span className="text-[10px] font-bold text-white/80">{role.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* PROFILE PHOTO PRESETS */}
+                {type === 'profile_photo' && (
+                    <div className="space-y-6">
+                        <p className="text-xs text-white/50 text-center">Pilih gaya bentuk foto profil</p>
+
+                        <div className="grid grid-cols-3 gap-3">
+                            {PROFILE_PHOTO_PRESETS.map((preset) => (
+                                <button
+                                    key={preset.shape}
+                                    onClick={() => onSelect({
+                                        profilePhotoConfig: {
+                                            role: 'mempelai_pria',
+                                            shape: preset.shape,
+                                            borderColor: '#bfa181',
+                                            borderWidth: 2,
+                                            showLabel: true,
+                                            label: 'Mempelai Pria'
+                                        }
+                                    })}
+                                    className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white/5 hover:bg-premium-accent/20 border border-white/5 hover:border-premium-accent/40 transition-all gap-2 group aspect-square"
+                                >
+                                    <div className="text-white/60 group-hover:text-premium-accent group-hover:scale-110 transition-all">
+                                        {preset.icon}
+                                    </div>
+                                    <span className="text-[9px] font-bold text-white/40 group-hover:text-white/80 uppercase tracking-widest text-center leading-tight">
+                                        {preset.label.split(' ')[0]}
+                                    </span>
                                 </button>
                             ))}
                         </div>

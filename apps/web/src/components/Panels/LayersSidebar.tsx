@@ -56,6 +56,7 @@ const layerIcons: Record<LayerType, React.ReactNode> = {
     love_story: <Heart className="w-4 h-4" />,
     live_streaming: <Monitor className="w-4 h-4" />,
     profile_card: <Users className="w-4 h-4" />,
+    profile_photo: <Users className="w-4 h-4" />,
     quote: <Quote className="w-4 h-4" />
 };
 

@@ -190,6 +190,14 @@ export const InvitationsStorePage: React.FC = () => {
                                             }
                                         }
                                     }
+                                    // Profile Photo Sync
+                                    if (layer.type === 'profile_photo') {
+                                        if (layer.profilePhotoConfig?.role === 'mempelai_pria' && magic.groomPhoto) {
+                                            layer.imageUrl = magic.groomPhoto;
+                                        } else if (layer.profilePhotoConfig?.role === 'mempelai_wanita' && magic.bridePhoto) {
+                                            layer.imageUrl = magic.bridePhoto;
+                                        }
+                                    }
 
                                     // Countdown Sync
                                     const targetDateTime = magic.eventDate && magic.eventTime

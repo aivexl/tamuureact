@@ -41,6 +41,7 @@ const MENU_ITEMS = [
     { id: 'location', label: 'Lokasi', icon: MapPin, color: 'text-red-600', bg: 'bg-red-50', gradient: 'from-red-500/20 to-rose-500/20' },
     { id: 'gift', label: 'Kado', icon: Gift, color: 'text-emerald-600', bg: 'bg-emerald-50', gradient: 'from-emerald-500/20 to-teal-500/20' },
     { id: 'seo', label: 'Sosmed', icon: Search, color: 'text-indigo-600', bg: 'bg-indigo-50', gradient: 'from-indigo-500/20 to-blue-500/20' },
+    { id: 'profile_photo', label: 'Profil', icon: Users, color: 'text-sky-600', bg: 'bg-sky-50', gradient: 'from-sky-500/20 to-blue-500/20' },
     { id: 'download', label: 'Download', icon: Download, color: 'text-rose-600', bg: 'bg-rose-50', gradient: 'from-rose-500/20 to-pink-500/20' },
 
 ];

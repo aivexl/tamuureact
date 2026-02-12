@@ -52,6 +52,24 @@ const elementConfigs: ElementConfig[] = [
         })
     },
     {
+        type: 'profile_photo',
+        icon: <ImageIcon className="w-5 h-5 text-premium-accent" />,
+        label: 'Profile Photo',
+        color: 'hover:bg-premium-accent/10 hover:border-premium-accent/30',
+        createDefault: () => ({
+            width: 200,
+            height: 200,
+            profilePhotoConfig: {
+                role: 'mempelai_pria',
+                shape: 'circle',
+                borderColor: '#bfa181',
+                borderWidth: 2,
+                showLabel: true,
+                label: 'Mempelai Pria'
+            }
+        })
+    },
+    {
         type: 'icon',
         icon: <Heart className="w-5 h-5" />,
         label: 'Icon',
@@ -831,7 +849,7 @@ export const ElementToolbar: React.FC<ElementToolbarProps> = ({ embedded = false
 
     const isAdmin = user?.role === 'admin';
     const allTools = elementConfigs.filter(c => {
-        if (c.type === 'live_streaming' || c.type === 'quote' || c.type === 'social_mockup') return isAdmin;
+        if (c.type === 'live_streaming' || c.type === 'quote' || c.type === 'social_mockup' || c.type === 'profile_photo') return isAdmin;
         return true;
     });
 

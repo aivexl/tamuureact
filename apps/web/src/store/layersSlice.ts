@@ -51,7 +51,8 @@ export type LayerType =
     | 'gift_address'
     | 'quote'
     | 'live_streaming'
-    | 'profile_card';
+    | 'profile_card'
+    | 'profile_photo';
 
 
 // ============================================
@@ -66,6 +67,37 @@ export type AnimationType =
     | 'bounce' | 'pop-in' | 'blur-in' | 'twirl-in'
     | 'float' | 'pulse' | 'sway' | 'spin' | 'glow' | 'heartbeat' | 'sparkle'
     | 'flap-bob' | 'float-flap' | 'fly-left' | 'fly-right' | 'fly-up' | 'fly-down' | 'fly-random' | 'twirl' | 'elegant-spin';
+
+// ============================================
+// PROFILE PHOTO TYPES
+// ============================================
+export type ProfilePhotoShape = 'circle' | 'square' | 'heart' | 'luxury' | 'arch' | 'hexagon';
+
+export interface ProfilePhotoConfig {
+    role: 'mempelai_pria' | 'mempelai_wanita' | 'ayah_wanita' | 'ibu_wanita' | 'ayah_pria' | 'ibu_pria' | 'general';
+    shape: ProfilePhotoShape;
+    borderWidth: number;
+    borderColor: string;
+    showLabel: boolean;
+    label?: string;
+    // We store the crop data to allow re-editing
+    crop?: {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    };
+    zoom?: number;
+}
+
+export const DEFAULT_PROFILE_PHOTO_CONFIG: ProfilePhotoConfig = {
+    role: 'mempelai_pria',
+    shape: 'luxury',
+    borderWidth: 2,
+    borderColor: '#bfa181',
+    showLabel: true,
+    label: 'Mempelai Pria'
+};
 
 // ============================================
 // STYLE CONFIGS
@@ -795,6 +827,7 @@ export interface Layer {
     giftAddressConfig?: GiftAddressConfig;
     liveStreamingConfig?: LiveStreamingConfig;
     profileCardConfig?: ProfileCardConfig;
+    profilePhotoConfig?: ProfilePhotoConfig;
 
     // ENTERPRISE V2 FEATURES
     maskConfig?: MaskConfig;

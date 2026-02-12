@@ -92,6 +92,7 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
             case 'live_streaming': return <Monitor className="w-4 h-4" />;
             case 'quote': return <Quote className="w-4 h-4" />;
             case 'social_mockup': return <Share2 className="w-4 h-4" />;
+            case 'profile_photo': return <ImageIcon className="w-4 h-4" />;
             default: return <Type className="w-4 h-4" />;
 
         }
@@ -424,10 +425,32 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
             )}
 
             {/* Image Field */}
-            {(element.type === 'image' || element.type === 'gif') && (
+            {(element.type === 'image' || element.type === 'gif' || element.type === 'profile_photo') && (
                 <div className="space-y-3">
-                    {permissions.canEditImage ? (
-                        <div className="relative group/upload h-32 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-teal-300 hover:bg-teal-50/30 transition-all">
+                    {permissions.canEditImage && !element.isLocked ? (
+                        <div
+                            onClick={() => {
+                                // For profile_photo, we want to trigger the input in the element itself if possible, 
+                                // but here we can just handle the file selection directly or use a hidden input here.
+                                // Actually, let's just trigger a click on a hidden input we can add here for simplicity 
+                                // if we want it to work from this panel.
+                                const input = document.createElement('input');
+                                input.type = 'file';
+                                input.accept = 'image/*';
+                                input.onchange = (e) => {
+                                    const file = (e.target as HTMLInputElement).files?.[0];
+                                    if (file) {
+                                        const reader = new FileReader();
+                                        reader.onload = () => {
+                                            handleUpdate({ imageUrl: reader.result as string });
+                                        };
+                                        reader.readAsDataURL(file);
+                                    }
+                                };
+                                input.click();
+                            }}
+                            className="relative group/upload h-32 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-teal-300 hover:bg-teal-50/30 transition-all"
+                        >
                             {element.imageUrl ? (
                                 <img src={element.imageUrl} alt="Preview" className="w-full h-full object-cover rounded-[calc(1rem-2px)] opacity-50 group-hover/upload:opacity-30 transition-opacity" />
                             ) : (
@@ -436,7 +459,7 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                             <div className="absolute inset-0 flex flex-col items-center justify-center">
                                 <button className="flex items-center gap-2 px-4 py-2 bg-white text-slate-700 text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-slate-200/50 hover:shadow-xl transition-all">
                                     <ImageIcon className="w-3.5 h-3.5 text-teal-500" />
-                                    Pilih Foto
+                                    {element.type === 'profile_photo' ? 'Upload Profile Photo' : 'Pilih Foto'}
                                 </button>
                             </div>
                         </div>
@@ -450,6 +473,26 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
                             <div className="absolute flex items-center gap-2 px-3 py-1.5 bg-white/80 backdrop-blur-sm rounded-full text-[9px] font-black text-slate-400 uppercase tracking-widest border border-slate-100">
                                 <Lock className="w-3 h-3" /> Foto Dikunci
                             </div>
+                        </div>
+                    )}
+
+                    {element.type === 'profile_photo' && element.profilePhotoConfig?.showLabel && (
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                                Keterangan Foto
+                            </label>
+                            <input
+                                type="text"
+                                value={element.profilePhotoConfig.label || ''}
+                                onChange={(e) => handleUpdate({
+                                    profilePhotoConfig: {
+                                        ...element.profilePhotoConfig!,
+                                        label: e.target.value
+                                    }
+                                })}
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
+                                placeholder="Contoh: Mempelai Pria"
+                            />
                         </div>
                     )}
                 </div>
