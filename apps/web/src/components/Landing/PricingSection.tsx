@@ -1,5 +1,5 @@
-import { m } from 'framer-motion';
-import { CheckCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Check, Crown, Star, Zap, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/useStore';
 import { usePayment } from '../../hooks/usePayment';
@@ -8,9 +8,9 @@ const pricingPlans = [
     {
         tier: "free",
         name: "FREE",
-        price: 0,
-        originalPrice: null,
+        price: "Rp 0",
         duration: "selamanya",
+        icon: Zap,
         features: [
             "1 Undangan Aktif",
             "Masa Aktif 30 Hari",
@@ -23,9 +23,10 @@ const pricingPlans = [
     {
         tier: "pro",
         name: "PRO",
-        price: 99000,
-        originalPrice: 149000,
+        price: "Rp 99k",
+        originalPrice: "Rp 149k",
         duration: "per tahun",
+        icon: Crown,
         features: [
             "1 Undangan Aktif",
             "Masa Aktif 1 Tahun",
@@ -39,9 +40,10 @@ const pricingPlans = [
     {
         tier: "ultimate",
         name: "ULTIMATE",
-        price: 149000,
-        originalPrice: 249000,
+        price: "Rp 149k",
+        originalPrice: "Rp 249k",
         duration: "per tahun",
+        icon: Star,
         popular: true,
         features: [
             "2 Undangan Aktif",
@@ -56,9 +58,10 @@ const pricingPlans = [
     {
         tier: "elite",
         name: "ELITE",
-        price: 199000,
-        originalPrice: 299000,
+        price: "Rp 199k",
+        originalPrice: "Rp 299k",
         duration: "per tahun",
+        icon: Crown,
         features: [
             "3 Undangan Aktif",
             "Semua Fitur Ultimate",
@@ -67,10 +70,6 @@ const pricingPlans = [
         ],
     },
 ];
-
-const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("id-ID").format(price);
-};
 
 const PricingSection: React.FC = () => {
     const navigate = useNavigate();
@@ -91,76 +90,141 @@ const PricingSection: React.FC = () => {
     };
 
     return (
-        <section id="pricing" className="max-w-7xl mx-auto px-6 py-24 bg-white">
-            <div className="text-center mb-16 space-y-4">
-                <span className="text-amber-900 font-black uppercase tracking-widest text-sm block">Investasi Terbaik</span>
-                <h2 className="text-4xl md:text-5xl font-black text-[#0A1128] tracking-tight">Pilih Paket Kebahagiaan</h2>
-                <div className="w-20 h-1.5 bg-[#FFBF00] mx-auto rounded-full" aria-hidden="true" />
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-6 xl:gap-8 items-center max-w-lg lg:max-w-none mx-auto">
-                {pricingPlans.map((plan, index) => (
-                    <m.div
-                        key={index}
-                        whileHover={{ y: -8 }}
-                        className={`relative p-8 sm:p-10 rounded-[2.5rem] transition-all duration-500 ${plan.popular
-                            ? 'bg-slate-900 text-white shadow-[0_30px_60px_-15px_rgba(15,23,42,0.3)] lg:scale-105 z-10'
-                            : 'bg-[#F8FAFC] text-slate-900 border border-slate-200 shadow-md hover:shadow-2xl'
-                            }`}
+        <section id="pricing" className="bg-[#F8FAFC] py-24 px-4 overflow-hidden">
+            <div className="max-w-7xl mx-auto">
+                {/* Header Block */}
+                <div className="text-center mb-16 space-y-4">
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
                     >
-                        {plan.popular && (
-                            <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#FFBF00] text-[#0A1128] text-[10px] font-black tracking-[0.2em] uppercase py-2 px-6 rounded-full shadow-lg">
-                                Rekomendasi Utama
-                            </div>
-                        )}
+                        <span className="text-amber-600 font-black uppercase tracking-widest text-[10px] bg-amber-50 px-4 py-1.5 rounded-full border border-amber-100">
+                            Investasi Terbaik
+                        </span>
+                    </motion.div>
 
-                        <h3 className="text-2xl font-black mb-2 tracking-tight">{plan.name}</h3>
-                        <div className="flex flex-col mb-8">
+                    <motion.h2
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.1 }}
+                        className="text-4xl md:text-6xl font-black text-[#0A1128] tracking-tight leading-tight"
+                    >
+                        Pilih Paket <br />
+                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#FFBF00] to-[#FF8C00]">
+                            Kebahagiaan Anda
+                        </span>
+                    </motion.h2>
+
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.2 }}
+                        className="text-slate-500 max-w-2xl mx-auto text-lg"
+                    >
+                        Hadirkan kesan eksklusif untuk setiap momen spesial dengan fitur digital invitation premium dari Tamuu.
+                    </motion.p>
+                </div>
+
+                {/* Pricing Grid - 4 Columns */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start relative mb-20">
+                    {pricingPlans.map((plan, index) => (
+                        <motion.div
+                            key={plan.tier}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: index * 0.1 }}
+                            whileHover={{ y: -8 }}
+                            className={`relative p-8 rounded-3xl border transition-all duration-300 ${plan.popular
+                                ? 'bg-white border-[#FFBF00] shadow-[0_20px_50px_rgba(255,191,0,0.15)] z-10'
+                                : 'bg-white/70 border-white/50 backdrop-blur-xl shadow-sm hover:shadow-xl'
+                                } ${user?.tier === plan.tier ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}`}
+                        >
+                            {plan.popular && (
+                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#FFBF00] text-[#0A1128] px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
+                                    Recommended
+                                </div>
+                            )}
+
+                            {user?.tier === plan.tier && (
+                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
+                                    Current Plan
+                                </div>
+                            )}
+
+                            <h3 className="text-2xl font-black text-[#0A1128] mb-2">{plan.name}</h3>
+                            <div className="flex items-baseline gap-2 mb-1">
+                                <span className="text-4xl font-black text-[#0A1128]">{plan.price}</span>
+                                <span className="text-slate-400 text-sm font-medium">/{plan.duration}</span>
+                            </div>
                             {plan.originalPrice && (
-                                <span className="text-sm font-medium text-slate-500 line-through">
-                                    Rp {formatPrice(plan.originalPrice)}
+                                <span className="text-slate-400 line-through text-sm font-medium mb-6 block">
+                                    Regular {plan.originalPrice}
                                 </span>
                             )}
-                            <div className="flex items-baseline gap-1">
-                                <span className="text-sm font-bold opacity-60 flex-shrink-0">Rp</span>
-                                <span className="text-3xl sm:text-5xl font-black tracking-tighter leading-none">
-                                    {plan.price === 0 ? "0" : formatPrice(plan.price).replace(/,00$/, '').replace(/\.000$/, 'k')}
-                                </span>
-                                <span className="text-xs sm:text-sm font-medium opacity-60 flex-shrink-0">{plan.duration}</span>
-                            </div>
-                        </div>
+                            {!plan.originalPrice && (
+                                <div className="h-[20px] mb-6 block" />
+                            )}
 
-                        <div className={`h-[1px] w-full mb-8 ${plan.popular ? 'bg-white/10' : 'bg-slate-200'}`} />
-
-                        <ul className="space-y-4 mb-10">
-                            {plan.features.map((feature, i) => (
-                                <li key={i} className="flex items-center gap-3 text-sm font-semibold">
-                                    <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${plan.popular ? 'bg-amber-400/20 text-amber-400' : 'bg-[#0A1128]/5 text-[#0A1128]/60'
-                                        }`}>
-                                        <CheckCircle className="w-3.5 h-3.5" />
+                            <div className="space-y-4 mb-8 mt-6">
+                                {plan.features.map((feature) => (
+                                    <div key={feature} className="flex items-start gap-3 group">
+                                        <div className={`mt-1 rounded-full p-0.5 transition-colors ${plan.popular ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                            <Check className="w-3.5 h-3.5" />
+                                        </div>
+                                        <span className="text-slate-600 text-sm leading-tight font-medium group-hover:text-slate-900 transition-colors">
+                                            {feature}
+                                        </span>
                                     </div>
-                                    <span className="opacity-90">{feature}</span>
-                                </li>
-                            ))}
-                        </ul>
+                                ))}
+                            </div>
 
-                        <button
-                            onClick={() => handleAction(plan.tier)}
-                            disabled={!!processingTier}
-                            className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all duration-300 transform active:scale-95 ${plan.popular
-                                ? 'bg-[#FFBF00] text-[#0A1128] hover:bg-[#FFD700]'
-                                : 'bg-[#0A1128] text-white shadow-lg shadow-[#0A1128]/20 hover:bg-slate-800'
-                                } ${processingTier === plan.tier ? 'opacity-70 cursor-wait' : ''}`}
-                            aria-label={`Pilih paket ${plan.name}`}
-                        >
-                            {processingTier === plan.tier ? "Processing..." : "Pilih Sekarang"}
-                        </button>
-                    </m.div>
-                ))}
+                            <button
+                                onClick={() => handleAction(plan.tier)}
+                                disabled={user?.tier === plan.tier || processingTier === plan.tier}
+                                className={`w-full py-4 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-2 ${user?.tier === plan.tier
+                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                    : plan.popular
+                                        ? 'bg-[#FFBF00] text-[#0A1128] hover:shadow-[0_10px_20px_rgba(255,191,0,0.3)] shadow-md'
+                                        : 'bg-[#0A1128] text-white hover:bg-[#152042] shadow-md'
+                                    } ${processingTier === plan.tier ? 'opacity-70 cursor-wait' : ''}`}
+                            >
+                                {processingTier === plan.tier ? 'Processing...' : (user?.tier === plan.tier ? 'Current Plan' : 'Pilih Sekarang')}
+                                {user?.tier !== plan.tier && processingTier !== plan.tier && <ArrowRight className="w-4 h-4" />}
+                            </button>
+                        </motion.div>
+                    ))}
+                </div>
+
+                {/* Payment Methods Section - Sync with Upgrade Page but enhanced */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    className="mt-24 mb-12 text-center"
+                >
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-10">Pilihan Metode Pembayaran</p>
+                    <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-8 opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700 max-w-4xl mx-auto">
+                        {["BNI", "CIMB", "ShopeePay", "Permata", "BRI", "QRIS", "BSI", "GoPay", "Mandiri", "DANA"].map(logo => (
+                            <span
+                                key={logo}
+                                className="text-xl font-black text-slate-800 tracking-tighter cursor-default hover:text-[#0A1128] transition-colors"
+                            >
+                                {logo}
+                            </span>
+                        ))}
+                    </div>
+                </motion.div>
+
+                {/* Floating Decorative Elements */}
+                <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
             </div>
         </section>
     );
 };
-
 
 export default PricingSection;
