@@ -180,9 +180,9 @@ export const LandingPage: React.FC = () => {
 
             <Suspense fallback={<SectionLoader />}>
                 <PricingSection />
-                <BlogSection />
                 <TestimonialsSection />
                 <FAQSection />
+                <BlogSection />
                 <CTASection />
             </Suspense>
 

@@ -75,6 +75,7 @@ export const Navbar: React.FC = () => {
     const navLinks = isLoggedIn ? [
         { name: 'Home', path: '/' },
         { name: 'Invitations', path: '/invitations' },
+        { name: 'Blog', path: '/blog' },
         { name: 'Dashboard', path: '/dashboard' },
         { name: 'Event Saya', path: '/dashboard' },
         { name: 'Bantuan', path: '/support' },

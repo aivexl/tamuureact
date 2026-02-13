@@ -98,7 +98,7 @@ const PricingSection: React.FC = () => {
                 <div className="w-20 h-1.5 bg-[#FFBF00] mx-auto rounded-full" aria-hidden="true" />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-6 xl:gap-8 items-center max-w-lg lg:max-w-none mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 lg:gap-4 xl:gap-8 items-stretch max-w-lg md:max-w-none mx-auto">
                 {pricingPlans.map((plan, index) => (
                     <m.div
                         key={index}
@@ -157,6 +157,19 @@ const PricingSection: React.FC = () => {
                         </button>
                     </m.div>
                 ))}
+            </div>
+
+            <div className="mt-20 pt-10 border-t border-slate-100 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-500">
+                <p className="text-center text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 mb-10">Pilihan Metode Pembayaran</p>
+                <div className="flex items-center gap-8 md:gap-12 justify-start md:justify-center overflow-x-auto pb-6 md:pb-0 hide-scrollbar px-4 grayscale opacity-30 hover:grayscale-0 hover:opacity-100 transition-all duration-700">
+                    <span className="text-xs font-black tracking-[0.2em] whitespace-nowrap">QRIS</span>
+                    <span className="text-xs font-black tracking-[0.2em] whitespace-nowrap">GOPAY</span>
+                    <span className="text-xs font-black tracking-[0.2em] whitespace-nowrap">SHOPEEPAY</span>
+                    <span className="text-xs font-black tracking-[0.2em] whitespace-nowrap">DANA</span>
+                    <span className="text-xs font-black tracking-[0.2em] whitespace-nowrap">OVO</span>
+                    <span className="text-xs font-black tracking-[0.2em] whitespace-nowrap">VA BANK</span>
+                    <span className="text-xs font-black tracking-[0.2em] whitespace-nowrap">KARTU KREDIT</span>
+                </div>
             </div>
         </section>
     );
