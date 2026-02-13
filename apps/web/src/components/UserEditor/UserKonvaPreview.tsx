@@ -73,19 +73,24 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
     const backgroundUrl = canvasType === 'main' ? section?.backgroundUrl : orbitCanvas?.backgroundUrl;
 
     // LIQUID MATH: Calculate viewport expansion (Design Units)
-    const coverHeight = containerHeight / (scale || 1);
-    const extraHeight = coverHeight - DESIGN_HEIGHT;
+    // CRITICAL FIX v2: Clamp coverHeight to never be LESS than DESIGN_HEIGHT.
+    // During AnimatePresence height animation, containerHeight is intermediate (small),
+    // causing coverHeight < DESIGN_HEIGHT → extraHeight becomes hugely NEGATIVE →
+    // elements get shifted hundreds of pixels UP → layout breaks completely.
+    const rawCoverHeight = containerHeight / (scale || 1);
+    const coverHeight = Math.max(DESIGN_HEIGHT, rawCoverHeight);
+    const extraHeight = coverHeight - DESIGN_HEIGHT; // Always >= 0 now
 
     return (
         <div
             ref={containerRef}
-            className="relative w-full h-full flex items-start justify-start overflow-hidden bg-[#0a0a0a] transition-all duration-1000"
+            className="relative w-full h-full flex items-start justify-start overflow-hidden bg-[#0a0a0a]"
         >
             {/* The Scaled Render Viewport */}
             <div
                 style={{
                     width: DESIGN_WIDTH,
-                    height: coverHeight, // DESIGN UNITS VP HEIGHT
+                    height: coverHeight, // DESIGN UNITS VP HEIGHT (clamped)
                     backgroundColor: backgroundColor,
                     backgroundImage: backgroundUrl ? `url(${backgroundUrl})` : 'none',
                     backgroundSize: 'cover',
@@ -94,7 +99,6 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
                     transformOrigin: 'top left', // PURE SYNC
                     position: 'relative',
                     overflow: 'visible',
-                    transition: 'all 0.5s cubic-bezier(0.22, 1, 0.36, 1)',
                     boxShadow: canvasType === 'main' ? 'none' : '0 20px 50px rgba(0,0,0,0.3)',
                     borderRadius: canvasType === 'main' ? 0 : '2rem',
                     flexShrink: 0
