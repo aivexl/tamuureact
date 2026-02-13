@@ -3,6 +3,8 @@ import { m } from 'framer-motion';
 import { MapPin, Save, Navigation, Check } from 'lucide-react';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { invitations } from '../../../lib/api';
+import { useStore } from '@/store/useStore';
+import { syncLocationToCanvas } from '@/lib/canvasSync';
 
 interface LocationPanelProps {
     invitationId: string;
@@ -10,6 +12,7 @@ interface LocationPanelProps {
 }
 
 export const LocationPanel: React.FC<LocationPanelProps> = ({ invitationId, onClose }) => {
+    const { sections, updateSectionsBatch } = useStore();
     const [venueName, setVenueName] = useState('');
     const [address, setAddress] = useState('');
     const [googleMapsUrl, setGoogleMapsUrl] = useState('');
@@ -48,6 +51,14 @@ export const LocationPanel: React.FC<LocationPanelProps> = ({ invitationId, onCl
                 google_maps_url: googleMapsUrl,
                 event_location: venueName // Sync for legacy/onboarding compatibility
             });
+
+            // CANVAS SYNC: Update maps_point elements in the canvas
+            const synced = syncLocationToCanvas(sections, {
+                venueName,
+                address,
+                googleMapsUrl,
+            });
+            updateSectionsBatch(synced);
 
             setSuccess(true);
             setTimeout(() => {

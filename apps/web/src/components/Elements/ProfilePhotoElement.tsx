@@ -89,7 +89,9 @@ export const ProfilePhotoElement: React.FC<ProfilePhotoElementProps> = ({ layer,
                 className="w-full h-full overflow-hidden transition-all duration-500 relative"
                 style={{
                     backgroundColor: 'rgba(255,255,255,0.05)',
-                    border: `${config.borderWidth}px solid ${config.borderColor}`,
+                    border: config.showBorder !== false
+                        ? `${config.borderWidth}px solid ${config.borderColor}`
+                        : 'none',
                     ...getMaskStyle()
                 }}
             >
@@ -118,7 +120,7 @@ export const ProfilePhotoElement: React.FC<ProfilePhotoElementProps> = ({ layer,
                 )}
             </div>
 
-            {config.showLabel && (
+            {isEditor && config.showLabel && (
                 <div className="absolute -bottom-6 left-0 right-0 text-center">
                     <span
                         className="text-[8px] font-black uppercase tracking-[0.2em]"

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSEO } from '../hooks/useSEO';
+import { PremiumLoader } from '@/components/ui/PremiumLoader';
 
 // Lazy load the grid to reduce initial payload and TBT
 const InvitationsGrid = lazy(() => import('../components/Store/InvitationsGrid'));
@@ -237,6 +238,7 @@ export const InvitationsStorePage: React.FC = () => {
 
                 // Clear storage after successful use
                 localStorage.removeItem('tamuu_onboarding_data');
+                localStorage.removeItem('tamuu_onboarding_progress');
 
                 // 5. Navigate to the user editor with the new ID
                 const isAppDomain = getIsAppDomain();
@@ -272,6 +274,18 @@ export const InvitationsStorePage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-white text-slate-900 pt-14">
+            {/* Full-screen creation overlay */}
+            {isCreating && (
+                <div className="fixed inset-0 z-[100] bg-white/90 backdrop-blur-xl flex items-center justify-center">
+                    <PremiumLoader
+                        variant="inline"
+                        size="lg"
+                        showLabel
+                        label="Menyiapkan Undanganmu..."
+                        color="#14b8a6"
+                    />
+                </div>
+            )}
             {/* Mesh Gradient Decorations */}
             <div className="fixed inset-0 pointer-events-none opacity-40 overflow-hidden z-0">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-rose-500/10 rounded-full blur-[120px]" />

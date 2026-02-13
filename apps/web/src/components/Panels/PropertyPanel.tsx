@@ -2635,19 +2635,37 @@ export const PropertyPanel: React.FC = () => {
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-2 gap-3">
-                                <ColorInput
-                                    label="Border Color"
-                                    value={layer.profilePhotoConfig?.borderColor || '#bfa181'}
-                                    onChange={(v) => handleUpdate({ profilePhotoConfig: { ...layer.profilePhotoConfig!, borderColor: v } })}
-                                />
-                                <NumberInput
-                                    label="Border Width"
-                                    value={layer.profilePhotoConfig?.borderWidth || 2}
-                                    min={0}
-                                    max={10}
-                                    onChange={(v) => handleUpdate({ profilePhotoConfig: { ...layer.profilePhotoConfig!, borderWidth: v } })}
-                                />
+                            <div className="space-y-3 p-3 bg-white/5 rounded-lg border border-white/10">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[9px] text-white/30 uppercase font-bold">Show Border</span>
+                                    <motion.button
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => handleUpdate({ profilePhotoConfig: { ...layer.profilePhotoConfig!, showBorder: !(layer.profilePhotoConfig?.showBorder ?? true) } })}
+                                        className={`w-10 h-5 rounded-full transition-colors ${layer.profilePhotoConfig?.showBorder !== false ? 'bg-premium-accent' : 'bg-white/10'}`}
+                                    >
+                                        <motion.div
+                                            className="w-4 h-4 bg-white rounded-full shadow-sm"
+                                            animate={{ x: layer.profilePhotoConfig?.showBorder !== false ? 22 : 2 }}
+                                        />
+                                    </motion.button>
+                                </div>
+
+                                {layer.profilePhotoConfig?.showBorder !== false && (
+                                    <div className="grid grid-cols-2 gap-3 pt-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                                        <ColorInput
+                                            label="Border Color"
+                                            value={layer.profilePhotoConfig?.borderColor || '#bfa181'}
+                                            onChange={(v) => handleUpdate({ profilePhotoConfig: { ...layer.profilePhotoConfig!, borderColor: v } })}
+                                        />
+                                        <NumberInput
+                                            label="Border Width"
+                                            value={layer.profilePhotoConfig?.borderWidth || 2}
+                                            min={0}
+                                            max={20}
+                                            onChange={(v) => handleUpdate({ profilePhotoConfig: { ...layer.profilePhotoConfig!, borderWidth: v } })}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </SectionComponent>

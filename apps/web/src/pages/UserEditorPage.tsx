@@ -27,6 +27,8 @@ import { LiveStreamPanel } from '@/components/UserEditor/Panels/LiveStreamPanel'
 import { LoveStoryPanel } from '@/components/UserEditor/Panels/LoveStoryPanel';
 import { QuotesPanel } from '@/components/UserEditor/Panels/QuotesPanel';
 import { LuckyDrawPanel } from '@/components/UserEditor/Panels/LuckyDrawPanel';
+import { ProfilePhotoPanel } from '@/components/UserEditor/Panels/ProfilePhotoPanel';
+import { SettingsPanel } from '@/components/UserEditor/Panels/SettingsPanel';
 import { AnimatedLayer } from '@/components/Preview/AnimatedLayer';
 import { useStore } from '@/store/useStore';
 import { invitations as invitationsApi } from '@/lib/api';
@@ -266,7 +268,8 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                             lovestory: 'Kisah Cinta',
                             quotes: 'Quote Undangan',
                             luckydraw: 'Lucky Draw',
-                            settings: 'Pengaturan Undangan'
+                            settings: 'Pengaturan Undangan',
+                            profile_photo: 'Foto Profil'
                         };
                         return titles[activePanel || ''] || (activePanel ? activePanel.charAt(0).toUpperCase() + activePanel.slice(1) : '');
                     })()}
@@ -289,7 +292,16 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                     {activePanel === 'lovestory' && <LoveStoryPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
                     {activePanel === 'quotes' && <QuotesPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
                     {activePanel === 'luckydraw' && <LuckyDrawPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
-                    {!['music', 'theme', 'display', 'template', 'share', 'download', 'wishes', 'analytics', 'eventDate', 'location', 'gift', 'seo', 'gallery', 'livestream', 'lovestory', 'quotes', 'luckydraw', 'settings', 'guests'].includes(activePanel || '') && (
+                    {activePanel === 'profile_photo' && <ProfilePhotoPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                    {activePanel === 'settings' && (
+                        <SettingsPanel
+                            invitationId={invitation?.id}
+                            invitation={invitation}
+                            onClose={() => setActivePanel(null)}
+                            onUpdated={(updates) => setInvitation((prev: any) => ({ ...prev, ...updates }))}
+                        />
+                    )}
+                    {!['music', 'theme', 'display', 'template', 'share', 'download', 'wishes', 'analytics', 'eventDate', 'location', 'gift', 'seo', 'gallery', 'livestream', 'lovestory', 'quotes', 'luckydraw', 'settings', 'guests', 'profile_photo'].includes(activePanel || '') && (
                         <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
                             <div className="w-20 h-20 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-slate-300">
                                 <Sparkles className="w-10 h-10" />

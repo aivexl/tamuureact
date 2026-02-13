@@ -80,6 +80,7 @@ export interface ProfilePhotoConfig {
     borderColor: string;
     showLabel: boolean;
     labelColor?: string;
+    showBorder?: boolean;
     label?: string;
     // We store the crop data to allow re-editing
     crop?: {
@@ -98,6 +99,7 @@ export const DEFAULT_PROFILE_PHOTO_CONFIG: ProfilePhotoConfig = {
     borderColor: '#bfa181',
     showLabel: true,
     labelColor: 'rgba(255,255,255,0.4)',
+    showBorder: true,
     label: 'Mempelai Pria'
 };
 

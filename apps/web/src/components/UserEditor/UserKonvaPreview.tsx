@@ -30,6 +30,11 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
         const updateScale = () => {
             if (containerRef.current) {
                 const { width, height } = containerRef.current.getBoundingClientRect();
+
+                // GUARD: Skip computation when container has zero dimensions
+                // This happens during AnimatePresence enter animation
+                if (width < 1 || height < 1) return;
+
                 const scaleW = width / DESIGN_WIDTH;
                 const scaleH = height / DESIGN_HEIGHT;
 
@@ -41,7 +46,14 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
             }
         };
 
-        updateScale();
+        // CRITICAL FIX: Defer initial calculation to after layout/paint
+        // AnimatePresence remount means container starts with zero/wrong dims
+        requestAnimationFrame(() => {
+            updateScale();
+            // Secondary deferred call for AnimatePresence animation completion
+            requestAnimationFrame(updateScale);
+        });
+
         const resizeObserver = new ResizeObserver(updateScale);
         if (containerRef.current) resizeObserver.observe(containerRef.current);
         return () => resizeObserver.disconnect();

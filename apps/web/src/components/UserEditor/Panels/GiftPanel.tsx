@@ -4,6 +4,7 @@ import { Landmark, Smartphone, MapPin, Save, Check, AlertCircle, Plus, X } from 
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { users } from '@/lib/api';
 import { useStore } from '@/store/useStore';
+import { syncBankCardToCanvas, syncGiftAddressToCanvas } from '@/lib/canvasSync';
 import { SUPPORTED_BANKS } from '@/lib/banks';
 import { BankCard } from '@/components/Elements/BankCard';
 import { GiftAddressCard } from '@/components/Elements/GiftAddressCard';
@@ -13,7 +14,7 @@ interface GiftPanelProps {
 }
 
 export const GiftPanel: React.FC<GiftPanelProps> = ({ onClose }) => {
-    const { user, showModal } = useStore();
+    const { user, showModal, sections, updateSectionsBatch } = useStore();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -88,6 +89,18 @@ export const GiftPanel: React.FC<GiftPanelProps> = ({ onClose }) => {
                 giftRecipient,
                 giftAddress
             } as any);
+
+            // CANVAS SYNC: Update bank_card and gift_address elements
+            let synced = syncBankCardToCanvas(sections, {
+                bankName: bank1Name,
+                accountNumber: bank1Number,
+                accountHolder: bank1Holder,
+            });
+            synced = syncGiftAddressToCanvas(synced, {
+                recipientName: giftRecipient,
+                address: giftAddress,
+            });
+            updateSectionsBatch(synced);
 
             setSuccess(true);
             setTimeout(() => {
