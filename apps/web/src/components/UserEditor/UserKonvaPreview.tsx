@@ -30,10 +30,14 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
         const updateScale = () => {
             if (containerRef.current) {
                 const { width, height } = containerRef.current.getBoundingClientRect();
-
-                // GUARD: Skip computation when container has zero dimensions
-                // This happens during AnimatePresence enter animation
                 if (width < 1 || height < 1) return;
+
+                // FIX: Reject intermediate heights during AnimatePresence animation.
+                // Parent uses aspect-[9/20.5] (ratio ≈ 2.28). During height:0→auto
+                // animation, height/width drops far below 2.0. Accepting these small
+                // heights causes negative extraHeight → elements crushed to top.
+                // Skip until animation is near completion (ratio ≈ stable).
+                if (canvasType === 'main' && height < width * 2) return;
 
                 const scaleW = width / DESIGN_WIDTH;
                 const scaleH = height / DESIGN_HEIGHT;
@@ -46,14 +50,7 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
             }
         };
 
-        // CRITICAL FIX: Defer initial calculation to after layout/paint
-        // AnimatePresence remount means container starts with zero/wrong dims
-        requestAnimationFrame(() => {
-            updateScale();
-            // Secondary deferred call for AnimatePresence animation completion
-            requestAnimationFrame(updateScale);
-        });
-
+        updateScale();
         const resizeObserver = new ResizeObserver(updateScale);
         if (containerRef.current) resizeObserver.observe(containerRef.current);
         return () => resizeObserver.disconnect();
@@ -73,24 +70,19 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
     const backgroundUrl = canvasType === 'main' ? section?.backgroundUrl : orbitCanvas?.backgroundUrl;
 
     // LIQUID MATH: Calculate viewport expansion (Design Units)
-    // CRITICAL FIX v2: Clamp coverHeight to never be LESS than DESIGN_HEIGHT.
-    // During AnimatePresence height animation, containerHeight is intermediate (small),
-    // causing coverHeight < DESIGN_HEIGHT → extraHeight becomes hugely NEGATIVE →
-    // elements get shifted hundreds of pixels UP → layout breaks completely.
-    const rawCoverHeight = containerHeight / (scale || 1);
-    const coverHeight = Math.max(DESIGN_HEIGHT, rawCoverHeight);
-    const extraHeight = coverHeight - DESIGN_HEIGHT; // Always >= 0 now
+    const coverHeight = containerHeight / (scale || 1);
+    const extraHeight = coverHeight - DESIGN_HEIGHT;
 
     return (
         <div
             ref={containerRef}
-            className="relative w-full h-full flex items-start justify-start overflow-hidden bg-[#0a0a0a]"
+            className="relative w-full h-full flex items-start justify-start overflow-hidden bg-[#0a0a0a] transition-all duration-1000"
         >
             {/* The Scaled Render Viewport */}
             <div
                 style={{
                     width: DESIGN_WIDTH,
-                    height: coverHeight, // DESIGN UNITS VP HEIGHT (clamped)
+                    height: coverHeight, // DESIGN UNITS VP HEIGHT
                     backgroundColor: backgroundColor,
                     backgroundImage: backgroundUrl ? `url(${backgroundUrl})` : 'none',
                     backgroundSize: 'cover',
@@ -99,6 +91,7 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
                     transformOrigin: 'top left', // PURE SYNC
                     position: 'relative',
                     overflow: 'visible',
+                    transition: 'all 0.5s cubic-bezier(0.22, 1, 0.36, 1)',
                     boxShadow: canvasType === 'main' ? 'none' : '0 20px 50px rgba(0,0,0,0.3)',
                     borderRadius: canvasType === 'main' ? 0 : '2rem',
                     flexShrink: 0
@@ -152,3 +145,4 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
         </div>
     );
 };
+
