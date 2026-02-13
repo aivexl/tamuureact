@@ -207,15 +207,17 @@ const PricingSection: React.FC = () => {
                     className="mt-24 mb-12 text-center"
                 >
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-10">Pilihan Metode Pembayaran</p>
-                    <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-8 opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700 max-w-4xl mx-auto">
-                        {["BNI", "CIMB", "ShopeePay", "Permata", "BRI", "QRIS", "BSI", "GoPay", "Mandiri", "DANA"].map(logo => (
-                            <span
-                                key={logo}
-                                className="text-xl font-black text-slate-800 tracking-tighter cursor-default hover:text-[#0A1128] transition-colors"
-                            >
-                                {logo}
-                            </span>
-                        ))}
+                    <div className="w-full overflow-x-auto no-scrollbar pb-4">
+                        <div className="flex flex-nowrap justify-center items-center gap-x-8 md:gap-x-12 opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700 min-w-max mx-auto px-12">
+                            {["BNI", "CIMB", "ShopeePay", "Permata", "BRI", "QRIS", "BSI", "GoPay", "Mandiri", "DANA"].map(logo => (
+                                <span
+                                    key={logo}
+                                    className="text-xl md:text-2xl font-black text-slate-800 tracking-tighter cursor-default hover:text-[#0A1128] transition-colors whitespace-nowrap flex-shrink-0"
+                                >
+                                    {logo}
+                                </span>
+                            ))}
+                        </div>
                     </div>
                 </motion.div>
 
