@@ -11,7 +11,7 @@ import { QUOTES_LIBRARY } from '@/constants/quotes';
 import {
     Type, Image as ImageIcon, Clock, MailOpen,
     Heart, Square, Film, MapPin, Video, Sparkles, X,
-    MessageSquare, Users, Circle, Triangle, Diamond, Star, Zap, Wind, Layout,
+    MessageSquare, Users, UserRound, Circle, Triangle, Diamond, Star, Zap, Wind, Layout,
     Gift, Music, QrCode, Waves, Layers, Monitor, Share2, Sun, Hash, PlaySquare,
     Component, Palette, Eye, Shield, CreditCard,
     ChevronDown, ChevronUp, GripVertical, Settings2, Trash2, Copy, Lock, Unlock,
@@ -2560,6 +2560,93 @@ export const PropertyPanel: React.FC = () => {
                                     label="Text Color"
                                     value={layer.socialMockupConfig?.textColor || '#ffffff'}
                                     onChange={(v) => handleUpdate({ socialMockupConfig: { ...layer.socialMockupConfig!, textColor: v } })}
+                                />
+                            </div>
+                        </div>
+                    </SectionComponent>
+                )}
+
+                {/* Profile Photo Config */}
+                {layer.type === 'profile_photo' && (
+                    <SectionComponent title="Profile Photo Settings" icon={<UserRound className="w-4 h-4 text-premium-accent" />}>
+                        <div className="space-y-4">
+                            <SelectInput
+                                label="Role"
+                                value={layer.profilePhotoConfig?.role || 'mempelai_pria'}
+                                options={[
+                                    { value: 'mempelai_pria', label: 'Mempelai Pria' },
+                                    { value: 'mempelai_wanita', label: 'Mempelai Wanita' },
+                                    { value: 'ayah_wanita', label: 'Ayah Wanita' },
+                                    { value: 'ibu_wanita', label: 'Ibu Wanita' },
+                                    { value: 'ayah_pria', label: 'Ayah Pria' },
+                                    { value: 'ibu_pria', label: 'Ibu Pria' },
+                                    { value: 'general', label: 'General' }
+                                ]}
+                                onChange={(v) => handleUpdate({ profilePhotoConfig: { ...layer.profilePhotoConfig!, role: v as any } })}
+                            />
+
+                            <SelectInput
+                                label="Shape"
+                                value={layer.profilePhotoConfig?.shape || 'circle'}
+                                options={[
+                                    { value: 'circle', label: 'Circle' },
+                                    { value: 'square', label: 'Square' },
+                                    { value: 'heart', label: 'Heart' },
+                                    { value: 'luxury', label: 'Luxury Shield' },
+                                    { value: 'arch', label: 'Arch' },
+                                    { value: 'hexagon', label: 'Hexagon' }
+                                ]}
+                                onChange={(v) => handleUpdate({ profilePhotoConfig: { ...layer.profilePhotoConfig!, shape: v as any } })}
+                            />
+
+                            <div className="space-y-3 p-3 bg-white/5 rounded-lg border border-white/10">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[9px] text-white/30 uppercase font-bold">Show Label</span>
+                                    <motion.button
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => handleUpdate({ profilePhotoConfig: { ...layer.profilePhotoConfig!, showLabel: !layer.profilePhotoConfig?.showLabel } })}
+                                        className={`w-10 h-5 rounded-full transition-colors ${layer.profilePhotoConfig?.showLabel !== false ? 'bg-premium-accent' : 'bg-white/10'}`}
+                                    >
+                                        <motion.div
+                                            className="w-4 h-4 bg-white rounded-full shadow-sm"
+                                            animate={{ x: layer.profilePhotoConfig?.showLabel !== false ? 22 : 2 }}
+                                        />
+                                    </motion.button>
+                                </div>
+
+                                {layer.profilePhotoConfig?.showLabel !== false && (
+                                    <div className="space-y-3 pt-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                                        <div>
+                                            <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Label Text</label>
+                                            <input
+                                                type="text"
+                                                value={layer.profilePhotoConfig?.label || ''}
+                                                onChange={(e) => handleUpdate({ profilePhotoConfig: { ...layer.profilePhotoConfig!, label: e.target.value } })}
+                                                className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none text-white"
+                                                placeholder="Custom Label"
+                                            />
+                                        </div>
+                                        <ColorInput
+                                            label="Label Color"
+                                            value={layer.profilePhotoConfig?.labelColor || 'rgba(255,255,255,0.4)'}
+                                            onChange={(v) => handleUpdate({ profilePhotoConfig: { ...layer.profilePhotoConfig!, labelColor: v } })}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <ColorInput
+                                    label="Border Color"
+                                    value={layer.profilePhotoConfig?.borderColor || '#bfa181'}
+                                    onChange={(v) => handleUpdate({ profilePhotoConfig: { ...layer.profilePhotoConfig!, borderColor: v } })}
+                                />
+                                <NumberInput
+                                    label="Border Width"
+                                    value={layer.profilePhotoConfig?.borderWidth || 2}
+                                    min={0}
+                                    max={10}
+                                    onChange={(v) => handleUpdate({ profilePhotoConfig: { ...layer.profilePhotoConfig!, borderWidth: v } })}
                                 />
                             </div>
                         </div>

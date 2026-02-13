@@ -120,7 +120,10 @@ export const ProfilePhotoElement: React.FC<ProfilePhotoElementProps> = ({ layer,
 
             {config.showLabel && (
                 <div className="absolute -bottom-6 left-0 right-0 text-center">
-                    <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/40">
+                    <span
+                        className="text-[8px] font-black uppercase tracking-[0.2em]"
+                        style={{ color: config.labelColor || 'rgba(255,255,255,0.4)' }}
+                    >
                         {config.label || config.role.replace('_', ' ')}
                     </span>
                 </div>
