@@ -23,81 +23,59 @@ export const BlogLandingPage = () => {
     }, []);
 
     return (
-        <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
+        <div className="min-h-screen bg-white font-sans text-[#0A1128]">
             <Helmet>
-                <title>The Tamuu Journal | Wedding Inspiration & Tips</title>
-                <meta name="description" content="Kumpulan tips pernikahan, inspirasi desain undangan, dan panduan acara terbaik dari Tamuu.id." />
+                <title>The Tamuu Journal | Inspirasi & Tips Pernikahan</title>
+                <meta name="description" content="Kumpulan tips pernikahan, inspirasi desain undangan, dan panduan acara terbaik dari Tamuu." />
             </Helmet>
 
-            {/* Hero Section */}
-            <section className="relative bg-white pt-32 pb-20 px-4 overflow-hidden">
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
-                <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-indigo-50/50 to-transparent" />
-
-                <div className="max-w-7xl mx-auto relative z-10">
-                    <span className="block text-indigo-600 font-bold tracking-widest uppercase mb-4 text-sm">Official Blog</span>
-                    <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight">
-                        The Tamuu <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Journal</span>
+            {/* Simple Hero Section */}
+            <section className="relative pt-40 pb-20 px-6 border-b border-slate-50">
+                <div className="max-w-[1600px] mx-auto text-center">
+                    <span className="block text-[10px] font-black tracking-[0.4em] text-slate-400 uppercase mb-6">Official Journal</span>
+                    <h1 className="text-4xl md:text-6xl font-black mb-6 tracking-tight text-[#0A1128]">
+                        The Tamuu <span className="text-slate-400 font-medium italic">Journal</span>
                     </h1>
-                    <p className="text-xl text-gray-600 max-w-2xl leading-relaxed">
-                        Inspirasi pernikahan modern, tips digital invitation, dan cerita cinta dari komunitas kami. Dikurasi untuk membantu hari bahagiamu.
+                    <p className="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed font-medium">
+                        Inspirasi pernikahan, tips undangan digital, dan panduan acara untuk hari bahagia Anda.
                     </p>
                 </div>
             </section>
 
             {/* Content Grid */}
-            <div className="max-w-7xl mx-auto px-4 py-16">
-                <div className="flex flex-col lg:flex-row gap-12">
-
-                    {/* Sticky Sidebar */}
-                    <aside className="w-full lg:w-64 flex-shrink-0">
-                        <div className="sticky top-24 space-y-8">
-                            <div>
-                                <h3 className="font-bold text-lg mb-4">Categories</h3>
-                                <div className="space-y-2">
-                                    {['All Stories', 'Wedding Tips', 'Product Updates', 'Inspiration', 'Tutorial'].map((cat, i) => (
-                                        <button key={cat} className={`block w-full text-left px-4 py-2 rounded-lg text-sm font-medium transition-colors ${i === 0 ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'}`}>
-                                            {cat}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="p-6 bg-indigo-900 rounded-2xl text-white">
-                                <h4 className="font-bold mb-2">Buat Undangan?</h4>
-                                <p className="text-indigo-200 text-sm mb-4">Coba Tamuu gratis sekarang.</p>
-                                <a href="https://tamuu.id" className="block w-full py-2 bg-white text-indigo-900 text-center font-bold rounded-lg text-sm hover:bg-indigo-50 transition-colors">
-                                    Mulai Gratis
-                                </a>
-                            </div>
+            <div className="max-w-[1800px] mx-auto px-6 py-20">
+                {loading ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+                        {[1, 2, 3, 4, 5, 6].map(i => (
+                            <div key={i} className="bg-slate-50 rounded-3xl h-80 animate-pulse" />
+                        ))}
+                    </div>
+                ) : (
+                    <>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-6">
+                            {posts.map(post => (
+                                <BlogCard key={post.id} post={post} />
+                            ))}
                         </div>
-                    </aside>
 
-                    {/* Main Grid */}
-                    <main className="flex-1">
-                        {loading ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-pulse">
-                                {[1, 2, 3, 4].map(i => (
-                                    <div key={i} className="bg-gray-200 rounded-2xl h-96" />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {posts.map(post => (
-                                    <BlogCard key={post.id} post={post} />
-                                ))}
+                        {!loading && posts.length > 0 && (
+                            <div className="mt-20 text-center">
+                                <button className="px-10 py-4 bg-[#0A1128] text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-200">
+                                    Lihat Artikel Lainnya
+                                </button>
                             </div>
                         )}
 
                         {!loading && posts.length === 0 && (
-                            <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-300">
-                                <p className="text-gray-500">Belum ada artikel yang dipublish.</p>
+                            <div className="text-center py-40 border border-dashed border-slate-200 rounded-[3rem]">
+                                <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">Belum ada artikel dipublish</p>
                             </div>
                         )}
-                    </main>
-
-                </div>
+                    </>
+                )}
             </div>
         </div>
     );
 };
+
+export default BlogLandingPage;

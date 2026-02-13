@@ -30,15 +30,6 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
         const updateScale = () => {
             if (containerRef.current) {
                 const { width, height } = containerRef.current.getBoundingClientRect();
-                if (width < 1 || height < 1) return;
-
-                // FIX: Reject intermediate heights during AnimatePresence animation.
-                // Parent uses aspect-[9/20.5] (ratio ≈ 2.28). During height:0→auto
-                // animation, height/width drops far below 2.0. Accepting these small
-                // heights causes negative extraHeight → elements crushed to top.
-                // Skip until animation is near completion (ratio ≈ stable).
-                if (canvasType === 'main' && height < width * 2) return;
-
                 const scaleW = width / DESIGN_WIDTH;
                 const scaleH = height / DESIGN_HEIGHT;
 
@@ -145,4 +136,3 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
         </div>
     );
 };
-
