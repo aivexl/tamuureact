@@ -910,6 +910,14 @@ export const blog = {
         return sanitizeValue(data);
     },
 
+    async checkSlug(slug: string, excludeId?: string): Promise<{ available: boolean; slug: string }> {
+        const params = new URLSearchParams({ slug });
+        if (excludeId) params.append('excludeId', excludeId);
+        const res = await safeFetch(`${API_BASE}/api/blog/check-slug?${params.toString()}`);
+        if (!res.ok) return { available: false, slug };
+        return res.json();
+    },
+
     async getPost(slug: string) {
         const res = await safeFetch(`${API_BASE}/api/blog/post/${slug}`);
         if (!res.ok) throw new Error('Post not found');

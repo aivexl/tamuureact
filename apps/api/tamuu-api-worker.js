@@ -1303,9 +1303,18 @@ CONTEXT:
             // PUBLIC: Check Slug Availability
             if (path === '/api/blog/check-slug' && method === 'GET') {
                 const slug = url.searchParams.get('slug');
+                const excludeId = url.searchParams.get('excludeId');
                 if (!slug) return json({ error: 'Slug required' }, corsHeaders);
 
-                const existing = await env.DB.prepare('SELECT id FROM blog_posts WHERE slug = ?').bind(slug).first();
+                let query = 'SELECT id FROM blog_posts WHERE slug = ?';
+                let params = [slug];
+
+                if (excludeId) {
+                    query += ' AND id != ?';
+                    params.push(excludeId);
+                }
+
+                const existing = await env.DB.prepare(query).bind(...params).first();
                 return json({ available: !existing }, corsHeaders);
             }
 

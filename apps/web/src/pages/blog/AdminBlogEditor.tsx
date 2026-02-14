@@ -389,6 +389,8 @@ export const AdminBlogEditor = () => {
     const [seoTitle, setSeoTitle] = useState('');
     const [seoDesc, setSeoDesc] = useState('');
     const [seoKeywords, setSeoKeywords] = useState('');
+    const [isSlugAvailable, setIsSlugAvailable] = useState<boolean | null>(null);
+    const [isCheckingSlug, setIsCheckingSlug] = useState(false);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -450,6 +452,30 @@ export const AdminBlogEditor = () => {
             setSlug(generated);
         }
     }, [title, id]);
+
+    // Real-time Slug Check
+    useEffect(() => {
+        if (!slug) {
+            setIsSlugAvailable(null);
+            return;
+        }
+
+        const checkAvailability = async () => {
+            setIsCheckingSlug(true);
+            try {
+                const { available } = await api.blog.checkSlug(slug, id);
+                setIsSlugAvailable(available);
+            } catch (err) {
+                console.error('Slug check failed:', err);
+                setIsSlugAvailable(null);
+            } finally {
+                setIsCheckingSlug(false);
+            }
+        };
+
+        const timer = setTimeout(checkAvailability, 500);
+        return () => clearTimeout(timer);
+    }, [slug, id]);
 
     // Load Existing Data
     useEffect(() => {
@@ -619,12 +645,17 @@ export const AdminBlogEditor = () => {
             <main className="max-w-[1600px] mx-auto px-8 py-12 grid grid-cols-1 xl:grid-cols-12 gap-12">
                 {/* Writing Canvas */}
                 <div className="xl:col-span-8 flex flex-col gap-6">
-                    <input
-                        type="text"
+                    <textarea
                         placeholder="Ketik Judul Yang Menggetarkan Disini..."
                         value={title}
                         onChange={e => setTitle(e.target.value)}
-                        className="w-full text-5xl font-extrabold bg-transparent border-0 border-b-2 border-white/5 focus:border-teal-500 focus:ring-0 px-0 py-8 placeholder-white/5 text-white transition-all tracking-tight"
+                        rows={1}
+                        className="w-full text-5xl font-extrabold bg-transparent border-0 border-b-2 border-white/5 focus:border-teal-500 focus:ring-0 px-0 py-8 placeholder-white/5 text-white transition-all tracking-tight resize-none min-h-[120px] overflow-hidden leading-[1.1]"
+                        onInput={(e) => {
+                            const target = e.target as HTMLTextAreaElement;
+                            target.style.height = 'auto';
+                            target.style.height = `${target.scrollHeight}px`;
+                        }}
                     />
 
                     <div className="relative bg-[#0a0a0a] rounded-3xl border border-white/5 shadow-2xl transition-all hover:border-white/10">
@@ -642,8 +673,8 @@ export const AdminBlogEditor = () => {
                         <div className="flex items-center justify-between">
                             <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-teal-400">Status Publikasi</h3>
                             <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase border ${status === 'published' ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10' :
-                                    status === 'pending' ? 'text-amber-400 border-amber-500/20 bg-amber-500/10' :
-                                        'text-slate-400 border-white/10 bg-white/5'
+                                status === 'pending' ? 'text-amber-400 border-amber-500/20 bg-amber-500/10' :
+                                    'text-slate-400 border-white/10 bg-white/5'
                                 }`}>
                                 <span className={`w-1.5 h-1.5 rounded-full ${status === 'published' ? 'bg-emerald-400' : status === 'pending' ? 'bg-amber-400 animate-pulse' : 'bg-slate-400'}`} />
                                 {status}
@@ -654,12 +685,30 @@ export const AdminBlogEditor = () => {
                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-2">
                                 <Globe className="w-3 h-3 text-indigo-400" /> Permalink Slug
                             </label>
-                            <input
-                                type="text"
-                                value={slug}
-                                onChange={e => setSlug(e.target.value)}
-                                className="w-full bg-black/40 border border-white/5 rounded-xl px-4 py-3 text-xs font-mono text-indigo-400 focus:border-indigo-500 focus:ring-0 outline-none transition-all"
-                            />
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    value={slug}
+                                    onChange={e => setSlug(e.target.value)}
+                                    className={`w-full bg-black/40 border rounded-xl px-4 py-3 text-xs font-mono transition-all outline-none focus:ring-0 ${isSlugAvailable === true ? 'border-emerald-500/50 text-emerald-400' :
+                                        isSlugAvailable === false ? 'border-red-500/50 text-red-400' :
+                                            'border-white/5 text-indigo-400 focus:border-indigo-500'
+                                        }`}
+                                />
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                                    {isCheckingSlug ? (
+                                        <Loader2 className="w-3 h-3 animate-spin text-slate-500" />
+                                    ) : isSlugAvailable === true ? (
+                                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                                            <span className="text-[8px] font-bold text-emerald-500">AVAILABLE</span>
+                                        </div>
+                                    ) : isSlugAvailable === false ? (
+                                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-500/10 border border-red-500/20">
+                                            <span className="text-[8px] font-bold text-red-500">TAKEN</span>
+                                        </div>
+                                    ) : null}
+                                </div>
+                            </div>
                         </div>
 
                         <p className="text-[10px] italic text-slate-600 text-center">Terakhir disinkronisasi: {new Date().toLocaleTimeString()}</p>
