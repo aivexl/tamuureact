@@ -138,7 +138,6 @@ const Toolbar = ({ editor }: { editor: any }) => {
     const toggleLink = () => {
         const previousUrl = editor.getAttributes('link').href;
         const url = window.prompt('URL Link:', previousUrl);
-
         if (url === null) return;
         if (url === '') {
             editor.chain().focus().extendMarkRange('link').unsetLink().run();
@@ -156,11 +155,20 @@ const Toolbar = ({ editor }: { editor: any }) => {
         editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
     };
 
+    const ToolBtn = ({ onClick, active, children, className = '' }: any) => (
+        <button
+            onClick={onClick}
+            className={`p-2 rounded-lg text-xs transition-all ${active ? 'bg-teal-500 text-slate-900 shadow-lg shadow-teal-500/20' : 'text-slate-400 hover:bg-white/5 hover:text-white'} ${className}`}
+        >
+            {children}
+        </button>
+    );
+
     return (
         <div className="flex flex-col border-b border-white/5 bg-white/[0.02] sticky top-0 z-20 backdrop-blur-xl">
-            {/* Primary Tool Controls */}
+            {/* Row 1: Typography + Inline Styles */}
             <div className="flex flex-wrap items-center gap-1 p-3 border-b border-white/5">
-                {/* History */}
+                {/* Undo/Redo */}
                 <div className="flex items-center gap-0.5 mr-2">
                     <button onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} className="p-1.5 rounded-lg text-slate-400 hover:bg-white/5 disabled:opacity-20 transition-all"><Undo className="w-3.5 h-3.5" /></button>
                     <button onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} className="p-1.5 rounded-lg text-slate-400 hover:bg-white/5 disabled:opacity-20 transition-all"><Redo className="w-3.5 h-3.5" /></button>
@@ -168,7 +176,7 @@ const Toolbar = ({ editor }: { editor: any }) => {
 
                 <div className="w-px h-4 bg-white/10 mx-1" />
 
-                {/* Typography Selectors */}
+                {/* Font + Size */}
                 <div className="relative flex items-center gap-2 px-1">
                     <div className="relative">
                         <button
@@ -273,46 +281,60 @@ const Toolbar = ({ editor }: { editor: any }) => {
 
                 {/* Inline Styles */}
                 <div className="flex items-center gap-0.5">
-                    <button onClick={() => editor.chain().focus().toggleBold().run()} className={`p-2 rounded-lg text-xs font-bold transition-all ${editor.isActive('bold') ? 'bg-teal-500 text-slate-900 shadow-lg shadow-teal-500/20' : 'text-slate-400 hover:bg-white/5'}`}><BoldIcon className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => editor.chain().focus().toggleItalic().run()} className={`p-2 rounded-lg text-xs italic transition-all ${editor.isActive('italic') ? 'bg-teal-500 text-slate-900 shadow-lg shadow-teal-500/20' : 'text-slate-400 hover:bg-white/5'}`}><ItalicIcon className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => editor.chain().focus().toggleUnderline().run()} className={`p-2 rounded-lg text-xs transition-all ${editor.isActive('underline') ? 'bg-teal-500 text-slate-900 shadow-lg shadow-teal-500/20' : 'text-slate-400 hover:bg-white/5'}`}><UnderlineIcon className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => editor.chain().focus().toggleStrike().run()} className={`p-2 rounded-lg text-xs transition-all ${editor.isActive('strike') ? 'bg-teal-500 text-slate-900 shadow-lg shadow-teal-500/20' : 'text-slate-400 hover:bg-white/5'}`}><Strikethrough className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => editor.chain().focus().toggleCode().run()} className={`p-2 rounded-lg text-xs transition-all ${editor.isActive('code') ? 'bg-teal-500 text-slate-900 shadow-lg shadow-teal-500/20' : 'text-slate-400 hover:bg-white/5'}`}><Type className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => editor.chain().focus().toggleSubscript().run()} className={`p-2 rounded-lg text-xs transition-all ${editor.isActive('subscript') ? 'bg-teal-500 text-slate-900' : 'text-slate-400 hover:bg-white/5'}`}><sub>S</sub></button>
-                    <button onClick={() => editor.chain().focus().toggleSuperscript().run()} className={`p-2 rounded-lg text-xs transition-all ${editor.isActive('superscript') ? 'bg-teal-500 text-slate-900' : 'text-slate-400 hover:bg-white/5'}`}><sup>S</sup></button>
+                    <ToolBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')}><BoldIcon className="w-3.5 h-3.5" /></ToolBtn>
+                    <ToolBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')}><ItalicIcon className="w-3.5 h-3.5" /></ToolBtn>
+                    <ToolBtn onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive('underline')}><UnderlineIcon className="w-3.5 h-3.5" /></ToolBtn>
+                    <ToolBtn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')}><Strikethrough className="w-3.5 h-3.5" /></ToolBtn>
+                    <ToolBtn onClick={() => editor.chain().focus().toggleCode().run()} active={editor.isActive('code')}><Type className="w-3.5 h-3.5" /></ToolBtn>
+                    <ToolBtn onClick={() => editor.chain().focus().toggleSubscript().run()} active={editor.isActive('subscript')}><sub>S</sub></ToolBtn>
+                    <ToolBtn onClick={() => editor.chain().focus().toggleSuperscript().run()} active={editor.isActive('superscript')}><sup>S</sup></ToolBtn>
                 </div>
 
                 <div className="w-px h-4 bg-white/10 mx-1" />
 
                 {/* Alignment */}
                 <div className="flex items-center gap-0.5">
-                    <button onClick={() => editor.chain().focus().setTextAlign('left').run()} className={`p-2 rounded-lg transition-all ${editor.isActive({ textAlign: 'left' }) ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:bg-white/5'}`}><AlignLeft className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => editor.chain().focus().setTextAlign('center').run()} className={`p-2 rounded-lg transition-all ${editor.isActive({ textAlign: 'center' }) ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:bg-white/5'}`}><AlignCenter className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => editor.chain().focus().setTextAlign('right').run()} className={`p-2 rounded-lg transition-all ${editor.isActive({ textAlign: 'right' }) ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:bg-white/5'}`}><AlignRight className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => editor.chain().focus().setTextAlign('justify').run()} className={`p-2 rounded-lg transition-all ${editor.isActive({ textAlign: 'justify' }) ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:bg-white/5'}`}><AlignJustify className="w-3.5 h-3.5" /></button>
+                    {(['left', 'center', 'right', 'justify'] as const).map(align => {
+                        const Icon = { left: AlignLeft, center: AlignCenter, right: AlignRight, justify: AlignJustify }[align];
+                        return (
+                            <ToolBtn
+                                key={align}
+                                onClick={() => editor.chain().focus().setTextAlign(align).run()}
+                                active={editor.isActive({ textAlign: align })}
+                            >
+                                <Icon className="w-3.5 h-3.5" />
+                            </ToolBtn>
+                        );
+                    })}
                 </div>
             </div>
 
-            {/* Content & Block Controls */}
+            {/* Row 2: Block elements + Media + Formatting */}
             <div className="flex flex-wrap items-center gap-1 p-2 bg-white/[0.01]">
                 <div className="flex items-center gap-0.5 px-1">
-                    <button onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={`p-2 rounded-lg text-[10px] font-black tracking-tighter transition-all ${editor.isActive('heading', { level: 1 }) ? 'bg-white/10 text-white' : 'text-slate-500 hover:bg-white/5'}`}>H1</button>
-                    <button onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={`p-2 rounded-lg text-[10px] font-black tracking-tighter transition-all ${editor.isActive('heading', { level: 2 }) ? 'bg-white/10 text-white' : 'text-slate-500 hover:bg-white/5'}`}>H2</button>
-                    <button onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={`p-2 rounded-lg text-[10px] font-black tracking-tighter transition-all ${editor.isActive('heading', { level: 3 }) ? 'bg-white/10 text-white' : 'text-slate-500 hover:bg-white/5'}`}>H3</button>
+                    {([1, 2, 3] as const).map(level => (
+                        <button
+                            key={level}
+                            onClick={() => editor.chain().focus().toggleHeading({ level }).run()}
+                            className={`p-2 rounded-lg text-[10px] font-black tracking-tighter transition-all ${editor.isActive('heading', { level }) ? 'bg-white/10 text-white' : 'text-slate-500 hover:bg-white/5'}`}
+                        >
+                            H{level}
+                        </button>
+                    ))}
                 </div>
 
                 <div className="w-px h-4 bg-white/10 mx-1" />
 
                 <div className="flex items-center gap-0.5">
-                    <button onClick={() => editor.chain().focus().toggleBulletList().run()} className={`p-2 rounded-lg transition-all ${editor.isActive('bulletList') ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'}`}><List className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => editor.chain().focus().toggleOrderedList().run()} className={`p-2 rounded-lg transition-all ${editor.isActive('orderedList') ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'}`}><ListOrdered className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => editor.chain().focus().toggleTaskList().run()} className={`p-2 rounded-lg transition-all ${editor.isActive('taskList') ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5'}`}><CheckSquare className="w-3.5 h-3.5" /></button>
+                    <ToolBtn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')}><List className="w-3.5 h-3.5" /></ToolBtn>
+                    <ToolBtn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')}><ListOrdered className="w-3.5 h-3.5" /></ToolBtn>
+                    <ToolBtn onClick={() => editor.chain().focus().toggleTaskList().run()} active={editor.isActive('taskList')}><CheckSquare className="w-3.5 h-3.5" /></ToolBtn>
                 </div>
 
                 <div className="w-px h-4 bg-white/10 mx-1" />
 
                 <div className="flex items-center gap-1">
-                    <button onClick={toggleLink} className={`p-2 rounded-lg transition-all ${editor.isActive('link') ? 'bg-blue-500/20 text-blue-400' : 'text-slate-400 hover:bg-white/5'}`}><LinkIcon className="w-3.5 h-3.5" /></button>
+                    <ToolBtn onClick={toggleLink} active={editor.isActive('link')}><LinkIcon className="w-3.5 h-3.5" /></ToolBtn>
                     <button onClick={addYoutube} className="p-2 rounded-lg text-slate-400 hover:bg-red-500/20 hover:text-red-400 transition-all"><YoutubeIcon className="w-3.5 h-3.5" /></button>
                     <button
                         onClick={() => {
@@ -323,13 +345,13 @@ const Toolbar = ({ editor }: { editor: any }) => {
                     >
                         <ImageIcon className="w-3.5 h-3.5" />
                     </button>
-                    <button onClick={addTable} className={`p-2 rounded-lg transition-all ${editor.isActive('table') ? 'bg-teal-500/20 text-teal-400 font-bold' : 'text-slate-400 hover:bg-white/5'}`}><TableIcon className="w-3.5 h-3.5" /></button>
+                    <ToolBtn onClick={addTable} active={editor.isActive('table')}><TableIcon className="w-3.5 h-3.5" /></ToolBtn>
                     <button onClick={() => editor.chain().focus().setHorizontalRule().run()} className="p-2 rounded-lg text-slate-400 hover:bg-white/5 transition-all"><Minus className="w-3.5 h-3.5" /></button>
                 </div>
 
                 <div className="w-px h-4 bg-white/10 mx-1 ml-auto" />
 
-                {/* Color and Formatting Clear */}
+                {/* Color & Clear */}
                 <div className="flex items-center gap-0.5">
                     <button
                         onClick={() => {
@@ -340,7 +362,7 @@ const Toolbar = ({ editor }: { editor: any }) => {
                     >
                         <div className="w-3 h-3 rounded-full border border-white/20" style={{ backgroundColor: editor.getAttributes('textStyle').color || '#fff' }} />
                     </button>
-                    <button onClick={() => editor.chain().focus().toggleHighlight().run()} className={`p-2 rounded-lg transition-all ${editor.isActive('highlight') ? 'bg-yellow-500/20 text-yellow-400' : 'text-slate-400 hover:bg-white/5'}`}><Highlighter className="w-3.5 h-3.5" /></button>
+                    <ToolBtn onClick={() => editor.chain().focus().toggleHighlight().run()} active={editor.isActive('highlight')}><Highlighter className="w-3.5 h-3.5" /></ToolBtn>
                     <button onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()} className="p-2 rounded-lg text-slate-400 hover:bg-white/10 hover:text-white transition-all ml-1"><Eraser className="w-3.5 h-3.5" /></button>
                 </div>
             </div>
@@ -378,7 +400,6 @@ export const AdminBlogEditor = () => {
     // Memoize extensions to prevent duplicate instance warnings on re-render
     const extensions = useMemo(() => [
         StarterKit.configure({
-            // Ensure no duplicate extensions from StarterKit
             heading: { levels: [1, 2, 3] },
             link: false,
             underline: false,
@@ -413,6 +434,12 @@ export const AdminBlogEditor = () => {
             },
         },
     });
+
+    // Word count
+    const wordCount = useMemo(() => {
+        if (!editor) return 0;
+        return editor.state.doc.textContent?.split(/\s+/).filter(Boolean).length || 0;
+    }, [editor?.state.doc.content]);
 
     // Auto-generate slug
     useEffect(() => {
@@ -524,7 +551,7 @@ export const AdminBlogEditor = () => {
 
     return (
         <div className="min-h-screen bg-[#050505] text-slate-300 pb-20">
-            {/* Ultra Premium Header */}
+            {/* Premium Header */}
             <header className="sticky top-0 z-40 w-full bg-black/60 backdrop-blur-2xl border-b border-white/5 px-8 h-20 flex items-center shadow-2xl">
                 <div className="max-w-[1600px] w-full mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-6">
@@ -536,46 +563,50 @@ export const AdminBlogEditor = () => {
                                     navigate('/admin/blog');
                                 }
                             }}
-                            className="group flex gap-3 items-center px-4 py-2.5 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all text-sm font-bold"
+                            className="group flex gap-3 items-center px-4 py-2.5 rounded-full bg-white/[0.03] border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all text-sm font-bold"
                         >
                             <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                            <span>Blog Dashboard</span>
+                            <span className="hidden sm:inline">Dashboard</span>
                         </button>
 
                         <div className="h-8 w-px bg-white/10" />
 
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-black tracking-tight text-white leading-none capitalize">
+                            <h1 className="text-lg font-extrabold tracking-tight text-white leading-none capitalize line-clamp-1 max-w-md">
                                 {title || (id ? 'Mengedit Artikel' : 'Tulis Artikel Baru')}
                             </h1>
-                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Authorized Author: {user?.name || user?.email}</p>
+                            <div className="flex items-center gap-3 mt-1">
+                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{user?.name || user?.email}</span>
+                                <span className="w-1 h-1 rounded-full bg-slate-700" />
+                                <span className="text-[10px] font-bold text-slate-500 tabular-nums">{wordCount} words</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                         <button
                             onClick={() => handleSave('draft')}
                             disabled={loading}
-                            className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-white/10 text-[11px] font-black uppercase tracking-widest hover:bg-white/5 hover:border-white/20 transition-all active:scale-95"
+                            className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/10 text-xs font-bold hover:bg-white/5 hover:border-white/20 transition-all active:scale-95"
                         >
                             <Save className="w-4 h-4 text-teal-400" />
-                            Simpan Draft
+                            <span className="hidden sm:inline">Simpan Draft</span>
                         </button>
 
                         {isSuperAdmin ? (
                             <button
                                 onClick={() => handleSave('published')}
                                 disabled={loading}
-                                className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-teal-500 text-slate-950 text-[11px] font-black uppercase tracking-widest hover:bg-teal-400 transition-all shadow-[0_0_30px_rgba(20,184,166,0.3)] active:scale-95"
+                                className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-teal-500 text-slate-950 text-xs font-bold hover:bg-teal-400 transition-all shadow-[0_0_30px_rgba(20,184,166,0.3)] active:scale-95"
                             >
                                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                                Terbitkan Sekarang
+                                Terbitkan
                             </button>
                         ) : (
                             <button
                                 onClick={() => handleSave('published')}
                                 disabled={loading}
-                                className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-indigo-600 text-white text-[11px] font-black uppercase tracking-widest hover:bg-indigo-500 transition-all shadow-[0_0_30px_rgba(79,70,229,0.3)] active:scale-95"
+                                className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-500 transition-all shadow-[0_0_30px_rgba(79,70,229,0.3)] active:scale-95"
                             >
                                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                                 Ajukan Review
@@ -593,10 +624,10 @@ export const AdminBlogEditor = () => {
                         placeholder="Ketik Judul Yang Menggetarkan Disini..."
                         value={title}
                         onChange={e => setTitle(e.target.value)}
-                        className="w-full text-6xl font-black bg-transparent border-0 border-b-2 border-white/5 focus:border-teal-500 focus:ring-0 px-0 py-8 placeholder-white/5 text-white transition-all tracking-tighter"
+                        className="w-full text-5xl font-extrabold bg-transparent border-0 border-b-2 border-white/5 focus:border-teal-500 focus:ring-0 px-0 py-8 placeholder-white/5 text-white transition-all tracking-tight"
                     />
 
-                    <div className="relative bg-[#0a0a0a] rounded-[2.5rem] border border-white/5 shadow-2xl transition-all hover:border-white/10">
+                    <div className="relative bg-[#0a0a0a] rounded-3xl border border-white/5 shadow-2xl transition-all hover:border-white/10">
                         <Toolbar editor={editor} />
                         <div className="min-h-[800px] overflow-hidden">
                             <EditorContent editor={editor} />
@@ -604,50 +635,47 @@ export const AdminBlogEditor = () => {
                     </div>
                 </div>
 
-                {/* Intelligent Settings Sidebar */}
-                <aside className="xl:col-span-4 space-y-10">
+                {/* Sidebar */}
+                <aside className="xl:col-span-4 space-y-8">
                     {/* Publishing Status */}
-                    <section className="bg-white/[0.03] backdrop-blur-md border border-white/5 p-8 rounded-[2rem] space-y-6">
+                    <section className="bg-white/[0.03] backdrop-blur-md border border-white/5 p-6 rounded-3xl space-y-5">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-teal-400">Status Publikasi</h3>
-                            <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase border animate-pulse ${status === 'published' ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10' :
-                                status === 'pending' ? 'text-amber-400 border-amber-500/20 bg-amber-500/10' :
-                                    'text-slate-400 border-white/10 bg-white/5'
+                            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-teal-400">Status Publikasi</h3>
+                            <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase border ${status === 'published' ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10' :
+                                    status === 'pending' ? 'text-amber-400 border-amber-500/20 bg-amber-500/10' :
+                                        'text-slate-400 border-white/10 bg-white/5'
                                 }`}>
-                                <div className={`w-1.5 h-1.5 rounded-full ${status === 'published' ? 'bg-emerald-400' : status === 'pending' ? 'bg-amber-400' : 'bg-slate-400'}`} />
+                                <span className={`w-1.5 h-1.5 rounded-full ${status === 'published' ? 'bg-emerald-400' : status === 'pending' ? 'bg-amber-400 animate-pulse' : 'bg-slate-400'}`} />
                                 {status}
-                            </div>
+                            </span>
                         </div>
 
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-2">
-                                    <Globe className="w-3 h-3 text-indigo-400" /> Permalink Slug
-                                </label>
-                                <input
-                                    type="text"
-                                    value={slug}
-                                    onChange={e => setSlug(e.target.value)}
-                                    className="w-full bg-black/40 border border-white/5 rounded-2xl px-5 py-4 text-xs font-mono text-indigo-400 focus:border-indigo-500 focus:ring-0 outline-none transition-all shadow-inner"
-                                />
-                            </div>
-
-                            <div className="space-y-2 text-center pt-2">
-                                <p className="text-[10px] italic text-slate-600">Terakhir disinkronisasi: {new Date().toLocaleTimeString()}</p>
-                            </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-2">
+                                <Globe className="w-3 h-3 text-indigo-400" /> Permalink Slug
+                            </label>
+                            <input
+                                type="text"
+                                value={slug}
+                                onChange={e => setSlug(e.target.value)}
+                                className="w-full bg-black/40 border border-white/5 rounded-xl px-4 py-3 text-xs font-mono text-indigo-400 focus:border-indigo-500 focus:ring-0 outline-none transition-all"
+                            />
                         </div>
+
+                        <p className="text-[10px] italic text-slate-600 text-center">Terakhir disinkronisasi: {new Date().toLocaleTimeString()}</p>
                     </section>
 
-                    {/* Media & categorization */}
-                    <section className="bg-white/[0.03] backdrop-blur-md border border-white/5 p-8 rounded-[2rem] space-y-8">
-                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white flex items-center gap-3">
+                    {/* Content Matrix */}
+                    <section className="bg-white/[0.03] backdrop-blur-md border border-white/5 p-6 rounded-3xl space-y-6">
+                        <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white flex items-center gap-3">
                             <div className="w-2 h-2 rounded-full bg-teal-500 shadow-[0_0_10px_rgba(20,184,166,0.5)]" />
                             Content Matrix
                         </h3>
 
-                        <div className="space-y-3">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Featured Hero Image</label>
-                            <div className="group relative aspect-video rounded-3xl overflow-hidden border border-white/5 bg-black/40 ring-1 ring-white/5 transition-all hover:ring-teal-500/30">
+                        {/* Hero Image */}
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Featured Hero Image</label>
+                            <div className="group relative aspect-video rounded-2xl overflow-hidden border border-white/5 bg-black/40 transition-all hover:border-teal-500/30">
                                 {featuredImage ? (
                                     <>
                                         <img src={featuredImage} alt="Hero" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
@@ -655,32 +683,33 @@ export const AdminBlogEditor = () => {
                                             <button onClick={() => fileInputRef.current?.click()} className="p-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-white transition-all backdrop-blur-md">
                                                 <RefreshCcw className="w-5 h-5" />
                                             </button>
-                                            <span className="text-[10px] font-black text-white uppercase tracking-widest">Ganti Gambar</span>
+                                            <span className="text-[10px] font-bold text-white uppercase tracking-widest">Ganti Gambar</span>
                                         </div>
                                     </>
                                 ) : (
-                                    <div onClick={() => fileInputRef.current?.click()} className="w-full h-full flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-white/[0.02] transition-all">
-                                        <div className="p-5 rounded-full bg-white/5 border border-dashed border-white/10">
-                                            {uploading ? <Loader2 className="w-8 h-8 animate-spin text-teal-400" /> : <Plus className="w-8 h-8 text-slate-500" />}
+                                    <div onClick={() => fileInputRef.current?.click()} className="w-full h-full flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-white/[0.02] transition-all">
+                                        <div className="p-4 rounded-full bg-white/5 border border-dashed border-white/10">
+                                            {uploading ? <Loader2 className="w-6 h-6 animate-spin text-teal-400" /> : <Plus className="w-6 h-6 text-slate-500" />}
                                         </div>
-                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Unggah Hero Image</span>
+                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Unggah Hero Image</span>
                                     </div>
                                 )}
                                 <input type="file" ref={fileInputRef} onChange={handleUpload} accept="image/*" className="hidden" />
                             </div>
 
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mt-4 block">Alt Text (Deskripsi Gambar)</label>
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 mt-3 block">Alt Text</label>
                             <input
                                 type="text"
                                 placeholder="Deskripsi untuk SEO..."
                                 value={imageAlt}
                                 onChange={e => setImageAlt(e.target.value)}
-                                className="w-full bg-black/40 border border-white/5 rounded-2xl px-5 py-4 text-xs text-white focus:border-teal-500 focus:ring-0 outline-none transition-all shadow-inner"
+                                className="w-full bg-black/40 border border-white/5 rounded-xl px-4 py-3 text-xs text-white focus:border-teal-500 focus:ring-0 outline-none transition-all"
                             />
                         </div>
 
-                        <div className="space-y-3">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-2">
+                        {/* Category */}
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-2">
                                 <Tag className="w-3 h-3 text-teal-400" /> Kategori Artikel
                             </label>
                             <input
@@ -688,7 +717,7 @@ export const AdminBlogEditor = () => {
                                 list="category-list"
                                 value={category}
                                 onChange={e => setCategory(e.target.value)}
-                                className="w-full bg-black/40 border border-white/5 rounded-2xl px-5 py-4 text-xs text-white focus:border-teal-500 focus:ring-0 outline-none transition-all shadow-inner"
+                                className="w-full bg-black/40 border border-white/5 rounded-xl px-4 py-3 text-xs text-white focus:border-teal-500 focus:ring-0 outline-none transition-all"
                                 placeholder="Pilih atau ketik kategori baru..."
                             />
                             <datalist id="category-list">
@@ -698,51 +727,52 @@ export const AdminBlogEditor = () => {
                             </datalist>
                         </div>
 
-                        <div className="space-y-3">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Ringkasan Singkat</label>
+                        {/* Excerpt */}
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Ringkasan Singkat</label>
                             <textarea
                                 value={excerpt}
                                 onChange={e => setExcerpt(e.target.value)}
                                 rows={4}
-                                className="w-full bg-black/40 border border-white/5 rounded-2xl px-5 py-4 text-xs text-slate-300 focus:border-teal-500 focus:ring-0 outline-none resize-none transition-all shadow-inner leading-relaxed"
+                                className="w-full bg-black/40 border border-white/5 rounded-xl px-4 py-3 text-xs text-slate-300 focus:border-teal-500 focus:ring-0 outline-none resize-none transition-all leading-relaxed"
                                 placeholder="Sampaikan inti dari artikel Anda untuk menarik pembaca..."
                             />
                         </div>
                     </section>
 
-                    {/* SEO Optimizer Card */}
+                    {/* SEO Optimizer */}
                     <section className="relative overflow-hidden group">
-                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 via-purple-500/10 to-transparent rounded-[2rem]" />
-                        <div className="relative z-10 bg-white/[0.02] backdrop-blur-md border border-white/5 p-8 rounded-[2rem] space-y-6">
-                            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-indigo-400 flex items-center gap-3">
+                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 via-purple-500/10 to-transparent rounded-3xl" />
+                        <div className="relative z-10 bg-white/[0.02] backdrop-blur-md border border-white/5 p-6 rounded-3xl space-y-5">
+                            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-400 flex items-center gap-3">
                                 <Sparkles className="w-4 h-4 animate-pulse" />
                                 SEO Optimizer AI
                             </h3>
 
-                            <div className="space-y-5">
+                            <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-indigo-400/60 uppercase tracking-widest ml-1">Meta Title</label>
+                                    <label className="text-[10px] font-bold text-indigo-400/60 uppercase tracking-widest ml-1">Meta Title</label>
                                     <input
                                         type="text"
                                         value={seoTitle}
                                         onChange={e => setSeoTitle(e.target.value)}
-                                        className="w-full bg-white/[0.03] border border-white/5 rounded-xl px-5 py-4 text-xs text-white focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
+                                        className="w-full bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3 text-xs text-white focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
                                         placeholder={title}
                                     />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-indigo-400/60 uppercase tracking-widest ml-1">Meta Description</label>
+                                    <label className="text-[10px] font-bold text-indigo-400/60 uppercase tracking-widest ml-1">Meta Description</label>
                                     <textarea
                                         value={seoDesc}
                                         onChange={e => setSeoDesc(e.target.value)}
                                         rows={3}
-                                        className="w-full bg-white/[0.03] border border-white/5 rounded-xl px-5 py-4 text-xs text-white focus:ring-1 focus:ring-indigo-500 outline-none resize-none transition-all"
+                                        className="w-full bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3 text-xs text-white focus:ring-1 focus:ring-indigo-500 outline-none resize-none transition-all"
                                         placeholder="Gambarkan artikel ini di mesin pencari..."
                                     />
                                 </div>
 
-                                <button className="w-full py-4 bg-white text-indigo-950 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl shadow-[0_10px_30px_rgba(255,255,255,0.1)] hover:shadow-indigo-500/40 transition-all hover:-translate-y-1 active:translate-y-0 active:scale-95">
+                                <button className="w-full py-3.5 bg-white text-indigo-950 text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl shadow-[0_10px_30px_rgba(255,255,255,0.1)] hover:shadow-indigo-500/40 transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-95">
                                     Generate SEO Meta
                                 </button>
                             </div>

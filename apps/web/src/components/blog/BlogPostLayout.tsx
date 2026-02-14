@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, useScroll, useSpring } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Copy, Check } from 'lucide-react';
 
-// Components (We will inline simple ones for speed, extract later if needed)
 import { BlogCard, BlogPost } from './BlogCard';
 
 interface BlogPostLayoutProps {
@@ -13,34 +13,100 @@ interface BlogPostLayoutProps {
     relatedPosts: BlogPost[];
 }
 
+const ShareBar = ({ title, slug }: { title: string; slug: string }) => {
+    const url = `https://tamuu.id/blog/${slug}`;
+    const [copied, setCopied] = React.useState(false);
+
+    const copyLink = () => {
+        navigator.clipboard.writeText(url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5 }}
+            className="fixed left-8 top-1/2 -translate-y-1/2 z-40 hidden xl:flex flex-col gap-3"
+        >
+            {/* WhatsApp */}
+            <a
+                href={`https://wa.me/?text=${encodeURIComponent(title + ' ' + url)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="w-11 h-11 bg-white border border-slate-100 rounded-full shadow-sm flex items-center justify-center text-slate-500 hover:text-emerald-500 hover:border-emerald-200 hover:shadow-md transition-all"
+                title="Share via WhatsApp"
+            >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z" />
+                </svg>
+            </a>
+
+            {/* Twitter/X */}
+            <a
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="w-11 h-11 bg-white border border-slate-100 rounded-full shadow-sm flex items-center justify-center text-slate-500 hover:text-sky-500 hover:border-sky-200 hover:shadow-md transition-all"
+                title="Share on X"
+            >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+            </a>
+
+            {/* Copy Link */}
+            <button
+                onClick={copyLink}
+                className="w-11 h-11 bg-white border border-slate-100 rounded-full shadow-sm flex items-center justify-center text-slate-500 hover:text-teal-500 hover:border-teal-200 hover:shadow-md transition-all"
+                title="Copy link"
+            >
+                {copied ? <Check className="w-4 h-4 text-teal-500" /> : <Copy className="w-4 h-4" />}
+            </button>
+        </motion.div>
+    );
+};
+
 const PromoBanner = () => (
-    <div className="my-12 p-8 rounded-[2rem] bg-slate-50 border border-slate-100 flex flex-col md:flex-row items-center gap-8 shadow-sm">
-        <div className="w-16 h-16 bg-[#0A1128] rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg">
+    <div className="my-16 p-8 rounded-2xl bg-white border border-slate-100 flex flex-col md:flex-row items-center gap-8 shadow-sm">
+        <div className="w-14 h-14 bg-[#0A1128] rounded-2xl flex items-center justify-center text-white text-xl shadow-lg">
             💎
         </div>
         <div className="flex-1 text-center md:text-left">
-            <h4 className="text-xl font-black text-[#0A1128] mb-1">Upgrade Undangan Anda</h4>
-            <p className="text-slate-500 font-medium">Buka fitur premium, RSVP tanpa batas, dan desain eksklusif lainnya.</p>
+            <h4 className="text-lg font-bold text-[#0A1128] mb-1">Upgrade Undangan Anda</h4>
+            <p className="text-slate-500 text-sm font-medium">Buka fitur premium, RSVP tanpa batas, dan desain eksklusif lainnya.</p>
         </div>
-        <Link to="/pricing" className="px-8 py-4 bg-[#0A1128] text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-slate-800 transition-all">
+        <Link
+            to="/pricing"
+            className="px-8 py-3.5 bg-[#0A1128] text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-slate-800 transition-all"
+        >
             Lihat Paket
         </Link>
     </div>
 );
 
 const SubscribeCard = () => (
-    <div className="mt-24 bg-slate-900 rounded-[3rem] p-10 md:p-16 text-center relative overflow-hidden">
+    <div className="mt-24 bg-[#0A1128] rounded-3xl p-10 md:p-16 text-center relative overflow-hidden">
+        <div
+            className="absolute inset-0 opacity-10"
+            style={{
+                backgroundImage: 'radial-gradient(circle, #e2e8f0 1px, transparent 1px)',
+                backgroundSize: '24px 24px',
+            }}
+        />
         <div className="relative z-10 max-w-xl mx-auto">
-            <h3 className="text-3xl font-black text-white mb-4 tracking-tight">Stay Inspired</h3>
-            <p className="text-slate-400 mb-10 font-medium">Dapatkan tips pernikahan dan inspirasi desain langsung di email Anda.</p>
-
-            <form className="flex flex-col sm:flex-row gap-3" onSubmit={(e) => e.preventDefault()}>
+            <h3 className="text-3xl font-bold text-white mb-4">Stay Inspired</h3>
+            <p className="text-slate-400 mb-10 font-medium">
+                Dapatkan tips pernikahan dan inspirasi desain langsung di email Anda.
+            </p>
+            <form className="flex flex-col sm:flex-row gap-3" onSubmit={e => e.preventDefault()}>
                 <input
                     type="email"
                     placeholder="Alamat Email"
-                    className="flex-1 px-8 py-5 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-white transition-all font-medium"
+                    className="flex-1 px-6 py-4 rounded-full bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all font-medium"
                 />
-                <button className="px-10 py-5 bg-white text-slate-900 font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-slate-100 transition-all">
+                <button className="px-10 py-4 bg-teal-500 text-white font-bold uppercase tracking-widest text-xs rounded-full hover:bg-teal-600 transition-all">
                     Subscribe
                 </button>
             </form>
@@ -48,39 +114,45 @@ const SubscribeCard = () => (
     </div>
 );
 
-const ShareBar = ({ title, slug }: { title: string, slug: string }) => {
-    const url = `https://tamuu.id/blog/${slug}`;
-    return (
-        <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="fixed left-8 top-1/2 -translate-y-1/2 z-40 hidden xl:flex flex-col gap-3"
-        >
-            <a href={`https://wa.me/?text=${encodeURIComponent(title + ' ' + url)}`} target="_blank" rel="noreferrer" className="w-12 h-12 bg-white border border-slate-100 rounded-full shadow-sm flex items-center justify-center text-[#0A1128] hover:bg-slate-50 transition-all">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-8.683-2.031-.967-.272-.297-.471-.446-.966-.446-.495 0-.965.198-1.472.744-.508.545-1.932 1.883-1.932 4.591 0 2.709 1.972 5.325 2.245 5.721.273.396 3.881 5.929 9.405 8.303 5.523 2.373 5.523 1.583 5.523.867 5.523-.717 1.734-2.527 1.981-2.823.248-.297.422-.446.669-.347.248.099 1.56.732 1.832.867.272.135.459.201.52.302.062.101.062.597-.198 1.336z" /></svg>
-            </a>
-        </motion.div>
-    );
-};
-
 export const BlogPostLayout: React.FC<BlogPostLayoutProps> = ({ post, relatedPosts }) => {
     const { scrollYProgress } = useScroll();
     const scaleX = useSpring(scrollYProgress, {
         stiffness: 100,
         damping: 30,
-        restDelta: 0.001
+        restDelta: 0.001,
     });
 
+    const readingTime = Math.max(1, Math.ceil((post.content?.length || 0) / 1200));
+
     const components = {
-        p: ({ node, children }: any) => <p className="mb-8 leading-relaxed text-slate-600 text-lg md:text-xl font-medium">{children}</p>,
+        p: ({ children }: any) => (
+            <p className="mb-8 leading-relaxed text-slate-600 text-lg md:text-xl">{children}</p>
+        ),
         img: ({ src, alt }: any) => (
-            <div className="my-12 rounded-[2rem] overflow-hidden">
+            <div className="my-12 rounded-2xl overflow-hidden">
                 <img src={src} alt={alt} className="w-full h-auto object-cover" loading="lazy" />
-                {alt && <p className="text-center text-xs text-slate-400 mt-4 uppercase tracking-widest font-black">{alt}</p>}
+                {alt && (
+                    <p className="text-center text-xs text-slate-400 mt-4 uppercase tracking-widest font-bold">
+                        {alt}
+                    </p>
+                )}
             </div>
         ),
-        h2: ({ children }: any) => <h2 className="text-3xl md:text-4xl font-black mt-16 mb-8 text-[#0A1128] tracking-tight">{children}</h2>,
-        h3: ({ children }: any) => <h3 className="text-2xl md:text-3xl font-black mt-12 mb-6 text-[#0A1128] tracking-tight">{children}</h3>,
+        h2: ({ children }: any) => (
+            <h2 className="text-3xl md:text-4xl font-extrabold mt-16 mb-8 text-[#0A1128] tracking-tight">
+                {children}
+            </h2>
+        ),
+        h3: ({ children }: any) => (
+            <h3 className="text-2xl md:text-3xl font-bold mt-12 mb-6 text-[#0A1128] tracking-tight">
+                {children}
+            </h3>
+        ),
+        blockquote: ({ children }: any) => (
+            <blockquote className="border-l-4 border-teal-500 pl-6 my-8 italic text-slate-500 text-lg">
+                {children}
+            </blockquote>
+        ),
     };
 
     return (
@@ -95,45 +167,69 @@ export const BlogPostLayout: React.FC<BlogPostLayoutProps> = ({ post, relatedPos
                 <meta property="og:type" content="article" />
             </Helmet>
 
+            {/* Progress Bar */}
             <motion.div
-                className="fixed top-0 left-0 right-0 h-1 bg-[#0A1128] origin-left z-50"
+                className="fixed top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-teal-500 to-teal-400 origin-left z-50"
                 style={{ scaleX }}
             />
 
+            {/* Share Bar */}
             <ShareBar title={post.title} slug={post.slug} />
 
-            <main className="max-w-4xl mx-auto px-6 py-16 md:py-32">
-                <header className="mb-20">
-                    <div className="mb-12 rounded-[2.5rem] overflow-hidden aspect-[2/1] bg-slate-50">
+            <main className="max-w-4xl mx-auto px-6 py-16 md:py-24">
+                <header className="mb-16">
+                    {/* Hero Image */}
+                    <div className="mb-10 rounded-3xl overflow-hidden aspect-[2/1] bg-slate-50 relative group">
                         <img
-                            src={post.featured_image || 'https://placehold.co/1200x630/png?text=Tamuu+Blog'}
+                            src={post.featured_image || 'https://placehold.co/1200x630/0A1128/white?text=Tamuu+Blog'}
                             alt={post.title}
-                            className="w-full h-full object-cover grayscale-[0.1]"
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
                             width={1200}
                             height={600}
                         />
+                        {/* Overlay with meta */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                        <div className="absolute bottom-0 left-0 p-6 md:p-10 flex items-center gap-4 text-sm">
+                            <span className="px-3 py-1 rounded-full bg-teal-500 text-white text-[10px] font-bold uppercase tracking-wider">
+                                {post.category || 'Article'}
+                            </span>
+                            <span className="text-white/70">
+                                {post.published_at
+                                    ? new Date(post.published_at).toLocaleDateString('id-ID', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                    })
+                                    : 'Draft'}
+                            </span>
+                            <span className="text-white/50">·</span>
+                            <span className="text-white/70">{readingTime} min read</span>
+                        </div>
                     </div>
 
-                    <div className="flex items-center gap-4 text-[10px] font-black tracking-[0.4em] text-slate-400 mb-8 uppercase">
-                        <span>{post.category || 'Article'}</span>
-                        <span className="w-1 h-1 bg-slate-200 rounded-full" />
-                        <span>{post.published_at ? new Date(post.published_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Draft'}</span>
-                    </div>
-
-                    <h1 className="text-4xl md:text-5xl lg:text-7xl font-black text-[#0A1128] leading-[1.1] mb-10 tracking-tighter">
+                    {/* Title */}
+                    <motion.h1
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#0A1128] leading-[1.1] mb-8 tracking-tight"
+                    >
                         {post.title}
-                    </h1>
+                    </motion.h1>
 
-                    <p className="text-xl md:text-2xl text-slate-500 leading-relaxed font-medium">
+                    {/* Excerpt */}
+                    <motion.p
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="text-xl md:text-2xl text-slate-500 leading-relaxed"
+                    >
                         {post.excerpt}
-                    </p>
+                    </motion.p>
                 </header>
 
+                {/* Article Body */}
                 <article className="prose prose-lg md:prose-xl max-w-none prose-slate">
-                    <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        components={components}
-                    >
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
                         {post.content}
                     </ReactMarkdown>
                 </article>
@@ -141,9 +237,12 @@ export const BlogPostLayout: React.FC<BlogPostLayoutProps> = ({ post, relatedPos
                 <PromoBanner />
                 <SubscribeCard />
 
+                {/* Related Posts */}
                 {relatedPosts.length > 0 && (
-                    <section className="mt-40 pt-20 border-t border-slate-50 text-left">
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 mb-12">Artikel Terkait</h3>
+                    <section className="mt-32 pt-16 border-t border-slate-100 text-left">
+                        <h3 className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-400 mb-12">
+                            Artikel Terkait
+                        </h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {relatedPosts.map(p => (
                                 <BlogCard key={p.id} post={p} />
@@ -153,15 +252,18 @@ export const BlogPostLayout: React.FC<BlogPostLayoutProps> = ({ post, relatedPos
                 )}
             </main>
 
-            <footer className="bg-slate-50 py-20 border-t border-slate-100">
+            {/* Footer */}
+            <footer className="bg-slate-50 py-16 border-t border-slate-100">
                 <div className="max-w-4xl mx-auto px-6 text-center">
-                    <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-10 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8 text-xs font-bold uppercase tracking-wider text-slate-400">
                         <Link to="/privacy" className="hover:text-[#0A1128] transition-colors">Privacy Policy</Link>
                         <Link to="/terms" className="hover:text-[#0A1128] transition-colors">Terms of Service</Link>
                         <Link to="/refund" className="hover:text-[#0A1128] transition-colors">Refund Policy</Link>
                         <Link to="/contact" className="hover:text-[#0A1128] transition-colors">Contact</Link>
                     </div>
-                    <p className="text-[10px] text-slate-300 font-black uppercase tracking-[0.1em]">© 2026 Tamuu. All rights reserved.</p>
+                    <p className="text-xs text-slate-300 font-bold uppercase tracking-wider">
+                        © 2026 Tamuu. All rights reserved.
+                    </p>
                 </div>
             </footer>
         </div>
