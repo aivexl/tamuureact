@@ -897,12 +897,13 @@ export const preview = {
 // BLOG API
 // ============================================
 export const blog = {
-    async list(options?: { limit?: number; offset?: number; category?: string; tag?: string }) {
+    async list(options?: { limit?: number; offset?: number; category?: string; tag?: string; featured?: boolean }) {
         const params = new URLSearchParams();
         if (options?.limit) params.append('limit', options.limit.toString());
         if (options?.offset) params.append('offset', options.offset.toString());
         if (options?.category) params.append('category', options.category);
         if (options?.tag) params.append('tag', options.tag);
+        if (options?.featured) params.append('featured', '1');
 
         const res = await safeFetch(`${API_BASE}/api/blog?${params.toString()}`);
         if (!res.ok) throw new Error('Failed to fetch blog posts');
@@ -938,6 +939,13 @@ export const blog = {
             body: JSON.stringify({ post_id: postId, type })
         });
         return res.ok;
+    },
+
+    async getCategories() {
+        const res = await safeFetch(`${API_BASE}/api/blog/categories`);
+        if (!res.ok) throw new Error('Failed to fetch categories');
+        const data = await res.json();
+        return sanitizeValue(data);
     },
 
     async adminList() {

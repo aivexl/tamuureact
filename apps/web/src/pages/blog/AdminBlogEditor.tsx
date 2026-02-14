@@ -60,7 +60,8 @@ import {
     ChevronDown,
     Plus,
     X,
-    RefreshCcw
+    RefreshCcw,
+    Star
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import api from '@/lib/api';
@@ -389,6 +390,9 @@ export const AdminBlogEditor = () => {
     const [seoTitle, setSeoTitle] = useState('');
     const [seoDesc, setSeoDesc] = useState('');
     const [seoKeywords, setSeoKeywords] = useState('');
+    const [isFeatured, setIsFeatured] = useState(false);
+    const [tags, setTags] = useState<string[]>([]);
+    const [tagInput, setTagInput] = useState('');
     const [isSlugAvailable, setIsSlugAvailable] = useState<boolean | null>(null);
     const [isCheckingSlug, setIsCheckingSlug] = useState(false);
 
@@ -494,6 +498,12 @@ export const AdminBlogEditor = () => {
                         setStatus(post.status || 'draft');
                         setSeoTitle(post.seo_title || '');
                         setSeoDesc(post.seo_description || '');
+                        setIsFeatured(!!post.is_featured);
+                        try {
+                            setTags(typeof post.tags === 'string' ? JSON.parse(post.tags) : (post.tags || []));
+                        } catch (e) {
+                            setTags([]);
+                        }
                         setSeoKeywords(post.seo_keywords || '');
 
                         // ENHANCED HYDRATION: Ensure editor is ready before setting content
@@ -525,6 +535,8 @@ export const AdminBlogEditor = () => {
                 title, slug, content, excerpt, featured_image: featuredImage,
                 image_alt: imageAlt,
                 category,
+                tags,
+                is_featured: isFeatured,
                 seo_title: seoTitle, seo_description: seoDesc, seo_keywords: seoKeywords,
                 status: targetStatus,
                 author_id: user?.id,
@@ -571,6 +583,25 @@ export const AdminBlogEditor = () => {
         } finally {
             setUploading(false);
         }
+    };
+
+    const handleTagKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addTag();
+        }
+    };
+
+    const addTag = () => {
+        const val = tagInput.trim();
+        if (val && !tags.includes(val)) {
+            setTags([...tags, val]);
+        }
+        setTagInput('');
+    };
+
+    const removeTag = (tagToRemove: string) => {
+        setTags(tags.filter(t => t !== tagToRemove));
     };
 
     const isSuperAdmin = user?.email === 'admin@tamuu.id';
@@ -681,6 +712,30 @@ export const AdminBlogEditor = () => {
                             </span>
                         </div>
 
+                        {/* Hero Toggle */}
+                        <div className="pt-2">
+                            <button
+                                onClick={() => setIsFeatured(!isFeatured)}
+                                className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all ${isFeatured
+                                    ? 'bg-amber-500/10 border-amber-500/20 text-amber-500'
+                                    : 'bg-white/5 border-white/5 text-slate-500 hover:border-white/10'
+                                    }`}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className={`p-2 rounded-lg ${isFeatured ? 'bg-amber-500 text-white' : 'bg-white/10 text-slate-400'}`}>
+                                        <Star className={`w-4 h-4 ${isFeatured ? 'fill-current' : ''}`} />
+                                    </div>
+                                    <div className="text-left">
+                                        <div className="text-xs font-bold">Featured Article</div>
+                                        <div className="text-[10px] opacity-60">Tampilkan di Hero Slider</div>
+                                    </div>
+                                </div>
+                                <div className={`w-10 h-5 rounded-full relative transition-all ${isFeatured ? 'bg-amber-500' : 'bg-slate-700'}`}>
+                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${isFeatured ? 'right-1' : 'left-1'}`} />
+                                </div>
+                            </button>
+                        </div>
+
                         <div className="space-y-2">
                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-2">
                                 <Globe className="w-3 h-3 text-indigo-400" /> Permalink Slug
@@ -774,6 +829,49 @@ export const AdminBlogEditor = () => {
                                     <option key={c.id} value={c.name} />
                                 ))}
                             </datalist>
+                        </div>
+
+                        {/* Tags Manager */}
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-2">
+                                <Plus className="w-3 h-3 text-indigo-400" /> Custom Tags
+                            </label>
+
+                            <div className="flex flex-wrap gap-2 mb-2">
+                                <AnimatePresence>
+                                    {tags.map(t => (
+                                        <motion.span
+                                            key={t}
+                                            initial={{ scale: 0.8, opacity: 0 }}
+                                            animate={{ scale: 1, opacity: 1 }}
+                                            exit={{ scale: 0.8, opacity: 0 }}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold text-slate-300"
+                                        >
+                                            {t}
+                                            <button onClick={() => removeTag(t)} className="hover:text-red-400 transition-colors">
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                        </motion.span>
+                                    ))}
+                                </AnimatePresence>
+                            </div>
+
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    value={tagInput}
+                                    onChange={e => setTagInput(e.target.value)}
+                                    onKeyDown={handleTagKeyDown}
+                                    placeholder="Ketik tag & Tekan Enter..."
+                                    className="w-full bg-black/40 border border-white/5 rounded-xl px-4 py-3 text-xs text-white focus:border-indigo-500 focus:ring-0 outline-none transition-all pr-12"
+                                />
+                                <button
+                                    onClick={addTag}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg bg-white/5 text-slate-500 hover:text-white transition-all"
+                                >
+                                    <Plus className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
                         </div>
 
                         {/* Excerpt */}

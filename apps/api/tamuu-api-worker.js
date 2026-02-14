@@ -1249,16 +1249,28 @@ CONTEXT:
                 const tag = url.searchParams.get('tag');
 
                 try {
+                    const isFeatured = url.searchParams.get('featured') === '1';
+                    const category = url.searchParams.get('category');
+
                     let query = `
-                        SELECT id, slug, title, excerpt, featured_image, category, published_at, author_id, view_count, created_at 
+                        SELECT id, slug, title, excerpt, featured_image, category, tags, is_featured, published_at, author_id, view_count, created_at 
                         FROM blog_posts 
                         WHERE is_published = 1 
                     `;
                     const params = [];
 
+                    if (isFeatured) {
+                        query += ` AND is_featured = 1 `;
+                    }
+
+                    if (category && category !== 'All') {
+                        query += ` AND category = ? `;
+                        params.push(category);
+                    }
+
                     if (tag) {
-                        query += ` AND seo_keywords LIKE ? `;
-                        params.push(`%${tag}%`);
+                        query += ` AND (tags LIKE ? OR seo_keywords LIKE ?) `;
+                        params.push(`%${tag}%`, `%${tag}%`);
                     }
 
                     query += ` ORDER BY published_at DESC LIMIT ? OFFSET ?`;
@@ -1375,6 +1387,14 @@ CONTEXT:
                 return json(results, { ...corsHeaders, 'Cache-Control': 'public, max-age=300' });
             }
 
+            // PUBLIC: Categories
+            if (path === '/api/blog/categories' && method === 'GET') {
+                const { results } = await env.DB.prepare(
+                    'SELECT * FROM blog_categories ORDER BY name ASC'
+                ).all();
+                return json(results, { ...corsHeaders, 'Cache-Control': 'public, max-age=3600' });
+            }
+
             // ADMIN: List Posts
             // ADMIN: Get Categories
             if (path === '/api/admin/blog/categories' && method === 'GET') {
@@ -1408,7 +1428,7 @@ CONTEXT:
             // ADMIN: Create Post
             if (path === '/api/admin/blog/posts' && method === 'POST') {
                 const body = await request.json();
-                const { slug, title, content, excerpt, featured_image, category, author_id, author_email, status, seo_title, seo_description, seo_keywords, image_meta, image_alt } = body;
+                const { slug, title, content, excerpt, featured_image, category, tags, is_featured, author_id, author_email, status, seo_title, seo_description, seo_keywords, image_meta, image_alt } = body;
 
                 let finalStatus = status || 'draft';
                 // Enforcement: Only admin can publish directly
@@ -1451,10 +1471,10 @@ CONTEXT:
                     // 2. Insert Post
                     await env.DB.prepare(`
                         INSERT INTO blog_posts (
-                            id, slug, title, content, excerpt, featured_image, category, author_id, status, is_published,
+                            id, slug, title, content, excerpt, featured_image, category, tags, is_featured, author_id, status, is_published,
                             published_at, seo_title, seo_description, seo_keywords, image_meta, image_alt
                         )
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     `).bind(
                         id,
                         slug || '',
@@ -1463,6 +1483,8 @@ CONTEXT:
                         excerpt || '',
                         featured_image || '',
                         category || '',
+                        typeof tags === 'object' ? JSON.stringify(tags) : (tags || '[]'),
+                        is_featured ? 1 : 0,
                         finalAuthorId,
                         finalStatus || 'draft',
                         finalStatus === 'published' ? 1 : 0,
@@ -1503,13 +1525,17 @@ CONTEXT:
                 const updates = [];
                 const values = [];
 
-                const fields = ['slug', 'title', 'content', 'excerpt', 'featured_image', 'category', 'seo_title', 'seo_description', 'seo_keywords', 'image_meta', 'image_alt'];
+                const fields = ['slug', 'title', 'content', 'excerpt', 'featured_image', 'category', 'tags', 'is_featured', 'seo_title', 'seo_description', 'seo_keywords', 'image_meta', 'image_alt'];
                 fields.forEach(f => {
                     if (body[f] !== undefined) {
                         updates.push(`${f} = ?`);
                         // Special handling for JSON fields if needed, but client sends string or obj
                         if (f === 'image_meta' && typeof body[f] === 'object') {
                             values.push(JSON.stringify(body[f]));
+                        } else if (f === 'tags' && typeof body[f] === 'object') {
+                            values.push(JSON.stringify(body[f]));
+                        } else if (f === 'is_featured') {
+                            values.push(body[f] ? 1 : 0);
                         } else {
                             values.push(body[f]);
                         }

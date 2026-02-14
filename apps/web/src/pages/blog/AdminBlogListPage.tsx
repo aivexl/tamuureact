@@ -12,7 +12,8 @@ import {
     CheckCircle2,
     Clock,
     ExternalLink,
-    ArrowLeft
+    ArrowLeft,
+    Star
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { toast } from 'react-hot-toast';
@@ -26,6 +27,7 @@ export interface BlogPost {
     featured_image?: string;
     category?: string;
     status: 'draft' | 'pending' | 'published';
+    is_featured: number | boolean;
     view_count: number;
     created_at: string;
     published_at?: string;
@@ -79,6 +81,19 @@ export const AdminBlogListPage = () => {
             fetchPosts();
         } catch (err) {
             toast.error('Gagal menghapus artikel');
+        }
+    };
+
+    const handleToggleFeatured = async (post: BlogPost) => {
+        try {
+            await api.blog.adminUpdate(post.id, {
+                is_featured: !post.is_featured,
+                author_email: user?.email
+            });
+            toast.success(post.is_featured ? 'Artikel dihilangkan dari Hero' : 'Artikel dijadikan Hero! ⭐');
+            fetchPosts();
+        } catch (err) {
+            toast.error('Gagal memperbarui status Hero');
         }
     };
 
@@ -247,6 +262,7 @@ export const AdminBlogListPage = () => {
                             <tr className="border-b border-white/5 bg-white/[0.01]">
                                 <th className="px-8 py-5 text-[10px] tracking-widest uppercase font-bold text-slate-500">Judul</th>
                                 <th className="px-8 py-5 text-[10px] tracking-widest uppercase font-bold text-slate-500">Kategori</th>
+                                <th className="px-8 py-5 text-[10px] tracking-widest uppercase font-bold text-slate-500 text-center">Hero</th>
                                 <th className="px-8 py-5 text-[10px] tracking-widest uppercase font-bold text-slate-500">Status</th>
                                 <th className="px-8 py-5 text-[10px] tracking-widest uppercase font-bold text-slate-500 text-center">Views</th>
                                 <th className="px-8 py-5 text-[10px] tracking-widest uppercase font-bold text-slate-500">Tanggal</th>
@@ -292,6 +308,20 @@ export const AdminBlogListPage = () => {
                                             <span className="px-3 py-1 bg-slate-500/10 text-slate-400 rounded-full border border-slate-500/10 text-xs">
                                                 {post.category || 'Uncategorized'}
                                             </span>
+                                        </td>
+
+                                        {/* Hero Toggle */}
+                                        <td className="px-8 py-5 text-center">
+                                            <button
+                                                onClick={() => handleToggleFeatured(post)}
+                                                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${post.is_featured
+                                                    ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
+                                                    : 'bg-white/5 text-slate-600 border border-white/5 hover:border-white/20'
+                                                    }`}
+                                                title={post.is_featured ? 'Hapus dari Hero' : 'Jadikan Hero'}
+                                            >
+                                                <Star className={`w-4 h-4 ${post.is_featured ? 'fill-current' : ''}`} />
+                                            </button>
                                         </td>
 
                                         {/* Status */}

@@ -8,19 +8,51 @@ import api from '../../lib/api';
 const CATEGORIES = ['All', 'Wedding Tips', 'Inspiration', 'Tutorial', 'Digital Invitation'];
 
 const BlogLandingPage: React.FC = () => {
+    const [featuredPosts, setFeaturedPosts] = useState<BlogPost[]>([]);
     const [posts, setPosts] = useState<BlogPost[]>([]);
+    const [categories, setCategories] = useState<string[]>(['All']);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [offset, setOffset] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [activeCategory, setActiveCategory] = useState('All');
-    const limit = 12;
+    const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+    const initialLimit = 9;
+    const loadMoreLimit = 3;
+
+    const fetchInitialData = async () => {
+        try {
+            setLoading(true);
+            const [featuredData, catsData, blogData] = await Promise.all([
+                api.blog.list({ featured: true, limit: 6 }),
+                api.blog.getCategories(),
+                api.blog.list({ limit: initialLimit, offset: 0, category: activeCategory === 'All' ? undefined : activeCategory })
+            ]);
+
+            setFeaturedPosts(featuredData);
+            if (Array.isArray(catsData)) {
+                setCategories(['All', ...catsData.map((c: any) => c.name)]);
+            }
+            setPosts(blogData);
+            setHasMore(blogData.length === initialLimit);
+        } catch (err) {
+            console.error('Failed to fetch initial data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const fetchPosts = async (currentOffset: number, append = false) => {
         try {
-            if (append) setLoadingMore(true); else setLoading(true);
-            const data = await api.blog.list({ limit, offset: currentOffset });
+            if (append) setLoadingMore(true);
+            const limit = append ? loadMoreLimit : initialLimit;
+            const data = await api.blog.list({
+                limit,
+                offset: currentOffset,
+                category: activeCategory === 'All' ? undefined : activeCategory
+            });
             const newPosts = Array.isArray(data) ? data : (data?.posts || []);
+
             if (append) {
                 setPosts(prev => [...prev, ...newPosts]);
             } else {
@@ -30,31 +62,40 @@ const BlogLandingPage: React.FC = () => {
         } catch (err) {
             console.error('Failed to fetch posts:', err);
         } finally {
-            setLoading(false);
             setLoadingMore(false);
         }
     };
 
     useEffect(() => {
-        fetchPosts(0);
+        fetchInitialData();
     }, []);
 
+    // Effect for category change
+    useEffect(() => {
+        if (!loading) {
+            setOffset(0);
+            fetchPosts(0);
+        }
+    }, [activeCategory]);
+
+    // Slider Timer
+    useEffect(() => {
+        if (featuredPosts.length <= 1) return;
+        const timer = setInterval(() => {
+            setCurrentHeroIndex(prev => (prev + 1) % featuredPosts.length);
+        }, 6000);
+        return () => clearInterval(timer);
+    }, [featuredPosts]);
+
     const handleLoadMore = () => {
-        const newOffset = offset + limit;
-        setOffset(newOffset);
-        fetchPosts(newOffset, true);
+        const newOffset = offset + (posts.length === initialLimit ? initialLimit : loadMoreLimit);
+        // Wait, offset should be cumulative
+        const currentTotal = posts.length;
+        setOffset(currentTotal);
+        fetchPosts(currentTotal, true);
     };
 
-    // Filter posts by category (client-side)
-    const filteredPosts = useMemo(() => {
-        if (activeCategory === 'All') return posts;
-        return posts.filter(p =>
-            p.category?.toLowerCase().includes(activeCategory.toLowerCase())
-        );
-    }, [posts, activeCategory]);
-
-    const featuredPost = filteredPosts[0];
-    const gridPosts = filteredPosts.slice(1);
+    const heroPost = featuredPosts[currentHeroIndex];
 
     // Loading skeleton
     if (loading) {
@@ -116,7 +157,7 @@ const BlogLandingPage: React.FC = () => {
             {/* Category Filter */}
             <section className="max-w-7xl mx-auto px-6 mb-12">
                 <div className="flex items-center justify-center gap-3 overflow-x-auto pb-4 no-scrollbar">
-                    {CATEGORIES.map(cat => (
+                    {categories.map(cat => (
                         <button
                             key={cat}
                             onClick={() => setActiveCategory(cat)}
@@ -132,77 +173,99 @@ const BlogLandingPage: React.FC = () => {
             </section>
 
             <AnimatePresence mode="wait">
-                {filteredPosts.length === 0 ? (
-                    /* Empty State */
-                    <motion.section
-                        key="empty"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="max-w-7xl mx-auto px-6 py-32 text-center"
-                    >
-                        <div className="w-20 h-20 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                            <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                            </svg>
-                        </div>
-                        <h3 className="text-xl font-bold text-[#0A1128] mb-2">Belum Ada Artikel</h3>
-                        <p className="text-slate-400">Artikel akan segera hadir. Nantikan update terbaru kami!</p>
-                    </motion.section>
-                ) : (
-                    <motion.div
-                        key={activeCategory}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                    >
-                        {/* Featured Article */}
-                        {featuredPost && (
-                            <section className="max-w-7xl mx-auto px-6 mb-16">
-                                <BlogCard post={featuredPost} featured />
-                            </section>
-                        )}
+                <motion.div
+                    key={activeCategory}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    {/* Hero Slider */}
+                    {featuredPosts.length > 0 && activeCategory === 'All' && (
+                        <section className="max-w-7xl mx-auto px-6 mb-20 mt-10">
+                            <div className="relative overflow-hidden rounded-[2.5rem] bg-[#0A1128] aspect-[21/9] shadow-2xl">
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={heroPost.id}
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -20 }}
+                                        transition={{ duration: 0.6, ease: "anticipate" }}
+                                        className="absolute inset-0"
+                                    >
+                                        <BlogCard post={heroPost} featured />
+                                    </motion.div>
+                                </AnimatePresence>
 
-                        {/* Article Grid */}
-                        {gridPosts.length > 0 && (
-                            <section className="max-w-7xl mx-auto px-6 pb-16">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                    {gridPosts.map((post, i) => (
-                                        <motion.div
-                                            key={post.id}
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: i * 0.05 }}
-                                        >
-                                            <BlogCard post={post} />
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            </section>
-                        )}
+                                {/* Slider Controls */}
+                                {featuredPosts.length > 1 && (
+                                    <div className="absolute bottom-10 right-10 flex gap-2 z-10">
+                                        {featuredPosts.map((_, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={() => setCurrentHeroIndex(idx)}
+                                                className={`h-1.5 rounded-full transition-all duration-500 ${idx === currentHeroIndex ? 'w-8 bg-teal-400' : 'w-2 bg-white/20 hover:bg-white/40'}`}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </section>
+                    )}
 
-                        {/* Load More */}
-                        {hasMore && (
-                            <section className="max-w-7xl mx-auto px-6 pb-16 text-center">
-                                <button
-                                    onClick={handleLoadMore}
-                                    disabled={loadingMore}
-                                    className="px-10 py-4 bg-[#0A1128] text-white text-sm font-bold uppercase tracking-widest rounded-2xl hover:bg-slate-800 transition-all disabled:opacity-50"
-                                >
-                                    {loadingMore ? (
-                                        <span className="flex items-center gap-2">
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                            Memuat...
-                                        </span>
-                                    ) : (
-                                        'Lihat Artikel Lainnya'
-                                    )}
-                                </button>
-                            </section>
-                        )}
-                    </motion.div>
-                )}
+                    {/* Article Grid */}
+                    {posts.length > 0 ? (
+                        <section className="max-w-7xl mx-auto px-6 pb-16">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                {posts.map((post, i) => (
+                                    <motion.div
+                                        key={post.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: i * 0.05 }}
+                                    >
+                                        <BlogCard post={post} />
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </section>
+                    ) : (
+                        /* Empty State */
+                        <motion.section
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="max-w-7xl mx-auto px-6 py-32 text-center"
+                        >
+                            <div className="w-20 h-20 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                                <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                                </svg>
+                            </div>
+                            <h3 className="text-xl font-bold text-[#0A1128] mb-2">Belum Ada Artikel</h3>
+                            <p className="text-slate-400">Artikel akan segera hadir. Nantikan update terbaru kami!</p>
+                        </motion.section>
+                    )}
+
+                    {/* Load More */}
+                    {hasMore && posts.length > 0 && (
+                        <section className="max-w-7xl mx-auto px-6 pb-16 text-center">
+                            <button
+                                onClick={handleLoadMore}
+                                disabled={loadingMore}
+                                className="px-10 py-4 bg-[#0A1128] text-white text-sm font-bold uppercase tracking-widest rounded-2xl hover:bg-slate-800 transition-all disabled:opacity-50 active:scale-95"
+                            >
+                                {loadingMore ? (
+                                    <span className="flex items-center gap-2">
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Memuat...
+                                    </span>
+                                ) : (
+                                    'Lihat Artikel Lainnya'
+                                )}
+                            </button>
+                        </section>
+                    )}
+                </motion.div>
             </AnimatePresence>
 
             {/* Newsletter Section */}

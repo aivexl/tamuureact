@@ -18,6 +18,8 @@ export interface BlogPost {
     created_at: string;
     view_count?: number;
     author_email?: string;
+    tags?: string[] | string;
+    is_featured?: number | boolean;
 }
 
 interface BlogCardProps {
@@ -98,6 +100,12 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, featured = false }) =>
                         <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase text-teal-600 bg-teal-500/10">
                             {post.category || 'Article'}
                         </span>
+                        {/* Display first 2 tags if they exist */}
+                        {post.tags && (typeof post.tags === 'string' ? JSON.parse(post.tags) : post.tags).slice(0, 2).map((tag: string) => (
+                            <span key={tag} className="px-2 py-0.5 rounded text-[8px] font-bold uppercase text-slate-400 bg-slate-100 border border-slate-200">
+                                #{tag}
+                            </span>
+                        ))}
                     </div>
 
                     {/* Title */}
