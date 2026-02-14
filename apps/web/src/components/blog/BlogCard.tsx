@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Eye } from 'lucide-react';
+
 
 export interface BlogPost {
     id: string;
@@ -113,10 +113,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, featured = false }) =>
                     {/* Footer */}
                     <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between text-[11px] font-medium text-slate-400 uppercase tracking-wider">
                         <span>{formattedDate}</span>
-                        <div className="flex items-center gap-1.5">
-                            <Eye className="w-3.5 h-3.5" />
-                            <span>{(post.view_count || 0).toLocaleString()} views</span>
-                        </div>
+                        <span>{readingTime} min read</span>
                     </div>
                 </div>
             </motion.article>

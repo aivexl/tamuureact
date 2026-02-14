@@ -2,9 +2,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, useScroll, useSpring } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, Sparkles } from 'lucide-react';
 
 import { BlogCard, BlogPost } from './BlogCard';
 
@@ -24,18 +22,14 @@ const ShareBar = ({ title, slug }: { title: string; slug: string }) => {
     };
 
     return (
-        <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5 }}
-            className="fixed left-8 top-1/2 -translate-y-1/2 z-40 hidden xl:flex flex-col gap-3"
-        >
+        <div className="flex items-center gap-3 mt-12 pt-8 border-t border-slate-100">
+            <span className="text-xs font-bold uppercase tracking-widest text-slate-400 mr-2">Share</span>
             {/* WhatsApp */}
             <a
                 href={`https://wa.me/?text=${encodeURIComponent(title + ' ' + url)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-11 h-11 bg-white border border-slate-100 rounded-full shadow-sm flex items-center justify-center text-slate-500 hover:text-emerald-500 hover:border-emerald-200 hover:shadow-md transition-all"
+                className="w-10 h-10 bg-white border border-slate-100 rounded-full shadow-sm flex items-center justify-center text-slate-500 hover:text-emerald-500 hover:border-emerald-200 hover:shadow-md transition-all"
                 title="Share via WhatsApp"
             >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -48,7 +42,7 @@ const ShareBar = ({ title, slug }: { title: string; slug: string }) => {
                 href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-11 h-11 bg-white border border-slate-100 rounded-full shadow-sm flex items-center justify-center text-slate-500 hover:text-sky-500 hover:border-sky-200 hover:shadow-md transition-all"
+                className="w-10 h-10 bg-white border border-slate-100 rounded-full shadow-sm flex items-center justify-center text-slate-500 hover:text-sky-500 hover:border-sky-200 hover:shadow-md transition-all"
                 title="Share on X"
             >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -59,19 +53,20 @@ const ShareBar = ({ title, slug }: { title: string; slug: string }) => {
             {/* Copy Link */}
             <button
                 onClick={copyLink}
-                className="w-11 h-11 bg-white border border-slate-100 rounded-full shadow-sm flex items-center justify-center text-slate-500 hover:text-teal-500 hover:border-teal-200 hover:shadow-md transition-all"
+                className="w-10 h-10 bg-white border border-slate-100 rounded-full shadow-sm flex items-center justify-center text-slate-500 hover:text-teal-500 hover:border-teal-200 hover:shadow-md transition-all"
                 title="Copy link"
             >
                 {copied ? <Check className="w-4 h-4 text-teal-500" /> : <Copy className="w-4 h-4" />}
             </button>
-        </motion.div>
+            {copied && <span className="text-xs text-teal-500 font-bold">Link disalin!</span>}
+        </div>
     );
 };
 
 const PromoBanner = () => (
     <div className="my-16 p-8 rounded-2xl bg-white border border-slate-100 flex flex-col md:flex-row items-center gap-8 shadow-sm">
-        <div className="w-14 h-14 bg-[#0A1128] rounded-2xl flex items-center justify-center text-white text-xl shadow-lg">
-            💎
+        <div className="w-14 h-14 bg-[#0A1128] rounded-2xl flex items-center justify-center text-white shadow-lg">
+            <Sparkles className="w-6 h-6" />
         </div>
         <div className="flex-1 text-center md:text-left">
             <h4 className="text-lg font-bold text-[#0A1128] mb-1">Upgrade Undangan Anda</h4>
@@ -124,37 +119,6 @@ export const BlogPostLayout: React.FC<BlogPostLayoutProps> = ({ post, relatedPos
 
     const readingTime = Math.max(1, Math.ceil((post.content?.length || 0) / 1200));
 
-    const components = {
-        p: ({ children }: any) => (
-            <p className="mb-8 leading-relaxed text-slate-600 text-lg md:text-xl">{children}</p>
-        ),
-        img: ({ src, alt }: any) => (
-            <div className="my-12 rounded-2xl overflow-hidden">
-                <img src={src} alt={alt} className="w-full h-auto object-cover" loading="lazy" />
-                {alt && (
-                    <p className="text-center text-xs text-slate-400 mt-4 uppercase tracking-widest font-bold">
-                        {alt}
-                    </p>
-                )}
-            </div>
-        ),
-        h2: ({ children }: any) => (
-            <h2 className="text-3xl md:text-4xl font-extrabold mt-16 mb-8 text-[#0A1128] tracking-tight">
-                {children}
-            </h2>
-        ),
-        h3: ({ children }: any) => (
-            <h3 className="text-2xl md:text-3xl font-bold mt-12 mb-6 text-[#0A1128] tracking-tight">
-                {children}
-            </h3>
-        ),
-        blockquote: ({ children }: any) => (
-            <blockquote className="border-l-4 border-teal-500 pl-6 my-8 italic text-slate-500 text-lg">
-                {children}
-            </blockquote>
-        ),
-    };
-
     return (
         <div className="min-h-screen bg-white font-sans text-[#0A1128]">
             <Helmet>
@@ -172,9 +136,6 @@ export const BlogPostLayout: React.FC<BlogPostLayoutProps> = ({ post, relatedPos
                 className="fixed top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-teal-500 to-teal-400 origin-left z-50"
                 style={{ scaleX }}
             />
-
-            {/* Share Bar */}
-            <ShareBar title={post.title} slug={post.slug} />
 
             <main className="max-w-4xl mx-auto px-6 py-16 md:py-24">
                 <header className="mb-16">
@@ -228,11 +189,13 @@ export const BlogPostLayout: React.FC<BlogPostLayoutProps> = ({ post, relatedPos
                 </header>
 
                 {/* Article Body */}
-                <article className="prose prose-lg md:prose-xl max-w-none prose-slate">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
-                        {post.content}
-                    </ReactMarkdown>
-                </article>
+                <article
+                    className="prose prose-lg md:prose-xl max-w-none prose-slate prose-headings:text-[#0A1128] prose-headings:tracking-tight prose-blockquote:border-l-teal-500 prose-img:rounded-2xl"
+                    dangerouslySetInnerHTML={{ __html: post.content }}
+                />
+
+                {/* Share Buttons */}
+                <ShareBar title={post.title} slug={post.slug} />
 
                 <PromoBanner />
                 <SubscribeCard />
@@ -251,21 +214,6 @@ export const BlogPostLayout: React.FC<BlogPostLayoutProps> = ({ post, relatedPos
                     </section>
                 )}
             </main>
-
-            {/* Footer */}
-            <footer className="bg-slate-50 py-16 border-t border-slate-100">
-                <div className="max-w-4xl mx-auto px-6 text-center">
-                    <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8 text-xs font-bold uppercase tracking-wider text-slate-400">
-                        <Link to="/privacy" className="hover:text-[#0A1128] transition-colors">Privacy Policy</Link>
-                        <Link to="/terms" className="hover:text-[#0A1128] transition-colors">Terms of Service</Link>
-                        <Link to="/refund" className="hover:text-[#0A1128] transition-colors">Refund Policy</Link>
-                        <Link to="/contact" className="hover:text-[#0A1128] transition-colors">Contact</Link>
-                    </div>
-                    <p className="text-xs text-slate-300 font-bold uppercase tracking-wider">
-                        © 2026 Tamuu. All rights reserved.
-                    </p>
-                </div>
-            </footer>
         </div>
     );
 };
