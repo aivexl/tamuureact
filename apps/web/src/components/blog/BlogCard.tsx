@@ -26,13 +26,13 @@ interface BlogCardProps {
 }
 
 export const BlogCard: React.FC<BlogCardProps> = ({ post, featured = false }) => {
-    const formattedDate = post.published_at
-        ? new Date(post.published_at).toLocaleDateString('id-ID', {
+    const formattedDate = (post.published_at || post.created_at)
+        ? new Date(post.published_at || post.created_at).toLocaleDateString('id-ID', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
         })
-        : 'Draft';
+        : '';
 
     const readingTime = Math.max(1, Math.ceil((post.content?.length || 0) / 1200));
 

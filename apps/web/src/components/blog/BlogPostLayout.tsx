@@ -198,21 +198,22 @@ export const BlogPostLayout: React.FC<BlogPostLayoutProps> = ({ post, relatedPos
                 <ShareBar title={post.title} slug={post.slug} />
 
                 <PromoBanner />
-                <SubscribeCard />
 
                 {/* Related Posts */}
                 {relatedPosts.length > 0 && (
-                    <section className="mt-32 pt-16 border-t border-slate-100 text-left">
-                        <h3 className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-400 mb-12">
+                    <section className="mt-16 pt-12 border-t border-slate-100 text-left">
+                        <h3 className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-400 mb-8">
                             Artikel Terkait
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            {relatedPosts.map(p => (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                            {relatedPosts.slice(0, 3).map(p => (
                                 <BlogCard key={p.id} post={p} />
                             ))}
                         </div>
                     </section>
                 )}
+
+                <SubscribeCard />
             </main>
         </div>
     );
