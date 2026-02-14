@@ -11,6 +11,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { setAuthSession, setUser, setToken, setLoading } = useStore();
+    const lastSyncedSession = React.useRef<string | null>(null);
 
     useEffect(() => {
         // 1. Check current session on load
@@ -20,7 +21,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             if (session) {
                 // Non-blocking sync to allow immediate access to basic auth state
-                syncUserProfile(session.user, session.access_token);
+                syncUserProfile(session.user, session.access_token, session);
             } else {
                 setLoading(false);
             }
@@ -34,7 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             if (session) {
                 // Non-blocking profile sync for faster UI response
-                syncUserProfile(session.user, session.access_token);
+                syncUserProfile(session.user, session.access_token, session);
             } else {
                 setUser(null);
                 setToken(null);
@@ -51,7 +52,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
      * Syncs Supabase Auth user with our Zustand store
      * Uses user_metadata initially, then fetches D1 data
      */
-    const syncUserProfile = async (supabaseUser: any, token: string) => {
+    const syncUserProfile = async (supabaseUser: any, token: string, session?: any) => {
+        // Use session access token or specific identifier for deduplication
+        const sessionKey = session?.access_token || token;
+        if (lastSyncedSession.current === sessionKey) {
+            return;
+        }
+        lastSyncedSession.current = sessionKey;
+
         // Build initial user object from Supabase auth metadata
         const initialUser: User = {
             id: supabaseUser.id,

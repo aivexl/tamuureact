@@ -11,7 +11,8 @@ import {
     Trash2,
     CheckCircle2,
     Clock,
-    ExternalLink
+    ExternalLink,
+    ArrowLeft
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { toast } from 'react-hot-toast';
@@ -143,12 +144,35 @@ export const AdminBlogListPage = () => {
     ];
 
     return (
-        <div className="space-y-10">
+        <div className="pt-12 pb-24 px-8 sm:px-12 space-y-12">
+            {/* Top Navigation Bar */}
+            <div className="flex items-center gap-4">
+                <Link
+                    to="/admin/dashboard"
+                    className="flex items-center gap-2 text-slate-500 hover:text-white transition-colors group"
+                >
+                    <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 group-hover:border-white/10 group-hover:bg-white/10 transition-all">
+                        <ArrowLeft className="w-5 h-5" />
+                    </div>
+                    <span className="text-xs font-bold uppercase tracking-widest">Dashboard Admin</span>
+                </Link>
+
+                <div className="h-4 w-[1px] bg-white/10 mx-2" />
+
+                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20">
+                    <span className="text-[10px] font-bold text-teal-500 uppercase tracking-widest">CMS Mode</span>
+                </div>
+            </div>
+
             {/* Header */}
-            <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div>
-                    <h1 className="text-4xl font-extrabold text-white tracking-tight mb-2">Blog Management</h1>
-                    <p className="text-slate-400 font-medium">Kelola artikel, draf, dan publikasi konten Tamuu CMS Anda.</p>
+            <header className="flex flex-col md:flex-row md:items-end justify-between gap-8 pt-4">
+                <div className="space-y-3">
+                    <h1 className="text-5xl font-black text-white tracking-tighter leading-none">
+                        Blog Management
+                    </h1>
+                    <p className="text-lg text-slate-400 font-medium max-w-xl">
+                        Kelola artikel, draf, dan publikasi konten Tamuu CMS Anda dengan presisi.
+                    </p>
                 </div>
                 <Link
                     to="/admin/blog/new"
@@ -193,8 +217,8 @@ export const AdminBlogListPage = () => {
                             key={tab.value}
                             onClick={() => setStatusFilter(tab.value)}
                             className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${statusFilter === tab.value
-                                    ? 'bg-teal-500 text-white'
-                                    : 'text-slate-400 hover:text-white'
+                                ? 'bg-teal-500 text-white'
+                                : 'text-slate-400 hover:text-white'
                                 }`}
                         >
                             {tab.label}
