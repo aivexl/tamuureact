@@ -1,6 +1,7 @@
 import { m } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 
 interface AuthLayoutProps {
     children: React.ReactNode;
@@ -19,6 +20,9 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
 
     return (
         <div className="min-h-screen bg-[#0A1128] flex overflow-hidden">
+            <Helmet>
+                <link rel="preload" as="image" href={image} fetchPriority="high" />
+            </Helmet>
             {/* Left Pane: Immersive Visual (Hidden on mobile) */}
             <div className="hidden lg:flex lg:w-[60%] relative items-center justify-center overflow-hidden">
                 {/* Dynamic Multi-layered Overlay for Maximum Legibility */}

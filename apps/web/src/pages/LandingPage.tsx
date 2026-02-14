@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSEO } from '../hooks/useSEO';
 import { useStore } from '../store/useStore';
@@ -108,6 +109,9 @@ export const LandingPage: React.FC = () => {
 
     return (
         <div className="bg-white text-gray-900 overflow-visible font-sans">
+            <Helmet>
+                <link rel="preload" as="image" href="/images/hero-bride.webp" fetchPriority="high" />
+            </Helmet>
 
             {/* Hero Section - Dark Navy Background */}
             <section className="relative pt-24 pb-0 sm:pt-32 overflow-hidden hero-section" style={{ backgroundColor: '#0A1128' }}>
