@@ -335,7 +335,7 @@ export const SeamlessCanvas: React.FC = () => {
         };
 
         const handleKeyUp = (e: KeyboardEvent) => {
-            if (!e.shiftKey) setShiftPressed(false);
+            if (e.key === 'Shift') setShiftPressed(false);
         };
 
         window.addEventListener('keydown', handleKeyDown);
@@ -1055,6 +1055,7 @@ const SectionFrame: React.FC<{
                             rotatable={true}
                             snappable={true}
                             keepRatio={shiftPressed}
+                            renderDirections={["nw", "n", "ne", "w", "e", "sw", "s", "se"]}
                             elementGuidelines={[...targets]}
                             snapGap={5}
                             snapThreshold={5}
@@ -1066,38 +1067,63 @@ const SectionFrame: React.FC<{
 
                             // Single Target Events
                             onDrag={(e: OnDrag) => {
+                                e.target.style.left = `${e.left}px`;
+                                e.target.style.top = `${e.top}px`;
+                            }}
+                            onDragEnd={(e: any) => {
                                 const id = e.target.getAttribute('data-element-id');
-                                if (id) onElementResize(id, { x: e.left, y: e.top });
+                                if (id) onElementResize(id, { x: e.lastEvent.left, y: e.lastEvent.top });
                             }}
                             onResize={(e: any) => {
+                                e.target.style.width = `${e.width}px`;
+                                e.target.style.height = `${e.height}px`;
+                                e.target.style.transform = e.drag.transform;
+                            }}
+                            onResizeEnd={(e: any) => {
                                 const id = e.target.getAttribute('data-element-id');
                                 if (id) onElementResize(id, {
-                                    width: e.width,
-                                    height: e.height,
-                                    x: e.drag.left,
-                                    y: e.drag.top
+                                    width: e.lastEvent.width,
+                                    height: e.lastEvent.height,
+                                    x: e.lastEvent.drag.left,
+                                    y: e.lastEvent.drag.top
                                 });
                             }}
                             onRotate={(e: OnRotate) => {
+                                e.target.style.transform = e.drag.transform;
+                            }}
+                            onRotateEnd={(e: any) => {
                                 const id = e.target.getAttribute('data-element-id');
-                                if (id) onElementResize(id, { rotation: e.rotate });
+                                if (id) onElementResize(id, { rotation: e.lastEvent.rotate });
                             }}
 
                             // Group Events
                             onDragGroup={(e: OnDragGroup) => {
                                 e.events.forEach((ev) => {
+                                    ev.target.style.left = `${ev.left}px`;
+                                    ev.target.style.top = `${ev.top}px`;
+                                });
+                            }}
+                            onDragGroupEnd={(e: any) => {
+                                e.events.forEach((ev: any) => {
                                     const id = ev.target.getAttribute('data-element-id');
-                                    if (id) onElementResize(id, { x: ev.left, y: ev.top });
+                                    if (id) onElementResize(id, { x: ev.lastEvent.left, y: ev.lastEvent.top });
                                 });
                             }}
                             onResizeGroup={(e: any) => {
                                 e.events.forEach((ev: any) => {
+                                    ev.target.style.width = `${ev.width}px`;
+                                    ev.target.style.height = `${ev.height}px`;
+                                    ev.target.style.transform = ev.drag.transform;
+                                });
+                            }}
+                            onResizeGroupEnd={(e: any) => {
+                                e.events.forEach((ev: any) => {
                                     const id = ev.target.getAttribute('data-element-id');
                                     if (id) onElementResize(id, {
-                                        width: ev.width,
-                                        height: ev.height,
-                                        x: ev.drag.left,
-                                        y: ev.drag.top
+                                        width: ev.lastEvent.width,
+                                        height: ev.lastEvent.height,
+                                        x: ev.lastEvent.drag.left,
+                                        y: ev.lastEvent.drag.top
                                     });
                                 });
                             }}
@@ -1268,48 +1294,80 @@ const SideCanvas: React.FC<{
                         snapVertical={true}
                         snapHorizontal={true}
                         snapCenter={true}
+                        renderDirections={["nw", "n", "ne", "w", "e", "sw", "s", "se"]}
+                        origin={false}
 
                         // Single Target Events
-                        onDrag={(e: OnDrag) => {
+                        onDrag={(e: any) => {
+                            e.target.style.left = `${e.left}px`;
+                            e.target.style.top = `${e.top}px`;
+                        }}
+                        onDragEnd={(e: any) => {
                             const id = e.target.getAttribute('data-element-id');
-                            if (id) onUpdateElement(id, { x: e.left, y: e.top });
+                            if (id) onUpdateElement(id, { x: e.lastEvent.left, y: e.lastEvent.top });
                         }}
                         onResize={(e: any) => {
+                            e.target.style.width = `${e.width}px`;
+                            e.target.style.height = `${e.height}px`;
+                            e.target.style.transform = e.drag.transform;
+                        }}
+                        onResizeEnd={(e: any) => {
                             const id = e.target.getAttribute('data-element-id');
                             if (id) onUpdateElement(id, {
-                                width: e.width,
-                                height: e.height,
-                                x: e.drag.left,
-                                y: e.drag.top
+                                width: e.lastEvent.width,
+                                height: e.lastEvent.height,
+                                x: e.lastEvent.drag.left,
+                                y: e.lastEvent.drag.top
                             });
                         }}
-                        onRotate={(e: OnRotate) => {
+                        onRotate={(e: any) => {
+                            e.target.style.transform = e.drag.transform;
+                        }}
+                        onRotateEnd={(e: any) => {
                             const id = e.target.getAttribute('data-element-id');
-                            if (id) onUpdateElement(id, { rotation: e.rotate });
+                            if (id) onUpdateElement(id, { rotation: e.lastEvent.rotate });
                         }}
 
                         // Group Events
-                        onDragGroup={(e: OnDragGroup) => {
-                            e.events.forEach((ev) => {
+                        onDragGroup={(e: any) => {
+                            e.events.forEach((ev: any) => {
+                                ev.target.style.left = `${ev.left}px`;
+                                ev.target.style.top = `${ev.top}px`;
+                            });
+                        }}
+                        onDragGroupEnd={(e: any) => {
+                            e.events.forEach((ev: any) => {
                                 const id = ev.target.getAttribute('data-element-id');
-                                if (id) onUpdateElement(id, { x: ev.left, y: ev.top });
+                                if (id) onUpdateElement(id, { x: ev.lastEvent.left, y: ev.lastEvent.top });
                             });
                         }}
                         onResizeGroup={(e: any) => {
                             e.events.forEach((ev: any) => {
+                                ev.target.style.width = `${ev.width}px`;
+                                ev.target.style.height = `${ev.height}px`;
+                                ev.target.style.transform = ev.drag.transform;
+                            });
+                        }}
+                        onResizeGroupEnd={(e: any) => {
+                            e.events.forEach((ev: any) => {
                                 const id = ev.target.getAttribute('data-element-id');
                                 if (id) onUpdateElement(id, {
-                                    width: ev.width,
-                                    height: ev.height,
-                                    x: ev.drag.left,
-                                    y: ev.drag.top
+                                    width: ev.lastEvent.width,
+                                    height: ev.lastEvent.height,
+                                    x: ev.lastEvent.drag.left,
+                                    y: ev.lastEvent.drag.top
                                 });
                             });
                         }}
-                        onRotateGroup={(e: OnRotateGroup) => {
-                            e.events.forEach((ev) => {
+                        onRotateGroup={(e: any) => {
+                            e.events.forEach((ev: any) => {
+                                ev.target.style.transform = ev.drag.transform;
+                            });
+                        }}
+                        onRotateGroupEnd={(e: any) => {
+                            e.events.forEach((ev: any) => {
                                 const id = ev.target.getAttribute('data-element-id');
-                                if (id) onUpdateElement(id, { rotation: ev.rotate });
+                                if (id) onUpdateElement(id, { rotation: ev.lastEvent.rotate });
                             });
                         }}
 

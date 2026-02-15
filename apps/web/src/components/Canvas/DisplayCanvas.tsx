@@ -159,7 +159,7 @@ export const DisplayCanvas: React.FC = () => {
         };
 
         const handleKeyUp = (e: KeyboardEvent) => {
-            if (!e.shiftKey) setShiftPressed(false);
+            if (e.key === 'Shift') setShiftPressed(false);
         };
 
         window.addEventListener('keydown', handleKeyDown);
@@ -328,28 +328,90 @@ export const DisplayCanvas: React.FC = () => {
                                     keepRatio={shiftPressed}
                                     snapThreshold={5}
                                     origin={false}
+                                    renderDirections={["nw", "n", "ne", "w", "e", "sw", "s", "se"]}
                                     onDrag={(e: any) => {
+                                        e.target.style.left = `${e.left}px`;
+                                        e.target.style.top = `${e.top}px`;
+                                    }}
+                                    onDragEnd={(e: any) => {
                                         const id = e.target.getAttribute('data-element-id');
                                         if (id && activeSectionId) {
-                                            updateElementInSection(activeSectionId, id, { x: e.left, y: e.top });
+                                            updateElementInSection(activeSectionId, id, { x: e.lastEvent.left, y: e.lastEvent.top });
                                         }
                                     }}
                                     onResize={(e: any) => {
+                                        e.target.style.width = `${e.width}px`;
+                                        e.target.style.height = `${e.height}px`;
+                                        e.target.style.transform = e.drag.transform;
+                                    }}
+                                    onResizeEnd={(e: any) => {
                                         const id = e.target.getAttribute('data-element-id');
                                         if (id && activeSectionId) {
                                             updateElementInSection(activeSectionId, id, {
-                                                width: e.width,
-                                                height: e.height,
-                                                x: e.drag.left,
-                                                y: e.drag.top
+                                                width: e.lastEvent.width,
+                                                height: e.lastEvent.height,
+                                                x: e.lastEvent.drag.left,
+                                                y: e.lastEvent.drag.top
                                             });
                                         }
                                     }}
                                     onRotate={(e: any) => {
+                                        e.target.style.transform = e.drag.transform;
+                                    }}
+                                    onRotateEnd={(e: any) => {
                                         const id = e.target.getAttribute('data-element-id');
                                         if (id && activeSectionId) {
-                                            updateElementInSection(activeSectionId, id, { rotation: e.rotate });
+                                            updateElementInSection(activeSectionId, id, { rotation: e.lastEvent.rotate });
                                         }
+                                    }}
+
+                                    // Group Events
+                                    onDragGroup={(e: any) => {
+                                        e.events.forEach((ev: any) => {
+                                            ev.target.style.left = `${ev.left}px`;
+                                            ev.target.style.top = `${ev.top}px`;
+                                        });
+                                    }}
+                                    onDragGroupEnd={(e: any) => {
+                                        e.events.forEach((ev: any) => {
+                                            const id = ev.target.getAttribute('data-element-id');
+                                            if (id && activeSectionId) {
+                                                updateElementInSection(activeSectionId, id, { x: ev.lastEvent.left, y: ev.lastEvent.top });
+                                            }
+                                        });
+                                    }}
+                                    onResizeGroup={(e: any) => {
+                                        e.events.forEach((ev: any) => {
+                                            ev.target.style.width = `${ev.width}px`;
+                                            ev.target.style.height = `${ev.height}px`;
+                                            ev.target.style.transform = ev.drag.transform;
+                                        });
+                                    }}
+                                    onResizeGroupEnd={(e: any) => {
+                                        e.events.forEach((ev: any) => {
+                                            const id = ev.target.getAttribute('data-element-id');
+                                            if (id && activeSectionId) {
+                                                updateElementInSection(activeSectionId, id, {
+                                                    width: ev.lastEvent.width,
+                                                    height: ev.lastEvent.height,
+                                                    x: ev.lastEvent.drag.left,
+                                                    y: ev.lastEvent.drag.top
+                                                });
+                                            }
+                                        });
+                                    }}
+                                    onRotateGroup={(e: any) => {
+                                        e.events.forEach((ev: any) => {
+                                            ev.target.style.transform = ev.drag.transform;
+                                        });
+                                    }}
+                                    onRotateGroupEnd={(e: any) => {
+                                        e.events.forEach((ev: any) => {
+                                            const id = ev.target.getAttribute('data-element-id');
+                                            if (id && activeSectionId) {
+                                                updateElementInSection(activeSectionId, id, { rotation: ev.lastEvent.rotate });
+                                            }
+                                        });
                                     }}
                                     className="custom-moveable"
                                 />
