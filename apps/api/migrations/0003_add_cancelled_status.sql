@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS billing_transactions_new (
 
 -- Step 2: Copy data from old table to new table
 INSERT INTO billing_transactions_new (id, user_id, external_id, amount, currency, status, tier, payment_method, payment_channel, payment_url, paid_at, created_at, updated_at)
-SELECT id, user_id, external_id, amount, currency, status, tier, payment_method, payment_channel, payment_url, paid_at, created_at, updated_at
+SELECT id, user_id, external_id, amount, currency, status, tier, payment_method, payment_channel, NULL as payment_url, paid_at, created_at, updated_at
 FROM billing_transactions;
 
 -- Step 3: Drop old table

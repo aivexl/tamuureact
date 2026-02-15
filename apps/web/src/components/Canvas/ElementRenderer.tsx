@@ -486,20 +486,98 @@ const ButtonElement: React.FC<{ layer: Layer, onOpenInvitation?: () => void, onC
 const ShapeElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ layer, onContentLoad }) => {
     useEffect(() => {
         onContentLoad?.();
-    }, []); // Non-resource element, reveal immediately
+    }, []);
 
     const config = layer.shapeConfig;
     if (!config) return null;
     const shapeType = config.shapeType || 'rectangle';
 
+    // CTO Logic: Generate Style based on Enterprise Requirements
+    const getShapeStyle = (): React.CSSProperties => {
+        const style: React.CSSProperties = {
+            width: '100%',
+            height: '100%',
+            transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+        };
+
+        // 1. Handling Organic Blobs (Squircle / Custom Border Radius)
+        if (shapeType === 'blob' && config.blobConfig?.borderRadius) {
+            style.borderRadius = config.blobConfig.borderRadius;
+        }
+
+        // 2. Handling Glassmorphism
+        if (config.styleType === 'glass') {
+            style.backdropFilter = `blur(${config.glassBlur || 20}px)`;
+            style.backgroundColor = `rgba(255, 255, 255, ${config.glassOpacity || 0.1})`;
+            style.border = `${config.strokeWidth || 1}px solid ${config.stroke || 'rgba(255, 255, 255, 0.2)'}`;
+            if (shapeType === 'circle') style.borderRadius = '50%';
+        }
+
+        // 3. Handling Mesh Gradients
+        else if (config.styleType === 'mesh' && config.meshColors && config.meshColors.length > 0) {
+            const colors = config.meshColors;
+            const gradients = [
+                `radial-gradient(at 0% 0%, ${colors[0]} 0, transparent 50%)`,
+                `radial-gradient(at 50% 0%, ${colors[1] || colors[0]} 0, transparent 50%)`,
+                `radial-gradient(at 100% 0%, ${colors[2] || colors[0]} 0, transparent 50%)`,
+                `radial-gradient(at 0% 50%, ${colors[3] || colors[0]} 0, transparent 50%)`,
+                `radial-gradient(at 100% 50%, ${colors[4] || colors[0]} 0, transparent 50%)`,
+                `radial-gradient(at 0% 100%, ${colors[5] || colors[0]} 0, transparent 50%)`,
+                `radial-gradient(at 50% 100%, ${colors[6] || colors[0]} 0, transparent 50%)`,
+                `radial-gradient(at 100% 100%, ${colors[7] || colors[0]} 0, transparent 50%)`
+            ];
+            style.backgroundImage = gradients.join(', ');
+            style.backgroundColor = colors[0]; // Fallback
+        }
+
+        return style;
+    };
+
+    // If it's a "Path" based shape or SVG based, we use the SVG renderer
+    const useSvg = !['blob', 'glass'].includes(shapeType) && config.styleType !== 'mesh' && config.styleType !== 'glass';
+
+    if (!useSvg) {
+        return (
+            <div
+                className="w-full h-full overflow-hidden"
+                style={getShapeStyle()}
+            />
+        );
+    }
+
     return (
         <div className="w-full h-full">
             <svg width="100%" height="100%" viewBox={shapeType.includes('rectangle') ? `0 0 ${layer.width} ${layer.height}` : '0 0 100 100'} preserveAspectRatio={shapeType.includes('rectangle') ? 'none' : 'xMidYMid meet'} className="overflow-visible">
-                {shapeType === 'rectangle' && <rect x="0" y="0" width="100%" height="100%" fill={config.fill || '#bfa181'} stroke={config.stroke || undefined} strokeWidth={config.strokeWidth} />}
-                {shapeType === 'rounded-rectangle' && <rect x="0" y="0" width="100%" height="100%" rx={config.cornerRadius || 20} fill={config.fill || '#bfa181'} stroke={config.stroke || undefined} strokeWidth={config.strokeWidth} />}
-                {shapeType === 'circle' && <circle cx="50" cy="50" r="48" fill={config.fill || '#bfa181'} stroke={config.stroke || undefined} strokeWidth={config.strokeWidth} />}
+                {shapeType === 'rectangle' && (
+                    <rect x="0" y="0" width="100%" height="100%"
+                        fill={config.fill || '#bfa181'}
+                        stroke={config.stroke || undefined}
+                        strokeWidth={config.strokeWidth}
+                    />
+                )}
+                {shapeType === 'rounded-rectangle' && (
+                    <rect x="0" y="0" width="100%" height="100%"
+                        rx={config.cornerRadius || 20}
+                        fill={config.fill || '#bfa181'}
+                        stroke={config.stroke || undefined}
+                        strokeWidth={config.strokeWidth}
+                    />
+                )}
+                {shapeType === 'circle' && (
+                    <circle cx="50" cy="50" r="48"
+                        fill={config.fill || '#bfa181'}
+                        stroke={config.stroke || undefined}
+                        strokeWidth={config.strokeWidth}
+                    />
+                )}
                 {!['rectangle', 'rounded-rectangle', 'circle'].includes(shapeType) && (
-                    <path d={shapePaths[shapeType] || config.pathData || ''} fill={config.fill || '#bfa181'} stroke={config.stroke || undefined} strokeWidth={config.strokeWidth} vectorEffect="non-scaling-stroke" />
+                    <path
+                        d={shapePaths[shapeType] || config.pathData || ''}
+                        fill={config.fill || '#bfa181'}
+                        stroke={config.stroke || undefined}
+                        strokeWidth={config.strokeWidth}
+                        vectorEffect="non-scaling-stroke"
+                    />
                 )}
             </svg>
         </div>

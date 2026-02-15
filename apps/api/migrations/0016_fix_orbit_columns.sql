@@ -6,7 +6,7 @@
 
 -- 1. Fix INVITATIONS table
 -- Add orbit_layers if it doesn't exist
-ALTER TABLE invitations ADD COLUMN orbit_layers TEXT DEFAULT '[]';
+-- ALTER TABLE invitations ADD COLUMN orbit_layers TEXT DEFAULT '[]';
 
 -- Add orbit alias for redundancy and compatibility
 ALTER TABLE invitations ADD COLUMN orbit TEXT DEFAULT '{}';

@@ -1899,29 +1899,113 @@ export const PropertyPanel: React.FC = () => {
                                     value={layer.shapeConfig?.shapeType || 'rectangle'}
                                     options={[
                                         { value: 'rectangle', label: 'Rectangle' },
+                                        { value: 'rounded-rectangle', label: 'Rounded Rect' },
                                         { value: 'circle', label: 'Circle' },
                                         { value: 'triangle', label: 'Triangle' },
                                         { value: 'diamond', label: 'Diamond' },
                                         { value: 'heart', label: 'Heart' },
-                                        { value: 'star', label: 'Star' }
+                                        { value: 'star', label: 'Star' },
+                                        { value: 'blob', label: 'Organic Blob' },
                                     ]}
                                     onChange={(v) => handleUpdate({ shapeConfig: { ...layer.shapeConfig!, shapeType: v as any } })}
                                 />
-                                <ColorInput
-                                    label="Fill Color"
-                                    value={layer.shapeConfig?.fill || '#bfa181'}
-                                    onChange={(v) => handleUpdate({ shapeConfig: { ...layer.shapeConfig!, fill: v } })}
+
+                                <SelectInput
+                                    label="Fill Style"
+                                    value={layer.shapeConfig?.styleType || 'solid'}
+                                    options={[
+                                        { value: 'solid', label: 'Solid Color' },
+                                        { value: 'mesh', label: 'Mesh Gradient' },
+                                        { value: 'glass', label: 'Glassmorphism' }
+                                    ]}
+                                    onChange={(v) => handleUpdate({ shapeConfig: { ...layer.shapeConfig!, styleType: v as any } })}
                                 />
-                                <ColorInput
-                                    label="Stroke Color"
-                                    value={layer.shapeConfig?.stroke || 'transparent'}
-                                    onChange={(v) => handleUpdate({ shapeConfig: { ...layer.shapeConfig!, stroke: v === 'transparent' ? undefined : v } })}
-                                />
-                                <NumberInput
-                                    label="Stroke Width"
-                                    value={layer.shapeConfig?.strokeWidth || 0}
-                                    onChange={(v) => handleUpdate({ shapeConfig: { ...layer.shapeConfig!, strokeWidth: v } })}
-                                />
+
+                                {/* Solid Fill */}
+                                {(layer.shapeConfig?.styleType === 'solid' || !layer.shapeConfig?.styleType) && (
+                                    <ColorInput
+                                        label="Fill Color"
+                                        value={layer.shapeConfig?.fill || '#bfa181'}
+                                        onChange={(v) => handleUpdate({ shapeConfig: { ...layer.shapeConfig!, fill: v } })}
+                                    />
+                                )}
+
+                                {/* Mesh Gradient Colors */}
+                                {layer.shapeConfig?.styleType === 'mesh' && (
+                                    <div className="space-y-3 p-3 bg-white/5 rounded-xl border border-white/5">
+                                        <label className="text-[9px] text-white/30 uppercase font-bold">Mesh Color Stops</label>
+                                        <div className="grid grid-cols-4 gap-2">
+                                            {[0, 1, 2, 3, 4, 5, 6, 7].map((idx) => (
+                                                <input
+                                                    key={idx}
+                                                    type="color"
+                                                    value={layer.shapeConfig?.meshColors?.[idx] || (idx === 0 ? '#bfa181' : '#1a1a1a')}
+                                                    onChange={(e) => {
+                                                        const newColors = [...(layer.shapeConfig?.meshColors || Array(8).fill('#1a1a1a'))];
+                                                        newColors[idx] = e.target.value;
+                                                        handleUpdate({ shapeConfig: { ...layer.shapeConfig!, meshColors: newColors } });
+                                                    }}
+                                                    className="w-full h-8 rounded-lg cursor-pointer bg-transparent border border-white/10 hover:border-premium-accent/50 transition-colors"
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Glassmorphism Settings */}
+                                {layer.shapeConfig?.styleType === 'glass' && (
+                                    <div className="space-y-4">
+                                        <RangeInput
+                                            label="Glass Blur"
+                                            value={layer.shapeConfig?.glassBlur || 20}
+                                            min={0}
+                                            max={40}
+                                            onChange={(v) => handleUpdate({ shapeConfig: { ...layer.shapeConfig!, glassBlur: v } })}
+                                        />
+                                        <RangeInput
+                                            label="Glass Opacity"
+                                            value={Math.round((layer.shapeConfig?.glassOpacity || 0.1) * 100)}
+                                            min={0}
+                                            max={100}
+                                            onChange={(v) => handleUpdate({ shapeConfig: { ...layer.shapeConfig!, glassOpacity: v / 100 } })}
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Blob Generator Button */}
+                                {layer.shapeConfig?.shapeType === 'blob' && (
+                                    <button
+                                        onClick={() => {
+                                            const r = () => Math.floor(Math.random() * 70) + 30;
+                                            const br = `${r()}% ${100 - r()}% ${r()}% ${100 - r()}% / ${r()}% ${100 - r()}% ${r()}% ${100 - r()}%`;
+                                            handleUpdate({
+                                                shapeConfig: {
+                                                    ...layer.shapeConfig!,
+                                                    shapeType: 'blob',
+                                                    blobConfig: { borderRadius: br }
+                                                }
+                                            });
+                                        }}
+                                        className="w-full py-2 bg-premium-accent/10 border border-premium-accent/30 text-premium-accent rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-premium-accent/20 transition-all"
+                                    >
+                                        <Zap className="w-3.5 h-3.5" />
+                                        GENERATE UNIQUE BLOB
+                                    </button>
+                                )}
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <ColorInput
+                                        label="Stroke Color"
+                                        value={layer.shapeConfig?.stroke || 'transparent'}
+                                        onChange={(v) => handleUpdate({ shapeConfig: { ...layer.shapeConfig!, stroke: v === 'transparent' ? undefined : v } })}
+                                    />
+                                    <NumberInput
+                                        label="Stroke Width"
+                                        value={layer.shapeConfig?.strokeWidth || 0}
+                                        onChange={(v) => handleUpdate({ shapeConfig: { ...layer.shapeConfig!, strokeWidth: v } })}
+                                    />
+                                </div>
+
                                 {layer.shapeConfig?.shapeType === 'rectangle' && (
                                     <NumberInput
                                         label="Corner Radius"

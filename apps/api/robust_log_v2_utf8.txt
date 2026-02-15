@@ -1,0 +1,1622 @@
+﻿Found 35 migrations to check.
+
+Reviewing migration: 0001_monetization.sql...
+  [OK] Statement applied.
+  [OK] Statement applied.
+  [OK] Statement applied.
+node :   [ERROR] 
+Critical error in 
+statement:
+At line:1 char:60
++ ... robust.cjs; 
+node apply_migrations_
+robust.cjs > 
+robust_log_v2.txt 
+2>&1 ...
++                 ~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (  [ERROR]    
+ Critical error in    
+ statement::Strin    
+g) [], RemoteExce    
+ption
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+  Statement: CREATE 
+INDEX IF NOT EXISTS 
+idx_billing_user ON bi
+lling_transactions(use
+r_id)...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: main.billing_tr
+ansactions: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-14-20_199.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: CREATE 
+INDEX IF NOT EXISTS 
+idx_billing_external 
+ON billing_transaction
+s(external_id)...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: main.billing_tr
+ansactions: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-14-25_202.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: CREATE 
+INDEX IF NOT EXISTS 
+idx_billing_status ON 
+billing_transactions(s
+tatus)...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: main.billing_tr
+ansactions: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-14-28_788.log"
+
+
+Reviewing migration: 0002_user_profile_ext.sql...
+  [OK] Statement applied.
+  [OK] Statement applied.
+  [OK] Statement applied.
+
+Reviewing migration: 0003_add_cancelled_status.sql...
+  [ERROR] Critical 
+error in statement:
+  Statement: CREATE 
+INDEX IF NOT EXISTS 
+idx_billing_external 
+ON billing_transaction
+s(external_id)...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: main.billing_tr
+ansactions: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-14-43_075.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: CREATE 
+INDEX IF NOT EXISTS 
+idx_billing_status ON 
+billing_transactions(s
+tatus)...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: main.billing_tr
+ansactions: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-14-46_712.log"
+
+
+Reviewing migration: 0003_b_guests_and_music.sql...
+  [ERROR] Critical 
+error in statement:
+  Statement: CREATE 
+INDEX IF NOT EXISTS 
+idx_guests_invitation 
+ON guests(invitation_i
+d)...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: main.guests: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-14-51_062.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: CREATE 
+INDEX IF NOT EXISTS 
+idx_guests_checkin ON 
+guests(check_in_code).
+..
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: main.guests: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-14-54_386.log"
+
+  [ERROR] Critical 
+error in statement:
+
+Reviewing migration: 0004_advanced_music.sql...
+  Statement: CREATE 
+INDEX IF NOT EXISTS 
+idx_music_category ON 
+music_library(category
+)...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: 
+main.music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-14-58_400.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: ALTER 
+TABLE music_library 
+ADD COLUMN 
+source_type TEXT 
+DEFAULT 'library'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-15-01_946.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: ALTER 
+TABLE music_library 
+ADD COLUMN 
+external_id TEXT...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+Reviewing migration: 0005_seed_music_batch.sql...
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-15-05_176.log"
+
+
+Reviewing migration: 0006_add_template_type.sql...
+
+Reviewing migration: 0007_add_music_persistence.sql...
+  [OK] Statement applied.
+
+Reviewing migration: 0008_add_gift_accounts.sql...
+  [OK] Statement applied.
+  [OK] Statement applied.
+  [OK] Statement applied.
+  [OK] Statement applied.
+  [OK] Statement applied.
+  [OK] Statement applied.
+  [OK] Statement applied.
+  [OK] Statement applied.
+
+Reviewing migration: 0009_add_user_id_to_invitations.sql...
+
+Reviewing migration: 0010_add_user_id_to_assets.sql...
+
+Reviewing migration: 0011_user_wishlist.sql...
+  [ERROR] Critical 
+error in statement:
+  Statement: CREATE 
+INDEX IF NOT EXISTS 
+idx_wishlist_template 
+ON user_wishlist(templ
+ate_id)...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: 
+main.user_wishlist: 
+SQLITE_ERROR[0m
+
+
+Reviewing migration: 0012_template_categories.sql...
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-15-37_781.log"
+
+
+Reviewing migration: 0013_seed_50_music_tracks.sql...
+
+Reviewing migration: 0014_fix_music_urls.sql...
+
+Reviewing migration: 0015_revert_music_urls.sql...
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/tr-kayu
+manis.mp3' WHERE id = 
+'tr-2...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-15-40_889.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/tr-bali
+.mp3' WHERE id = 
+'tr-3'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-15-44_687.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/tr-mina
+ng.mp3' WHERE id = 
+'tr-4'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-15-48_027.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/tr-zapi
+n.mp3' WHERE id = 
+'tr-5'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-15-51_360.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/tr-bata
+k.mp3' WHERE id = 
+'tr-6'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-15-54_920.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/tr-maka
+ssar.mp3' WHERE id = 
+'tr-7'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-15-58_094.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/tr-papu
+a.mp3' WHERE id = 
+'tr-8'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-16-01_125.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/tr-bubu
+y.mp3' WHERE id = 
+'tr-9'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-16-04_322.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/tr-manu
+k.mp3' WHERE id = 
+'tr-10'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-16-07_666.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/pop-aty
+.mp3' WHERE id = 
+'pop-2'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-16-11_394.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/pop-per
+fect.mp3' WHERE id = 
+'pop-3...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-16-14_620.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/pop-chf
+il.mp3' WHERE id = 
+'pop-4'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-16-17_914.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/pop-eid
+.mp3' WHERE id = 
+'pop-5'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-16-21_063.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/pop-hal
+lelujah.mp3' WHERE id 
+= 'po...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-16-24_202.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/pop-mar
+ryme.mp3' WHERE id = 
+'pop-7...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-16-27_833.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/pop-all
+ofme.mp3' WHERE id = 
+'pop-8...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-16-31_378.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/pop-wil
+dest.mp3' WHERE id = 
+'pop-9...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-16-34_572.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/pop-rew
+rite.mp3' WHERE id = 
+'pop-1...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-16-38_028.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/ac-lazy
+.mp3' WHERE id = 
+'ac-2'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-16-41_530.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/ac-beac
+h.mp3' WHERE id = 
+'ac-3'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-16-45_972.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/ac-fore
+st.mp3' WHERE id = 
+'ac-4'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-16-49_665.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/ac-rain
+.mp3' WHERE id = 
+'ac-5'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-16-53_608.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/ac-suns
+et.mp3' WHERE id = 
+'ac-6'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-16-57_013.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/ac-moun
+tain.mp3' WHERE id = 
+'ac-7'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-17-00_397.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/ac-rive
+r.mp3' WHERE id = 
+'ac-8'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-17-03_602.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/ac-star
+ry.mp3' WHERE id = 
+'ac-9'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-17-06_902.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/ac-mead
+ow.mp3' WHERE id = 
+'ac-10'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-17-10_555.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/classic
+-bach-air.mp3' WHERE 
+id = '...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-17-14_098.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/classic
+-clair.mp3' WHERE id 
+= 'cl-...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-17-17_531.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/classic
+-moonlight.mp3' WHERE 
+id = ...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-17-21_022.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/classic
+-ave-maria.mp3' WHERE 
+id = ...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-17-24_208.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/classic
+-vivaldi-spring.mp3' 
+WHERE ...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-17-27_594.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/classic
+-swan.mp3' WHERE id = 
+'cl-7...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-17-31_096.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/classic
+-minuet.mp3' WHERE id 
+= 'cl...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-17-34_581.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/classic
+-nessun.mp3' WHERE id 
+= 'cl...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-17-38_164.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/classic
+-wedding-march.mp3' 
+WHERE i...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-17-42_376.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/mod-hou
+se.mp3' WHERE id = 
+'mod-2'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-17-45_515.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/mod-neo
+n.mp3' WHERE id = 
+'mod-3'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-17-49_044.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/mod-par
+ty.mp3' WHERE id = 
+'mod-4'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-17-52_266.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/mod-foc
+us.mp3' WHERE id = 
+'mod-5'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-17-56_526.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/mod-urb
+an.mp3' WHERE id = 
+'mod-6'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-17-59_914.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/mod-chi
+ll.mp3' WHERE id = 
+'mod-7'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-18-04_198.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/mod-sou
+l.mp3' WHERE id = 
+'mod-8'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-18-07_904.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/mod-sky
+.mp3' WHERE id = 
+'mod-9'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-18-11_447.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+music_library SET url 
+= 'https://api.tamuu.i
+d/assets/music/mod-cyb
+er.mp3' WHERE id = 
+'mod-10'...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: music_library: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-18-15_157.log"
+
+
+Reviewing migration: 0016_fix_orbit_columns.sql...
+
+Reviewing migration: 0017_add_event_details_to_invitations.sql...
+  [OK] Statement applied.
+  [OK] Statement applied.
+  [OK] Statement applied.
+  [OK] Statement applied.
+
+Reviewing migration: 0018_prune_music_library.sql...
+
+Reviewing migration: 0019_add_seo_fields_to_invitations.sql...
+  [OK] Statement applied.
+  [OK] Statement applied.
+
+Reviewing migration: 0020_add_gallery_photos.sql...
+
+Reviewing migration: 0021_add_livestream_url.sql...
+
+Reviewing migration: 0022_add_love_story.sql...
+
+Reviewing migration: 0023_add_quotes.sql...
+  [OK] Statement applied.
+
+Reviewing migration: 0024_add_lucky_draw.sql...
+
+Reviewing migration: 0025_create_user_display_designs.sql...
+  [ERROR] Critical 
+error in statement:
+  Statement: CREATE 
+INDEX IF NOT EXISTS id
+x_user_display_designs
+_user ON user_display_
+designs(user_id)...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: main.user_displ
+ay_designs: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-18-41_854.log"
+
+  [ERROR] Critical 
+error in statement:
+
+  Statement: CREATE 
+INDEX IF NOT EXISTS id
+x_user_display_designs
+_invitation ON user_di
+splay_designs(invitati
+on_id...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: main.user_displ
+ay_designs: 
+SQLITE_ERROR[0m
+
+
+Reviewing migration: 0026_user_roles_and_permissions.sql...
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-18-45_291.log"
+
+  [OK] Statement applied.
+
+Reviewing migration: 0027_create_blog_posts.sql...
+  [ERROR] Critical 
+error in statement:
+  Statement: CREATE 
+INDEX IF NOT EXISTS 
+idx_blog_slug ON 
+blog_posts(slug)...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: 
+main.blog_posts: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-18-51_816.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: CREATE 
+INDEX IF NOT EXISTS 
+idx_blog_published ON 
+blog_posts(published_a
+t DESC)...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: 
+main.blog_posts: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-18-55_221.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: CREATE 
+INDEX IF NOT EXISTS 
+idx_blog_author ON blo
+g_posts(author_id)...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: 
+main.blog_posts: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-18-58_794.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: CREATE 
+INDEX IF NOT EXISTS 
+idx_subscribers_email 
+ON blog_subscribers(em
+ail)...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: main.blog_subsc
+ribers: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-19-02_160.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: CREATE 
+INDEX IF NOT EXISTS 
+idx_stats_date ON blog
+_daily_stats(date)...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: main.blog_daily
+_stats: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-19-05_768.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: CREATE 
+INDEX IF NOT EXISTS 
+idx_stats_post ON blog
+_daily_stats(post_id).
+..
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: main.blog_daily
+_stats: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-19-09_029.log"
+
+  [WARN] Potential dependency issue: [31mX [41;31m[[41;97mERROR[41;31m][0m [1mno such column: post_id at offset 53: SQLITE_ERROR[0m
+
+Reviewing migration: 0029_blog_approval_status.sql...
+  [ERROR] Critical 
+error in statement:
+  Statement: ALTER 
+TABLE blog_posts ADD 
+COLUMN approved_by 
+TEXT...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: blog_posts: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-19-15_560.log"
+
+  [ERROR] Critical 
+error in statement:
+  Statement: UPDATE 
+blog_posts SET status 
+= 'draft' WHERE 
+is_published = 0...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: blog_posts: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-19-18_925.log"
+
+
+Reviewing migration: 0030_add_blog_category.sql...
+  [ERROR] Critical 
+error in statement:
+  Statement: CREATE 
+INDEX IF NOT EXISTS 
+idx_blog_category ON b
+log_posts(category)...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: 
+main.blog_posts: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-19-22_124.log"
+
+
+Reviewing migration: 0031_add_image_meta_to_blog.sql...
+
+Reviewing migration: 0032_create_blog_categories.sql...
+  [ERROR] Critical 
+error in statement:
+
+Reviewing migration: 0033_add_image_alt.sql...
+  Statement: CREATE 
+INDEX IF NOT EXISTS 
+idx_category_slug ON b
+log_categories(slug)..
+.
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: 
+main.blog_categories: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-19-25_606.log"
+
+
+Reviewing migration: 0034_add_gift_recipient.sql...
+
+Reviewing migration: 0035_enhance_blog_schema.sql...
+  [ERROR] Critical 
+error in statement:
+
+Robust migration process completed.
+  Statement: ALTER 
+TABLE blog_posts ADD 
+COLUMN tags TEXT...
+  Error: [31mX [41;3
+1m[[41;97mERROR[41;3
+1m][0m [1mno such 
+table: blog_posts: 
+SQLITE_ERROR[0m
+
+
+ƒ¬Á  Logs were 
+written to "C:\Users\6
+2896\AppData\Roaming\x
+dg.config\.wrangler\lo
+gs\wrangler-2026-02-15
+_06-19-28_797.log"
+

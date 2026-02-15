@@ -269,12 +269,26 @@ export interface ButtonConfig {
 }
 
 export interface ShapeConfig {
-    shapeType: 'rectangle' | 'rounded-rectangle' | 'circle' | 'triangle' | 'diamond' | 'heart' | 'star' | string;
+    shapeType: 'rectangle' | 'rounded-rectangle' | 'circle' | 'triangle' | 'diamond' | 'heart' | 'star' | 'squiggle' | 'blob' | string;
     fill?: string;
     stroke?: string;
     strokeWidth?: number;
     cornerRadius?: number;
     pathData?: string;
+
+    // Enterprise V5 Styling
+    styleType?: 'solid' | 'gradient' | 'mesh' | 'glass';
+    meshColors?: string[]; // Array of hex colors for mesh gradient
+    glassBlur?: number;    // Blur amount in px
+    glassOpacity?: number; // 0-1
+    blobConfig?: {
+        borderRadius: string; // e.g., "30% 70% 70% 30% / 30% 30% 70% 70%"
+    };
+    gradient?: {
+        type: 'linear' | 'radial' | 'conic';
+        stops: { color: string; offset: number }[];
+        angle?: number;
+    };
 }
 
 export interface MapsConfig {
