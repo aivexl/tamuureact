@@ -92,6 +92,7 @@ export const SeamlessCanvas: React.FC = () => {
     const [visibleSectionId, setVisibleSectionId] = useState<string | null>(null);
     const [zoom, setZoom] = useState(1); // Feature 10: Zoom State
     const [contextMenu, setContextMenu] = useState<{ x: number, y: number, id: string } | null>(null); // Feature 4: Context Menu
+    const [shiftPressed, setShiftPressed] = useState(false);
 
     // Modal State
     const [showCopyModal, setShowCopyModal] = useState(false);
@@ -191,6 +192,8 @@ export const SeamlessCanvas: React.FC = () => {
     // Keyboard Shortcuts (CTO Level - Figma/Canva standard)
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.shiftKey) setShiftPressed(true);
+
             // Prevent shortcuts if user is typing in an input
             if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || (e.target as HTMLElement).isContentEditable) {
                 return;
@@ -331,9 +334,17 @@ export const SeamlessCanvas: React.FC = () => {
             if (e.key === 'Escape') clearSelection();
         };
 
+        const handleKeyUp = (e: KeyboardEvent) => {
+            if (!e.shiftKey) setShiftPressed(false);
+        };
+
         window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selectedLayerIds, activeSectionId, sections]);
+        window.addEventListener('keyup', handleKeyUp);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
+        };
+    }, [selectedLayerIds, activeSectionId, sections, activeCanvas, orbit, shiftPressed]);
 
     // Marquee Selection State
     const [marquee, setMarquee] = useState<{ x1: number, y1: number, x2: number, y2: number, active: boolean, sectionId: string | null } | null>(null);
@@ -462,6 +473,7 @@ export const SeamlessCanvas: React.FC = () => {
                         onUpdateElement={(id, updates) => updateOrbitElement('left', id, updates)}
                         onSelectLayer={(id, isMulti) => selectLayer(id, isMulti)}
                         selectedLayerIds={selectedLayerIds}
+                        shiftPressed={shiftPressed}
                         marquee={marquee?.sectionId === 'left' ? marquee : null}
                         onMarqueeStart={handleMarqueeStart}
                         onMarqueeMove={handleMarqueeMove}
@@ -501,6 +513,7 @@ export const SeamlessCanvas: React.FC = () => {
                                 onSelectLayer={(id, isMulti) => selectLayer(id, isMulti)}
                                 selectedLayerIds={activeCanvas === 'main' ? selectedLayerIds : []}
                                 zoom={zoom}
+                                shiftPressed={shiftPressed}
                                 onElementDrag={(id, pos) => updateElementInSection(section.id, id, pos)}
                                 onElementResize={(id, updates) => updateElementInSection(section.id, id, updates)}
                                 onContextMenu={handleContextMenu}
@@ -543,6 +556,7 @@ export const SeamlessCanvas: React.FC = () => {
                         onUpdateElement={(id, updates) => updateOrbitElement('right', id, updates)}
                         onSelectLayer={(id, isMulti) => selectLayer(id, isMulti)}
                         selectedLayerIds={selectedLayerIds}
+                        shiftPressed={shiftPressed}
                         marquee={marquee?.sectionId === 'right' ? marquee : null}
                         onMarqueeStart={handleMarqueeStart}
                         onMarqueeMove={handleMarqueeMove}
@@ -939,11 +953,12 @@ const SectionFrame: React.FC<{
     onMarqueeMove: (x: number, y: number) => void,
     onMarqueeEnd: () => void,
     canvasWidth: number,
-    sectionHeight: number
+    sectionHeight: number,
+    shiftPressed: boolean
 }> = ({
     section, isActive, index, onClick, onSelectLayer, selectedLayerIds,
     onElementResize, onDimensionsDetected, onContextMenu, onMoveUp, onMoveDown, onToggleVisibility, onCopyTo, onClear, onDelete, isFirst, isLast,
-    marquee, onMarqueeStart, onMarqueeMove, onMarqueeEnd, zoom, canvasWidth, sectionHeight
+    marquee, onMarqueeStart, onMarqueeMove, onMarqueeEnd, zoom, canvasWidth, sectionHeight, shiftPressed
 }) => {
         // Collect DOM targets for Moveable
         const targetMap = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -1036,10 +1051,10 @@ const SectionFrame: React.FC<{
                             {...({} as any)}
                             target={targets}
                             draggable={true}
-                            scalable={true}
+                            resizable={true}
                             rotatable={true}
                             snappable={true}
-                            keepRatio={true}
+                            keepRatio={shiftPressed}
                             elementGuidelines={[...targets]}
                             snapGap={5}
                             snapThreshold={5}
@@ -1054,10 +1069,14 @@ const SectionFrame: React.FC<{
                                 const id = e.target.getAttribute('data-element-id');
                                 if (id) onElementResize(id, { x: e.left, y: e.top });
                             }}
-                            onScale={(e: OnScale) => {
+                            onResize={(e: any) => {
                                 const id = e.target.getAttribute('data-element-id');
-                                const scale = e.drag.transform.match(/scale\(([^)]+)\)/)?.[1];
-                                if (id && scale) onElementResize(id, { scale: parseFloat(scale) });
+                                if (id) onElementResize(id, {
+                                    width: e.width,
+                                    height: e.height,
+                                    x: e.drag.left,
+                                    y: e.drag.top
+                                });
                             }}
                             onRotate={(e: OnRotate) => {
                                 const id = e.target.getAttribute('data-element-id');
@@ -1071,11 +1090,15 @@ const SectionFrame: React.FC<{
                                     if (id) onElementResize(id, { x: ev.left, y: ev.top });
                                 });
                             }}
-                            onScaleGroup={(e: OnScaleGroup) => {
-                                e.events.forEach((ev) => {
+                            onResizeGroup={(e: any) => {
+                                e.events.forEach((ev: any) => {
                                     const id = ev.target.getAttribute('data-element-id');
-                                    const scale = ev.drag.transform.match(/scale\(([^)]+)\)/)?.[1];
-                                    if (id && scale) onElementResize(id, { scale: parseFloat(scale) });
+                                    if (id) onElementResize(id, {
+                                        width: ev.width,
+                                        height: ev.height,
+                                        x: ev.drag.left,
+                                        y: ev.drag.top
+                                    });
                                 });
                             }}
                             onRotateGroup={(e: OnRotateGroup) => {
@@ -1106,8 +1129,9 @@ const SideCanvas: React.FC<{
     onMarqueeEnd: () => void,
     onContextMenu: (e: React.MouseEvent, id: string) => void,
     onClear: () => void,
-    onCopy: () => void
-}> = ({ type, isActive, orbit, onSelect, onUpdateElement, onSelectLayer, selectedLayerIds, marquee, onMarqueeStart, onMarqueeMove, onMarqueeEnd, onContextMenu, onClear, onCopy }) => {
+    onCopy: () => void,
+    shiftPressed: boolean
+}> = ({ type, isActive, orbit, onSelect, onUpdateElement, onSelectLayer, selectedLayerIds, marquee, onMarqueeStart, onMarqueeMove, onMarqueeEnd, onContextMenu, onClear, onCopy, shiftPressed }) => {
     const stageRef = useRef<HTMLDivElement>(null);
     const [editorScale, setEditorScale] = useState(0.8);
 
@@ -1232,10 +1256,10 @@ const SideCanvas: React.FC<{
                         {...({} as any)}
                         target={targets}
                         draggable={true}
-                        scalable={true}
+                        resizable={true}
                         rotatable={true}
                         snappable={true}
-                        keepRatio={true}
+                        keepRatio={shiftPressed}
                         elementGuidelines={[...targets]}
                         snapGap={5}
                         snapThreshold={5}
@@ -1250,10 +1274,14 @@ const SideCanvas: React.FC<{
                             const id = e.target.getAttribute('data-element-id');
                             if (id) onUpdateElement(id, { x: e.left, y: e.top });
                         }}
-                        onScale={(e: OnScale) => {
+                        onResize={(e: any) => {
                             const id = e.target.getAttribute('data-element-id');
-                            const scale = e.drag.transform.match(/scale\(([^)]+)\)/)?.[1];
-                            if (id && scale) onUpdateElement(id, { scale: parseFloat(scale) });
+                            if (id) onUpdateElement(id, {
+                                width: e.width,
+                                height: e.height,
+                                x: e.drag.left,
+                                y: e.drag.top
+                            });
                         }}
                         onRotate={(e: OnRotate) => {
                             const id = e.target.getAttribute('data-element-id');
@@ -1267,11 +1295,15 @@ const SideCanvas: React.FC<{
                                 if (id) onUpdateElement(id, { x: ev.left, y: ev.top });
                             });
                         }}
-                        onScaleGroup={(e: OnScaleGroup) => {
-                            e.events.forEach((ev) => {
+                        onResizeGroup={(e: any) => {
+                            e.events.forEach((ev: any) => {
                                 const id = ev.target.getAttribute('data-element-id');
-                                const scale = ev.drag.transform.match(/scale\(([^)]+)\)/)?.[1];
-                                if (id && scale) onUpdateElement(id, { scale: parseFloat(scale) });
+                                if (id) onUpdateElement(id, {
+                                    width: ev.width,
+                                    height: ev.height,
+                                    x: ev.drag.left,
+                                    y: ev.drag.top
+                                });
                             });
                         }}
                         onRotateGroup={(e: OnRotateGroup) => {

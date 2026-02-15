@@ -64,6 +64,7 @@ export const DisplayCanvas: React.FC = () => {
     const canvasRef = useRef<HTMLDivElement>(null);
     const [zoom, setZoom] = useState(0.5); // Default zoom to fit in viewport
     const [contextMenu, setContextMenu] = useState<{ x: number, y: number, id: string } | null>(null);
+    const [shiftPressed, setShiftPressed] = useState(false);
 
     // Get active section
     const activeSection = sections.find(s => s.id === activeSectionId) || sections[0];
@@ -101,6 +102,73 @@ export const DisplayCanvas: React.FC = () => {
         e.preventDefault();
         setContextMenu({ x: e.clientX, y: e.clientY, id });
     };
+
+    // Keyboard Shortcuts & Shift Tracking
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.shiftKey) setShiftPressed(true);
+
+            // Prevent shortcuts if user is typing in an input
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || (e.target as HTMLElement).isContentEditable) {
+                return;
+            }
+
+            const isMod = e.ctrlKey || e.metaKey;
+            const hasSelection = selectedLayerIds.length > 0;
+
+            // Delete
+            if ((e.key === 'Delete' || e.key === 'Backspace') && hasSelection) {
+                e.preventDefault();
+                selectedLayerIds.forEach(id => {
+                    if (activeSectionId) removeElementFromSection(activeSectionId, id);
+                });
+                clearSelection();
+            }
+
+            // Duplicate
+            if (isMod && (e.key === 'd' || e.key === 'D') && hasSelection) {
+                e.preventDefault();
+                selectedLayerIds.forEach(id => {
+                    if (activeSectionId) duplicateElementInSection(activeSectionId, id);
+                });
+            }
+
+            // Nudge
+            if (hasSelection && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                e.preventDefault();
+                const step = e.shiftKey ? 10 : 1;
+                selectedLayerIds.forEach(id => {
+                    const el = activeSection?.elements.find(l => l.id === id);
+                    if (el && activeSectionId) {
+                        updateElementInSection(activeSectionId, id, {
+                            x: el.x + (e.key === 'ArrowRight' ? step : e.key === 'ArrowLeft' ? -step : 0),
+                            y: el.y + (e.key === 'ArrowDown' ? step : e.key === 'ArrowUp' ? -step : 0)
+                        });
+                    }
+                });
+            }
+
+            // Select All
+            if (isMod && e.key === 'a') {
+                e.preventDefault();
+                if (activeSection) selectLayer(activeSection.elements.map(el => el.id) as any, true);
+            }
+
+            // Escape
+            if (e.key === 'Escape') clearSelection();
+        };
+
+        const handleKeyUp = (e: KeyboardEvent) => {
+            if (!e.shiftKey) setShiftPressed(false);
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keyup', handleKeyUp);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
+        };
+    }, [selectedLayerIds, activeSectionId, activeSection, shiftPressed]);
 
     // Close context menu on click outside
     useEffect(() => {
@@ -254,10 +322,10 @@ export const DisplayCanvas: React.FC = () => {
                                     {...({} as any)}
                                     target={targets}
                                     draggable={true}
-                                    scalable={true}
+                                    resizable={true}
                                     rotatable={true}
                                     snappable={true}
-                                    keepRatio={true}
+                                    keepRatio={shiftPressed}
                                     snapThreshold={5}
                                     origin={false}
                                     onDrag={(e: any) => {
@@ -266,12 +334,15 @@ export const DisplayCanvas: React.FC = () => {
                                             updateElementInSection(activeSectionId, id, { x: e.left, y: e.top });
                                         }
                                     }}
-                                    onScale={(e: any) => {
+                                    onResize={(e: any) => {
                                         const id = e.target.getAttribute('data-element-id');
-                                        const scaleMatch = e.drag.transform.match(/scale\(([^)]+)\)/);
-                                        const scale = scaleMatch ? parseFloat(scaleMatch[1]) : 1;
                                         if (id && activeSectionId) {
-                                            updateElementInSection(activeSectionId, id, { scale });
+                                            updateElementInSection(activeSectionId, id, {
+                                                width: e.width,
+                                                height: e.height,
+                                                x: e.drag.left,
+                                                y: e.drag.top
+                                            });
                                         }
                                     }}
                                     onRotate={(e: any) => {
