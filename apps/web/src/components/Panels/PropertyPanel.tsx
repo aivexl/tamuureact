@@ -3537,7 +3537,11 @@ export const PropertyPanel: React.FC = () => {
                                 { value: 'bounce', label: 'Bounce' },
                                 { value: 'pop-in', label: 'Pop In' },
                                 { value: 'blur-in', label: 'Blur In' },
-                                { value: 'twirl-in', label: 'Twirl In (Premium ✨)' }
+                                { value: 'twirl-in', label: 'Twirl In (Premium ✨)' },
+                                { value: 'door-open-left', label: '🚪 Door Open (Left)' },
+                                { value: 'door-open-right', label: '🚪 Door Open (Right)' },
+                                { value: 'door-2d-open-left', label: '🚪 Door 2D (Left)' },
+                                { value: 'door-2d-open-right', label: '🚪 Door 2D (Right)' }
                             ]}
                             onChange={(v) => handleUpdate({
                                 animation: {

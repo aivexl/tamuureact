@@ -229,6 +229,36 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             case 'bounce': hidden.y = targetY - 40; visible.transition = { type: "spring", bounce: 0.4, duration: entranceDuration, delay: entranceDelay }; break;
             case 'pop-in': hidden.scaleX = 0.8 * targetScaleX; hidden.scaleY = 0.8 * targetScaleY; visible.transition = { type: "spring", stiffness: 260, damping: 20, delay: entranceDelay }; break;
             case 'twirl-in': hidden.scaleX = 0; hidden.scaleY = 0; hidden.rotate = targetRotate - 180; visible.transition = { type: "spring", duration: entranceDuration, bounce: 0.2, delay: entranceDelay }; break;
+            // ENTERPRISE V6: CINEMATIC DOORS
+            case 'door-open-left':
+                visible.originX = 0;
+                hidden.originX = 0;
+                hidden.rotateY = 0;
+                visible.rotateY = -100; // Opens INWARDS (away from viewer to the left)
+                visible.transition = { type: "spring", stiffness: 60, damping: 12, mass: 1.2, delay: entranceDelay };
+                break;
+            case 'door-open-right':
+                visible.originX = 1;
+                hidden.originX = 1;
+                hidden.rotateY = 0;
+                visible.rotateY = 100; // Opens INWARDS (away from viewer to the right)
+                visible.transition = { type: "spring", stiffness: 60, damping: 12, mass: 1.2, delay: entranceDelay };
+                break;
+            // 2D DOORS (SCALE)
+            case 'door-2d-open-left':
+                visible.originX = 0;
+                hidden.originX = 0;
+                hidden.scaleX = targetScaleX;
+                visible.scaleX = isEditor ? 1 : 0;
+                visible.transition = { type: "spring", stiffness: 60, damping: 12, mass: 1.2, delay: entranceDelay };
+                break;
+            case 'door-2d-open-right':
+                visible.originX = 1;
+                hidden.originX = 1;
+                hidden.scaleX = targetScaleX;
+                visible.scaleX = isEditor ? 1 : 0;
+                visible.transition = { type: "spring", stiffness: 60, damping: 12, mass: 1.2, delay: entranceDelay };
+                break;
         }
         return { hidden, visible };
     }, [entranceType, hasEntranceAnimation, layer.opacity, entranceDuration, entranceDelay, baseScale, flipX, flipY, baseRotate, isEditor]);
@@ -407,7 +437,9 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                 height: `${layer.height}px`,
                 zIndex: layer.zIndex,
                 willChange: 'transform, opacity',
-                opacity: layer.opacity ?? 1
+                opacity: layer.opacity ?? 1,
+                perspective: '1200px', // ENABLE 3D CONTEXT
+                transformStyle: 'preserve-3d'
             }}
         >
             {isMarqueeEnabled && (marqueeConfig?.mode || 'seamless') === 'seamless' ? (

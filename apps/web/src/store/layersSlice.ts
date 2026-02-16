@@ -66,7 +66,10 @@ export type AnimationType =
     | 'flip-x' | 'flip-y' | 'rotate-in-down-left' | 'rotate-in-down-right'
     | 'bounce' | 'pop-in' | 'blur-in' | 'twirl-in'
     | 'float' | 'pulse' | 'sway' | 'spin' | 'glow' | 'heartbeat' | 'sparkle'
-    | 'flap-bob' | 'float-flap' | 'fly-left' | 'fly-right' | 'fly-up' | 'fly-down' | 'fly-random' | 'twirl' | 'elegant-spin';
+    | 'flap-bob' | 'float-flap' | 'fly-left' | 'fly-right' | 'fly-up' | 'fly-down' | 'fly-random' | 'twirl' | 'elegant-spin'
+    // ENTERPRISE V6 TYPES
+    | 'door-open-left' | 'door-open-right'
+    | 'door-2d-open-left' | 'door-2d-open-right';
 
 // ============================================
 // PROFILE PHOTO TYPES

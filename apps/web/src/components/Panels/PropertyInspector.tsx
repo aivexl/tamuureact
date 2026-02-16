@@ -340,6 +340,10 @@ export const PropertyInspector: React.FC = () => {
                             <option value="scale" className="bg-premium-dark text-white">Scale Up</option>
                             <option value="slide-up" className="bg-premium-dark text-white">Slide Up</option>
                             <option value="blur" className="bg-premium-dark text-white">Blur In</option>
+                            <option value="door-open-left" className="bg-premium-dark text-white">Door Open (Left)</option>
+                            <option value="door-open-right" className="bg-premium-dark text-white">Door Open (Right)</option>
+                            <option value="door-2d-open-left" className="bg-premium-dark text-white">Door 2D (Left)</option>
+                            <option value="door-2d-open-right" className="bg-premium-dark text-white">Door 2D (Right)</option>
                         </select>
                     </div>
 
