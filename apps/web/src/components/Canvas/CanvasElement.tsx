@@ -142,7 +142,7 @@ export const CanvasElement: React.FC<CanvasElementProps> = ({
                 />
             ) : (
                 <div
-                    className={`w-full h-full ${layer.type === 'text' || layer.motionPathConfig?.enabled
+                    className={`w-full h-full ${layer.type === 'text' || layer.type === 'shape' || layer.motionPathConfig?.enabled
                         ? 'overflow-visible'
                         : 'overflow-hidden'
                         }`}
