@@ -547,7 +547,7 @@ const ShapeElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ 
 
     return (
         <div className="w-full h-full">
-            <svg width="100%" height="100%" viewBox={shapeType.includes('rectangle') ? `0 0 ${layer.width} ${layer.height}` : '0 0 100 100'} preserveAspectRatio={shapeType.includes('rectangle') ? 'none' : 'xMidYMid meet'} className="overflow-visible">
+            <svg width="100%" height="100%" viewBox={shapeType.includes('rectangle') ? `0 0 ${layer.width} ${layer.height}` : '0 0 100 100'} preserveAspectRatio="none" className="overflow-visible">
                 {shapeType === 'rectangle' && (
                     <rect x="0" y="0" width="100%" height="100%"
                         fill={config.fill || '#bfa181'}

@@ -1,6 +1,7 @@
 # Tamuu - Arsitektur Sistem
 
 Platform undangan digital dengan arsitektur multi-domain dan monorepo.
+Lihat juga [SKILL.md](file:///C:/Users/62896/Documents/tamuureact/SKILL.md) untuk panduan pengembangan AI Gemini.
 
 ---
 
@@ -111,7 +112,7 @@ tamuureact/
 - **Storage**: Cloudflare R2 (`tamuu-assets`)
 - **Package Manager**: npm (workspace)
 - **Build System**: Turborepo
-- **Payment Gateway**: Xendit (Invoice API)
+- **Payment Gateway**: Midtrans (Snap API)
 
 ---
 
@@ -127,7 +128,7 @@ tamuureact/
 
 
 ### Billing Architecture
-- **Xendit Integration**: Menggunakan Xendit Invoice API untuk auto-generate link pembayaran.
+- **Midtrans Integration**: Menggunakan Midtrans Snap API untuk auto-generate link pembayaran.
 - **Webhook Listener**: Endpoint `/api/billing/webhook` menangani konfirmasi pembayaran secara asinkron.
 - **Gating Logic**: 
   - **FE**: UI-level restrictions di `ExportPanel`, `MusicPanel`, dan `InvitationsGrid`.
@@ -199,7 +200,7 @@ npm run build:web     # Build web only
 - **Display Editor**: Landscape (1920x1080) editor for TV displays
 - **Billing & Upgrade Center**:
   - Prestige UI for tier selection
-  - Xendit payment link integration
+  - Midtrans payment link integration
   - Auto-provisioning system
   - Usage tracking (invitation counts)
 - **Liquid Auto-Layout Engine**: Dynamic vertical shifting based on real-time content height.
@@ -226,7 +227,7 @@ npm run build:web     # Build web only
 |---------|----------------|--------|
 | **Cloudflare** | [dash.cloudflare.com](https://dash.cloudflare.com) | Pages, Workers, D1, R2, DNS |
 | **Supabase** | [supabase.com/dashboard](https://supabase.com/dashboard) | Authentication & Auth Config |
-| **Xendit** | [dashboard.xendit.co](https://dashboard.xendit.co) | Payment tracking & API Keys |
+| **Midtrans** | [dashboard.midtrans.com](https://dashboard.midtrans.com) | Payment tracking & API Keys |
 | **GitHub** | [github.com/aivexl/tamuureact](https://github.com/aivexl/tamuureact) | Source Control & CI/CD |
 
 ---
@@ -412,6 +413,13 @@ Invitations are organized into multiple **Sections** (e.g., Opening, Bride & Gro
 - **Autonomous Toolset**: AI has permissioned write-access to specialized tools (`sync_payment`, `upgrade_tier`, `repair_invitation`) scoped by user ID.
 - **Dual-Model Logic**: Primary intelligence powered by **Gemini 2.5 Flash Lite** (for tool-use) with a zero-latency fallback to **Groq (Llama-3.3)**.
 - **Tone Enforcement**: Strict adherence to professional Indonesian (EYD) and elite brand tone.
+
+### 📚 AI Development Standards
+Dokumentasi teknis untuk pengembangan AI Gemini dan integrasi SDK dapat ditemukan di [SKILL.md](file:///C:/Users/62896/Documents/tamuureact/SKILL.md). Dokumen ini berisi:
+- Konfigurasi model Gemini terbaru.
+- Contoh implementasi SDK (Python, JS, Go, Java).
+- Spesifikasi REST API (Discovery Spec).
+- Panduan migrasi dari SDK legacy.
 
 ### 🛡️ Data Integrity Shield
 - **Identity Resolver**: Hybrid lookup engine (Email + Canonical UUID) that eliminates data isolation due to authentication provider drift.

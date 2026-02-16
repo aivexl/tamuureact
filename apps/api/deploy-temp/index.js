@@ -128,7 +128,7 @@ export default {
             }
 
             // ============================================
-            // BILLING & XENDIT ENDPOINTS
+            // BILLING & MIDTRANS ENDPOINTS
             // ============================================
             if (path === '/api/billing/create-invoice' && method === 'POST') {
                 const body = await request.json();
@@ -138,7 +138,7 @@ export default {
                     return json({ error: 'Missing required fields' }, { ...corsHeaders, status: 400 });
                 }
 
-                // Call Xendit API
+                // Call Midtrans API
                 const xenditResponse = await fetch('https://api.xendit.co/v2/invoices', {
                     method: 'POST',
                     headers: {
@@ -444,7 +444,7 @@ export default {
                     return response.results.map(t => ({
                         ...t,
                         thumbnail_url: t.thumbnail && !t.thumbnail.startsWith('http')
-                            ?\`https://api.tamuu.id/assets/\${t.thumbnail}\` 
+                            ? `https://api.tamuu.id/assets/${t.thumbnail}`
                             : t.thumbnail
                     }));
                 });
@@ -563,8 +563,8 @@ export default {
                 const body = await request.json();
                 const id = crypto.randomUUID();
                 await env.DB.prepare(
-                    `INSERT INTO user_display_designs(id, user_id, name, content, thumbnail_url, source_template_id) 
-                     VALUES(?, ?, ?, ?, ?, ?)`
+                    `INSERT INTO user_display_designs (id, user_id, name, content, thumbnail_url, source_template_id) 
+                     VALUES (?, ?, ?, ?, ?, ?)`
                 ).bind(
                     id,
                     body.user_id, // Frontend must send this!
@@ -851,9 +851,8 @@ export default {
                 const body = await request.json();
                 const id = crypto.randomUUID();
                 await env.DB.prepare(
-                    `INSERT INTO rsvp_responses
-                        (id, invitation_id, name, email, phone, attendance, guest_count, message, ip_address, user_agent)
-                     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                    `INSERT INTO rsvp_responses (id, invitation_id, name, email, phone, attendance, guest_count, message, ip_address, user_agent)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
                 ).bind(
                     id, invitationId,
                     body.name, body.email || null, body.phone || null,
@@ -881,7 +880,7 @@ export default {
                         attendance = COALESCE(?, attendance),
                         message = COALESCE(?, message),
                         updated_at = datetime('now')
-                     WHERE id = ? `
+                     WHERE id = ?`
                 ).bind(
                     body.is_visible !== undefined ? (body.is_visible ? 1 : 0) : null,
                     body.attendance,
@@ -905,8 +904,8 @@ export default {
                     });
                 }
 
-                const filename = `${ Date.now() } - ${ file.name }`;
-                const key = `uploads / ${ filename }`;
+                const filename = `${Date.now()}-${file.name}`;
+                const key = `uploads/${filename}`;
 
                 await env.ASSETS.put(key, file.stream(), {
                     httpMetadata: { contentType: file.type }
@@ -917,53 +916,53 @@ export default {
                 // Get user_id from form data if provided
                 const userId = formData.get('user_id');
 
-                    // Save to database with user_id
-                    const id = crypto.randomUUID();
-                    await env.DB.prepare(
-                        `INSERT INTO assets (id, user_id, filename, content_type, size, r2_key, public_url)
-                     VALUES (?, ?, ?, ?, ?, ?, ?)`
-                    ).bind(id, userId || null, file.name, file.type, file.size, key, publicUrl).run();
+                // Save to database with user_id
+                const id = crypto.randomUUID();
+                await env.DB.prepare(
+                    `INSERT INTO assets (id, user_id, filename, content_type, size, r2_key, public_url)
+                         VALUES (?, ?, ?, ?, ?, ?, ?)`
+                ).bind(id, userId || null, file.name, file.type, file.size, key, publicUrl).run();
 
-                    return json({ id, url: publicUrl, key }, corsHeaders);
-                }
+                return json({ id, url: publicUrl, key }, corsHeaders);
+            }
 
             // ============================================
             // SERVE ASSETS FROM R2
             // ============================================
             if (path.startsWith('/assets/')) {
-                    const key = path.replace('/assets/', '');
-                    const object = await env.ASSETS.get(key);
-                    if (!object) return notFound(corsHeaders);
+                const key = path.replace('/assets/', '');
+                const object = await env.ASSETS.get(key);
+                if (!object) return notFound(corsHeaders);
 
-                    const headers = new Headers();
-                    object.writeHttpMetadata(headers);
-                    headers.set('etag', object.httpEtag);
-                    headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+                const headers = new Headers();
+                object.writeHttpMetadata(headers);
+                headers.set('etag', object.httpEtag);
+                headers.set('Cache-Control', 'public, max-age=31536000, immutable');
 
-                    return new Response(object.body, { headers });
-                }
-
-                // ============================================
-                // HEALTH CHECK
-                // ============================================
-                if (path === '/api/health') {
-                    return json({ status: 'ok', timestamp: new Date().toISOString() }, corsHeaders);
-                }
-
-                return notFound(corsHeaders);
-
-            } catch (error) {
-                console.error('API Error:', error);
-                return new Response(JSON.stringify({ error: error.message }), {
-                    status: 500,
-                    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-                });
+                return new Response(object.body, { headers });
             }
+
+            // ============================================
+            // HEALTH CHECK
+            // ============================================
+            if (path === '/api/health') {
+                return json({ status: 'ok', timestamp: new Date().toISOString() }, corsHeaders);
+            }
+
+            return notFound(corsHeaders);
+
+        } catch (error) {
+            console.error('API Error:', error);
+            return new Response(JSON.stringify({ error: error.message }), {
+                status: 500,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
         }
+    }
 };
 
-    // Helper functions
-    function json(data, corsHeaders) {
+// Helper functions
+function json(data, corsHeaders) {
     return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });

@@ -9,7 +9,7 @@ ALTER TABLE users ADD COLUMN expires_at TEXT;
 CREATE TABLE IF NOT EXISTS billing_transactions (
     id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
     user_id TEXT NOT NULL,
-    external_id TEXT UNIQUE NOT NULL, -- Xendit Invoice ID
+    external_id TEXT UNIQUE NOT NULL, -- Midtrans Order ID
     amount INTEGER NOT NULL,
     currency TEXT DEFAULT 'IDR',
     status TEXT NOT NULL CHECK (status IN ('PENDING', 'PAID', 'EXPIRED', 'FAILED')),
