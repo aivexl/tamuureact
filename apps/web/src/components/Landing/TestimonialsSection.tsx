@@ -44,7 +44,7 @@ const testimonials = [
 const TestimonialsSection: React.FC = () => {
     return (
         <section id="testimonials" className="py-32 px-6 overflow-hidden relative" style={{ backgroundColor: '#0A1128' }}>
-            {/* Decorative Glows - Balanced Vertical Rhythm */}
+            {/* Decorative Glows */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/10 blur-[120px] rounded-full animate-pulse" />
                 <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-500/10 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '2s' }} />
@@ -54,27 +54,28 @@ const TestimonialsSection: React.FC = () => {
                 <m.div
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
-                    className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 text-[#FFBF00] text-xs font-bold tracking-[0.2em] uppercase mb-10 border border-[#FFBF00]/20"
+                    className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 text-[#FFBF00] text-xs font-bold tracking-[0.2em] uppercase mb-10 border border-white/10"
                 >
                     <Star className="w-3 h-3 fill-[#FFBF00]" />
-                    <span>Branded Testimony</span>
+                    <span>Real Customer Stories</span>
                 </m.div>
 
-                {/* Apple Pro Typography: Seamless Inline Branding */}
+                {/* Apple Pro Typography: Fixed 1-line Branding */}
                 <m.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="flex items-center justify-center flex-wrap gap-x-2 gap-y-2 max-w-5xl mx-auto"
+                    className="flex items-center justify-center max-w-5xl mx-auto"
                 >
-                    <h2 className="text-xl md:text-2xl font-light text-white/90 tracking-tight flex items-center flex-wrap justify-center gap-x-2">
-                        <span>Dengarkan kebahagiaan mereka yang telah mempercayakan momen spesial kepada layanan</span>
+                    <h2 className="text-lg md:text-xl font-light text-white/80 tracking-tight leading-relaxed flex items-center justify-center gap-x-2.5">
+                        <span className="opacity-80">Dengarkan kebahagiaan mereka yang telah mempercayakan momen spesial kepada layanan</span>
 
-                        {/* Proportional Seamless Logo: No background, perfectly aligned */}
+                        {/* Pure Inline Logo: Proportional and sharp */}
                         <img
-                            src="/images/logo-tamuu.webp"
+                            src="/images/logo-tamuu.webp?v=final"
                             alt="Tamuu"
-                            className="h-6 md:h-8 w-auto object-contain inline-block -translate-y-[1px]"
+                            className="h-5 md:h-6 w-auto object-contain inline-block brightness-110 contrast-125"
+                            style={{ verticalAlign: 'middle', marginTop: '-2px' }}
                         />
                     </h2>
                 </m.div>
