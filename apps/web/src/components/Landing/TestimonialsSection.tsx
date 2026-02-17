@@ -60,23 +60,22 @@ const TestimonialsSection: React.FC = () => {
                     <span>Kesan Pelanggan</span>
                 </m.div>
 
-                {/* Apple Pro Typography: Bold 1-line Branding */}
+                {/* Apple Pro Typography: True Inline Branded signature */}
                 <m.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="flex items-center justify-center max-w-5xl mx-auto"
+                    className="max-w-6xl mx-auto px-4"
                 >
-                    <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight leading-relaxed flex items-center justify-center gap-x-3 text-center flex-wrap">
-                        <span>Dengarkan kebahagiaan mereka yang telah mempercayakan momen spesial kepada layanan</span>
-
-                        {/* Pure White Logo: Perfectly aligned and bold-weighted */}
-                        <img
-                            src="/images/logo-tamuu.webp?v=bold-white"
-                            alt="Tamuu"
-                            className="h-6 md:h-8 w-auto object-contain inline-block brightness-0 invert"
-                            style={{ verticalAlign: 'middle', marginTop: '-1px' }}
-                        />
+                    <h2 className="text-xl md:text-3xl font-bold text-white tracking-tight leading-tight text-center">
+                        Dengarkan kebahagiaan mereka yang telah mempercayakan momen spesial kepada layanan{' '}
+                        <span className="inline-flex items-baseline gap-1 align-baseline whitespace-nowrap">
+                            <img
+                                src="/images/logo-tamuu.webp?v=inline-final"
+                                alt="Tamuu"
+                                className="h-6 md:h-9 w-auto object-contain inline-block brightness-0 invert translate-y-[15%] md:translate-y-[12%]"
+                            />
+                        </span>
                     </h2>
                 </m.div>
             </div>
