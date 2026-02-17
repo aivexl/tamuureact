@@ -107,7 +107,7 @@ export const Navbar: React.FC = () => {
                     {isAppDomain ? (
                         <a href="https://tamuu.id" className="flex items-center gap-3 group" aria-label="Tamuu - Halaman Utama">
                             <img
-                                src="/images/logo-tamuu.webp"
+                                src="/images/logo-tamuu-vfinal-v1.webp"
                                 alt="Tamuu"
                                 className="h-8 md:h-10 w-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity"
                             />
@@ -115,7 +115,7 @@ export const Navbar: React.FC = () => {
                     ) : (
                         <Link to="/" className="flex items-center gap-3 group" aria-label="Tamuu - Halaman Utama">
                             <img
-                                src="/images/logo-tamuu.webp"
+                                src="/images/logo-tamuu-vfinal-v1.webp"
                                 alt="Tamuu"
                                 className="h-8 md:h-10 w-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity"
                             />
