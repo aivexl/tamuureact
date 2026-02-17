@@ -44,31 +44,42 @@ const testimonials = [
 const TestimonialsSection: React.FC = () => {
     return (
         <section id="testimonials" className="py-32 px-6 overflow-hidden relative" style={{ backgroundColor: '#0A1128' }}>
-            {/* Decorative Glows - Same as Hero */}
+            {/* Decorative Glows - Balanced Vertical Rhythm */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
-                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/20 blur-[120px] rounded-full animate-pulse" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-500/20 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '2s' }} />
-                <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-purple-500/20 blur-[100px] rounded-full animate-pulse" style={{ animationDelay: '4s' }} />
+                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/10 blur-[120px] rounded-full animate-pulse" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-500/10 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '2s' }} />
             </div>
 
             <div className="max-w-7xl mx-auto text-center mb-24 relative z-10">
                 <m.div
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
-                    className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 text-[#FFBF00] text-xs font-bold tracking-wider uppercase mb-8 border border-[#FFBF00]/20"
+                    className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 text-[#FFBF00] text-xs font-bold tracking-[0.2em] uppercase mb-10 border border-[#FFBF00]/20"
                 >
                     <Star className="w-3 h-3 fill-[#FFBF00]" />
-                    <span>Kesan Pelanggan</span>
+                    <span>Branded Testimony</span>
                 </m.div>
 
-                <m.h2
+                {/* Apple Pro Typography: Scaled to match Navbar Branding */}
+                <m.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="text-4xl md:text-6xl font-black text-white tracking-tighter leading-tight max-w-4xl mx-auto"
+                    className="flex flex-wrap items-center justify-center gap-x-3 gap-y-4 max-w-4xl mx-auto"
                 >
-                    Dengarkan kebahagiaan mereka yang telah mempercayakan momen spesial kepada layanan Tamuu.
-                </m.h2>
+                    <h2 className="text-xl md:text-2xl font-light text-white/90 tracking-tight leading-relaxed">
+                        Dengarkan kebahagiaan mereka yang telah mempercayakan momen spesial kepada layanan
+                    </h2>
+
+                    {/* Clinical Branding Capsule: Crisp #FFBF00 with NO Glow */}
+                    <div className="inline-flex items-center justify-center bg-[#FFBF00] px-4 py-1.5 rounded-full shrink-0 transition-transform duration-500 hover:scale-105">
+                        <img
+                            src="/images/logo-tamuu.webp"
+                            alt="Tamuu"
+                            className="h-5 md:h-6 w-auto object-contain brightness-0 invert"
+                        />
+                    </div>
+                </m.div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto relative z-10">
