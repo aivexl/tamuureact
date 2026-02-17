@@ -10,124 +10,98 @@ import {
 const features = [
     {
         title: "Tema Premium",
-        description: "Desain eksklusif terinspirasi estetika Apple untuk keanggunan tertinggi.",
+        description: "Desain eksklusif dengan estetika tinggi untuk keanggunan momen spesial Anda.",
         icon: Star,
-        size: "2x2",
-        color: "bg-blue-600",
-        iconColor: "text-white"
     },
     {
         title: "Edit Mudah",
-        description: "Kustomisasi instan langsung dari genggaman Anda.",
+        description: "Kustomisasi instan dan intuitif langsung dari genggaman Anda.",
         icon: Zap,
-        size: "2x1",
-        color: "bg-amber-500",
-        iconColor: "text-white"
-    },
-    {
-        title: "RSVP & Guest Book",
-        description: "Kelola kehadiran dan tanda tangan digital dengan alur yang mulus.",
-        icon: Users,
-        size: "2x2",
-        color: "bg-[#0A1128]",
-        iconColor: "text-white"
-    },
-    {
-        title: "WhatsApp Broadcast",
-        description: "Satu klik untuk jangkauan tak terbatas.",
-        icon: Sparkles,
-        size: "1x1"
-    },
-    {
-        title: "QR Check-in",
-        description: "Sistem registrasi tamu modern.",
-        icon: Scan,
-        size: "1x1"
-    },
-    {
-        title: "Galeri Foto & Video",
-        description: "Abadikan setiap detil indah dalam resolusi tinggi.",
-        icon: ImageIcon,
-        size: "2x1"
-    },
-    {
-        title: "Musik Latar",
-        description: "Harmoni melodi pilihan.",
-        icon: Music,
-        size: "1x1"
-    },
-    {
-        title: "Navigasi Alamat",
-        description: "Presisi lokasi lokasi.",
-        icon: MapPin,
-        size: "1x1"
     },
     {
         title: "Custom Domain",
-        description: "Identitas personal wedding.com.",
+        description: "Gunakan identitas unik wedding.com untuk impresi yang lebih personal.",
         icon: Globe,
-        size: "2x1"
     },
     {
-        title: "Ayat & Quote",
-        description: "Kalam indah menyentuh hati.",
+        title: "WhatsApp Broadcast",
+        description: "Kirim undangan ke ribuan tamu secara otomatis dengan satu klik.",
+        icon: Sparkles,
+    },
+    {
+        title: "QR Code Check-in",
+        description: "Sistem registrasi tamu modern untuk manajemen kehadiran yang efisien.",
+        icon: Scan,
+    },
+    {
+        title: "RSVP & Guest Book",
+        description: "Kelola konfirmasi hadir dan buku tamu digital secara real-time.",
+        icon: Users,
+    },
+    {
+        title: "Galeri",
+        description: "Abadikan dan bagikan setiap momen indah dalam resolusi tinggi.",
+        icon: ImageIcon,
+    },
+    {
+        title: "Quote",
+        description: "Rangkaian kata indah dan ayat suci yang menyentuh hati para tamu.",
         icon: QuoteIcon,
-        size: "1x1"
     },
     {
-        title: "Ucapan & Wishes",
-        description: "Doa terbaik dari tamu.",
+        title: "Alamat",
+        description: "Navigasi presisi dengan integrasi peta ke lokasi acara Anda.",
+        icon: MapPin,
+    },
+    {
+        title: "Musik",
+        description: "Alunan melodi pilihan yang menyempurnakan suasana undangan.",
+        icon: Music,
+    },
+    {
+        title: "Wishes",
+        description: "Ruang bagi tamu untuk mengirimkan doa dan ucapan terbaik.",
         icon: MessageCircle,
-        size: "1x1"
     },
     {
         title: "Social Media Share",
-        description: "Berbagi kebahagiaan luas.",
+        description: "Kemudahan berbagi momen bahagia ke seluruh jejaring sosial.",
         icon: Share2,
-        size: "2x1"
     },
     {
-        title: "Amplop Digital",
-        description: "Praktis & aman.",
+        title: "Gift",
+        description: "Kelola daftar kado fisik dengan cara yang terorganisir.",
         icon: Gift,
-        size: "1x1"
     },
     {
-        title: "E-Gift Payment",
-        description: "Digital gifting modern.",
+        title: "E-Gift",
+        description: "Media pemberian amplop digital yang praktis, aman, dan modern.",
         icon: CreditCard,
-        size: "1x1"
     },
     {
         title: "Live Streaming",
-        description: "Hadirkan tamu virtual secara real-time.",
+        description: "Hadirkan tamu virtual secara langsung dari mana saja di dunia.",
         icon: Video,
-        size: "2x1",
-        special: "LIVE"
     },
     {
-        title: "Undian Doorprize",
-        description: "Kemeriahan interaktif.",
+        title: "Undian",
+        description: "Fitur interaktif untuk memeriahkan acara dengan doorprize digital.",
         icon: Trophy,
-        size: "1x1"
     },
     {
-        title: "Love Story",
-        description: "Narasi perjalanan cinta.",
+        title: "Story",
+        description: "Narasi perjalanan cinta yang disajikan secara sinematik.",
         icon: BookOpen,
-        size: "1x1"
     },
     {
-        title: "Wedding Display",
-        description: "Visualisasi layar besar.",
+        title: "Display",
+        description: "Visualisasi data dan foto tamu langsung di layar besar lokasi.",
         icon: Monitor,
-        size: "1x1"
     },
     {
-        title: "Analitik Tamu",
-        description: "Insight data kunjungan.",
+        title: "Analitik",
+        description: "Insight mendalam mengenai statistik kunjungan dan interaksi tamu.",
         icon: BarChart3,
-        size: "1x1"
     },
 ];
 
@@ -141,7 +115,7 @@ const FeaturesSection: React.FC = () => {
                     viewport={{ once: true }}
                     className="text-5xl md:text-7xl font-black text-[#0A1128] tracking-tighter leading-tight"
                 >
-                    Premium Bento Experience.
+                    Exclusively Designed.
                 </m.h2>
                 <m.p
                     initial={{ opacity: 0, y: 30 }}
@@ -150,66 +124,32 @@ const FeaturesSection: React.FC = () => {
                     transition={{ delay: 0.1 }}
                     className="text-xl text-slate-500 font-medium"
                 >
-                    Discover high-end features designed for your special day.
+                    Designed with precision for your most precious moments.
                 </m.p>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 auto-rows-[160px] md:auto-rows-[180px]">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {features.map((feature, index) => (
                     <m.div
                         key={index}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.5, delay: index * 0.02 }}
                         whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                        className={`
-                            relative overflow-hidden group p-6 rounded-[2.5rem] 
-                            flex flex-col justify-between transition-all duration-300
-                            ${feature.size === '2x2' ? 'col-span-2 row-span-2' : ''}
-                            ${feature.size === '2x1' ? 'col-span-2' : ''}
-                            ${feature.size === '1x1' ? 'col-span-1' : ''}
-                            ${feature.color || 'bg-[#FBFBFB] border border-slate-100/80 shadow-[0_4px_20px_rgba(0,0,0,0.02)]'}
-                            ${!feature.color && 'hover:bg-white hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)]'}
-                        `}
+                        className="relative p-10 bg-[#FBFBFB] rounded-apple border border-[#EDEDED] flex flex-col items-start h-full group transition-all duration-300 hover:bg-white hover:shadow-[0_20px_40px_rgba(0,0,0,0.04)]"
                     >
-                        <div className="relative z-10 h-full flex flex-col justify-between">
-                            <div>
-                                <div className={`
-                                    w-12 h-12 rounded-2xl flex items-center justify-center mb-4
-                                    transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3
-                                    ${feature.iconColor ? 'bg-white/10' : 'bg-white shadow-sm border border-slate-100'}
-                                `}>
-                                    <feature.icon className={`w-6 h-6 ${feature.iconColor || 'text-[#0A1128]'}`} />
-                                </div>
-
-                                <h3 className={`
-                                    font-black tracking-tight mb-2
-                                    ${feature.size === '2x2' ? 'text-2xl md:text-3xl' : 'text-base md:text-lg'}
-                                    ${feature.iconColor ? 'text-white' : 'text-[#0A1128]'}
-                                `}>
-                                    {feature.title}
-                                </h3>
-
-                                <p className={`
-                                    font-medium leading-tight
-                                    ${feature.size === '2x2' ? 'text-sm md:text-base max-w-[90%]' : 'text-[10px] md:text-xs text-slate-400'}
-                                    ${feature.iconColor ? 'text-white/80' : ''}
-                                `}>
-                                    {feature.description}
-                                </p>
-                            </div>
-
-                            {feature.special === 'LIVE' && (
-                                <div className="mt-4 flex items-center gap-2 px-3 py-1 bg-red-500/10 rounded-full w-fit">
-                                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                                    <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">Live</span>
-                                </div>
-                            )}
+                        <div className="w-14 h-14 rounded-2xl bg-white shadow-sm border border-[#EDEDED] flex items-center justify-center mb-8 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3">
+                            <feature.icon className="w-7 h-7 text-[#0A1128]" />
                         </div>
 
-                        {/* Subtle Glass Reflection */}
-                        <div className="absolute inset-0 bg-gradient-to-tr from-white/transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                        <h3 className="text-2xl font-black text-[#0A1128] tracking-tight mb-4">
+                            {feature.title}
+                        </h3>
+
+                        <p className="text-slate-500 font-medium leading-[1.6] text-[15px]">
+                            {feature.description}
+                        </p>
                     </m.div>
                 ))}
             </div>
@@ -224,7 +164,7 @@ const FeaturesSection: React.FC = () => {
                 <div className="inline-flex items-center gap-4 px-6 py-3 bg-[#FBFBFB] rounded-full border border-slate-100">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                     <span className="text-slate-400 font-bold tracking-[0.2em] uppercase text-[10px]">
-                        Tamuu Premium Design Core 2026
+                        Tamuu Precision Architecture 2026
                     </span>
                 </div>
             </m.div>
