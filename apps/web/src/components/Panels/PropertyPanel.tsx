@@ -23,6 +23,158 @@ import { ElementToolbar } from '@/components/Layout/ElementToolbar';
 import { UserElementEditor } from '@/components/UserEditor/UserElementEditor';
 import { LoveStoryPanel } from './LoveStoryPanel';
 
+// ============================================
+// UI COMPONENTS
+// ============================================
+const SectionComponent: React.FC<{ title: string; icon: React.ReactNode; children: React.ReactNode }> = ({ title, icon, children }) => (
+    <div className="space-y-3">
+        <div className="flex items-center gap-2 text-white/60">
+            {icon}
+            <h4 className="text-[10px] font-bold uppercase tracking-widest">{title}</h4>
+        </div>
+        {children}
+    </div>
+);
+
+interface NumberInputProps {
+    label: string;
+    value: number;
+    step?: number;
+    min?: number;
+    max?: number;
+    onChange: (v: number) => void;
+    onKeyframe?: () => void;
+    isKeyframed?: boolean;
+}
+
+const NumberInput: React.FC<NumberInputProps> = ({
+    label,
+    value,
+    step = 1,
+    min,
+    max,
+    onChange,
+    onKeyframe,
+    isKeyframed
+}) => (
+    <div className="space-y-1">
+        <div className="flex items-center justify-between">
+            <label className="text-[9px] text-white/30 uppercase font-bold">{label}</label>
+            {onKeyframe && (
+                <button
+                    onClick={onKeyframe}
+                    className={`p-0.5 rounded transition-colors ${isKeyframed ? 'text-[#0D99FF]' : 'text-white/10 hover:text-white/30'}`}
+                >
+                    <Diamond className={`w-2.5 h-2.5 ${isKeyframed ? 'fill-current' : ''}`} />
+                </button>
+            )}
+        </div>
+        <input
+            type="number"
+            value={value}
+            step={step}
+            min={min}
+            max={max}
+            onChange={(e) => onChange(Number(e.target.value))}
+            className={`w-full bg-white/5 border rounded-lg px-3 py-1.5 text-xs focus:border-[#0D99FF]/50 focus:outline-none transition-colors font-mono ${isKeyframed ? 'border-[#0D99FF]/30' : 'border-white/5'}`}
+        />
+    </div>
+);
+
+interface SelectInputProps {
+    label: string;
+    value: string;
+    options: { value: string; label: string }[];
+    onChange: (v: string) => void;
+    isFontPicker?: boolean;
+}
+
+const SelectInput: React.FC<SelectInputProps> = ({
+    label,
+    value,
+    options,
+    onChange,
+    isFontPicker
+}) => (
+    <div className="space-y-1">
+        <label className="text-[9px] text-white/30 uppercase font-bold block">{label}</label>
+        <div className="relative">
+            <select
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-1.5 text-xs focus:border-[#0D99FF]/50 focus:outline-none appearance-none cursor-pointer pr-8"
+            >
+                {options.map(opt => (
+                    <option
+                        key={opt.value}
+                        value={opt.value}
+                        className="bg-[#020617] text-white"
+                    >
+                        {opt.label}
+                    </option>
+                ))}
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" />
+        </div>
+    </div>
+);
+
+interface ColorInputProps {
+    label: string;
+    value: string;
+    onChange: (v: string) => void;
+}
+
+const ColorInput: React.FC<ColorInputProps> = ({ label, value, onChange }) => (
+    <div className="space-y-1">
+        <label className="text-[9px] text-white/30 uppercase font-bold block">{label}</label>
+        <div className="flex gap-2">
+            <div className="relative group">
+                <input
+                    type="color"
+                    value={/#[0-9a-f]{6}/i.test(value) ? value : '#000000'}
+                    onChange={(e) => onChange(e.target.value)}
+                    className="w-8 h-8 rounded-lg border border-white/10 cursor-pointer bg-transparent overflow-hidden"
+                />
+            </div>
+            <input
+                type="text"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="flex-1 bg-white/5 border border-white/5 rounded-lg px-3 py-1.5 text-xs focus:border-[#0D99FF]/50 focus:outline-none font-mono tracking-tight"
+                placeholder="#000000"
+            />
+        </div>
+    </div>
+);
+
+interface RangeInputProps {
+    label: string;
+    value: number;
+    min: number;
+    max: number;
+    step?: number;
+    onChange: (v: number) => void;
+}
+
+const RangeInput: React.FC<RangeInputProps> = ({ label, value, min, max, step = 1, onChange }) => (
+    <div className="space-y-1.5">
+        <div className="flex justify-between items-center">
+            <label className="text-[9px] text-white/30 uppercase font-bold">{label}</label>
+            <span className="text-[10px] text-white/60 font-mono">{value}</span>
+        </div>
+        <input
+            type="range"
+            min={min}
+            max={max}
+            step={step}
+            value={value}
+            onChange={(e) => onChange(Number(e.target.value))}
+            className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#0D99FF]"
+        />
+    </div>
+);
+
 export const PropertyPanel: React.FC = () => {
     const {
         // Global/Legacy layers (optional, kept for safety)
@@ -63,7 +215,14 @@ export const PropertyPanel: React.FC = () => {
         // Image Crop Modal
         openImageCropModal,
         isTemplate,
-        isSimulationMode
+        isSimulationMode,
+
+        // Motion Engine
+        playhead,
+        isPlaying,
+        addKeyframe,
+        removeKeyframe,
+        updateKeyframe
     } = useStore();
 
     // 1. Context-Aware Discovery
@@ -85,12 +244,44 @@ export const PropertyPanel: React.FC = () => {
     const handleUpdate = (updates: Partial<Layer>) => {
         if (!layer) return;
 
+        // CTO SMART ENGINE: Check for keyframeable properties
+        const animatableProps = ['x', 'y', 'scale', 'rotation', 'opacity'];
+        let finalUpdates = { ...updates };
+
+        // If we are in "Motion Recording" mode or the property has keyframes
+        const startTime = layer.sequence?.startTime || 0;
+        const effectiveTime = playhead - startTime;
+
+        Object.keys(updates).forEach(key => {
+            if (animatableProps.includes(key)) {
+                const isAlreadyKeyframed = layer.keyframes?.some(k => k.property === key);
+                // Only record if we are within or after the sequence start
+                if (isAlreadyKeyframed && effectiveTime >= 0) {
+                    // Update or Add Keyframe instead of base property
+                    const existingKf = layer.keyframes?.find(k => k.property === key && k.time === effectiveTime);
+                    if (existingKf) {
+                        updateKeyframe(layer.id, existingKf.id, { value: (updates as any)[key] });
+                    } else {
+                        addKeyframe(layer.id, {
+                            id: `kf-${Date.now()}-${Math.random()}`,
+                            time: effectiveTime,
+                            property: key as any,
+                            value: (updates as any)[key],
+                            easing: 'ease-in-out'
+                        });
+                    }
+                    // CTO FIX: Remove from base updates to prevent double-offset
+                    delete (finalUpdates as any)[key];
+                }
+            }
+        });
+
         if (activeCanvas === 'main' && activeSectionId) {
-            updateElementInSection(activeSectionId, layer.id, updates);
+            updateElementInSection(activeSectionId, layer.id, finalUpdates);
         } else if (activeCanvas === 'left' || activeCanvas === 'right') {
-            updateOrbitElement(activeCanvas, layer.id, updates);
+            updateOrbitElement(activeCanvas, layer.id, finalUpdates);
         } else {
-            useStore.getState().updateLayer(layer.id, updates);
+            useStore.getState().updateLayer(layer.id, finalUpdates);
         }
     };
 
@@ -155,6 +346,39 @@ export const PropertyPanel: React.FC = () => {
             if (direction === 'up') moveOrbitElementUp(activeCanvas, layer.id);
             if (direction === 'down') moveOrbitElementDown(activeCanvas, layer.id);
         }
+    };
+
+    // ============================================
+    // KEYFRAME HELPERS
+    // ============================================
+    const toggleKeyframe = (property: string, value: any) => {
+        if (!layer) return;
+        const startTime = layer.sequence?.startTime || 0;
+        const effectiveTime = Math.max(0, playhead - startTime);
+        const existing = layer.keyframes?.find(k => k.property === property && k.time === effectiveTime);
+
+        if (existing) {
+            removeKeyframe(layer.id, existing.id);
+        } else {
+            addKeyframe(layer.id, {
+                id: `kf-${Date.now()}`,
+                time: effectiveTime,
+                property: property as any,
+                value,
+                easing: 'ease-in-out'
+            });
+        }
+    };
+
+    const isPropertyKeyframed = (property: string) => {
+        if (!layer) return false;
+        const startTime = layer.sequence?.startTime || 0;
+        const effectiveTime = playhead - startTime;
+        return layer.keyframes?.some(k => k.property === property && k.time === effectiveTime) || false;
+    };
+
+    const hasAnyKeyframes = (property: string) => {
+        return layer?.keyframes?.some(k => k.property === property) || false;
     };
 
     // ============================================
@@ -533,7 +757,7 @@ export const PropertyPanel: React.FC = () => {
             return (
                 <div className="h-full flex flex-col overflow-hidden">
                     <div className="p-4 border-b border-white/10 shrink-0">
-                        <h3 className="text-sm font-bold uppercase tracking-widest text-purple-400">Stage Settings</h3>
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-[#0D99FF]">Stage Settings</h3>
                         <p className="text-[10px] text-white/40 font-mono">{activeCanvas.toUpperCase()} DECOR STAGE</p>
                     </div>
                     <div className="flex-1 overflow-y-auto premium-scroll p-4 space-y-6">
@@ -562,7 +786,7 @@ export const PropertyPanel: React.FC = () => {
                                     <motion.button
                                         whileTap={{ scale: 0.95 }}
                                         onClick={() => updateOrbitCanvas(activeCanvas as 'left' | 'right', { isVisible: !orbitCanvas.isVisible })}
-                                        className={`w-10 h-5 rounded-full transition-colors ${orbitCanvas.isVisible ? 'bg-purple-500' : 'bg-white/10'}`}
+                                        className={`w-10 h-5 rounded-full transition-colors ${orbitCanvas.isVisible ? 'bg-[#0D99FF]' : 'bg-white/10'}`}
                                     >
                                         <motion.div
                                             className="w-4 h-4 bg-white rounded-full shadow-sm"
@@ -573,7 +797,7 @@ export const PropertyPanel: React.FC = () => {
                             </div>
                         </SectionComponent>
 
-                        <div className="p-4 bg-purple-500/5 rounded-xl border border-purple-500/10 text-[10px] text-purple-300/60 leading-relaxed italic">
+                        <div className="p-4 bg-[#0D99FF]/5 rounded-xl border border-[#0D99FF]/10 text-[10px] text-[#0D99FF]/60 leading-relaxed italic">
                             Tip: Decorations on this stage are "Fixed". They will stay in position even when the main invitation scrolls.
                         </div>
                     </div>
@@ -743,10 +967,30 @@ export const PropertyPanel: React.FC = () => {
                     })()}
 
                     <div className="grid grid-cols-2 gap-3">
-                        <NumberInput label="X" value={layer.x} onChange={(v) => handleUpdate({ x: v })} />
-                        <NumberInput label="Y" value={layer.y} onChange={(v) => handleUpdate({ y: v })} />
-                        <NumberInput label="Width" value={layer.width} onChange={(v) => handleUpdate({ width: v })} />
-                        <NumberInput label="Height" value={layer.height} onChange={(v) => handleUpdate({ height: v })} />
+                        <NumberInput
+                            label="X"
+                            value={layer.x}
+                            onChange={(v) => handleUpdate({ x: v })}
+                            onKeyframe={() => toggleKeyframe('x', layer.x)}
+                            isKeyframed={isPropertyKeyframed('x')}
+                        />
+                        <NumberInput
+                            label="Y"
+                            value={layer.y}
+                            onChange={(v) => handleUpdate({ y: v })}
+                            onKeyframe={() => toggleKeyframe('y', layer.y)}
+                            isKeyframed={isPropertyKeyframed('y')}
+                        />
+                        <NumberInput
+                            label="Width"
+                            value={layer.width}
+                            onChange={(v) => handleUpdate({ width: v })}
+                        />
+                        <NumberInput
+                            label="Height"
+                            value={layer.height}
+                            onChange={(v) => handleUpdate({ height: v })}
+                        />
                     </div>
 
                     {/* Precision Fitting Tools - CTO Unicorn Implementation */}
@@ -798,7 +1042,15 @@ export const PropertyPanel: React.FC = () => {
                     <div className="mt-4">
                         <div className="flex justify-between items-center mb-2">
                             <span className="text-[9px] text-white/30 uppercase font-bold">Rotation</span>
-                            <span className="text-xs text-white/60">{layer.rotation || 0}°</span>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs text-white/60">{layer.rotation || 0}°</span>
+                                <button
+                                    onClick={() => toggleKeyframe('rotation', layer.rotation || 0)}
+                                    className={`p-0.5 rounded transition-colors ${isPropertyKeyframed('rotation') ? 'text-[#0D99FF]' : 'text-white/10 hover:text-white/30'}`}
+                                >
+                                    <Diamond className={`w-2.5 h-2.5 ${isPropertyKeyframed('rotation') ? 'fill-current' : ''}`} />
+                                </button>
+                            </div>
                         </div>
                         <input
                             type="range"
@@ -806,7 +1058,31 @@ export const PropertyPanel: React.FC = () => {
                             max="180"
                             value={layer.rotation || 0}
                             onChange={(e) => handleUpdate({ rotation: Number(e.target.value) })}
-                            className="w-full accent-premium-accent"
+                            className={`w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-premium-accent ${isPropertyKeyframed('rotation') ? 'accent-[#0D99FF]' : ''}`}
+                        />
+                    </div>
+
+                    <div className="mt-4">
+                        <div className="flex justify-between items-center mb-2">
+                            <span className="text-[9px] text-white/30 uppercase font-bold">Scale</span>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs text-white/60">{layer.scale || 1}x</span>
+                                <button
+                                    onClick={() => toggleKeyframe('scale', layer.scale || 1)}
+                                    className={`p-0.5 rounded transition-colors ${isPropertyKeyframed('scale') ? 'text-[#0D99FF]' : 'text-white/10 hover:text-white/30'}`}
+                                >
+                                    <Diamond className={`w-2.5 h-2.5 ${isPropertyKeyframed('scale') ? 'fill-current' : ''}`} />
+                                </button>
+                            </div>
+                        </div>
+                        <input
+                            type="range"
+                            min="0.1"
+                            max="5"
+                            step="0.1"
+                            value={layer.scale || 1}
+                            onChange={(e) => handleUpdate({ scale: Number(e.target.value) })}
+                            className={`w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-premium-accent ${isPropertyKeyframed('scale') ? 'accent-[#0D99FF]' : ''}`}
                         />
                     </div>
 
@@ -4111,7 +4387,15 @@ export const PropertyPanel: React.FC = () => {
                         <div>
                             <div className="flex justify-between items-center mb-2">
                                 <span className="text-[9px] text-white/30 uppercase font-bold">Opacity</span>
-                                <span className="text-xs text-white/60">{Math.round((layer.opacity ?? 1) * 100)}%</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-white/60">{Math.round((layer.opacity ?? 1) * 100)}%</span>
+                                    <button
+                                        onClick={() => toggleKeyframe('opacity', layer.opacity ?? 1)}
+                                        className={`p-0.5 rounded transition-colors ${isPropertyKeyframed('opacity') ? 'text-indigo-400' : 'text-white/10 hover:text-white/30'}`}
+                                    >
+                                        <Diamond className={`w-2.5 h-2.5 ${isPropertyKeyframed('opacity') ? 'fill-current' : ''}`} />
+                                    </button>
+                                </div>
                             </div>
                             <input
                                 type="range"
@@ -4120,6 +4404,7 @@ export const PropertyPanel: React.FC = () => {
                                 step="0.01"
                                 value={layer.opacity ?? 1}
                                 onChange={(e) => handleUpdate({ opacity: Number(e.target.value) })}
+                                className={isPropertyKeyframed('opacity') ? 'accent-indigo-500' : ''}
                             />
                         </div>
                     </div>
@@ -4178,113 +4463,3 @@ export const PropertyPanel: React.FC = () => {
     );
 };
 
-// ============================================
-// UI COMPONENTS
-// ============================================
-const SectionComponent: React.FC<{ title: string; icon: React.ReactNode; children: React.ReactNode }> = ({ title, icon, children }) => (
-    <div className="space-y-3">
-        <div className="flex items-center gap-2 text-white/60">
-            {icon}
-            <h4 className="text-[10px] font-bold uppercase tracking-widest">{title}</h4>
-        </div>
-        {children}
-    </div>
-);
-
-const NumberInput: React.FC<{
-    label: string;
-    value: number;
-    step?: number;
-    min?: number;
-    max?: number;
-    onChange: (v: number) => void;
-}> = ({ label, value, step = 1, min, max, onChange }) => (
-    <div>
-        <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">{label}</label>
-        <input
-            type="number"
-            value={value}
-            step={step}
-            min={min}
-            max={max}
-            onChange={(e) => onChange(Number(e.target.value))}
-            className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none"
-        />
-    </div>
-);
-
-const SelectInput: React.FC<{
-    label: string;
-    value: string;
-    options: { value: string; label: string }[];
-    onChange: (v: string) => void;
-    isFontPicker?: boolean;
-}> = ({ label, value, options, onChange, isFontPicker }) => (
-    <div>
-        <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">{label}</label>
-        <select
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none appearance-none cursor-pointer"
-        >
-            {options.map(opt => {
-                const fontConfig = isFontPicker ? SUPPORTED_FONTS.find(f => f.name === opt.value) : null;
-                return (
-                    <option
-                        key={opt.value}
-                        value={opt.value}
-                        className="bg-[#1a1a1a]"
-                        style={isFontPicker && fontConfig ? { fontFamily: fontConfig.family } : {}}
-                    >
-                        {opt.label}
-                    </option>
-                );
-            })}
-        </select>
-    </div>
-);
-
-const ColorInput: React.FC<{ label: string; value: string; onChange: (v: string) => void }> = ({ label, value, onChange }) => (
-    <div>
-        <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">{label}</label>
-        <div className="flex gap-2">
-            <input
-                type="color"
-                value={/^#[0-9A-F]{6}$/i.test(value) ? value : '#000000'}
-                onChange={(e) => onChange(e.target.value)}
-                className="w-10 h-10 rounded-lg border border-white/10 cursor-pointer bg-transparent"
-            />
-            <input
-                type="text"
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className="flex-1 bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none font-mono"
-            />
-        </div>
-    </div>
-);
-
-const RangeInput: React.FC<{
-    label: string;
-    value: number;
-    min: number;
-    max: number;
-    step?: number;
-    onChange: (v: number) => void;
-}> = ({ label, value, min, max, step = 1, onChange }) => (
-    <div className="space-y-1.5">
-        <div className="flex justify-between items-center">
-            <label className="text-[9px] text-white/30 uppercase font-bold">{label}</label>
-            <span className="text-[10px] text-white/60 font-mono">{value}</span>
-        </div>
-        <input
-            type="range"
-            min={min}
-            max={max}
-            step={step}
-            value={value}
-            onChange={(e) => onChange(Number(e.target.value))}
-            className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-premium-accent"
-        />
-    </div>
-);

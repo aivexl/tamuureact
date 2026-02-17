@@ -3,6 +3,7 @@ import { m, useInView } from 'framer-motion';
 import { Layer } from '@/store/layersSlice';
 import { ElementRenderer } from '../Canvas/ElementRenderer';
 import { useStore } from '@/store/useStore';
+import { interpolate } from '@/lib/interpolation';
 
 /**
  * GLOBAL PERSISTENT STATE
@@ -51,6 +52,10 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     const elementDimensions = useStore(state => state.elementDimensions);
     const updateElementDimensions = useStore(state => state.updateElementDimensions);
 
+    // MOTION ENGINE STATES
+    const playhead = useStore(state => state.playhead);
+    const isPlaying = useStore(state => state.isPlaying);
+
     const prevForceTriggerRef = useRef(forceTrigger);
     const isVisibleRef = useRef(false);
 
@@ -93,6 +98,27 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     const flipY = layer.flipVertical ? -1 : 1;
     const baseScale = layer.scale || 1;
     const baseRotate = layer.rotation || 0;
+
+    // ============================================
+    // MOTION GRAPHICS INTERPOLATION
+    // ============================================
+    const motionStyles = useMemo(() => {
+        // CTO UNICORN ENGINE: Absolute Interpolation Logic with Sequence Offset
+        const startTime = layer.sequence?.startTime || 0;
+        const duration = layer.sequence?.duration || 2000;
+
+        // Effective time is the relative playhead within the layer's own sequence
+        // We clamp it to [0, duration] to respect the sequence boundaries
+        const effectiveTime = Math.max(0, Math.min(playhead - startTime, duration));
+
+        return {
+            x: interpolate(effectiveTime, layer.keyframes || [], layer.x, 'x'),
+            y: interpolate(effectiveTime, layer.keyframes || [], layer.y, 'y'),
+            scale: interpolate(effectiveTime, layer.keyframes || [], layer.scale || 1, 'scale'),
+            rotate: interpolate(effectiveTime, layer.keyframes || [], layer.rotation || 0, 'rotation'),
+            opacity: interpolate(effectiveTime, layer.keyframes || [], layer.opacity ?? 1, 'opacity'),
+        };
+    }, [playhead, layer.keyframes, layer.sequence, layer.x, layer.y, layer.scale, layer.rotation, layer.opacity]);
 
     // ============================================
     // LIQUID AUTO-LAYOUT (SMART POSITION)
@@ -431,15 +457,19 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             ref={ref} initial="hidden" animate={animationState} variants={variants}
             className="absolute origin-center"
             style={{
-                left: isEditor ? 0 : `${layer.x}px`,
-                top: isEditor ? relativeShift : `${finalY}px`,
+                left: isEditor ? 0 : 0,
+                // Liquid layout shift (finalY - layer.y) is applied on top of motion Y
+                top: isEditor ? relativeShift : `${(motionStyles.y + (finalY - layer.y))}px`,
                 width: `${layer.width}px`,
                 height: `${layer.height}px`,
                 zIndex: layer.zIndex,
                 willChange: 'transform, opacity',
-                opacity: layer.opacity ?? 1,
-                perspective: '1200px', // ENABLE 3D CONTEXT
-                transformStyle: 'preserve-3d'
+                opacity: (playhead >= (layer.sequence?.startTime || 0) && playhead <= (layer.sequence?.startTime || 0) + (layer.sequence?.duration || 2000))
+                    ? motionStyles.opacity
+                    : 0, // Hide if outside sequence
+                perspective: '1200px',
+                transformStyle: 'preserve-3d',
+                transform: `translateX(${motionStyles.x}px) rotate(${motionStyles.rotate}deg) scale(${motionStyles.scale})`
             }}
         >
             {isMarqueeEnabled && (marqueeConfig?.mode || 'seamless') === 'seamless' ? (

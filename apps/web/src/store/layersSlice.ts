@@ -72,6 +72,27 @@ export type AnimationType =
     | 'door-2d-open-left' | 'door-2d-open-right';
 
 // ============================================
+// MOTION GRAPHICS & SEQUENCING TYPES ($100B Standard)
+// ============================================
+export interface Keyframe {
+    id: string;
+    time: number;       // ms from the START of the layer's sequence
+    property: 'x' | 'y' | 'scale' | 'rotation' | 'opacity' | string;
+    value: number | string;
+    easing: 'linear' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'step' | string;
+}
+
+export interface LayerSequence {
+    startTime: number; // ms from section start
+    duration: number;  // ms
+    loop?: {
+        enabled: boolean;
+        type: 'yoyo' | 'restart' | 'offset';
+        iterations: number; // Infinity or count
+    };
+}
+
+// ============================================
 // PROFILE PHOTO TYPES
 // ============================================
 export type ProfilePhotoShape = 'circle' | 'square' | 'heart' | 'luxury' | 'arch' | 'hexagon';
@@ -767,6 +788,10 @@ export interface Layer {
     isLocked?: boolean;
     isVisible?: boolean;
 
+    // MOTION GRAPHICS V1 (Pure Time-Series)
+    sequence?: LayerSequence;
+    keyframes?: Keyframe[];
+
     // Filters
     filters?: {
         brightness?: number; // 0-200
@@ -914,6 +939,11 @@ export interface LayersState {
     updateLayersBatch: (layers: Layer[]) => void;
     sanitizeAllLayers: () => void;
 
+    // Keyframe Management
+    addKeyframe: (layerId: string, keyframe: Keyframe) => void;
+    removeKeyframe: (layerId: string, keyframeId: string) => void;
+    updateKeyframe: (layerId: string, keyframeId: string, updates: Partial<Keyframe>) => void;
+
     // Feature 7: Global Theme
     globalTheme: GlobalTheme;
     updateGlobalTheme: (updates: Partial<GlobalTheme>) => void;
@@ -963,6 +993,23 @@ export const sanitizeLayer = (layer: Layer): Layer => {
     if (sanitized.scale !== undefined && (sanitized.scale > 4 || sanitized.scale < 0.1)) {
         sanitized.scale = 1;
         changed = true;
+    }
+
+    // MOTION GRAPHICS V1: Defensive checks for new fields
+    if (sanitized.keyframes && !Array.isArray(sanitized.keyframes)) {
+        sanitized.keyframes = [];
+        changed = true;
+    }
+
+    if (sanitized.sequence) {
+        if (typeof sanitized.sequence.startTime !== 'number') {
+            sanitized.sequence.startTime = 0;
+            changed = true;
+        }
+        if (typeof sanitized.sequence.duration !== 'number') {
+            sanitized.sequence.duration = 2000;
+            changed = true;
+        }
     }
 
     return changed ? sanitized : layer;
@@ -1173,6 +1220,27 @@ export const createLayersSlice: StateCreator<LayersState> = (set, get) => ({
 
     sanitizeAllLayers: () => set((state) => ({
         layers: state.layers.map(sanitizeLayer)
+    })),
+
+    addKeyframe: (layerId, keyframe) => set((state) => ({
+        layers: state.layers.map(l => l.id === layerId ? {
+            ...l,
+            keyframes: [...(l.keyframes || []), keyframe]
+        } : l)
+    })),
+
+    removeKeyframe: (layerId, keyframeId) => set((state) => ({
+        layers: state.layers.map(l => l.id === layerId ? {
+            ...l,
+            keyframes: (l.keyframes || []).filter(k => k.id !== keyframeId)
+        } : l)
+    })),
+
+    updateKeyframe: (layerId, keyframeId, updates) => set((state) => ({
+        layers: state.layers.map(l => l.id === layerId ? {
+            ...l,
+            keyframes: (l.keyframes || []).map(k => k.id === keyframeId ? { ...k, ...updates } : k)
+        } : l)
     })),
 
     // Feature 7: Global Theme Implementation

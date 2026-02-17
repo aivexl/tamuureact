@@ -17,6 +17,8 @@ import { templates as templatesApi, invitations as invitationsApi, userDisplayDe
 import { generateId, dataURLtoBlob, sanitizeValue } from '@/lib/utils';
 import { Layers, List, Settings } from 'lucide-react';
 import { SettingsSidebar } from '../Panels/SettingsSidebar';
+import { useClockEngine } from '@/hooks/useClockEngine';
+import { SequenceTimeline } from '../AdminEditor/SequenceTimeline';
 
 
 interface EditorLayoutProps {
@@ -26,6 +28,9 @@ interface EditorLayoutProps {
 }
 
 export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTemplate, isDisplayDesign }) => {
+    // 0. MOTION ENGINE HEARTBEAT
+    useClockEngine();
+
     const {
         layers,
         projectName,
@@ -412,6 +417,11 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                 >
                     <PropertyPanel />
                 </motion.div>
+            </div>
+
+            {/* UNICORN MOTION TIMELINE (CITADEL ONYX) - ARCHITECTURAL DOCK */}
+            <div className="relative z-[100] border-t border-white/5">
+                <SequenceTimeline />
             </div>
 
             {/* Removed Preview Modal - handled via new tab */}

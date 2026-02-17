@@ -7,12 +7,13 @@ import { createUISlice, UIState } from './uiSlice';
 import { createModalSlice, ModalState } from './modalSlice';
 import { createSectionsSlice, SectionsState, Section, PredefinedSectionType, SECTION_ICONS, SECTION_LABELS, PREDEFINED_SECTION_TYPES, ZoomPoint, ZoomConfig } from './sectionsSlice';
 import { createAuthSlice, AuthState } from './authSlice';
+import { createClockSlice, ClockState } from './clockSlice';
 import { sanitizeValue } from '@/lib/utils';
 
 // ============================================
 // COMBINED STORE TYPE
 // ============================================
-type StoreState = CanvasState & LayersState & UIState & ModalState & SectionsState & AuthState;
+type StoreState = CanvasState & LayersState & UIState & ModalState & SectionsState & AuthState & ClockState;
 
 // ============================================
 // MAIN STORE WITH UNDO/REDO
@@ -27,6 +28,7 @@ export const useStore = create<StoreState>()(
                 ...createModalSlice(...a),
                 ...createSectionsSlice(...a),
                 ...createAuthSlice(...a),
+                ...createClockSlice(...a),
             }),
             {
                 limit: 50,

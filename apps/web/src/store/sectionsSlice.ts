@@ -101,6 +101,7 @@ export interface Section {
     backgroundUrl?: string;
     overlayOpacity: number;
     animation: AnimationType;
+    duration?: number;        // Total Section Duration in MS (Default: 5000ms)
     zoomConfig?: ZoomConfig;
     pageTransition?: PageTransition;
     kenBurnsEnabled?: boolean;
