@@ -92,8 +92,7 @@ const PricingSection: React.FC = () => {
     return (
         <section id="pricing" className="max-w-7xl mx-auto px-6 py-24 bg-white">
             <div className="text-center mb-16 space-y-4">
-                <span className="text-amber-900 font-black uppercase tracking-widest text-sm block">Investasi Terbaik</span>
-                <h2 className="text-4xl md:text-5xl font-black text-[#0A1128] tracking-tight">Pilih Paket Kebahagiaan</h2>
+                <h2 className="text-4xl md:text-5xl font-black text-[#0A1128] tracking-tight">Mulai buat undangan impian Anda sekarang.</h2>
                 <div className="w-20 h-1.5 bg-[#FFBF00] mx-auto rounded-full" aria-hidden="true" />
             </div>
 
