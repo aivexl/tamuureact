@@ -25,7 +25,7 @@ const features = [
     },
     {
         title: "WhatsApp Broadcast",
-        description: "Kirim undangan ke ribuan tamu secara otomatis dengan satu klik.",
+        description: "Kirim undangan ke tamu secara dengan satu klik.",
         icon: Sparkles,
     },
     {
@@ -98,16 +98,11 @@ const features = [
         description: "Visualisasi data dan foto tamu langsung di layar besar lokasi.",
         icon: Monitor,
     },
-    {
-        title: "Analitik",
-        description: "Insight mendalam mengenai statistik kunjungan dan interaksi tamu.",
-        icon: BarChart3,
-    },
 ];
 
 const FeaturesSection: React.FC = () => {
     return (
-        <section id="features" className="max-w-7xl mx-auto px-6 py-32 bg-white">
+        <section id="features" className="max-w-7xl mx-auto px-6 py-24 bg-white">
             <div className="text-center mb-24 max-w-3xl mx-auto space-y-6">
                 <m.h2
                     initial={{ opacity: 0, y: 30 }}
@@ -154,20 +149,6 @@ const FeaturesSection: React.FC = () => {
                 ))}
             </div>
 
-            <m.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.5 }}
-                className="mt-32 text-center"
-            >
-                <div className="inline-flex items-center gap-4 px-6 py-3 bg-[#FBFBFB] rounded-full border border-slate-100">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                    <span className="text-slate-400 font-bold tracking-[0.2em] uppercase text-[10px]">
-                        Tamuu Precision Architecture 2026
-                    </span>
-                </div>
-            </m.div>
         </section>
     );
 };
