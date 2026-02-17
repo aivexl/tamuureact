@@ -107,7 +107,7 @@ export const Navbar: React.FC = () => {
                     {isAppDomain ? (
                         <a href="https://tamuu.id" className="flex items-center gap-3 group" aria-label="Tamuu - Halaman Utama">
                             <img
-                                src="/assets/tamuu-logo-header.png"
+                                src="/assets/tamuu-logo-header.jpg"
                                 alt="Tamuu"
                                 className="h-8 md:h-9 w-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity"
                             />
@@ -115,7 +115,7 @@ export const Navbar: React.FC = () => {
                     ) : (
                         <Link to="/" className="flex items-center gap-3 group" aria-label="Tamuu - Halaman Utama">
                             <img
-                                src="/assets/tamuu-logo-header.png"
+                                src="/assets/tamuu-logo-header.jpg"
                                 alt="Tamuu"
                                 className="h-8 md:h-9 w-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity"
                             />
@@ -188,8 +188,8 @@ export const Navbar: React.FC = () => {
                             <button
                                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                                 className={`flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full border transition-all duration-200 ${isProfileOpen
-                                        ? 'bg-slate-100 border-slate-200'
-                                        : 'bg-transparent border-transparent hover:bg-slate-50 hover:border-slate-100'
+                                    ? 'bg-slate-100 border-slate-200'
+                                    : 'bg-transparent border-transparent hover:bg-slate-50 hover:border-slate-100'
                                     }`}
                             >
                                 <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-rose-500 to-orange-500 flex items-center justify-center text-white text-xs font-bold shadow-sm">
