@@ -25,7 +25,18 @@ const SectionLoader = () => (
 // ============================================
 // WORD ROLLER COMPONENT (Eagerly Loaded for Hero)
 // ============================================
-const eventTypes = ["Pernikahan", "Ulang Tahun", "Sunatan", "Syukuran", "Aqiqah", "Tunangan", "Pertunangan"];
+const eventTypes = [
+    "Pernikahan",
+    "Pertunangan",
+    "Aqiqah",
+    "Sunatan",
+    "Syukuran",
+    "Tahlilan",
+    "Ulang Tahun",
+    "Peresmian",
+    "Event",
+    "Rapat"
+];
 const ITEM_HEIGHT_EM = 1.7;
 
 const WordRoller: React.FC = () => {
