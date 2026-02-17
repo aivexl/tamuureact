@@ -57,25 +57,25 @@ const TestimonialsSection: React.FC = () => {
                     className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 text-[#FFBF00] text-xs font-bold tracking-[0.2em] uppercase mb-10 border border-white/10"
                 >
                     <Star className="w-3 h-3 fill-[#FFBF00]" />
-                    <span>Real Customer Stories</span>
+                    <span>Kesan Pelanggan</span>
                 </m.div>
 
-                {/* Apple Pro Typography: Fixed 1-line Branding */}
+                {/* Apple Pro Typography: Bold 1-line Branding */}
                 <m.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     className="flex items-center justify-center max-w-5xl mx-auto"
                 >
-                    <h2 className="text-lg md:text-xl font-light text-white/80 tracking-tight leading-relaxed flex items-center justify-center gap-x-2.5">
-                        <span className="opacity-80">Dengarkan kebahagiaan mereka yang telah mempercayakan momen spesial kepada layanan</span>
+                    <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight leading-relaxed flex items-center justify-center gap-x-3 text-center flex-wrap">
+                        <span>Dengarkan kebahagiaan mereka yang telah mempercayakan momen spesial kepada layanan</span>
 
-                        {/* Pure Inline Logo: Proportional and sharp */}
+                        {/* Pure White Logo: Perfectly aligned and bold-weighted */}
                         <img
-                            src="/images/logo-tamuu.webp?v=final"
+                            src="/images/logo-tamuu.webp?v=bold-white"
                             alt="Tamuu"
-                            className="h-5 md:h-6 w-auto object-contain inline-block brightness-110 contrast-125"
-                            style={{ verticalAlign: 'middle', marginTop: '-2px' }}
+                            className="h-6 md:h-8 w-auto object-contain inline-block brightness-0 invert"
+                            style={{ verticalAlign: 'middle', marginTop: '-1px' }}
                         />
                     </h2>
                 </m.div>
