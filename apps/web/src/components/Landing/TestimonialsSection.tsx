@@ -73,7 +73,7 @@ const TestimonialsSection: React.FC = () => {
                             <img
                                 src="/images/logo-tamuu.webp?v=inline-final"
                                 alt="Tamuu"
-                                className="h-6 md:h-9 w-auto object-contain inline-block brightness-0 invert translate-y-[15%] md:translate-y-[12%]"
+                                className="h-6 md:h-9 w-auto object-contain inline-block brightness-0 invert translate-y-[18%] md:translate-y-[22%]"
                             />
                         </span>
                     </h2>
