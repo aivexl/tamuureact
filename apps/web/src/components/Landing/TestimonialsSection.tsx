@@ -12,7 +12,7 @@ const testimonials = [
     {
         name: "Dewi Anggraini",
         role: "Calon Pengantin Wanita",
-        content: "Awalnya ragu pakai undangan digital, tapi setelah lihat hasilnya, saya sangat puas! Tamu-tamu langsung bisa konfirmasi kehadiran dan kirim ucapan. Praktis sekali!",
+        content: "Awalnya ragu pakai undangan digital, tapi setelah lihat hasilnya, saya sangat puas! Tamu-tamu langsung bisa konfirmasi kehadiran and kirim ucapan. Praktis sekali!",
         rating: 5
     },
     {
@@ -60,25 +60,23 @@ const TestimonialsSection: React.FC = () => {
                     <span>Branded Testimony</span>
                 </m.div>
 
-                {/* Apple Pro Typography: Scaled to match Navbar Branding */}
+                {/* Apple Pro Typography: Seamless Inline Branding */}
                 <m.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="flex flex-wrap items-center justify-center gap-x-3 gap-y-4 max-w-4xl mx-auto"
+                    className="flex items-center justify-center flex-wrap gap-x-2 gap-y-2 max-w-5xl mx-auto"
                 >
-                    <h2 className="text-xl md:text-2xl font-light text-white/90 tracking-tight leading-relaxed">
-                        Dengarkan kebahagiaan mereka yang telah mempercayakan momen spesial kepada layanan
-                    </h2>
+                    <h2 className="text-xl md:text-2xl font-light text-white/90 tracking-tight flex items-center flex-wrap justify-center gap-x-2">
+                        <span>Dengarkan kebahagiaan mereka yang telah mempercayakan momen spesial kepada layanan</span>
 
-                    {/* Clinical Branding Capsule: Crisp #FFBF00 with NO Glow */}
-                    <div className="inline-flex items-center justify-center bg-[#FFBF00] px-4 py-1.5 rounded-full shrink-0 transition-transform duration-500 hover:scale-105">
+                        {/* Proportional Seamless Logo: No background, perfectly aligned */}
                         <img
                             src="/images/logo-tamuu.webp"
                             alt="Tamuu"
-                            className="h-5 md:h-6 w-auto object-contain brightness-0 invert"
+                            className="h-6 md:h-8 w-auto object-contain inline-block -translate-y-[1px]"
                         />
-                    </div>
+                    </h2>
                 </m.div>
             </div>
 
