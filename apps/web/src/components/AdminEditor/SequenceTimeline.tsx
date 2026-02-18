@@ -7,7 +7,8 @@ import {
     Layers,
     ChevronRight,
     Search,
-    Plus
+    Plus,
+    Square
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 
@@ -70,10 +71,22 @@ export const SequenceTimeline: React.FC = () => {
                             <RotateCcw className="w-4 h-4" />
                         </button>
                         <button
-                            onClick={togglePlayback}
+                            onClick={() => {
+                                if (playhead >= duration) {
+                                    setPlayhead(0);
+                                }
+                                togglePlayback();
+                            }}
                             className="w-10 h-10 flex items-center justify-center bg-[#0D99FF] hover:bg-[#0D99FF]/80 text-white rounded-lg shadow-lg shadow-[#0D99FF]/20 transition-all active:scale-95"
                         >
                             {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
+                        </button>
+                        <button
+                            onClick={resetClock}
+                            className="p-2 hover:bg-white/10 text-slate-400 rounded-lg transition-all"
+                            title="Stop & Reset"
+                        >
+                            <Square className="w-4 h-4 fill-current" />
                         </button>
                     </div>
 
