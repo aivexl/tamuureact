@@ -590,8 +590,9 @@ const ShapeElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ 
 // LOTTIE ELEMENT
 // ============================================
 const LottieElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
+    const isPlaying = useStore(state => state.isPlaying);
     const isAnimationPlaying = useStore(state => state.isAnimationPlaying);
-    const shouldAnimate = !isEditor || isAnimationPlaying;
+    const shouldAnimate = isPlaying || isAnimationPlaying;
     const config = layer.lottieConfig;
     const [data, setData] = useState<any>(null);
 
@@ -706,8 +707,9 @@ const FlyingBirdElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentL
         onContentLoad?.();
     }, []);
 
+    const isPlaying = useStore(state => state.isPlaying);
     const isAnimationPlaying = useStore(state => state.isAnimationPlaying);
-    const shouldAnimate = !isEditor || isAnimationPlaying;
+    const shouldAnimate = isPlaying || isAnimationPlaying;
     const config = layer.flyingBirdConfig;
     return (
         <div className="w-full h-full flex items-center justify-center pointer-events-none" style={{ transform: config?.direction === 'right' ? 'scaleX(-1)' : 'none' }}>

@@ -171,10 +171,18 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     const pendingTriggerRef = useRef(false);
 
     const [animationState, setAnimationState] = React.useState<"hidden" | "visible">(
-        (isEditor && !isPlaying) || !hasEntranceAnimation || (layer.id && globalAnimatedState.get(layer.id))
+        (!isPlaying && isEditor) || !hasEntranceAnimation || (layer.id && globalAnimatedState.get(layer.id))
             ? "visible"
             : "hidden"
     );
+
+    // CTO FIX: In Editor, we should force the state to "visible" when playing starts
+    // to ensure it doesn't get stuck in "hidden" if it didn't trigger correctly.
+    useEffect(() => {
+        if (isEditor && isPlaying && animationState !== "visible") {
+            setAnimationState("visible");
+        }
+    }, [isEditor, isPlaying, animationState]);
 
     // Use ref to track animationState inside callbacks to avoid infinite loop
     const animationStateRef = useRef(animationState);
