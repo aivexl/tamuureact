@@ -457,19 +457,24 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             ref={ref} initial="hidden" animate={animationState} variants={variants}
             className="absolute origin-center"
             style={{
-                left: isEditor ? 0 : 0,
-                // Liquid layout shift (finalY - layer.y) is applied on top of motion Y
-                top: isEditor ? relativeShift : `${(motionStyles.y + (finalY - layer.y))}px`,
+                left: 0,
+                // CTO FIX: In Editor, we apply the DELTA (motion - base) because parent CanvasElement already has base Y.
+                // In Preview, we apply absolute motion since there is no CanvasElement parent.
+                top: isEditor
+                    ? (motionStyles.y - layer.y) + relativeShift
+                    : `${(motionStyles.y + (finalY - layer.y))}px`,
                 width: `${layer.width}px`,
                 height: `${layer.height}px`,
                 zIndex: layer.zIndex,
                 willChange: 'transform, opacity',
                 opacity: (playhead >= (layer.sequence?.startTime || 0) && playhead <= (layer.sequence?.startTime || 0) + (layer.sequence?.duration || 2000))
                     ? motionStyles.opacity
-                    : 0, // Hide if outside sequence
+                    : 1, // Keep visible but static if outside or in editor (to see handles)
                 perspective: '1200px',
                 transformStyle: 'preserve-3d',
-                transform: `translateX(${motionStyles.x}px) rotate(${motionStyles.rotate}deg) scale(${motionStyles.scale})`
+                transform: isEditor
+                    ? `translateX(${motionStyles.x - layer.x}px) rotate(${motionStyles.rotate - (layer.rotation || 0)}deg) scale(${motionStyles.scale / (layer.scale || 1)})`
+                    : `translateX(${motionStyles.x}px) rotate(${motionStyles.rotate}deg) scale(${motionStyles.scale})`
             }}
         >
             {isMarqueeEnabled && (marqueeConfig?.mode || 'seamless') === 'seamless' ? (
