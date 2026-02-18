@@ -171,7 +171,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     const pendingTriggerRef = useRef(false);
 
     const [animationState, setAnimationState] = React.useState<"hidden" | "visible">(
-        (isEditor && !isAnimationPlaying) || !hasEntranceAnimation || (layer.id && globalAnimatedState.get(layer.id))
+        (isEditor && !isPlaying) || !hasEntranceAnimation || (layer.id && globalAnimatedState.get(layer.id))
             ? "visible"
             : "hidden"
     );
@@ -312,6 +312,11 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     }, [isImmediate, isSectionActive, tryTriggerAnimation, animationState, layer.id]);
 
     useEffect(() => {
+        if (!isEditor || !hasEntranceAnimation || isImmediate) return;
+        if (isPlaying) tryTriggerAnimation();
+    }, [isPlaying, isEditor, hasEntranceAnimation, isImmediate, tryTriggerAnimation]);
+
+    useEffect(() => {
         if (isEditor || !hasEntranceAnimation || isImmediate || entranceTrigger !== 'scroll') return;
         if (inView && isSectionActive) tryTriggerAnimation();
     }, [inView, isSectionActive, isEditor, hasEntranceAnimation, isImmediate, entranceTrigger, tryTriggerAnimation]);
@@ -348,9 +353,9 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
 
     const loopingConfig = useMemo(() => {
         if (!loopingType || loopingType === 'none') return null;
-        if (loopTrigger === 'click' && !forceTrigger) return null;
-        if (loopTrigger === 'scroll' && !inView) return null;
-        if (loopTrigger === 'open_btn' && !isOpened) return null;
+        if (loopTrigger === 'click' && !forceTrigger && !isEditor) return null;
+        if (loopTrigger === 'scroll' && !inView && !isEditor) return null;
+        if (loopTrigger === 'open_btn' && !isOpened && !isEditor) return null;
 
         const loopTransition = { duration: loopDuration, repeat: Infinity, repeatType: "reverse" as const, ease: "easeInOut", delay: loopDelay };
         const startRotateForLoop = isEditor ? 0 : baseRotate;
@@ -379,9 +384,9 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     const elegantSpinAnimation = useMemo(() => {
         if (!isElegantSpinEnabled || !elegantSpinConfig) return null;
         const trigger = elegantSpinConfig.trigger || 'load';
-        if (trigger === 'click' && !forceTrigger) return null;
-        if (trigger === 'scroll' && !inView) return null;
-        if (trigger === 'open_btn' && !isOpened) return null;
+        if (trigger === 'click' && !forceTrigger && !isEditor) return null;
+        if (trigger === 'scroll' && !inView && !isEditor) return null;
+        if (trigger === 'open_btn' && !isOpened && !isEditor) return null;
         const spinDuration = (elegantSpinConfig.spinDuration || elegantSpinConfig.duration || 1000) / 1000;
         const scaleDuration = (elegantSpinConfig.scaleDuration || elegantSpinConfig.duration || 1000) / 1000;
         const delay = (elegantSpinConfig.delay || 0) / 1000;
