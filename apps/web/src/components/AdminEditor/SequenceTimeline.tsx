@@ -32,7 +32,8 @@ export const SequenceTimeline: React.FC = () => {
         setPlayhead,
         resetClock,
         sections,
-        activeSectionId
+        activeSectionId,
+        updateLayer
     } = useStore();
 
     const timelineRef = useRef<HTMLDivElement>(null);
@@ -173,13 +174,64 @@ export const SequenceTimeline: React.FC = () => {
                                 >
                                     {/* SEQUENCE BLOCK */}
                                     <m.div
-                                        className="absolute top-1 bottom-1 bg-[#0D99FF]/10 border border-[#0D99FF]/20 rounded-md backdrop-blur-sm cursor-grab active:cursor-grabbing hover:bg-[#0D99FF]/20 transition-colors flex items-center px-1 overflow-visible"
+                                        className="absolute top-1 bottom-1 bg-[#0D99FF]/10 border border-[#0D99FF]/20 rounded-md backdrop-blur-sm cursor-grab active:cursor-grabbing hover:bg-[#0D99FF]/20 transition-colors flex items-center px-1 overflow-visible group/seq"
                                         style={{
                                             left: (sequence.startTime || 0) * pxPerMs,
                                             width: (sequence.duration || 2000) * pxPerMs
                                         }}
+                                        onMouseDown={(e) => {
+                                            const startX = e.clientX;
+                                            const origStart = sequence.startTime || 0;
+                                            const origDuration = sequence.duration || 2000;
+
+                                            const onMouseMove = (moveEvent: MouseEvent) => {
+                                                const deltaMs = (moveEvent.clientX - startX) / pxPerMs;
+                                                updateLayer(layer.id, {
+                                                    sequence: {
+                                                        ...sequence,
+                                                        startTime: Math.max(0, origStart + deltaMs)
+                                                    }
+                                                });
+                                            };
+
+                                            const onMouseUp = () => {
+                                                window.removeEventListener('mousemove', onMouseMove);
+                                                window.removeEventListener('mouseup', onMouseUp);
+                                            };
+
+                                            window.addEventListener('mousemove', onMouseMove);
+                                            window.addEventListener('mouseup', onMouseUp);
+                                        }}
                                     >
                                         <div className="w-1 h-full bg-[#0D99FF]/40 rounded-full mr-1 shrink-0" />
+
+                                        {/* RESIZE HANDLE (Right) */}
+                                        <div
+                                            className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-[#0D99FF]/30 z-50 rounded-r-md"
+                                            onMouseDown={(e) => {
+                                                e.stopPropagation();
+                                                const startX = e.clientX;
+                                                const origDuration = sequence.duration || 2000;
+
+                                                const onMouseMove = (moveEvent: MouseEvent) => {
+                                                    const deltaMs = (moveEvent.clientX - startX) / pxPerMs;
+                                                    updateLayer(layer.id, {
+                                                        sequence: {
+                                                            ...sequence,
+                                                            duration: Math.max(100, origDuration + deltaMs)
+                                                        }
+                                                    });
+                                                };
+
+                                                const onMouseUp = () => {
+                                                    window.removeEventListener('mousemove', onMouseMove);
+                                                    window.removeEventListener('mouseup', onMouseUp);
+                                                };
+
+                                                window.addEventListener('mousemove', onMouseMove);
+                                                window.addEventListener('mouseup', onMouseUp);
+                                            }}
+                                        />
 
                                         {/* KEYFRAME MARKERS (Diamonds) */}
                                         <div className="absolute inset-0 pointer-events-none">
@@ -200,7 +252,7 @@ export const SequenceTimeline: React.FC = () => {
                                             ))}
                                         </div>
 
-                                        <span className="text-[8px] font-black text-[#0D99FF]/30 uppercase truncate">
+                                        <span className="text-[8px] font-black text-[#0D99FF]/30 uppercase truncate pointer-events-none">
                                             {layer.name || layer.type}
                                         </span>
                                     </m.div>

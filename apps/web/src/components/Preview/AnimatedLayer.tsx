@@ -3,7 +3,7 @@ import { m, useInView } from 'framer-motion';
 import { Layer } from '@/store/layersSlice';
 import { ElementRenderer } from '../Canvas/ElementRenderer';
 import { useStore } from '@/store/useStore';
-import { interpolate } from '@/lib/interpolation';
+import { interpolate, getPathPosition } from '@/lib/interpolation';
 
 /**
  * GLOBAL PERSISTENT STATE
@@ -145,18 +145,37 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             // Initial offsets (Inverse of the variants)
             switch (entranceType) {
                 case 'fade-in': entrance.opacity = eProgress; break;
-                case 'slide-up': entrance.y = (1 - eProgress) * 30; entrance.opacity = eProgress; break;
-                case 'slide-down': entrance.y = (1 - eProgress) * -30; entrance.opacity = eProgress; break;
-                case 'slide-left': entrance.x = (1 - eProgress) * 30; entrance.opacity = eProgress; break;
-                case 'slide-right': entrance.x = (1 - eProgress) * -30; entrance.opacity = eProgress; break;
-                case 'zoom-in': entrance.scale = (eProgress * 0.2) - 0.2; entrance.opacity = eProgress; break;
-                case 'zoom-out': entrance.scale = (1 - eProgress) * 0.2; entrance.opacity = eProgress; break;
+                case 'slide-up': entrance.y = (1 - eProgress) * 50; entrance.opacity = eProgress; break;
+                case 'slide-down': entrance.y = (1 - eProgress) * -50; entrance.opacity = eProgress; break;
+                case 'slide-left': entrance.x = (1 - eProgress) * 50; entrance.opacity = eProgress; break;
+                case 'slide-right': entrance.x = (1 - eProgress) * -50; entrance.opacity = eProgress; break;
+                case 'zoom-in': entrance.scale = (eProgress * 0.4) - 0.4; entrance.opacity = eProgress; break;
+                case 'zoom-out': entrance.scale = (1 - eProgress) * 0.4; entrance.opacity = eProgress; break;
             }
         }
 
-        // 3. CLOCK-DRIVEN LOOPING (Editor Mode Only)
+        // 2.5 MOTION PATH ENGINE
+        const pathPos = { x: 0, y: 0, rotation: 0 };
+        const mpConfig = layer.motionPathConfig;
+        if (mpConfig?.enabled && mpConfig.points.length > 0) {
+            const mpDuration = mpConfig.duration || 3000;
+            const mpTime = isEditor ? playhead : (performance.now() % mpDuration); // Use performance.now for continuous play in preview if global clock is stopped
+            const effectiveMpTime = isPlaying || isAnimationPlaying ? (isEditor ? playhead : performance.now()) : 0;
+            // Actually, best to use global playhead if possible
+            const timeSource = isEditor ? playhead : (isPlaying ? playhead : 0);
+            const pos = getPathPosition(timeSource, {
+                points: mpConfig.points,
+                duration: mpDuration,
+                loop: mpConfig.loop ?? true
+            }, layer.x, layer.y);
+            pathPos.x = pos.x;
+            pathPos.y = pos.y;
+            pathPos.rotation = pos.rotation;
+        }
+
+        // 3. CLOCK-DRIVEN LOOPING (Unfied for Editor & Preview)
         const loops = { x: 0, y: 0, scale: 0, rotate: 0, opacity: 0, filter: 'none' };
-        if (isEditor && shouldAnimate && playhead >= startTime && playhead <= endTime && isTriggered) {
+        if (shouldAnimate && isTriggered) {
             const t = playhead / 1000;
             const d = loopDuration || 1;
             const progress = (t % d) / d;
@@ -167,7 +186,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                 case 'float': loops.y = phase * -15; break;
                 case 'pulse': loops.scale = phase * 0.05; break;
                 case 'sway': loops.rotate = phase * 5; break;
-                case 'spin': loops.rotate = progress * 360 * (loopDirection === 'ccw' ? -1 : 1); break;
+                case 'spin': loops.rotate = (t / d) * 360 * (loopDirection === 'ccw' ? -1 : 1); break;
                 case 'glow': loops.filter = `drop-shadow(0 0 ${Math.abs(phase) * 10}px rgba(255,255,255,0.8))`; break;
                 case 'heartbeat': loops.scale = mirrorPhase * 0.2; break;
             }
@@ -178,32 +197,15 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
 
         // Combine everything
         return {
-            x: kf.x - layer.x + loops.x + entrance.x,
-            y: kf.y - layer.y + loops.y + entrance.y,
-            rotate: isEditor ? (kf.rotate - (layer.rotation || 0) + loops.rotate + entrance.rotate) : kf.rotate,
-            scaleX: isEditor ? (kf.scale / (layer.scale || 1) + loops.scale + entrance.scale) : kf.scale * flipX,
-            scaleY: isEditor ? (kf.scale / (layer.scale || 1) + loops.scale + entrance.scale) : kf.scale * flipY,
+            x: (kf.x - layer.x) + loops.x + entrance.x + pathPos.x,
+            y: (kf.y - layer.y) + loops.y + entrance.y + pathPos.y,
+            rotate: (kf.rotate - (layer.rotation || 0)) + loops.rotate + entrance.rotate + pathPos.rotation,
+            scaleX: (kf.scale / (layer.scale || 1)) + loops.scale + entrance.scale,
+            scaleY: (kf.scale / (layer.scale || 1)) + loops.scale + entrance.scale,
             opacity: isVisible ? (isEditor ? entrance.opacity * kf.opacity : kf.opacity) : 0,
             filter: loops.filter,
         };
-    }, [playhead, layer.keyframes, layer.sequence, layer.x, layer.y, layer.scale, layer.rotation, layer.opacity, isEditor, shouldAnimate, loopingType, loopDuration, loopDirection, flipX, flipY, isTriggered, entranceType, entranceDelay, entranceDuration, hasEntranceAnimation]);
-
-    // PREVIEW MODE LOOPS
-    const previewLoopProps = useMemo(() => {
-        if (isEditor || isExportMode || !shouldAnimate || animationState !== "visible" || !loopingType || loopingType === 'none') return {};
-
-        const loopTransition: any = { duration: loopDuration, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay: loopDelay };
-        const startRotateForLoop = baseRotate;
-        const spinRotation = loopDirection === 'ccw' ? startRotateForLoop - 360 : startRotateForLoop + 360;
-
-        switch (loopingType) {
-            case 'float': return { animate: { y: [0, -15, 0] }, transition: loopTransition };
-            case 'pulse': return { animate: { scale: [1, 1.05, 1] }, transition: loopTransition };
-            case 'sway': return { animate: { rotate: [startRotateForLoop, startRotateForLoop + 5, startRotateForLoop, startRotateForLoop - 5, startRotateForLoop] }, transition: { ...loopTransition, duration: 4 } };
-            case 'spin': return { animate: { rotate: [startRotateForLoop, spinRotation] }, transition: { duration: loopDuration * 4, repeat: Infinity, ease: "linear", repeatType: "loop" as const } };
-            default: return {};
-        }
-    }, [isEditor, isExportMode, shouldAnimate, animationState, loopingType, loopDuration, loopDelay, baseRotate, loopDirection]);
+    }, [playhead, layer.keyframes, layer.sequence, layer.x, layer.y, layer.scale, layer.rotation, layer.opacity, layer.motionPathConfig, isEditor, shouldAnimate, loopingType, loopDuration, loopDirection, isTriggered, entranceType, entranceDelay, entranceDuration, hasEntranceAnimation, isPlaying, isAnimationPlaying]);
 
     // LIQUID AUTO-LAYOUT (UNCHANGED)
     const target = useMemo((): Layer | null => {
@@ -414,7 +416,6 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         >
             <m.div
                 className="w-full h-full relative"
-                {...(isEditor ? {} : previewLoopProps)}
                 style={{
                     x: motionStyles.x,
                     y: motionStyles.y,

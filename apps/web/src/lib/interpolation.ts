@@ -72,3 +72,36 @@ export const interpolate = (
 
     return baseValue;
 };
+
+/**
+ * Samples a position from a motion path config based on a time value.
+ */
+export const getPathPosition = (
+    time: number,
+    config: { points: any[], duration: number, loop: boolean },
+    baseX: number,
+    baseY: number
+) => {
+    if (!config || !config.points || config.points.length === 0) return { x: 0, y: 0, rotation: 0 };
+
+    const { points, duration, loop } = config;
+    const t = loop ? (time % duration) : Math.min(time, duration);
+    const progress = t / duration;
+
+    if (points.length === 1) return { x: points[0].x - baseX, y: points[0].y - baseY, rotation: points[0].rotation || 0 };
+
+    // Find current segment
+    const segmentCount = points.length - 1;
+    const segmentIdx = Math.min(Math.floor(progress * segmentCount), segmentCount - 1);
+    const segmentProgress = (progress * segmentCount) - segmentIdx;
+
+    const p1 = points[segmentIdx];
+    const p2 = points[segmentIdx + 1];
+
+    // Simple linear interpolation between points
+    return {
+        x: (p1.x + (p2.x - p1.x) * segmentProgress) - baseX,
+        y: (p1.y + (p2.y - p1.y) * segmentProgress) - baseY,
+        rotation: (p1.rotation || 0) + ((p2.rotation || 0) - (p1.rotation || 0)) * segmentProgress
+    };
+};
