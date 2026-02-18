@@ -489,10 +489,8 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             ref={ref} initial="hidden" animate={animationState} variants={variants}
             className="absolute origin-center"
             style={{
-                left: 0,
-                top: isEditor
-                    ? `${relativeShift}px`
-                    : `${finalY - layer.y}px`,
+                left: isEditor ? 0 : `${layer.x}px`,
+                top: isEditor ? `${relativeShift}px` : `${finalY}px`,
                 width: `${layer.width}px`,
                 height: `${layer.height}px`,
                 zIndex: layer.zIndex,
@@ -503,10 +501,17 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             <m.div
                 className="w-full h-full relative"
                 style={{
-                    x: isEditor ? (motionStyles.x - layer.x) : motionStyles.x,
-                    y: isEditor ? (motionStyles.y - layer.y) : motionStyles.y,
-                    rotate: isEditor ? (motionStyles.rotate - (layer.rotation || 0)) : motionStyles.rotate,
-                    scale: isEditor ? (motionStyles.scale / (layer.scale || 1)) : motionStyles.scale,
+                    x: motionStyles.x - layer.x,
+                    y: motionStyles.y - layer.y,
+                    rotate: isEditor
+                        ? (motionStyles.rotate - (layer.rotation || 0))
+                        : motionStyles.rotate,
+                    scaleX: isEditor
+                        ? (motionStyles.scale / (layer.scale || 1))
+                        : motionStyles.scale * flipX,
+                    scaleY: isEditor
+                        ? (motionStyles.scale / (layer.scale || 1))
+                        : motionStyles.scale * flipY,
                     opacity: (playhead >= (layer.sequence?.startTime || 0) && playhead <= (layer.sequence?.startTime || 0) + (layer.sequence?.duration || 2000))
                         ? motionStyles.opacity
                         : 1,
