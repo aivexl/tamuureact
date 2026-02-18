@@ -1,0 +1,9 @@
+﻿src/components/Canvas/ElementRenderer.tsx(599,23): error TS2304: Cannot find name 'useRef'.
+src/components/Preview/AnimatedLayer.tsx(415,14): error TS2322: Type '{ children: Element; style: { x: number; y: number; rotate: number; scaleX: number; scaleY: number; opacity: number; filter: string; }; animate?: undefined; transition?: undefined; className: string; } | { ...; } | { ...; } | { ...; }' is not assignable to type 'IntrinsicAttributes & Omit<HTMLMotionProps<"div">, "ref"> & RefAttributes<HTMLDivElement>'.
+  Type '{ children: Element; style: { x: number; y: number; rotate: number; scaleX: number; scaleY: number; opacity: number; filter: string; }; animate: { rotate: number[]; y?: undefined; scale?: undefined; }; transition: { ...; }; className: string; }' is not assignable to type 'Omit<HTMLMotionProps<"div">, "ref">'.
+    Types of property 'transition' are incompatible.
+      Type '{ duration: number; repeat: number; ease: string; repeatType: string; }' is not assignable to type 'Transition | undefined'.
+        Type '{ duration: number; repeat: number; ease: string; repeatType: string; }' is not assignable to type 'Orchestration & Repeat & PermissiveTransitionDefinition & { [key: string]: TransitionDefinition; }'.
+          Type '{ duration: number; repeat: number; ease: string; repeatType: string; }' is not assignable to type 'Repeat'.
+            Types of property 'repeatType' are incompatible.
+              Type 'string' is not assignable to type '"reverse" | "loop" | "mirror" | undefined'.

@@ -55,6 +55,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     // MOTION ENGINE STATES
     const playhead = useStore(state => state.playhead);
     const isPlaying = useStore(state => state.isPlaying);
+    const resetNonce = useStore(state => state.resetNonce);
 
     const prevForceTriggerRef = useRef(forceTrigger);
     const isVisibleRef = useRef(false);
@@ -106,13 +107,11 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         (!isPlaying && isEditor) || !hasEntranceAnimation || (layer.id && globalAnimatedState.get(layer.id)) || false
     );
 
-    // Reset interaction state when playhead returns to 0
+    // CTO MASTER RESET: Hard sync when clock is reset
     useEffect(() => {
-        if (playhead === 0) {
-            setInteractionTriggered(false);
-            if (layer.id) globalAnimatedState.set(layer.id, false);
-        }
-    }, [playhead, layer.id]);
+        setInteractionTriggered(false);
+        if (layer.id) globalAnimatedState.set(layer.id, false);
+    }, [resetNonce, layer.id]);
 
     const playheadTriggered = isEditor && playhead >= (layer.sequence?.startTime || 0);
     const isTriggered = interactionTriggered || playheadTriggered;
@@ -193,7 +192,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     const previewLoopProps = useMemo(() => {
         if (isEditor || isExportMode || !shouldAnimate || animationState !== "visible" || !loopingType || loopingType === 'none') return {};
 
-        const loopTransition = { duration: loopDuration, repeat: Infinity, repeatType: "reverse" as const, ease: "easeInOut", delay: loopDelay };
+        const loopTransition: any = { duration: loopDuration, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay: loopDelay };
         const startRotateForLoop = baseRotate;
         const spinRotation = loopDirection === 'ccw' ? startRotateForLoop - 360 : startRotateForLoop + 360;
 
@@ -201,7 +200,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             case 'float': return { animate: { y: [0, -15, 0] }, transition: loopTransition };
             case 'pulse': return { animate: { scale: [1, 1.05, 1] }, transition: loopTransition };
             case 'sway': return { animate: { rotate: [startRotateForLoop, startRotateForLoop + 5, startRotateForLoop, startRotateForLoop - 5, startRotateForLoop] }, transition: { ...loopTransition, duration: 4 } };
-            case 'spin': return { animate: { rotate: [startRotateForLoop, spinRotation] }, transition: { duration: loopDuration * 4, repeat: Infinity, ease: "linear", repeatType: "loop" } };
+            case 'spin': return { animate: { rotate: [startRotateForLoop, spinRotation] }, transition: { duration: loopDuration * 4, repeat: Infinity, ease: "linear", repeatType: "loop" as const } };
             default: return {};
         }
     }, [isEditor, isExportMode, shouldAnimate, animationState, loopingType, loopDuration, loopDelay, baseRotate, loopDirection]);

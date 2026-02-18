@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { patchLegacyUrl } from '@/lib/utils';
@@ -590,19 +590,19 @@ const ShapeElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ 
 // LOTTIE ELEMENT
 // ============================================
 const LottieElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
+    const playhead = useStore(state => state.playhead);
     const isPlaying = useStore(state => state.isPlaying);
-    const isAnimationPlaying = useStore(state => state.isAnimationPlaying);
-    const shouldAnimate = isPlaying || isAnimationPlaying;
+    const resetNonce = useStore(state => state.resetNonce);
+
     const config = layer.lottieConfig;
     const [data, setData] = useState<any>(null);
+    const lottieRef = useRef<any>(null);
 
     useEffect(() => {
         if (!config?.url) {
-            onContentLoad?.(); // Reveal placeholders
+            onContentLoad?.();
             return;
         }
-
-        // CTO FIX: Patch legacy domains in Lottie URLs
         import('@/lib/utils').then(({ patchLegacyUrl }) => {
             const patchedUrl = patchLegacyUrl(config.url!);
             fetch(patchedUrl)
@@ -613,16 +613,33 @@ const LottieElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?
                 })
                 .catch(err => {
                     console.error('Lottie Load Failed:', err);
-                    onContentLoad?.(); // Still reveal on error
+                    onContentLoad?.();
                 });
         });
     }, [config?.url]);
+
+    // CTO MASTER SYNC: Hard reset or frame-jump for Lottie
+    useEffect(() => {
+        if (!lottieRef.current) return;
+        if (playhead === 0 || resetNonce > 0) {
+            lottieRef.current.goToAndStop(0, true);
+        }
+    }, [playhead, resetNonce]);
 
     if (!config?.url) return <div className="w-full h-full bg-indigo-500/10 rounded flex items-center justify-center text-indigo-400 text-[10px] font-bold">LOTTIE</div>;
 
     return (
         <div className="w-full h-full flex items-center justify-center overflow-hidden">
-            {data ? <Lottie animationData={data} loop={shouldAnimate && config.loop !== false} autoplay={shouldAnimate && config.autoplay !== false} /> : <div className="w-full h-full bg-white/5 animate-pulse" />}
+            {data ? (
+                <Lottie
+                    lottieRef={lottieRef}
+                    animationData={data}
+                    loop={isPlaying && config.loop !== false}
+                    autoplay={isPlaying && config.autoplay !== false}
+                />
+            ) : (
+                <div className="w-full h-full bg-white/5 animate-pulse" />
+            )}
         </div>
     );
 };
@@ -703,22 +720,29 @@ const GuestWishesElement: React.FC<{ layer: Layer, onContentLoad?: () => void }>
 // FLYING BIRD ELEMENT (SVG ANIMATED)
 // ============================================
 const FlyingBirdElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
+    const playhead = useStore(state => state.playhead);
+    const isPlaying = useStore(state => state.isPlaying);
+
     useEffect(() => {
         onContentLoad?.();
     }, []);
 
-    const isPlaying = useStore(state => state.isPlaying);
-    const isAnimationPlaying = useStore(state => state.isAnimationPlaying);
-    const shouldAnimate = isPlaying || isAnimationPlaying;
     const config = layer.flyingBirdConfig;
+    const flapSpeed = config?.flapSpeed || 0.3;
+    const t = playhead / 1000;
+
+    // Deterministic flap cycle
+    const flapProgress = (t % flapSpeed) / flapSpeed;
+    const flapPhase = Math.sin(flapProgress * Math.PI);
+
+    // Smoothly interpolate the "d" path based on phase
+    const yControl = 30 + (flapPhase * 40); // Between 30 and 70
+    const d = `M20,50 Q40,${50 - (flapPhase * 40)} 60,50 Q40,${50 + (flapPhase * 40)} 20,50`;
+
     return (
         <div className="w-full h-full flex items-center justify-center pointer-events-none" style={{ transform: config?.direction === 'right' ? 'scaleX(-1)' : 'none' }}>
             <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible" style={{ fill: config?.birdColor || '#1a1a1a' }}>
-                <m.path
-                    d="M20,50 Q40,30 60,50 Q40,70 20,50"
-                    animate={shouldAnimate ? { d: ["M20,50 Q40,10 60,50 Q40,90 20,50", "M20,50 Q40,40 60,50 Q40,60 20,50"] } : undefined}
-                    transition={{ duration: config?.flapSpeed || 0.3, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
-                />
+                <path d={d} />
             </svg>
         </div>
     );

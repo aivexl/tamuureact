@@ -5,6 +5,7 @@ export interface ClockState {
     duration: number;        // Total duration in milliseconds
     isPlaying: boolean;
     playbackRate: number;    // Speed multiplier (e.g., 1.0, 0.5, 2.0)
+    resetNonce: number;      // Incremented on stop/reset to force child sync
 
     // Actions
     setPlayhead: (time: number) => void;
@@ -20,6 +21,7 @@ export const createClockSlice: StateCreator<ClockState> = (set, get) => ({
     duration: 5000, // Default 5 seconds
     isPlaying: false,
     playbackRate: 1.0,
+    resetNonce: 0,
 
     setPlayhead: (time) => set((state) => ({
         playhead: Math.max(0, Math.min(time, state.duration))
@@ -33,5 +35,9 @@ export const createClockSlice: StateCreator<ClockState> = (set, get) => ({
 
     setPlaybackRate: (playbackRate) => set({ playbackRate }),
 
-    resetClock: () => set({ playhead: 0, isPlaying: false }),
+    resetClock: () => set((state) => ({
+        playhead: 0,
+        isPlaying: false,
+        resetNonce: state.resetNonce + 1
+    })),
 });

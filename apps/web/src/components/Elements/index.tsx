@@ -17,6 +17,9 @@ import { useAudioController } from '@/hooks/useAudioController';
 // ============================================
 export const ParticlesElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ layer, onContentLoad }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const isPlaying = useStore(state => state.isPlaying);
+    const resetNonce = useStore(state => state.resetNonce);
+    const particlesRef = useRef<any[]>([]);
 
     useEffect(() => {
         onContentLoad?.();
@@ -26,7 +29,6 @@ export const ParticlesElement: React.FC<{ layer: Layer, onContentLoad?: () => vo
         if (!ctx) return;
 
         let animationFrame: number;
-        const particles: any[] = [];
         const type = layer.type;
 
         const resize = () => {
@@ -34,6 +36,10 @@ export const ParticlesElement: React.FC<{ layer: Layer, onContentLoad?: () => vo
             canvas.height = layer.height;
         };
         resize();
+
+        // CTO Master Reset: Clear particles on reset
+        particlesRef.current = [];
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         const createParticle = () => {
             const width = canvas.width;
@@ -90,7 +96,10 @@ export const ParticlesElement: React.FC<{ layer: Layer, onContentLoad?: () => vo
         };
 
         const render = () => {
+            if (!isPlaying) return; // Freeze when clock stops
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const particles = particlesRef.current;
 
             if (particles.length < (type === 'fireworks' ? 100 : 50)) {
                 particles.push(createParticle());
@@ -142,9 +151,15 @@ export const ParticlesElement: React.FC<{ layer: Layer, onContentLoad?: () => vo
             animationFrame = requestAnimationFrame(render);
         };
 
-        render();
+        if (isPlaying) {
+            animationFrame = requestAnimationFrame(render);
+        } else {
+            // Draw static state once even if stopped (to show frozen particles if scrubbing, 
+            // but for now we'll just clear on stop if it's a hard reset)
+        }
+
         return () => cancelAnimationFrame(animationFrame);
-    }, [layer.type, layer.width, layer.height]);
+    }, [layer.type, layer.width, layer.height, isPlaying, resetNonce]);
 
     return (
         <canvas
@@ -248,8 +263,10 @@ export const GiftAddressElement: React.FC<{ layer: Layer, isEditor?: boolean, on
 // MUSIC PLAYER ELEMENT
 // ============================================
 export const MusicPlayerElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
+    const playhead = useStore(state => state.playhead);
+    const isPlayingGlobal = useStore(state => state.isPlaying);
     useEffect(() => { onContentLoad?.(); }, []);
-    const { play, pause, isPlaying, currentUrl } = useAudioController();
+    const { play, pause, isPlaying: isAudioPlaying, currentUrl } = useAudioController();
     const config = layer.musicPlayerConfig || {
         audioUrl: '',
         title: 'Wedding March',
@@ -260,18 +277,17 @@ export const MusicPlayerElement: React.FC<{ layer: Layer, isEditor?: boolean, on
         visualizerColor: '#ffffff'
     };
 
-    // Auto-play when added or loaded if url exists (and not in editor to avoid chaos, or optionally in editor)
-    // For now, let's make it clickable to play/pause
     const handleToggle = () => {
         if (!config.audioUrl) return;
-        if (currentUrl === config.audioUrl && isPlaying) {
+        if (currentUrl === config.audioUrl && isAudioPlaying) {
             pause();
         } else {
             play(config.audioUrl);
         }
     };
 
-    const isThisPlaying = currentUrl === config.audioUrl && isPlaying;
+    const isThisPlaying = currentUrl === config.audioUrl && isAudioPlaying;
+    const t = playhead / 1000;
 
     return (
         <m.div
@@ -286,9 +302,8 @@ export const MusicPlayerElement: React.FC<{ layer: Layer, isEditor?: boolean, on
                     <Music className="w-5 h-5 text-premium-accent" />
                 )}
                 {isThisPlaying && (
-                    <m.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    <div
+                        style={{ transform: `rotate(${t * 90}deg)` }}
                         className="absolute inset-0 border-2 border-dashed border-premium-accent/40 rounded-full"
                     />
                 )}
@@ -298,14 +313,16 @@ export const MusicPlayerElement: React.FC<{ layer: Layer, isEditor?: boolean, on
                 <div className="text-[8px] text-white/40 truncate">{config.artist || 'Unknown Artist'}</div>
             </div>
             <div className="flex gap-1.5 items-center">
-                {[0.4, 0.7, 0.3, 0.9, 0.5].map((h, i) => (
-                    <m.div
-                        key={i}
-                        animate={isThisPlaying ? { height: [h * 20, (1 - h) * 20, h * 20] } : { height: 4 }}
-                        transition={{ duration: 1, repeat: Infinity, delay: i * 0.1 }}
-                        className="w-0.5 bg-premium-accent/60 rounded-full"
-                    />
-                ))}
+                {[0.4, 0.7, 0.3, 0.9, 0.5].map((h, i) => {
+                    const barPhase = isThisPlaying ? Math.sin((t + i * 0.1) * Math.PI * 2) * 0.5 + 0.5 : 0.2;
+                    return (
+                        <div
+                            key={i}
+                            style={{ height: `${Math.max(4, barPhase * 20)}px` }}
+                            className="w-0.5 bg-premium-accent/60 rounded-full"
+                        />
+                    );
+                })}
             </div>
         </m.div>
     );
@@ -385,45 +402,37 @@ export const QRCodeElement: React.FC<{ layer: Layer, isEditor?: boolean, onConte
 // ATMOSPHERIC VECTOR (Waves, Blobs)
 // ============================================
 export const AtmosphericVectorElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ layer, onContentLoad }) => {
+    const playhead = useStore(state => state.playhead);
+    const isPlaying = useStore(state => state.isPlaying);
     useEffect(() => { onContentLoad?.(); }, []);
+
     const config = layer.waveConfig || { amplitude: 30, frequency: 0.02, speed: 1, color: 'rgba(191, 161, 129, 0.4)' };
     const type = layer.type;
+    const t = playhead / 1000;
 
     if (type === 'generative_blob') {
+        const phase = Math.sin(t * (Math.PI * 2 / 5)); // 5s cycle
+        const d = `M${150 + phase * 5},100c0,${27.6 + phase * 2.8}-22.4,${50 + phase * 5}-50,${50 + phase * 5}s-50-22.4-50-50s22.4-50,50-50S${150 + phase * 5},${72.4 - phase * 2.8},${150 + phase * 5},100z`;
+
         return (
             <div className="w-full h-full flex items-center justify-center">
                 <svg viewBox="0 0 200 200" className="w-full h-full">
-                    <m.path
-                        animate={{
-                            d: [
-                                "M150,100c0,27.6-22.4,50-50,50s-50-22.4-50-50s22.4-50,50-50S150,72.4,150,100z",
-                                "M155,100c0,30.4-24.6,55-55,55s-55-24.6-55-55s24.6-55,55-55S155,69.6,155,100z",
-                                "M150,100c0,27.6-22.4,50-50,50s-50-22.4-50-50s22.4-50,50-50S150,72.4,150,100z"
-                            ]
-                        }}
-                        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                        fill={config.color || 'rgba(191, 161, 129, 0.3)'}
-                    />
+                    <path d={d} fill={config.color || 'rgba(191, 161, 129, 0.3)'} />
                 </svg>
             </div>
         );
     }
 
+    const wavePhase = Math.sin(t * (Math.PI * 2 / 4)); // 4s cycle
+    const amp = config.amplitude || 30;
+    const currentAmp = wavePhase * amp;
+
+    const waveD = `M 0 ${layer.height / 2} Q ${layer.width / 4} ${layer.height / 2 - currentAmp} ${layer.width / 2} ${layer.height / 2} T ${layer.width} ${layer.height / 2} L ${layer.width} ${layer.height} L 0 ${layer.height} Z`;
+
     return (
         <div className="w-full h-full relative overflow-hidden">
             <svg viewBox={`0 0 ${layer.width} ${layer.height}`} preserveAspectRatio="none" className="w-full h-full">
-                <m.path
-                    d={`M 0 ${layer.height / 2} Q ${layer.width / 4} ${layer.height / 2 - config.amplitude} ${layer.width / 2} ${layer.height / 2} T ${layer.width} ${layer.height / 2} L ${layer.width} ${layer.height} L 0 ${layer.height} Z`}
-                    fill={config.color || 'rgba(191, 161, 129, 0.2)'}
-                    animate={{
-                        d: [
-                            `M 0 ${layer.height / 2} Q ${layer.width / 4} ${layer.height / 2 - config.amplitude} ${layer.width / 2} ${layer.height / 2} T ${layer.width} ${layer.height / 2} L ${layer.width} ${layer.height} L 0 ${layer.height} Z`,
-                            `M 0 ${layer.height / 2} Q ${layer.width / 4} ${layer.height / 2 + config.amplitude} ${layer.width / 2} ${layer.height / 2} T ${layer.width} ${layer.height / 2} L ${layer.width} ${layer.height} L 0 ${layer.height} Z`,
-                            `M 0 ${layer.height / 2} Q ${layer.width / 4} ${layer.height / 2 - config.amplitude} ${layer.width / 2} ${layer.height / 2} T ${layer.width} ${layer.height / 2} L ${layer.width} ${layer.height} L 0 ${layer.height} Z`
-                        ]
-                    }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                />
+                <path d={waveD} fill={config.color || 'rgba(191, 161, 129, 0.2)'} />
             </svg>
         </div>
     );
@@ -593,20 +602,24 @@ export const WeatherElement: React.FC<{ layer: Layer, onContentLoad?: () => void
 // MARQUEE (SCROLLING TICKER)
 // ============================================
 export const MarqueeElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ layer, onContentLoad }) => {
+    const playhead = useStore(state => state.playhead);
+    const isPlaying = useStore(state => state.isPlaying);
     useEffect(() => { onContentLoad?.(); }, []);
+
     const text = layer.content || "ENTERPRISE LEVEL • UNICORN STANDARDS • AWARD WINNING DESIGN • ";
+    const speed = 50; // pixels per second
+    const offset = -(playhead / 1000 * speed) % 400; // 400 is the width of the wrap
 
     return (
         <div className="w-full h-full flex items-center overflow-hidden bg-premium-accent/10 border-y border-premium-accent/30 backdrop-blur-sm">
-            <m.div
-                animate={{ x: [0, -400] }}
-                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+            <div
+                style={{ transform: `translateX(${offset}px)` }}
                 className="flex whitespace-nowrap gap-8"
             >
                 {[...Array(6)].map((_, i) => (
                     <span key={i} className="text-[12px] font-black text-premium-accent tracking-[0.3em] uppercase">{text}</span>
                 ))}
-            </m.div>
+            </div>
         </div>
     );
 };
@@ -615,7 +628,10 @@ export const MarqueeElement: React.FC<{ layer: Layer, onContentLoad?: () => void
 // TILT CARD ELEMENT
 // ============================================
 export const TiltCardElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ layer, onContentLoad }) => {
+    const playhead = useStore(state => state.playhead);
     useEffect(() => { onContentLoad?.(); }, []);
+    const t = playhead / 1000;
+    const starScale = 1 + Math.sin(t * Math.PI * 2) * 0.1;
 
     return (
         <m.div
@@ -636,7 +652,7 @@ export const TiltCardElement: React.FC<{ layer: Layer, onContentLoad?: () => voi
 
                 <div className="absolute top-4 right-4">
                     <div className="w-10 h-10 rounded-full border border-premium-accent/30 flex items-center justify-center backdrop-blur-md">
-                        <Star className="w-5 h-5 text-premium-accent animate-pulse" />
+                        <Star className="w-5 h-5 text-premium-accent" style={{ transform: `scale(${starScale})` }} />
                     </div>
                 </div>
             </div>
