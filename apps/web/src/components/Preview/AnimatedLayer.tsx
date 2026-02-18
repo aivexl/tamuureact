@@ -177,12 +177,21 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     );
 
     // CTO FIX: In Editor, we should force the state to "visible" when playing starts
-    // to ensure it doesn't get stuck in "hidden" if it didn't trigger correctly.
+    // but RESET it if we are at the beginning of the sequence to allow entrance playback.
     useEffect(() => {
-        if (isEditor && isPlaying && animationState !== "visible") {
+        if (!isEditor) return;
+
+        const startTime = layer.sequence?.startTime || 0;
+        const isAtStart = playhead <= startTime + 50;
+
+        if (isPlaying && isAtStart && hasEntranceAnimation) {
+            setAnimationState("hidden");
+            const timer = setTimeout(() => setAnimationState("visible"), 50);
+            return () => clearTimeout(timer);
+        } else if (!isPlaying && animationState !== "visible") {
             setAnimationState("visible");
         }
-    }, [isEditor, isPlaying, animationState]);
+    }, [isEditor, isPlaying, hasEntranceAnimation, layer.sequence?.startTime]);
 
     // Use ref to track animationState inside callbacks to avoid infinite loop
     const animationStateRef = useRef(animationState);
@@ -240,17 +249,13 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
 
         const hidden: any = {
             opacity: 0,
-            ...(isEditor ? {} : {
-                x: targetX, y: targetY,
-                scaleX: targetScaleX, scaleY: targetScaleY, rotate: targetRotate
-            })
+            x: 0, y: 0,
+            scaleX: targetScaleX, scaleY: targetScaleY, rotate: targetRotate
         };
         const visible: any = {
             opacity: (layer.opacity ?? 1),
-            ...(isEditor ? {} : {
-                x: targetX, y: targetY,
-                scaleX: targetScaleX, scaleY: targetScaleY, rotate: targetRotate
-            }),
+            x: 0, y: 0,
+            scaleX: targetScaleX, scaleY: targetScaleY, rotate: targetRotate,
             transition: { duration: entranceDuration, delay: entranceDelay, ease: [0.22, 1, 0.36, 1] }
         };
 
@@ -258,15 +263,15 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
 
         switch (entranceType) {
             case 'fade-in': break;
-            case 'slide-up': hidden.y = targetY + 30; break;
-            case 'slide-down': hidden.y = targetY - 30; break;
-            case 'slide-left': hidden.x = targetX + 30; break;
-            case 'slide-right': hidden.x = targetX - 30; break;
+            case 'slide-up': hidden.y = 30; break;
+            case 'slide-down': hidden.y = -30; break;
+            case 'slide-left': hidden.x = 30; break;
+            case 'slide-right': hidden.x = -30; break;
             case 'slide-in-left': hidden.x = "-100vw"; hidden.opacity = 0; break;
             case 'slide-in-right': hidden.x = "100vw"; hidden.opacity = 0; break;
             case 'zoom-in': hidden.scaleX = 0.8 * targetScaleX; hidden.scaleY = 0.8 * targetScaleY; break;
             case 'zoom-out': hidden.scaleX = 1.2 * targetScaleX; hidden.scaleY = 1.2 * targetScaleY; break;
-            case 'bounce': hidden.y = targetY - 40; visible.transition = { type: "spring", bounce: 0.4, duration: entranceDuration, delay: entranceDelay }; break;
+            case 'bounce': hidden.y = -40; visible.transition = { type: "spring", bounce: 0.4, duration: entranceDuration, delay: entranceDelay }; break;
             case 'pop-in': hidden.scaleX = 0.8 * targetScaleX; hidden.scaleY = 0.8 * targetScaleY; visible.transition = { type: "spring", stiffness: 260, damping: 20, delay: entranceDelay }; break;
             case 'twirl-in': hidden.scaleX = 0; hidden.scaleY = 0; hidden.rotate = targetRotate - 180; visible.transition = { type: "spring", duration: entranceDuration, bounce: 0.2, delay: entranceDelay }; break;
             // ENTERPRISE V6: CINEMATIC DOORS
