@@ -100,25 +100,77 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     const baseRotate = layer.rotation || 0;
 
     // ============================================
-    // MOTION GRAPHICS INTERPOLATION
+    // CTO MASTER MOTION ENGINE (Unified Keyframes & Loops)
     // ============================================
     const motionStyles = useMemo(() => {
-        // CTO UNICORN ENGINE: Absolute Interpolation Logic with Sequence Offset
         const startTime = layer.sequence?.startTime || 0;
         const duration = layer.sequence?.duration || 2000;
+        const endTime = startTime + duration;
 
-        // Effective time is the relative playhead within the layer's own sequence
-        // We clamp it to [0, duration] to respect the sequence boundaries
+        // 1. KEYFRAME INTERPOLATION
         const effectiveTime = Math.max(0, Math.min(playhead - startTime, duration));
-
-        return {
+        const kf = {
             x: interpolate(effectiveTime, layer.keyframes || [], layer.x, 'x'),
             y: interpolate(effectiveTime, layer.keyframes || [], layer.y, 'y'),
             scale: interpolate(effectiveTime, layer.keyframes || [], layer.scale || 1, 'scale'),
             rotate: interpolate(effectiveTime, layer.keyframes || [], layer.rotation || 0, 'rotation'),
             opacity: interpolate(effectiveTime, layer.keyframes || [], layer.opacity ?? 1, 'opacity'),
         };
-    }, [playhead, layer.keyframes, layer.sequence, layer.x, layer.y, layer.scale, layer.rotation, layer.opacity]);
+
+        // 2. CLOCK-DRIVEN LOOPING (Editor Mode Only)
+        // This ensures Loops and Keyframes are perfectly cumulative and stop together.
+        const loops = { x: 0, y: 0, scale: 0, rotate: 0, opacity: 0, filter: 'none' };
+
+        if (isEditor && shouldAnimate && playhead >= startTime && playhead <= endTime) {
+            const t = playhead / 1000;
+            const d = loopDuration || 1;
+            const progress = (t % d) / d;
+            const phase = Math.sin(progress * Math.PI * 2);
+            const mirrorPhase = Math.sin(progress * Math.PI);
+
+            switch (loopingType) {
+                case 'float': loops.y = phase * -15; break;
+                case 'pulse': loops.scale = phase * 0.05; break;
+                case 'sway': loops.rotate = phase * 5; break;
+                case 'spin': loops.rotate = progress * 360 * (loopDirection === 'ccw' ? -1 : 1); break;
+                case 'glow': loops.filter = `drop-shadow(0 0 ${Math.abs(phase) * 10}px rgba(255,255,255,0.8))`; break;
+                case 'heartbeat': loops.scale = mirrorPhase * 0.2; break;
+                case 'sparkle': loops.opacity = (0.5 + Math.abs(phase) * 0.5) - 1; break; // Relative to base 1
+                case 'fly-left': loops.x = -progress * 200; break;
+                case 'fly-right': loops.x = progress * 200; break;
+            }
+        }
+
+        // 3. FINAL COMPOSITE STYLE (Strict Bound Enforcement)
+        const isVisible = playhead >= startTime && playhead <= endTime;
+
+        return {
+            x: kf.x - layer.x + loops.x,
+            y: kf.y - layer.y + loops.y,
+            rotate: isEditor ? (kf.rotate - (layer.rotation || 0) + loops.rotate) : kf.rotate,
+            scaleX: isEditor ? (kf.scale / (layer.scale || 1) + loops.scale) : kf.scale * flipX,
+            scaleY: isEditor ? (kf.scale / (layer.scale || 1) + loops.scale) : kf.scale * flipY,
+            opacity: isVisible ? kf.opacity : 0, // HARD CUT OUTSIDE SEQUENCE
+            filter: loops.filter,
+        };
+    }, [playhead, layer.keyframes, layer.sequence, layer.x, layer.y, layer.scale, layer.rotation, layer.opacity, isEditor, shouldAnimate, loopingType, loopDuration, loopDirection, flipX, flipY]);
+
+    // PREVIEW MODE LOOPS (Uses native Framer oscillator for maximum smoothness)
+    const previewLoopProps = useMemo(() => {
+        if (isEditor || isExportMode || !shouldAnimate || animationState !== "visible" || !loopingType || loopingType === 'none') return {};
+
+        const loopTransition = { duration: loopDuration, repeat: Infinity, repeatType: "reverse" as const, ease: "easeInOut", delay: loopDelay };
+        const startRotateForLoop = baseRotate;
+        const spinRotation = loopDirection === 'ccw' ? startRotateForLoop - 360 : startRotateForLoop + 360;
+
+        switch (loopingType) {
+            case 'float': return { animate: { y: [0, -15, 0] }, transition: loopTransition };
+            case 'pulse': return { animate: { scale: [1, 1.05, 1] }, transition: loopTransition };
+            case 'sway': return { animate: { rotate: [startRotateForLoop, startRotateForLoop + 5, startRotateForLoop, startRotateForLoop - 5, startRotateForLoop] }, transition: { ...loopTransition, duration: 4 } };
+            case 'spin': return { animate: { rotate: [startRotateForLoop, spinRotation] }, transition: { duration: loopDuration * 4, repeat: Infinity, ease: "linear", repeatType: "loop" } };
+            default: return {};
+        }
+    }, [isEditor, isExportMode, shouldAnimate, animationState, loopingType, loopDuration, loopDelay, baseRotate, loopDirection]);
 
     // ============================================
     // LIQUID AUTO-LAYOUT (SMART POSITION)
@@ -210,7 +262,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         }
     }, [layer.id]);
 
-    // RE-ANIMATION ENGINE
+    // PREVIEW MODE TRIGGERS (Untouched for fidelity)
     useEffect(() => {
         if (isEditor || !hasEntranceAnimation || interactionNonce === 0) return;
         if (layer.id) globalAnimatedState.delete(layer.id);
@@ -273,42 +325,28 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     }, [entranceType, hasEntranceAnimation, entranceDuration, entranceDelay, flipX, flipY, isEditor, isPlaying]);
 
     useEffect(() => {
-        if (isContentReadyRef.current && pendingTriggerRef.current) {
+        if (!isEditor && isContentReadyRef.current && pendingTriggerRef.current) {
             pendingTriggerRef.current = false;
             tryTriggerAnimation();
         }
-    }, [tryTriggerAnimation]);
+    }, [tryTriggerAnimation, isEditor]);
 
     useEffect(() => {
-        if (animationState === "visible") return;
+        if (isEditor || animationState === "visible") return;
         if (layer.id && globalAnimatedState.get(layer.id)) {
             setAnimationState("visible");
             return;
         }
         if (isImmediate && isSectionActive) tryTriggerAnimation();
-    }, [isImmediate, isSectionActive, tryTriggerAnimation, animationState, layer.id]);
-
-    useEffect(() => {
-        if (!isEditor || !hasEntranceAnimation || isImmediate) return;
-        if (isPlaying) tryTriggerAnimation();
-    }, [isPlaying, isEditor, hasEntranceAnimation, isImmediate, tryTriggerAnimation]);
+    }, [isImmediate, isSectionActive, tryTriggerAnimation, animationState, layer.id, isEditor]);
 
     useEffect(() => {
         if (isEditor || !hasEntranceAnimation || isImmediate || entranceTrigger !== 'scroll') return;
-        // CTO FIX: In Editor, if we are playing, we treat it as if it's in view (Timeline scrubbing/playing)
-        if (isPlaying && isEditor) {
-            tryTriggerAnimation();
-            return;
-        }
         if (inView && isSectionActive) tryTriggerAnimation();
-    }, [inView, isSectionActive, isEditor, hasEntranceAnimation, isImmediate, entranceTrigger, tryTriggerAnimation, isPlaying]);
+    }, [inView, isSectionActive, isEditor, hasEntranceAnimation, isImmediate, entranceTrigger, tryTriggerAnimation]);
 
     useEffect(() => {
         if (isEditor || !hasEntranceAnimation || isImmediate || entranceTrigger !== 'scroll') return;
-
-        // CTO FIX: In Editor during playback, do NOT hide it based on scroll.
-        if (isPlaying && isEditor) return;
-
         if (!inView && ref.current) {
             const rect = ref.current.getBoundingClientRect();
             if (rect.top >= window.innerHeight - 100) {
@@ -318,7 +356,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                 }
             }
         }
-    }, [inView, layer.id, isEditor, hasEntranceAnimation, isImmediate, entranceTrigger, isPlaying]);
+    }, [inView, layer.id, isEditor, hasEntranceAnimation, isImmediate, entranceTrigger]);
 
     useEffect(() => {
         if (isEditor || !hasEntranceAnimation) return;
@@ -336,79 +374,6 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         if (isEditor || !hasEntranceAnimation) return;
         if (entranceTrigger === 'open_btn' && isOpened) tryTriggerAnimation();
     }, [isOpened, entranceTrigger, isEditor, hasEntranceAnimation, tryTriggerAnimation]);
-
-    // CTO MASTER FIX: Clock-Driven Looping Props
-    const loopingProps = useMemo(() => {
-        if (isExportMode || !shouldAnimate || animationState !== "visible") return {};
-        if (!loopingType || loopingType === 'none') return {};
-
-        // In Editor, we calculate the exact frame based on playhead
-        if (isEditor) {
-            const t = playhead / 1000; // time in seconds
-            const d = loopDuration || 1;
-            const progress = (t % d) / d; // [0, 1] relative to loop cycle
-
-            // Phase calculation for oscillations [0, 1, 0, -1, 0]
-            const phase = Math.sin(progress * Math.PI * 2);
-            const mirrorPhase = Math.sin(progress * Math.PI); // Half-wave for reverse-style loops
-
-            const loopTransition = { duration: 0 }; // Immediate updates driven by playhead
-
-            switch (loopingType) {
-                case 'float': return { animate: { y: phase * -15 }, transition: loopTransition };
-                case 'pulse': return { animate: { scale: 1 + phase * 0.05 }, transition: loopTransition };
-                case 'sway': return { animate: { rotate: phase * 5 }, transition: loopTransition };
-                case 'spin': return { animate: { rotate: (progress * 360 * (loopDirection === 'ccw' ? -1 : 1)) }, transition: loopTransition };
-                case 'glow': return { animate: { filter: `drop-shadow(0 0 ${Math.abs(phase) * 10}px rgba(255,255,255,0.8))` }, transition: loopTransition };
-                case 'heartbeat': return { animate: { scale: 1 + mirrorPhase * 0.2 }, transition: loopTransition };
-                case 'sparkle': return { animate: { opacity: 0.5 + Math.abs(phase) * 0.5 }, transition: loopTransition };
-                case 'flap-bob': return { animate: { y: phase * -10, scaleY: 1 - Math.abs(phase) * 0.4 }, transition: loopTransition };
-                case 'float-flap': return { animate: { y: phase * -20, scaleY: 1 - Math.abs(phase) * 0.5, rotate: phase * 5 }, transition: loopTransition };
-                case 'fly-left': return { animate: { x: -progress * 200 }, transition: loopTransition };
-                case 'fly-right': return { animate: { x: progress * 200 }, transition: loopTransition };
-                case 'fly-up': return { animate: { y: -progress * 200, opacity: 1 - progress }, transition: loopTransition };
-                case 'fly-down': return { animate: { y: progress * 200, opacity: 1 - progress }, transition: loopTransition };
-                case 'fly-random': {
-                    const x = Math.sin(progress * Math.PI * 2) * 30 + Math.cos(progress * Math.PI * 4) * 10;
-                    const y = Math.cos(progress * Math.PI * 2) * -40 + Math.sin(progress * Math.PI * 4) * 20;
-                    return { animate: { x, y }, transition: loopTransition };
-                }
-                case 'twirl': return {
-                    animate: {
-                        scale: progress < 0.4 ? progress / 0.4 : (progress > 0.6 ? (1 - progress) / 0.4 : 1),
-                        rotate: progress * 360,
-                        opacity: progress < 0.4 ? progress / 0.4 : (progress > 0.6 ? (1 - progress) / 0.4 : 1)
-                    },
-                    transition: loopTransition
-                };
-                default: return {};
-            }
-        }
-
-        // PREVIEW MODE: Use native Infinity repeats for smooth independent motion
-        const loopTransition = { duration: loopDuration, repeat: Infinity, repeatType: "reverse" as const, ease: "easeInOut", delay: loopDelay };
-        const startRotateForLoop = isEditor ? 0 : baseRotate;
-        const spinRotation = loopDirection === 'ccw' ? startRotateForLoop - 360 : startRotateForLoop + 360;
-
-        switch (loopingType) {
-            case 'float': return { animate: { y: [0, -15, 0] }, transition: loopTransition };
-            case 'pulse': return { animate: { scale: [1, 1.05, 1] }, transition: loopTransition };
-            case 'sway': return { animate: { rotate: [startRotateForLoop, startRotateForLoop + 5, startRotateForLoop, startRotateForLoop - 5, startRotateForLoop] }, transition: { ...loopTransition, duration: 4 } };
-            case 'spin': return { animate: { rotate: [startRotateForLoop, spinRotation] }, transition: { duration: loopDuration * 4, repeat: Infinity, ease: "linear", repeatType: "loop" } };
-            case 'glow': return { animate: { filter: ['drop-shadow(0 0 0px rgba(255,255,255,0))', 'drop-shadow(0 0 10px rgba(255,255,255,0.8))', 'drop-shadow(0 0 0px rgba(255,255,255,0))'] }, transition: loopTransition };
-            case 'heartbeat': return { animate: { scale: [1, 1.2, 1] }, transition: { duration: loopDuration * 0.8, repeat: Infinity, repeatType: "mirror" } };
-            case 'sparkle': return { animate: { opacity: [1, 0.5, 1] }, transition: { duration: loopDuration, repeat: Infinity, ease: "easeInOut" } };
-            case 'flap-bob': return { animate: { y: [0, -10, 0], scaleY: [1, 0.6, 1] }, transition: { duration: loopDuration * 0.3, repeat: Infinity, ease: "easeInOut" } };
-            case 'float-flap': return { animate: { y: [0, -20, 0], scaleY: [1, 0.5, 1], rotate: [baseRotate, baseRotate + 5, baseRotate, baseRotate - 5, baseRotate] }, transition: { duration: loopDuration, repeat: Infinity, ease: "easeInOut" } };
-            case 'fly-left': return { animate: { x: [0, -200] }, transition: { duration: loopDuration * 3, repeat: Infinity, ease: "linear" } };
-            case 'fly-right': return { animate: { x: [0, 200] }, transition: { duration: loopDuration * 3, repeat: Infinity, ease: "linear" } };
-            case 'fly-up': return { animate: { y: [0, -200], opacity: [1, 0] }, transition: { duration: loopDuration * 4, repeat: Infinity, ease: "easeIn" } };
-            case 'fly-down': return { animate: { y: [0, 200], opacity: [1, 0] }, transition: { duration: loopDuration * 4, repeat: Infinity, ease: "easeIn" } };
-            case 'fly-random': return { animate: { x: [0, 30, -20, 40, 0], y: [0, -40, 20, -10, 0] }, transition: { duration: loopDuration * 8, repeat: Infinity, ease: "easeInOut" } };
-            case 'twirl': return { animate: { scale: [0, 1, 1, 0], rotate: [startRotateForLoop - 360, startRotateForLoop, startRotateForLoop, startRotateForLoop + 360], opacity: [0, 1, 1, 0] }, transition: { duration: loopDuration * 2.5, repeat: Infinity, ease: "easeInOut", times: [0, 0.4, 0.6, 1], delay: loopDelay } };
-            default: return {};
-        }
-    }, [loopingType, loopDuration, loopDelay, loopTrigger, loopDirection, forceTrigger, inView, isOpened, baseRotate, isEditor, shouldAnimate, animationState, isExportMode, playhead]);
 
     if (isExportMode) {
         // PURE STATIC RENDER: No Framer Motion, No Animations, just pixel-perfect CSS
@@ -465,21 +430,15 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         >
             <m.div
                 className="w-full h-full relative"
+                {...(isEditor ? {} : previewLoopProps)}
                 style={{
-                    x: motionStyles.x - layer.x,
-                    y: motionStyles.y - layer.y,
-                    rotate: isEditor
-                        ? (motionStyles.rotate - (layer.rotation || 0))
-                        : motionStyles.rotate,
-                    scaleX: isEditor
-                        ? (motionStyles.scale / (layer.scale || 1))
-                        : motionStyles.scale * flipX,
-                    scaleY: isEditor
-                        ? (motionStyles.scale / (layer.scale || 1))
-                        : motionStyles.scale * flipY,
-                    opacity: (playhead >= (layer.sequence?.startTime || 0) && playhead <= (layer.sequence?.startTime || 0) + (layer.sequence?.duration || 2000))
-                        ? motionStyles.opacity
-                        : 1,
+                    x: motionStyles.x,
+                    y: motionStyles.y,
+                    rotate: motionStyles.rotate,
+                    scaleX: motionStyles.scaleX,
+                    scaleY: motionStyles.scaleY,
+                    opacity: motionStyles.opacity,
+                    filter: motionStyles.filter,
                 }}
             >
                 {isMarqueeEnabled && (marqueeConfig?.mode || 'seamless') === 'seamless' ? (
@@ -501,13 +460,14 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                         );
                     })()
                 ) : (
-                    <m.div className="w-full h-full relative" {...loopingProps} style={{ ...(isMarqueeTileMode ? { backgroundImage: `url(${layer.imageUrl})`, backgroundRepeat: 'repeat', backgroundSize: 'auto', backgroundColor: 'transparent' } : {}) }}>
+                    <div className="w-full h-full relative" style={{ ...(isMarqueeTileMode ? { backgroundImage: `url(${layer.imageUrl})`, backgroundRepeat: 'repeat', backgroundSize: 'auto', backgroundColor: 'transparent' } : {}) }}>
                         {!isMarqueeTileMode && <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={isEditor} onContentLoad={handleContentLoad} onDimensionsDetected={handleDimensions} />}
-                    </m.div>
+                    </div>
                 )}
             </m.div>
         </m.div>
     );
 };
+
 
 export const AnimatedLayer = React.memo(AnimatedLayerComponent);
