@@ -91,8 +91,8 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     const isMarqueeTileMode = isMarqueeEnabled && marqueeConfig?.mode === 'tile' && !!layer.imageUrl;
 
     const isImmediate = entranceTrigger === 'load' || entranceTrigger === 'immediate';
+    const shouldAnimate = isPlaying || isAnimationPlaying;
     const hasEntranceAnimation = entranceType && entranceType !== 'none';
-    const shouldAnimate = !isEditor || isAnimationPlaying;
 
     const flipX = layer.flipHorizontal ? -1 : 1;
     const flipY = layer.flipVertical ? -1 : 1;
@@ -230,13 +230,19 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         const targetScaleY = isEditor ? 1 : baseScale * flipY;
         const targetRotate = isEditor ? 0 : baseRotate;
 
-        const hidden: any = { opacity: 0, x: targetX, y: targetY, scaleX: targetScaleX, scaleY: targetScaleY, rotate: targetRotate };
+        const hidden: any = {
+            opacity: 0,
+            ...(isEditor ? {} : {
+                x: targetX, y: targetY,
+                scaleX: targetScaleX, scaleY: targetScaleY, rotate: targetRotate
+            })
+        };
         const visible: any = {
-            opacity: layer.opacity ?? 1,
-            x: targetX, y: targetY,
-            scaleX: isEditor ? 1 : targetScaleX,
-            scaleY: isEditor ? 1 : targetScaleY,
-            rotate: isEditor ? 0 : targetRotate,
+            opacity: (layer.opacity ?? 1),
+            ...(isEditor ? {} : {
+                x: targetX, y: targetY,
+                scaleX: targetScaleX, scaleY: targetScaleY, rotate: targetRotate
+            }),
             transition: { duration: entranceDuration, delay: entranceDelay, ease: [0.22, 1, 0.36, 1] }
         };
 
@@ -458,10 +464,8 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             className="absolute origin-center"
             style={{
                 left: 0,
-                // CTO FIX: In Editor, we apply the DELTA (motion - base) because parent CanvasElement already has base Y.
-                // In Preview, we apply absolute motion since there is no CanvasElement parent.
                 top: isEditor
-                    ? (motionStyles.y - layer.y) + relativeShift
+                    ? `${(motionStyles.y - layer.y) + relativeShift}px`
                     : `${(motionStyles.y + (finalY - layer.y))}px`,
                 width: `${layer.width}px`,
                 height: `${layer.height}px`,
@@ -469,13 +473,14 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                 willChange: 'transform, opacity',
                 opacity: (playhead >= (layer.sequence?.startTime || 0) && playhead <= (layer.sequence?.startTime || 0) + (layer.sequence?.duration || 2000))
                     ? motionStyles.opacity
-                    : 1, // Keep visible but static if outside or in editor (to see handles)
+                    : 1,
                 perspective: '1200px',
                 transformStyle: 'preserve-3d',
-                transform: isEditor
-                    ? `translateX(${motionStyles.x - layer.x}px) rotate(${motionStyles.rotate - (layer.rotation || 0)}deg) scale(${motionStyles.scale / (layer.scale || 1)})`
-                    : `translateX(${motionStyles.x}px) rotate(${motionStyles.rotate}deg) scale(${motionStyles.scale})`
-            }}
+                // Use individual transform properties for better reactivity in m.div
+                x: isEditor ? (motionStyles.x - layer.x) : motionStyles.x,
+                rotate: isEditor ? (motionStyles.rotate - (layer.rotation || 0)) : motionStyles.rotate,
+                scale: isEditor ? (motionStyles.scale / (layer.scale || 1)) : motionStyles.scale
+            } as any}
         >
             {isMarqueeEnabled && (marqueeConfig?.mode || 'seamless') === 'seamless' ? (
                 (() => {
