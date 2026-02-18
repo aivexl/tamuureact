@@ -170,28 +170,21 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     const isContentReadyRef = useRef(!needsLoadSignal || isEditor);
     const pendingTriggerRef = useRef(false);
 
+    // CTO MASTER FIX: Unified Animation State for Editor
+    // In Editor, visibility is a binary function of Playhead vs Sequence Start
     const [animationState, setAnimationState] = React.useState<"hidden" | "visible">(
         (!isPlaying && isEditor) || !hasEntranceAnimation || (layer.id && globalAnimatedState.get(layer.id))
             ? "visible"
             : "hidden"
     );
 
-    // CTO FIX: In Editor, we should force the state to "visible" when playing starts
-    // but RESET it if we are at the beginning of the sequence to allow entrance playback.
+    // Sync animationState to Playhead in Editor
     useEffect(() => {
         if (!isEditor) return;
-
         const startTime = layer.sequence?.startTime || 0;
-        const isAtStart = playhead <= startTime + 50;
-
-        if (isPlaying && isAtStart && hasEntranceAnimation) {
-            setAnimationState("hidden");
-            const timer = setTimeout(() => setAnimationState("visible"), 50);
-            return () => clearTimeout(timer);
-        } else if (!isPlaying && animationState !== "visible") {
-            setAnimationState("visible");
-        }
-    }, [isEditor, isPlaying, hasEntranceAnimation, layer.sequence?.startTime]);
+        const newState = playhead >= startTime ? "visible" : "hidden";
+        if (newState !== animationState) setAnimationState(newState);
+    }, [playhead, isEditor, layer.sequence?.startTime, animationState]);
 
     // Use ref to track animationState inside callbacks to avoid infinite loop
     const animationStateRef = useRef(animationState);
@@ -241,21 +234,17 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     }, [isEditor, handleContentLoad]);
 
     const variants = useMemo(() => {
-        // Outer wrapper only handles Entrance (0 -> 1) and Flip (-1 or 1)
-        // In Editor, the container handles Flip, so we must target 1 (100% of container) to avoid double-flip.
         const targetScaleX = isEditor ? 1 : flipX;
         const targetScaleY = isEditor ? 1 : flipY;
 
-        const hidden: any = {
-            opacity: 0,
-            x: 0, y: 0,
-            scaleX: targetScaleX, scaleY: targetScaleY, rotate: 0
-        };
+        const hidden: any = { opacity: 0, x: 0, y: 0, scaleX: targetScaleX, scaleY: targetScaleY, rotate: 0 };
         const visible: any = {
-            opacity: 1, // Inner handles the actual opacity value
-            x: 0, y: 0,
-            scaleX: targetScaleX, scaleY: targetScaleY, rotate: 0,
-            transition: { duration: entranceDuration, delay: entranceDelay, ease: [0.22, 1, 0.36, 1] }
+            opacity: 1, x: 0, y: 0, scaleX: targetScaleX, scaleY: targetScaleY, rotate: 0,
+            transition: {
+                duration: isPlaying ? entranceDuration : 0,
+                delay: isPlaying ? entranceDelay : 0,
+                ease: [0.22, 1, 0.36, 1]
+            }
         };
 
         if (!hasEntranceAnimation) return { hidden: { ...visible, transition: { duration: 0 } }, visible };
@@ -273,39 +262,15 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             case 'bounce': hidden.y = -40; visible.transition = { type: "spring", bounce: 0.4, duration: entranceDuration, delay: entranceDelay }; break;
             case 'pop-in': hidden.scaleX = 0.8 * targetScaleX; hidden.scaleY = 0.8 * targetScaleY; visible.transition = { type: "spring", stiffness: 260, damping: 20, delay: entranceDelay }; break;
             case 'twirl-in': hidden.scaleX = 0; hidden.scaleY = 0; hidden.rotate = -180; visible.transition = { type: "spring", duration: entranceDuration, bounce: 0.2, delay: entranceDelay }; break;
-
-            // ENTERPRISE V6: CINEMATIC DOORS
-            case 'door-open-left':
-                visible.originX = 0;
-                hidden.originX = 0;
-                hidden.rotateY = 0;
-                visible.rotateY = -100;
-                visible.transition = { type: "spring", stiffness: 60, damping: 12, mass: 1.2, delay: entranceDelay };
-                break;
-            case 'door-open-right':
-                visible.originX = 1;
-                hidden.originX = 1;
-                hidden.rotateY = 0;
-                visible.rotateY = 100;
-                visible.transition = { type: "spring", stiffness: 60, damping: 12, mass: 1.2, delay: entranceDelay };
-                break;
-            case 'door-2d-open-left':
-                visible.originX = 0;
-                hidden.originX = 0;
-                hidden.scaleX = targetScaleX;
-                visible.scaleX = isEditor ? 1 : 0;
-                visible.transition = { type: "spring", stiffness: 60, damping: 12, mass: 1.2, delay: entranceDelay };
-                break;
-            case 'door-2d-open-right':
-                visible.originX = 1;
-                hidden.originX = 1;
-                hidden.scaleX = targetScaleX;
-                visible.scaleX = isEditor ? 1 : 0;
-                visible.transition = { type: "spring", stiffness: 60, damping: 12, mass: 1.2, delay: entranceDelay };
-                break;
         }
+
+        // INSTANT SNAP IF NOT PLAYING (SCRUBBING)
+        if (!isPlaying) {
+            visible.transition = { duration: 0, delay: 0 };
+        }
+
         return { hidden, visible };
-    }, [entranceType, hasEntranceAnimation, entranceDuration, entranceDelay, flipX, flipY, isEditor]);
+    }, [entranceType, hasEntranceAnimation, entranceDuration, entranceDelay, flipX, flipY, isEditor, isPlaying]);
 
     useEffect(() => {
         if (isContentReadyRef.current && pendingTriggerRef.current) {
@@ -372,12 +337,55 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         if (entranceTrigger === 'open_btn' && isOpened) tryTriggerAnimation();
     }, [isOpened, entranceTrigger, isEditor, hasEntranceAnimation, tryTriggerAnimation]);
 
-    const loopingConfig = useMemo(() => {
-        if (!loopingType || loopingType === 'none') return null;
-        if (loopTrigger === 'click' && !forceTrigger && !isEditor) return null;
-        if (loopTrigger === 'scroll' && !inView && !isEditor) return null;
-        if (loopTrigger === 'open_btn' && !isOpened && !isEditor) return null;
+    // CTO MASTER FIX: Clock-Driven Looping Props
+    const loopingProps = useMemo(() => {
+        if (isExportMode || !shouldAnimate || animationState !== "visible") return {};
+        if (!loopingType || loopingType === 'none') return {};
 
+        // In Editor, we calculate the exact frame based on playhead
+        if (isEditor) {
+            const t = playhead / 1000; // time in seconds
+            const d = loopDuration || 1;
+            const progress = (t % d) / d; // [0, 1] relative to loop cycle
+
+            // Phase calculation for oscillations [0, 1, 0, -1, 0]
+            const phase = Math.sin(progress * Math.PI * 2);
+            const mirrorPhase = Math.sin(progress * Math.PI); // Half-wave for reverse-style loops
+
+            const loopTransition = { duration: 0 }; // Immediate updates driven by playhead
+
+            switch (loopingType) {
+                case 'float': return { animate: { y: phase * -15 }, transition: loopTransition };
+                case 'pulse': return { animate: { scale: 1 + phase * 0.05 }, transition: loopTransition };
+                case 'sway': return { animate: { rotate: phase * 5 }, transition: loopTransition };
+                case 'spin': return { animate: { rotate: (progress * 360 * (loopDirection === 'ccw' ? -1 : 1)) }, transition: loopTransition };
+                case 'glow': return { animate: { filter: `drop-shadow(0 0 ${Math.abs(phase) * 10}px rgba(255,255,255,0.8))` }, transition: loopTransition };
+                case 'heartbeat': return { animate: { scale: 1 + mirrorPhase * 0.2 }, transition: loopTransition };
+                case 'sparkle': return { animate: { opacity: 0.5 + Math.abs(phase) * 0.5 }, transition: loopTransition };
+                case 'flap-bob': return { animate: { y: phase * -10, scaleY: 1 - Math.abs(phase) * 0.4 }, transition: loopTransition };
+                case 'float-flap': return { animate: { y: phase * -20, scaleY: 1 - Math.abs(phase) * 0.5, rotate: phase * 5 }, transition: loopTransition };
+                case 'fly-left': return { animate: { x: -progress * 200 }, transition: loopTransition };
+                case 'fly-right': return { animate: { x: progress * 200 }, transition: loopTransition };
+                case 'fly-up': return { animate: { y: -progress * 200, opacity: 1 - progress }, transition: loopTransition };
+                case 'fly-down': return { animate: { y: progress * 200, opacity: 1 - progress }, transition: loopTransition };
+                case 'fly-random': {
+                    const x = Math.sin(progress * Math.PI * 2) * 30 + Math.cos(progress * Math.PI * 4) * 10;
+                    const y = Math.cos(progress * Math.PI * 2) * -40 + Math.sin(progress * Math.PI * 4) * 20;
+                    return { animate: { x, y }, transition: loopTransition };
+                }
+                case 'twirl': return {
+                    animate: {
+                        scale: progress < 0.4 ? progress / 0.4 : (progress > 0.6 ? (1 - progress) / 0.4 : 1),
+                        rotate: progress * 360,
+                        opacity: progress < 0.4 ? progress / 0.4 : (progress > 0.6 ? (1 - progress) / 0.4 : 1)
+                    },
+                    transition: loopTransition
+                };
+                default: return {};
+            }
+        }
+
+        // PREVIEW MODE: Use native Infinity repeats for smooth independent motion
         const loopTransition = { duration: loopDuration, repeat: Infinity, repeatType: "reverse" as const, ease: "easeInOut", delay: loopDelay };
         const startRotateForLoop = isEditor ? 0 : baseRotate;
         const spinRotation = loopDirection === 'ccw' ? startRotateForLoop - 360 : startRotateForLoop + 360;
@@ -398,52 +406,9 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             case 'fly-down': return { animate: { y: [0, 200], opacity: [1, 0] }, transition: { duration: loopDuration * 4, repeat: Infinity, ease: "easeIn" } };
             case 'fly-random': return { animate: { x: [0, 30, -20, 40, 0], y: [0, -40, 20, -10, 0] }, transition: { duration: loopDuration * 8, repeat: Infinity, ease: "easeInOut" } };
             case 'twirl': return { animate: { scale: [0, 1, 1, 0], rotate: [startRotateForLoop - 360, startRotateForLoop, startRotateForLoop, startRotateForLoop + 360], opacity: [0, 1, 1, 0] }, transition: { duration: loopDuration * 2.5, repeat: Infinity, ease: "easeInOut", times: [0, 0.4, 0.6, 1], delay: loopDelay } };
-            default: return null;
+            default: return {};
         }
-    }, [loopingType, loopDuration, loopDelay, loopTrigger, loopDirection, forceTrigger, inView, isOpened, baseRotate, isEditor]);
-
-    const elegantSpinAnimation = useMemo(() => {
-        if (!isElegantSpinEnabled || !elegantSpinConfig) return null;
-        const trigger = elegantSpinConfig.trigger || 'load';
-        if (trigger === 'click' && !forceTrigger && !isEditor) return null;
-        if (trigger === 'scroll' && !inView && !isEditor) return null;
-        if (trigger === 'open_btn' && !isOpened && !isEditor) return null;
-        const spinDuration = (elegantSpinConfig.spinDuration || elegantSpinConfig.duration || 1000) / 1000;
-        const scaleDuration = (elegantSpinConfig.scaleDuration || elegantSpinConfig.duration || 1000) / 1000;
-        const delay = (elegantSpinConfig.delay || 0) / 1000;
-        const direction = elegantSpinConfig.direction || 'cw';
-        const startRotate = isEditor ? 0 : baseRotate;
-        const spinRotation = direction === 'ccw' ? startRotate - 360 : startRotate + 360;
-        return { animate: { rotate: [startRotate, spinRotation], scale: [elegantSpinConfig.minScale ?? 0.8, elegantSpinConfig.maxScale ?? 1.2] }, transition: { rotate: { duration: spinDuration, repeat: Infinity, ease: "linear" }, scale: { duration: scaleDuration, ease: "easeOut" }, delay: delay } };
-    }, [isElegantSpinEnabled, elegantSpinConfig, forceTrigger, inView, isOpened, baseRotate, isEditor]);
-
-    const marqueeAnimation = useMemo(() => {
-        if (!isMarqueeEnabled || !marqueeConfig) return null;
-        const speed = marqueeConfig.speed || 50;
-        const angleRad = (marqueeConfig.reverse ? (marqueeConfig.angle || 0) + 180 : (marqueeConfig.angle || 0)) * (Math.PI / 180);
-        if (marqueeConfig.mode === 'tile') {
-            const dist = 2000;
-            return { animate: { backgroundPosition: ["0px 0px", `${Math.cos(angleRad) * dist}px ${Math.sin(angleRad) * dist}px`] }, transition: { duration: dist / speed, repeat: Infinity, ease: "linear" } };
-        } else {
-            const dist = marqueeConfig.distance || 500;
-            return { animate: { x: [0, Math.cos(angleRad) * dist], y: [0, Math.sin(angleRad) * dist] }, transition: { duration: dist / speed, repeat: Infinity, repeatType: "mirror" as const, ease: "easeInOut" } };
-        }
-    }, [isMarqueeEnabled, marqueeConfig]);
-
-    const pathAnimation = useMemo(() => {
-        const config = layer.motionPathConfig;
-        if (!config?.enabled || !config.points || config.points.length < 2) return null;
-        const halfWidth = (layer.width || 0) / 2;
-        const halfHeight = (layer.height || 0) / 2;
-        const xKF = config.points.map((p: any) => p.x - layer.x - halfWidth);
-        const yKF = config.points.map((p: any) => p.y - adjustedY - halfHeight);
-        return { animate: { x: xKF, y: yKF, rotate: config.points.map((p: any) => p.rotation ?? 0), scale: config.points.map((p: any) => p.scale ?? 1) }, transition: { duration: (config.duration || 3000) / 1000, repeat: config.loop ? Infinity : 0, repeatType: "loop", ease: "linear", times: xKF.map((_: any, i: number) => i / (xKF.length - 1)) } };
-    }, [layer.motionPathConfig, layer.x, adjustedY, layer.width, layer.height]);
-
-    const loopingProps = useMemo(() => {
-        if (isExportMode || !shouldAnimate || animationState !== "visible") return {};
-        return marqueeAnimation || elegantSpinAnimation || pathAnimation || loopingConfig || {};
-    }, [isExportMode, shouldAnimate, animationState, marqueeAnimation, elegantSpinAnimation, pathAnimation, loopingConfig]);
+    }, [loopingType, loopDuration, loopDelay, loopTrigger, loopDirection, forceTrigger, inView, isOpened, baseRotate, isEditor, shouldAnimate, animationState, isExportMode, playhead]);
 
     if (isExportMode) {
         // PURE STATIC RENDER: No Framer Motion, No Animations, just pixel-perfect CSS
