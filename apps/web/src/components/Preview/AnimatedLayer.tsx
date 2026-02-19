@@ -182,9 +182,11 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         const loops = { x: 0, y: 0, scale: 0, rotate: 0, opacity: 0, filter: 'none' };
         const isLoopingActive = loopingType && loopingType !== 'none' && isAnimationPlaying; // Only loop when playing
         // Actually, decorative loops (float, sway) should ALWAYS play in preview for feeling
+        // In Editor, we play loops if playback is active.
         const isDecorative = !isEditor && (loopingType === 'float' || loopingType === 'sway' || loopingType === 'pulse' || loopingType === 'spin');
+        const isEditorLooping = isEditor && isPlaying;
 
-        if (isTriggered || isDecorative) {
+        if (isTriggered || isDecorative || isEditorLooping) {
             const t = (isEditor ? playhead : performance.now()) / 1000;
             const d = loopDuration || 1;
             const progress = (t % d) / d;
@@ -214,20 +216,22 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         // Note: baseScale and flip are handled in the IDENTITY layer (child).
         const motionScale = (kf.scale / baseScale) + loops.scale + entrance.scale;
 
-        // Visibility Logic: 
+        // Visibility Logic:
         // 1. Before startTime: opacity 0
         // 2. During entrance: entrance.opacity * kf.opacity
         // 3. After entrance: kf.opacity
         let finalOpacity = kf.opacity;
         if (hasEntranceAnimation && isEntranceActive) {
             finalOpacity = entrance.opacity * kf.opacity;
-        } else if (hasEntranceAnimation && (playhead < startTime + eDelayMs || playhead < startTime)) {
+        } else if (hasEntranceAnimation && playhead < startTime + eDelayMs) {
             finalOpacity = 0;
         }
 
-        // Editor specific visibility: hide before sequence start
-        if (isEditor && playhead < startTime) {
-            finalOpacity = 0;
+        // Editor specific visibility:
+        // When static (not playing), keep everything visible for layouting.
+        // When playing, respect the timeline visibility.
+        if (isEditor && isPlaying && playhead < startTime) {
+            finalOpacity = 0.2; // Show ghosts of future elements
         }
 
         return {
@@ -423,8 +427,11 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             <m.div
                 className="w-full h-full relative origin-center"
                 style={{
-                    x: motionStyles.x - layer.x,
-                    y: motionStyles.y - (isEditor ? (layer.y + relativeShift) : layer.y),
+                    // CTO FIX: Factor in Parent Flip (Level 0) for translation offsets in Editor mode.
+                    // If the parent is flipped vertically (scaleY: -1), local +Y becomes global -Y (Up).
+                    // So we must invert our local offset to maintain screen-space direction.
+                    x: (motionStyles.x - layer.x) * (isEditor ? flipX : 1),
+                    y: (motionStyles.y - (isEditor ? (layer.y + relativeShift) : layer.y)) * (isEditor ? flipY : 1),
                     rotate: motionStyles.rotate,
                     scale: motionStyles.scale,
                     opacity: motionStyles.opacity,
