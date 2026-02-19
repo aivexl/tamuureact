@@ -206,18 +206,25 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                 loops.rotate = (t / sDur) * 360 * dir;
 
                 // Scale component (Pulse)
-                // We use a full sine wave (0 -> 1 -> 0 -> -1 -> 0)
-                // Positive phase scales to maxS, negative phase scales to minS
-                // This guarantees the animation starts exactly at 1.0 (no jump)
-                const pulseProgress = (t % gDur) / gDur;
-                const pulsePhase = Math.sin(pulseProgress * Math.PI * 2);
+                // We use a pure sine wave: A * sin(wt + phi) + C
+                // This preserves the exact animation flow while starting at 1.0
+                const C = (maxS + minS) / 2;
+                const A = (maxS - minS) / 2;
 
-                const scaleOffset = pulsePhase > 0
-                    ? pulsePhase * (maxS - 1)
-                    : Math.abs(pulsePhase) * (minS - 1);
+                if (A === 0) {
+                    loops.scale += (C - 1); // Constant offset if no range
+                } else {
+                    // Calculate phase shift so wave passes through 1.0 at t=0
+                    // sin(phi) = (1.0 - C) / A
+                    let ratio = (1.0 - C) / A;
+                    ratio = Math.max(-1, Math.min(1, ratio)); // Handle out-of-bounds 1.0
+                    const phi = Math.asin(ratio);
 
-                // Add to loop scale (relative to base 1)
-                loops.scale += scaleOffset;
+                    const wt = (t / gDur) * Math.PI * 2;
+                    const pulseScale = A * Math.sin(wt + phi) + C;
+
+                    loops.scale += (pulseScale - 1);
+                }
             }
 
             switch (loopingType) {
