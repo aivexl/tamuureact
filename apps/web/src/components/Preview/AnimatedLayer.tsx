@@ -140,7 +140,10 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         const eDurMs = (entranceDuration || 800) * 1000;
         const eTime = playhead - startTime - eDelayMs;
         const eProgress = Math.max(0, Math.min(eTime / eDurMs, 1));
-        const isEntranceActive = hasEntranceAnimation && (isPlaying || isAnimationPlaying || isEditor);
+        // CTO FIX: In Editor, ONLY show entrance offsets if actually playing/scrubbing (approximated by isPlaying).
+        // If we are just layouting (static), show the Resting Pose (offsets = 0) to ensure alignment with resize handles.
+        // We allow 'forceTrigger' for preview interactions.
+        const isEntranceActive = hasEntranceAnimation && (isPlaying || isAnimationPlaying || (isEditor && isPlaying) || forceTrigger);
 
         if (isEntranceActive) {
             // Initial offsets (Inverse of the target)
