@@ -205,14 +205,19 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         // CTO FIX: Elements stay visible AFTER endTime. They only appear IF playhead >= startTime.
         const isVisible = isEditor ? (playhead >= startTime) : true;
 
-        // Combine using Absolute Values
+        // Combine everything into absolute coordinates
+        const absX = kf.x + loops.x + entrance.x + pathPos.x;
+        const absY = kf.y + loops.y + entrance.y + pathPos.y;
+        const absRotate = kf.rotate + loops.rotate + entrance.rotate + pathPos.rotation;
+        const absScale = kf.scale + loops.scale + entrance.scale;
+
         return {
-            x: kf.x + loops.x + entrance.x + pathPos.x,
-            y: kf.y + loops.y + entrance.y + pathPos.y,
-            rotate: kf.rotate + loops.rotate + entrance.rotate + pathPos.rotation,
-            scaleX: (kf.scale + loops.scale + entrance.scale) * flipX,
-            scaleY: (kf.scale + loops.scale + entrance.scale) * flipY,
-            opacity: isVisible ? (hasEntranceAnimation ? entrance.opacity * kf.opacity : kf.opacity) : 0,
+            x: absX,
+            y: absY,
+            rotate: absRotate,
+            scaleX: absScale * flipX,
+            scaleY: absScale * flipY,
+            opacity: isVisible ? (hasEntranceAnimation && isEntranceActive ? entrance.opacity * kf.opacity : kf.opacity) : 0,
             filter: loops.filter,
         };
     }, [playhead, layer.keyframes, layer.sequence, layer.x, layer.y, layer.scale, layer.rotation, layer.opacity, layer.motionPathConfig, layer.flipHorizontal, layer.flipVertical, baseScale, baseRotate, baseOpacity, flipX, flipY, isEditor, loopingType, loopDuration, loopDirection, isTriggered, entranceType, entranceDelay, entranceDuration, hasEntranceAnimation, isPlaying, isAnimationPlaying]);
@@ -415,8 +420,8 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             ref={ref} initial="hidden" animate={animationState} variants={variants}
             className="absolute origin-center"
             style={{
-                left: isEditor ? `${layer.x}px` : `${layer.x}px`,
-                top: isEditor ? `${finalY}px` : `${finalY}px`,
+                left: isEditor ? 0 : `${layer.x}px`,
+                top: isEditor ? `${relativeShift}px` : `${finalY}px`,
                 width: `${layer.width}px`,
                 height: `${layer.height}px`,
                 zIndex: layer.zIndex,
@@ -427,11 +432,13 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             <m.div
                 className="w-full h-full relative"
                 style={{
-                    x: motionStyles.x - layer.x,
-                    y: motionStyles.y - layer.y,
-                    rotate: motionStyles.rotate,
-                    scaleX: motionStyles.scaleX,
-                    scaleY: motionStyles.scaleY,
+                    // In Editor, x/y/rotate are relative to the Bounding Box (CanvasElement)
+                    // In Preview, they are absolute (because parent has no position)
+                    x: isEditor ? (motionStyles.x - layer.x) : (motionStyles.x - layer.x),
+                    y: isEditor ? (motionStyles.y - (layer.y + relativeShift)) : (motionStyles.y - layer.y),
+                    rotate: isEditor ? (motionStyles.rotate - baseRotate) : motionStyles.rotate,
+                    scaleX: isEditor ? (motionStyles.scaleX / (baseScale * flipX)) : motionStyles.scaleX,
+                    scaleY: isEditor ? (motionStyles.scaleY / (baseScale * flipY)) : motionStyles.scaleY,
                     opacity: motionStyles.opacity,
                     filter: motionStyles.filter,
                 }}
