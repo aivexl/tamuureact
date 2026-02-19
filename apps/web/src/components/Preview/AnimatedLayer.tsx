@@ -77,7 +77,8 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     const entranceDelay = Math.min(((typeof animation?.entrance === 'object' ? animation.entrance.delay : animation?.delay) || 0) / 1000, 10);
     const entranceDuration = Math.min(((typeof animation?.entrance === 'object' ? animation.entrance.duration : animation?.duration) || 800) / 1000, 10);
 
-    const loopingType = (typeof animation?.loop === 'object' ? animation.loop.type : (animation as any)?.looping) || (layer as any).animationLoop || (animation as any)?.loopingType;
+    const resLoopType = (typeof animation?.loop === 'object' ? animation.loop.type : (animation as any)?.looping) || (layer as any).animationLoop || (animation as any)?.loopingType;
+    const loopingType = typeof resLoopType === 'string' ? resLoopType.toLowerCase() : 'none';
     const loopTrigger = (typeof animation?.loop === 'object' ? animation.loop.trigger : 'load') || 'load';
     const loopDelay = Math.min(((typeof animation?.loop === 'object' ? animation.loop.delay : 0) || 0) / 1000, 10);
     const loopDuration = Math.min(((typeof animation?.loop === 'object' ? animation.loop.duration : ((animation as any)?.duration || 1000)) || 1000) / 1000, 10);
@@ -186,20 +187,57 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         const isDecorative = !isEditor && (loopingType === 'float' || loopingType === 'sway' || loopingType === 'pulse' || loopingType === 'spin');
         const isEditorLooping = isEditor;
 
-        if (isTriggered || isDecorative || isEditorLooping) {
+        if (isTriggered || isDecorative || isEditorLooping || isElegantSpinEnabled) {
             const t = (isEditor ? playhead : performance.now()) / 1000;
             const d = loopDuration || 1;
             const progress = (t % d) / d;
             const phase = Math.sin(progress * Math.PI * 2);
             const mirrorPhase = Math.sin(progress * Math.PI);
 
+            // Elegant Spin Math (Premium Pulse & Spin)
+            if (isElegantSpinEnabled && elegantSpinConfig) {
+                const sDur = (elegantSpinConfig.spinDuration || 10000) / 1000;
+                const gDur = (elegantSpinConfig.growthDuration || 10000) / 1000;
+                const minS = elegantSpinConfig.minScale ?? 0.8;
+                const maxS = elegantSpinConfig.maxScale ?? 1.2;
+                const dir = (elegantSpinConfig.direction === 'ccw' ? -1 : 1);
+
+                // Rotational component
+                loops.rotate = (t / sDur) * 360 * dir;
+
+                // Scale component (Pulse)
+                const pulseProgress = (t % gDur) / gDur;
+                const pulsePhase = Math.sin(pulseProgress * Math.PI); // 0 -> 1 -> 0
+                const pulseScale = minS + (pulsePhase * (maxS - minS));
+                // Add to loop scale (relative to base 1)
+                loops.scale += (pulseScale - 1);
+            }
+
             switch (loopingType) {
-                case 'float': loops.y = phase * -15; break;
-                case 'pulse': loops.scale = phase * 0.05; break;
-                case 'sway': loops.rotate = phase * 5; break;
-                case 'spin': loops.rotate = (t / d) * 360 * (loopDirection === 'ccw' ? -1 : 1); break;
+                case 'float':
+                case 'floating': loops.y = phase * -15; break;
+                case 'pulse': loops.scale += (phase * 0.05); break;
+                case 'sway':
+                case 'swaying': loops.rotate += (phase * 5); break;
+                case 'spin': loops.rotate += (t / d) * 360 * (loopDirection === 'ccw' ? -1 : 1); break;
                 case 'glow': loops.filter = `drop-shadow(0 0 ${Math.abs(phase) * 10}px rgba(255,255,255,0.8))`; break;
-                case 'heartbeat': loops.scale = mirrorPhase * 0.2; break;
+                case 'heartbeat': loops.scale += (Math.max(0, mirrorPhase) * 0.15); break;
+                case 'flap-bob':
+                case 'floating-bob':
+                    loops.y = phase * -10;
+                    loops.scale += (phase * 1); // Fixed weight for dolls
+                    break;
+                case 'float-flap':
+                    loops.y = phase * -20;
+                    loops.rotate += (phase * 3);
+                    break;
+                case 'twirl':
+                    loops.rotate += (phase * 15);
+                    loops.scale += (phase * 0.05);
+                    break;
+                case 'elegant-spin':
+                    // Handled above by explicit elegantSpinConfig check
+                    break;
             }
         }
 
@@ -217,22 +255,31 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         const motionScale = (kf.scale / baseScale) + loops.scale + entrance.scale;
 
         // Visibility Logic:
-        // 1. In Editor, if NOT playing, everything should be visible for layouting (Resting Pose)
+        // 1. In Editor, elements should ALWAYS be visible for selection/layout (Ghosts or Full)
         // 2. In Preview or when playing in Editor, respect the sequence lifecycle.
         let finalOpacity = kf.opacity;
 
-        if (isEditor && !isPlaying) {
-            finalOpacity = kf.opacity;
+        if (isEditor) {
+            if (!isPlaying) {
+                // When stopped, force visibility to at least 0.4 so they don't vanish
+                // even if keyframes say 0 at this time.
+                finalOpacity = Math.max(0.4, kf.opacity);
+            } else {
+                // When playing/scrubbing
+                if (playhead < startTime) {
+                    finalOpacity = 0.2; // Future elements are ghosts
+                } else if (hasEntranceAnimation && isEntranceActive) {
+                    finalOpacity = Math.max(0.2, entrance.opacity * kf.opacity);
+                } else {
+                    finalOpacity = kf.opacity;
+                }
+            }
         } else {
+            // PRODUCTION MODE
             if (hasEntranceAnimation && isEntranceActive) {
                 finalOpacity = entrance.opacity * kf.opacity;
             } else if (hasEntranceAnimation && playhead < startTime + eDelayMs) {
                 finalOpacity = 0;
-            }
-
-            // Ghost visibility for future elements during playback/scrubbing
-            if (isEditor && playhead < startTime) {
-                finalOpacity = 0.2;
             }
         }
 
@@ -244,7 +291,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             opacity: finalOpacity,
             filter: loops.filter,
         };
-    }, [playhead, layer.keyframes, layer.sequence, layer.x, layer.y, layer.scale, layer.rotation, layer.opacity, layer.motionPathConfig, layer.flipHorizontal, layer.flipVertical, baseScale, baseRotate, baseOpacity, isEditor, loopingType, loopDuration, loopDirection, isTriggered, entranceType, entranceDelay, entranceDuration, hasEntranceAnimation, isPlaying, isAnimationPlaying, forceTrigger]);
+    }, [playhead, layer.keyframes, layer.sequence, layer.x, layer.y, layer.scale, layer.rotation, layer.opacity, layer.motionPathConfig, layer.flipHorizontal, layer.flipVertical, baseScale, baseRotate, baseOpacity, isEditor, loopingType, loopDuration, loopDirection, isTriggered, entranceType, entranceDelay, entranceDuration, hasEntranceAnimation, isPlaying, isAnimationPlaying, forceTrigger, isElegantSpinEnabled, elegantSpinConfig]);
 
     // LIQUID AUTO-LAYOUT (UNCHANGED)
     const target = useMemo((): Layer | null => {
