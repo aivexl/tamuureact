@@ -182,9 +182,9 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         const loops = { x: 0, y: 0, scale: 0, rotate: 0, opacity: 0, filter: 'none' };
         const isLoopingActive = loopingType && loopingType !== 'none' && isAnimationPlaying; // Only loop when playing
         // Actually, decorative loops (float, sway) should ALWAYS play in preview for feeling
-        // In Editor, we play loops if playback is active.
+        // In Editor, we play loops whenever they are configured (to support scrubbing/previewing)
         const isDecorative = !isEditor && (loopingType === 'float' || loopingType === 'sway' || loopingType === 'pulse' || loopingType === 'spin');
-        const isEditorLooping = isEditor && isPlaying;
+        const isEditorLooping = isEditor;
 
         if (isTriggered || isDecorative || isEditorLooping) {
             const t = (isEditor ? playhead : performance.now()) / 1000;
@@ -217,21 +217,23 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         const motionScale = (kf.scale / baseScale) + loops.scale + entrance.scale;
 
         // Visibility Logic:
-        // 1. Before startTime: opacity 0
-        // 2. During entrance: entrance.opacity * kf.opacity
-        // 3. After entrance: kf.opacity
+        // 1. In Editor, if NOT playing, everything should be visible for layouting (Resting Pose)
+        // 2. In Preview or when playing in Editor, respect the sequence lifecycle.
         let finalOpacity = kf.opacity;
-        if (hasEntranceAnimation && isEntranceActive) {
-            finalOpacity = entrance.opacity * kf.opacity;
-        } else if (hasEntranceAnimation && playhead < startTime + eDelayMs) {
-            finalOpacity = 0;
-        }
 
-        // Editor specific visibility:
-        // When static (not playing), keep everything visible for layouting.
-        // When playing, respect the timeline visibility.
-        if (isEditor && isPlaying && playhead < startTime) {
-            finalOpacity = 0.2; // Show ghosts of future elements
+        if (isEditor && !isPlaying) {
+            finalOpacity = kf.opacity;
+        } else {
+            if (hasEntranceAnimation && isEntranceActive) {
+                finalOpacity = entrance.opacity * kf.opacity;
+            } else if (hasEntranceAnimation && playhead < startTime + eDelayMs) {
+                finalOpacity = 0;
+            }
+
+            // Ghost visibility for future elements during playback/scrubbing
+            if (isEditor && playhead < startTime) {
+                finalOpacity = 0.2;
+            }
         }
 
         return {
