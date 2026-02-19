@@ -99,6 +99,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     const flipY = layer.flipVertical ? -1 : 1;
     const baseScale = layer.scale || 1;
     const baseRotate = layer.rotation || 0;
+    const baseOpacity = layer.opacity ?? 1;
 
     // ============================================
     // DOUBLE TRIGGER & RESET ENGINE
@@ -123,26 +124,27 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         const duration = layer.sequence?.duration || 2000;
         const endTime = startTime + duration;
 
-        // 1. KEYFRAME INTERPOLATION
+        // 1. KEYFRAME INTERPOLATION (Absolute Target)
         const effectiveTime = Math.max(0, Math.min(playhead - startTime, duration));
         const kf = {
             x: interpolate(effectiveTime, layer.keyframes || [], layer.x, 'x'),
             y: interpolate(effectiveTime, layer.keyframes || [], layer.y, 'y'),
-            scale: interpolate(effectiveTime, layer.keyframes || [], layer.scale || 1, 'scale'),
-            rotate: interpolate(effectiveTime, layer.keyframes || [], layer.rotation || 0, 'rotation'),
-            opacity: interpolate(effectiveTime, layer.keyframes || [], layer.opacity ?? 1, 'opacity'),
+            scale: interpolate(effectiveTime, layer.keyframes || [], baseScale, 'scale'),
+            rotate: interpolate(effectiveTime, layer.keyframes || [], baseRotate, 'rotation'),
+            opacity: interpolate(effectiveTime, layer.keyframes || [], baseOpacity, 'opacity'),
         };
 
-        // 2. MATH-DRIVEN ENTRANCE (Editor Scrubbing Only)
-        // This makes the Slide/Fade animations respond to the scrollbar/playhead position.
+        // 2. MATH-DRIVEN ENTRANCE (Dynamic Offset)
         const entrance = { x: 0, y: 0, scale: 0, rotate: 0, opacity: 1 };
-        if (isEditor && hasEntranceAnimation) {
-            const eDelayMs = (entranceDelay || 0) * 1000;
-            const eDurMs = (entranceDuration || 800) * 1000;
-            const eTime = playhead - startTime - eDelayMs;
-            const eProgress = Math.max(0, Math.min(eTime / eDurMs, 1));
+        const eDelayMs = (entranceDelay || 0) * 1000;
+        const eDurMs = (entranceDuration || 800) * 1000;
+        const eTime = playhead - startTime - eDelayMs;
+        const eProgress = Math.max(0, Math.min(eTime / eDurMs, 1));
+        const isEntranceActive = hasEntranceAnimation && (isPlaying || isAnimationPlaying || isEditor);
 
-            // Initial offsets (Inverse of the variants)
+        if (isEntranceActive) {
+            // Initial offsets (Inverse of the target)
+            // When eProgress = 0, we apply full offset. When eProgress = 1, offset is 0.
             switch (entranceType) {
                 case 'fade-in': entrance.opacity = eProgress; break;
                 case 'slide-up': entrance.y = (1 - eProgress) * 50; entrance.opacity = eProgress; break;
@@ -151,6 +153,8 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                 case 'slide-right': entrance.x = (1 - eProgress) * -50; entrance.opacity = eProgress; break;
                 case 'zoom-in': entrance.scale = (eProgress * 0.4) - 0.4; entrance.opacity = eProgress; break;
                 case 'zoom-out': entrance.scale = (1 - eProgress) * 0.4; entrance.opacity = eProgress; break;
+                // Complex spring animations (Spring behavior is handled by variants in Framer, but we can math them if needed)
+                // For now, we use simple progress for custom math.
             }
         }
 
@@ -159,11 +163,9 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         const mpConfig = layer.motionPathConfig;
         if (mpConfig?.enabled && mpConfig.points.length > 0) {
             const mpDuration = mpConfig.duration || 3000;
-            const mpTime = isEditor ? playhead : (performance.now() % mpDuration); // Use performance.now for continuous play in preview if global clock is stopped
-            const effectiveMpTime = isPlaying || isAnimationPlaying ? (isEditor ? playhead : performance.now()) : 0;
-            // Actually, best to use global playhead if possible
-            const timeSource = isEditor ? playhead : (isPlaying ? playhead : 0);
-            const pos = getPathPosition(timeSource, {
+            // Use performance.now() for continuous path playback even if clock is stopped (Decorative)
+            const mpTimeSource = isEditor ? playhead : (performance.now() % mpDuration);
+            const pos = getPathPosition(mpTimeSource, {
                 points: mpConfig.points,
                 duration: mpDuration,
                 loop: mpConfig.loop ?? true
@@ -173,10 +175,14 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             pathPos.rotation = pos.rotation;
         }
 
-        // 3. CLOCK-DRIVEN LOOPING (Unfied for Editor & Preview)
+        // 3. CLOCK-DRIVEN LOOPING (Stateless Decoration)
         const loops = { x: 0, y: 0, scale: 0, rotate: 0, opacity: 0, filter: 'none' };
-        if (shouldAnimate && isTriggered) {
-            const t = playhead / 1000;
+        const isLoopingActive = loopingType && loopingType !== 'none' && isAnimationPlaying; // Only loop when playing
+        // Actually, decorative loops (float, sway) should ALWAYS play in preview for feeling
+        const isDecorative = !isEditor && (loopingType === 'float' || loopingType === 'sway' || loopingType === 'pulse' || loopingType === 'spin');
+
+        if (isTriggered || isDecorative) {
+            const t = (isEditor ? playhead : performance.now()) / 1000;
             const d = loopDuration || 1;
             const progress = (t % d) / d;
             const phase = Math.sin(progress * Math.PI * 2);
@@ -192,20 +198,21 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             }
         }
 
-        // 4. FINAL COMPOSITE STYLE
-        const isVisible = isEditor ? (playhead >= startTime && playhead <= endTime) : true;
+        // 4. FINAL ABSOLUTE COMPOSITE STYLE
+        // CTO FIX: Elements stay visible AFTER endTime. They only appear IF playhead >= startTime.
+        const isVisible = isEditor ? (playhead >= startTime) : true;
 
-        // Combine everything
+        // Combine using Absolute Values
         return {
-            x: (kf.x - layer.x) + loops.x + entrance.x + pathPos.x,
-            y: (kf.y - layer.y) + loops.y + entrance.y + pathPos.y,
-            rotate: (kf.rotate - (layer.rotation || 0)) + loops.rotate + entrance.rotate + pathPos.rotation,
-            scaleX: (kf.scale / (layer.scale || 1)) + loops.scale + entrance.scale,
-            scaleY: (kf.scale / (layer.scale || 1)) + loops.scale + entrance.scale,
-            opacity: isVisible ? (isEditor ? entrance.opacity * kf.opacity : kf.opacity) : 0,
+            x: kf.x + loops.x + entrance.x + pathPos.x,
+            y: kf.y + loops.y + entrance.y + pathPos.y,
+            rotate: kf.rotate + loops.rotate + entrance.rotate + pathPos.rotation,
+            scaleX: (kf.scale + loops.scale + entrance.scale) * flipX,
+            scaleY: (kf.scale + loops.scale + entrance.scale) * flipY,
+            opacity: isVisible ? (hasEntranceAnimation ? entrance.opacity * kf.opacity : kf.opacity) : 0,
             filter: loops.filter,
         };
-    }, [playhead, layer.keyframes, layer.sequence, layer.x, layer.y, layer.scale, layer.rotation, layer.opacity, layer.motionPathConfig, isEditor, shouldAnimate, loopingType, loopDuration, loopDirection, isTriggered, entranceType, entranceDelay, entranceDuration, hasEntranceAnimation, isPlaying, isAnimationPlaying]);
+    }, [playhead, layer.keyframes, layer.sequence, layer.x, layer.y, layer.scale, layer.rotation, layer.opacity, layer.motionPathConfig, layer.flipHorizontal, layer.flipVertical, baseScale, baseRotate, baseOpacity, flipX, flipY, isEditor, loopingType, loopDuration, loopDirection, isTriggered, entranceType, entranceDelay, entranceDuration, hasEntranceAnimation, isPlaying, isAnimationPlaying]);
 
     // LIQUID AUTO-LAYOUT (UNCHANGED)
     const target = useMemo((): Layer | null => {
@@ -405,8 +412,8 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             ref={ref} initial="hidden" animate={animationState} variants={variants}
             className="absolute origin-center"
             style={{
-                left: isEditor ? 0 : `${layer.x}px`,
-                top: isEditor ? `${relativeShift}px` : `${finalY}px`,
+                left: isEditor ? `${layer.x}px` : `${layer.x}px`,
+                top: isEditor ? `${finalY}px` : `${finalY}px`,
                 width: `${layer.width}px`,
                 height: `${layer.height}px`,
                 zIndex: layer.zIndex,
@@ -417,8 +424,8 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             <m.div
                 className="w-full h-full relative"
                 style={{
-                    x: motionStyles.x,
-                    y: motionStyles.y,
+                    x: motionStyles.x - layer.x,
+                    y: motionStyles.y - layer.y,
                     rotate: motionStyles.rotate,
                     scaleX: motionStyles.scaleX,
                     scaleY: motionStyles.scaleY,
