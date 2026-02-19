@@ -290,10 +290,23 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             }
         } else {
             // PRODUCTION MODE
-            if (hasEntranceAnimation && isEntranceActive) {
-                finalOpacity = entrance.opacity * kf.opacity;
-            } else if (hasEntranceAnimation && playhead < startTime + eDelayMs) {
-                finalOpacity = 0;
+            if (hasEntranceAnimation) {
+                if (isEntranceActive) {
+                    finalOpacity = entrance.opacity * kf.opacity;
+                } else if (playhead < startTime + eDelayMs) {
+                    // Pre-entrance state
+                    finalOpacity = 0;
+                } else {
+                    // Post-entrance state
+                    finalOpacity = kf.opacity;
+                }
+            } else {
+                // No entrance animation: only visible during its sequence lifecycle
+                if (playhead < startTime) {
+                    finalOpacity = 0;
+                } else {
+                    finalOpacity = kf.opacity;
+                }
             }
         }
 
