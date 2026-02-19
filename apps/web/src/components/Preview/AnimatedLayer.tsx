@@ -201,26 +201,44 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             }
         }
 
-        // 4. FINAL ABSOLUTE COMPOSITE STYLE
-        // CTO FIX: Elements stay visible AFTER endTime. They only appear IF playhead >= startTime.
-        const isVisible = isEditor ? (playhead >= startTime) : true;
-
-        // Combine everything into absolute coordinates
+        // 4. FINAL MOTION COMPOSITE (Absolute Units - Global Stage)
+        // These will be translated to relative offsets in the JSX to handle both Editor & Preview.
         const absX = kf.x + loops.x + entrance.x + pathPos.x;
         const absY = kf.y + loops.y + entrance.y + pathPos.y;
-        const absRotate = kf.rotate + loops.rotate + entrance.rotate + pathPos.rotation;
-        const absScale = kf.scale + loops.scale + entrance.scale;
+
+        // Combine rotations: path rotation + entrance rotate + loop rotate + (keyframes rotate is special)
+        // Note: baseRotate and flip are handled in the IDENTITY layer (child).
+        const motionRotate = (kf.rotate - baseRotate) + loops.rotate + entrance.rotate + pathPos.rotation;
+
+        // Combine scales: entrance scale + loop scale + (keyframes scale is special)
+        // Note: baseScale and flip are handled in the IDENTITY layer (child).
+        const motionScale = (kf.scale / baseScale) + loops.scale + entrance.scale;
+
+        // Visibility Logic: 
+        // 1. Before startTime: opacity 0
+        // 2. During entrance: entrance.opacity * kf.opacity
+        // 3. After entrance: kf.opacity
+        let finalOpacity = kf.opacity;
+        if (hasEntranceAnimation && isEntranceActive) {
+            finalOpacity = entrance.opacity * kf.opacity;
+        } else if (hasEntranceAnimation && (playhead < startTime + eDelayMs || playhead < startTime)) {
+            finalOpacity = 0;
+        }
+
+        // Editor specific visibility: hide before sequence start
+        if (isEditor && playhead < startTime) {
+            finalOpacity = 0;
+        }
 
         return {
             x: absX,
             y: absY,
-            rotate: absRotate,
-            scaleX: absScale * flipX,
-            scaleY: absScale * flipY,
-            opacity: isVisible ? (hasEntranceAnimation && isEntranceActive ? entrance.opacity * kf.opacity : kf.opacity) : 0,
+            rotate: motionRotate,
+            scale: motionScale,
+            opacity: finalOpacity,
             filter: loops.filter,
         };
-    }, [playhead, layer.keyframes, layer.sequence, layer.x, layer.y, layer.scale, layer.rotation, layer.opacity, layer.motionPathConfig, layer.flipHorizontal, layer.flipVertical, baseScale, baseRotate, baseOpacity, flipX, flipY, isEditor, loopingType, loopDuration, loopDirection, isTriggered, entranceType, entranceDelay, entranceDuration, hasEntranceAnimation, isPlaying, isAnimationPlaying]);
+    }, [playhead, layer.keyframes, layer.sequence, layer.x, layer.y, layer.scale, layer.rotation, layer.opacity, layer.motionPathConfig, layer.flipHorizontal, layer.flipVertical, baseScale, baseRotate, baseOpacity, isEditor, loopingType, loopDuration, loopDirection, isTriggered, entranceType, entranceDelay, entranceDuration, hasEntranceAnimation, isPlaying, isAnimationPlaying, forceTrigger]);
 
     // LIQUID AUTO-LAYOUT (UNCHANGED)
     const target = useMemo((): Layer | null => {
@@ -293,37 +311,6 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         return () => clearTimeout(timer);
     }, [isEditor, handleContentLoad]);
 
-    const variants = useMemo(() => {
-        const targetScaleX = isEditor ? 1 : flipX;
-        const targetScaleY = isEditor ? 1 : flipY;
-        const hidden: any = { opacity: 0, x: 0, y: 0, scaleX: targetScaleX, scaleY: targetScaleY, rotate: 0 };
-        const visible: any = {
-            opacity: 1, x: 0, y: 0, scaleX: targetScaleX, scaleY: targetScaleY, rotate: 0,
-            transition: {
-                duration: isPlaying ? entranceDuration : 0,
-                delay: isPlaying ? entranceDelay : 0,
-                ease: [0.22, 1, 0.36, 1]
-            }
-        };
-
-        if (!hasEntranceAnimation || isEditor) return { hidden: { ...visible, transition: { duration: 0 } }, visible };
-
-        switch (entranceType) {
-            case 'fade-in': break;
-            case 'slide-up': hidden.y = 30; break;
-            case 'slide-down': hidden.y = -30; break;
-            case 'slide-left': hidden.x = 30; break;
-            case 'slide-right': hidden.x = -30; break;
-            case 'zoom-in': hidden.scaleX = 0.8 * targetScaleX; hidden.scaleY = 0.8 * targetScaleY; break;
-            case 'zoom-out': hidden.scaleX = 1.2 * targetScaleX; hidden.scaleY = 1.2 * targetScaleY; break;
-            case 'bounce': hidden.y = -40; visible.transition = { type: "spring", bounce: 0.4, duration: entranceDuration, delay: entranceDelay }; break;
-            case 'pop-in': hidden.scaleX = 0.8 * targetScaleX; hidden.scaleY = 0.8 * targetScaleY; visible.transition = { type: "spring", stiffness: 260, damping: 20, delay: entranceDelay }; break;
-            case 'twirl-in': hidden.scaleX = 0; hidden.scaleY = 0; hidden.rotate = -180; visible.transition = { type: "spring", duration: entranceDuration, bounce: 0.2, delay: entranceDelay }; break;
-        }
-
-        if (!isPlaying) visible.transition = { duration: 0, delay: 0 };
-        return { hidden, visible };
-    }, [entranceType, hasEntranceAnimation, entranceDuration, entranceDelay, flipX, flipY, isEditor, isPlaying]);
 
     useEffect(() => {
         if (!isEditor && isContentReadyRef.current && pendingTriggerRef.current) {
@@ -417,9 +404,11 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
 
     return (
         <m.div
-            ref={ref} initial="hidden" animate={animationState} variants={variants}
+            ref={ref}
             className="absolute origin-center"
             style={{
+                // LAYER 1: ABSOLUTE ANCHOR
+                // Editor: Parent handles positioning. Preview: We handle it.
                 left: isEditor ? 0 : `${layer.x}px`,
                 top: isEditor ? `${relativeShift}px` : `${finalY}px`,
                 width: `${layer.width}px`,
@@ -429,43 +418,53 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                 transformStyle: 'preserve-3d',
             }}
         >
+            {/* LAYER 2: GLOBAL MOTION STAGE (Translation & Floating) */}
+            {/* THIS LAYER IS NEVER FLIPPED. Movement is viewport-consistent. */}
             <m.div
-                className="w-full h-full relative"
+                className="w-full h-full relative origin-center"
                 style={{
-                    // In Editor, x/y/rotate are relative to the Bounding Box (CanvasElement)
-                    // In Preview, they are absolute (because parent has no position)
-                    x: isEditor ? (motionStyles.x - layer.x) : (motionStyles.x - layer.x),
-                    y: isEditor ? (motionStyles.y - (layer.y + relativeShift)) : (motionStyles.y - layer.y),
-                    rotate: isEditor ? (motionStyles.rotate - baseRotate) : motionStyles.rotate,
-                    scaleX: isEditor ? (motionStyles.scaleX / (baseScale * flipX)) : motionStyles.scaleX,
-                    scaleY: isEditor ? (motionStyles.scaleY / (baseScale * flipY)) : motionStyles.scaleY,
+                    x: motionStyles.x - layer.x,
+                    y: motionStyles.y - (isEditor ? (layer.y + relativeShift) : layer.y),
+                    rotate: motionStyles.rotate,
+                    scale: motionStyles.scale,
                     opacity: motionStyles.opacity,
                     filter: motionStyles.filter,
                 }}
             >
-                {isMarqueeEnabled && (marqueeConfig?.mode || 'seamless') === 'seamless' ? (
-                    (() => {
-                        const direction = marqueeConfig?.direction || 'left';
-                        const isVertical = direction === 'up' || direction === 'down';
-                        const duration = ((isVertical ? (layer.height || 100) : (layer.width || 100)) * 2) / (marqueeConfig?.speed || 50);
-                        return (
-                            <div className="seamless-marquee-container">
-                                <div className={`seamless-marquee-track${isVertical ? '-vertical' : ''} animate-seamless-${direction}`} style={{ '--marquee-duration': `${duration}s`, ...(isVertical ? { height: 'fit-content' } : { width: 'fit-content' }) } as any}>
-                                    <div className="flex-shrink-0" style={isVertical ? { height: layer.height } : { width: layer.width }}>
-                                        <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={isEditor} onContentLoad={handleContentLoad} onDimensionsDetected={handleDimensions} />
-                                    </div>
-                                    <div className="flex-shrink-0" style={isVertical ? { height: layer.height } : { width: layer.width }}>
-                                        <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={isEditor} onContentLoad={handleContentLoad} onDimensionsDetected={handleDimensions} />
+                {/* LAYER 3: IDENTITY STAGE (Flips & Base Styles) */}
+                {/* Editor: Parent Handles Base Transfroms. Preview: We apply them here. */}
+                <div
+                    className="w-full h-full relative origin-center"
+                    style={{
+                        transform: isEditor
+                            ? 'none'
+                            : `rotate(${baseRotate}deg) scale(${baseScale * flipX}, ${baseScale * flipY})`,
+                    }}
+                >
+                    {isMarqueeEnabled && (marqueeConfig?.mode || 'seamless') === 'seamless' ? (
+                        (() => {
+                            const direction = marqueeConfig?.direction || 'left';
+                            const isVertical = direction === 'up' || direction === 'down';
+                            const duration = ((isVertical ? (layer.height || 100) : (layer.width || 100)) * 2) / (marqueeConfig?.speed || 50);
+                            return (
+                                <div className="seamless-marquee-container">
+                                    <div className={`seamless-marquee-track${isVertical ? '-vertical' : ''} animate-seamless-${direction}`} style={{ '--marquee-duration': `${duration}s`, ...(isVertical ? { height: 'fit-content' } : { width: 'fit-content' }) } as any}>
+                                        <div className="flex-shrink-0" style={isVertical ? { height: layer.height } : { width: layer.width }}>
+                                            <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={isEditor} onContentLoad={handleContentLoad} onDimensionsDetected={handleDimensions} />
+                                        </div>
+                                        <div className="flex-shrink-0" style={isVertical ? { height: layer.height } : { width: layer.width }}>
+                                            <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={isEditor} onContentLoad={handleContentLoad} onDimensionsDetected={handleDimensions} />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        );
-                    })()
-                ) : (
-                    <div className="w-full h-full relative" style={{ ...(isMarqueeTileMode ? { backgroundImage: `url(${layer.imageUrl})`, backgroundRepeat: 'repeat', backgroundSize: 'auto', backgroundColor: 'transparent' } : {}) }}>
-                        {!isMarqueeTileMode && <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={isEditor} onContentLoad={handleContentLoad} onDimensionsDetected={handleDimensions} />}
-                    </div>
-                )}
+                            );
+                        })()
+                    ) : (
+                        <div className="w-full h-full relative" style={{ ...(isMarqueeTileMode ? { backgroundImage: `url(${layer.imageUrl})`, backgroundRepeat: 'repeat', backgroundSize: 'auto', backgroundColor: 'transparent' } : {}) }}>
+                            {!isMarqueeTileMode && <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={isEditor} onContentLoad={handleContentLoad} onDimensionsDetected={handleDimensions} />}
+                        </div>
+                    )}
+                </div>
             </m.div>
         </m.div>
     );
