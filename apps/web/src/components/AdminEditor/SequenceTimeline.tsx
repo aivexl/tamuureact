@@ -136,7 +136,26 @@ export const SequenceTimeline: React.FC = () => {
                             <MousePointer2 className="w-3.5 h-3.5" />
                         </button>
                         <button
-                            onClick={() => setActiveTimelineTool('razor')}
+                            onClick={() => {
+                                if (selectedIds.size > 0 && activeSectionId) {
+                                    let didSplit = false;
+                                    selectedIds.forEach(id => {
+                                        const el = layers.find(l => l.id === id);
+                                        if (!el || el.isLocked) return;
+                                        const start = el.sequence?.startTime || 0;
+                                        const end = start + (el.sequence?.duration || 2000);
+                                        if (playhead > start && playhead < end) {
+                                            useStore.getState().splitElement(activeSectionId, el.id, playhead);
+                                            didSplit = true;
+                                        }
+                                    });
+                                    if (didSplit) {
+                                        setActiveTimelineTool('pointer');
+                                        return;
+                                    }
+                                }
+                                setActiveTimelineTool('razor');
+                            }}
                             title="Split Tool (C)"
                             className={`p-2 rounded-md transition-colors ${activeTimelineTool === 'razor' ? 'bg-[#0D99FF] text-white' : 'text-slate-400 hover:text-white hover:bg-white/10'}`}
                         >
