@@ -38,6 +38,7 @@ export const SequenceTimeline: React.FC = () => {
     isPlaying,
     togglePlayback,
     setPlayhead,
+    setDuration,
     resetClock,
     sections,
     activeSectionId,
@@ -55,7 +56,26 @@ export const SequenceTimeline: React.FC = () => {
   const timelineRef = useRef<HTMLDivElement>(null);
   const leftSidebarRef = useRef<HTMLDivElement>(null);
   const activeSection = sections.find((s) => s.id === activeSectionId);
-  const layers = activeSection?.elements || [];
+
+  const { orbit, updateOrbitElement } = useStore();
+
+  const layers = React.useMemo(() => {
+    const sectionLayers = activeSection?.elements || [];
+    const orbitLeftLayers = orbit?.left?.elements?.map(l => ({ ...l, _orbit: 'left' })) || [];
+    const orbitRightLayers = orbit?.right?.elements?.map(l => ({ ...l, _orbit: 'right' })) || [];
+    return [...sectionLayers, ...orbitLeftLayers, ...orbitRightLayers];
+  }, [activeSection?.elements, orbit?.left?.elements, orbit?.right?.elements]);
+
+  const updateTimelineElement = React.useCallback((layerId: string, updates: Partial<typeof layers[0]>) => {
+    const el = layers.find(l => l.id === layerId) as any;
+    if (el?._orbit === 'left') {
+      updateOrbitElement('left', layerId, updates);
+    } else if (el?._orbit === 'right') {
+      updateOrbitElement('right', layerId, updates);
+    } else if (activeSectionId) {
+      updateElementInSection(activeSectionId, layerId, updates);
+    }
+  }, [layers, updateOrbitElement, updateElementInSection, activeSectionId]);
 
   // Group layers into Tracks based on trackId
   const tracks = React.useMemo(() => {
@@ -78,6 +98,19 @@ export const SequenceTimeline: React.FC = () => {
       };
     });
   }, [layers]);
+
+  // Dynamically adjust timeline duration relative to longest track
+  React.useEffect(() => {
+    let maxMs = 5000; // minimum duration 5s
+    layers.forEach((l) => {
+      const el = l as any;
+      const end = (el.sequence?.startTime || 0) + (el.sequence?.duration || 2000);
+      if (end > maxMs) maxMs = end;
+    });
+    if (duration !== maxMs) {
+      setDuration(maxMs);
+    }
+  }, [layers, duration, setDuration]);
 
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
 
@@ -188,10 +221,13 @@ export const SequenceTimeline: React.FC = () => {
                     const start = el.sequence?.startTime || 0;
                     const end = start + (el.sequence?.duration || 2000);
                     if (playhead > start && playhead < end) {
-                      useStore
-                        .getState()
-                        .splitElement(activeSectionId, el.id, playhead);
-                      didSplit = true;
+                      const elInfo = el as any;
+                      if (!elInfo._orbit) {
+                        useStore
+                          .getState()
+                          .splitElement(activeSectionId, el.id, playhead);
+                        didSplit = true;
+                      }
                     }
                   });
                   if (didSplit) {
@@ -277,7 +313,7 @@ export const SequenceTimeline: React.FC = () => {
                     <span
                       className={`text-[11px] font-bold truncate tracking-tight uppercase transition-colors ${isTrackSelected ? "text-white" : "text-slate-400 group-hover:text-white"}`}
                     >
-                      {layer.name.replace(/ \(Part \d+\)$/, "") || layer.type}
+                      {((layer as any)?._orbit ? `[Orbit ${(layer as any)._orbit}] ` : '') + (layer.name.replace(/ \(Part \d+\)$/, "") || layer.type)}
                     </span>
                   </div>
                   <div
@@ -286,15 +322,10 @@ export const SequenceTimeline: React.FC = () => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (activeSectionId) {
-                          const newState =
-                            layer.isVisible === false ? true : false;
-                          track.layers.forEach((l) => {
-                            updateElementInSection(activeSectionId, l.id, {
-                              isVisible: newState,
-                            });
-                          });
-                        }
+                        const newState = layer.isVisible === false ? true : false;
+                        track.layers.forEach((l) => {
+                          updateTimelineElement(l.id, { isVisible: newState });
+                        });
                       }}
                       className={`p-1 hover:bg-white/10 rounded transition-colors ${layer.isVisible === false ? "text-slate-600" : "text-slate-400 hover:text-white"}`}
                       title={
@@ -310,14 +341,10 @@ export const SequenceTimeline: React.FC = () => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (activeSectionId) {
-                          const newState = !layer.isLocked;
-                          track.layers.forEach((l) => {
-                            updateElementInSection(activeSectionId, l.id, {
-                              isLocked: newState,
-                            });
-                          });
-                        }
+                        const newState = !layer.isLocked;
+                        track.layers.forEach((l) => {
+                          updateTimelineElement(l.id, { isLocked: newState });
+                        });
                       }}
                       className={`p-1 hover:bg-white/10 rounded transition-colors ${layer.isLocked ? "text-red-400 hover:text-red-300" : "text-slate-400 hover:text-white"}`}
                       title={layer.isLocked ? "Unlock Track" : "Lock Track"}
@@ -429,7 +456,7 @@ export const SequenceTimeline: React.FC = () => {
                               ) {
                                 // Split all selected elements exactly at playhead
                                 selectedIds.forEach((id) => {
-                                  const el = activeSection?.elements.find(
+                                  const el = layers.find(
                                     (el) => el.id === id,
                                   );
                                   if (!el || el.isLocked) return;
@@ -437,25 +464,33 @@ export const SequenceTimeline: React.FC = () => {
                                   const end =
                                     start + (el.sequence?.duration || 2000);
                                   if (playhead > start && playhead < end) {
-                                    useStore
-                                      .getState()
-                                      .splitElement(
-                                        activeSectionId,
-                                        el.id,
-                                        playhead,
-                                      );
+                                    const elInfo = el as any;
+                                    if (!elInfo._orbit) {
+                                      useStore
+                                        .getState()
+                                        .splitElement(
+                                          activeSectionId,
+                                          el.id,
+                                          playhead,
+                                        );
+                                    }
                                   }
                                 });
                               } else {
                                 // Ask Store to split this single element exactly at playhead
                                 if (!layer.isLocked) {
-                                  useStore
-                                    .getState()
-                                    .splitElement(
-                                      activeSectionId,
-                                      layer.id,
-                                      playhead,
-                                    );
+                                  const elInfo = layer as any;
+                                  if (elInfo._orbit) {
+                                    console.warn("Splitting orbit layers is not supported");
+                                  } else {
+                                    useStore
+                                      .getState()
+                                      .splitElement(
+                                        activeSectionId,
+                                        layer.id,
+                                        playhead,
+                                      );
+                                  }
                                 }
                               }
                               setActiveTimelineTool("pointer");
@@ -517,17 +552,9 @@ export const SequenceTimeline: React.FC = () => {
                                 setSnapLine(closestSnap);
                               }
 
-                              if (activeSectionId)
-                                updateElementInSection(
-                                  activeSectionId,
-                                  layer.id,
-                                  {
-                                    sequence: {
-                                      ...sequence,
-                                      startTime: newStart,
-                                    },
-                                  },
-                                );
+                              updateTimelineElement(layer.id, {
+                                sequence: { ...sequence, startTime: newStart }
+                              });
                             };
 
                             const onMouseUp = () => {
@@ -585,18 +612,9 @@ export const SequenceTimeline: React.FC = () => {
                                 }
 
                                 const newDuration = origEnd - newStart;
-                                if (activeSectionId)
-                                  updateElementInSection(
-                                    activeSectionId,
-                                    layer.id,
-                                    {
-                                      sequence: {
-                                        ...sequence,
-                                        startTime: newStart,
-                                        duration: newDuration,
-                                      },
-                                    },
-                                  );
+                                updateTimelineElement(layer.id, {
+                                  sequence: { ...sequence, startTime: newStart, duration: newDuration }
+                                });
                               };
 
                               const onMouseUp = () => {
@@ -659,17 +677,9 @@ export const SequenceTimeline: React.FC = () => {
                                   setSnapLine(closestSnap);
                                 }
 
-                                if (activeSectionId)
-                                  updateElementInSection(
-                                    activeSectionId,
-                                    layer.id,
-                                    {
-                                      sequence: {
-                                        ...sequence,
-                                        duration: newDuration,
-                                      },
-                                    },
-                                  );
+                                updateTimelineElement(layer.id, {
+                                  sequence: { ...sequence, duration: newDuration }
+                                });
                               };
 
                               const onMouseUp = () => {
