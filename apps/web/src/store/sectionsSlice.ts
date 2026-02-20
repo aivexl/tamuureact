@@ -156,6 +156,10 @@ export interface SectionsState {
     removeElementFromSection: (sectionId: string, elementId: string) => void;
     updateElementInSection: (sectionId: string, elementId: string, updates: Partial<Layer>) => void;
     duplicateElementInSection: (sectionId: string, elementId: string) => void;
+
+    // NLE TIMELINE ACTIONS
+    splitElement: (sectionId: string, elementId: string, splitTimeMs: number) => void;
+
     bringElementToFront: (sectionId: string, elementId: string) => void;
     sendElementToBack: (sectionId: string, elementId: string) => void;
     moveElementUp: (sectionId: string, elementId: string) => void;
@@ -709,6 +713,59 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
         return {
             sections: state.sections.map(s =>
                 s.id === sectionId ? { ...s, elements: [...s.elements, newElement] } : s
+            )
+        };
+    }),
+
+    splitElement: (sectionId, elementId, splitTimeMs) => set((state) => {
+        const section = state.sections.find(s => s.id === sectionId);
+        if (!section) return state;
+
+        const originalElementIdx = section.elements.findIndex(el => el.id === elementId);
+        if (originalElementIdx === -1) return state;
+
+        const originalElement = section.elements[originalElementIdx];
+        const seq = originalElement.sequence || { startTime: 0, duration: 2000 };
+
+        // Ensure split time is within the bounds of this element's sequence
+        const elStart = seq.startTime || 0;
+        const elDuration = seq.duration || 2000;
+        const elEnd = elStart + elDuration;
+
+        if (splitTimeMs <= elStart || splitTimeMs >= elEnd) return state; // Invalid split point
+
+        // 1. Modify Original Element (A) => ends at splitTimeMs
+        const newDurationA = splitTimeMs - elStart;
+
+        // 2. Create Duplicate Element (B) => starts at splitTimeMs
+        const newDurationB = elEnd - splitTimeMs;
+        const secondElement = sanitizeLayer({
+            ...originalElement,
+            id: generateId('layer'),
+            name: `${originalElement.name} (Part 2)`,
+            sequence: {
+                ...seq,
+                startTime: splitTimeMs,
+                duration: newDurationB
+            }
+        });
+
+        // 3. Assemble New Elements Array
+        const newElements = [...section.elements];
+        // Modify A in place
+        newElements[originalElementIdx] = {
+            ...originalElement,
+            sequence: {
+                ...seq,
+                duration: newDurationA
+            }
+        };
+        // Insert B right after A
+        newElements.splice(originalElementIdx + 1, 0, secondElement);
+
+        return {
+            sections: state.sections.map(s =>
+                s.id === sectionId ? { ...s, elements: newElements } : s
             )
         };
     }),

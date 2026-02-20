@@ -15,8 +15,21 @@ export interface UIState {
     pathEditingId: string | null;
     isAnimationPlaying: boolean;
     hasHydrated: boolean;
+
+    // NLE TIMELINE STATES
+    timelineZoom: number;
+    isSnappingEnabled: boolean;
+    activeTimelineTool: 'pointer' | 'razor';
+    snapLine: number | null; // For the neon vertical guide
+
     imageCropModal: ImageCropModalState;
     pickingAnchorForId: string | null;
+
+    setTimelineZoom: (zoom: number) => void;
+    setSnappingEnabled: (enabled: boolean) => void;
+    setActiveTimelineTool: (tool: 'pointer' | 'razor') => void;
+    setSnapLine: (posLine: number | null) => void;
+
     setPickingAnchorForId: (id: string | null) => void;
     setActiveTab: (tab: 'layers' | 'settings') => void;
     setSidebarOpen: (isOpen: boolean) => void;
@@ -35,6 +48,13 @@ export const createUISlice: StateCreator<UIState> = (set) => ({
     pathEditingId: null,
     isAnimationPlaying: false,
     hasHydrated: false,
+
+    // Default Timeline states
+    timelineZoom: 0.1,
+    isSnappingEnabled: true,
+    activeTimelineTool: 'pointer',
+    snapLine: null,
+
     imageCropModal: {
         isOpen: false,
         imageSrc: null,
@@ -43,6 +63,12 @@ export const createUISlice: StateCreator<UIState> = (set) => ({
         aspectRatio: 1
     },
     pickingAnchorForId: null,
+
+    setTimelineZoom: (timelineZoom) => set({ timelineZoom }),
+    setSnappingEnabled: (isSnappingEnabled) => set({ isSnappingEnabled }),
+    setActiveTimelineTool: (activeTimelineTool) => set({ activeTimelineTool }),
+    setSnapLine: (snapLine) => set({ snapLine }),
+
     setPickingAnchorForId: (id) => set({ pickingAnchorForId: id }),
     setActiveTab: (activeTab) => set({ activeTab }),
     setSidebarOpen: (isSidebarOpen) => set({ isSidebarOpen }),

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useMemo, useCallback } from 'react';
-import { m, useInView, useAnimationFrame, useMotionValue } from 'framer-motion';
+import { m, useInView } from 'framer-motion';
 import { Layer } from '@/store/layersSlice';
 import { ElementRenderer } from '../Canvas/ElementRenderer';
 import { useStore } from '@/store/useStore';
@@ -77,8 +77,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     const entranceDelay = Math.min(((typeof animation?.entrance === 'object' ? animation.entrance.delay : animation?.delay) || 0) / 1000, 10);
     const entranceDuration = Math.min(((typeof animation?.entrance === 'object' ? animation.entrance.duration : animation?.duration) || 800) / 1000, 10);
 
-    const resLoopType = (typeof animation?.loop === 'object' ? animation.loop.type : (animation as any)?.looping) || (layer as any).animationLoop || (animation as any)?.loopingType;
-    const loopingType = typeof resLoopType === 'string' ? resLoopType.toLowerCase() : 'none';
+    const loopingType = (typeof animation?.loop === 'object' ? animation.loop.type : (animation as any)?.looping) || (layer as any).animationLoop || (animation as any)?.loopingType;
     const loopTrigger = (typeof animation?.loop === 'object' ? animation.loop.trigger : 'load') || 'load';
     const loopDelay = Math.min(((typeof animation?.loop === 'object' ? animation.loop.delay : 0) || 0) / 1000, 10);
     const loopDuration = Math.min(((typeof animation?.loop === 'object' ? animation.loop.duration : ((animation as any)?.duration || 1000)) || 1000) / 1000, 10);
@@ -117,12 +116,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
 
     const playheadTriggered = isEditor && playhead >= (layer.sequence?.startTime || 0);
     const isTriggered = interactionTriggered || playheadTriggered;
-    // CTO FIX: Elements WITHOUT entrance animations must ALWAYS be visible.
-    // The resetNonce useEffect resets interactionTriggered to false on mount,
-    // and no re-trigger effect fires for non-entrance elements, leaving them
-    // permanently stuck at opacity:0 (the "hidden" variant). This fixes motion path,
-    // elegant spin, and all loop-only elements from disappearing in Preview.
-    const animationState = (!hasEntranceAnimation || isTriggered) ? "visible" : "hidden";
+    const animationState = isTriggered ? "visible" : "hidden";
 
     // CTO MASTER MOTION ENGINE (Unified Keyframes, Loops & Entrance)
     const motionStyles = useMemo(() => {
@@ -146,9 +140,10 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         const eDurMs = (entranceDuration || 800) * 1000;
         const eTime = playhead - startTime - eDelayMs;
         const eProgress = Math.max(0, Math.min(eTime / eDurMs, 1));
-        // CTO FIX: Math entrance is ONLY used in Editor mode for scrubbing/timeline playback.
-        // In Preview/Production modes, the Framer Motion native variants take over.
-        const isEntranceActive = isEditor && hasEntranceAnimation && (isPlaying || forceTrigger);
+        // CTO FIX: In Editor, ONLY show entrance offsets if actually playing/scrubbing (approximated by isPlaying).
+        // If we are just layouting (static), show the Resting Pose (offsets = 0) to ensure alignment with resize handles.
+        // We allow 'forceTrigger' for preview interactions.
+        const isEntranceActive = hasEntranceAnimation && (isPlaying || isAnimationPlaying || (isEditor && isPlaying) || forceTrigger);
 
         if (isEntranceActive) {
             // Initial offsets (Inverse of the target)
@@ -191,71 +186,20 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         const isDecorative = !isEditor && (loopingType === 'float' || loopingType === 'sway' || loopingType === 'pulse' || loopingType === 'spin');
         const isEditorLooping = isEditor;
 
-        if (isTriggered || isDecorative || isEditorLooping || isElegantSpinEnabled) {
+        if (isTriggered || isDecorative || isEditorLooping) {
             const t = (isEditor ? playhead : performance.now()) / 1000;
             const d = loopDuration || 1;
             const progress = (t % d) / d;
             const phase = Math.sin(progress * Math.PI * 2);
             const mirrorPhase = Math.sin(progress * Math.PI);
 
-            // Elegant Spin Math (Premium Pulse & Spin)
-            if (isElegantSpinEnabled && elegantSpinConfig) {
-                const sDur = (elegantSpinConfig.spinDuration || 10000) / 1000;
-                const gDur = (elegantSpinConfig.growthDuration || 10000) / 1000;
-                const minS = elegantSpinConfig.minScale ?? 0.8;
-                const maxS = elegantSpinConfig.maxScale ?? 1.2;
-                const dir = (elegantSpinConfig.direction === 'ccw' ? -1 : 1);
-
-                // Rotational component
-                loops.rotate = (t / sDur) * 360 * dir;
-
-                // Scale component (Pulse)
-                // We use a pure sine wave: A * sin(wt + phi) + C
-                // This preserves the exact animation flow while starting at 1.0
-                const C = (maxS + minS) / 2;
-                const A = (maxS - minS) / 2;
-
-                if (A === 0) {
-                    loops.scale += (C - 1); // Constant offset if no range
-                } else {
-                    // Calculate phase shift so wave passes through 1.0 at t=0
-                    // sin(phi) = (1.0 - C) / A
-                    let ratio = (1.0 - C) / A;
-                    ratio = Math.max(-1, Math.min(1, ratio)); // Handle out-of-bounds 1.0
-                    const phi = Math.asin(ratio);
-
-                    const wt = (t / gDur) * Math.PI * 2;
-                    const pulseScale = A * Math.sin(wt + phi) + C;
-
-                    loops.scale += (pulseScale - 1);
-                }
-            }
-
             switch (loopingType) {
-                case 'float':
-                case 'floating': loops.y = phase * -15; break;
-                case 'pulse': loops.scale += (phase * 0.05); break;
-                case 'sway':
-                case 'swaying': loops.rotate += (phase * 5); break;
-                case 'spin': loops.rotate += (t / d) * 360 * (loopDirection === 'ccw' ? -1 : 1); break;
+                case 'float': loops.y = phase * -15; break;
+                case 'pulse': loops.scale = phase * 0.05; break;
+                case 'sway': loops.rotate = phase * 5; break;
+                case 'spin': loops.rotate = (t / d) * 360 * (loopDirection === 'ccw' ? -1 : 1); break;
                 case 'glow': loops.filter = `drop-shadow(0 0 ${Math.abs(phase) * 10}px rgba(255,255,255,0.8))`; break;
-                case 'heartbeat': loops.scale += (Math.max(0, mirrorPhase) * 0.15); break;
-                case 'flap-bob':
-                case 'floating-bob':
-                    loops.y = phase * -10;
-                    loops.scale += (phase * 1); // Fixed weight for dolls
-                    break;
-                case 'float-flap':
-                    loops.y = phase * -20;
-                    loops.rotate += (phase * 3);
-                    break;
-                case 'twirl':
-                    loops.rotate += (phase * 15);
-                    loops.scale += (phase * 0.05);
-                    break;
-                case 'elegant-spin':
-                    // Handled above by explicit elegantSpinConfig check
-                    break;
+                case 'heartbeat': loops.scale = mirrorPhase * 0.2; break;
             }
         }
 
@@ -273,37 +217,23 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         const motionScale = (kf.scale / baseScale) + loops.scale + entrance.scale;
 
         // Visibility Logic:
-        // 1. In Editor, elements should ALWAYS be visible for selection/layout (Ghosts or Full)
+        // 1. In Editor, if NOT playing, everything should be visible for layouting (Resting Pose)
         // 2. In Preview or when playing in Editor, respect the sequence lifecycle.
         let finalOpacity = kf.opacity;
 
-        if (isEditor) {
-            if (!isPlaying) {
-                // When stopped, force visibility to at least 0.4 so they don't vanish
-                finalOpacity = Math.max(0.4, kf.opacity);
-            } else {
-                // When playing/scrubbing
-                if (playhead < startTime) {
-                    finalOpacity = 0.2; // Future elements are ghosts
-                } else if (hasEntranceAnimation && isEntranceActive) {
-                    // Apply math entrance only when scrubbing/playing in editor
-                    finalOpacity = Math.max(0.2, entrance.opacity * kf.opacity);
-                } else {
-                    finalOpacity = kf.opacity;
-                }
-            }
-        } else {
-            // PRODUCTION / PREVIEW MODE
-            // CTO FIX: Math entrance (playhead-based) is intentionally ignored here.
-            // Opacity starts at baseline (kf.opacity). The parent <m.div> handles
-            // the 0 -> 1 animating sequence natively via Framer Motion variants.
-            // This allows native scroll/click listener triggers to fire perfectly.
-
-            // Only hide fully if the timeline sequence hasn't even reached this element yet,
-            // EXCEPT if it's triggered by load/scroll (which happens independently of timeline in production).
-            // Actually, in typical Preview, playhead is ALWAYS 0. We NEVER hide elements based on playhead here,
-            // we let Framer Motion `variants` set `opacity: 0` during the `hidden` state!
+        if (isEditor && !isPlaying) {
             finalOpacity = kf.opacity;
+        } else {
+            if (hasEntranceAnimation && isEntranceActive) {
+                finalOpacity = entrance.opacity * kf.opacity;
+            } else if (hasEntranceAnimation && playhead < startTime + eDelayMs) {
+                finalOpacity = 0;
+            }
+
+            // Ghost visibility for future elements during playback/scrubbing
+            if (isEditor && playhead < startTime) {
+                finalOpacity = 0.2;
+            }
         }
 
         return {
@@ -314,116 +244,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             opacity: finalOpacity,
             filter: loops.filter,
         };
-    }, [playhead, layer.keyframes, layer.sequence, layer.x, layer.y, layer.scale, layer.rotation, layer.opacity, layer.motionPathConfig, layer.flipHorizontal, layer.flipVertical, baseScale, baseRotate, baseOpacity, isEditor, loopingType, loopDuration, loopDirection, isTriggered, entranceType, entranceDelay, entranceDuration, hasEntranceAnimation, isPlaying, isAnimationPlaying, forceTrigger, isElegantSpinEnabled, elegantSpinConfig]);
-
-    // ============================================
-    // CTO ENTERPRISE 60FPS PREVIEW ENGINE 
-    // ============================================
-    // React useMemo only runs on re-renders. In Editor, Redux state (playhead) updates 60fps.
-    // In Preview, there is NO playhead state update, so React never re-renders, and performance.now()
-    // inside useMemo never ticks!
-    // Solution: Framer Motion's useAnimationFrame + useMotionValue completely bypasses React render.
-
-    const mvX = useMotionValue(0);
-    const mvY = useMotionValue(0);
-    const mvRotate = useMotionValue(0);
-    const mvScale = useMotionValue(1);
-    const mvFilter = useMotionValue('none');
-
-    useAnimationFrame((time) => {
-        if (isEditor) return; // Editor relies on Redux playhead and motionStyles
-
-        const t = time / 1000;
-        let finalX = 0;
-        let finalY = 0;
-        let finalRotate = 0;
-        let finalScale = 0; // Relative to base scale
-        let finalFilter = 'none';
-
-        // 1. Motion Path Engine (60fps continuous)
-        const mpConfig = layer.motionPathConfig;
-        if (mpConfig?.enabled && mpConfig.points && mpConfig.points.length > 0) {
-            const mpDuration = mpConfig.duration || 3000;
-            // Native Framer Motion time loop
-            const pos = getPathPosition(time % mpDuration, {
-                points: mpConfig.points,
-                duration: mpDuration,
-                loop: mpConfig.loop ?? true
-            }, layer.x, layer.y);
-
-            // Convert absolute canvas coords to local relative offset
-            // The getPathPosition returns the offset from layer.x, layer.y
-            finalX += pos.x;
-            finalY += pos.y;
-            finalRotate += pos.rotation;
-            // Native Framer uses additive transforms
-        }
-
-        // 2. Loop & Elegant Spin Engine
-        const isDecorative = loopingType === 'float' || loopingType === 'sway' || loopingType === 'pulse' || loopingType === 'spin';
-
-        if (isTriggered || isDecorative || isElegantSpinEnabled) {
-            const d = loopDuration || 1;
-            const progress = (t % d) / d;
-            const phase = Math.sin(progress * Math.PI * 2);
-            const mirrorPhase = Math.sin(progress * Math.PI);
-
-            if (isElegantSpinEnabled && elegantSpinConfig) {
-                const sDur = (elegantSpinConfig.spinDuration || 10000) / 1000;
-                const gDur = (elegantSpinConfig.growthDuration || 10000) / 1000;
-                const minS = elegantSpinConfig.minScale ?? 0.8;
-                const maxS = elegantSpinConfig.maxScale ?? 1.2;
-                const dir = (elegantSpinConfig.direction === 'ccw' ? -1 : 1);
-
-                finalRotate += (t / sDur) * 360 * dir;
-
-                const C = (maxS + minS) / 2;
-                const A = (maxS - minS) / 2;
-
-                if (A === 0) {
-                    finalScale += (C - 1);
-                } else {
-                    let ratio = (1.0 - C) / A;
-                    ratio = Math.max(-1, Math.min(1, ratio));
-                    const phi = Math.asin(ratio);
-                    const wt = (t / gDur) * Math.PI * 2;
-                    const pulseScale = A * Math.sin(wt + phi) + C;
-                    finalScale += (pulseScale - 1);
-                }
-            }
-
-            switch (loopingType) {
-                case 'float':
-                case 'floating': finalY += phase * -15; break;
-                case 'pulse': finalScale += (phase * 0.05); break;
-                case 'sway':
-                case 'swaying': finalRotate += (phase * 5); break;
-                case 'spin': finalRotate += (t / d) * 360 * (loopDirection === 'ccw' ? -1 : 1); break;
-                case 'glow': finalFilter = `drop-shadow(0 0 ${Math.abs(phase) * 10}px rgba(255,255,255,0.8))`; break;
-                case 'heartbeat': finalScale += (Math.max(0, mirrorPhase) * 0.15); break;
-                case 'flap-bob':
-                case 'floating-bob':
-                    finalY += phase * -10;
-                    finalScale += (phase * 1);
-                    break;
-                case 'float-flap':
-                    finalY += phase * -20;
-                    finalRotate += (phase * 3);
-                    break;
-                case 'twirl':
-                    finalRotate += (phase * 15);
-                    finalScale += (phase * 0.05);
-                    break;
-            }
-        }
-
-        // Apply final composites considering flips
-        mvX.set(finalX * flipX);
-        mvY.set(finalY * flipY);
-        mvRotate.set(finalRotate);
-        mvScale.set(1 + finalScale); // Default scale base is 1 here, identity layer handles real baseScale
-        mvFilter.set(finalFilter);
-    });
+    }, [playhead, layer.keyframes, layer.sequence, layer.x, layer.y, layer.scale, layer.rotation, layer.opacity, layer.motionPathConfig, layer.flipHorizontal, layer.flipVertical, baseScale, baseRotate, baseOpacity, isEditor, loopingType, loopDuration, loopDirection, isTriggered, entranceType, entranceDelay, entranceDuration, hasEntranceAnimation, isPlaying, isAnimationPlaying, forceTrigger]);
 
     // LIQUID AUTO-LAYOUT (UNCHANGED)
     const target = useMemo((): Layer | null => {
@@ -587,183 +408,9 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         updateElementDimensions(layer.id, w, h);
     }, [layer.id, onDimensionsDetected, updateElementDimensions]);
 
-    // CTO FIX: Native Variants for Scroll/Click Entrances in Production Mode.
-    // Mathematical tracking in `motionStyles` breaks in Preview because playhead doesn't run automatically;
-    // it requires these Native Framer Motion variants to trigger transitions correctly.
-    const variants = useMemo(() => {
-        const hidden: any = { opacity: 0, x: 0, y: 0, scale: 1, rotate: 0 };
-        const visible: any = {
-            opacity: layer.opacity ?? 1, x: 0, y: 0, scale: 1, rotate: 0,
-            transition: {
-                duration: entranceDuration,
-                delay: entranceDelay,
-                ease: [0.22, 1, 0.36, 1]
-            }
-        };
-
-        if (!hasEntranceAnimation || isEditor) return { hidden: { ...visible, transition: { duration: 0 } }, visible };
-
-        switch (entranceType) {
-            case 'fade-in': break;
-            case 'slide-up': hidden.y = 30; break;
-            case 'slide-down': hidden.y = -30; break;
-            case 'slide-left': hidden.x = 30; break;
-            case 'slide-right': hidden.x = -30; break;
-            case 'zoom-in': hidden.scale = 0.8; break;
-            case 'zoom-out': hidden.scale = 1.2; break;
-            case 'bounce': hidden.y = -40; visible.transition = { type: "spring", bounce: 0.4, duration: entranceDuration, delay: entranceDelay }; break;
-            case 'pop-in': hidden.scale = 0.8; visible.transition = { type: "spring", stiffness: 260, damping: 20, delay: entranceDelay }; break;
-            case 'twirl-in': hidden.scale = 0; hidden.rotate = -180; visible.transition = { type: "spring", duration: entranceDuration, bounce: 0.2, delay: entranceDelay }; break;
-        }
-
-        return { hidden, visible };
-    }, [entranceType, hasEntranceAnimation, entranceDuration, entranceDelay, isEditor]);
-
-    // ============================================
-    // NATIVE LOOPING ENGINES (PREVIEW / PRODUCTION)
-    // ============================================
-    // CTO FIX: Math-based looping broke in Preview because playhead doesn't increment.
-    // We delegate continuous looping to native Framer Motion GPU optimizations.
-
-    const loopingConfig = useMemo(() => {
-        if (!loopingType || loopingType === 'none' || isEditor) return null;
-
-        const loopTransition = {
-            duration: loopDuration,
-            repeat: Infinity,
-            repeatType: "reverse" as const,
-            ease: "easeInOut",
-            delay: loopDelay
-        };
-
-        const startRotateForLoop = 0; // Handled by origin
-        const spinRotation = loopDirection === 'ccw' ? -360 : 360;
-
-        switch (loopingType) {
-            case 'float': return { animate: { y: [0, -15, 0] }, transition: loopTransition };
-            case 'pulse': return { animate: { scale: [1, 1.05, 1] }, transition: loopTransition };
-            case 'sway': return { animate: { rotate: [0, 5, 0, -5, 0] }, transition: { ...loopTransition, duration: 4 } };
-            case 'spin': return { animate: { rotate: [0, spinRotation] }, transition: { duration: loopDuration * 4, repeat: Infinity, ease: "linear", repeatType: "loop" } };
-            case 'glow': return { animate: { filter: ['drop-shadow(0 0 0px rgba(255,255,255,0))', 'drop-shadow(0 0 10px rgba(255,255,255,0.8))', 'drop-shadow(0 0 0px rgba(255,255,255,0))'] }, transition: loopTransition };
-            case 'heartbeat': return { animate: { scale: [1, 1.2, 1] }, transition: { duration: loopDuration * 0.8, repeat: Infinity, repeatType: "mirror" } };
-            case 'sparkle': return { animate: { opacity: [1, 0.5, 1] }, transition: { duration: loopDuration, repeat: Infinity, ease: "easeInOut" } };
-            case 'flap-bob': return { animate: { y: [0, -10, 0], scaleY: [1, 0.6, 1] }, transition: { duration: loopDuration * 0.3, repeat: Infinity, ease: "easeInOut" } };
-            case 'float-flap': return { animate: { y: [0, -20, 0], scaleY: [1, 0.5, 1], rotate: [0, 5, 0, -5, 0] }, transition: { duration: loopDuration, repeat: Infinity, ease: "easeInOut" } };
-            case 'fly-left': return { animate: { x: [0, -200] }, transition: { duration: loopDuration * 3, repeat: Infinity, ease: "linear" } };
-            case 'fly-right': return { animate: { x: [0, 200] }, transition: { duration: loopDuration * 3, repeat: Infinity, ease: "linear" } };
-            case 'fly-up': return { animate: { y: [0, -200], opacity: [1, 0] }, transition: { duration: loopDuration * 4, repeat: Infinity, ease: "easeIn" } };
-            case 'fly-down': return { animate: { y: [0, 200], opacity: [1, 0] }, transition: { duration: loopDuration * 4, repeat: Infinity, ease: "easeIn" } };
-            case 'fly-random': return { animate: { x: [0, 30, -20, 40, 0], y: [0, -40, 20, -10, 0] }, transition: { duration: loopDuration * 8, repeat: Infinity, ease: "easeInOut" } };
-            case 'twirl': return {
-                animate: {
-                    scale: [0, 1, 1, 0],
-                    rotate: [-360, 0, 0, 360],
-                    opacity: [0, 1, 1, 0]
-                },
-                transition: {
-                    duration: loopDuration * 2.5,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    times: [0, 0.4, 0.6, 1],
-                    delay: loopDelay
-                }
-            };
-            default: return null;
-        }
-    }, [loopingType, loopDuration, loopDelay, loopDirection, isEditor]);
-
-    const elegantSpinAnimation = useMemo(() => {
-        if (!isElegantSpinEnabled || !elegantSpinConfig || isEditor) return null;
-
-        const spinDuration = (elegantSpinConfig.spinDuration || elegantSpinConfig.duration || 1000) / 1000;
-        const scaleDuration = (elegantSpinConfig.scaleDuration || elegantSpinConfig.duration || 1000) / 1000;
-        const delay = (elegantSpinConfig.delay || 0) / 1000;
-        const direction = elegantSpinConfig.direction || 'cw';
-        const minS = elegantSpinConfig.minScale ?? 0.8;
-        const maxS = elegantSpinConfig.maxScale ?? 1.2;
-
-        const startRotate = 0;
-        const spinRotation = direction === 'ccw' ? -360 : 360;
-
-        return {
-            animate: {
-                rotate: [startRotate, spinRotation],
-                // CTO FIX: Elegant Spin scale should go from small (minS) to original (1.0),
-                // not from minS to maxS. The element "grows" into its natural size while spinning.
-                scale: [minS, 1]
-            },
-            transition: {
-                rotate: { duration: spinDuration, repeat: Infinity, ease: "linear" },
-                scale: { duration: scaleDuration, ease: "easeInOut", repeat: Infinity, repeatType: "mirror" },
-                delay: delay
-            }
-        };
-    }, [isElegantSpinEnabled, elegantSpinConfig, isEditor]);
-
-    const pathAnimation = useMemo(() => {
-        const config = layer.motionPathConfig;
-        if (!config?.enabled || !config.points || config.points.length < 2 || isEditor) return null;
-
-        const points = config.points;
-        const xKeyframes: number[] = [];
-        const yKeyframes: number[] = [];
-        const rotateKeyframes: number[] = [];
-        const scaleKeyframes: number[] = [];
-
-        const halfWidth = (layer.width || 0) / 2;
-        const halfHeight = (layer.height || 0) / 2;
-
-        points.forEach((p: any) => {
-            // CTO FIX: Motion Path Coordinates in Preview Mode
-            // The canvas points (p.x, p.y) are absolute canvas coordinates for the center of the element.
-            // But this Framer Motion wrapper (<m.div> Layer 0) is already absolutely positioned at:
-            // left: layer.x, top: finalY
-            // Therefore, x: 0, y: 0 means the element's TOP-LEFT corner is at (layer.x, finalY).
-            // To move the element so its center is at (p.x, p.y) relative to its start center:
-            // The Framer Motion transform origin is center, so we only need to provide the translation
-            // from its starting offset.
-
-            xKeyframes.push(p.x - layer.x - halfWidth);
-            // We use adjustedY because the parent anchor is set relative to finalY (which includes relativeShift).
-            // The point coordinates p.y are recorded against the absolute canvas (equivalent to adjustedY).
-            yKeyframes.push(p.y - adjustedY - halfHeight);
-            rotateKeyframes.push(p.rotation ?? 0);
-            scaleKeyframes.push(p.scale ?? 1);
-        });
-
-        return {
-            animate: {
-                x: xKeyframes,
-                y: yKeyframes,
-                rotate: rotateKeyframes,
-                scale: scaleKeyframes
-            },
-            transition: {
-                duration: (config.duration || 3000) / 1000,
-                repeat: config.loop ? Infinity : 0,
-                repeatType: "loop",
-                ease: "linear",
-                times: xKeyframes.map((_, i) => i / (xKeyframes.length - 1))
-            }
-        };
-    }, [layer.motionPathConfig, layer.x, adjustedY, layer.width, layer.height, isEditor]);
-
-    const loopingProps = useMemo(() => {
-        if (isEditor) return {};
-        // In Preview Mode, loops, elegant spins, and motion paths should always run regardless of entrance state,
-        // unless they are explicitly tied to a click/scroll trigger in their own configs.
-        if (elegantSpinAnimation) return elegantSpinAnimation;
-        if (pathAnimation) return pathAnimation;
-        if (loopingConfig) return loopingConfig;
-        return {};
-    }, [elegantSpinAnimation, pathAnimation, loopingConfig, isEditor]);
-
     return (
         <m.div
             ref={ref}
-            initial={isEditor ? "visible" : "hidden"}
-            animate={isEditor ? "visible" : animationState}
-            variants={variants}
             className="absolute origin-center"
             style={{
                 // LAYER 1: ABSOLUTE ANCHOR
@@ -781,26 +428,20 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
             {/* THIS LAYER IS NEVER FLIPPED. Movement is viewport-consistent. */}
             <m.div
                 className="w-full h-full relative origin-center"
-                style={isEditor ? {
-                    // CTO FIX: Math entrance/scrub styles ONLY apply in Editor mode.
-                    x: (motionStyles.x - layer.x) * flipX,
-                    y: (motionStyles.y - (layer.y + relativeShift)) * flipY,
+                style={{
+                    // CTO FIX: Factor in Parent Flip (Level 0) for translation offsets in Editor mode.
+                    // If the parent is flipped vertically (scaleY: -1), local +Y becomes global -Y (Up).
+                    // So we must invert our local offset to maintain screen-space direction.
+                    x: (motionStyles.x - layer.x) * (isEditor ? flipX : 1),
+                    y: (motionStyles.y - (isEditor ? (layer.y + relativeShift) : layer.y)) * (isEditor ? flipY : 1),
                     rotate: motionStyles.rotate,
                     scale: motionStyles.scale,
                     opacity: motionStyles.opacity,
                     filter: motionStyles.filter,
-                } : {
-                    // CTO ENTERPRISE PREVIEW ENGINE: Bound to 60fps MotionValues
-                    x: mvX,
-                    y: mvY,
-                    rotate: mvRotate,
-                    scale: mvScale,
-                    filter: mvFilter,
-                    // Note: opacity is handled by variants in Layer 1
                 }}
             >
                 {/* LAYER 3: IDENTITY STAGE (Flips & Base Styles) */}
-                {/* Editor: Parent Handles Base Transforms. Preview: We apply them here. */}
+                {/* Editor: Parent Handles Base Transfroms. Preview: We apply them here. */}
                 <div
                     className="w-full h-full relative origin-center"
                     style={{
@@ -837,5 +478,6 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         </m.div>
     );
 };
+
 
 export const AnimatedLayer = React.memo(AnimatedLayerComponent);

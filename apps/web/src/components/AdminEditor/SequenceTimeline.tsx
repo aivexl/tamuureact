@@ -1,15 +1,6 @@
 import React, { useRef } from 'react';
 import { m } from 'framer-motion';
-import {
-    Play,
-    Pause,
-    RotateCcw,
-    Layers,
-    ChevronRight,
-    Search,
-    Plus,
-    Square
-} from 'lucide-react';
+import { Play, Pause, Square, Search, Plus, Layers, ChevronRight, RotateCcw, Scissors, MousePointer2, Magnet } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 
 /**
@@ -33,15 +24,44 @@ export const SequenceTimeline: React.FC = () => {
         resetClock,
         sections,
         activeSectionId,
-        updateLayer
+        updateElementInSection,
+        timelineZoom,
+        isSnappingEnabled,
+        activeTimelineTool,
+        snapLine,
+        setTimelineZoom,
+        setSnappingEnabled,
+        setActiveTimelineTool,
+        setSnapLine
     } = useStore();
 
     const timelineRef = useRef<HTMLDivElement>(null);
+    const leftSidebarRef = useRef<HTMLDivElement>(null);
     const activeSection = sections.find(s => s.id === activeSectionId);
     const layers = activeSection?.elements || [];
 
-    // Pixels per millisecond (Zoom factor)
-    const pxPerMs = 0.1;
+    // Derived Anchor Points for Snapping
+    const snapPoints = React.useMemo(() => {
+        const points = new Set<number>();
+        points.add(playhead);
+
+        // Snap to whole seconds (up to duration)
+        for (let i = 0; i <= duration; i += 1000) {
+            points.add(i);
+        }
+
+        layers.forEach(l => {
+            const start = l.sequence?.startTime || 0;
+            const end = start + (l.sequence?.duration || 2000);
+            points.add(start);
+            points.add(end);
+        });
+
+        return Array.from(points).sort((a, b) => a - b);
+    }, [layers, duration, playhead]);
+
+    // Base pxPerMs is 0.1, multiplied by user's timelineZoom setting
+    const pxPerMs = 0.1 * timelineZoom;
     const timelineWidth = duration * pxPerMs;
 
     const formatTime = (ms: number) => {
@@ -102,45 +122,99 @@ export const SequenceTimeline: React.FC = () => {
                     </div>
                 </div>
 
+                {/* NEW ENTERPRISE TOOLS: Toolbar Right */}
                 <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
-                        <Layers className="w-3.5 h-3.5" />
-                        {layers.length} Layers
+                    {/* Tool Selection (Pointer vs Razor) */}
+                    <div className="flex items-center gap-1 bg-white/5 border border-white/5 p-1 rounded-lg">
+                        <button
+                            onClick={() => setActiveTimelineTool('pointer')}
+                            title="Selection Tool (V)"
+                            className={`p-2 rounded-md transition-colors ${activeTimelineTool === 'pointer' ? 'bg-[#0D99FF] text-white' : 'text-slate-400 hover:text-white hover:bg-white/10'}`}
+                        >
+                            <MousePointer2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                            onClick={() => setActiveTimelineTool('razor')}
+                            title="Split Tool (C)"
+                            className={`p-2 rounded-md transition-colors ${activeTimelineTool === 'razor' ? 'bg-[#0D99FF] text-white' : 'text-slate-400 hover:text-white hover:bg-white/10'}`}
+                        >
+                            <Scissors className="w-3.5 h-3.5" />
+                        </button>
                     </div>
-                    <div className="h-4 w-px bg-white/5 mx-2" />
-                    <button className="p-2 hover:bg-white/5 text-slate-300 rounded-lg transition-all border border-white/5">
-                        <Plus className="w-4 h-4" />
+
+                    <div className="h-4 w-px bg-white/5 mx-1" />
+
+                    {/* Snap Toggle */}
+                    <button
+                        onClick={() => setSnappingEnabled(!isSnappingEnabled)}
+                        title="Magnetic Snapping (S)"
+                        className={`p-2 rounded-md transition-colors border ${isSnappingEnabled ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30' : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10'}`}
+                    >
+                        <Magnet className="w-3.5 h-3.5" />
                     </button>
-                    <button className="p-2 hover:bg-white/5 text-slate-300 rounded-lg transition-all border border-white/5">
-                        <Search className="w-4 h-4" />
-                    </button>
+
+                    <div className="h-4 w-px bg-white/5 mx-1" />
+
+                    {/* Zoom Slider */}
+                    <div className="flex items-center gap-2 group" title="Timeline Zoom">
+                        <Search className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-300" />
+                        <input
+                            type="range"
+                            min="0.1"
+                            max="5"
+                            step="0.1"
+                            value={timelineZoom}
+                            onChange={(e) => setTimelineZoom(parseFloat(e.target.value))}
+                            className="w-24 accent-[#0D99FF] cursor-ew-resize h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#0D99FF]"
+                        />
+                    </div>
                 </div>
             </div>
 
             {/* 2. TIMELINE BODY */}
             <div className="flex-1 flex overflow-hidden">
                 {/* LEFT: LAYER NAMES */}
-                <div className="w-64 border-r border-white/5 bg-[#020617] overflow-y-auto no-scrollbar">
-                    {layers.map((layer) => (
-                        <div
-                            key={`track-label-${layer.id}`}
-                            className="h-10 border-b border-white/5 flex items-center px-4 gap-3 hover:bg-white/5 transition-colors cursor-pointer group"
-                        >
-                            <ChevronRight className="w-3 h-3 text-slate-600 group-hover:text-indigo-400 transition-colors" />
-                            <span className="text-[11px] font-bold text-slate-400 truncate tracking-tight uppercase group-hover:text-white transition-colors">
-                                {layer.name || layer.type}
-                            </span>
-                        </div>
-                    ))}
-                    {layers.length === 0 && (
-                        <div className="h-full flex items-center justify-center p-8 text-center">
-                            <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">No active layers</p>
-                        </div>
-                    )}
+                <div className="w-64 flex-shrink-0 border-r border-white/5 bg-[#020617] flex flex-col">
+                    {/* Header Spacer to align with Time Ruler */}
+                    <div className="h-8 border-b border-white/5 bg-[#0f172a]/30 flex-shrink-0" />
+
+                    <div ref={leftSidebarRef} className="flex-1 overflow-y-hidden no-scrollbar">
+                        {layers.map((layer) => (
+                            <div
+                                key={`track-label-${layer.id}`}
+                                className="h-10 border-b border-white/5 flex items-center px-4 gap-3 hover:bg-white/5 transition-colors cursor-pointer group"
+                            >
+                                <ChevronRight className="w-3 h-3 text-slate-600 group-hover:text-indigo-400 transition-colors" />
+                                <span className="text-[11px] font-bold text-slate-400 truncate tracking-tight uppercase group-hover:text-white transition-colors">
+                                    {layer.name || layer.type}
+                                </span>
+                            </div>
+                        ))}
+                        {layers.length === 0 && (
+                            <div className="h-full flex items-center justify-center p-8 text-center">
+                                <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">No active layers</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* RIGHT: TRACK AREA + RULER */}
-                <div className="flex-1 relative overflow-auto no-scrollbar bg-[#050b18]">
+                <div
+                    className="flex-1 relative overflow-auto no-scrollbar bg-[#050b18]"
+                    onScroll={(e) => {
+                        if (leftSidebarRef.current) {
+                            leftSidebarRef.current.scrollTop = e.currentTarget.scrollTop;
+                        }
+                    }}
+                >
+                    {/* VIRTUAL SNAP GUIDE (NEON LINE) */}
+                    {snapLine !== null && (
+                        <div
+                            className="absolute top-0 bottom-0 w-px bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.8)] z-50 pointer-events-none"
+                            style={{ left: snapLine * pxPerMs }}
+                        />
+                    )}
+
                     {/* TIME RULER */}
                     <div
                         ref={timelineRef}
@@ -174,27 +248,67 @@ export const SequenceTimeline: React.FC = () => {
                                 >
                                     {/* SEQUENCE BLOCK */}
                                     <m.div
-                                        className="absolute top-1 bottom-1 bg-[#0D99FF]/10 border border-[#0D99FF]/20 rounded-md backdrop-blur-sm cursor-grab active:cursor-grabbing hover:bg-[#0D99FF]/20 transition-colors flex items-center px-1 overflow-visible group/seq"
+                                        className={`absolute top-1 bottom-1 bg-[#0D99FF]/10 border border-[#0D99FF]/20 rounded-md backdrop-blur-sm transition-colors flex items-center px-1 overflow-visible group/seq ${activeTimelineTool === 'razor' ? 'cursor-cell hover:bg-[#0D99FF]/30' : 'cursor-grab active:cursor-grabbing hover:bg-[#0D99FF]/20'}`}
                                         style={{
                                             left: (sequence.startTime || 0) * pxPerMs,
                                             width: (sequence.duration || 2000) * pxPerMs
                                         }}
+                                        onClick={(e) => {
+                                            if (activeTimelineTool === 'razor' && activeSectionId) {
+                                                e.stopPropagation();
+                                                // Ask Store to split this element exactly at playhead
+                                                useStore.getState().splitElement(activeSectionId, layer.id, playhead);
+                                                // Instantly revert to pointer tool like Pro NLEs often do (optional workflow choice, but good for safety)
+                                                setActiveTimelineTool('pointer');
+                                            }
+                                        }}
                                         onMouseDown={(e) => {
+                                            if (activeTimelineTool === 'razor') return; // Don't drag if razor is active
+
+                                            e.stopPropagation();
                                             const startX = e.clientX;
                                             const origStart = sequence.startTime || 0;
                                             const origDuration = sequence.duration || 2000;
 
                                             const onMouseMove = (moveEvent: MouseEvent) => {
                                                 const deltaMs = (moveEvent.clientX - startX) / pxPerMs;
-                                                updateLayer(layer.id, {
+                                                let newStart = Math.max(0, origStart + deltaMs);
+
+                                                // MAGNET SNAPPING LOGIC
+                                                if (isSnappingEnabled) {
+                                                    const snapRadiusMs = 100 / timelineZoom; // Adjust radius based on zoom
+                                                    let closestSnap: number | null = null;
+                                                    let minDiff = Infinity;
+                                                    const currentEnd = newStart + origDuration;
+
+                                                    for (const pt of snapPoints) {
+                                                        const diffStart = Math.abs(pt - newStart);
+                                                        const diffEnd = Math.abs(pt - currentEnd);
+
+                                                        if (diffStart < snapRadiusMs && diffStart < minDiff) {
+                                                            minDiff = diffStart;
+                                                            closestSnap = pt;
+                                                            newStart = pt;
+                                                        } else if (diffEnd < snapRadiusMs && diffEnd < minDiff) {
+                                                            minDiff = diffEnd;
+                                                            closestSnap = pt;
+                                                            newStart = pt - origDuration;
+                                                        }
+                                                    }
+
+                                                    setSnapLine(closestSnap);
+                                                }
+
+                                                if (activeSectionId) updateElementInSection(activeSectionId, layer.id, {
                                                     sequence: {
                                                         ...sequence,
-                                                        startTime: Math.max(0, origStart + deltaMs)
+                                                        startTime: newStart
                                                     }
                                                 });
                                             };
 
                                             const onMouseUp = () => {
+                                                setSnapLine(null); // Clear snap guide
                                                 window.removeEventListener('mousemove', onMouseMove);
                                                 window.removeEventListener('mouseup', onMouseUp);
                                             };
@@ -205,25 +319,100 @@ export const SequenceTimeline: React.FC = () => {
                                     >
                                         <div className="w-1 h-full bg-[#0D99FF]/40 rounded-full mr-1 shrink-0" />
 
-                                        {/* RESIZE HANDLE (Right) */}
+                                        {/* RESIZE HANDLE (Left) */}
                                         <div
-                                            className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-[#0D99FF]/30 z-50 rounded-r-md"
+                                            className={`absolute left-0 top-0 bottom-0 w-2 hover:bg-[#0D99FF]/30 z-50 rounded-l-md ${activeTimelineTool === 'razor' ? 'cursor-cell' : 'cursor-ew-resize'}`}
                                             onMouseDown={(e) => {
+                                                if (activeTimelineTool === 'razor') return;
                                                 e.stopPropagation();
                                                 const startX = e.clientX;
+                                                const origStart = sequence.startTime || 0;
                                                 const origDuration = sequence.duration || 2000;
+                                                const origEnd = origStart + origDuration;
 
                                                 const onMouseMove = (moveEvent: MouseEvent) => {
                                                     const deltaMs = (moveEvent.clientX - startX) / pxPerMs;
-                                                    updateLayer(layer.id, {
+                                                    let newStart = Math.max(0, Math.min(origEnd - 100, origStart + deltaMs));
+
+                                                    // MAGNET SNAPPING LOGIC (Left Edge)
+                                                    if (isSnappingEnabled) {
+                                                        const snapRadiusMs = 100 / timelineZoom;
+                                                        let closestSnap: number | null = null;
+                                                        let minDiff = Infinity;
+                                                        for (const pt of snapPoints) {
+                                                            const diff = Math.abs(pt - newStart);
+                                                            if (diff < snapRadiusMs && diff < minDiff) {
+                                                                minDiff = diff;
+                                                                closestSnap = pt;
+                                                                newStart = Math.min(origEnd - 100, pt);
+                                                            }
+                                                        }
+                                                        setSnapLine(closestSnap);
+                                                    }
+
+                                                    const newDuration = origEnd - newStart;
+                                                    if (activeSectionId) updateElementInSection(activeSectionId, layer.id, {
                                                         sequence: {
                                                             ...sequence,
-                                                            duration: Math.max(100, origDuration + deltaMs)
+                                                            startTime: newStart,
+                                                            duration: newDuration
                                                         }
                                                     });
                                                 };
 
                                                 const onMouseUp = () => {
+                                                    setSnapLine(null);
+                                                    window.removeEventListener('mousemove', onMouseMove);
+                                                    window.removeEventListener('mouseup', onMouseUp);
+                                                };
+
+                                                window.addEventListener('mousemove', onMouseMove);
+                                                window.addEventListener('mouseup', onMouseUp);
+                                            }}
+                                        />
+
+                                        {/* RESIZE HANDLE (Right) */}
+                                        <div
+                                            className={`absolute right-0 top-0 bottom-0 w-2 hover:bg-[#0D99FF]/30 z-50 rounded-r-md ${activeTimelineTool === 'razor' ? 'cursor-cell' : 'cursor-ew-resize'}`}
+                                            onMouseDown={(e) => {
+                                                if (activeTimelineTool === 'razor') return;
+                                                e.stopPropagation();
+                                                const startX = e.clientX;
+                                                const origStart = sequence.startTime || 0;
+                                                const origDuration = sequence.duration || 2000;
+
+                                                const onMouseMove = (moveEvent: MouseEvent) => {
+                                                    const deltaMs = (moveEvent.clientX - startX) / pxPerMs;
+                                                    let newDuration = Math.max(100, origDuration + deltaMs);
+
+                                                    // MAGNET SNAPPING LOGIC (Right Edge)
+                                                    if (isSnappingEnabled) {
+                                                        const snapRadiusMs = 100 / timelineZoom;
+                                                        let closestSnap: number | null = null;
+                                                        let minDiff = Infinity;
+                                                        const currentEnd = origStart + newDuration;
+
+                                                        for (const pt of snapPoints) {
+                                                            const diff = Math.abs(pt - currentEnd);
+                                                            if (diff < snapRadiusMs && diff < minDiff) {
+                                                                minDiff = diff;
+                                                                closestSnap = pt;
+                                                                newDuration = Math.max(100, pt - origStart);
+                                                            }
+                                                        }
+                                                        setSnapLine(closestSnap);
+                                                    }
+
+                                                    if (activeSectionId) updateElementInSection(activeSectionId, layer.id, {
+                                                        sequence: {
+                                                            ...sequence,
+                                                            duration: newDuration
+                                                        }
+                                                    });
+                                                };
+
+                                                const onMouseUp = () => {
+                                                    setSnapLine(null);
                                                     window.removeEventListener('mousemove', onMouseMove);
                                                     window.removeEventListener('mouseup', onMouseUp);
                                                 };
