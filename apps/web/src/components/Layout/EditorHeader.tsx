@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useStore, useTemporalStore } from '@/store/useStore';
 import {
     ArrowLeft, Play, Save, Sparkles, Check,
-    Undo2, Redo2, Edit2, X, ExternalLink, Zap, Link, Wand2, Shield, Monitor
+    Undo2, Redo2, Edit2, X, ExternalLink, Link, Wand2, Shield,
+    PanelLeft, PanelBottom, PanelRight
 } from 'lucide-react';
 import { PremiumLoader } from '../ui/PremiumLoader';
 import { templates, invitations, userDisplayDesigns } from '@/lib/api';
@@ -45,11 +46,16 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
         slug,
         sanitizeAllLayers,
         sanitizeAllSectionElements,
-        isSimulationMode,
-        setIsSimulationMode,
         isTemplate,
         setProjectName,
-        id
+        id,
+        // Layout Toggles
+        isLeftPanelOpen,
+        setLeftPanelOpen,
+        isBottomPanelOpen,
+        setBottomPanelOpen,
+        isRightPanelOpen,
+        setRightPanelOpen
     } = useStore();
     const { undo, redo } = useTemporalStore();
 
@@ -425,37 +431,41 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
                     <ExternalLink className="w-3 h-3 opacity-30" />
                 </motion.button>
 
-                {/* Simulation Mode Toggle (Admin Only) */}
-                {isTemplate && (
+                {/* Layout Toggles (Replacing Simulation/Simulate) */}
+                <div className="flex items-center gap-1 bg-black/40 p-1 rounded-xl border border-white/5 h-[34px]">
                     <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => setIsSimulationMode(!isSimulationMode)}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all ${isSimulationMode
-                            ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-lg shadow-amber-500/10'
-                            : 'hover:bg-white/5 text-white/40 hover:text-white border border-transparent'
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setLeftPanelOpen(!isLeftPanelOpen)}
+                        className={`p-1.5 rounded-lg transition-colors flex items-center justify-center ${isLeftPanelOpen ? 'bg-[#0D99FF]/20 text-[#0D99FF] shadow-[inset_0_0_0_1px_#0D99FF]' : 'text-white/40 hover:text-white/80 hover:bg-white/5'
                             }`}
-                        title={isSimulationMode ? "Exit Simulation" : "Enter Simulation Mode (User View)"}
+                        title="Toggle Left Sidebar"
                     >
-                        <Monitor className={`w-4 h-4 ${isSimulationMode ? 'animate-pulse' : ''}`} />
-                        <span>{isSimulationMode ? 'Simulation ON' : 'Simulation'}</span>
+                        <PanelLeft className="w-3.5 h-3.5" />
                     </motion.button>
-                )}
 
-                {/* Simulation Toggle */}
-                <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setAnimationPlaying(!isAnimationPlaying)}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all ${isAnimationPlaying
-                        ? 'bg-premium-accent/20 text-premium-accent border border-premium-accent/30 shadow-lg shadow-premium-accent/10'
-                        : 'hover:bg-white/5 text-white/40 hover:text-white border border-transparent'
-                        }`}
-                    title={isAnimationPlaying ? "Stop Simulation" : "Simulate Animations"}
-                >
-                    <Zap className={`w-4 h-4 ${isAnimationPlaying ? 'fill-current animate-pulse' : ''}`} />
-                    <span>{isAnimationPlaying ? 'Live' : 'Simulate'}</span>
-                </motion.button>
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setBottomPanelOpen(!isBottomPanelOpen)}
+                        className={`p-1.5 rounded-lg transition-colors flex items-center justify-center ${isBottomPanelOpen ? 'bg-[#0D99FF]/20 text-[#0D99FF] shadow-[inset_0_0_0_1px_#0D99FF]' : 'text-white/40 hover:text-white/80 hover:bg-white/5'
+                            }`}
+                        title="Toggle Timeline Panel"
+                    >
+                        <PanelBottom className="w-3.5 h-3.5" />
+                    </motion.button>
+
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setRightPanelOpen(!isRightPanelOpen)}
+                        className={`p-1.5 rounded-lg transition-colors flex items-center justify-center ${isRightPanelOpen ? 'bg-[#0D99FF]/20 text-[#0D99FF] shadow-[inset_0_0_0_1px_#0D99FF]' : 'text-white/40 hover:text-white/80 hover:bg-white/5'
+                            }`}
+                        title="Toggle Right Sidebar"
+                    >
+                        <PanelRight className="w-3.5 h-3.5" />
+                    </motion.button>
+                </div>
 
                 {/* Save Button */}
                 <motion.button

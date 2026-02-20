@@ -46,8 +46,11 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
     // Enable keyboard shortcuts
     useKeyboardShortcuts();
 
-    const [leftPanelOpen, setLeftPanelOpen] = useState(true);
-    const [rightPanelOpen, setRightPanelOpen] = useState(true);
+    const leftPanelOpen = useStore(s => s.isLeftPanelOpen);
+    const setLeftPanelOpen = useStore(s => s.setLeftPanelOpen);
+    const rightPanelOpen = useStore(s => s.isRightPanelOpen);
+    const setRightPanelOpen = useStore(s => s.setRightPanelOpen);
+    const bottomPanelOpen = useStore(s => s.isBottomPanelOpen);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false); // Renamed from isLoading for clarity
     const [hasLoaded, setHasLoaded] = useState(false); // Enterprise Load Guard
@@ -420,9 +423,18 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
             </div>
 
             {/* UNICORN MOTION TIMELINE (CITADEL ONYX) - ARCHITECTURAL DOCK */}
-            <div className="relative z-[100] border-t border-white/5">
-                <SequenceTimeline />
-            </div>
+            <AnimatePresence>
+                {bottomPanelOpen && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="relative z-[100] border-t border-white/5 overflow-hidden flex-shrink-0"
+                    >
+                        <SequenceTimeline />
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Removed Preview Modal - handled via new tab */}
 

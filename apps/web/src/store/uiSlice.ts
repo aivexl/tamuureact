@@ -22,6 +22,11 @@ export interface UIState {
     activeTimelineTool: 'pointer' | 'razor';
     snapLine: number | null; // For the neon vertical guide
 
+    // LAYOUT TOGGLES
+    isLeftPanelOpen: boolean;
+    isRightPanelOpen: boolean;
+    isBottomPanelOpen: boolean;
+
     imageCropModal: ImageCropModalState;
     pickingAnchorForId: string | null;
 
@@ -37,6 +42,12 @@ export interface UIState {
     setPathEditingId: (id: string | null) => void;
     setAnimationPlaying: (isPlaying: boolean) => void;
     setHasHydrated: (h: boolean) => void;
+
+    // LAYOUT SETTERS
+    setLeftPanelOpen: (isOpen: boolean) => void;
+    setRightPanelOpen: (isOpen: boolean) => void;
+    setBottomPanelOpen: (isOpen: boolean) => void;
+
     openImageCropModal: (imageSrc: string, layerId: string, slotIndex: number, aspectRatio?: number) => void;
     closeImageCropModal: () => void;
 }
@@ -54,6 +65,10 @@ export const createUISlice: StateCreator<UIState> = (set) => ({
     isSnappingEnabled: true,
     activeTimelineTool: 'pointer',
     snapLine: null,
+
+    isLeftPanelOpen: true,
+    isRightPanelOpen: true,
+    isBottomPanelOpen: true,
 
     imageCropModal: {
         isOpen: false,
@@ -75,7 +90,12 @@ export const createUISlice: StateCreator<UIState> = (set) => ({
     setToolbarExpanded: (isToolbarExpanded) => set({ isToolbarExpanded }),
     setPathEditingId: (pathEditingId) => set({ pathEditingId }),
     setAnimationPlaying: (isAnimationPlaying) => set({ isAnimationPlaying }),
-    setHasHydrated: (hasHydrated) => set({ hasHydrated }),
+    setHasHydrated: (h) => set({ hasHydrated: h }),
+
+    setLeftPanelOpen: (isOpen) => set({ isLeftPanelOpen: isOpen }),
+    setRightPanelOpen: (isOpen) => set({ isRightPanelOpen: isOpen }),
+    setBottomPanelOpen: (isOpen) => set({ isBottomPanelOpen: isOpen }),
+
     openImageCropModal: (imageSrc, targetLayerId, targetSlotIndex, aspectRatio = 1) =>
         set({
             imageCropModal: {
