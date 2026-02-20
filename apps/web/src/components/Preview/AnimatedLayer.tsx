@@ -273,21 +273,17 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         const motionScale = (kf.scale / baseScale) + loops.scale + entrance.scale;
 
         // Visibility Logic:
-        // 1. In Editor, elements should ALWAYS be visible for selection/layout (Ghosts or Full)
-        // 2. In Preview or when playing in Editor, respect the sequence lifecycle.
+        // CTO FIX: True NLE behavior. Elements MUST disappear when playhead is outside their sequence.
         let finalOpacity = kf.opacity;
+        const isOutsideSequence = playhead < startTime || playhead > endTime;
 
         if (isEditor) {
-            if (!isPlaying) {
-                // When stopped, force visibility to at least 0.4 so they don't vanish
-                finalOpacity = Math.max(0.4, kf.opacity);
+            if (isOutsideSequence) {
+                // If it's outside the clip bounds, it does not exist on the canvas.
+                finalOpacity = 0;
             } else {
-                // When playing/scrubbing
-                if (playhead < startTime) {
-                    finalOpacity = 0.2; // Future elements are ghosts
-                } else if (hasEntranceAnimation && isEntranceActive) {
-                    // Apply math entrance only when scrubbing/playing in editor
-                    finalOpacity = Math.max(0.2, entrance.opacity * kf.opacity);
+                if (hasEntranceAnimation && isEntranceActive) {
+                    finalOpacity = Math.max(0, entrance.opacity * kf.opacity);
                 } else {
                     finalOpacity = kf.opacity;
                 }
@@ -775,6 +771,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                 zIndex: layer.zIndex,
                 perspective: '1200px',
                 transformStyle: 'preserve-3d',
+                pointerEvents: isEditor && motionStyles.opacity === 0 ? 'none' : 'auto',
             }}
         >
             {/* LAYER 2: GLOBAL MOTION STAGE (Translation & Floating) */}

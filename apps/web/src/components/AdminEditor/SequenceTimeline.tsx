@@ -200,283 +200,285 @@ export const SequenceTimeline: React.FC = () => {
 
                 {/* RIGHT: TRACK AREA + RULER */}
                 <div
-                    className="flex-1 relative overflow-auto no-scrollbar bg-[#050b18]"
+                    className="flex-1 overflow-auto no-scrollbar bg-[#050b18]"
                     onScroll={(e) => {
                         if (leftSidebarRef.current) {
                             leftSidebarRef.current.scrollTop = e.currentTarget.scrollTop;
                         }
                     }}
                 >
-                    {/* VIRTUAL SNAP GUIDE (NEON LINE) */}
-                    {snapLine !== null && (
-                        <div
-                            className="absolute top-0 bottom-0 w-px bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.8)] z-50 pointer-events-none"
-                            style={{ left: snapLine * pxPerMs }}
-                        />
-                    )}
-
-                    {/* TIME RULER */}
-                    <div
-                        ref={timelineRef}
-                        onMouseDown={handleScrub}
-                        className="h-8 border-b border-white/5 bg-[#0f172a]/30 sticky top-0 z-20 cursor-crosshair"
-                        style={{ width: Math.max(timelineWidth, 1000), ...TIMELINE_GRID_STYLE }}
-                    >
-                        {/* RULER TICKS (Simple logic for now) */}
-                        {Array.from({ length: Math.ceil(duration / 1000) + 1 }).map((_, i) => (
+                    <div className="relative min-h-full w-max">
+                        {/* VIRTUAL SNAP GUIDE (NEON LINE) */}
+                        {snapLine !== null && (
                             <div
-                                key={`tick-${i}`}
-                                className="absolute top-0 flex flex-col items-center"
-                                style={{ left: i * 1000 * pxPerMs }}
-                            >
-                                <div className="h-2 w-px bg-slate-700" />
-                                <span className="text-[9px] font-mono text-slate-500 mt-1">{i}s</span>
-                            </div>
-                        ))}
-                    </div>
+                                className="absolute top-0 bottom-0 w-px bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.8)] z-50 pointer-events-none"
+                                style={{ left: snapLine * pxPerMs }}
+                            />
+                        )}
 
-                    {/* TRACKS GRID */}
-                    <div className="relative" style={{ width: Math.max(timelineWidth, 1000), ...TIMELINE_GRID_STYLE }}>
-                        {layers.map((layer) => {
-                            const sequence = layer.sequence || { startTime: 0, duration: 2000 };
-                            const layerKeyframes = layer.keyframes || [];
-
-                            return (
+                        {/* TIME RULER */}
+                        <div
+                            ref={timelineRef}
+                            onMouseDown={handleScrub}
+                            className="h-8 border-b border-white/5 bg-[#0f172a]/30 sticky top-0 z-20 cursor-crosshair"
+                            style={{ width: Math.max(timelineWidth, 1000), ...TIMELINE_GRID_STYLE }}
+                        >
+                            {/* RULER TICKS (Simple logic for now) */}
+                            {Array.from({ length: Math.ceil(duration / 1000) + 1 }).map((_, i) => (
                                 <div
-                                    key={`track-area-${layer.id}`}
-                                    className="h-10 border-b border-white/5 relative group/track"
+                                    key={`tick-${i}`}
+                                    className="absolute top-0 flex flex-col items-center"
+                                    style={{ left: i * 1000 * pxPerMs }}
                                 >
-                                    {/* SEQUENCE BLOCK */}
-                                    <m.div
-                                        className={`absolute top-1 bottom-1 bg-[#0D99FF]/10 border border-[#0D99FF]/20 rounded-md backdrop-blur-sm transition-colors flex items-center px-1 overflow-visible group/seq ${activeTimelineTool === 'razor' ? 'cursor-cell hover:bg-[#0D99FF]/30' : 'cursor-grab active:cursor-grabbing hover:bg-[#0D99FF]/20'}`}
-                                        style={{
-                                            left: (sequence.startTime || 0) * pxPerMs,
-                                            width: (sequence.duration || 2000) * pxPerMs
-                                        }}
-                                        onClick={(e) => {
-                                            if (activeTimelineTool === 'razor' && activeSectionId) {
-                                                e.stopPropagation();
-                                                // Ask Store to split this element exactly at playhead
-                                                useStore.getState().splitElement(activeSectionId, layer.id, playhead);
-                                                // Instantly revert to pointer tool like Pro NLEs often do (optional workflow choice, but good for safety)
-                                                setActiveTimelineTool('pointer');
-                                            }
-                                        }}
-                                        onMouseDown={(e) => {
-                                            if (activeTimelineTool === 'razor') return; // Don't drag if razor is active
-
-                                            e.stopPropagation();
-                                            const startX = e.clientX;
-                                            const origStart = sequence.startTime || 0;
-                                            const origDuration = sequence.duration || 2000;
-
-                                            const onMouseMove = (moveEvent: MouseEvent) => {
-                                                const deltaMs = (moveEvent.clientX - startX) / pxPerMs;
-                                                let newStart = Math.max(0, origStart + deltaMs);
-
-                                                // MAGNET SNAPPING LOGIC
-                                                if (isSnappingEnabled) {
-                                                    const snapRadiusMs = 100 / timelineZoom; // Adjust radius based on zoom
-                                                    let closestSnap: number | null = null;
-                                                    let minDiff = Infinity;
-                                                    const currentEnd = newStart + origDuration;
-
-                                                    for (const pt of snapPoints) {
-                                                        const diffStart = Math.abs(pt - newStart);
-                                                        const diffEnd = Math.abs(pt - currentEnd);
-
-                                                        if (diffStart < snapRadiusMs && diffStart < minDiff) {
-                                                            minDiff = diffStart;
-                                                            closestSnap = pt;
-                                                            newStart = pt;
-                                                        } else if (diffEnd < snapRadiusMs && diffEnd < minDiff) {
-                                                            minDiff = diffEnd;
-                                                            closestSnap = pt;
-                                                            newStart = pt - origDuration;
-                                                        }
-                                                    }
-
-                                                    setSnapLine(closestSnap);
-                                                }
-
-                                                if (activeSectionId) updateElementInSection(activeSectionId, layer.id, {
-                                                    sequence: {
-                                                        ...sequence,
-                                                        startTime: newStart
-                                                    }
-                                                });
-                                            };
-
-                                            const onMouseUp = () => {
-                                                setSnapLine(null); // Clear snap guide
-                                                window.removeEventListener('mousemove', onMouseMove);
-                                                window.removeEventListener('mouseup', onMouseUp);
-                                            };
-
-                                            window.addEventListener('mousemove', onMouseMove);
-                                            window.addEventListener('mouseup', onMouseUp);
-                                        }}
-                                    >
-                                        <div className="w-1 h-full bg-[#0D99FF]/40 rounded-full mr-1 shrink-0" />
-
-                                        {/* RESIZE HANDLE (Left) */}
-                                        <div
-                                            className={`absolute left-0 top-0 bottom-0 w-2 hover:bg-[#0D99FF]/30 z-50 rounded-l-md ${activeTimelineTool === 'razor' ? 'cursor-cell' : 'cursor-ew-resize'}`}
-                                            onMouseDown={(e) => {
-                                                if (activeTimelineTool === 'razor') return;
-                                                e.stopPropagation();
-                                                const startX = e.clientX;
-                                                const origStart = sequence.startTime || 0;
-                                                const origDuration = sequence.duration || 2000;
-                                                const origEnd = origStart + origDuration;
-
-                                                const onMouseMove = (moveEvent: MouseEvent) => {
-                                                    const deltaMs = (moveEvent.clientX - startX) / pxPerMs;
-                                                    let newStart = Math.max(0, Math.min(origEnd - 100, origStart + deltaMs));
-
-                                                    // MAGNET SNAPPING LOGIC (Left Edge)
-                                                    if (isSnappingEnabled) {
-                                                        const snapRadiusMs = 100 / timelineZoom;
-                                                        let closestSnap: number | null = null;
-                                                        let minDiff = Infinity;
-                                                        for (const pt of snapPoints) {
-                                                            const diff = Math.abs(pt - newStart);
-                                                            if (diff < snapRadiusMs && diff < minDiff) {
-                                                                minDiff = diff;
-                                                                closestSnap = pt;
-                                                                newStart = Math.min(origEnd - 100, pt);
-                                                            }
-                                                        }
-                                                        setSnapLine(closestSnap);
-                                                    }
-
-                                                    const newDuration = origEnd - newStart;
-                                                    if (activeSectionId) updateElementInSection(activeSectionId, layer.id, {
-                                                        sequence: {
-                                                            ...sequence,
-                                                            startTime: newStart,
-                                                            duration: newDuration
-                                                        }
-                                                    });
-                                                };
-
-                                                const onMouseUp = () => {
-                                                    setSnapLine(null);
-                                                    window.removeEventListener('mousemove', onMouseMove);
-                                                    window.removeEventListener('mouseup', onMouseUp);
-                                                };
-
-                                                window.addEventListener('mousemove', onMouseMove);
-                                                window.addEventListener('mouseup', onMouseUp);
-                                            }}
-                                        />
-
-                                        {/* RESIZE HANDLE (Right) */}
-                                        <div
-                                            className={`absolute right-0 top-0 bottom-0 w-2 hover:bg-[#0D99FF]/30 z-50 rounded-r-md ${activeTimelineTool === 'razor' ? 'cursor-cell' : 'cursor-ew-resize'}`}
-                                            onMouseDown={(e) => {
-                                                if (activeTimelineTool === 'razor') return;
-                                                e.stopPropagation();
-                                                const startX = e.clientX;
-                                                const origStart = sequence.startTime || 0;
-                                                const origDuration = sequence.duration || 2000;
-
-                                                const onMouseMove = (moveEvent: MouseEvent) => {
-                                                    const deltaMs = (moveEvent.clientX - startX) / pxPerMs;
-                                                    let newDuration = Math.max(100, origDuration + deltaMs);
-
-                                                    // MAGNET SNAPPING LOGIC (Right Edge)
-                                                    if (isSnappingEnabled) {
-                                                        const snapRadiusMs = 100 / timelineZoom;
-                                                        let closestSnap: number | null = null;
-                                                        let minDiff = Infinity;
-                                                        const currentEnd = origStart + newDuration;
-
-                                                        for (const pt of snapPoints) {
-                                                            const diff = Math.abs(pt - currentEnd);
-                                                            if (diff < snapRadiusMs && diff < minDiff) {
-                                                                minDiff = diff;
-                                                                closestSnap = pt;
-                                                                newDuration = Math.max(100, pt - origStart);
-                                                            }
-                                                        }
-                                                        setSnapLine(closestSnap);
-                                                    }
-
-                                                    if (activeSectionId) updateElementInSection(activeSectionId, layer.id, {
-                                                        sequence: {
-                                                            ...sequence,
-                                                            duration: newDuration
-                                                        }
-                                                    });
-                                                };
-
-                                                const onMouseUp = () => {
-                                                    setSnapLine(null);
-                                                    window.removeEventListener('mousemove', onMouseMove);
-                                                    window.removeEventListener('mouseup', onMouseUp);
-                                                };
-
-                                                window.addEventListener('mousemove', onMouseMove);
-                                                window.addEventListener('mouseup', onMouseUp);
-                                            }}
-                                        />
-
-                                        {/* KEYFRAME MARKERS (Diamonds) */}
-                                        <div className="absolute inset-0 pointer-events-none">
-                                            {layerKeyframes.map((kf) => (
-                                                <div
-                                                    key={kf.id}
-                                                    className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-[#0D99FF] rotate-45 border border-white/20 shadow-[0_0_10px_rgba(13,153,255,0.5)] pointer-events-auto cursor-pointer hover:scale-125 transition-transform"
-                                                    style={{ left: kf.time * pxPerMs }}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setPlayhead(kf.time);
-                                                    }}
-                                                >
-                                                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-[#020617] text-white text-[8px] px-1.5 py-0.5 rounded border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                                                        {kf.property}: {typeof kf.value === 'number' ? kf.value.toFixed(1) : kf.value}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        <span className="text-[8px] font-black text-[#0D99FF]/30 uppercase truncate pointer-events-none">
-                                            {layer.name || layer.type}
-                                        </span>
-                                    </m.div>
-
-                                    {/* ADD KEYFRAME BUTTON ON HOVER */}
-                                    <button
-                                        onClick={() => {
-                                            const id = `kf-${Date.now()}`;
-                                            const startTime = layer.sequence?.startTime || 0;
-                                            const effectiveTime = Math.max(0, playhead - startTime);
-
-                                            useStore.getState().addKeyframe(layer.id, {
-                                                id,
-                                                time: effectiveTime,
-                                                property: 'opacity',
-                                                value: 1,
-                                                easing: 'ease-in-out'
-                                            });
-                                        }}
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 bg-white/5 opacity-0 group-hover/track:opacity-100 hover:bg-[#0D99FF]/20 rounded transition-all z-40"
-                                    >
-                                        <Plus className="w-3.5 h-3.5 text-[#0D99FF]" />
-                                    </button>
+                                    <div className="h-2 w-px bg-slate-700" />
+                                    <span className="text-[9px] font-mono text-slate-500 mt-1">{i}s</span>
                                 </div>
-                            );
-                        })}
-                    </div>
+                            ))}
+                        </div>
 
-                    {/* PLAYHEAD */}
-                    <div
-                        className="absolute top-0 bottom-0 w-px bg-[#0D99FF] z-30 pointer-events-none"
-                        style={{ left: playhead * pxPerMs }}
-                    >
-                        <div className="absolute -top-1 -left-1.5 w-3 h-3 bg-[#0D99FF] rotate-45 border-2 border-[#020617] shadow-lg" />
-                        <div className="absolute inset-0 w-4 -left-2 bg-[#0D99FF]/5 blur-sm" />
+                        {/* TRACKS GRID */}
+                        <div className="relative" style={{ width: Math.max(timelineWidth, 1000), ...TIMELINE_GRID_STYLE }}>
+                            {layers.map((layer) => {
+                                const sequence = layer.sequence || { startTime: 0, duration: 2000 };
+                                const layerKeyframes = layer.keyframes || [];
+
+                                return (
+                                    <div
+                                        key={`track-area-${layer.id}`}
+                                        className="h-10 border-b border-white/5 relative group/track"
+                                    >
+                                        {/* SEQUENCE BLOCK */}
+                                        <m.div
+                                            className={`absolute top-1 bottom-1 bg-[#0D99FF]/10 border border-[#0D99FF]/20 rounded-md backdrop-blur-sm transition-colors flex items-center px-1 overflow-visible group/seq ${activeTimelineTool === 'razor' ? 'cursor-cell hover:bg-[#0D99FF]/30' : 'cursor-grab active:cursor-grabbing hover:bg-[#0D99FF]/20'}`}
+                                            style={{
+                                                left: (sequence.startTime || 0) * pxPerMs,
+                                                width: (sequence.duration || 2000) * pxPerMs
+                                            }}
+                                            onClick={(e) => {
+                                                if (activeTimelineTool === 'razor' && activeSectionId) {
+                                                    e.stopPropagation();
+                                                    // Ask Store to split this element exactly at playhead
+                                                    useStore.getState().splitElement(activeSectionId, layer.id, playhead);
+                                                    // Instantly revert to pointer tool like Pro NLEs often do (optional workflow choice, but good for safety)
+                                                    setActiveTimelineTool('pointer');
+                                                }
+                                            }}
+                                            onMouseDown={(e) => {
+                                                if (activeTimelineTool === 'razor') return; // Don't drag if razor is active
+
+                                                e.stopPropagation();
+                                                const startX = e.clientX;
+                                                const origStart = sequence.startTime || 0;
+                                                const origDuration = sequence.duration || 2000;
+
+                                                const onMouseMove = (moveEvent: MouseEvent) => {
+                                                    const deltaMs = (moveEvent.clientX - startX) / pxPerMs;
+                                                    let newStart = Math.max(0, origStart + deltaMs);
+
+                                                    // MAGNET SNAPPING LOGIC
+                                                    if (isSnappingEnabled) {
+                                                        const snapRadiusMs = 100 / timelineZoom; // Adjust radius based on zoom
+                                                        let closestSnap: number | null = null;
+                                                        let minDiff = Infinity;
+                                                        const currentEnd = newStart + origDuration;
+
+                                                        for (const pt of snapPoints) {
+                                                            const diffStart = Math.abs(pt - newStart);
+                                                            const diffEnd = Math.abs(pt - currentEnd);
+
+                                                            if (diffStart < snapRadiusMs && diffStart < minDiff) {
+                                                                minDiff = diffStart;
+                                                                closestSnap = pt;
+                                                                newStart = pt;
+                                                            } else if (diffEnd < snapRadiusMs && diffEnd < minDiff) {
+                                                                minDiff = diffEnd;
+                                                                closestSnap = pt;
+                                                                newStart = pt - origDuration;
+                                                            }
+                                                        }
+
+                                                        setSnapLine(closestSnap);
+                                                    }
+
+                                                    if (activeSectionId) updateElementInSection(activeSectionId, layer.id, {
+                                                        sequence: {
+                                                            ...sequence,
+                                                            startTime: newStart
+                                                        }
+                                                    });
+                                                };
+
+                                                const onMouseUp = () => {
+                                                    setSnapLine(null); // Clear snap guide
+                                                    window.removeEventListener('mousemove', onMouseMove);
+                                                    window.removeEventListener('mouseup', onMouseUp);
+                                                };
+
+                                                window.addEventListener('mousemove', onMouseMove);
+                                                window.addEventListener('mouseup', onMouseUp);
+                                            }}
+                                        >
+                                            <div className="w-1 h-full bg-[#0D99FF]/40 rounded-full mr-1 shrink-0" />
+
+                                            {/* RESIZE HANDLE (Left) */}
+                                            <div
+                                                className={`absolute left-0 top-0 bottom-0 w-2 hover:bg-[#0D99FF]/30 z-50 rounded-l-md ${activeTimelineTool === 'razor' ? 'cursor-cell' : 'cursor-ew-resize'}`}
+                                                onMouseDown={(e) => {
+                                                    if (activeTimelineTool === 'razor') return;
+                                                    e.stopPropagation();
+                                                    const startX = e.clientX;
+                                                    const origStart = sequence.startTime || 0;
+                                                    const origDuration = sequence.duration || 2000;
+                                                    const origEnd = origStart + origDuration;
+
+                                                    const onMouseMove = (moveEvent: MouseEvent) => {
+                                                        const deltaMs = (moveEvent.clientX - startX) / pxPerMs;
+                                                        let newStart = Math.max(0, Math.min(origEnd - 100, origStart + deltaMs));
+
+                                                        // MAGNET SNAPPING LOGIC (Left Edge)
+                                                        if (isSnappingEnabled) {
+                                                            const snapRadiusMs = 100 / timelineZoom;
+                                                            let closestSnap: number | null = null;
+                                                            let minDiff = Infinity;
+                                                            for (const pt of snapPoints) {
+                                                                const diff = Math.abs(pt - newStart);
+                                                                if (diff < snapRadiusMs && diff < minDiff) {
+                                                                    minDiff = diff;
+                                                                    closestSnap = pt;
+                                                                    newStart = Math.min(origEnd - 100, pt);
+                                                                }
+                                                            }
+                                                            setSnapLine(closestSnap);
+                                                        }
+
+                                                        const newDuration = origEnd - newStart;
+                                                        if (activeSectionId) updateElementInSection(activeSectionId, layer.id, {
+                                                            sequence: {
+                                                                ...sequence,
+                                                                startTime: newStart,
+                                                                duration: newDuration
+                                                            }
+                                                        });
+                                                    };
+
+                                                    const onMouseUp = () => {
+                                                        setSnapLine(null);
+                                                        window.removeEventListener('mousemove', onMouseMove);
+                                                        window.removeEventListener('mouseup', onMouseUp);
+                                                    };
+
+                                                    window.addEventListener('mousemove', onMouseMove);
+                                                    window.addEventListener('mouseup', onMouseUp);
+                                                }}
+                                            />
+
+                                            {/* RESIZE HANDLE (Right) */}
+                                            <div
+                                                className={`absolute right-0 top-0 bottom-0 w-2 hover:bg-[#0D99FF]/30 z-50 rounded-r-md ${activeTimelineTool === 'razor' ? 'cursor-cell' : 'cursor-ew-resize'}`}
+                                                onMouseDown={(e) => {
+                                                    if (activeTimelineTool === 'razor') return;
+                                                    e.stopPropagation();
+                                                    const startX = e.clientX;
+                                                    const origStart = sequence.startTime || 0;
+                                                    const origDuration = sequence.duration || 2000;
+
+                                                    const onMouseMove = (moveEvent: MouseEvent) => {
+                                                        const deltaMs = (moveEvent.clientX - startX) / pxPerMs;
+                                                        let newDuration = Math.max(100, origDuration + deltaMs);
+
+                                                        // MAGNET SNAPPING LOGIC (Right Edge)
+                                                        if (isSnappingEnabled) {
+                                                            const snapRadiusMs = 100 / timelineZoom;
+                                                            let closestSnap: number | null = null;
+                                                            let minDiff = Infinity;
+                                                            const currentEnd = origStart + newDuration;
+
+                                                            for (const pt of snapPoints) {
+                                                                const diff = Math.abs(pt - currentEnd);
+                                                                if (diff < snapRadiusMs && diff < minDiff) {
+                                                                    minDiff = diff;
+                                                                    closestSnap = pt;
+                                                                    newDuration = Math.max(100, pt - origStart);
+                                                                }
+                                                            }
+                                                            setSnapLine(closestSnap);
+                                                        }
+
+                                                        if (activeSectionId) updateElementInSection(activeSectionId, layer.id, {
+                                                            sequence: {
+                                                                ...sequence,
+                                                                duration: newDuration
+                                                            }
+                                                        });
+                                                    };
+
+                                                    const onMouseUp = () => {
+                                                        setSnapLine(null);
+                                                        window.removeEventListener('mousemove', onMouseMove);
+                                                        window.removeEventListener('mouseup', onMouseUp);
+                                                    };
+
+                                                    window.addEventListener('mousemove', onMouseMove);
+                                                    window.addEventListener('mouseup', onMouseUp);
+                                                }}
+                                            />
+
+                                            {/* KEYFRAME MARKERS (Diamonds) */}
+                                            <div className="absolute inset-0 pointer-events-none">
+                                                {layerKeyframes.map((kf) => (
+                                                    <div
+                                                        key={kf.id}
+                                                        className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-[#0D99FF] rotate-45 border border-white/20 shadow-[0_0_10px_rgba(13,153,255,0.5)] pointer-events-auto cursor-pointer hover:scale-125 transition-transform"
+                                                        style={{ left: kf.time * pxPerMs }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setPlayhead(kf.time);
+                                                        }}
+                                                    >
+                                                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-[#020617] text-white text-[8px] px-1.5 py-0.5 rounded border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                                            {kf.property}: {typeof kf.value === 'number' ? kf.value.toFixed(1) : kf.value}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <span className="text-[8px] font-black text-[#0D99FF]/30 uppercase truncate pointer-events-none">
+                                                {layer.name || layer.type}
+                                            </span>
+                                        </m.div>
+
+                                        {/* ADD KEYFRAME BUTTON ON HOVER */}
+                                        <button
+                                            onClick={() => {
+                                                const id = `kf-${Date.now()}`;
+                                                const startTime = layer.sequence?.startTime || 0;
+                                                const effectiveTime = Math.max(0, playhead - startTime);
+
+                                                useStore.getState().addKeyframe(layer.id, {
+                                                    id,
+                                                    time: effectiveTime,
+                                                    property: 'opacity',
+                                                    value: 1,
+                                                    easing: 'ease-in-out'
+                                                });
+                                            }}
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 bg-white/5 opacity-0 group-hover/track:opacity-100 hover:bg-[#0D99FF]/20 rounded transition-all z-40"
+                                        >
+                                            <Plus className="w-3.5 h-3.5 text-[#0D99FF]" />
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* PLAYHEAD */}
+                        <div
+                            className="absolute top-0 bottom-0 w-px bg-[#0D99FF] z-30 pointer-events-none"
+                            style={{ left: playhead * pxPerMs }}
+                        >
+                            <div className="absolute -top-1 -left-1.5 w-3 h-3 bg-[#0D99FF] rotate-45 border-2 border-[#020617] shadow-lg" />
+                            <div className="absolute inset-0 w-4 -left-2 bg-[#0D99FF]/5 blur-sm" />
+                        </div>
                     </div>
                 </div>
             </div>
