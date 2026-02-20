@@ -773,6 +773,7 @@ export interface WeatherConfig {
 export interface Layer {
     id: string;
     type: LayerType;
+    trackId?: string; // CTO: Identifier for Unified Track paradigm
     name: string;
     content?: string;
     imageUrl?: string;
@@ -1012,6 +1013,12 @@ export const sanitizeLayer = (layer: Layer): Layer => {
         }
     }
 
+    // Ensure trackId is present
+    if (!sanitized.trackId) {
+        sanitized.trackId = sanitized.id; // Default to layer ID if not explicitly set
+        changed = true;
+    }
+
     return changed ? sanitized : layer;
 };
 
@@ -1182,6 +1189,7 @@ export const createLayersSlice: StateCreator<LayersState> = (set, get) => ({
         const newLayer: Layer = {
             ...layer,
             id: generateId('layer'),
+            trackId: layer.trackId || layer.id, // Inherit trackId from original layer
             name: `${layer.name} (Copy)`,
             x: layer.x + 20,
             y: layer.y + 20

@@ -737,11 +737,15 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
         // 1. Modify Original Element (A) => ends at splitTimeMs
         const newDurationA = splitTimeMs - elStart;
 
+        // Ensure original element has a trackId attached
+        const originalTrackId = originalElement.trackId || originalElement.id;
+
         // 2. Create Duplicate Element (B) => starts at splitTimeMs
         const newDurationB = elEnd - splitTimeMs;
         const secondElement = sanitizeLayer({
             ...originalElement,
             id: generateId('layer'),
+            trackId: originalTrackId,
             name: `${originalElement.name} (Part 2)`,
             sequence: {
                 ...seq,
@@ -755,6 +759,7 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
         // Modify A in place
         newElements[originalElementIdx] = {
             ...originalElement,
+            trackId: originalTrackId,
             sequence: {
                 ...seq,
                 duration: newDurationA

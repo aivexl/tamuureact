@@ -774,7 +774,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                 zIndex: layer.zIndex,
                 perspective: '1200px',
                 transformStyle: 'preserve-3d',
-                pointerEvents: isEditor && motionStyles.opacity === 0 ? 'none' : 'auto',
+                pointerEvents: isEditor && (motionStyles.opacity === 0 || layer.isLocked) ? 'none' : 'auto',
             }}
         >
             {/* LAYER 2: GLOBAL MOTION STAGE (Translation & Floating) */}
