@@ -277,7 +277,10 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         let finalOpacity = kf.opacity;
         const isOutsideSequence = playhead < startTime || playhead > endTime;
 
-        if (isEditor) {
+        if (layer.isVisible === false) {
+            // Explicitly hidden via Timeline UI
+            finalOpacity = 0;
+        } else if (isEditor) {
             if (isOutsideSequence) {
                 // If it's outside the clip bounds, it does not exist on the canvas.
                 finalOpacity = 0;

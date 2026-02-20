@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { m } from 'framer-motion';
-import { Play, Pause, Square, Search, Plus, Layers, ChevronRight, RotateCcw, Scissors, MousePointer2, Magnet } from 'lucide-react';
+import { Play, Pause, Square, Search, Plus, Layers, ChevronRight, RotateCcw, Scissors, MousePointer2, Magnet, Eye, EyeOff, Lock, Unlock } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 
 /**
@@ -39,6 +39,8 @@ export const SequenceTimeline: React.FC = () => {
     const leftSidebarRef = useRef<HTMLDivElement>(null);
     const activeSection = sections.find(s => s.id === activeSectionId);
     const layers = activeSection?.elements || [];
+
+    const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
 
     // Derived Anchor Points for Snapping
     const snapPoints = React.useMemo(() => {
@@ -182,12 +184,42 @@ export const SequenceTimeline: React.FC = () => {
                         {layers.map((layer) => (
                             <div
                                 key={`track-label-${layer.id}`}
-                                className="h-10 border-b border-white/5 flex items-center px-4 gap-3 hover:bg-white/5 transition-colors cursor-pointer group"
+                                className={`h-10 border-b border-white/5 flex items-center justify-between px-4 hover:bg-white/5 transition-colors cursor-pointer group ${selectedIds.has(layer.id) ? 'bg-[#0D99FF]/10' : ''}`}
+                                onClick={(e) => {
+                                    const newSet = new Set(e.shiftKey ? selectedIds : []);
+                                    if (newSet.has(layer.id)) newSet.delete(layer.id);
+                                    else newSet.add(layer.id);
+                                    setSelectedIds(newSet);
+                                }}
                             >
-                                <ChevronRight className="w-3 h-3 text-slate-600 group-hover:text-indigo-400 transition-colors" />
-                                <span className="text-[11px] font-bold text-slate-400 truncate tracking-tight uppercase group-hover:text-white transition-colors">
-                                    {layer.name || layer.type}
-                                </span>
+                                <div className="flex items-center gap-2 overflow-hidden">
+                                    <ChevronRight className={`w-3 h-3 shrink-0 transition-colors ${selectedIds.has(layer.id) ? 'text-[#0D99FF]' : 'text-slate-600 group-hover:text-indigo-400'}`} />
+                                    <span className={`text-[11px] font-bold truncate tracking-tight uppercase transition-colors ${selectedIds.has(layer.id) ? 'text-white' : 'text-slate-400 group-hover:text-white'}`}>
+                                        {layer.name || layer.type}
+                                    </span>
+                                </div>
+                                <div className={`flex items-center gap-1 shrink-0 transition-opacity ${layer.isLocked || layer.isVisible === false ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (activeSectionId) updateElementInSection(activeSectionId, layer.id, { isVisible: layer.isVisible === false ? true : false });
+                                        }}
+                                        className={`p-1 hover:bg-white/10 rounded transition-colors ${layer.isVisible === false ? 'text-slate-600' : 'text-slate-400 hover:text-white'}`}
+                                        title={layer.isVisible === false ? "Show Layer" : "Hide Layer"}
+                                    >
+                                        {layer.isVisible === false ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (activeSectionId) updateElementInSection(activeSectionId, layer.id, { isLocked: !layer.isLocked });
+                                        }}
+                                        className={`p-1 hover:bg-white/10 rounded transition-colors ${layer.isLocked ? 'text-red-400 hover:text-red-300' : 'text-slate-400 hover:text-white'}`}
+                                        title={layer.isLocked ? "Unlock Layer" : "Lock Layer"}
+                                    >
+                                        {layer.isLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                                    </button>
+                                </div>
                             </div>
                         ))}
                         {layers.length === 0 && (
@@ -249,7 +281,7 @@ export const SequenceTimeline: React.FC = () => {
                                     >
                                         {/* SEQUENCE BLOCK */}
                                         <m.div
-                                            className={`absolute top-1 bottom-1 bg-[#0D99FF]/10 border border-[#0D99FF]/20 rounded-md backdrop-blur-sm transition-colors flex items-center px-1 overflow-visible group/seq ${activeTimelineTool === 'razor' ? 'cursor-cell hover:bg-[#0D99FF]/30' : 'cursor-grab active:cursor-grabbing hover:bg-[#0D99FF]/20'}`}
+                                            className={`absolute top-1 bottom-1 bg-[#0D99FF]/10 border ${selectedIds.has(layer.id) ? 'border-white z-10 shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'border-[#0D99FF]/20'} rounded-md backdrop-blur-sm transition-colors flex items-center px-1 overflow-visible group/seq ${activeTimelineTool === 'razor' ? 'cursor-cell hover:bg-[#0D99FF]/30' : 'cursor-grab active:cursor-grabbing hover:bg-[#0D99FF]/20'} ${layer.isLocked ? 'pointer-events-none opacity-50' : ''}`}
                                             style={{
                                                 left: (sequence.startTime || 0) * pxPerMs,
                                                 width: (sequence.duration || 2000) * pxPerMs
@@ -257,14 +289,34 @@ export const SequenceTimeline: React.FC = () => {
                                             onClick={(e) => {
                                                 if (activeTimelineTool === 'razor' && activeSectionId) {
                                                     e.stopPropagation();
-                                                    // Ask Store to split this element exactly at playhead
-                                                    useStore.getState().splitElement(activeSectionId, layer.id, playhead);
-                                                    // Instantly revert to pointer tool like Pro NLEs often do (optional workflow choice, but good for safety)
+                                                    if (selectedIds.has(layer.id) && selectedIds.size > 1) {
+                                                        // Split all selected elements exactly at playhead
+                                                        selectedIds.forEach(id => {
+                                                            const el = activeSection?.elements.find(el => el.id === id);
+                                                            if (!el || el.isLocked) return;
+                                                            const start = el.sequence?.startTime || 0;
+                                                            const end = start + (el.sequence?.duration || 2000);
+                                                            if (playhead > start && playhead < end) {
+                                                                useStore.getState().splitElement(activeSectionId, el.id, playhead);
+                                                            }
+                                                        });
+                                                    } else {
+                                                        // Ask Store to split this single element exactly at playhead
+                                                        if (!layer.isLocked) {
+                                                            useStore.getState().splitElement(activeSectionId, layer.id, playhead);
+                                                        }
+                                                    }
                                                     setActiveTimelineTool('pointer');
+                                                } else if (activeTimelineTool === 'pointer') {
+                                                    e.stopPropagation();
+                                                    const newSet = new Set(e.shiftKey ? selectedIds : []);
+                                                    if (newSet.has(layer.id)) newSet.delete(layer.id);
+                                                    else newSet.add(layer.id);
+                                                    setSelectedIds(newSet);
                                                 }
                                             }}
                                             onMouseDown={(e) => {
-                                                if (activeTimelineTool === 'razor') return; // Don't drag if razor is active
+                                                if (activeTimelineTool === 'razor' || layer.isLocked) return; // Don't drag if razor is active
 
                                                 e.stopPropagation();
                                                 const startX = e.clientX;
@@ -324,7 +376,7 @@ export const SequenceTimeline: React.FC = () => {
                                             <div
                                                 className={`absolute left-0 top-0 bottom-0 w-2 hover:bg-[#0D99FF]/30 z-50 rounded-l-md ${activeTimelineTool === 'razor' ? 'cursor-cell' : 'cursor-ew-resize'}`}
                                                 onMouseDown={(e) => {
-                                                    if (activeTimelineTool === 'razor') return;
+                                                    if (activeTimelineTool === 'razor' || layer.isLocked) return;
                                                     e.stopPropagation();
                                                     const startX = e.clientX;
                                                     const origStart = sequence.startTime || 0;
@@ -376,7 +428,7 @@ export const SequenceTimeline: React.FC = () => {
                                             <div
                                                 className={`absolute right-0 top-0 bottom-0 w-2 hover:bg-[#0D99FF]/30 z-50 rounded-r-md ${activeTimelineTool === 'razor' ? 'cursor-cell' : 'cursor-ew-resize'}`}
                                                 onMouseDown={(e) => {
-                                                    if (activeTimelineTool === 'razor') return;
+                                                    if (activeTimelineTool === 'razor' || layer.isLocked) return;
                                                     e.stopPropagation();
                                                     const startX = e.clientX;
                                                     const origStart = sequence.startTime || 0;
@@ -473,11 +525,28 @@ export const SequenceTimeline: React.FC = () => {
 
                         {/* PLAYHEAD */}
                         <div
-                            className="absolute top-0 bottom-0 w-px bg-[#0D99FF] z-30 pointer-events-none"
+                            className="absolute top-0 bottom-0 w-px bg-[#0D99FF] z-[100] cursor-ew-resize group/playhead hover:bg-white transition-colors"
                             style={{ left: playhead * pxPerMs }}
+                            onMouseDown={(e) => {
+                                e.stopPropagation();
+                                const onMouseMove = (moveEvent: MouseEvent) => {
+                                    if (!timelineRef.current) return;
+                                    const rect = timelineRef.current.getBoundingClientRect();
+                                    const x = moveEvent.clientX;
+                                    const offsetX = x - rect.left;
+                                    const newTime = Math.max(0, Math.min(duration, offsetX / pxPerMs));
+                                    setPlayhead(newTime);
+                                };
+                                const onMouseUp = () => {
+                                    window.removeEventListener('mousemove', onMouseMove);
+                                    window.removeEventListener('mouseup', onMouseUp);
+                                };
+                                window.addEventListener('mousemove', onMouseMove);
+                                window.addEventListener('mouseup', onMouseUp);
+                            }}
                         >
-                            <div className="absolute -top-1 -left-1.5 w-3 h-3 bg-[#0D99FF] rotate-45 border-2 border-[#020617] shadow-lg" />
-                            <div className="absolute inset-0 w-4 -left-2 bg-[#0D99FF]/5 blur-sm" />
+                            <div className="absolute -top-1 -left-1.5 w-3 h-4 bg-[#0D99FF] group-hover/playhead:bg-white transition-colors rotate-45 border-2 border-[#020617] shadow-lg cursor-ew-resize pointer-events-none" />
+                            <div className="absolute inset-0 w-4 -left-2 bg-[#0D99FF]/5 group-hover/playhead:bg-white/10 blur-sm pointer-events-none" />
                         </div>
                     </div>
                 </div>
