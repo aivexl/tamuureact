@@ -57,14 +57,21 @@ export const SequenceTimeline: React.FC = () => {
   const leftSidebarRef = useRef<HTMLDivElement>(null);
   const activeSection = sections.find((s) => s.id === activeSectionId);
 
-  const { orbit, updateOrbitElement } = useStore();
+  const { orbit, updateOrbitElement, activeCanvas } = useStore();
 
   const layers = React.useMemo(() => {
-    const sectionLayers = activeSection?.elements || [];
-    const orbitLeftLayers = orbit?.left?.elements?.map(l => ({ ...l, _orbit: 'left' })) || [];
-    const orbitRightLayers = orbit?.right?.elements?.map(l => ({ ...l, _orbit: 'right' })) || [];
-    return [...sectionLayers, ...orbitLeftLayers, ...orbitRightLayers];
-  }, [activeSection?.elements, orbit?.left?.elements, orbit?.right?.elements]);
+    if (activeCanvas === 'main') {
+      const sectionLayers = activeSection?.elements || [];
+      const orbitLeftLayers = orbit?.left?.elements?.map(l => ({ ...l, _orbit: 'left' })) || [];
+      const orbitRightLayers = orbit?.right?.elements?.map(l => ({ ...l, _orbit: 'right' })) || [];
+      return [...sectionLayers, ...orbitLeftLayers, ...orbitRightLayers];
+    } else if (activeCanvas === 'left') {
+      return orbit?.left?.elements?.map(l => ({ ...l, _orbit: 'left' })) || [];
+    } else if (activeCanvas === 'right') {
+      return orbit?.right?.elements?.map(l => ({ ...l, _orbit: 'right' })) || [];
+    }
+    return [];
+  }, [activeSection?.elements, orbit?.left?.elements, orbit?.right?.elements, activeCanvas]);
 
   const updateTimelineElement = React.useCallback((layerId: string, updates: Partial<typeof layers[0]>) => {
     const el = layers.find(l => l.id === layerId) as any;
@@ -293,7 +300,7 @@ export const SequenceTimeline: React.FC = () => {
               return (
                 <div
                   key={`track-label-${track.id}`}
-                  className={`h-10 border-b border-white/5 flex items-center justify-between px-4 hover:bg-white/5 transition-colors cursor-pointer group ${isTrackSelected ? "bg-[#0D99FF]/10" : ""}`}
+                  className={`h-10 border-b border-white/5 flex items-center justify-between px-4 hover:bg-white/5 transition-colors cursor-pointer group ${isTrackSelected ? ((layer as any)?._orbit ? "bg-[#B34AF6]/10" : "bg-[#0D99FF]/10") : ""}`}
                   onClick={(e) => {
                     const newSet = new Set(e.shiftKey ? selectedIds : []);
                     const allTrackIds = track.layers.map((l) => l.id);
@@ -308,7 +315,7 @@ export const SequenceTimeline: React.FC = () => {
                 >
                   <div className="flex items-center gap-2 overflow-hidden">
                     <ChevronRight
-                      className={`w-3 h-3 shrink-0 transition-colors ${isTrackSelected ? "text-[#0D99FF]" : "text-slate-600 group-hover:text-indigo-400"}`}
+                      className={`w-3 h-3 shrink-0 transition-colors ${isTrackSelected ? ((layer as any)?._orbit ? "text-[#B34AF6]" : "text-[#0D99FF]") : "text-slate-600 group-hover:text-indigo-400"}`}
                     />
                     <span
                       className={`text-[11px] font-bold truncate tracking-tight uppercase transition-colors ${isTrackSelected ? "text-white" : "text-slate-400 group-hover:text-white"}`}
@@ -434,12 +441,16 @@ export const SequenceTimeline: React.FC = () => {
                       duration: 2000,
                     };
                     const layerKeyframes = layer.keyframes || [];
+                    const isOrbitLayer = !!(layer as any)?._orbit;
+                    const baseBg = isOrbitLayer ? "bg-[#B34AF6]/10" : "bg-[#0D99FF]/10";
+                    const hoverBg = activeTimelineTool === "razor" ? (isOrbitLayer ? "hover:bg-[#B34AF6]/30" : "hover:bg-[#0D99FF]/30") : (isOrbitLayer ? "hover:bg-[#B34AF6]/20" : "hover:bg-[#0D99FF]/20");
+                    const borderCls = selectedIds.has(layer.id) ? "border-white z-10 shadow-[0_0_10px_rgba(255,255,255,0.3)]" : (isOrbitLayer ? "border-[#B34AF6]/20" : "border-[#0D99FF]/20");
 
                     return (
                       <React.Fragment key={`frag-${layer.id}`}>
                         <m.div
                           key={`clip-${layer.id}`}
-                          className={`absolute top-1 bottom-1 bg-[#0D99FF]/10 border ${selectedIds.has(layer.id) ? "border-white z-10 shadow-[0_0_10px_rgba(255,255,255,0.3)]" : "border-[#0D99FF]/20"} rounded-md backdrop-blur-sm transition-colors flex items-center px-1 overflow-visible group/seq ${activeTimelineTool === "razor" ? "cursor-cell hover:bg-[#0D99FF]/30" : "cursor-grab active:cursor-grabbing hover:bg-[#0D99FF]/20"} ${layer.isLocked ? "pointer-events-none opacity-50" : ""}`}
+                          className={`absolute top-1 bottom-1 ${baseBg} border ${borderCls} rounded-md backdrop-blur-sm transition-colors flex items-center px-1 overflow-visible group/seq ${activeTimelineTool === "razor" ? "cursor-cell" : "cursor-grab active:cursor-grabbing"} ${hoverBg} ${layer.isLocked ? "pointer-events-none opacity-50" : ""}`}
                           style={{
                             left: (sequence.startTime || 0) * pxPerMs,
                             width: (sequence.duration || 2000) * pxPerMs,
@@ -570,11 +581,11 @@ export const SequenceTimeline: React.FC = () => {
                             window.addEventListener("mouseup", onMouseUp);
                           }}
                         >
-                          <div className="w-1 h-full bg-[#0D99FF]/40 rounded-full mr-1 shrink-0" />
+                          <div className={`w-1 h-full ${isOrbitLayer ? "bg-[#B34AF6]/40" : "bg-[#0D99FF]/40"} rounded-full mr-1 shrink-0`} />
 
                           {/* RESIZE HANDLE (Left) */}
                           <div
-                            className={`absolute left-0 top-0 bottom-0 w-2 hover:bg-[#0D99FF]/30 z-50 rounded-l-md ${activeTimelineTool === "razor" ? "cursor-cell" : "cursor-ew-resize"}`}
+                            className={`absolute left-0 top-0 bottom-0 w-2 ${isOrbitLayer ? "hover:bg-[#B34AF6]/30" : "hover:bg-[#0D99FF]/30"} z-50 rounded-l-md ${activeTimelineTool === "razor" ? "cursor-cell" : "cursor-ew-resize"}`}
                             onMouseDown={(e) => {
                               if (
                                 activeTimelineTool === "razor" ||
@@ -636,7 +647,7 @@ export const SequenceTimeline: React.FC = () => {
 
                           {/* RESIZE HANDLE (Right) */}
                           <div
-                            className={`absolute right-0 top-0 bottom-0 w-2 hover:bg-[#0D99FF]/30 z-50 rounded-r-md ${activeTimelineTool === "razor" ? "cursor-cell" : "cursor-ew-resize"}`}
+                            className={`absolute right-0 top-0 bottom-0 w-2 ${isOrbitLayer ? "hover:bg-[#B34AF6]/30" : "hover:bg-[#0D99FF]/30"} z-50 rounded-r-md ${activeTimelineTool === "razor" ? "cursor-cell" : "cursor-ew-resize"}`}
                             onMouseDown={(e) => {
                               if (
                                 activeTimelineTool === "razor" ||
@@ -704,7 +715,7 @@ export const SequenceTimeline: React.FC = () => {
                             {layerKeyframes.map((kf) => (
                               <div
                                 key={kf.id}
-                                className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-[#0D99FF] rotate-45 border border-white/20 shadow-[0_0_10px_rgba(13,153,255,0.5)] pointer-events-auto cursor-pointer hover:scale-125 transition-transform"
+                                className={`absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 ${isOrbitLayer ? "bg-[#B34AF6] shadow-[0_0_10px_rgba(179,74,246,0.5)]" : "bg-[#0D99FF] shadow-[0_0_10px_rgba(13,153,255,0.5)]"} rotate-45 border border-white/20 pointer-events-auto cursor-pointer hover:scale-125 transition-transform`}
                                 style={{ left: kf.time * pxPerMs }}
                                 onClick={(e) => {
                                   e.stopPropagation();
