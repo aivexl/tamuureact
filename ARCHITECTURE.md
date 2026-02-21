@@ -210,6 +210,11 @@ npm run build:web     # Build web only
   - 100/100 PageSpeed optimization
   - AI-powered SEO & Evergreen content management
   - Integrated Monetization (AdSense + Internal Banners)
+- **Merchant Portal V6.0 (Clean Light Enterprise)**:
+  - 100% White/Off-White visual architecture
+  - Premium Navy & Slate typography sync
+  - Interactive "Glass" sidebar with Gold accents
+  - Global responsive optimization for high-end merchant tools
 
 ---
 

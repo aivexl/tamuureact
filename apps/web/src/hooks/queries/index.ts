@@ -69,3 +69,6 @@ export {
 
 // Re-export query keys and stale times for advanced usage
 export { queryKeys, STALE_TIMES } from '@/lib/queryClient';
+
+// Shop Ecosystem
+export { useMerchantProfile } from './useShop';

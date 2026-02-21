@@ -1,0 +1,1 @@
+﻿src/hooks/queries/useShop.ts(103,97): error TS2554: Expected 1 arguments, but got 2.

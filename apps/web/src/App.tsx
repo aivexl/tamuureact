@@ -62,6 +62,12 @@ const BlogRouter = lazy(() => import('./pages/blog/BlogRouter'));
 const AdminBlogListPage = lazy(() => import('./pages/blog/AdminBlogListPage').then(m => ({ default: m.AdminBlogListPage })));
 const AdminBlogEditor = lazy(() => import('./pages/blog/AdminBlogEditor').then(m => ({ default: m.AdminBlogEditor })));
 
+// Shop & Merchant Pages
+const MerchantPortalPage = lazy(() => import('./pages/Merchant/MerchantPortalPage').then(m => ({ default: m.MerchantPortalPage })));
+const ShopPage = lazy(() => import('./pages/Shop/ShopPage'));
+const StorefrontPage = lazy(() => import('./pages/Shop/StorefrontPage'));
+const ProductDetailPage = lazy(() => import('./pages/Shop/ProductDetailPage'));
+
 
 
 const App: React.FC = () => {
@@ -137,6 +143,10 @@ const App: React.FC = () => {
                             <>
                                 {/* Auth Pages (App Domain Only) */}
                                 <Route path="/login" element={<LoginPage />} />
+                                <Route path="/store" element={<InvitationsStorePage />} />
+                                <Route path="/shop" element={<ShopPage />} />
+                                <Route path="/shop/:slug" element={<StorefrontPage />} />
+                                <Route path="/shop/:slug/:productId" element={<ProductDetailPage />} />
                                 <Route path="/signup" element={<SignupPage />} />
                                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
@@ -165,6 +175,9 @@ const App: React.FC = () => {
                                 <Route path="/admin/blog" element={<ProtectedRoute requiredRole="admin"><AdminBlogListPage /></ProtectedRoute>} />
                                 <Route path="/admin/blog/new" element={<ProtectedRoute requiredRole="admin"><AdminBlogEditor /></ProtectedRoute>} />
                                 <Route path="/admin/blog/:id" element={<ProtectedRoute requiredRole="admin"><AdminBlogEditor /></ProtectedRoute>} />
+
+                                {/* Merchant Portal (Seller Center) */}
+                                <Route path="/store/:storeSlug/*" element={<ProtectedRoute><MerchantPortalPage /></ProtectedRoute>} />
 
 
                                 {/* Editor Routes */}
@@ -197,6 +210,7 @@ const App: React.FC = () => {
                                 <Route path="/upgrade" element={<ExternalRedirect to="https://app.tamuu.id/upgrade" />} />
                                 <Route path="/guests/*" element={<ExternalRedirect to="https://app.tamuu.id/guests" />} />
                                 <Route path="/admin/*" element={<ExternalRedirect to="https://app.tamuu.id/admin/dashboard" />} />
+                                <Route path="/store/*" element={<ExternalRedirect to="https://app.tamuu.id/dashboard" />} />
                                 <Route path="/editor/*" element={<ExternalRedirect to="https://app.tamuu.id/dashboard" />} />
                                 <Route path="/user/*" element={<ExternalRedirect to="https://app.tamuu.id/dashboard" />} />
                             </>

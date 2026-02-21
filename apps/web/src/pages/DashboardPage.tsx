@@ -10,6 +10,7 @@ import { useInvitations, Invitation } from '../hooks/queries';
 import { WelcomeDisplaysTab } from '../components/Dashboard/WelcomeDisplaysTab';
 import { BillingHistoryTab } from '../components/Dashboard/BillingHistoryTab';
 import { SubscriptionStatusWidget } from '../components/ui/SubscriptionStatusWidget';
+import { SmartMerchantCard } from '../components/Shop/SmartMerchantCard';
 
 // ============================================
 // INLINE SVG ICONS (Zero external dependency)
@@ -383,6 +384,11 @@ export const DashboardPage: React.FC = () => {
                                                     </Link>
                                                 )}
                                             </div>
+                                        </div>
+
+                                        {/* TAMUU NEXUS: Shop Merchant Pipeline Entry */}
+                                        <div className="pt-2">
+                                            <SmartMerchantCard />
                                         </div>
                                     </div>
                                 </div>

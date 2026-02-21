@@ -25,7 +25,7 @@ const features = [
     },
     {
         title: "WhatsApp Broadcast",
-        description: "Kirim undangan ke tamu secara dengan satu klik.",
+        description: "Kirim undangan ke tam dengan satu klik.",
         icon: Sparkles,
     },
     {

@@ -1004,6 +1004,188 @@ export const blog = {
     }
 };
 
+// ============================================
+// SHOP API (TAMUU NEXUS)
+// ============================================
+export const shop = {
+    async getMerchantMe(userId: string) {
+        const res = await safeFetch(`${API_BASE}/api/shop/merchant/me?userId=${userId}`);
+        if (!res.ok) throw new Error('Failed to fetch merchant profile');
+        const data = await res.json();
+        return sanitizeValue(data);
+    },
+
+    async onboardMerchant(data: { user_id: string; nama_toko: string; slug: string; category_id: string; deskripsi?: string }) {
+        const res = await safeFetch(`${API_BASE}/api/shop/merchant/onboard`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sanitizeValue(data))
+        });
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Failed to onboard merchant');
+        }
+        return res.json();
+    },
+
+    async updateMerchantSettings(data: any) {
+        const res = await safeFetch(`${API_BASE}/api/shop/merchant/settings`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sanitizeValue(data))
+        });
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Failed to update merchant settings');
+        }
+        return res.json();
+    },
+
+    // PRODUCTS CRUD
+    async getMerchantProducts(merchantId: string) {
+        if (!merchantId) return [];
+        const res = await safeFetch(`${API_BASE}/api/shop/merchant/products?merchant_id=${merchantId}`);
+        if (!res.ok) throw new Error('Failed to fetch merchant products');
+        const data = await res.json();
+        return sanitizeValue(data.products || []);
+    },
+
+    async createMerchantProduct(data: any) {
+        const res = await safeFetch(`${API_BASE}/api/shop/merchant/products`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sanitizeValue(data))
+        });
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Failed to create product');
+        }
+        return res.json();
+    },
+
+    async updateMerchantProduct({ id, data }: { id: string; data: any }) {
+        const res = await safeFetch(`${API_BASE}/api/shop/merchant/products?id=${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sanitizeValue(data))
+        });
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Failed to update product');
+        }
+        return res.json();
+    },
+
+    async deleteMerchantProduct(productId: string) {
+        const res = await safeFetch(`${API_BASE}/api/shop/merchant/products?id=${productId}`, {
+            method: 'DELETE'
+        });
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Failed to delete product');
+        }
+        return res.json();
+    },
+
+    // ANALYTICS
+    async getMerchantAnalytics(merchantId: string) {
+        if (!merchantId) return null;
+        const res = await safeFetch(`${API_BASE}/api/shop/merchant/analytics?merchant_id=${merchantId}`);
+        if (!res.ok) throw new Error('Failed to fetch analytics');
+        return res.json();
+    },
+
+    // DIRECTORY & STOREFRONT
+    async getDirectory(category?: string, query?: string) {
+        const params = new URLSearchParams();
+        if (category && category !== 'All' && category !== 'Semua') params.append('category', category);
+        if (query) params.append('q', query);
+        const url = `${API_BASE}/api/shop/directory${params.toString() ? '?' + params.toString() : ''}`;
+        const res = await safeFetch(url);
+        if (!res.ok) throw new Error('Failed to fetch shop directory');
+        const data = await res.json();
+        return sanitizeValue(data.merchants || []);
+    },
+
+    async getStorefront(slug: string, token?: string) {
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await safeFetch(`${API_BASE}/api/shop/storefront?slug=${slug}`, { headers });
+        if (!res.ok) throw new Error('Storefront not found');
+        const data = await res.json();
+        return sanitizeValue(data);
+    },
+
+    async getProduct(id: string) {
+        const res = await safeFetch(`${API_BASE}/api/shop/product?id=${id}`);
+        if (!res.ok) throw new Error('Product not found');
+        const data = await res.json();
+        return sanitizeValue(data.product);
+    },
+
+    async track(merchantId: string, actionType: string, productId?: string) {
+        try {
+            await safeFetch(`${API_BASE}/api/shop/analytics/track`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ merchant_id: merchantId, action_type: actionType, product_id: productId })
+            });
+        } catch (e) {
+            console.warn('[Analytics] Track failed silent:', e);
+        }
+    },
+
+    // WISHLIST
+    async getWishlist(userId: string) {
+        const res = await safeFetch(`${API_BASE}/api/shop/wishlist?user_id=${userId}`);
+        if (!res.ok) throw new Error('Failed to fetch wishlist');
+        const data = await res.json();
+        return sanitizeValue(data.wishlist || []);
+    },
+
+    async toggleWishlist(userId: string, productId: string) {
+        const res = await safeFetch(`${API_BASE}/api/shop/wishlist/toggle`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, product_id: productId })
+        });
+        if (!res.ok) throw new Error('Failed to toggle wishlist');
+        return res.json();
+    },
+
+    // PROFILE & STATUS
+    async updateMerchantProfile(merchantId: string, userId: string, data: any) {
+        const res = await safeFetch(`${API_BASE}/api/shop/merchant/profile`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ merchant_id: merchantId, user_id: userId, ...data })
+        });
+        if (!res.ok) throw new Error('Failed to update merchant profile');
+        return res.json();
+    },
+
+    async updateProductStatus(productId: string, userId: string, status: string) {
+        const res = await safeFetch(`${API_BASE}/api/shop/product/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ product_id: productId, user_id: userId, status })
+        });
+        if (!res.ok) throw new Error('Failed to update product status');
+        return res.json();
+    },
+
+    // ADS
+    async boostShop(merchantId: string, userId: string) {
+        const res = await safeFetch(`${API_BASE}/api/shop/merchant/ads/boost`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ merchant_id: merchantId, user_id: userId })
+        });
+        if (!res.ok) throw new Error('Failed to boost shop');
+        return res.json();
+    }
+};
+
 export async function healthCheck() {
     const res = await safeFetch(`${API_BASE}/api/health`);
     const data = await res.json();
@@ -1025,5 +1207,7 @@ export default {
     assets,
     preview,
     blog,
+    shop,
     healthCheck
 };
+
