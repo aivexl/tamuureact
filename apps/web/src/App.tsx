@@ -61,6 +61,8 @@ const InactivePage = lazy(() => import('./pages/InactivePage').then(m => ({ defa
 const BlogRouter = lazy(() => import('./pages/blog/BlogRouter'));
 const AdminBlogListPage = lazy(() => import('./pages/blog/AdminBlogListPage').then(m => ({ default: m.AdminBlogListPage })));
 const AdminBlogEditor = lazy(() => import('./pages/blog/AdminBlogEditor').then(m => ({ default: m.AdminBlogEditor })));
+const AdminShopSettingsPage = lazy(() => import('./pages/Admin/AdminShopSettingsPage').then(m => ({ default: m.AdminShopSettingsPage })));
+const AdminStoreManagementPage = lazy(() => import('./pages/Admin/AdminStoreManagementPage').then(m => ({ default: m.AdminStoreManagementPage })));
 
 // Shop & Merchant Pages
 const MerchantPortalPage = lazy(() => import('./pages/Merchant/MerchantPortalPage').then(m => ({ default: m.MerchantPortalPage })));
@@ -171,7 +173,9 @@ const App: React.FC = () => {
                                 <Route path="/admin/transactions" element={<ProtectedRoute requiredRole="admin"><AdminTransactionsPage /></ProtectedRoute>} />
                                 <Route path="/admin/activity" element={<ProtectedRoute requiredRole="admin"><AdminActivityPage /></ProtectedRoute>} />
                                 <Route path="/admin/templates" element={<ProtectedRoute requiredRole="admin"><AdminTemplatesPage /></ProtectedRoute>} />
+                                <Route path="/admin/templates/shop" element={<ProtectedRoute requiredRole="admin"><AdminShopSettingsPage /></ProtectedRoute>} />
                                 <Route path="/admin/templates/:type" element={<ProtectedRoute requiredRole="admin"><AdminTemplatesPage /></ProtectedRoute>} />
+                                <Route path="/admin/stores" element={<ProtectedRoute requiredRole="admin"><AdminStoreManagementPage /></ProtectedRoute>} />
 
                                 {/* Admin Blog */}
                                 <Route path="/admin/blog" element={<ProtectedRoute requiredRole="admin"><AdminBlogListPage /></ProtectedRoute>} />

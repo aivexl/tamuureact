@@ -25,10 +25,54 @@ const CATEGORY_COLORS: Record<string, string> = {
     'Default': '#94A3B8'
 };
 
+const CAROUSEL_SLIDES = [
+    {
+        id: 'slide-1',
+        // High fidelity MUA/Beauty
+        image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&q=80',
+        link: '/shop?category=MUA'
+    },
+    {
+        id: 'slide-2',
+        // High fidelity Wedding Planner/Event
+        image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80',
+        link: '/shop?category=Wedding%20Organizer'
+    },
+    {
+        id: 'slide-3',
+        // High fidelity Catering/Dining
+        image: 'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&q=80',
+        link: '/shop?category=Catering'
+    }
+];
+
 export const ShopPage: React.FC = () => {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
+
+    // Carousel State
+    const [currentSlide, setCurrentSlide] = useState(0);
+    const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+
+    // Auto-play Logic
+    React.useEffect(() => {
+        if (!isAutoPlaying) return;
+        const timer = setInterval(() => {
+            setCurrentSlide((prev) => (prev + 1) % CAROUSEL_SLIDES.length);
+        }, 5000); // 5 seconds per slide
+        return () => clearInterval(timer);
+    }, [isAutoPlaying]);
+
+    const nextSlide = () => {
+        setCurrentSlide((prev) => (prev + 1) % CAROUSEL_SLIDES.length);
+        setIsAutoPlaying(false);
+    };
+
+    const prevSlide = () => {
+        setCurrentSlide((prev) => (prev - 1 + CAROUSEL_SLIDES.length) % CAROUSEL_SLIDES.length);
+        setIsAutoPlaying(false);
+    };
 
     const { data: merchants = [], isLoading } = useShopDirectory(selectedCategory, searchQuery);
 
@@ -43,76 +87,62 @@ export const ShopPage: React.FC = () => {
     return (
         <div className="min-h-screen bg-white text-[#0A1128] font-sans selection:bg-[#FFBF00] selection:text-[#0A1128]">
             <main className="max-w-7xl mx-auto px-6 pb-32">
-                {/* Hero Carousel Section - High Fidelity Dummies */}
-                <section className="pt-12 pb-16">
-                    <div className="flex gap-6 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-4">
-                        {/* Slide 1: MUA */}
-                        <div className="min-w-full md:min-w-[70%] lg:min-w-[60%] snap-center rounded-[2.5rem] overflow-hidden relative group border border-[#F1F5F9]">
-                            <div className="aspect-[21/9] w-full bg-slate-100">
+                {/* Hero Carousel Section - Pure Image Fortune 500 Architecture */}
+                <section className="pt-24 pb-16 relative">
+                    <div className="relative w-full aspect-[21/9] md:aspect-[24/9] rounded-[2.5rem] overflow-hidden group border border-[#F1F5F9] shadow-sm bg-slate-50">
+                        <AnimatePresence mode="wait">
+                            <m.div
+                                key={currentSlide}
+                                initial={{ opacity: 0, scale: 1.02 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.98 }}
+                                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                                className="absolute inset-0 cursor-pointer"
+                                onClick={() => navigate(CAROUSEL_SLIDES[currentSlide].link)}
+                            >
                                 <img
-                                    src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&q=80"
-                                    className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700"
-                                    alt="MUA"
+                                    src={CAROUSEL_SLIDES[currentSlide].image}
+                                    alt={`Promotional Slide ${currentSlide + 1}`}
+                                    className="w-full h-full object-cover"
                                 />
-                            </div>
-                            <div className="absolute inset-0 flex items-center p-8 md:p-12">
-                                <m.div
-                                    initial={{ opacity: 0, x: -20 }}
-                                    whileInView={{ opacity: 1, x: 0 }}
-                                    className="max-w-xs bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-xl border border-[#F1F5F9]"
-                                >
-                                    <span className="text-[#FFBF00] text-[10px] font-black uppercase tracking-widest mb-3 block">Featured Category</span>
-                                    <h2 className="text-2xl font-black mb-4 leading-tight">Elite Bridal Artistry</h2>
-                                    <p className="text-slate-500 text-xs mb-6 font-medium">Temukan penata rias terbaik untuk momen istimewa Anda.</p>
-                                    <button className="w-full py-3 bg-[#0A1128] text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-black transition-all">Explore MUA</button>
-                                </m.div>
-                            </div>
+                            </m.div>
+                        </AnimatePresence>
+
+                        {/* Apple-Grade Hover Navigation Arrows */}
+                        <div className="absolute inset-y-0 left-0 flex items-center px-4 md:px-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); prevSlide(); }}
+                                className="w-12 h-12 rounded-full bg-white/30 hover:bg-white/90 backdrop-blur-md flex items-center justify-center text-[#0A1128] shadow-lg transition-all transform hover:scale-110 pointer-events-auto"
+                            >
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="m15 18-6-6 6-6" /></svg>
+                            </button>
+                        </div>
+                        <div className="absolute inset-y-0 right-0 flex items-center px-4 md:px-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); nextSlide(); }}
+                                className="w-12 h-12 rounded-full bg-white/30 hover:bg-white/90 backdrop-blur-md flex items-center justify-center text-[#0A1128] shadow-lg transition-all transform hover:scale-110 pointer-events-auto"
+                            >
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="ml-1"><path d="m9 18 6-6-6-6" /></svg>
+                            </button>
                         </div>
 
-                        {/* Slide 2: WO */}
-                        <div className="min-w-full md:min-w-[70%] lg:min-w-[60%] snap-center rounded-[2.5rem] overflow-hidden relative group border border-[#F1F5F9]">
-                            <div className="aspect-[21/9] w-full bg-slate-100">
-                                <img
-                                    src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80"
-                                    className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700"
-                                    alt="Wedding Organizer"
+                        {/* Landing Page Parity Pagination Dots */}
+                        <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-10">
+                            {CAROUSEL_SLIDES.map((_, index) => (
+                                <button
+                                    key={index}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setCurrentSlide(index);
+                                        setIsAutoPlaying(false); // Pause auto-play on manual override
+                                    }}
+                                    className={`h-2 rounded-full transition-all duration-500 ease-out ${currentSlide === index
+                                        ? 'w-8 bg-[#0A1128]'
+                                        : 'w-2 bg-white/50 hover:bg-white/80'
+                                        }`}
+                                    aria-label={`Go to slide ${index + 1}`}
                                 />
-                            </div>
-                            <div className="absolute inset-0 flex items-center p-8 md:p-12">
-                                <m.div
-                                    initial={{ opacity: 0, x: -20 }}
-                                    whileInView={{ opacity: 1, x: 0 }}
-                                    className="max-w-xs bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-xl border border-[#F1F5F9]"
-                                >
-                                    <span className="text-[#FFBF00] text-[10px] font-black uppercase tracking-widest mb-3 block">Enterprise Suite</span>
-                                    <h2 className="text-2xl font-black mb-4 leading-tight">Seamless Event Planning</h2>
-                                    <p className="text-slate-500 text-xs mb-6 font-medium">Wujudkan pernikahan impian dengan koordinasi profesional.</p>
-                                    <button className="w-full py-3 bg-[#0A1128] text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-black transition-all">View Planners</button>
-                                </m.div>
-                            </div>
-                        </div>
-
-                        {/* Slide 3: Catering */}
-                        <div className="min-w-full md:min-w-[70%] lg:min-w-[60%] snap-center rounded-[2.5rem] overflow-hidden relative group border border-[#F1F5F9]">
-                            <div className="aspect-[21/9] w-full bg-slate-100">
-                                <img
-                                    src="https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&q=80"
-                                    className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700"
-                                    alt="Catering"
-                                />
-                            </div>
-                            <div className="absolute inset-0 flex items-center p-8 md:p-12">
-                                <m.div
-                                    initial={{ opacity: 0, x: -20 }}
-                                    whileInView={{ opacity: 1, x: 0 }}
-                                    className="max-w-xs bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-xl border border-[#F1F5F9]"
-                                >
-                                    <span className="text-[#FFBF00] text-[10px] font-black uppercase tracking-widest mb-3 block">Culinary Arts</span>
-                                    <h2 className="text-2xl font-black mb-4 leading-tight">Exquisite Gourmet Dining</h2>
-                                    <p className="text-slate-500 text-xs mb-6 font-medium">Hidangan mewah untuk memanjakan lidah para tamu undangan.</p>
-                                    <button className="w-full py-3 bg-[#0A1128] text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-black transition-all">Discover Catering</button>
-                                </m.div>
-                            </div>
+                            ))}
                         </div>
                     </div>
                 </section>

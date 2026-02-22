@@ -225,6 +225,12 @@ npm run build:web     # Build web only
     - Pure `#FFFFFF` background sync with Navy/Slate typography (Zero-Gradient Policy).
     - High-Fidelity Discovery via MCP Stitch (Hero Carousel, Refined Search, Master Categories).
     - Live Database Seeding (Nusantara Wedding Organizer & Dummy Products).
+- **Sprint 10: Enterprise Shop Scaling & Admin Governance** [COMPLETED]
+  - **Objective**: Execute strategic pivot to full B2B2C governance with a zero-friction, highly aesthetic Carousel and robust Admin panels to manage the Unicorn ecosystem.
+  - **Key Deliverables**:
+    - **Fortune 500 Pure-Image Carousel**: Single-image, zero-overlay architecture with proportional height, Apple-grade hover arrows, and dynamic pagination dots.
+    - **Shop Command Center**: Dedicated CMS tab in the Admin Dashboard to add, edit, and sequence Carousel slides on the fly.
+    - **Enterprise Store Governance**: Advanced, customizable data grid in the Admin Dashboard enabling superset control (Suspend/Ban) over all merchants.
 
 ---
 

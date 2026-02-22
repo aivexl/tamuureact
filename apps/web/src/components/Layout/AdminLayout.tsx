@@ -120,6 +120,14 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                         sidebarOpen={sidebarOpen}
                     />
 
+                    <SidebarItem
+                        href="/admin/templates/shop"
+                        icon={Store}
+                        label="Shop Management"
+                        active={location.pathname === '/admin/templates/shop'}
+                        sidebarOpen={sidebarOpen}
+                    />
+
                     {(user?.email === 'admin@tamuu.id' || hasPermission('blog:manage')) && (
                         <SidebarItem
                             href="/admin/blog"
@@ -169,6 +177,17 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                             sidebarOpen={sidebarOpen}
                         />
                     )}
+
+                    {hasPermission('management:stores') && (
+                        <SidebarItem
+                            href="/admin/stores"
+                            icon={Store}
+                            label="Store Management"
+                            active={location.pathname === '/admin/stores'}
+                            sidebarOpen={sidebarOpen}
+                        />
+                    )}
+
                     <SidebarItem
                         href="/admin/transactions"
                         icon={CreditCard}
