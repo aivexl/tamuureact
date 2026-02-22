@@ -122,7 +122,7 @@ export const BlogPostLayout: React.FC<BlogPostLayoutProps> = ({ post, relatedPos
     return (
         <div className="min-h-screen bg-white font-sans text-[#0A1128]">
             <Helmet>
-                <title>{post.seo_title || post.title} | Tamuu Journal</title>
+                <title>{`${post.seo_title || post.title} | Tamuu Journal`}</title>
                 <meta name="description" content={post.seo_description || post.excerpt} />
                 <link rel="canonical" href={`https://tamuu.id/blog/${post.slug}`} />
                 <meta property="og:title" content={post.seo_title || post.title} />

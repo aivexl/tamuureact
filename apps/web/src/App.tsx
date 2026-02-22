@@ -121,6 +121,11 @@ const App: React.FC = () => {
                         {/* Public Blog */}
                         <Route path="/blog/*" element={<MainLayout><BlogRouter /></MainLayout>} />
 
+                        {/* Public Shop */}
+                        <Route path="/shop" element={<MainLayout><ShopPage /></MainLayout>} />
+                        <Route path="/shop/:slug" element={<StorefrontPage />} />
+                        <Route path="/shop/:slug/:productId" element={<ProductDetailPage />} />
+
 
                         {/* Preview Routes - Public for sharing */}
                         <Route path="/preview/:slug" element={<PreviewPage />} />
@@ -144,9 +149,6 @@ const App: React.FC = () => {
                                 {/* Auth Pages (App Domain Only) */}
                                 <Route path="/login" element={<LoginPage />} />
                                 <Route path="/store" element={<InvitationsStorePage />} />
-                                <Route path="/shop" element={<ShopPage />} />
-                                <Route path="/shop/:slug" element={<StorefrontPage />} />
-                                <Route path="/shop/:slug/:productId" element={<ProductDetailPage />} />
                                 <Route path="/signup" element={<SignupPage />} />
                                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
