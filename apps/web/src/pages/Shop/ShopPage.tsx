@@ -88,7 +88,7 @@ export const ShopPage: React.FC = () => {
         <div className="min-h-screen bg-white text-[#0A1128] font-sans selection:bg-[#FFBF00] selection:text-[#0A1128]">
             <main className="max-w-7xl mx-auto px-6 pb-32">
                 {/* Hero Carousel Section - Pure Image Fortune 500 Architecture */}
-                <section className="pt-24 pb-16 relative">
+                <section className="pt-32 md:pt-40 pb-16 relative">
                     <div className="relative w-full aspect-[21/9] md:aspect-[24/9] rounded-[2.5rem] overflow-hidden group border border-[#F1F5F9] shadow-sm bg-slate-50">
                         <AnimatePresence mode="wait">
                             <m.div
