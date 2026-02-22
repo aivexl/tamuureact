@@ -1,7 +1,7 @@
 import React from 'react';
-import { AdminLayout } from '../components/Layout/AdminLayout';
-import { AdminShopSettings } from '../components/Admin/AdminShopSettings';
-import { useSEO } from '../hooks/useSEO';
+import { AdminLayout } from '../../components/Layout/AdminLayout';
+import { AdminShopSettings } from '../../components/Admin/AdminShopSettings';
+import { useSEO } from '../../hooks/useSEO';
 
 export const AdminShopSettingsPage: React.FC = () => {
     useSEO({

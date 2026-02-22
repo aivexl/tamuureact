@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { m } from 'framer-motion';
 import { Plus, Trash2, GripVertical, Save, Image, Link as LinkIcon, AlertCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { PremiumLoader } from '../../ui/PremiumLoader';
+import { PremiumLoader } from '../ui/PremiumLoader';
 
 export const AdminShopSettings: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);

@@ -1,0 +1,12 @@
+﻿node_modules/vite/dist/node/index.d.ts(5,41): error TS2307: Cannot find module 'rollup/parseAst' or its corresponding type declarations.
+  There are types at 'C:/Users/62896/Documents/tamuureact/node_modules/rollup/dist/parseAst.d.ts', but this result could not be resolved under your current 'moduleResolution' setting. Consider updating to 'node16', 'nodenext', or 'bundler'.
+apps/web/src/components/Admin/AdminShopSettings.tsx(5,31): error TS2307: Cannot find module '../../ui/PremiumLoader' or its corresponding type declarations.
+apps/web/src/components/Admin/AdminStoreManagement.tsx(5,31): error TS2307: Cannot find module '../../ui/PremiumLoader' or its corresponding type declarations.
+apps/web/src/components/Layout/AdminLayout.tsx(125,31): error TS2552: Cannot find name 'Store'. Did you mean 'Storage'?
+apps/web/src/components/Layout/AdminLayout.tsx(184,35): error TS2552: Cannot find name 'Store'. Did you mean 'Storage'?
+apps/web/src/pages/Admin/AdminShopSettingsPage.tsx(2,29): error TS2307: Cannot find module '../components/Layout/AdminLayout' or its corresponding type declarations.
+apps/web/src/pages/Admin/AdminShopSettingsPage.tsx(3,35): error TS2307: Cannot find module '../components/Admin/AdminShopSettings' or its corresponding type declarations.
+apps/web/src/pages/Admin/AdminShopSettingsPage.tsx(4,24): error TS2307: Cannot find module '../hooks/useSEO' or its corresponding type declarations.
+apps/web/src/pages/Admin/AdminStoreManagementPage.tsx(2,29): error TS2307: Cannot find module '../components/Layout/AdminLayout' or its corresponding type declarations.
+apps/web/src/pages/Admin/AdminStoreManagementPage.tsx(3,38): error TS2307: Cannot find module '../components/Admin/AdminStoreManagement' or its corresponding type declarations.
+apps/web/src/pages/Admin/AdminStoreManagementPage.tsx(4,24): error TS2307: Cannot find module '../hooks/useSEO' or its corresponding type declarations.

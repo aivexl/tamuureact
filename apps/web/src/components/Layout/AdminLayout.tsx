@@ -15,7 +15,8 @@ import {
     Music,
     ShieldCheck,
     Briefcase,
-    FileText
+    FileText,
+    Store
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { AdminChatSidebarWrapper } from './AdminChatSidebarWrapper';

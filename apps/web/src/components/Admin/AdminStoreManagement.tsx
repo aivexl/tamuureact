@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { Search, Filter, MoreVertical, ShieldAlert, Store, UserX, UserCheck, ShieldOff } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { PremiumLoader } from '../../ui/PremiumLoader';
+import { PremiumLoader } from '../ui/PremiumLoader';
 
 // Mock Data for Merchants
 const MOCK_MERCHANTS = [
