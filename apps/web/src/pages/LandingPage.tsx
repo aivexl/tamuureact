@@ -15,6 +15,7 @@ const BlogSection = lazy(() => import('../components/Landing/BlogSection'));
 const TestimonialsSection = lazy(() => import('../components/Landing/TestimonialsSection'));
 const FAQSection = lazy(() => import('../components/Landing/FAQSection'));
 const CTASection = lazy(() => import('../components/Landing/CTASection'));
+const ShopSection = lazy(() => import('../components/Landing/ShopSection'));
 
 const SectionLoader = () => (
     <div className="py-20 flex justify-center items-center bg-white">
@@ -195,6 +196,7 @@ export const LandingPage: React.FC = () => {
 
             <Suspense fallback={<SectionLoader />}>
                 <PricingSection />
+                <ShopSection />
                 <TestimonialsSection />
                 <FAQSection />
                 <BlogSection />

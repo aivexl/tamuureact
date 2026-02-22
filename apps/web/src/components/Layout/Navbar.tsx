@@ -63,6 +63,7 @@ export const Navbar: React.FC = () => {
     const navLinks = isLoggedIn ? [
         { name: 'Home', path: '/' },
         { name: 'Invitations', path: '/invitations' },
+        { name: 'Shop', path: '/shop' },
         { name: 'Blog', path: '/blog' },
         { name: 'Dashboard', path: '/dashboard' },
         { name: 'Event Saya', path: '/dashboard' },
@@ -70,6 +71,7 @@ export const Navbar: React.FC = () => {
     ] : [
         { name: 'Home', path: '/' },
         { name: 'Invitations', path: '/invitations' },
+        { name: 'Shop', path: '/shop' },
         { name: 'Blog', path: '/blog' },
         { name: 'Fitur', path: '/#features' },
         { name: 'Harga', path: '/#pricing' },

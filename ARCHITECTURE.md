@@ -215,6 +215,10 @@ npm run build:web     # Build web only
   - Premium Navy & Slate typography sync
   - Interactive "Glass" sidebar with Gold accents
   - Global responsive optimization for high-end merchant tools
+- **Landing Page Shop Discovery (v8.0)**:
+  - Premium "Shop Section" integrated into the main landing page.
+  - Dynamic merchant grid showcasing verified vendors.
+  - "More" CTA leading to the full shop directory (`/shop`).
 
 ---
 
