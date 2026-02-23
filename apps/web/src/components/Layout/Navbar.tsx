@@ -51,12 +51,17 @@ export const Navbar: React.FC = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isProfileOpen]);
 
-    const isAppRoute = location.pathname.startsWith('/dashboard') ||
+    const isAppDomain = window.location.hostname.startsWith('app.') ||
+        window.location.hostname.includes('tamuu-app');
+
+    const isAppRoute = isAppDomain ||
+        location.pathname.startsWith('/dashboard') ||
         location.pathname.startsWith('/admin') ||
         location.pathname.startsWith('/user') ||
         location.pathname.startsWith('/profile') ||
         location.pathname.startsWith('/guests') ||
         location.pathname.startsWith('/onboarding') ||
+        location.pathname.startsWith('/store') ||
         location.pathname.startsWith('/tools') ||
         (location.pathname === '/invitations' && location.search.includes('onboarding=true'));
 
@@ -77,8 +82,6 @@ export const Navbar: React.FC = () => {
         { name: 'Harga', path: '/#pricing' },
     ];
 
-    const isAppDomain = window.location.hostname.startsWith('app.') ||
-        window.location.hostname.includes('tamuu-app');
 
     const handleNavClick = (e: React.MouseEvent, path: string) => {
         if (path.startsWith('/#')) {
