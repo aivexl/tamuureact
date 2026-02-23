@@ -4,7 +4,7 @@ import { m, AnimatePresence } from 'framer-motion';
 import { Store, Link as LinkIcon, Briefcase, ArrowRight, Check, AlertCircle, X } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useStore } from '../../store/useStore';
-import { useOnboardMerchant } from '../../hooks/queries/useShop';
+import { useOnboardMerchant, useMerchantProfile } from '../../hooks/queries/useShop';
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
 import { useSEO } from '../../hooks/useSEO';
 import { shop } from '../../lib/api';
@@ -24,7 +24,15 @@ const SHOP_CATEGORIES = [
 export const MerchantOnboardingPage: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useStore();
+    const { data: profile } = useMerchantProfile(user?.id);
     const { mutateAsync: onboardMerchant, isPending } = useOnboardMerchant();
+
+    // Auto-redirect if already a merchant
+    React.useEffect(() => {
+        if (profile?.isMerchant && profile?.merchant?.slug) {
+            window.location.href = `/store/${profile.merchant.slug}/dashboard`;
+        }
+    }, [profile]);
 
     const [step, setStep] = useState(1);
     const [namaToko, setNamaToko] = useState('');

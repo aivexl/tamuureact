@@ -1009,7 +1009,10 @@ export const blog = {
 // ============================================
 export const shop = {
     async getMerchantMe(userId: string) {
-        const res = await safeFetch(`${API_BASE}/api/shop/merchant/me?userId=${userId}`);
+        // Append a cache buster to strictly avoid browser disk cache returning stale 'isMerchant: false'
+        const res = await safeFetch(`${API_BASE}/api/shop/merchant/me?userId=${userId}&_t=${Date.now()}`, {
+            cache: 'no-store'
+        });
         if (!res.ok) throw new Error('Failed to fetch merchant profile');
         const data = await res.json();
         return sanitizeValue(data);
