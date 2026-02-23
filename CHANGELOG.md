@@ -1,5 +1,24 @@
 # Tamuu Changelog
 
+## [2026-02-23] Feature: Granular Social Media Controls & UI Polish
+**Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
+**Environment**: Production
+
+### Social Media & Contact Identity
+- **Field Separation**: Decoupled the unified "Media Sosial & Website" input into four distinct, high-fidelity input fields for **Facebook**, **TikTok**, **Instagram**, and **Website**.
+- **Database Scaling**: Executed D1 migrations to add `facebook`, `tiktok`, and `website` columns to the `shop_contacts` table.
+- **API Data Binding**: Updated the Merchant Profile worker to support atomic persistence of new social media metadata.
+- **Conditional Visibility**: Implemented logic in `StorefrontPage.tsx` to automatically hide social media icons on public profiles if the corresponding data is not provided by the owner.
+
+### UI/UX Refinements
+- **Professional Re-labeling**: 
+  - Updated main header from *Identitas Toko* to **Profile Store**.
+  - Renamed branding section from *Profil Visual* to **Edit Profile**.
+  - Simplified slug input hint from *Slug* to **Link**.
+- **Action Semantics**: Changed the global sticky footer button from *Sync Vault* to **Save** for better clarity and alignment with standard dashboard patterns.
+- **Decluttering**: Removed the "Encrypted Communication Layer" badge from the Contact section for a cleaner, more focused interface.
+
+
 ## [2026-02-23] Feature: Merchant Portal Refinements & Analytics Integration
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`)
 **Environment**: Production

@@ -237,7 +237,7 @@ export const MerchantSettings: React.FC = () => {
                                         <div className="space-y-3 relative">
                                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Tautan Toko</label>
                                             <div className="relative flex items-center">
-                                                <span className="absolute left-6 text-[#FFBF00]/40 text-[10px] font-black uppercase tracking-widest select-none pt-0.5">Slug</span>
+                                                <span className="absolute left-6 text-[#FFBF00]/40 text-[10px] font-black uppercase tracking-widest select-none pt-0.5">Link</span>
                                                 <input
                                                     type="text"
                                                     value={merchantData?.merchant?.slug || ''}
@@ -280,10 +280,7 @@ export const MerchantSettings: React.FC = () => {
                                     <ContactIcon className="w-6 h-6 text-[#FFBF00]" />
                                     <h2 className="text-xl font-black">Kontak</h2>
                                 </div>
-                                <div className="hidden sm:flex items-center gap-3 px-5 py-2 rounded-full bg-white border border-slate-100 text-[9px] font-black text-slate-400 uppercase tracking-widest shadow-sm">
-                                    <LockIcon className="w-3.5 h-3.5 text-[#FFBF00]" />
-                                    <span>Encrypted Communication Layer</span>
-                                </div>
+
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
