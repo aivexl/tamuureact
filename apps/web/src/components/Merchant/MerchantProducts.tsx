@@ -58,6 +58,7 @@ export const MerchantProducts: React.FC = () => {
     const [namaProduk, setNamaProduk] = useState('');
     const [hargaEstimasi, setHargaEstimasi] = useState('');
     const [status, setStatus] = useState('DRAFT');
+    const [kategoriProduk, setKategoriProduk] = useState('');
     const [deskripsi, setDeskripsi] = useState('');
     const [images, setImages] = useState<string[]>([]);
 
@@ -69,6 +70,7 @@ export const MerchantProducts: React.FC = () => {
         setNamaProduk('');
         setHargaEstimasi('');
         setStatus('DRAFT');
+        setKategoriProduk('');
         setDeskripsi('');
         setImages([]);
     };
@@ -84,6 +86,7 @@ export const MerchantProducts: React.FC = () => {
         setNamaProduk(prod.nama_produk || '');
         setHargaEstimasi(prod.harga_estimasi || '');
         setStatus(prod.status || 'DRAFT');
+        setKategoriProduk(prod.kategori_produk || '');
         setDeskripsi(prod.deskripsi || '');
         setImages(prod.images ? prod.images.map((i: any) => i.image_url) : []);
         setView('edit');
@@ -130,6 +133,7 @@ export const MerchantProducts: React.FC = () => {
             nama_produk: namaProduk,
             deskripsi: deskripsi,
             harga_estimasi: hargaEstimasi,
+            kategori_produk: kategoriProduk,
             status: finalStatus,
             images: images
         };
@@ -271,7 +275,10 @@ export const MerchantProducts: React.FC = () => {
                                                         <p className="text-[9px] font-black text-[#FFBF00] uppercase tracking-widest mb-1 opacity-60">Price Guide</p>
                                                         <p className="text-xl font-black text-white">{prod.harga_estimasi || '-'}</p>
                                                     </div>
-                                                    <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">ID: {prod.id.split('-')[0]}</p>
+                                                    <div className="text-right">
+                                                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 opacity-60 line-clamp-1 max-w-24 overflow-hidden text-ellipsis">{prod.kategori_produk || 'Umum'}</p>
+                                                        <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">ID: {prod.id.split('-')[0]}</p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </m.div>
@@ -313,6 +320,17 @@ export const MerchantProducts: React.FC = () => {
                                                         value={hargaEstimasi}
                                                         onChange={e => setHargaEstimasi(e.target.value)}
                                                         placeholder="IDR 15,000,000++"
+                                                        className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-[#0A1128] placeholder:text-slate-400 focus:ring-1 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40 focus:outline-none transition-all"
+                                                    />
+                                                </div>
+
+                                                <div className="space-y-3">
+                                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Product Category</label>
+                                                    <input
+                                                        type="text"
+                                                        value={kategoriProduk}
+                                                        onChange={e => setKategoriProduk(e.target.value)}
+                                                        placeholder="e.g. Wedding Package, Grooming, Buffet"
                                                         className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-[#0A1128] placeholder:text-slate-400 focus:ring-1 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40 focus:outline-none transition-all"
                                                     />
                                                 </div>

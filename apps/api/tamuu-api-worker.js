@@ -1037,7 +1037,7 @@ export default {
                 if (method === 'POST') {
                     try {
                         const body = await request.json();
-                        const { merchant_id, nama_produk, deskripsi, harga_estimasi, status, images } = body;
+                        const { merchant_id, nama_produk, deskripsi, harga_estimasi, status, images, kategori_produk } = body;
 
                         if (!merchant_id || !nama_produk || !deskripsi) {
                             return json({ error: 'Missing required fields' }, { ...corsHeaders, status: 400 });
@@ -1046,9 +1046,9 @@ export default {
                         const productId = crypto.randomUUID();
 
                         await env.DB.prepare(`
-                            INSERT INTO shop_products (id, merchant_id, nama_produk, deskripsi, harga_estimasi, status)
-                            VALUES (?, ?, ?, ?, ?, ?)
-                        `).bind(productId, merchant_id, nama_produk, deskripsi, harga_estimasi || null, status || 'DRAFT').run();
+                            INSERT INTO shop_products (id, merchant_id, nama_produk, deskripsi, harga_estimasi, status, kategori_produk)
+                            VALUES (?, ?, ?, ?, ?, ?, ?)
+                        `).bind(productId, merchant_id, nama_produk, deskripsi, harga_estimasi || null, status || 'DRAFT', kategori_produk || null).run();
 
                         // Insert images if provided (array of URL strings)
                         if (Array.isArray(images) && images.length > 0) {
@@ -1073,7 +1073,7 @@ export default {
                         if (!productId) return json({ error: 'Product ID required' }, { ...corsHeaders, status: 400 });
 
                         const body = await request.json();
-                        const { nama_produk, deskripsi, harga_estimasi, status, images } = body;
+                        const { nama_produk, deskripsi, harga_estimasi, status, images, kategori_produk } = body;
 
                         await env.DB.prepare(`
                             UPDATE shop_products 
@@ -1081,9 +1081,10 @@ export default {
                                 deskripsi = COALESCE(?, deskripsi),
                                 harga_estimasi = COALESCE(?, harga_estimasi),
                                 status = COALESCE(?, status),
+                                kategori_produk = COALESCE(?, kategori_produk),
                                 updated_at = CURRENT_TIMESTAMP
                             WHERE id = ?
-                        `).bind(nama_produk, deskripsi, harga_estimasi, status, productId).run();
+                        `).bind(nama_produk, deskripsi, harga_estimasi, status, kategori_produk || null, productId).run();
 
                         // Sync images if provided (delete all and re-insert for simplicity)
                         if (Array.isArray(images)) {

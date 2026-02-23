@@ -2,6 +2,7 @@ import React from 'react';
 import { useStore } from '../../store/useStore';
 import { useMerchantProfile, useMerchantAnalytics } from '../../hooks/queries/useShop';
 import { m } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const TrendingUpIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" /></svg>
@@ -29,6 +30,7 @@ const ZapIcon = ({ className }: { className?: string }) => (
 );
 
 export const MerchantOverview: React.FC<{ setTab?: (tab: string) => void }> = ({ setTab }) => {
+    const navigate = useNavigate();
     const user = useStore(s => s.user);
     const { data: merchantData, isLoading: profileLoading } = useMerchantProfile(user?.id);
     const merchant = merchantData?.merchant;
@@ -139,7 +141,7 @@ export const MerchantOverview: React.FC<{ setTab?: (tab: string) => void }> = ({
                             <p className="text-[10px] uppercase font-black tracking-widest text-[#FFBF00] mt-1">Real-time Trends</p>
                         </div>
                         <button
-                            onClick={() => setTab && setTab('analytics')}
+                            onClick={() => navigate('../analytics')}
                             className="text-[11px] font-bold text-[#FFBF00] bg-[#FFBF00]/5 px-5 py-2.5 rounded-full hover:bg-[#FFBF00] hover:text-[#0A1128] transition-all duration-300 border border-[#FFBF00]/20"
                         >
                             Advanced Hub
@@ -181,7 +183,7 @@ export const MerchantOverview: React.FC<{ setTab?: (tab: string) => void }> = ({
 
                     <div className="space-y-4 flex-1">
                         <button
-                            onClick={() => setTab && setTab('products')}
+                            onClick={() => navigate('../products')}
                             className="w-full group flex items-center justify-center gap-3 bg-[#FFBF00] hover:bg-[#FFD700] text-[#0A1128] font-black py-5 px-6 rounded-2xl transition-all shadow-md active:scale-95 text-xs uppercase tracking-widest"
                         >
                             <PlusIcon className="w-5 h-5" />
@@ -189,7 +191,7 @@ export const MerchantOverview: React.FC<{ setTab?: (tab: string) => void }> = ({
                         </button>
 
                         <button
-                            onClick={() => setTab && setTab('settings')}
+                            onClick={() => navigate('../settings')}
                             className="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 hover:bg-slate-50 text-[#0A1128] font-bold py-5 px-6 rounded-2xl transition-all active:scale-95 text-xs uppercase tracking-widest"
                         >
                             <SettingsIcon className="w-5 h-5 text-slate-400" />
@@ -209,7 +211,7 @@ export const MerchantOverview: React.FC<{ setTab?: (tab: string) => void }> = ({
                         </p>
                         {!merchant?.is_sponsored && (
                             <button
-                                onClick={() => setTab && setTab('ads')}
+                                onClick={() => navigate('../ads')}
                                 className="text-[9px] font-black uppercase tracking-widest text-[#FFBF00] flex items-center gap-2 hover:gap-3 transition-all"
                             >
                                 Boost Reach Now <PlusIcon className="w-3 h-3" />
