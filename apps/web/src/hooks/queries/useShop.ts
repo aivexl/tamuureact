@@ -63,8 +63,8 @@ export const useOnboardMerchant = () => {
     return useMutation({
         mutationFn: (data: { user_id: string, nama_toko: string, slug: string, category_id: string, deskripsi?: string }) =>
             shop.onboardMerchant(data),
-        onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: ['merchant_profile', variables.user_id] });
+        onSuccess: async (_, variables) => {
+            await queryClient.invalidateQueries({ queryKey: ['merchant_profile', variables.user_id] });
         }
     });
 };
