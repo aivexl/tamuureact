@@ -9,6 +9,9 @@ import {
     MapPin,
     MessageCircle,
     Instagram,
+    Facebook,
+    Globe,
+    Music2,
     Mail,
     ChevronRight,
     ShoppingBag
@@ -134,13 +137,32 @@ export const StorefrontPage: React.FC = () => {
                                     Login to reveal
                                 </button>
                             ) : (
-                                <div className="flex gap-2 w-full sm:w-auto">
-                                    <button className="flex-1 sm:flex-none p-4 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-emerald-500 hover:border-emerald-500/20 transition-all flex items-center justify-center">
-                                        <MessageCircle className="w-5 h-5" />
-                                    </button>
-                                    <button className="flex-1 sm:flex-none p-4 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-pink-500 hover:border-pink-500/20 transition-all flex items-center justify-center">
-                                        <Instagram className="w-5 h-5" />
-                                    </button>
+                                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                                    {contacts.whatsapp && (
+                                        <a href={`https://wa.me/${contacts.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="p-4 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-emerald-500 hover:border-emerald-500/20 transition-all flex items-center justify-center">
+                                            <MessageCircle className="w-5 h-5" />
+                                        </a>
+                                    )}
+                                    {contacts.instagram && (
+                                        <a href={`https://instagram.com/${contacts.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="p-4 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-pink-500 hover:border-pink-500/20 transition-all flex items-center justify-center">
+                                            <Instagram className="w-5 h-5" />
+                                        </a>
+                                    )}
+                                    {contacts.facebook && (
+                                        <a href={contacts.facebook.startsWith('http') ? contacts.facebook : `https://${contacts.facebook}`} target="_blank" rel="noopener noreferrer" className="p-4 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-blue-600 hover:border-blue-600/20 transition-all flex items-center justify-center">
+                                            <Facebook className="w-5 h-5" />
+                                        </a>
+                                    )}
+                                    {contacts.tiktok && (
+                                        <a href={`https://tiktok.com/${contacts.tiktok.startsWith('@') ? '' : '@'}${contacts.tiktok}`} target="_blank" rel="noopener noreferrer" className="p-4 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-black hover:border-black/20 transition-all flex items-center justify-center">
+                                            <Music2 className="w-5 h-5" />
+                                        </a>
+                                    )}
+                                    {contacts.website && (
+                                        <a href={contacts.website.startsWith('http') ? contacts.website : `https://${contacts.website}`} target="_blank" rel="noopener noreferrer" className="p-4 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-indigo-500 hover:border-indigo-500/20 transition-all flex items-center justify-center">
+                                            <Globe className="w-5 h-5" />
+                                        </a>
+                                    )}
                                 </div>
                             )}
                         </m.div>
