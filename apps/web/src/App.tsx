@@ -66,6 +66,7 @@ const AdminStoreManagementPage = lazy(() => import('./pages/Admin/AdminStoreMana
 
 // Shop & Merchant Pages
 const MerchantPortalPage = lazy(() => import('./pages/Merchant/MerchantPortalPage').then(m => ({ default: m.MerchantPortalPage })));
+const MerchantOnboardingPage = lazy(() => import('./pages/Merchant/MerchantOnboardingPage').then(m => ({ default: m.MerchantOnboardingPage })));
 const ShopPage = lazy(() => import('./pages/Shop/ShopPage'));
 const StorefrontPage = lazy(() => import('./pages/Shop/StorefrontPage'));
 const ProductDetailPage = lazy(() => import('./pages/Shop/ProductDetailPage'));
@@ -183,6 +184,7 @@ const App: React.FC = () => {
                                 <Route path="/admin/blog/:id" element={<ProtectedRoute requiredRole="admin"><AdminBlogEditor /></ProtectedRoute>} />
 
                                 {/* Merchant Portal (Seller Center) */}
+                                <Route path="/store/onboarding" element={<ProtectedRoute><MerchantOnboardingPage /></ProtectedRoute>} />
                                 <Route path="/store/:storeSlug/*" element={<ProtectedRoute><MerchantPortalPage /></ProtectedRoute>} />
 
 
@@ -216,6 +218,7 @@ const App: React.FC = () => {
                                 <Route path="/upgrade" element={<ExternalRedirect to="https://app.tamuu.id/upgrade" />} />
                                 <Route path="/guests/*" element={<ExternalRedirect to="https://app.tamuu.id/guests" />} />
                                 <Route path="/admin/*" element={<ExternalRedirect to="https://app.tamuu.id/admin/dashboard" />} />
+                                <Route path="/store/onboarding" element={<ExternalRedirect to="https://app.tamuu.id/store/onboarding" />} />
                                 <Route path="/store/*" element={<ExternalRedirect to="https://app.tamuu.id/dashboard" />} />
                                 <Route path="/editor/*" element={<ExternalRedirect to="https://app.tamuu.id/dashboard" />} />
                                 <Route path="/user/*" element={<ExternalRedirect to="https://app.tamuu.id/dashboard" />} />

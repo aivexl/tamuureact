@@ -126,7 +126,7 @@ export const SmartMerchantCard: React.FC = () => {
                 </p>
 
                 <button
-                    onClick={() => navigate('/shop/onboarding')}
+                    onClick={() => navigate('/store/onboarding')}
                     className="mt-auto w-full py-4 bg-teal-600 text-white font-black rounded-2xl hover:bg-teal-700 transition-all shadow-xl shadow-teal-600/20 active:scale-95 text-sm flex justify-center items-center gap-2"
                 >
                     Mulai Berjualan <ArrowRightIcon className="w-4 h-4" />
