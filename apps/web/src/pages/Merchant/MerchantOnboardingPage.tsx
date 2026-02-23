@@ -152,15 +152,15 @@ export const MerchantOnboardingPage: React.FC = () => {
                         return (
                             <React.Fragment key={s}>
                                 <div className="flex flex-col items-center gap-1">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500 ${isActive ? 'bg-teal-500 text-white scale-110 shadow-lg shadow-teal-500/20' : isDone ? 'bg-teal-100 text-teal-600' : 'bg-slate-100 text-slate-300'}`}>
-                                        {isDone ? <Check className="w-4 h-4" /> : <div className="text-xs font-black">{s}</div>}
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500 ${isActive ? 'bg-indigo-500 text-white scale-110 shadow-lg shadow-indigo-500/20' : isDone ? 'bg-indigo-50 text-indigo-500 border border-indigo-100' : 'bg-white border border-slate-100 text-slate-300 shadow-sm'}`}>
+                                        {isDone ? <Check className="w-4 h-4" strokeWidth={3} /> : <div className="text-xs font-bold">{s}</div>}
                                     </div>
-                                    <span className={`text-[8px] font-black uppercase tracking-widest ${isActive ? 'text-teal-600' : 'text-slate-400'}`}>
+                                    <span className={`text-[10px] font-bold uppercase tracking-widest ${isActive ? 'text-indigo-600' : 'text-slate-400'}`}>
                                         {s === 1 ? 'NAMA TOKO' : s === 2 ? 'KATEGORI' : 'LINK TOKO'}
                                     </span>
                                 </div>
                                 {s < 3 && (
-                                    <div className={`flex-1 h-0.5 mt-[-14px] transition-colors duration-500 ${isDone ? 'bg-teal-500/20' : 'bg-slate-100'}`} />
+                                    <div className={`flex-1 h-0.5 mt-[-14px] transition-colors duration-500 ${isDone ? 'bg-indigo-500/30' : 'bg-slate-100'}`} />
                                 )}
                             </React.Fragment>
                         );
@@ -172,47 +172,49 @@ export const MerchantOnboardingPage: React.FC = () => {
                 <AnimatePresence mode="wait">
                     {/* STEP 1: NAMA TOKO */}
                     {step === 1 && (
-                        <m.div key="step1" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }} className="max-w-xl w-full text-center space-y-10">
+                        <m.div key="step1" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }} className="max-w-[540px] w-full text-center space-y-10">
                             <div className="space-y-4">
-                                <div className="w-20 h-20 bg-teal-500 text-white rounded-[2rem] flex items-center justify-center mx-auto shadow-2xl shadow-teal-500/20 animate-bounce">
+                                <div className="w-20 h-20 bg-indigo-500 text-white rounded-[2rem] flex items-center justify-center mx-auto shadow-[0_8px_30px_rgb(99,102,241,0.3)] animate-bounce">
                                     <Store className="w-10 h-10" />
                                 </div>
-                                <h1 className="text-3xl md:text-4xl font-black text-slate-900 leading-tight">Mulai Ekosistem Bisnismu</h1>
+                                <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 leading-tight">Mulai Ekosistem Bisnismu</h1>
                                 <p className="text-slate-500 text-lg">Apa nama brand atau toko jasa Anda?</p>
                             </div>
 
-                            <div className="bg-white rounded-[3rem] p-8 shadow-2xl border border-slate-50 text-left">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4 mb-2 block">Nama Brand / Toko</label>
-                                <input
-                                    type="text"
-                                    value={namaToko}
-                                    onChange={handleNamaTokoChange}
-                                    autoFocus
-                                    className="w-full px-8 py-5 bg-slate-50 border-none rounded-[1.5rem] focus:ring-4 focus:ring-teal-500/10 text-xl font-bold text-slate-900 placeholder:text-slate-300"
-                                    placeholder="Contoh: The Grand Estate"
-                                />
+                            <div className="bg-white rounded-[2rem] p-8 lg:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col gap-3 text-left">
+                                <label className="text-xs font-semibold text-slate-400 ml-2">Nama Brand / Toko</label>
+                                <div className="group relative flex items-center bg-slate-50 hover:bg-slate-100/50 transition-all duration-300 rounded-[1.5rem] border border-transparent focus-within:!bg-white focus-within:!border-indigo-100 focus-within:ring-4 focus-within:ring-indigo-500/10 overflow-hidden px-6 py-2 h-20">
+                                    <input
+                                        type="text"
+                                        value={namaToko}
+                                        onChange={handleNamaTokoChange}
+                                        autoFocus
+                                        className="flex-1 bg-transparent border-none outline-none text-lg lg:text-xl font-bold text-slate-900 placeholder:text-slate-300 w-full"
+                                        placeholder="Contoh: The Grand Estate"
+                                    />
+                                </div>
                             </div>
                         </m.div>
                     )}
 
                     {/* STEP 2: CATEGORY */}
                     {step === 2 && (
-                        <m.div key="step2" initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -100 }} className="max-w-2xl w-full text-center space-y-10">
+                        <m.div key="step2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }} className="max-w-[720px] w-full text-center space-y-10">
                             <div className="space-y-4">
-                                <div className="w-16 h-16 bg-white border border-slate-100 rounded-3xl flex items-center justify-center mx-auto shadow-xl">
-                                    <Briefcase className="w-8 h-8 text-amber-500" />
+                                <div className="w-16 h-16 bg-white border border-slate-100/50 rounded-full flex items-center justify-center mx-auto shadow-sm">
+                                    <Briefcase className="w-7 h-7 text-indigo-500" strokeWidth={2.5} />
                                 </div>
-                                <h1 className="text-3xl font-black text-slate-900 leading-tight">Kategori Utama</h1>
-                                <p className="text-slate-500">Pilih industri yang paling sesuai dengan layanan Anda.</p>
+                                <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 leading-tight">Kategori Utama</h1>
+                                <p className="text-slate-500 text-lg">Pilih industri yang paling sesuai dengan layanan Anda.</p>
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 {SHOP_CATEGORIES.map(category => (
                                     <button
                                         key={category}
                                         onClick={() => setCategoryId(category)}
-                                        className={`p-4 rounded-[1.5rem] border-2 transition-all duration-300 ${categoryId === category ? 'border-teal-500 bg-teal-50/50 shadow-xl scale-105' : 'border-slate-100 bg-white hover:border-slate-200'}`}
+                                        className={`p-5 rounded-[1.5rem] border-2 transition-all duration-300 ${categoryId === category ? 'border-indigo-500 bg-indigo-50 shadow-lg scale-[1.03] ring-4 ring-indigo-500/10' : 'border-transparent bg-white shadow-sm hover:border-slate-200'}`}
                                     >
-                                        <h3 className={`font-black text-sm ${categoryId === category ? 'text-teal-600' : 'text-slate-700'}`}>{category}</h3>
+                                        <h3 className={`font-semibold text-sm ${categoryId === category ? 'text-indigo-600' : 'text-slate-600'}`}>{category}</h3>
                                     </button>
                                 ))}
                             </div>
@@ -221,47 +223,52 @@ export const MerchantOnboardingPage: React.FC = () => {
 
                     {/* STEP 3: SLUG */}
                     {step === 3 && (
-                        <m.div key="step3" initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -100 }} className="max-w-xl w-full text-center space-y-10">
+                        <m.div key="step3" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }} className="max-w-[540px] w-full text-center space-y-10">
                             <div className="space-y-4">
-                                <div className="w-16 h-16 bg-white border border-slate-100 rounded-3xl flex items-center justify-center mx-auto shadow-xl">
-                                    <LinkIcon className="w-8 h-8 text-blue-500" />
+                                <div className="w-16 h-16 bg-white border border-slate-100/50 rounded-full flex items-center justify-center mx-auto shadow-sm">
+                                    <LinkIcon className="w-7 h-7 text-indigo-500" strokeWidth={2.5} />
                                 </div>
-                                <h1 className="text-3xl font-black text-slate-900 leading-tight">Klaim URL Toko Anda</h1>
-                                <p className="text-slate-500">Buat tautan unik untuk etalase profesional Anda.</p>
+                                <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 leading-tight">URL Toko Spesialmu</h1>
+                                <p className="text-slate-500 text-lg">Buat identitas web yang elegan dan mudah diingat.</p>
                             </div>
 
-                            <div className="bg-white rounded-[3rem] p-8 shadow-2xl border border-slate-50 space-y-6">
-                                <div className="text-left space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Custom Link</label>
-                                    <div className="flex flex-col sm:flex-row sm:items-center overflow-hidden rounded-[1.5rem] border border-slate-200 focus-within:ring-4 focus-within:ring-teal-500/10 focus-within:border-teal-500 transition-all">
-                                        <div className="px-6 py-4 bg-slate-50 text-slate-400 font-bold select-none text-base border-b sm:border-b-0 sm:border-r border-slate-200 whitespace-nowrap">
+                            <div className="bg-white rounded-[2rem] p-8 lg:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col gap-6">
+                                <div className="text-left space-y-3">
+                                    <label className="text-xs font-semibold text-slate-400 ml-2">Tautan Kustom</label>
+
+                                    <div className="group relative flex items-center bg-slate-50 hover:bg-slate-100/50 transition-all duration-300 rounded-[1.5rem] border border-transparent focus-within:!bg-white focus-within:!border-indigo-100 focus-within:ring-4 focus-within:ring-indigo-500/10 overflow-hidden px-6 py-2 h-20">
+                                        <span className="text-slate-400 font-medium text-lg lg:text-xl select-none mr-0.5 tracking-tight">
                                             tamuu.id/shop/
-                                        </div>
+                                        </span>
                                         <input
                                             autoFocus
                                             type="text"
                                             value={slug}
                                             maxLength={24}
                                             onChange={handleSlugChange}
-                                            className="flex-1 px-6 py-4 bg-white outline-none text-lg font-bold text-slate-900 placeholder:text-slate-200 font-mono"
-                                            placeholder="grand_estate"
+                                            className="flex-1 bg-transparent border-none outline-none text-lg lg:text-xl font-bold text-slate-900 placeholder:text-slate-300 w-full min-w-0"
+                                            placeholder="brand_anda"
                                         />
+
                                         {/* Status Indicator */}
-                                        <div className="pr-4 flex items-center justify-center bg-white">
+                                        <div className="pl-3 flex items-center justify-center shrink-0">
                                             {isCheckingSlug ? (
-                                                <div className="w-5 h-5 border-2 border-slate-200 border-t-teal-500 rounded-full animate-spin" />
+                                                <div className="w-5 h-5 border-2 border-slate-200 border-t-indigo-500 rounded-full animate-spin" />
                                             ) : isSlugAvailable === true ? (
-                                                <Check className="w-6 h-6 text-teal-500 transition-transform duration-300 scale-110" />
+                                                <m.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center">
+                                                    <Check className="w-5 h-5 text-indigo-600" strokeWidth={3} />
+                                                </m.div>
                                             ) : isSlugAvailable === false ? (
-                                                <X className="w-6 h-6 text-rose-500" />
+                                                <m.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center">
+                                                    <X className="w-5 h-5 text-rose-500" strokeWidth={3} />
+                                                </m.div>
                                             ) : null}
                                         </div>
                                     </div>
-                                    <div className="flex items-start justify-between mt-3 px-4">
-                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
-                                            Kecil, angka, & garis bawah (_)
-                                        </p>
-                                        <span className={`text-[10px] font-black uppercase tracking-widest ${slug.length >= 24 ? 'text-amber-500' : 'text-slate-300'}`}>
+
+                                    <div className="flex items-center justify-between px-3 mt-4">
+                                        <p className="text-xs text-slate-400 font-medium">Hanya huruf kecil, angka, dan `_`</p>
+                                        <span className={`text-xs font-bold ${slug.length >= 24 ? 'text-amber-500' : 'text-slate-300'}`}>
                                             {slug.length}/24
                                         </span>
                                     </div>
@@ -270,13 +277,15 @@ export const MerchantOnboardingPage: React.FC = () => {
                                 <AnimatePresence>
                                     {error && (
                                         <m.div
-                                            initial={{ opacity: 0, y: -10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -10 }}
-                                            className="flex items-start gap-2.5 text-xs font-semibold text-rose-600 bg-rose-50/80 p-4 rounded-2xl border border-rose-100"
+                                            initial={{ opacity: 0, height: 0, y: -10 }}
+                                            animate={{ opacity: 1, height: 'auto', y: 0 }}
+                                            exit={{ opacity: 0, height: 0, y: -10 }}
+                                            className="overflow-hidden"
                                         >
-                                            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                                            <p className="leading-snug">{error}</p>
+                                            <div className="inline-flex items-center gap-2 text-sm font-medium text-rose-600 bg-rose-50/80 px-4 py-2.5 rounded-full border border-rose-100/50">
+                                                <AlertCircle className="w-4 h-4" />
+                                                <p>{error}</p>
+                                            </div>
                                         </m.div>
                                     )}
                                 </AnimatePresence>
@@ -292,7 +301,7 @@ export const MerchantOnboardingPage: React.FC = () => {
                     <button
                         onClick={nextStep}
                         disabled={!isStepValid() || isPending}
-                        className={`group relative w-full h-16 rounded-[2.5rem] font-black text-sm uppercase tracking-[0.2em] shadow-2xl transition-all flex items-center justify-center gap-3 active:scale-95 ${isStepValid() && !isPending ? 'bg-slate-900 text-white hover:bg-teal-600' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+                        className={`group relative w-full h-16 rounded-[2rem] font-bold tracking-widest uppercase shadow-2xl transition-all flex items-center justify-center gap-3 active:scale-95 ${isStepValid() && !isPending ? 'bg-slate-900 text-white hover:bg-indigo-600' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
                     >
                         {isPending ? (
                             <PremiumLoader variant="inline" size="sm" color="#ffffff" label="Processing..." showLabel />
@@ -303,7 +312,7 @@ export const MerchantOnboardingPage: React.FC = () => {
                             </>
                         )}
                         {isStepValid() && !isPending && (
-                            <m.div layoutId="glow" className="absolute inset-0 rounded-[2.5rem] bg-teal-400/20 blur-xl -z-10" />
+                            <m.div layoutId="glow" className="absolute inset-0 rounded-[2rem] bg-indigo-500/20 blur-xl -z-10" />
                         )}
                     </button>
                 </div>
