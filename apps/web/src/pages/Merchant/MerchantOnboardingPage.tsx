@@ -8,7 +8,7 @@ import { useOnboardMerchant } from '../../hooks/queries/useShop';
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
 import { useSEO } from '../../hooks/useSEO';
 import { shop } from '../../lib/api';
-import { Navbar } from '../Layout/Navbar';
+import { Navbar } from '../../components/Layout/Navbar';
 
 const SHOP_CATEGORIES = [
     'Makeup Artist',
