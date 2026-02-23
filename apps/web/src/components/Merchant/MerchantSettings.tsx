@@ -52,6 +52,9 @@ export const MerchantSettings: React.FC = () => {
     const [bannerUrl, setBannerUrl] = useState('');
     const [whatsapp, setWhatsapp] = useState('');
     const [instagram, setInstagram] = useState('');
+    const [facebook, setFacebook] = useState('');
+    const [tiktok, setTiktok] = useState('');
+    const [website, setWebsite] = useState('');
     const [email, setEmail] = useState('');
     const [alamat, setAlamat] = useState('');
 
@@ -66,14 +69,18 @@ export const MerchantSettings: React.FC = () => {
     useEffect(() => {
         if (merchantData?.merchant) {
             const m = merchantData.merchant;
+            const c = merchantData.contacts || {};
             setNamaToko(m.nama_toko || '');
             setDeskripsi(m.deskripsi || '');
             setLogoUrl(m.logo_url || '');
             setBannerUrl(m.banner_url || '');
-            setWhatsapp(m.whatsapp || '');
-            setInstagram(m.instagram || '');
-            setEmail(m.email || '');
-            setAlamat(m.alamat || '');
+            setWhatsapp(c.whatsapp || '');
+            setInstagram(c.instagram || '');
+            setFacebook(c.facebook || '');
+            setTiktok(c.tiktok || '');
+            setWebsite(c.website || '');
+            setEmail(c.email || '');
+            setAlamat(c.alamat || '');
             setIsDirty(false);
         }
     }, [merchantData]);
@@ -120,6 +127,9 @@ export const MerchantSettings: React.FC = () => {
                     banner_url: bannerUrl,
                     whatsapp: whatsapp,
                     instagram: instagram,
+                    facebook: facebook,
+                    tiktok: tiktok,
+                    website: website,
                     email: email,
                     alamat: alamat
                 }
@@ -152,7 +162,7 @@ export const MerchantSettings: React.FC = () => {
                 {/* Page Header */}
                 <header className="space-y-3">
                     <m.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="text-4xl font-black tracking-tight text-[#0A1128]">
-                        Identitas <span className="text-[#FFBF00]">Toko</span>
+                        Profile <span className="text-[#FFBF00]">Store</span>
                     </m.h1>
                     <m.p initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="text-slate-500 text-xs font-black uppercase tracking-[0.2em] max-w-xl">
                         Atur profil dan informasi publik toko Anda.
@@ -171,9 +181,9 @@ export const MerchantSettings: React.FC = () => {
                             <div className="flex items-center justify-between relative">
                                 <div className="flex items-center gap-4 text-[#0A1128]">
                                     <StorefrontIcon className="w-6 h-6 text-[#FFBF00]" />
-                                    <h2 className="text-xl font-black">Profil <span className="text-[#FFBF00]">Visual</span></h2>
+                                    <h2 className="text-xl font-black">Edit <span className="text-[#FFBF00]">Profile</span></h2>
                                 </div>
-                                <span className="px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-[#FFBF00] text-[#0A1128] border border-[#FFBF00] shadow-[0_4px_10px_rgba(255,191,0,0.2)]">Live Profile</span>
+
                             </div>
 
                             <div className="space-y-10">
@@ -225,7 +235,7 @@ export const MerchantSettings: React.FC = () => {
                                             />
                                         </div>
                                         <div className="space-y-3 relative">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Tautan Toko (Slug)</label>
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Tautan Toko</label>
                                             <div className="relative flex items-center">
                                                 <span className="absolute left-6 text-[#FFBF00]/40 text-[10px] font-black uppercase tracking-widest select-none pt-0.5">Slug</span>
                                                 <input
@@ -292,14 +302,56 @@ export const MerchantSettings: React.FC = () => {
                                 </div>
 
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Media Sosial & Website</label>
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Instagram</label>
                                     <div className="relative">
                                         <GlobeIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[#FFBF00]/40" />
                                         <input
                                             type="text"
                                             value={instagram}
                                             onChange={handleChange(setInstagram)}
-                                            placeholder="IG: @toko, FB: /toko, Web: toko.com"
+                                            placeholder="@grandestate"
+                                            className="w-full bg-white border border-slate-200 rounded-2xl pl-14 pr-6 py-4 text-sm font-bold text-[#0A1128] placeholder-slate-400 focus:ring-1 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40 focus:outline-none transition-all"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Facebook</label>
+                                    <div className="relative">
+                                        <GlobeIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[#FFBF00]/40" />
+                                        <input
+                                            type="text"
+                                            value={facebook}
+                                            onChange={handleChange(setFacebook)}
+                                            placeholder="fb.com/grandestate"
+                                            className="w-full bg-white border border-slate-200 rounded-2xl pl-14 pr-6 py-4 text-sm font-bold text-[#0A1128] placeholder-slate-400 focus:ring-1 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40 focus:outline-none transition-all"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">TikTok</label>
+                                    <div className="relative">
+                                        <GlobeIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[#FFBF00]/40" />
+                                        <input
+                                            type="text"
+                                            value={tiktok}
+                                            onChange={handleChange(setTiktok)}
+                                            placeholder="@grandestatetiktok"
+                                            className="w-full bg-white border border-slate-200 rounded-2xl pl-14 pr-6 py-4 text-sm font-bold text-[#0A1128] placeholder-slate-400 focus:ring-1 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40 focus:outline-none transition-all"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Website</label>
+                                    <div className="relative">
+                                        <GlobeIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[#FFBF00]/40" />
+                                        <input
+                                            type="text"
+                                            value={website}
+                                            onChange={handleChange(setWebsite)}
+                                            placeholder="https://grandestate.id"
                                             className="w-full bg-white border border-slate-200 rounded-2xl pl-14 pr-6 py-4 text-sm font-bold text-[#0A1128] placeholder-slate-400 focus:ring-1 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40 focus:outline-none transition-all"
                                         />
                                     </div>
@@ -347,7 +399,7 @@ export const MerchantSettings: React.FC = () => {
                     {saveStatus === 'success' ? (
                         <m.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#FFBF00]/10 border border-[#FFBF00]/30">
                             <CheckCircleIcon className="w-4 h-4 text-[#FFBF00]" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-[#FFBF00]">Vault Synchronized</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-[#FFBF00]">Saved</span>
                         </m.div>
                     ) : saveStatus === 'error' ? (
                         <div className="flex items-center gap-2">
@@ -383,7 +435,7 @@ export const MerchantSettings: React.FC = () => {
                         `}
                     >
                         {isSaving ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-[#0A1128]"></div> : null}
-                        {isSaving ? 'Processing...' : 'Sync Vault'}
+                        {isSaving ? 'Processing...' : 'Save'}
                     </button>
                 </div>
             </m.div>

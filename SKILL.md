@@ -146,5 +146,29 @@ This index contains links to all documentation pages in `.md.txt` format. Use we
 - [Text generation](https://ai.google.dev/gemini-api/docs/text-generation.md.txt)
 - [Image understanding](https://ai.google.dev/gemini-api/docs/image-understanding.md.txt)
 - [Embeddings](https://ai.google.dev/gemini-api/docs/embeddings.md.txt)
-- [Interactions API](https://ai.google.dev/gemini-api/docs/interactions.md.txt)
 - [SDK migration guide](https://ai.google.dev/gemini-api/docs/migrate.md.txt)
+
+---
+
+## Merchant Dashboard Operation (v6.0 Light Enterprise)
+
+### 1. Mengelola Identitas Toko (Shop Identity)
+- Buka **Merchant Portal** -> menu **Settings** (`/store/[slug]/settings`).
+- Untuk mengganti **Banner Visual**: Klik langsung pada area gambar banner. (Direncanakan aspect ratio 4:1 panorama).
+- Untuk mengganti **Logo Toko**: Klik pada frame logo bundar. (Keduanya kini dioptimasi tanpa efek zoom hover mengganggu).
+- Isi **Media Sosial & Website**: Masukkan semua link secara comma separated (misal: `IG:` `@namatoko`, `FB:` `fb.com/toko`, `Web:` `toko.com`).
+- **Penting:** Pengubahan *Tautan Toko (Slug)* dibatasi otomatis oleh sistem (hanya bisa 1x dalam 14 hari) untuk menjaga integritas SEO.
+
+### 2. Memantau Performa Melalui Analytics Hub
+- Buka **Merchant Portal** -> menu **Analytics**.
+- Modul ini menggunakan UI Light-theme yang responsif.
+- Lihat **Product Reach (Kinerja Produk/Jasa)**: Sistem akan melist semua produk Anda yang telah diupload beserta jumlah impression (views) individual menggunakan icon mata kuning.
+- Status data real-time: **System Online / Telemetry Active** terpantau di card hijau bawah.
+
+### 3. Ads & Growth Hub
+- Buka **Merchant Portal** -> menu **Ads & Growth Hub**.
+- Panel ini menarik telemetry real dari D1 Database menggunakan fungsi `useMerchantAnalytics`.
+- Fokus pada metrik seperti **Total Impressions** (Reach Publik) dan **Contact Leads** (Klik link eksternal oleh tamu).
+- **Prognostic Info:** Nilai Conversion (Contact Leads / Total Impressions) akan tertera di Progress bar diagnostika toko.
+
+*(Catatan: Langkah pengoperasian Merchant Dashboard ini ditambahkan sesuai arahan di luar spesifikasi murni Gemini API SDK)*
