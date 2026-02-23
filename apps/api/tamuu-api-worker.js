@@ -1326,6 +1326,12 @@ export default {
                         if (row.action_type === 'SHARE_PRODUCT') totals.shares = row.count;
                     });
 
+                    // Individual product impressions
+                    const productImpressionsQuery = await env.DB.prepare(
+                        'SELECT product_id, COUNT(*) as views FROM shop_analytics WHERE merchant_id = ? AND action_type = "VIEW_PRODUCT" AND product_id IS NOT NULL GROUP BY product_id'
+                    ).bind(merchantId).all();
+                    const productImpressions = productImpressionsQuery.results;
+
                     // Activity over last 7 days (Daily aggregation based on created_at DATETIME)
                     const dailyRows = await env.DB.prepare(`
                         SELECT DATE(created_at) as date, action_type, COUNT(*) as count 
@@ -1356,7 +1362,7 @@ export default {
                         chartData.push(dayStats);
                     }
 
-                    return json({ success: true, totals, chartData }, corsHeaders);
+                    return json({ success: true, totals, chartData, productImpressions }, corsHeaders);
                 } catch (error) {
                     console.error('[Shop) Analytics Error:', error);
                     return json({ error: 'Failed to fetch analytics', details: error.message }, { ...corsHeaders, status: 500 });

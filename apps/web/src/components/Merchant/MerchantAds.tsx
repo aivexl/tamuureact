@@ -1,7 +1,7 @@
 import React from 'react';
 import { m } from 'framer-motion';
 import { useStore } from '../../store/useStore';
-import { useMerchantProfile, useBoostShop } from '../../hooks/queries/useShop';
+import { useMerchantProfile, useBoostShop, useMerchantAnalytics } from '../../hooks/queries/useShop';
 
 // Icons
 const ZapIcon = ({ className }: { className?: string }) => (
@@ -27,6 +27,9 @@ export const MerchantAds: React.FC = () => {
 
     const merchant = merchantData?.merchant;
     const isBoosted = merchant?.is_sponsored;
+
+    const { data: analyticsRes } = useMerchantAnalytics(merchant?.id);
+    const totals = analyticsRes?.totals || { profileViews: 0, contactClicks: 0, productViews: 0 };
 
     const handleBoost = async () => {
         if (!merchant?.id || !user?.id) return;
@@ -111,24 +114,24 @@ export const MerchantAds: React.FC = () => {
                             <TelemetryCard
                                 icon={EyeIcon}
                                 label="Total Impressions"
-                                value={isBoosted ? "42,891" : "1,204"}
-                                trend="+240%"
+                                value={totals.productViews.toLocaleString()}
+                                trend={isBoosted ? "+240%" : "-"}
                                 color="#FFBF00"
                                 delay={0.3}
                             />
                             <TelemetryCard
                                 icon={MousePointerClickIcon}
                                 label="Click Throughs"
-                                value={isBoosted ? "852" : "14"}
-                                trend="+180%"
+                                value={totals.contactClicks.toLocaleString()}
+                                trend={isBoosted ? "+180%" : "-"}
                                 color="#FF007F"
                                 delay={0.4}
                             />
                             <TelemetryCard
                                 icon={TrendingUpIcon}
                                 label="Inquiry Velocity"
-                                value={isBoosted ? "18/day" : "1/wk"}
-                                trend="+310%"
+                                value={`${Math.ceil(totals.contactClicks / 7)}/day`}
+                                trend={isBoosted ? "+310%" : "-"}
                                 color="#11b4d4"
                                 delay={0.5}
                             />
@@ -177,9 +180,9 @@ export const MerchantAds: React.FC = () => {
                             <h3 className="text-sm font-black italic text-[#0A1128] uppercase tracking-widest">Growth <span className="text-[#FFBF00]">Diagnostics</span></h3>
 
                             <div className="space-y-6">
-                                <DiagnosticBar label="Category Dominance" value={78} color="#FFBF00" />
-                                <DiagnosticBar label="Discovery Rate" value={45} color="#FF007F" />
-                                <DiagnosticBar label="Lead Conversion" value={22} color="#11b4d4" />
+                                <DiagnosticBar label="Category Dominance" value={Math.min(Math.round(totals.productViews / 10), 100) || 5} color="#FFBF00" />
+                                <DiagnosticBar label="Discovery Rate" value={Math.min(Math.round(totals.profileViews / 10), 100) || 12} color="#FF007F" />
+                                <DiagnosticBar label="Lead Conversion" value={totals.productViews > 0 ? Math.round((totals.contactClicks / totals.productViews) * 100) : 0} color="#11b4d4" />
                             </div>
 
                             <div className="pt-8 border-t border-slate-100 space-y-4">

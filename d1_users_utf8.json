@@ -1,0 +1,44 @@
+﻿[
+  {
+    "results": [
+      {
+        "id": "ea41d086-156b-418c-bc62-92c12cf7c7ff",
+        "email": "admin@tamuu.id"
+      },
+      {
+        "id": "63482f65-eb6a-458a-ae66-68a5dc1aed8e",
+        "email": "user@tamuu.id"
+      },
+      {
+        "id": "74b5da22-53a3-4bdb-ac34-303bb123851f",
+        "email": "test2@tamuu.id"
+      },
+      {
+        "id": "4778ed3f-6fe5-4862-b4e7-2483688f4dd0",
+        "email": "alissafania58@gmail.com"
+      },
+      {
+        "id": "user-merchant-001",
+        "email": "merchant@nusantara.id"
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.1837
+      },
+      "duration": 0.1837,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 536576,
+      "rows_read": 5,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

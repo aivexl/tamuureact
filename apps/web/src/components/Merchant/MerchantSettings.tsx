@@ -152,10 +152,10 @@ export const MerchantSettings: React.FC = () => {
                 {/* Page Header */}
                 <header className="space-y-3">
                     <m.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="text-4xl font-black tracking-tight text-[#0A1128]">
-                        Shop <span className="text-[#FFBF00]">Identity</span>
+                        Identitas <span className="text-[#FFBF00]">Toko</span>
                     </m.h1>
                     <m.p initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="text-slate-500 text-xs font-black uppercase tracking-[0.2em] max-w-xl">
-                        Configure your brand perception and digital storefront.
+                        Atur profil dan informasi publik toko Anda.
                     </m.p>
                 </header>
 
@@ -171,7 +171,7 @@ export const MerchantSettings: React.FC = () => {
                             <div className="flex items-center justify-between relative">
                                 <div className="flex items-center gap-4 text-[#0A1128]">
                                     <StorefrontIcon className="w-6 h-6 text-[#FFBF00]" />
-                                    <h2 className="text-xl font-black">Visual <span className="text-[#FFBF00]">Architecture</span></h2>
+                                    <h2 className="text-xl font-black">Profil <span className="text-[#FFBF00]">Visual</span></h2>
                                 </div>
                                 <span className="px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-[#FFBF00] text-[#0A1128] border border-[#FFBF00] shadow-[0_4px_10px_rgba(255,191,0,0.2)]">Live Profile</span>
                             </div>
@@ -187,10 +187,10 @@ export const MerchantSettings: React.FC = () => {
                                     className="relative w-full aspect-[4/1] bg-slate-50 rounded-[32px] border border-dashed border-slate-200 group hover:border-[#FFBF00]/40 transition-all overflow-hidden cursor-pointer shadow-inner"
                                 >
                                     <div className="absolute inset-0 flex flex-col items-center justify-center z-20 opacity-0 group-hover:opacity-100 transition-all duration-500 bg-white/80 backdrop-blur-md">
-                                        <CloudUploadIcon className="w-10 h-10 text-[#FFBF00] mb-3 transform group-hover:scale-110 transition-transform" />
-                                        <span className="text-[10px] font-black text-[#0A1128] uppercase tracking-widest">Update Cinematic Banner</span>
+                                        <CloudUploadIcon className="w-10 h-10 text-[#FFBF00] mb-3 transition-transform" />
+                                        <span className="text-[10px] font-black text-[#0A1128] uppercase tracking-widest">Ganti Banner</span>
                                     </div>
-                                    <div className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110" style={{ backgroundImage: `url('${bannerUrl || defaultBanner}')` }} />
+                                    <div className="absolute inset-0 bg-cover bg-center transition-transform duration-1000" style={{ backgroundImage: `url('${bannerUrl || defaultBanner}')` }} />
                                     <div className="absolute inset-0 bg-gradient-to-t from-white/80 to-transparent" />
 
                                     {isUploading && (
@@ -205,27 +205,27 @@ export const MerchantSettings: React.FC = () => {
                                     {/* Logo Upload */}
                                     <div
                                         onClick={() => logoInputRef.current?.click()}
-                                        className="relative -mt-24 md:-mt-32 w-32 h-32 md:w-48 md:h-48 rounded-[48px] bg-white border-[8px] border-white shadow-xl group cursor-pointer overflow-hidden flex items-center justify-center z-20 transition-transform hover:scale-105"
+                                        className="relative -mt-24 md:-mt-32 w-32 h-32 md:w-48 md:h-48 rounded-[48px] bg-white border-[8px] border-white shadow-xl group cursor-pointer overflow-hidden flex items-center justify-center z-20 transition-transform"
                                     >
                                         <div className="absolute inset-0 bg-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 backdrop-blur-md">
                                             <EditIcon className="w-8 h-8 text-[#FFBF00]" />
                                         </div>
-                                        <img alt="Store Logo" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src={logoUrl || defaultLogo} />
+                                        <img alt="Store Logo" className="w-full h-full object-cover" src={logoUrl || defaultLogo} />
                                     </div>
 
                                     <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
                                         <div className="space-y-3">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Brand Designation</label>
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Nama Toko</label>
                                             <input
                                                 type="text"
                                                 value={namaToko}
                                                 onChange={handleChange(setNamaToko)}
-                                                placeholder="The Grand Estate"
+                                                placeholder="Contoh: The Grand Estate"
                                                 className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-[#0A1128] placeholder-slate-400 focus:ring-1 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40 focus:outline-none transition-all"
                                             />
                                         </div>
-                                        <div className="space-y-3">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Registry Profile</label>
+                                        <div className="space-y-3 relative">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Tautan Toko (Slug)</label>
                                             <div className="relative flex items-center">
                                                 <span className="absolute left-6 text-[#FFBF00]/40 text-[10px] font-black uppercase tracking-widest select-none pt-0.5">Slug</span>
                                                 <input
@@ -235,13 +235,14 @@ export const MerchantSettings: React.FC = () => {
                                                     className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-16 pr-6 py-4 text-sm font-bold text-slate-400 cursor-not-allowed"
                                                 />
                                             </div>
+                                            <p className="text-[9px] font-bold text-slate-400 mt-1 ml-1">* Tautan toko hanya bisa diganti 14 hari sekali.</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between">
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Brand Narrative</label>
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Deskripsi Toko</label>
                                         <span className="text-[10px] font-black text-[#FFBF00]/60 uppercase tracking-widest italic">{deskripsi.length} / 500 chars</span>
                                     </div>
                                     <div className="w-full bg-white border border-slate-200 rounded-3xl focus-within:border-[#FFBF00]/40 focus-within:ring-1 focus-within:ring-[#FFBF00]/40 overflow-hidden transition-all shadow-sm">
@@ -250,7 +251,7 @@ export const MerchantSettings: React.FC = () => {
                                             value={deskripsi}
                                             onChange={handleChange(setDeskripsi)}
                                             className="w-full bg-transparent border-none focus:ring-0 p-8 text-sm font-medium text-slate-600 placeholder-slate-400 resize-none leading-relaxed"
-                                            placeholder="Articulate your brand's unique value proposition and heritage..."
+                                            placeholder="Deskripsikan nilai, layanan, dan sejarah toko Anda..."
                                         ></textarea>
                                     </div>
                                 </div>
@@ -267,7 +268,7 @@ export const MerchantSettings: React.FC = () => {
                             <div className="flex items-center justify-between relative">
                                 <div className="flex items-center gap-4 text-[#0A1128]">
                                     <ContactIcon className="w-6 h-6 text-[#FFBF00]" />
-                                    <h2 className="text-xl font-black">Link <span className="text-[#FFBF00]">Vault</span></h2>
+                                    <h2 className="text-xl font-black">Kontak</h2>
                                 </div>
                                 <div className="hidden sm:flex items-center gap-3 px-5 py-2 rounded-full bg-white border border-slate-100 text-[9px] font-black text-slate-400 uppercase tracking-widest shadow-sm">
                                     <LockIcon className="w-3.5 h-3.5 text-[#FFBF00]" />
@@ -277,7 +278,7 @@ export const MerchantSettings: React.FC = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Secure Line (WhatsApp)</label>
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">WhatsApp</label>
                                     <div className="relative">
                                         <PhoneIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[#FFBF00]/40" />
                                         <input
@@ -291,21 +292,21 @@ export const MerchantSettings: React.FC = () => {
                                 </div>
 
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Social Intel (Instagram)</label>
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Media Sosial & Website</label>
                                     <div className="relative">
-                                        <CameraIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[#FFBF00]/40" />
+                                        <GlobeIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[#FFBF00]/40" />
                                         <input
                                             type="text"
                                             value={instagram}
                                             onChange={handleChange(setInstagram)}
-                                            placeholder="grandestate.id"
+                                            placeholder="IG: @toko, FB: /toko, Web: toko.com"
                                             className="w-full bg-white border border-slate-200 rounded-2xl pl-14 pr-6 py-4 text-sm font-bold text-[#0A1128] placeholder-slate-400 focus:ring-1 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40 focus:outline-none transition-all"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Official Terminal (Email)</label>
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Email</label>
                                     <div className="relative">
                                         <MailIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[#FFBF00]/40" />
                                         <input
@@ -319,15 +320,14 @@ export const MerchantSettings: React.FC = () => {
                                 </div>
 
                                 <div className="md:col-span-2 lg:col-span-3 space-y-3">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Geospatial Registry (Address)</label>
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Alamat</label>
                                     <div className="relative">
-                                        <MapPinIcon className="absolute left-6 top-6 w-4 h-4 text-[#FFBF00]/40" />
                                         <textarea
                                             rows={3}
                                             value={alamat}
                                             onChange={handleChange(setAlamat)}
                                             placeholder="Jalan Raya Ubud No. 88, Gianyar, Bali..."
-                                            className="w-full bg-white border border-slate-200 rounded-3xl pl-14 pr-8 py-6 text-sm font-bold text-[#0A1128] placeholder-slate-400 focus:ring-1 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40 focus:outline-none transition-all resize-none leading-relaxed shadow-sm"
+                                            className="w-full bg-white border border-slate-200 rounded-3xl p-6 text-sm font-bold text-[#0A1128] placeholder-slate-400 focus:ring-1 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40 focus:outline-none transition-all resize-none leading-relaxed shadow-sm"
                                         ></textarea>
                                     </div>
                                 </div>

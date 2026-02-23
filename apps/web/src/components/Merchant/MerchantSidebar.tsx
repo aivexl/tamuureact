@@ -45,7 +45,7 @@ export const MerchantSidebar: React.FC<MerchantSidebarProps> = ({ isMobileMenuOp
 
     const navItems = [
         { label: 'Overview', icon: LayoutDashboardIcon, path: `/store/${merchant?.slug || 'dashboard'}/dashboard`, exact: true },
-        { label: 'Products & Inventory', icon: PackageIcon, path: `/store/${merchant?.slug || 'dashboard'}/products` },
+        { label: 'Produk/Jasa', icon: PackageIcon, path: `/store/${merchant?.slug || 'dashboard'}/products` },
         { label: 'Ads & Growth', icon: ZapIcon, path: `/store/${merchant?.slug || 'dashboard'}/ads` },
         { label: 'Analytics Hub', icon: BarChart2Icon, path: `/store/${merchant?.slug || 'dashboard'}/analytics` },
         { label: 'Shop Settings', icon: SettingsIcon, path: `/store/${merchant?.slug || 'dashboard'}/settings` },
@@ -119,7 +119,7 @@ export const MerchantSidebar: React.FC<MerchantSidebarProps> = ({ isMobileMenuOp
                 >
                     <span className="flex items-center gap-3 truncate">
                         <ExternalLinkIcon className="w-4 h-4 text-[#0A1128]" />
-                        View Storefront
+                        View Store
                     </span>
                 </a>
                 <button

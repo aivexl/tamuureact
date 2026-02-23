@@ -58,8 +58,20 @@ export const MerchantProducts: React.FC = () => {
     const [namaProduk, setNamaProduk] = useState('');
     const [hargaEstimasi, setHargaEstimasi] = useState('');
     const [status, setStatus] = useState('DRAFT');
-    const [kategoriProduk, setKategoriProduk] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [customCategory, setCustomCategory] = useState('');
     const [deskripsi, setDeskripsi] = useState('');
+
+    const SHOP_CATEGORIES = [
+        'Makeup Artist',
+        'Wedding Organizer',
+        'Dekorasi',
+        'Fotografi',
+        'Catering',
+        'Venue',
+        'Entertainment',
+        'Lainnya'
+    ];
     const [images, setImages] = useState<string[]>([]);
 
     const [isProductUploading, setIsProductUploading] = useState(false);
@@ -70,7 +82,8 @@ export const MerchantProducts: React.FC = () => {
         setNamaProduk('');
         setHargaEstimasi('');
         setStatus('DRAFT');
-        setKategoriProduk('');
+        setSelectedCategory('');
+        setCustomCategory('');
         setDeskripsi('');
         setImages([]);
     };
@@ -86,7 +99,14 @@ export const MerchantProducts: React.FC = () => {
         setNamaProduk(prod.nama_produk || '');
         setHargaEstimasi(prod.harga_estimasi || '');
         setStatus(prod.status || 'DRAFT');
-        setKategoriProduk(prod.kategori_produk || '');
+        const kat = prod.kategori_produk || '';
+        if (kat === '' || SHOP_CATEGORIES.includes(kat)) {
+            setSelectedCategory(kat);
+            setCustomCategory('');
+        } else {
+            setSelectedCategory('Lainnya');
+            setCustomCategory(kat);
+        }
         setDeskripsi(prod.deskripsi || '');
         setImages(prod.images ? prod.images.map((i: any) => i.image_url) : []);
         setView('edit');
@@ -127,13 +147,14 @@ export const MerchantProducts: React.FC = () => {
     const handleSave = async (forceStatus?: string) => {
         if (!merchantId) return;
         const finalStatus = forceStatus || status;
+        const finalKategori = selectedCategory === 'Lainnya' ? customCategory : selectedCategory;
 
         const payload = {
             merchant_id: merchantId,
             nama_produk: namaProduk,
             deskripsi: deskripsi,
             harga_estimasi: hargaEstimasi,
-            kategori_produk: kategoriProduk,
+            kategori_produk: finalKategori,
             status: finalStatus,
             images: images
         };
@@ -165,9 +186,9 @@ export const MerchantProducts: React.FC = () => {
             <header className="px-6 md:px-10 py-10 border-b border-slate-100 bg-[#FBFBFB] flex flex-col md:flex-row md:items-center justify-between gap-6 sticky top-0 z-30 backdrop-blur-3xl bg-opacity-90">
                 <div className="flex flex-col">
                     <m.h2 initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="text-3xl font-black text-[#0A1128] tracking-tight">
-                        Inventory <span className="text-[#FFBF00]">Ledger</span>
+                        Produk/<span className="text-[#FFBF00]">Jasa</span>
                     </m.h2>
-                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1">Asset Registry Console</p>
+                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1">Daftar Produk/Jasa Toko Anda</p>
                 </div>
 
                 {view === 'list' ? (
@@ -177,7 +198,7 @@ export const MerchantProducts: React.FC = () => {
                         className="flex items-center justify-center gap-3 bg-[#FFBF00] hover:bg-[#FFD700] text-[#0A1128] px-8 py-3.5 rounded-2xl transition-all shadow-2xl active:scale-95 group font-black uppercase text-[10px] tracking-widest whitespace-nowrap"
                     >
                         <PlusCircleIcon className="w-5 h-5 shadow-[0_0_10px_rgba(0,0,0,0.2)]" />
-                        New Entry
+                        New Produk/Jasa
                     </m.button>
                 ) : (
                     <m.button
@@ -204,7 +225,7 @@ export const MerchantProducts: React.FC = () => {
                                 <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                                     <div className="flex items-center gap-4">
                                         <h3 className="text-lg font-black text-[#0A1128] tracking-tight">
-                                            Current Assets
+                                            List Produk/Jasa
                                         </h3>
                                         {isLoading && <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-[#FFBF00]"></div>}
                                     </div>
@@ -215,7 +236,7 @@ export const MerchantProducts: React.FC = () => {
                                                 type="text"
                                                 value={searchQuery}
                                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                                placeholder="Locate entries..."
+                                                placeholder="Cari..."
                                                 className="w-full pl-11 pr-5 py-3.5 bg-[#FBFBFB] border border-slate-200 rounded-2xl text-[11px] font-bold text-[#0A1128] placeholder:text-slate-400 focus:outline-none focus:border-[#FFBF00]/30 focus:ring-1 focus:ring-[#FFBF00]/30 transition-all uppercase tracking-widest"
                                             />
                                         </div>
@@ -272,7 +293,7 @@ export const MerchantProducts: React.FC = () => {
                                                 <h4 className="text-lg font-black tracking-tight text-white group-hover:text-[#FFBF00] transition-colors line-clamp-1 italic">{prod.nama_produk}</h4>
                                                 <div className="flex items-end justify-between">
                                                     <div>
-                                                        <p className="text-[9px] font-black text-[#FFBF00] uppercase tracking-widest mb-1 opacity-60">Price Guide</p>
+                                                        <p className="text-[9px] font-black text-[#FFBF00] uppercase tracking-widest mb-1 opacity-60">Harga</p>
                                                         <p className="text-xl font-black text-white">{prod.harga_estimasi || '-'}</p>
                                                     </div>
                                                     <div className="text-right">
@@ -299,11 +320,11 @@ export const MerchantProducts: React.FC = () => {
                                         {/* Basic Info Card */}
                                         <div className="bg-[#FBFBFB] rounded-[40px] border border-slate-100 p-10 space-y-8 shadow-sm relative overflow-hidden">
                                             <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFBF00]/5 rounded-full blur-3xl" />
-                                            <h4 className="text-lg font-black text-[#0A1128]">Asset <span className="text-[#FFBF00]">Blueprint</span></h4>
+                                            <h4 className="text-lg font-black text-[#0A1128]">Detail <span className="text-[#FFBF00]">Produk/Jasa</span></h4>
 
                                             <div className="space-y-6">
                                                 <div className="space-y-3">
-                                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Asset Designation</label>
+                                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Nama Produk/Jasa</label>
                                                     <input
                                                         type="text"
                                                         value={namaProduk}
@@ -314,7 +335,7 @@ export const MerchantProducts: React.FC = () => {
                                                 </div>
 
                                                 <div className="space-y-3">
-                                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Market Position (Pricing)</label>
+                                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Harga</label>
                                                     <input
                                                         type="text"
                                                         value={hargaEstimasi}
@@ -326,20 +347,32 @@ export const MerchantProducts: React.FC = () => {
 
                                                 <div className="space-y-3">
                                                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Product Category</label>
-                                                    <input
-                                                        type="text"
-                                                        value={kategoriProduk}
-                                                        onChange={e => setKategoriProduk(e.target.value)}
-                                                        placeholder="e.g. Wedding Package, Grooming, Buffet"
-                                                        className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-[#0A1128] placeholder:text-slate-400 focus:ring-1 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40 focus:outline-none transition-all"
-                                                    />
+                                                    <select
+                                                        value={selectedCategory}
+                                                        onChange={e => setSelectedCategory(e.target.value)}
+                                                        className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-1 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40 focus:outline-none transition-all appearance-none cursor-pointer"
+                                                    >
+                                                        <option value="" disabled>Pilih Kategori...</option>
+                                                        {SHOP_CATEGORIES.map(cat => (
+                                                            <option key={cat} value={cat}>{cat}</option>
+                                                        ))}
+                                                    </select>
+                                                    {selectedCategory === 'Lainnya' && (
+                                                        <input
+                                                            type="text"
+                                                            value={customCategory}
+                                                            onChange={e => setCustomCategory(e.target.value)}
+                                                            placeholder="Masukkan nama kategori kustom..."
+                                                            className="w-full mt-3 bg-white border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-1 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40 focus:outline-none transition-all"
+                                                        />
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
 
                                         {/* Description Card */}
                                         <div className="bg-[#FBFBFB] rounded-[40px] border border-slate-100 p-10 space-y-8 shadow-sm relative">
-                                            <h4 className="text-lg font-black text-[#0A1128]">Registry <span className="text-[#FFBF00]">Brief</span></h4>
+                                            <h4 className="text-lg font-black text-[#0A1128]">Deskripsi <span className="text-[#FFBF00]">Produk/Jasa</span></h4>
                                             <div className="border border-slate-100 rounded-3xl overflow-hidden bg-white">
                                                 <textarea
                                                     value={deskripsi}
@@ -355,7 +388,7 @@ export const MerchantProducts: React.FC = () => {
                                     <div className="lg:col-span-5 space-y-10">
                                         <div className="bg-[#FBFBFB] rounded-[40px] border border-slate-100 p-10 shadow-sm flex flex-col min-h-[500px] relative">
                                             <div className="flex items-center justify-between mb-8">
-                                                <h4 className="text-lg font-black text-[#0A1128]">Gallery <span className="text-[#FFBF00]">Curator</span></h4>
+                                                <h4 className="text-lg font-black text-[#0A1128]">Gallery</h4>
                                                 <span className="text-[10px] text-[#FFBF00] font-black tracking-widest">{images.length} / 5</span>
                                             </div>
 

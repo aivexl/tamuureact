@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from '../../store/useStore';
-import { useMerchantProfile, useMerchantAnalytics } from '../../hooks/queries/useShop';
+import { useMerchantProfile, useMerchantAnalytics, useMerchantProducts } from '../../hooks/queries/useShop';
 import { m } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
@@ -40,6 +40,9 @@ export const MerchantOverview: React.FC<{ setTab?: (tab: string) => void }> = ({
     const totals = analyticsRes?.totals || { profileViews: 0, contactClicks: 0, favorites: 0 };
     const chartData = analyticsRes?.chartData || [];
 
+    const { data: productsData, isLoading: productsLoading } = useMerchantProducts(merchant?.id);
+    const products = productsData?.products || [];
+
     if (profileLoading || analyticsLoading) {
         return (
             <div className="flex flex-col h-full bg-[#050505] items-center justify-center p-10">
@@ -51,7 +54,7 @@ export const MerchantOverview: React.FC<{ setTab?: (tab: string) => void }> = ({
 
     const metricCards = [
         { title: 'Store Activity', value: totals.profileViews, icon: EyeIcon, color: 'text-amber-400', label: 'Views' },
-        { title: 'Direct Leads', value: totals.contactClicks, icon: LockOpenIcon, color: 'text-[#FFBF00]', label: 'Unlocks' },
+        { title: 'Total Impressions', value: totals.productViews, icon: EyeIcon, color: 'text-[#FFBF00]', label: 'Views' },
         { title: 'Shop Favorites', value: totals.favorites, icon: StarIcon, color: 'text-orange-400', label: 'Stars' },
     ];
 
@@ -219,6 +222,46 @@ export const MerchantOverview: React.FC<{ setTab?: (tab: string) => void }> = ({
                         )}
                     </div>
                 </m.div>
+            </div>
+
+            {/* PRODUCT LIST */}
+            <div className="bg-white border border-slate-100 rounded-3xl p-8 shadow-sm">
+                <div className="flex justify-between items-end mb-8">
+                    <div>
+                        <h3 className="text-[#0A1128] font-bold text-lg tracking-tight">Kinerja Produk/Jasa</h3>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Total Views Per Item</p>
+                    </div>
+                </div>
+                {products.length === 0 ? (
+                    <div className="py-10 text-center text-slate-400 text-sm font-medium">Belum ada produk/jasa.</div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {products.map((prod: any) => {
+                            const impressions = analyticsRes?.productImpressions?.find((p: any) => p.product_id === prod.id)?.views || 0;
+                            return (
+                                <div key={prod.id} className="flex items-center justify-between p-4 rounded-2xl bg-[#FBFBFB] border border-slate-100 hover:border-[#FFBF00]/30 transition-colors">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-xl bg-slate-200 overflow-hidden flex-shrink-0">
+                                            {prod.images && prod.images[0] ? (
+                                                <img src={prod.images[0].image_url} alt="" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <PackageIcon className="w-6 h-6 m-3 text-slate-400" />
+                                            )}
+                                        </div>
+                                        <div>
+                                            <h4 className="text-sm font-bold text-[#0A1128]">{prod.nama_produk}</h4>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{prod.kategori_produk || 'Umum'}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-slate-500 bg-white px-3 py-1.5 rounded-lg border border-slate-100">
+                                        <EyeIcon className="w-4 h-4 text-[#FFBF00]" />
+                                        <span className="text-sm font-black text-[#0A1128]">{impressions}</span>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
         </div>
     );

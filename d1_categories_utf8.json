@@ -1,0 +1,48 @@
+﻿[
+  {
+    "results": [
+      {
+        "id": "cat-001",
+        "nama_kategori": "MUA"
+      },
+      {
+        "id": "cat-002",
+        "nama_kategori": "Wedding Organizer"
+      },
+      {
+        "id": "cat-003",
+        "nama_kategori": "Catering"
+      },
+      {
+        "id": "cat-004",
+        "nama_kategori": "Fotografi"
+      },
+      {
+        "id": "cat-005",
+        "nama_kategori": "Dekorasi"
+      },
+      {
+        "id": "cat-006",
+        "nama_kategori": "Venue"
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.3147
+      },
+      "duration": 0.3147,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 536576,
+      "rows_read": 6,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]
