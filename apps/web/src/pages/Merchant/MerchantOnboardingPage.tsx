@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { m, AnimatePresence } from 'framer-motion';
-import { Store, Link as LinkIcon, Briefcase, ArrowRight, Check, AlertCircle } from 'lucide-react';
+import { Store, Link as LinkIcon, Briefcase, ArrowRight, Check, AlertCircle, X } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useStore } from '../../store/useStore';
 import { useOnboardMerchant } from '../../hooks/queries/useShop';
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
 import { useSEO } from '../../hooks/useSEO';
+import { shop } from '../../lib/api';
 
 const SHOP_CATEGORIES = [
     'Makeup Artist',
@@ -29,6 +30,8 @@ export const MerchantOnboardingPage: React.FC = () => {
     const [categoryId, setCategoryId] = useState('');
     const [slug, setSlug] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [isCheckingSlug, setIsCheckingSlug] = useState(false);
+    const [isSlugAvailable, setIsSlugAvailable] = useState<boolean | null>(null);
 
     useSEO({
         title: 'Buka Toko Jasa - Tamuu Nexus',
@@ -40,9 +43,60 @@ export const MerchantOnboardingPage: React.FC = () => {
         const val = e.target.value;
         setNamaToko(val);
         if (step === 1 && !slug) {
-            setSlug(val.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-'));
+            setSlug(val.toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_'));
         }
     };
+
+    // Advanced Slug Validation
+    const validateSlugFormat = (value: string) => {
+        if (/[^a-zA-Z0-9_]/.test(value)) {
+            setError("Hanya boleh menggunakan huruf, angka, dan garis bawah (_). Karakter spesial (@, #, $) atau spasi tidak diizinkan.");
+            return false;
+        } else if (value.length > 0 && value.length < 5) {
+            setError("Minimal 5 karakter.");
+            return false;
+        } else if (value.length >= 5 && !/[a-zA-Z0-9]/.test(value)) {
+            setError("Tidak boleh hanya berisi garis bawah (_).");
+            return false;
+        } else {
+            setError(null);
+            return true;
+        }
+    };
+
+    const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value.toLowerCase().replace(/\s+/g, '');
+        setSlug(val);
+        validateSlugFormat(val);
+    };
+
+    // Real-time Slug Availability Check (Debounced)
+    React.useEffect(() => {
+        if (slug.length < 5 || !/[a-zA-Z0-9]/.test(slug) || /[^a-zA-Z0-9_]/.test(slug)) {
+            setIsSlugAvailable(null);
+            return;
+        }
+
+        const timer = setTimeout(async () => {
+            setIsCheckingSlug(true);
+            try {
+                const { available } = await shop.checkMerchantSlug(slug);
+                setIsSlugAvailable(available);
+                if (!available) {
+                    setError('URL / Username ini sudah digunakan oleh toko lain. Silakan cari yang lain.');
+                } else if (error === 'URL / Username ini sudah digunakan oleh toko lain. Silakan cari yang lain.') {
+                    setError(null);
+                }
+            } catch (err) {
+                console.error('Slug check failed:', err);
+                setIsSlugAvailable(null);
+            } finally {
+                setIsCheckingSlug(false);
+            }
+        }, 600); // 600ms debounce
+
+        return () => clearTimeout(timer);
+    }, [slug, error]);
 
     const handleComplete = async () => {
         if (!user?.id) {
@@ -80,7 +134,7 @@ export const MerchantOnboardingPage: React.FC = () => {
     const isStepValid = () => {
         if (step === 1) return namaToko.length >= 3;
         if (step === 2) return !!categoryId;
-        if (step === 3) return slug.length >= 3;
+        if (step === 3) return slug.length >= 5 && isSlugAvailable === true && !error;
         return false;
     };
 
@@ -184,12 +238,22 @@ export const MerchantOnboardingPage: React.FC = () => {
                                             autoFocus
                                             type="text"
                                             value={slug}
-                                            onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-'))}
+                                            onChange={handleSlugChange}
                                             className="flex-1 px-6 py-4 bg-white outline-none text-lg font-bold text-slate-900 placeholder:text-slate-200 font-mono"
-                                            placeholder="grand-estate"
+                                            placeholder="grand_estate"
                                         />
+                                        {/* Status Indicator */}
+                                        <div className="pr-4 flex items-center justify-center bg-white">
+                                            {isCheckingSlug ? (
+                                                <div className="w-5 h-5 border-2 border-slate-200 border-t-teal-500 rounded-full animate-spin" />
+                                            ) : isSlugAvailable === true ? (
+                                                <Check className="w-6 h-6 text-teal-500 transition-transform duration-300 scale-110" />
+                                            ) : isSlugAvailable === false ? (
+                                                <X className="w-6 h-6 text-rose-500" />
+                                            ) : null}
+                                        </div>
                                     </div>
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest ml-4 mt-2">Gunakan huruf kecil dan tanda hubung (-)</p>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest ml-4 mt-2">Gunakan huruf kecil, angka, dan garis bawah (_)</p>
                                 </div>
 
                                 <AnimatePresence>

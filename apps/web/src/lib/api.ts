@@ -1015,6 +1015,12 @@ export const shop = {
         return sanitizeValue(data);
     },
 
+    async checkMerchantSlug(slug: string): Promise<{ available: boolean; slug: string }> {
+        const res = await safeFetch(`${API_BASE}/api/shop/merchant/check-slug?slug=${slug}`);
+        if (!res.ok) throw new Error('Failed to check merchant slug availability');
+        return res.json();
+    },
+
     async onboardMerchant(data: { user_id: string; nama_toko: string; slug: string; category_id: string; deskripsi?: string }) {
         const res = await safeFetch(`${API_BASE}/api/shop/merchant/onboard`, {
             method: 'POST',

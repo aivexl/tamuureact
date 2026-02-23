@@ -825,6 +825,19 @@ export default {
             // SHOP ECOSYSTEM (TAMUU NEXUS)
             // ============================================
 
+            // 0. Check Merchant Slug Availability
+            if (path === '/api/shop/merchant/check-slug' && method === 'GET') {
+                const slug = url.searchParams.get('slug');
+                if (!slug) return json({ error: 'Slug is required' }, { ...corsHeaders, status: 400 });
+
+                try {
+                    const existing = await env.DB.prepare('SELECT id FROM shop_merchants WHERE slug = ?').bind(slug).first();
+                    return json({ available: !existing, slug }, corsHeaders);
+                } catch (error) {
+                    return json({ error: error.message }, { ...corsHeaders, status: 500 });
+                }
+            }
+
             // 1. Merchant Onboarding (Escalate User -> Merchant)
             if (path === '/api/shop/merchant/onboard' && method === 'POST') {
                 try {
@@ -835,10 +848,10 @@ export default {
                         return json({ error: 'Missing required fields' }, { ...corsHeaders, status: 400 });
                     }
 
-                    // Strict slug validation (only lowercase letters, numbers, hyphens)
-                    const validSlug = /^[a-z0-9-]+$/.test(slug);
+                    // Strict slug validation (only lowercase letters, numbers, underscores, min 5 chars, cannot be all underscores)
+                    const validSlug = /^[a-z0-9_]+$/.test(slug) && /[a-z0-9]/.test(slug) && slug.length >= 5;
                     if (!validSlug) {
-                        return json({ error: 'Format custom URL (slug) tidak valid.' }, { ...corsHeaders, status: 400 });
+                        return json({ error: 'Format custom URL (slug) tidak valid. Minimal 5 karakter, hanya huruf, angka, dan underscore (_).' }, { ...corsHeaders, status: 400 });
                     }
 
                     // Check if slug is already taken globally
