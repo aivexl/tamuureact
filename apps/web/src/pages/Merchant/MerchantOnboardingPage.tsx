@@ -21,6 +21,18 @@ const SHOP_CATEGORIES = [
     'Lainnya'
 ];
 
+// Map text labels to D1 database UUIDs to satisfy FOREIGN KEY constraint on shop_category
+const CATEGORY_UUID_MAP: Record<string, string> = {
+    'Makeup Artist': 'cat-001',
+    'Wedding Organizer': 'cat-002',
+    'Catering': 'cat-003',
+    'Fotografi': 'cat-004',
+    'Dekorasi': 'cat-005',
+    'Venue': 'cat-006',
+    'Entertainment': 'cat-001', // Fallbacks if not seeded
+    'Lainnya': 'cat-001'
+};
+
 export const MerchantOnboardingPage: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useStore();
@@ -118,11 +130,15 @@ export const MerchantOnboardingPage: React.FC = () => {
 
         try {
             setError(null);
+
+            // Map the selected string category to its database ID
+            const mappedCategoryId = CATEGORY_UUID_MAP[categoryId] || 'cat-001';
+
             const result = await onboardMerchant({
                 user_id: user.id,
                 nama_toko: namaToko,
                 slug: slug,
-                category_id: categoryId,
+                category_id: mappedCategoryId, // Use mapped ID instead of raw string
                 deskripsi: `Selamat datang di ${namaToko}` // default initial description
             });
 

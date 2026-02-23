@@ -870,10 +870,16 @@ export default {
                     const merchantId = crypto.randomUUID();
 
                     // Insert Merchant Profile
-                    await env.DB.prepare(
+                    const insertResult = await env.DB.prepare(
                         `INSERT INTO shop_merchants (id, user_id, slug, nama_toko, deskripsi, category_id, is_verified) 
                          VALUES (?, ?, ?, ?, ?, ?, 0)`
                     ).bind(merchantId, user_id, slug, nama_toko, deskripsi || null, category_id).run();
+
+                    // CRITICAL: D1 silent failure prevention
+                    // If foreign constraints fail, insertResult.changes will be 0 but won't throw exception
+                    if (insertResult.meta?.changes === 0) {
+                        throw new Error(`Gagal menyimpan profil merchant ke database. Constraint violation: category_id=${category_id}`);
+                    }
 
                     // Seed empty Contact profile
                     await env.DB.prepare(
