@@ -39,9 +39,10 @@ export const MerchantPortalPage: React.FC = () => {
     // Auth & Permission Check
     if (!user) return <Navigate to="/login" replace />;
 
-    // Show loading while EITHER initial load OR background refetch is happening
-    // This prevents the race condition where stale cache (isMerchant: false) causes a premature redirect
-    if (isLoading || isFetching) {
+    // Show loading only on initial load (isLoading).
+    // Do NOT include isFetching, otherwise child components mounting and triggering
+    // a background refetch will cause this parent to unmount them, creating an infinite loop.
+    if (isLoading) {
         return (
             <div className="min-h-screen bg-white flex items-center justify-center">
                 <div className="text-center space-y-4">
