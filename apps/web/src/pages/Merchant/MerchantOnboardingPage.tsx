@@ -143,10 +143,10 @@ export const MerchantOnboardingPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col pt-20 pb-32">
+        <div className="min-h-screen bg-slate-50 flex flex-col pt-36 pb-32">
             <Navbar />
             {/* Steps Header */}
-            <div className="bg-white border-b border-slate-200 sticky top-20 z-20 px-6 py-4">
+            <div className="bg-white border-b border-slate-200 sticky top-[90px] z-20 px-6 py-4 shadow-sm">
                 <div className="max-w-xl mx-auto flex items-center justify-between gap-2">
                     {[1, 2, 3].map((s) => {
                         const isActive = step === s;
