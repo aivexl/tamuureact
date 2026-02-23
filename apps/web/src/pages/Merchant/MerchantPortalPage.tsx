@@ -19,6 +19,7 @@ const MenuIcon = ({ className }: { className?: string }) => (
 
 export const MerchantPortalPage: React.FC = () => {
     const user = useStore(s => s.user);
+    const { storeSlug } = useParams<{ storeSlug: string }>();
     const { data: merchantData, isLoading, isFetching } = useMerchantProfile(user?.id);
     const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -57,7 +58,6 @@ export const MerchantPortalPage: React.FC = () => {
     }
 
     // Ensure the URL matches their actual store slug
-    const { storeSlug } = useParams<{ storeSlug: string }>();
     if (!isLoading && merchantData?.merchant && storeSlug !== merchantData.merchant.slug) {
         return <Navigate to={`/store/${merchantData.merchant.slug}/dashboard`} replace />;
     }

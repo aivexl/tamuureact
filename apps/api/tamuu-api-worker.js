@@ -899,7 +899,10 @@ export default {
 
                 try {
                     const merchant = await env.DB.prepare(
-                        'SELECT m.*, c.nama_kategori FROM shop_merchants m LEFT JOIN shop_category c ON m.category_id = c.id WHERE m.user_id = ?'
+                        `SELECT m.*, COALESCE(c.nama_kategori, m.category_id) as nama_kategori 
+                         FROM shop_merchants m 
+                         LEFT JOIN shop_category c ON m.category_id = c.id OR m.category_id = c.nama_kategori 
+                         WHERE m.user_id = ?`
                     ).bind(userId).first();
 
                     if (!merchant) {

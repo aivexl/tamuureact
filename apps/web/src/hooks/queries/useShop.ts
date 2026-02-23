@@ -54,7 +54,11 @@ export const useMerchantProfile = (userId?: string) => {
     return useQuery({
         queryKey: ['merchant_profile', userId],
         queryFn: () => shop.getMerchantMe(userId!),
-        enabled: !!userId
+        enabled: !!userId,
+        staleTime: 0,              // Always refetch — never trust cache for auth-critical data
+        gcTime: 0,                 // Don't keep stale entries across navigations
+        refetchOnMount: 'always',  // Force refetch on every mount (critical after onboarding redirect)
+        retry: 2                   // Retry on transient network errors
     });
 };
 

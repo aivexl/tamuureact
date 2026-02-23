@@ -118,7 +118,7 @@ export const MerchantOnboardingPage: React.FC = () => {
 
         try {
             setError(null);
-            await onboardMerchant({
+            const result = await onboardMerchant({
                 user_id: user.id,
                 nama_toko: namaToko,
                 slug: slug,
@@ -126,9 +126,13 @@ export const MerchantOnboardingPage: React.FC = () => {
                 deskripsi: `Selamat datang di ${namaToko}` // default initial description
             });
 
+            // Use API-confirmed slug for guaranteed consistency with backend
+            // (handles Smart Slug Resolver auto-resolution if slug was modified)
+            const confirmedSlug = result?.slug || slug;
+
             // Hard navigate to force a full page reload - this ensures React Query
             // starts completely fresh with no stale cache (isMerchant: false) from the SPA memory
-            window.location.href = `/store/${slug}/dashboard`;
+            window.location.href = `/store/${confirmedSlug}/dashboard`;
         } catch (err: any) {
             setError(err.message || 'Gagal membuat toko. Silakan coba slug atau nama lain.');
         }
