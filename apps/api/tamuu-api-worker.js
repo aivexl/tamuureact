@@ -848,10 +848,10 @@ export default {
                         return json({ error: 'Missing required fields' }, { ...corsHeaders, status: 400 });
                     }
 
-                    // Strict slug validation (only lowercase letters, numbers, underscores, min 5 chars, cannot be all underscores)
-                    const validSlug = /^[a-z0-9_]+$/.test(slug) && /[a-z0-9]/.test(slug) && slug.length >= 5;
+                    // Strict slug validation (only lowercase letters, numbers, underscores, min 5 chars, max 24 chars, cannot be all underscores)
+                    const validSlug = /^[a-z0-9_]+$/.test(slug) && /[a-z0-9]/.test(slug) && slug.length >= 5 && slug.length <= 24;
                     if (!validSlug) {
-                        return json({ error: 'Format custom URL (slug) tidak valid. Minimal 5 karakter, hanya huruf, angka, dan underscore (_).' }, { ...corsHeaders, status: 400 });
+                        return json({ error: 'Format custom URL (slug) tidak valid. Minimal 5, maksimal 24 karakter, hanya huruf, angka, dan underscore (_).' }, { ...corsHeaders, status: 400 });
                     }
 
                     // Check if slug is already taken globally

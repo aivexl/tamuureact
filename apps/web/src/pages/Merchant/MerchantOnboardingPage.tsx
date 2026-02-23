@@ -43,7 +43,7 @@ export const MerchantOnboardingPage: React.FC = () => {
         const val = e.target.value;
         setNamaToko(val);
         if (step === 1 && !slug) {
-            setSlug(val.toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_'));
+            setSlug(val.toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_').slice(0, 24));
         }
     };
 
@@ -54,6 +54,9 @@ export const MerchantOnboardingPage: React.FC = () => {
             return false;
         } else if (value.length > 0 && value.length < 5) {
             setError("Minimal 5 karakter.");
+            return false;
+        } else if (value.length > 24) {
+            setError("Maksimal 24 karakter.");
             return false;
         } else if (value.length >= 5 && !/[a-zA-Z0-9]/.test(value)) {
             setError("Tidak boleh hanya berisi garis bawah (_).");
@@ -72,7 +75,7 @@ export const MerchantOnboardingPage: React.FC = () => {
 
     // Real-time Slug Availability Check (Debounced)
     React.useEffect(() => {
-        if (slug.length < 5 || !/[a-zA-Z0-9]/.test(slug) || /[^a-zA-Z0-9_]/.test(slug)) {
+        if (slug.length < 5 || slug.length > 24 || !/[a-zA-Z0-9]/.test(slug) || /[^a-zA-Z0-9_]/.test(slug)) {
             setIsSlugAvailable(null);
             return;
         }
@@ -134,7 +137,7 @@ export const MerchantOnboardingPage: React.FC = () => {
     const isStepValid = () => {
         if (step === 1) return namaToko.length >= 3;
         if (step === 2) return !!categoryId;
-        if (step === 3) return slug.length >= 5 && isSlugAvailable === true && !error;
+        if (step === 3) return slug.length >= 5 && slug.length <= 24 && isSlugAvailable === true && !error;
         return false;
     };
 
@@ -238,6 +241,7 @@ export const MerchantOnboardingPage: React.FC = () => {
                                             autoFocus
                                             type="text"
                                             value={slug}
+                                            maxLength={24}
                                             onChange={handleSlugChange}
                                             className="flex-1 px-6 py-4 bg-white outline-none text-lg font-bold text-slate-900 placeholder:text-slate-200 font-mono"
                                             placeholder="grand_estate"
