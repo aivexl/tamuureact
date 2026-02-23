@@ -8,6 +8,7 @@ import { useOnboardMerchant } from '../../hooks/queries/useShop';
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
 import { useSEO } from '../../hooks/useSEO';
 import { shop } from '../../lib/api';
+import { Navbar } from '../Layout/Navbar';
 
 const SHOP_CATEGORIES = [
     'Makeup Artist',
@@ -142,7 +143,8 @@ export const MerchantOnboardingPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col pt-24 pb-32">
+        <div className="min-h-screen bg-slate-50 flex flex-col pt-20 pb-32">
+            <Navbar />
             {/* Steps Header */}
             <div className="bg-white border-b border-slate-200 sticky top-20 z-20 px-6 py-4">
                 <div className="max-w-xl mx-auto flex items-center justify-between gap-2">
