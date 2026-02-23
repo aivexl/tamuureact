@@ -279,7 +279,7 @@ export const ShopPage: React.FC = () => {
                             <p className="text-slate-400 font-semibold text-lg max-w-md">Bangun kehadiran digital vendor Anda bersama Tamuu Nexus.</p>
                         </div>
                         <button
-                            onClick={() => navigate('/onboarding')}
+                            onClick={() => navigate('/store/onboarding')}
                             className="px-12 py-6 bg-[#FFBF00] text-[#0A1128] font-black text-xs uppercase tracking-[0.2em] rounded-2xl shadow-2xl shadow-[#FFBF00]/10 hover:shadow-[#FFBF00]/30 transition-all hover:scale-[1.02] active:scale-95 whitespace-nowrap"
                         >
                             Daftar Sebagai Merchant
