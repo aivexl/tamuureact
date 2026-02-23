@@ -325,9 +325,9 @@ export const OnboardingPage: React.FC = () => {
     const catInfo = CATEGORIES.find(c => c.id === selectedCategory);
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col pt-14 pb-10">
+        <div className="min-h-screen bg-slate-50 flex flex-col pt-24 pb-10">
             {/* Progress Header */}
-            <div className="bg-white border-b border-slate-200 sticky top-14 z-20 px-6 py-4">
+            <div className="bg-white border-b border-slate-200 sticky top-20 z-20 px-6 py-4">
                 <div className="max-w-xl mx-auto flex items-center justify-between gap-2">
                     {STEPS.map((s, i) => {
                         const stepNum = i + 1;
