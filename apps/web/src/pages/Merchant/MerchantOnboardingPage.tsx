@@ -142,7 +142,7 @@ export const MerchantOnboardingPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col pt-24 pb-10">
+        <div className="min-h-screen bg-slate-50 flex flex-col pt-24 pb-32">
             {/* Steps Header */}
             <div className="bg-white border-b border-slate-200 sticky top-20 z-20 px-6 py-4">
                 <div className="max-w-xl mx-auto flex items-center justify-between gap-2">
@@ -257,14 +257,26 @@ export const MerchantOnboardingPage: React.FC = () => {
                                             ) : null}
                                         </div>
                                     </div>
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest ml-4 mt-2">Gunakan huruf kecil, angka, dan garis bawah (_)</p>
+                                    <div className="flex items-start justify-between mt-3 px-4">
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
+                                            Kecil, angka, & garis bawah (_)
+                                        </p>
+                                        <span className={`text-[10px] font-black uppercase tracking-widest ${slug.length >= 24 ? 'text-amber-500' : 'text-slate-300'}`}>
+                                            {slug.length}/24
+                                        </span>
+                                    </div>
                                 </div>
 
                                 <AnimatePresence>
                                     {error && (
-                                        <m.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="bg-rose-50 text-rose-600 p-4 rounded-2xl flex items-start gap-3 text-sm font-semibold">
-                                            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                                            <p>{error}</p>
+                                        <m.div
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -10 }}
+                                            className="flex items-start gap-2.5 text-xs font-semibold text-rose-600 bg-rose-50/80 p-4 rounded-2xl border border-rose-100"
+                                        >
+                                            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                                            <p className="leading-snug">{error}</p>
                                         </m.div>
                                     )}
                                 </AnimatePresence>
