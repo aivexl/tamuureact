@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { PremiumLoader } from '../../components/ui/PremiumLoader';
 import { useStore } from '../../store/useStore';
 import { useMerchantProfile } from '../../hooks/queries/useShop';
 import { MerchantSidebar } from '../../components/Merchant/MerchantSidebar';
@@ -18,7 +19,7 @@ const MenuIcon = ({ className }: { className?: string }) => (
 
 export const MerchantPortalPage: React.FC = () => {
     const user = useStore(s => s.user);
-    const { data: merchantData, isLoading } = useMerchantProfile(user?.id);
+    const { data: merchantData, isLoading, isFetching } = useMerchantProfile(user?.id);
     const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     useSEO({
@@ -37,8 +38,21 @@ export const MerchantPortalPage: React.FC = () => {
     // Auth & Permission Check
     if (!user) return <Navigate to="/login" replace />;
 
-    // Only bounce them if it's finished loading and they truly have no merchant profile
-    if (!isLoading && (!merchantData?.isMerchant || !merchantData?.merchant)) {
+    // Show loading while EITHER initial load OR background refetch is happening
+    // This prevents the race condition where stale cache (isMerchant: false) causes a premature redirect
+    if (isLoading || isFetching) {
+        return (
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <div className="text-center space-y-4">
+                    <PremiumLoader />
+                    <p className="text-sm text-slate-400 font-medium">Memuat Portal Toko...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Only bounce them if fetching is truly complete and they have no merchant profile
+    if (!merchantData?.isMerchant || !merchantData?.merchant) {
         return <Navigate to="/dashboard" replace />;
     }
 

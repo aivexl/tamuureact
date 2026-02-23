@@ -118,8 +118,9 @@ export const MerchantOnboardingPage: React.FC = () => {
                 deskripsi: `Selamat datang di ${namaToko}` // default initial description
             });
 
-            // Navigate to their new store dashboard on success
-            navigate(`/store/${slug}/dashboard`);
+            // Hard navigate to force a full page reload - this ensures React Query
+            // starts completely fresh with no stale cache (isMerchant: false) from the SPA memory
+            window.location.href = `/store/${slug}/dashboard`;
         } catch (err: any) {
             setError(err.message || 'Gagal membuat toko. Silakan coba slug atau nama lain.');
         }
