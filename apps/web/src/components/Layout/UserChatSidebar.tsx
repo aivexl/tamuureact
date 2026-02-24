@@ -504,7 +504,7 @@ export const UserChatSidebar: React.FC = () => {
         <>
             {/* Floating action button */}
             <motion.div
-                className="fixed bottom-6 right-6 z-50"
+                className="fixed bottom-24 md:bottom-6 right-6 z-50"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.5, type: 'spring', stiffness: 260, damping: 20 }}
@@ -565,7 +565,7 @@ export const UserChatSidebar: React.FC = () => {
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        className="fixed bottom-24 right-6 z-50"
+                        className="fixed bottom-44 md:bottom-24 right-6 z-50"
                         initial={{ opacity: 0, y: 100, scale: 0.9 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 100, scale: 0.9 }}
