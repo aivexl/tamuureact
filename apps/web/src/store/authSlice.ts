@@ -26,6 +26,8 @@ export interface User {
     maxInvitations: number;
     invitationCount: number;
     expiresAt?: string;
+    giftRecipientName?: string;
+    giftAddress?: string;
 }
 
 export interface AuthState {

@@ -82,9 +82,9 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
             </div>
 
             {/* Right Pane: Action Area */}
-            <div className="w-full lg:w-[40%] bg-[#0A1128] relative flex flex-col justify-center px-8 sm:px-16 lg:px-20 py-12">
+            <div className="w-full lg:w-[40%] bg-[#0A1128] relative flex flex-col justify-center px-6 sm:px-12 lg:px-20 py-8 lg:py-12">
                 {/* Premium Back Button */}
-                <div className="absolute top-10 right-8 lg:left-20 lg:right-auto z-30">
+                <div className="absolute top-8 right-6 lg:left-20 lg:right-auto z-30">
                     <m.button
                         whileHover={{ x: -4, scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -97,7 +97,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
                 </div>
 
                 {/* Mobile Header (Only visible on small screens) */}
-                <div className="lg:hidden absolute top-12 left-8">
+                <div className="lg:hidden absolute top-8 left-6">
                     <Link to="/" className="flex items-center gap-3">
                         <div className="w-9 h-9 bg-rose-600 rounded-xl flex items-center justify-center shadow-lg shadow-rose-500/20">
                             <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364-.707.707M6.343 17.657l-.707.707m0-12.728.707.707m11.314 11.314.707.707M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" /></svg>

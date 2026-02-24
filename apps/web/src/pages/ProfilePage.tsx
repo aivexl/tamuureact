@@ -205,7 +205,7 @@ export const ProfilePage: React.FC = () => {
     if (!profile) return null;
 
     return (
-        <div className="min-h-screen bg-slate-50 pt-20 pb-20 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-slate-50 pt-20 pb-24 px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto">
                 {/* Header */}
                 <m.div
@@ -224,9 +224,9 @@ export const ProfilePage: React.FC = () => {
                     transition={{ delay: 0.1 }}
                     className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"
                 >
-                    <div className="p-8">
+                    <div className="p-6 sm:p-8">
                         {/* Avatar + Name + Tier */}
-                        <div className="flex items-center gap-6 mb-8">
+                        <div className="flex flex-col md:flex-row items-center md:items-start gap-6 mb-8 text-center md:text-left">
                             <div className="relative">
                                 <div className="w-24 h-24 rounded-full bg-indigo-100 flex items-center justify-center border-4 border-white shadow-md overflow-hidden">
                                     {profile.avatarUrl ? (
@@ -236,9 +236,9 @@ export const ProfilePage: React.FC = () => {
                                     )}
                                 </div>
                             </div>
-                            <div>
+                            <div className="flex-1">
                                 <h2 className="text-xl font-semibold text-slate-900">{profile.name || 'Set your name'}</h2>
-                                <div className="flex items-center gap-2 mt-1">
+                                <div className="flex items-center justify-center md:justify-start gap-2 mt-1">
                                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border ${tierConfig.bgClass} ${tierConfig.textClass}`}>
                                         {tierConfig.label}
                                     </span>
@@ -249,16 +249,16 @@ export const ProfilePage: React.FC = () => {
                         </div>
 
                         {/* Tabs Navigation */}
-                        <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl mb-10 w-fit">
+                        <div className="flex overflow-x-auto no-scrollbar gap-1 p-1 bg-slate-100 rounded-xl mb-10 w-full md:w-fit">
                             <button
                                 onClick={() => setActiveTab('profile')}
-                                className={`px-5 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'profile' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                className={`flex-1 md:flex-none px-5 py-2 text-sm font-bold rounded-lg transition-all whitespace-nowrap ${activeTab === 'profile' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                             >
                                 Informasi Profil
                             </button>
                             <button
                                 onClick={() => setActiveTab('gift')}
-                                className={`px-5 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'gift' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                className={`flex-1 md:flex-none px-5 py-2 text-sm font-bold rounded-lg transition-all whitespace-nowrap ${activeTab === 'gift' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                             >
                                 Kado Digital
                             </button>
@@ -512,7 +512,7 @@ export const ProfilePage: React.FC = () => {
                                             <h3 className="text-lg font-bold text-slate-900">Rekening Bank (Maks. 2)</h3>
                                         </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 rounded-2xl bg-slate-50 border border-slate-200">
+                                        <div className="grid grid-cols-1 gap-8 p-6 rounded-2xl bg-slate-50 border border-slate-200 md:grid-cols-2">
                                             {/* Bank 1 */}
                                             <div className="space-y-4">
                                                 <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">Bank Utama #1</h4>
@@ -542,7 +542,7 @@ export const ProfilePage: React.FC = () => {
                                             </div>
 
                                             {/* Bank 2 */}
-                                            <div className="space-y-4 pt-8 md:pt-0 md:border-l md:pl-8 border-slate-200">
+                                            <div className="space-y-4 pt-8 border-t border-slate-200 md:pt-0 md:border-t-0 md:border-l md:pl-8">
                                                 <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">Bank Alternatif #2</h4>
                                                 <div className="space-y-3">
                                                     <input
@@ -634,13 +634,13 @@ export const ProfilePage: React.FC = () => {
                     </div>
 
                     {/* Footer with Save Button */}
-                    <div className="px-8 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-                        <div>
+                    <div className="px-8 py-4 bg-slate-50 border-t border-slate-200 flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
+                        <div className="w-full sm:w-auto text-center sm:text-left">
                             {saveSuccess && (
                                 <m.div
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    className="flex items-center gap-2 text-emerald-600 text-sm font-medium"
+                                    className="flex items-center gap-2 text-emerald-600 text-sm font-medium justify-center sm:justify-start"
                                 >
                                     <CheckIcon className="w-4 h-4" />
                                     Profile updated successfully
@@ -650,7 +650,7 @@ export const ProfilePage: React.FC = () => {
                         <button
                             onClick={handleSave}
                             disabled={isSaving}
-                            className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl shadow-md shadow-indigo-200 transition-all active:scale-95"
+                            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl shadow-md shadow-indigo-200 transition-all active:scale-95"
                         >
                             {isSaving ? <PremiumLoader variant="inline" size="sm" color="white" /> : <SaveIcon className="w-4 h-4" />}
                             Save Changes

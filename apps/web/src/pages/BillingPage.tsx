@@ -311,7 +311,7 @@ export const BillingPage: React.FC = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-[#F8FAFC] py-20 px-4">
+      <div className="min-h-screen bg-[#F8FAFC] pt-20 pb-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="mb-10">
             <h1 className="text-3xl font-black text-[#0A1128] mb-2">
@@ -358,7 +358,7 @@ export const BillingPage: React.FC = () => {
             )}
           </AnimatePresence>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             {/* Current Plan Card */}
             <div className="md:col-span-2 bg-white rounded-3xl p-8 border border-slate-200 shadow-sm relative overflow-hidden">
               <div className="relative z-10">
@@ -460,7 +460,7 @@ export const BillingPage: React.FC = () => {
                 </div>
               ) : transactions.length > 0 ? (
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
+                  <table className="w-full text-left border-collapse" style={{ minWidth: '800px' }}>
                     <thead>
                       <tr className="bg-slate-50 text-[10px] uppercase tracking-widest font-black text-slate-400">
                         <th className="px-8 py-4">Transaction ID</th>
@@ -607,7 +607,7 @@ export const BillingPage: React.FC = () => {
           </div>
 
           {/* Footer Security */}
-          <div className="mt-8 flex items-center justify-center gap-6 text-slate-400">
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-slate-400">
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4" />
               <span className="text-xs font-bold uppercase tracking-tighter">

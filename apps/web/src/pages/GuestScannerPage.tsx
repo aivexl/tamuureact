@@ -177,7 +177,7 @@ export const GuestScannerPage: React.FC = () => {
     return (
         <div className="min-h-screen bg-[#0A1128] text-white flex flex-col font-sans overflow-hidden">
             {/* Header */}
-            <header className="p-6 flex items-center justify-between">
+            <header className="p-4 sm:p-6 flex items-center justify-between">
                 <button
                     onClick={() => navigate(-1)}
                     className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-md"
@@ -185,7 +185,7 @@ export const GuestScannerPage: React.FC = () => {
                     <ArrowLeft className="w-5 h-5" />
                 </button>
                 <div className="flex flex-col items-center">
-                    <h1 className="text-lg font-bold tracking-tight">Scanner Mode</h1>
+                    <h1 className="text-base sm:text-lg font-bold tracking-tight">Scanner Mode</h1>
                     <div className="flex items-center gap-1.5">
                         <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                         <span className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Live Sync Active</span>
@@ -195,21 +195,21 @@ export const GuestScannerPage: React.FC = () => {
             </header>
 
             {/* Main Surface */}
-            <main className="flex-1 flex flex-col items-center px-6 pt-4 pb-12 overflow-y-auto">
+            <main className="flex-1 flex flex-col items-center px-4 sm:px-6 pt-4 pb-12 overflow-y-auto">
 
                 {/* Visual Context */}
                 {!isScanning && !scanResult && (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="w-full max-w-sm bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl flex flex-col items-center text-center gap-6"
+                        className="w-full max-w-sm bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-xl flex flex-col items-center text-center gap-6"
                     >
-                        <div className="w-20 h-20 rounded-full bg-[#FFBF00]/20 flex items-center justify-center">
-                            <QrCode className="w-10 h-10 text-[#FFBF00]" />
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#FFBF00]/20 flex items-center justify-center">
+                            <QrCode className="w-8 h-8 sm:w-10 sm:h-10 text-[#FFBF00]" />
                         </div>
                         <div className="space-y-2">
-                            <h2 className="text-xl font-bold">Ready to Scan?</h2>
-                            <p className="text-sm text-white/50 leading-relaxed px-4">
+                            <h2 className="text-lg sm:text-xl font-bold">Ready to Scan?</h2>
+                            <p className="text-xs sm:text-sm text-white/50 leading-relaxed px-2 sm:px-4">
                                 Pastikan Welcome Display sudah terbuka di TV/Laptop. Scan QR tamu untuk memulai animasi.
                             </p>
                         </div>
@@ -236,7 +236,7 @@ export const GuestScannerPage: React.FC = () => {
                             initial={{ opacity: 0, scale: 0.9, y: 50 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 50 }}
-                            className="w-full max-w-sm mt-8 bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-2xl relative overflow-hidden"
+                            className="w-full max-w-sm mt-8 bg-white/5 border border-white/10 rounded-3xl p-5 sm:p-6 backdrop-blur-2xl relative overflow-hidden"
                         >
                             {/* Success Progress Bar */}
                             {isLoading && (
@@ -244,27 +244,27 @@ export const GuestScannerPage: React.FC = () => {
                             )}
 
                             <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 rounded-2xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                                    <CheckCircle2 className="w-8 h-8 text-green-500" />
+                                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                    <CheckCircle2 className="w-6 h-6 sm:w-8 sm:h-8 text-green-500" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-xs text-white/40 font-bold uppercase tracking-widest mb-0.5">Guest Discovered</p>
-                                    <h3 className="text-xl font-bold truncate text-[#FFBF00]">{guestName}</h3>
+                                    <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mb-0.5">Guest Discovered</p>
+                                    <h3 className="text-lg sm:text-xl font-bold truncate text-[#FFBF00]">{guestName}</h3>
                                 </div>
                             </div>
 
-                            <div className="mt-6 flex gap-3">
+                            <div className="mt-6 flex flex-col sm:flex-row gap-3">
                                 <button
                                     onClick={() => triggerBlast(guestName || '')}
                                     disabled={isLoading}
-                                    className="flex-1 py-3.5 bg-white/10 hover:bg-white/20 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                                    className="flex-1 py-3.5 bg-white/10 hover:bg-white/20 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 text-xs"
                                 >
                                     {isLoading ? <PremiumLoader variant="inline" size="sm" color="#FFBF00" /> : <RefreshCw className="w-4 h-4" />}
                                     Resend Blast
                                 </button>
                                 <button
                                     onClick={startScanner}
-                                    className="flex-1 py-3.5 bg-[#FFBF00] text-[#0A1128] rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                                    className="flex-1 py-3.5 bg-[#FFBF00] text-[#0A1128] rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform text-xs"
                                 >
                                     <ArrowLeft className="w-4 h-4" />
                                     Next Guest
@@ -272,7 +272,7 @@ export const GuestScannerPage: React.FC = () => {
                             </div>
 
                             {error && (
-                                <p className="mt-4 text-xs text-red-500 flex items-center gap-1.5 font-medium">
+                                <p className="mt-4 text-[10px] sm:text-xs text-red-500 flex items-center gap-1.5 font-medium">
                                     <XCircle className="w-4 h-4" />
                                     {error}
                                 </p>

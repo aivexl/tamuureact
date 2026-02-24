@@ -4,7 +4,7 @@ import { useStore, useTemporalStore } from '@/store/useStore';
 import {
     ArrowLeft, Play, Save, Sparkles, Check,
     Undo2, Redo2, Edit2, X, ExternalLink, Link, Wand2, Shield,
-    PanelLeft, PanelBottom, PanelRight
+    PanelLeft, PanelBottom, PanelRight, FileText, Send
 } from 'lucide-react';
 import { PremiumLoader } from '../ui/PremiumLoader';
 import { templates, invitations, userDisplayDesigns } from '@/lib/api';
@@ -24,7 +24,6 @@ interface EditorHeaderProps {
 }
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
-type PublishStatus = 'draft' | 'publishing' | 'published';
 
 // ============================================
 // EDITOR HEADER COMPONENT
@@ -49,6 +48,8 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
         isTemplate,
         setProjectName,
         id,
+        isPublished,
+        setIsPublished,
         // Layout Toggles
         isLeftPanelOpen,
         setLeftPanelOpen,
@@ -66,7 +67,6 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
     const [isEditingName, setIsEditingName] = useState(false);
     const [editedName, setEditedName] = useState(templateName);
     const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
-    const [publishStatus, setPublishStatus] = useState<PublishStatus>('draft');
     const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
@@ -118,24 +118,11 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
         }
     }, [onSave, saveStatus]);
 
-    const handlePublish = useCallback(async () => {
-        if (publishStatus === 'publishing') return;
-
-        // Save first
+    const handleSetStatus = useCallback(async (status: boolean) => {
+        setIsPublished(status);
+        // Trigger save immediately to persist the status change
         await handleSave();
-
-        setPublishStatus('publishing');
-        try {
-            if (onPublish) {
-                await onPublish();
-            }
-            // Simulate publish for now
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            setPublishStatus('published');
-        } catch (error) {
-            setPublishStatus('draft');
-        }
-    }, [onPublish, publishStatus, handleSave]);
+    }, [setIsPublished, handleSave]);
 
     const handlePreview = useCallback(() => {
         if (onPreview) {
@@ -260,32 +247,6 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
                     <>
                         <Save className="w-4 h-4" />
                         <span>Save</span>
-                    </>
-                );
-        }
-    };
-
-    const getPublishButtonContent = () => {
-        switch (publishStatus) {
-            case 'publishing':
-                return (
-                    <>
-                        <PremiumLoader variant="inline" color="white" />
-                        <span>Publishing...</span>
-                    </>
-                );
-            case 'published':
-                return (
-                    <>
-                        <Check className="w-4 h-4" />
-                        <span>Published</span>
-                    </>
-                );
-            default:
-                return (
-                    <>
-                        <Sparkles className="w-4 h-4" />
-                        <span>Publish</span>
                     </>
                 );
         }
@@ -483,19 +444,38 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
                     {getSaveButtonContent()}
                 </motion.button>
 
-                {/* Publish Button */}
-                <motion.button
-                    whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(191,161,129,0.3)' }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handlePublish}
-                    disabled={publishStatus === 'publishing'}
-                    className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold shadow-lg transition-all ${publishStatus === 'published'
-                        ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-green-500/20'
-                        : 'bg-gradient-to-r from-premium-accent to-premium-accent/80 text-premium-dark shadow-premium-accent/20'
+                {/* Status Toggles (Draft/Publish) */}
+                <div className="flex items-center bg-black/40 p-1 rounded-xl border border-white/5 h-[36px]">
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handleSetStatus(false)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+                            !isPublished
+                                ? 'bg-amber-500/20 text-amber-400 shadow-[inset_0_0_0_1px_rgba(245,158,11,0.3)]'
+                                : 'text-white/30 hover:text-white/60 hover:bg-white/5'
                         }`}
-                >
-                    {getPublishButtonContent()}
-                </motion.button>
+                    >
+                        <FileText className="w-3.5 h-3.5" />
+                        Draft
+                    </motion.button>
+                    
+                    <div className="w-[1px] h-4 bg-white/10 mx-1" />
+
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handleSetStatus(true)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+                            isPublished
+                                ? 'bg-emerald-500/20 text-emerald-400 shadow-[inset_0_0_0_1px_rgba(16,185,129,0.3)]'
+                                : 'text-white/30 hover:text-white/60 hover:bg-white/5'
+                        }`}
+                    >
+                        {isPublished ? <Check className="w-3.5 h-3.5" /> : <Send className="w-3.5 h-3.5" />}
+                        Publish
+                    </motion.button>
+                </div>
             </div>
         </header>
     );

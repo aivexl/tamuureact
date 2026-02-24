@@ -52,7 +52,7 @@ interface IconGridMenuProps {
 
 export const IconGridMenu: React.FC<IconGridMenuProps> = ({ onOpenPanel }) => {
     return (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
             {MENU_ITEMS.map((item, i) => (
                 <m.button
                     key={item.id}
@@ -71,18 +71,18 @@ export const IconGridMenu: React.FC<IconGridMenuProps> = ({ onOpenPanel }) => {
                     }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => onOpenPanel(item.id)}
-                    className="group relative bg-white p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-slate-200 transition-all duration-300 overflow-hidden"
+                    className="group relative bg-white p-4 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-slate-200 transition-all duration-300 overflow-hidden"
                 >
                     {/* Inner Content */}
-                    <div className="relative z-10 flex flex-col items-center gap-3 sm:gap-4">
+                    <div className="relative z-10 flex flex-col items-center gap-2 sm:gap-4">
                         <div
-                            className={`w-14 h-14 sm:w-16 sm:h-16 ${item.bg} rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110`}
+                            className={`w-12 h-12 sm:w-16 sm:h-16 ${item.bg} rounded-[1.25rem] sm:rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110`}
                         >
-                            <item.icon className={`w-7 h-7 sm:w-8 h-8 ${item.color} transition-all duration-500`} />
+                            <item.icon className={`w-6 h-6 sm:w-8 h-8 ${item.color} transition-all duration-500`} />
                         </div>
 
                         <div className="space-y-1 text-center">
-                            <span className="text-xs font-black text-slate-800 uppercase tracking-[0.2em] group-hover:text-slate-900 transition-colors">
+                            <span className="text-[10px] sm:text-xs font-black text-slate-800 uppercase tracking-[0.15em] sm:tracking-[0.2em] group-hover:text-slate-900 transition-colors">
                                 {item.label}
                             </span>
                         </div>

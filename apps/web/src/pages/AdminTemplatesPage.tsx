@@ -135,40 +135,40 @@ export const AdminTemplatesPage: React.FC = () => {
             <div className="min-h-[calc(100vh-100px)]">
                 {/* Header Action Area */}
                 <div className="flex flex-col md:flex-row items-end md:items-center justify-between gap-6 mb-10">
-                    <div>
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${activeTab === 'invitation' ? 'bg-teal-500 shadow-teal-500/20' : 'bg-purple-500 shadow-purple-500/20'}`}>
+                    <div className="w-full md:w-auto text-center md:text-left">
+                        <div className="flex flex-col md:flex-row items-center gap-3 mb-2">
+                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${activeTab === 'invitation' ? 'bg-teal-50 shadow-teal-500/20' : 'bg-purple-50 shadow-purple-500/20'}`}>
                                 {activeTab === 'invitation' ? (
-                                    <Smartphone className="w-6 h-6 text-slate-900" />
+                                    <Smartphone className="w-6 h-6 text-teal-600" />
                                 ) : (
-                                    <Monitor className="w-6 h-6 text-white" />
+                                    <Monitor className="w-6 h-6 text-purple-600" />
                                 )}
                             </div>
-                            <h2 className="text-3xl font-bold text-white tracking-tight font-outfit">
+                            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-outfit">
                                 {activeTab === 'invitation' ? 'Template Undangan' : 'Template Display'}
                             </h2>
                         </div>
-                        <p className="text-slate-400 text-lg">
+                        <p className="text-slate-400 text-sm sm:text-lg">
                             {activeTab === 'invitation'
                                 ? 'Kelola desain master untuk undangan digital format portrait.'
                                 : 'Kelola desain master untuk layar sapaan format landscape.'}
                         </p>
                     </div>
 
-                    <div className="flex gap-4">
-                        <div className="relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                    <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                        <div className="relative flex-1 sm:flex-none">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
                                 placeholder="Cari template..."
-                                className="pl-12 pr-6 py-3.5 bg-[#111] border border-white/10 text-white rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 outline-none shadow-sm"
+                                className="w-full sm:w-auto pl-12 pr-6 py-3.5 bg-[#111] border border-white/10 text-white rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 outline-none shadow-sm"
                             />
                         </div>
                         <button
                             onClick={() => setIsCreateModalOpen(true)}
-                            className="flex items-center gap-2 px-6 py-3.5 bg-teal-500 text-slate-900 font-bold rounded-2xl hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                            className="flex items-center justify-center gap-2 px-6 py-3.5 bg-teal-500 text-slate-900 font-bold rounded-2xl hover:shadow-xl hover:-translate-y-0.5 transition-all"
                         >
                             <Plus className="w-5 h-5" /> Create New
                         </button>
@@ -261,32 +261,32 @@ export const AdminTemplatesPage: React.FC = () => {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="relative bg-white rounded-[2rem] p-8 max-w-3xl w-full shadow-2xl overflow-hidden"
+                            className="relative bg-[#0F0F0F] border border-white/10 rounded-[2rem] p-6 sm:p-8 max-w-3xl w-full shadow-2xl overflow-hidden"
                         >
                             <button
                                 onClick={() => setIsCreateModalOpen(false)}
-                                className="absolute top-6 right-6 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition-colors"
+                                className="absolute top-6 right-6 p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors"
                             >
                                 <X className="w-5 h-5 text-slate-500" />
                             </button>
 
-                            <div className="text-center mb-10">
-                                <h2 className="text-3xl font-bold text-slate-900 mb-3">Pilih Tipe Template</h2>
-                                <p className="text-slate-500 text-lg">Format apa yang ingin Anda buat hari ini?</p>
+                            <div className="text-center mb-8 sm:mb-10">
+                                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">Pilih Tipe Template</h2>
+                                <p className="text-slate-500 text-base sm:text-lg">Format apa yang ingin Anda buat hari ini?</p>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                 {/* Option 1: Mobile */}
                                 <button
                                     onClick={() => handleCreateTemplate('invitation')}
                                     disabled={isCreating}
-                                    className="group relative flex flex-col bg-slate-50 rounded-3xl border-2 border-slate-100 p-8 hover:border-teal-500 hover:bg-teal-50/50 transition-all duration-300 text-left"
+                                    className="group relative flex flex-col bg-white/5 rounded-3xl border-2 border-white/5 p-6 sm:p-8 hover:border-teal-500 hover:bg-teal-500/5 transition-all duration-300 text-left"
                                 >
-                                    <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                                        <Smartphone className="w-8 h-8 text-teal-600" />
+                                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/5 shadow-sm flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
+                                        <Smartphone className="w-7 h-7 sm:w-8 sm:h-8 text-teal-500" />
                                     </div>
-                                    <h3 className="text-xl font-bold text-slate-900 mb-2">Undangan Digital</h3>
-                                    <p className="text-sm text-slate-500 leading-relaxed">
+                                    <h3 className="text-lg sm:text-xl font-bold text-white mb-2">Undangan Digital</h3>
+                                    <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
                                         Standard mobile invitation (390x844). Cocok untuk disebar via WhatsApp ke tamu undangan.
                                     </p>
                                 </button>
@@ -295,21 +295,21 @@ export const AdminTemplatesPage: React.FC = () => {
                                 <button
                                     onClick={() => handleCreateTemplate('display')}
                                     disabled={isCreating}
-                                    className="group relative flex flex-col bg-slate-50 rounded-3xl border-2 border-slate-100 p-8 hover:border-purple-500 hover:bg-purple-50/50 transition-all duration-300 text-left"
+                                    className="group relative flex flex-col bg-white/5 rounded-3xl border-2 border-white/5 p-6 sm:p-8 hover:border-purple-500 hover:bg-purple-500/5 transition-all duration-300 text-left"
                                 >
-                                    <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                                        <Monitor className="w-8 h-8 text-purple-600" />
+                                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/5 shadow-sm flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
+                                        <Monitor className="w-7 h-7 sm:w-8 sm:h-8 text-purple-500" />
                                     </div>
-                                    <h3 className="text-xl font-bold text-slate-900 mb-2">Layar Sapaan (TV)</h3>
-                                    <p className="text-sm text-slate-500 leading-relaxed">
+                                    <h3 className="text-lg sm:text-xl font-bold text-white mb-2">Layar Sapaan (TV)</h3>
+                                    <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
                                         Widescreen display (1920x1080). Cocok untuk layar Welcome Screen di pintu masuk venue.
                                     </p>
                                 </button>
                             </div>
 
                             {isCreating && (
-                                <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10">
-                                    <PremiumLoader showLabel label="Sedang Membuat Template..." color="#0f172a" />
+                                <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-10">
+                                    <PremiumLoader showLabel label="Sedang Membuat Template..." color="#ffffff" />
                                 </div>
                             )}
 

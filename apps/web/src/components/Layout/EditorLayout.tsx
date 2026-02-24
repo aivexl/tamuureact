@@ -129,6 +129,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
             music: state.music,
             zoom: state.zoom,
             pan: state.pan,
+            is_published: state.isPublished,
             updated_at: new Date().toISOString()
         };
 

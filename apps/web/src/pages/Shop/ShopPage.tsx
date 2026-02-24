@@ -151,7 +151,7 @@ export const ShopPage: React.FC = () => {
                 <section className="max-w-3xl mx-auto mb-16">
                     <div className="relative group">
                         <div className="flex items-center w-full bg-white border border-slate-200 rounded-2xl p-1.5 shadow-sm focus-within:shadow-md focus-within:border-[#FFBF00]/50 transition-all group">
-                            <div className="pl-4 text-slate-400">
+                            <div className="pl-3 sm:pl-4 text-slate-400 shrink-0">
                                 <Search className="w-5 h-5" />
                             </div>
                             <input
@@ -159,9 +159,9 @@ export const ShopPage: React.FC = () => {
                                 placeholder="Cari vendor, jasa, atau inspirasi..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="flex-1 bg-transparent border-none focus:ring-0 text-[#0A1128] placeholder:text-slate-300 text-base py-3 px-3 font-medium"
+                                className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 text-[#0A1128] placeholder:text-slate-300 text-sm sm:text-base py-2 sm:py-3 px-3 font-medium"
                             />
-                            <button className="bg-[#FFBF00] text-[#0A1128] px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all">
+                            <button className="bg-[#FFBF00] text-[#0A1128] px-4 py-2 sm:px-6 sm:py-3 rounded-xl font-black text-[10px] sm:text-xs uppercase tracking-widest hover:scale-105 transition-all shrink-0">
                                 Search
                             </button>
                         </div>

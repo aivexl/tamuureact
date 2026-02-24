@@ -157,16 +157,16 @@ export const AdminDashboardPage: React.FC = () => {
     return (
         <AdminLayout>
             {/* Header */}
-            <div className="flex items-end justify-between mb-10">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-0 mb-10">
                 <div>
                     <h1 className="text-3xl font-bold text-white mb-2">Dashboard Overview</h1>
                     <p className="text-slate-400">Welcome back, Super Admin. Here's what's happening today.</p>
                 </div>
-                <div className="flex gap-3">
-                    <button className="px-4 py-2 bg-white/5 text-white text-sm font-bold rounded-xl hover:bg-white/10 border border-white/5 transition-colors">
+                <div className="flex gap-3 w-full md:w-auto">
+                    <button className="flex-1 md:flex-none px-4 py-2 bg-white/5 text-white text-sm font-bold rounded-xl hover:bg-white/10 border border-white/5 transition-colors">
                         View Reports
                     </button>
-                    <button className="px-4 py-2 bg-teal-500 text-slate-900 text-sm font-bold rounded-xl hover:bg-teal-400 transition-colors shadow-lg shadow-teal-500/20">
+                    <button className="flex-1 md:flex-none px-4 py-2 bg-teal-500 text-slate-900 text-sm font-bold rounded-xl hover:bg-teal-400 transition-colors shadow-lg shadow-teal-500/20">
                         Create Broadcast
                     </button>
                 </div>
@@ -189,7 +189,7 @@ export const AdminDashboardPage: React.FC = () => {
 
                         <div className="flex items-center gap-2">
                             {/* Search */}
-                            <div className="relative">
+                            <div className="relative flex-1 md:flex-none">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                                 <input
                                     type="text"
@@ -201,7 +201,7 @@ export const AdminDashboardPage: React.FC = () => {
                             </div>
 
                             {/* Filter */}
-                            <div className="relative group">
+                            <div className="relative group flex-shrink-0">
                                 <select
                                     value={filterType}
                                     onChange={(e) => setFilterType(e.target.value)}

@@ -512,7 +512,7 @@ export const GuestManagementPage: React.FC = () => {
 
                 {/* Toolbar */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200">
-                    <div className="relative flex-1 max-w-md">
+                    <div className="relative flex-1 max-w-md w-full">
                         <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                         <input
                             type="text"
@@ -522,18 +522,18 @@ export const GuestManagementPage: React.FC = () => {
                             className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:border-teal-500 transition-all outline-none"
                         />
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto">
                         <button
                             onClick={() => setShowImportModal(true)}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all font-medium shadow-lg shadow-slate-900/10"
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all font-medium shadow-lg shadow-slate-900/10 whitespace-nowrap"
                         >
                             <FileUpIcon className="w-4 h-4" /> Import CSV / Excel
                         </button>
 
-                        <div className="relative">
+                        <div className="relative flex-1 sm:flex-none">
                             <button
                                 onClick={() => setShowExportDropdown(!showExportDropdown)}
-                                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-all font-medium"
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-all font-medium whitespace-nowrap"
                             >
                                 <FileDownIcon className="w-4 h-4" /> Export
                             </button>

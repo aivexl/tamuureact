@@ -40,8 +40,6 @@ export const MerchantPortalPage: React.FC = () => {
     if (!user) return <Navigate to="/login" replace />;
 
     // Show loading only on initial load (isLoading).
-    // Do NOT include isFetching, otherwise child components mounting and triggering
-    // a background refetch will cause this parent to unmount them, creating an infinite loop.
     if (isLoading) {
         return (
             <div className="min-h-screen bg-white flex items-center justify-center">
@@ -64,25 +62,25 @@ export const MerchantPortalPage: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-white text-slate-900 font-inter flex">
+        <div className="min-h-screen bg-white text-slate-900 font-inter flex flex-col lg:flex-row overflow-hidden">
             {/* Unified Sidebar */}
             <MerchantSidebar isMobileMenuOpen={isMobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
 
             {/* Main Content Area */}
-            <main className="flex-1 flex flex-col min-h-screen min-w-0 lg:ml-72 bg-white">
+            <main className="flex-1 flex flex-col min-h-screen min-w-0 lg:ml-72 bg-white relative overflow-y-auto pb-safe">
                 {/* Mobile Header (Hidden on Desktop) */}
-                <div className="lg:hidden flex items-center justify-between p-6 border-b border-slate-100 bg-white sticky top-0 z-30">
-                    <div className="font-extrabold text-[#0A1128] tracking-tight">Merchant Portal</div>
+                <div className="lg:hidden flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white sticky top-0 z-30 shadow-sm">
+                    <div className="font-extrabold text-[#0A1128] tracking-tight uppercase text-xs tracking-[0.2em]">Seller Center</div>
                     <button
                         onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}
-                        className="p-2 -mr-2 text-slate-400 hover:text-white transition-colors"
+                        className="p-2 -mr-2 text-slate-400 hover:text-indigo-600 transition-colors"
                     >
                         <MenuIcon className="w-6 h-6" />
                     </button>
                 </div>
 
                 {/* Routing Area */}
-                <div className="flex-1 overflow-x-hidden relative">
+                <div className="flex-1 overflow-x-hidden relative p-4 sm:p-6 lg:p-8">
                     <Routes>
                         <Route path="dashboard" element={<MerchantOverview />} />
                         <Route path="products" element={<MerchantProducts />} />

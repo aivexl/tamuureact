@@ -1,6 +1,6 @@
 import React, { useState, useMemo, Suspense, lazy, useCallback } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { templates as templatesApi, invitations as invitationsApi, Category } from '@/lib/api';
+import { templates as templatesApi, invitations as invitationsApi, users as usersApi, Category } from '@/lib/api';
 import { useStore } from '@/store/useStore';
 import { useTemplates, useCategories, useWishlist, useToggleWishlist } from '@/hooks/queries';
 
@@ -26,8 +26,6 @@ interface Template {
     category?: string;
     price?: number;
 }
-
-// Removed hardcoded CATEGORIES - now fetched from API
 
 const GridLoader = () => (
     <div className="py-20 flex justify-center items-center">
@@ -56,6 +54,17 @@ const formatIndonesianDate = (dateStr: string) => {
     }
 };
 
+// More robust, deep clone function
+const deepClone = (obj: any) => {
+    if (obj === null || typeof obj !== 'object') {
+        return obj;
+    }
+    if (typeof structuredClone === 'function') {
+        return structuredClone(obj);
+    }
+    return JSON.parse(JSON.stringify(obj));
+};
+
 export const InvitationsStorePage: React.FC = () => {
     const { search } = useLocation();
     const { isAuthenticated, user, showModal } = useStore();
@@ -65,20 +74,17 @@ export const InvitationsStorePage: React.FC = () => {
     const onboardingName = queryParams.get('name');
     const onboardingTemplateId = queryParams.get('templateId');
 
-    // TanStack Query hooks - replacing manual useState + useEffect
     const { data: templates = [], isLoading: isLoadingTemplates } = useTemplates();
     const { data: categoryList = [] } = useCategories();
     const { data: wishlistData = [] } = useWishlist(user?.id);
     const toggleWishlistMutation = useToggleWishlist();
 
-    // UI-only state
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-    const [isCreating, setIsCreating] = useState(false); // For invitation creation loading
+    const [isCreating, setIsCreating] = useState(false);
     const navigate = useNavigate();
 
-    // Derive wishlist as array of IDs for compatibility
     const wishlist = useMemo(() => wishlistData as string[], [wishlistData]);
 
     useSEO({
@@ -91,7 +97,6 @@ export const InvitationsStorePage: React.FC = () => {
             navigate('/login');
             return;
         }
-        // Use mutation with optimistic update handled by TanStack Query
         toggleWishlistMutation.mutate({
             userId: user.id,
             templateId,
@@ -111,13 +116,11 @@ export const InvitationsStorePage: React.FC = () => {
 
     const handleUseTemplate = async (templateId: string) => {
         if (!isAuthenticated) {
-            // Redirect to login with current search params to preserve onboarding context
             const redirectUrl = encodeURIComponent(window.location.pathname + window.location.search);
             navigate(`/login?redirect=${redirectUrl}`);
             return;
         }
 
-        // [QUOTA GUARD] Check if user has reached their invitation limit
         const maxInvitations = user?.maxInvitations || 1;
         const invitationCount = user?.invitationCount || 0;
         if (invitationCount >= maxInvitations) {
@@ -132,141 +135,144 @@ export const InvitationsStorePage: React.FC = () => {
             return;
         }
 
-        const isAppDomain = getIsAppDomain();
-
         if (isOnboarding) {
-            // Flow C: Already in onboarding on app domain
             setIsCreating(true);
             try {
-                // 1. Get the full template data
                 const templateData = await templatesApi.get(templateId);
-
-                // 2. Read Magic Data from Onboarding
                 const rawOnboardingData = localStorage.getItem('tamuu_onboarding_data');
                 const magic = rawOnboardingData ? JSON.parse(rawOnboardingData) : null;
 
-                // 3. Apply Magic Sync (Inject data into sections)
-                let sections = templateData.sections || [];
+                let finalSections = deepClone(templateData.sections || []);
+
                 if (magic) {
-                    let magicJson = JSON.stringify(sections);
-
-                    const formattedDate = magic.eventDate ? formatIndonesianDate(magic.eventDate) : 'Lokasi Acara';
-
-                    // A. Text Replacement
-                    magicJson = magicJson
-                        .replace(/Mempelai Pria/g, magic.groomName || 'Mempelai Pria')
-                        .replace(/Mempelai Wanita/g, magic.brideName || 'Mempelai Wanita')
-                        .replace(/Nama Mempelai/g, magic.celebrantName || magic.invitationName || 'Nama Mempelai')
-                        .replace(/0000000000/g, magic.bank1Number || '0000000000')
-                        .replace(/Nama Bank/g, magic.bank1Name || 'Nama Bank')
-                        .replace(/Atas Nama/g, magic.bank1Holder || 'Atas Nama')
-                        .replace(/Lokasi Acara/g, magic.eventLocation || 'Lokasi Acara')
-                        .replace(/Tanggal Acara/g, formattedDate);
-
-                    // B. Photo Injection (Heuristic-based)
-                    try {
-                        const parsedSections = JSON.parse(magicJson);
-                        parsedSections.forEach((section: any) => {
-                            if (section.layers) {
-                                section.layers.forEach((layer: any) => {
-                                    // Main Photo
-                                    if (magic.photoPreview && (layer.name?.toLowerCase().includes('foto utama') || layer.name?.toLowerCase().includes('hero'))) {
-                                        layer.url = magic.photoPreview;
-                                    }
-                                    // Groom Photo
-                                    if (magic.groomPhoto && layer.name?.toLowerCase().includes('pria')) {
-                                        layer.url = magic.groomPhoto;
-                                    }
-                                    // Bride Photo
-                                    if (magic.bridePhoto && layer.name?.toLowerCase().includes('wanita')) {
-                                        layer.url = magic.bridePhoto;
-                                    }
-                                    // Gallery Photos
-                                    if (magic.galleryPhotos?.length > 0 && layer.name?.toLowerCase().includes('gallery')) {
-                                        const match = layer.name.match(/gallery\s*(\d+)/i);
-                                        if (match) {
-                                            const idx = parseInt(match[1]) - 1;
-                                            if (magic.galleryPhotos[idx]) {
-                                                layer.url = magic.galleryPhotos[idx];
-                                            }
-                                        }
-                                    }
-                                    // Profile Photo Sync
-                                    if (layer.type === 'profile_photo') {
-                                        if (layer.profilePhotoConfig?.role === 'mempelai_pria' && magic.groomPhoto) {
-                                            layer.imageUrl = magic.groomPhoto;
-                                        } else if (layer.profilePhotoConfig?.role === 'mempelai_wanita' && magic.bridePhoto) {
-                                            layer.imageUrl = magic.bridePhoto;
-                                        }
-                                    }
-
-                                    // Countdown Sync
-                                    const targetDateTime = magic.eventDate && magic.eventTime
-                                        ? new Date(`${magic.eventDate}T${magic.eventTime}`).toISOString()
-                                        : magic.eventDate
-                                            ? new Date(`${magic.eventDate}T09:00:00`).toISOString()
-                                            : null;
-
-                                    if (targetDateTime && (layer.type === 'countdown' || layer.name?.toLowerCase().includes('countdown'))) {
-                                        if (layer.countdownConfig) {
-                                            layer.countdownConfig.targetDate = targetDateTime;
-                                        } else {
-                                            layer.countdownConfig = { targetDate: targetDateTime };
-                                        }
-                                    }
-                                });
-                            }
-                        });
-                        sections = parsedSections;
-                    } catch (e) {
-                        console.error('Magic Sync Photo Injection Error:', e);
-                        sections = JSON.parse(magicJson);
+                    // SYNC: Update user profile first so GiftPanel has the latest data
+                    if (user?.id) {
+                         // We don't await this to keep UI snappy, or we can await if we want to be sure.
+                         // Given we are about to create an invitation, let's await to ensure consistency.
+                         try {
+                            await usersApi.updateProfile({
+                                id: user.id,
+                                bank1Name: magic.bank1Name,
+                                bank1Number: magic.bank1Number,
+                                bank1Holder: magic.bank1Holder,
+                                bank2Name: magic.bank2Name,
+                                bank2Number: magic.bank2Number,
+                                bank2Holder: magic.bank2Holder,
+                                emoneyType: magic.emoneyType,
+                                emoneyNumber: magic.emoneyNumber,
+                                giftRecipient: magic.giftRecipientName, // Map from onboarding key to DB key
+                                giftAddress: magic.giftAddress
+                            });
+                         } catch (err) {
+                             console.warn('Background profile sync failed:', err);
+                         }
                     }
+
+                    const formattedDate = magic.eventDate ? formatIndonesianDate(magic.eventDate) : 'Tanggal Acara';
+                    const recipientName = magic.giftRecipientName || user?.giftRecipientName || 'JOHN';
+                    const recipientAddress = magic.giftAddress || user?.giftAddress || 'Alamat lengkap Anda di sini';
+
+                    const replacementMap = new Map([
+                        // Main Details
+                        [/Mempelai Pria/g, magic.groomName || 'Mempelai Pria'],
+                        [/Mempelai Wanita/g, magic.brideName || 'Mempelai Wanita'],
+                        [/Nama Mempelai/g, magic.celebrantName || magic.invitationName || 'Nama Mempelai'],
+                        [/Tanggal Acara/g, formattedDate],
+                        [/Lokasi Acara/g, magic.eventLocation || 'Lokasi Acara'],
+
+                        // Bank Account
+                        [/0000000000/g, magic.bank1Number || '0000000000'],
+                        [/Nama Bank/g, magic.bank1Name || 'Nama Bank'],
+                        [/Atas Nama/g, magic.bank1Holder || 'Atas Nama'],
+                        
+                        // [FIX] Address Card Placeholders
+                        [/JOHN/g, recipientName],
+                        [/Alamat lengkap Anda di sini/g, recipientAddress],
+                        [/Alamat Lengkap/g, recipientAddress], // Add variation
+                        [/NAMA PENERIMA/g, recipientName], // Add variation
+                    ]);
+
+                    const traverseAndReplace = (obj: any) => {
+                        for (const key in obj) {
+                            if (typeof obj[key] === 'string') {
+                                replacementMap.forEach((replacement, regex) => {
+                                    obj[key] = obj[key].replace(regex, replacement);
+                                });
+                            } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+                                traverseAndReplace(obj[key]);
+                            }
+                        }
+                    };
+
+                    traverseAndReplace(finalSections);
+
+                    // Surgical sync for complex components (Photos, Countdown, etc.)
+                    finalSections.forEach((section: any) => {
+                        if (section.layers) {
+                            section.layers.forEach((layer: any) => {
+                                // Photo & Countdown Sync
+                                if (magic.photoPreview && (layer.name?.toLowerCase().includes('foto utama') || layer.name?.toLowerCase().includes('hero'))) layer.url = magic.photoPreview;
+                                if (magic.groomPhoto && layer.name?.toLowerCase().includes('pria')) layer.url = magic.groomPhoto;
+                                if (magic.bridePhoto && layer.name?.toLowerCase().includes('wanita')) layer.url = magic.bridePhoto;
+                                if (layer.type === 'profile_photo') {
+                                    if (layer.profilePhotoConfig?.role === 'mempelai_pria' && magic.groomPhoto) layer.imageUrl = magic.groomPhoto;
+                                    else if (layer.profilePhotoConfig?.role === 'mempelai_wanita' && magic.bridePhoto) layer.imageUrl = magic.bridePhoto;
+                                }
+                                const targetDateTime = magic.eventDate && magic.eventTime ? new Date(`${magic.eventDate}T${magic.eventTime}`).toISOString() : magic.eventDate ? new Date(`${magic.eventDate}T09:00:00`).toISOString() : null;
+                                if (targetDateTime && (layer.type === 'countdown' || layer.name?.toLowerCase().includes('countdown'))) {
+                                    layer.countdownConfig = { ...(layer.countdownConfig || {}), targetDate: targetDateTime };
+                                }
+
+                                // Gallery Sync
+                                if (magic.galleryPhotos?.length > 0 && layer.name?.toLowerCase().includes('gallery')) {
+                                    const match = layer.name.match(/gallery\s*(\d+)/i);
+                                    if (match) {
+                                        const idx = parseInt(match[1]) - 1;
+                                        if (magic.galleryPhotos[idx]) layer.url = magic.galleryPhotos[idx];
+                                    }
+                                }
+                            });
+                        }
+                    });
                 }
 
-                // 4. Create the invitation using synced data
                 const newInvitation = await invitationsApi.create({
                     ...templateData,
-                    user_id: user?.id, // CTO FIX: Explicitly send user_id to link invitation to account
-                    id: undefined, // Let the backend generate a new UUID
+                    user_id: user?.id,
+                    id: undefined,
                     template_id: templateId,
                     name: onboardingName || magic?.invitationName || `Undangan ${onboardingSlug}`,
                     slug: onboardingSlug,
-                    sections: sections,
+                    sections: finalSections,
                     is_published: false
                 });
 
-                // Clear storage after successful use
                 localStorage.removeItem('tamuu_onboarding_data');
                 localStorage.removeItem('tamuu_onboarding_progress');
 
-                // 5. Navigate to the user editor with the new ID
-                const isAppDomain = getIsAppDomain();
-                if (isAppDomain) {
-                    navigate(`/user/editor/${newInvitation.id}`);
+                const newUrl = `/user/editor/${newInvitation.id}`;
+                if (getIsAppDomain()) {
+                    navigate(newUrl);
                 } else {
-                    window.location.href = `https://app.tamuu.id/user/editor/${newInvitation.id}`;
+                    window.location.href = `https://app.tamuu.id${newUrl}`;
                 }
+
             } catch (error: any) {
-                console.error('Failed to create invitation:', error);
+                console.error('Failed to create invitation during onboarding:', error);
                 showModal({
-                    title: 'Gagal Membuat Undangan',
-                    message: error.message || 'Terjadi kesalahan sistem. Silakan coba beberapa saat lagi.',
+                    title: 'Gagal Menyiapkan Undangan',
+                    message: 'Terjadi kesalahan tak terduga saat menyinkronkan data Anda. Silakan coba lagi atau hubungi dukungan.',
                     type: 'error'
                 });
             } finally {
                 setIsCreating(false);
             }
-        } else if (!isAppDomain) {
-            // Flow A: On public domain, redirect to onboarding on app domain
+        } else if (!getIsAppDomain()) {
             window.location.href = `https://app.tamuu.id/onboarding?templateId=${templateId}`;
         } else {
-            // Flow B: On app domain but not in onboarding, start onboarding
             navigate(`/onboarding?templateId=${templateId}`);
         }
     };
-
-
 
     const previewTemplate = (slug: string | undefined, id: string) => {
         window.open(`/preview/${slug || id}`, '_blank');
@@ -274,7 +280,6 @@ export const InvitationsStorePage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-white text-slate-900 pt-14">
-            {/* Full-screen creation overlay */}
             {isCreating && (
                 <div className="fixed inset-0 z-[100] bg-white/90 backdrop-blur-xl flex items-center justify-center">
                     <PremiumLoader
@@ -286,14 +291,12 @@ export const InvitationsStorePage: React.FC = () => {
                     />
                 </div>
             )}
-            {/* Mesh Gradient Decorations */}
             <div className="fixed inset-0 pointer-events-none opacity-40 overflow-hidden z-0">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-rose-500/10 rounded-full blur-[120px]" />
                 <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-amber-500/10 rounded-full blur-[120px]" />
             </div>
 
             <div className="relative z-10">
-                {/* Onboarding Header */}
                 <AnimatePresence>
                     {isOnboarding && (
                         <m.div
@@ -313,13 +316,12 @@ export const InvitationsStorePage: React.FC = () => {
                                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-center flex-1">
                                     Langkah Terakhir: <span className="text-teal-400">Pilih Desain Dasar</span> Untuk <span className="text-white italic">"{onboardingName || onboardingSlug}"</span>
                                 </p>
-                                <div className="w-16 hidden sm:block" /> {/* Spacer for balance */}
+                                <div className="w-16 hidden sm:block" />
                             </div>
                         </m.div>
                     )}
                 </AnimatePresence>
 
-                {/* Hero Header */}
                 <header className="pt-32 pb-16 px-6 text-center">
                     <div className="max-w-4xl mx-auto">
                         <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/70 backdrop-blur-md border border-slate-200 rounded-full shadow-sm mb-8">
@@ -331,36 +333,33 @@ export const InvitationsStorePage: React.FC = () => {
                             Pilih Desain <span className="text-amber-900">Terbaik</span> Untuk Momen Anda
                         </h1>
 
-                        {/* Search Bar */}
                         <div className="relative max-w-2xl mx-auto mb-12 group">
                             <div className="absolute inset-0 bg-[#FFD700]/10 rounded-[2rem] blur-2xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-700" />
                             <div className="relative bg-white border border-slate-200 rounded-[2rem] shadow-xl shadow-slate-100 overflow-hidden flex items-center p-2 focus-within:ring-4 focus-within:ring-[#FFBF00]/10 transition-all duration-500">
-                                <Search className="w-6 h-6 text-slate-400 ml-6" />
+                                <Search className="w-5 h-5 sm:w-6 sm:h-6 text-slate-400 ml-4 sm:ml-6 shrink-0" />
                                 <input
                                     type="text"
                                     placeholder="Cari tema atau kategori..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="flex-1 bg-transparent border-none focus:ring-0 px-6 py-4 text-lg font-medium text-slate-700 placeholder:text-slate-300"
+                                    className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 px-3 sm:px-6 py-3 sm:py-4 text-base sm:text-lg font-medium text-slate-700 placeholder:text-slate-300"
                                     aria-label="Cari undangan"
                                 />
                                 <button
-                                    className="bg-slate-900 text-white p-4 rounded-[1.5rem] hover:bg-[#FFBF00] hover:text-slate-900 transition-all shadow-lg"
+                                    className="bg-slate-900 text-white p-3 sm:p-4 rounded-[1.5rem] hover:bg-[#FFBF00] hover:text-slate-900 transition-all shadow-lg shrink-0"
                                     aria-label="Submit pencarian"
                                 >
-                                    <ArrowRight className="w-5 h-5" />
+                                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                                 </button>
                             </div>
                         </div>
 
-                        {/* Categories */}
                         <m.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.3 }}
                             className="flex flex-wrap justify-center gap-3"
                         >
-                            {/* All Category Button */}
                             <button
                                 onClick={() => { setSelectedCategory('All'); setShowFavoritesOnly(false); }}
                                 className={`px-6 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 border ${selectedCategory === 'All' && !showFavoritesOnly
@@ -371,7 +370,6 @@ export const InvitationsStorePage: React.FC = () => {
                                 All
                             </button>
 
-                            {/* Dynamic Categories */}
                             {categoryList.map((cat) => (
                                 <button
                                     key={cat.id}
@@ -386,7 +384,6 @@ export const InvitationsStorePage: React.FC = () => {
                                 </button>
                             ))}
 
-                            {/* Favorites Tab */}
                             {user && (
                                 <button
                                     onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
@@ -403,7 +400,6 @@ export const InvitationsStorePage: React.FC = () => {
                     </div>
                 </header>
 
-                {/* Main Content */}
                 <main className="max-w-7xl mx-auto px-6 pb-32">
                     <Suspense fallback={<GridLoader />}>
                         <InvitationsGrid

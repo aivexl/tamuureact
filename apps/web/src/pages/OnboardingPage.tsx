@@ -7,7 +7,7 @@ import {
     PartyPopper, UtensilsCrossed, GraduationCap, Star,
     ArrowLeft, ArrowRight, Check, Sparkles, Camera,
     Calendar, MapPin, CreditCard, Landmark, User,
-    Plus, X, Smartphone
+    Plus, X, Smartphone, Clock, ChevronDown
 } from 'lucide-react';
 import { invitations } from '../lib/api';
 import { useStore } from '../store/useStore';
@@ -23,9 +23,9 @@ const CATEGORIES = [
     { id: 'wedding', name: 'Pernikahan', icon: Heart, color: '#E91E63', bgGradient: 'from-pink-500/20 to-rose-500/20', questionName: 'Siapa nama kedua mempelai yang berbahagia?' },
     { id: 'birthday', name: 'Ulang Tahun', icon: Gift, color: '#FF9800', bgGradient: 'from-orange-500/20 to-amber-500/20', questionName: 'Siapa yang sedang merayakan hari lahirnya?' },
     { id: 'aqiqah', name: 'Aqiqah', icon: Baby, color: '#9C27B0', bgGradient: 'from-purple-500/20 to-violet-500/20', questionName: 'Siapa nama malaikat kecil kesayangan ayah & ibu?' },
-    { id: 'khitan', name: 'Tasyakuran Khitan', icon: Sparkles, color: '#00BCD4', bgGradient: 'from-cyan-500/20 to-teal-500/20', questionName: 'Boleh tau nama jagoan kecil yang akan dikhitan?' },
+    { id: 'khitan', name: 'Khitan', icon: Sparkles, color: '#00BCD4', bgGradient: 'from-cyan-500/20 to-teal-500/20', questionName: 'Boleh tau nama jagoan kecil yang akan dikhitan?' },
     { id: 'syukuran', name: 'Syukuran', icon: Sun, color: '#FF5722', bgGradient: 'from-orange-500/20 to-red-500/20', questionName: 'Apa nama acara atau syukuran yang akan diadakan?' },
-    { id: 'umum', name: 'Umum / Lainnya', icon: Star, color: '#607D8B', bgGradient: 'from-slate-500/20 to-gray-500/20', questionName: 'Boleh tau nama acara spesial yang akan dibuat?' },
+    { id: 'umum', name: 'Umum', icon: Star, color: '#607D8B', bgGradient: 'from-slate-500/20 to-gray-500/20', questionName: 'Boleh tau nama acara spesial yang akan dibuat?' },
 ];
 
 const STEPS = [
@@ -85,6 +85,7 @@ export const OnboardingPage: React.FC = () => {
     // E-Money & Gift Address
     const [emoneyType, setEmoneyType] = useState('');
     const [emoneyNumber, setEmoneyNumber] = useState('');
+    const [giftRecipientName, setGiftRecipientName] = useState('');
     const [giftAddress, setGiftAddress] = useState('');
     const [showBank2, setShowBank2] = useState(false);
 
@@ -110,6 +111,7 @@ export const OnboardingPage: React.FC = () => {
             // E-Money & Gift
             if (profile.emoneyType) setEmoneyType(profile.emoneyType);
             if (profile.emoneyNumber) setEmoneyNumber(profile.emoneyNumber);
+            if (profile.giftRecipient) setGiftRecipientName(profile.giftRecipient);
             if (profile.giftAddress) setGiftAddress(profile.giftAddress);
             setHasAutoFilled(true);
         }
@@ -154,6 +156,7 @@ export const OnboardingPage: React.FC = () => {
                 if (data.bank2Holder) setBank2Holder(data.bank2Holder);
                 if (data.emoneyType) setEmoneyType(data.emoneyType);
                 if (data.emoneyNumber) setEmoneyNumber(data.emoneyNumber);
+                if (data.giftRecipientName) setGiftRecipientName(data.giftRecipientName);
                 if (data.giftAddress) setGiftAddress(data.giftAddress);
                 if (data.slug) setSlug(data.slug);
                 if (data.invitationName) setInvitationName(data.invitationName);
@@ -172,14 +175,14 @@ export const OnboardingPage: React.FC = () => {
             currentStep, selectedCategory, groomName, brideName, celebrantName,
             photoPreview, groomPhoto, bridePhoto, galleryPhotos,
             eventDate, eventTime, eventLocation, bankName, accountNumber, accountHolder,
-            bank2Name, bank2Number, bank2Holder, emoneyType, emoneyNumber, giftAddress,
+            bank2Name, bank2Number, bank2Holder, emoneyType, emoneyNumber, giftRecipientName, giftAddress,
             slug, invitationName
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     }, [isRestored, currentStep, selectedCategory, groomName, brideName, celebrantName,
         photoPreview, groomPhoto, bridePhoto, galleryPhotos,
         eventDate, eventTime, eventLocation, bankName, accountNumber, accountHolder,
-        bank2Name, bank2Number, bank2Holder, emoneyType, emoneyNumber, giftAddress,
+        bank2Name, bank2Number, bank2Holder, emoneyType, emoneyNumber, giftRecipientName, giftAddress,
         slug, invitationName]);
 
     // Slug Availability Check (Debounced)
@@ -289,35 +292,15 @@ export const OnboardingPage: React.FC = () => {
             groomPhoto,
             bridePhoto,
             galleryPhotos,
-            eventDate,
-            eventTime,
-            eventLocation,
-            // primary bank (from form)
-            bank1Name: bankName,
-            bank1Number: accountNumber,
-            bank1Holder: accountHolder,
-            // Bank 2 (from form)
-            bank2Name,
-            bank2Number,
-            bank2Holder,
-            // E-Money & Gift Address (from form)
-            emoneyType,
-            emoneyNumber,
-            giftAddress,
-            slug,
+            eventDate, eventTime, eventLocation,
+            bank1Name: bankName, bank1Number: accountNumber, bank1Holder: accountHolder,
+            bank2Name, bank2Number, bank2Holder,
+            emoneyType, emoneyNumber, giftAddress, slug,
             invitationName: invitationName || celebrantName || (groomName && brideName ? `${groomName} & ${brideName}` : '')
         };
 
-        // Save to localStorage for the next page to consume
         localStorage.setItem('tamuu_onboarding_data', JSON.stringify(onboardingData));
-
-        const params = new URLSearchParams({
-            onboarding: 'true',
-            category: selectedCategory || '',
-            slug: slug,
-            name: onboardingData.invitationName,
-        });
-
+        const params = new URLSearchParams({ onboarding: 'true', category: selectedCategory || '', slug: slug, name: onboardingData.invitationName });
         if (templateId) params.append('templateId', templateId);
         navigate(`/invitations?${params.toString()}`);
     };
@@ -327,8 +310,8 @@ export const OnboardingPage: React.FC = () => {
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col pt-24 pb-10">
             {/* Progress Header */}
-            <div className="bg-white border-b border-slate-200 sticky top-20 z-20 px-6 py-4">
-                <div className="max-w-xl mx-auto flex items-center justify-between gap-2">
+            <div className="bg-white border-b border-slate-200 sticky top-20 z-20 px-4 sm:px-6 py-4">
+                <div className="max-w-xl mx-auto flex items-center justify-between gap-1 sm:gap-2">
                     {STEPS.map((s, i) => {
                         const stepNum = i + 1;
                         const isActive = currentStep === stepNum;
@@ -336,13 +319,13 @@ export const OnboardingPage: React.FC = () => {
                         return (
                             <React.Fragment key={s.id}>
                                 <div className="flex flex-col items-center gap-1">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500 ${isActive ? 'bg-teal-500 text-white scale-110 shadow-lg shadow-teal-500/20' : isDone ? 'bg-teal-100 text-teal-600' : 'bg-slate-100 text-slate-300'}`}>
-                                        {isDone ? <Check className="w-4 h-4" /> : <s.icon className="w-3.5 h-3.5" />}
+                                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-500 ${isActive ? 'bg-teal-500 text-white scale-110 shadow-lg shadow-teal-500/20' : isDone ? 'bg-teal-100 text-teal-600' : 'bg-slate-100 text-slate-300'}`}>
+                                        {isDone ? <Check className="w-3.5 h-3.5" /> : <s.icon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />}
                                     </div>
-                                    <span className={`text-[8px] font-black uppercase tracking-widest ${isActive ? 'text-teal-600' : 'text-slate-400'}`}>{s.title}</span>
+                                    <span className={`text-[7px] sm:text-[8px] font-black uppercase tracking-widest hidden sm:block ${isActive ? 'text-teal-600' : 'text-slate-400'}`}>{s.title}</span>
                                 </div>
                                 {i < STEPS.length - 1 && (
-                                    <div className={`flex-1 h-0.5 mt-[-14px] transition-colors duration-500 ${isDone ? 'bg-teal-500/20' : 'bg-slate-100'}`} />
+                                    <div className={`flex-1 h-0.5 sm:mt-[-14px] transition-colors duration-500 ${isDone ? 'bg-teal-500/20' : 'bg-slate-100'}`} />
                                 )}
                             </React.Fragment>
                         );
@@ -350,30 +333,30 @@ export const OnboardingPage: React.FC = () => {
                 </div>
             </div>
 
-            <main className="flex-1 flex flex-col items-center justify-center py-12 px-6 overflow-hidden">
+            <main className="flex-1 flex flex-col items-center justify-center py-8 sm:py-12 px-4 sm:px-6 overflow-hidden">
                 <AnimatePresence mode="wait">
                     {/* STEP 1: CATEGORY */}
                     {currentStep === 1 && (
-                        <m.div key="step1" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }} className="max-w-2xl w-full text-center space-y-10">
+                        <m.div key="step1" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }} className="max-w-2xl w-full text-center space-y-8 sm:space-y-10">
                             <div className="space-y-4">
-                                <div className="w-20 h-20 bg-teal-500 text-white rounded-[2rem] flex items-center justify-center mx-auto shadow-2xl shadow-teal-500/20 animate-bounce">
-                                    <Sparkles className="w-10 h-10" />
+                                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-teal-500 text-white rounded-[1.5rem] sm:rounded-[2rem] flex items-center justify-center mx-auto shadow-2xl shadow-teal-500/20 animate-bounce">
+                                    <Sparkles className="w-8 h-8 sm:w-10 sm:h-10" />
                                 </div>
-                                <h1 className="text-3xl md:text-4xl font-black text-slate-900 leading-tight">Halo! Senang sekali bisa membantu menyiapkan hari spesialmu.</h1>
-                                <p className="text-slate-500 text-lg">Kira-kira, acara apa nih yang akan kita rayakan hari ini?</p>
+                                <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 leading-tight">Halo! Senang sekali bisa membantu menyiapkan hari spesialmu.</h1>
+                                <p className="text-slate-500 text-base sm:text-lg">Kira-kira, acara apa nih yang akan kita rayakan hari ini?</p>
                             </div>
-                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                                 {CATEGORIES.map(cat => (
                                     <button
                                         key={cat.id}
                                         onClick={() => setSelectedCategory(cat.id)}
-                                        className={`group relative p-6 rounded-[2.5rem] border-2 transition-all duration-500 text-left overflow-hidden ${selectedCategory === cat.id ? 'border-teal-500 bg-white shadow-2xl scale-[1.05] ring-8 ring-teal-500/5' : 'border-white bg-white hover:border-slate-200'}`}
+                                        className={`group relative p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2.5rem] border-2 transition-all duration-500 text-left overflow-hidden ${selectedCategory === cat.id ? 'border-teal-500 bg-white shadow-2xl scale-[1.05] ring-8 ring-teal-500/5' : 'border-white bg-white hover:border-slate-200'}`}
                                     >
-                                        <div className="relative z-10 flex flex-col items-center text-center gap-3">
-                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 duration-500 bg-slate-50 ${selectedCategory === cat.id ? 'bg-teal-50' : ''}`}>
-                                                <cat.icon className={`w-7 h-7 ${selectedCategory === cat.id ? 'text-teal-600' : 'text-slate-400'}`} />
+                                        <div className="relative z-10 flex flex-col items-center text-center gap-2 sm:gap-3">
+                                            <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 duration-500 bg-slate-50 ${selectedCategory === cat.id ? 'bg-teal-50' : ''}`}>
+                                                <cat.icon className={`w-5 h-5 sm:w-7 sm:h-7 ${selectedCategory === cat.id ? 'text-teal-600' : 'text-slate-400'}`} />
                                             </div>
-                                            <h3 className={`font-black uppercase tracking-tighter text-sm ${selectedCategory === cat.id ? 'text-teal-600' : 'text-slate-900'}`}>{cat.name}</h3>
+                                            <h3 className={`font-black uppercase tracking-tighter text-[10px] sm:text-sm ${selectedCategory === cat.id ? 'text-teal-600' : 'text-slate-900'}`}>{cat.name}</h3>
                                         </div>
                                     </button>
                                 ))}
@@ -383,32 +366,32 @@ export const OnboardingPage: React.FC = () => {
 
                     {/* STEP 2: NAMES */}
                     {currentStep === 2 && (
-                        <m.div key="step2" initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -100 }} className="max-w-xl w-full text-center space-y-10">
+                        <m.div key="step2" initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -100 }} className="max-w-xl w-full text-center space-y-8 sm:space-y-10">
                             <div className="space-y-4">
-                                <div className="w-16 h-16 bg-white border border-slate-100 rounded-3xl flex items-center justify-center mx-auto shadow-xl">
-                                    <User className="w-8 h-8 text-teal-500" />
+                                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white border border-slate-100 rounded-[1.25rem] sm:rounded-3xl flex items-center justify-center mx-auto shadow-xl">
+                                    <User className="w-6 h-6 sm:w-8 sm:h-8 text-teal-500" />
                                 </div>
-                                <h1 className="text-3xl font-black text-slate-900 leading-tight px-4">{catInfo?.questionName}</h1>
-                                <p className="text-slate-500">Tuliskan nama lengkap atau nama panggilan Anda.</p>
+                                <h1 className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight px-2 sm:px-4">{catInfo?.questionName}</h1>
+                                <p className="text-slate-500 text-sm sm:text-base">Tuliskan nama lengkap atau nama panggilan Anda.</p>
                             </div>
 
-                            <div className="bg-white rounded-[3rem] p-8 md:p-10 shadow-2xl border border-slate-50 space-y-6">
+                            <div className="bg-white rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-10 shadow-2xl border border-slate-50 space-y-6">
                                 {selectedCategory === 'wedding' ? (
                                     <>
                                         <div className="text-left space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Mempelai Pria</label>
-                                            <input type="text" value={groomName} onChange={e => setGroomName(e.target.value)} autoFocus className="w-full px-8 py-5 bg-slate-50 border-none rounded-[1.5rem] focus:ring-4 focus:ring-teal-500/10 text-lg font-bold text-slate-900 placeholder:text-slate-300" placeholder="Contoh: Andi Wijaya" />
+                                            <label className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Mempelai Pria</label>
+                                            <input type="text" value={groomName} onChange={e => setGroomName(e.target.value)} autoFocus className="w-full px-6 sm:px-8 py-4 sm:py-5 bg-slate-50 border-none rounded-[1rem] sm:rounded-[1.5rem] focus:ring-4 focus:ring-teal-500/10 text-base sm:text-lg font-bold text-slate-900 placeholder:text-slate-300" placeholder="Contoh: Andi Wijaya" />
                                         </div>
-                                        <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center mx-auto text-teal-600 font-black italic">&</div>
+                                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-teal-50 flex items-center justify-center mx-auto text-teal-600 font-black italic text-sm">&</div>
                                         <div className="text-left space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Mempelai Wanita</label>
-                                            <input type="text" value={brideName} onChange={e => setBrideName(e.target.value)} className="w-full px-8 py-5 bg-slate-50 border-none rounded-[1.5rem] focus:ring-4 focus:ring-teal-500/10 text-lg font-bold text-slate-900 placeholder:text-slate-300" placeholder="Contoh: Sarah Fatimah" />
+                                            <label className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Mempelai Wanita</label>
+                                            <input type="text" value={brideName} onChange={e => setBrideName(e.target.value)} className="w-full px-6 sm:px-8 py-4 sm:py-5 bg-slate-50 border-none rounded-[1rem] sm:rounded-[1.5rem] focus:ring-4 focus:ring-teal-500/10 text-base sm:text-lg font-bold text-slate-900 placeholder:text-slate-300" placeholder="Contoh: Sarah Fatimah" />
                                         </div>
                                     </>
                                 ) : (
                                     <div className="text-left space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Nama Lengkap</label>
-                                        <input type="text" value={celebrantName} onChange={e => setCelebrantName(e.target.value)} autoFocus className="w-full px-8 py-5 bg-slate-50 border-none rounded-[2rem] focus:ring-4 focus:ring-teal-500/10 text-xl font-bold text-slate-900 placeholder:text-slate-300" placeholder="Contoh: Muhammad Akhtar" />
+                                        <label className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Nama Lengkap</label>
+                                        <input type="text" value={celebrantName} onChange={e => setCelebrantName(e.target.value)} autoFocus className="w-full px-6 sm:px-8 py-4 sm:py-5 bg-slate-50 border-none rounded-[1.25rem] sm:rounded-[2rem] focus:ring-4 focus:ring-teal-500/10 text-lg sm:text-xl font-bold text-slate-900 placeholder:text-slate-300" placeholder="Contoh: Muhammad Akhtar" />
                                     </div>
                                 )}
                             </div>
@@ -417,31 +400,31 @@ export const OnboardingPage: React.FC = () => {
 
                     {/* STEP 3: PHOTO (MEMORY) */}
                     {currentStep === 3 && (
-                        <m.div key="step3" initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -100 }} className="max-w-xl w-full text-center space-y-10">
+                        <m.div key="step3" initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -100 }} className="max-w-xl w-full text-center space-y-8 sm:space-y-10">
                             <div className="space-y-4">
-                                <div className="w-16 h-16 bg-white border border-slate-100 rounded-3xl flex items-center justify-center mx-auto shadow-xl">
-                                    <Camera className="w-8 h-8 text-rose-500" />
+                                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white border border-slate-100 rounded-[1.25rem] sm:rounded-3xl flex items-center justify-center mx-auto shadow-xl">
+                                    <Camera className="w-6 h-6 sm:w-8 sm:h-8 text-rose-500" />
                                 </div>
-                                <h1 className="text-3xl font-black text-slate-900 leading-tight">Biar lebih berkesan, yuk pasang foto terbaikmu!</h1>
-                                <p className="text-slate-500">Foto ini akan ditampilkan di halaman utama undanganmu.</p>
+                                <h1 className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight">Biar lebih berkesan, yuk pasang foto terbaikmu!</h1>
+                                <p className="text-slate-500 text-sm sm:text-base">Foto ini akan ditampilkan di halaman utama undanganmu.</p>
                             </div>
 
                             {selectedCategory === 'wedding' ? (
-                                <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
+                                <div className="grid grid-cols-2 gap-3 sm:gap-4 max-w-[320px] sm:max-w-sm mx-auto">
                                     {/* Groom Photo */}
                                     <div
                                         onClick={() => groomInputRef.current?.click()}
-                                        className="group relative aspect-[3/4] bg-white rounded-[2rem] border-2 border-dashed border-slate-200 p-2 transition-all hover:border-teal-500 hover:bg-teal-50/30 cursor-pointer overflow-hidden shadow-xl"
+                                        className="group relative aspect-[3/4] bg-white rounded-[1.5rem] sm:rounded-[2rem] border-2 border-dashed border-slate-200 p-1.5 sm:p-2 transition-all hover:border-teal-500 hover:bg-teal-50/30 cursor-pointer overflow-hidden shadow-xl"
                                     >
                                         <input type="file" ref={groomInputRef} onChange={(e) => handlePhotoChange(e, 'groom')} accept="image/*" className="hidden" />
                                         {groomPhoto ? (
-                                            <div className="relative w-full h-full rounded-[1.5rem] overflow-hidden">
+                                            <div className="relative w-full h-full rounded-[1rem] sm:rounded-[1.5rem] overflow-hidden">
                                                 <img src={groomPhoto} alt="Groom" className="w-full h-full object-cover" />
                                             </div>
                                         ) : (
-                                            <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-slate-400">
-                                                <User className="w-8 h-8" />
-                                                <p className="text-[10px] font-black uppercase tracking-widest">Pria</p>
+                                            <div className="w-full h-full flex flex-col items-center justify-center gap-1 sm:gap-2 text-slate-400">
+                                                <User className="w-6 h-6 sm:w-8 sm:h-8" />
+                                                <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest">Pria</p>
                                             </div>
                                         )}
                                     </div>
@@ -449,17 +432,17 @@ export const OnboardingPage: React.FC = () => {
                                     {/* Bride Photo */}
                                     <div
                                         onClick={() => brideInputRef.current?.click()}
-                                        className="group relative aspect-[3/4] bg-white rounded-[2rem] border-2 border-dashed border-slate-200 p-2 transition-all hover:border-teal-500 hover:bg-teal-50/30 cursor-pointer overflow-hidden shadow-xl"
+                                        className="group relative aspect-[3/4] bg-white rounded-[1.5rem] sm:rounded-[2rem] border-2 border-dashed border-slate-200 p-1.5 sm:p-2 transition-all hover:border-teal-500 hover:bg-teal-50/30 cursor-pointer overflow-hidden shadow-xl"
                                     >
                                         <input type="file" ref={brideInputRef} onChange={(e) => handlePhotoChange(e, 'bride')} accept="image/*" className="hidden" />
                                         {bridePhoto ? (
-                                            <div className="relative w-full h-full rounded-[1.5rem] overflow-hidden">
+                                            <div className="relative w-full h-full rounded-[1rem] sm:rounded-[1.5rem] overflow-hidden">
                                                 <img src={bridePhoto} alt="Bride" className="w-full h-full object-cover" />
                                             </div>
                                         ) : (
-                                            <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-slate-400">
-                                                <User className="w-8 h-8" />
-                                                <p className="text-[10px] font-black uppercase tracking-widest">Wanita</p>
+                                            <div className="w-full h-full flex flex-col items-center justify-center gap-1 sm:gap-2 text-slate-400">
+                                                <User className="w-6 h-6 sm:w-8 sm:h-8" />
+                                                <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest">Wanita</p>
                                             </div>
                                         )}
                                     </div>
@@ -467,105 +450,105 @@ export const OnboardingPage: React.FC = () => {
                             ) : (
                                 <div
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="group relative aspect-[4/5] max-w-sm mx-auto bg-white rounded-[3rem] border-4 border-dashed border-slate-200 p-4 transition-all hover:border-teal-500 hover:bg-teal-50/30 cursor-pointer overflow-hidden shadow-2xl"
+                                    className="group relative aspect-[4/5] max-w-[280px] sm:max-w-sm mx-auto bg-white rounded-[2rem] sm:rounded-[3rem] border-4 border-dashed border-slate-200 p-3 sm:p-4 transition-all hover:border-teal-500 hover:bg-teal-50/30 cursor-pointer overflow-hidden shadow-2xl"
                                 >
                                     <input type="file" ref={fileInputRef} onChange={(e) => handlePhotoChange(e, 'main')} accept="image/*" className="hidden" />
                                     {photoPreview ? (
-                                        <div className="relative w-full h-full rounded-[2rem] overflow-hidden">
+                                        <div className="relative w-full h-full rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden">
                                             <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
                                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <p className="text-white font-black uppercase tracking-widest text-xs">Ganti Foto</p>
+                                                <p className="text-white font-black uppercase tracking-widest text-[10px] sm:text-xs">Ganti Foto</p>
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-slate-400">
-                                            <div className="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                                <Camera className="w-10 h-10" />
+                                        <div className="w-full h-full flex flex-col items-center justify-center gap-3 sm:gap-4 text-slate-400">
+                                            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                                <Camera className="w-8 h-8 sm:w-10 sm:h-10" />
                                             </div>
-                                            <p className="font-bold uppercase tracking-widest text-xs">Klik untuk upload</p>
+                                            <p className="font-bold uppercase tracking-widest text-[10px] sm:text-xs">Klik untuk upload</p>
                                         </div>
                                     )}
                                 </div>
                             )}
 
-                            <button onClick={nextStep} className="text-slate-400 hover:text-slate-600 font-bold uppercase tracking-widest text-[10px] underline underline-offset-8">Lewati dulu, saya belum punya foto bagus</button>
+                            <button onClick={nextStep} className="text-slate-400 hover:text-slate-600 font-bold uppercase tracking-widest text-[9px] sm:text-[10px] underline underline-offset-8">Lewati dulu, saya belum punya foto bagus</button>
                         </m.div>
                     )}
 
                     {/* STEP 4: GALLERY (GRID) */}
                     {currentStep === 4 && (
-                        <m.div key="step4" initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -100 }} className="max-w-xl w-full text-center space-y-10">
+                        <m.div key="step4" initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -100 }} className="max-w-xl w-full text-center space-y-8 sm:space-y-10">
                             <div className="space-y-4">
-                                <div className="w-16 h-16 bg-white border border-slate-100 rounded-3xl flex items-center justify-center mx-auto shadow-xl">
-                                    <BookOpen className="w-8 h-8 text-teal-500" />
+                                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white border border-slate-100 rounded-[1.25rem] sm:rounded-3xl flex items-center justify-center mx-auto shadow-xl">
+                                    <BookOpen className="w-6 h-6 sm:w-8 sm:h-8 text-teal-500" />
                                 </div>
-                                <h1 className="text-3xl font-black text-slate-900 leading-tight">Bagiin lebih banyak momen seru!</h1>
-                                <p className="text-slate-500 text-sm">Upload foto-fotomu untuk galeri (maksimal 6 foto).</p>
+                                <h1 className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight">Bagiin lebih banyak momen seru!</h1>
+                                <p className="text-slate-500 text-[11px] sm:text-sm">Upload foto-fotomu untuk galeri (maksimal 6 foto).</p>
                             </div>
 
-                            <div className="bg-white rounded-[3rem] p-8 md:p-10 shadow-2xl border border-slate-50">
-                                <div className="grid grid-cols-3 gap-3">
+                            <div className="bg-white rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-10 shadow-2xl border border-slate-50">
+                                <div className="grid grid-cols-3 gap-2 sm:gap-3">
                                     {galleryPhotos.map((photo, index) => (
-                                        <div key={index} className="relative aspect-square rounded-2xl overflow-hidden group">
+                                        <div key={index} className="relative aspect-square rounded-[1rem] sm:rounded-2xl overflow-hidden group">
                                             <img src={photo} alt={`Gallery ${index}`} className="w-full h-full object-cover" />
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); removeGalleryPhoto(index); }}
-                                                className="absolute top-1 right-1 w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                className="absolute top-1 right-1 w-5 h-5 sm:w-6 sm:h-6 bg-rose-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                                             >
-                                                <Star className="w-3 h-3 fill-current rotate-45" />
+                                                <X className="w-3 h-3" />
                                             </button>
                                         </div>
                                     ))}
                                     {galleryPhotos.length < 6 && (
                                         <button
                                             onClick={() => galleryInputRef.current?.click()}
-                                            className="aspect-square rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-1 text-slate-400 hover:border-teal-500 hover:bg-teal-50/30 transition-all"
+                                            className="aspect-square rounded-[1rem] sm:rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-1 text-slate-400 hover:border-teal-500 hover:bg-teal-50/30 transition-all"
                                         >
-                                            <Camera className="w-6 h-6" />
-                                            <span className="text-[8px] font-black uppercase">Tambah</span>
+                                            <Camera className="w-5 h-5 sm:w-6 sm:h-6" />
+                                            <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-tighter">Tambah</span>
                                             <input type="file" ref={galleryInputRef} onChange={handleGalleryChange} accept="image/*" multiple className="hidden" />
                                         </button>
                                     )}
                                 </div>
                             </div>
 
-                            <button onClick={nextStep} className="text-slate-400 hover:text-slate-600 font-bold uppercase tracking-widest text-[10px] underline underline-offset-8">Lewati, saya isi nanti saja</button>
+                            <button onClick={nextStep} className="text-slate-400 hover:text-slate-600 font-bold uppercase tracking-widest text-[9px] sm:text-[10px] underline underline-offset-8">Lewati, saya isi nanti saja</button>
                         </m.div>
                     )}
 
                     {/* STEP 5: LOGISTICS */}
                     {currentStep === 5 && (
-                        <m.div key="step5" initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -100 }} className="max-w-xl w-full text-center space-y-10">
+                        <m.div key="step5" initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -100 }} className="max-w-xl w-full text-center space-y-8 sm:space-y-10">
                             <div className="space-y-4">
-                                <div className="w-16 h-16 bg-white border border-slate-100 rounded-3xl flex items-center justify-center mx-auto shadow-xl">
-                                    <Calendar className="w-8 h-8 text-blue-500" />
+                                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white border border-slate-100 rounded-[1.25rem] sm:rounded-3xl flex items-center justify-center mx-auto shadow-xl">
+                                    <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500" />
                                 </div>
-                                <h1 className="text-3xl font-black text-slate-900 leading-tight">Di mana dan kapan kebahagiaan ini akan dibagikan?</h1>
-                                <p className="text-slate-500">Kita siapkan detail waktu dan lokasinya ya.</p>
+                                <h1 className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight">Di mana dan kapan kebahagiaan ini akan dibagikan?</h1>
+                                <p className="text-slate-500 text-sm sm:text-base">Kita siapkan detail waktu dan lokasinya ya.</p>
                             </div>
 
-                            <div className="bg-white rounded-[3rem] p-10 shadow-2xl border border-slate-50 space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="bg-white rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-10 shadow-2xl border border-slate-50 space-y-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                     <div className="text-left space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Tanggal Acara</label>
+                                        <label className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Tanggal Acara</label>
                                         <div className="relative">
-                                            <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
-                                            <input type="date" value={eventDate} onChange={e => setEventDate(e.target.value)} className="w-full pl-16 pr-8 py-5 bg-slate-50 border-none rounded-[1.5rem] focus:ring-4 focus:ring-teal-500/10 text-lg font-bold text-slate-900" />
+                                            <Calendar className="absolute left-5 sm:left-6 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-300" />
+                                            <input type="date" value={eventDate} onChange={e => setEventDate(e.target.value)} className="w-full pl-12 sm:pl-16 pr-4 sm:pr-8 py-4 sm:py-5 bg-slate-50 border-none rounded-[1rem] sm:rounded-[1.5rem] focus:ring-4 focus:ring-teal-500/10 text-base sm:text-lg font-bold text-slate-900" style={{ colorScheme: 'light' }} />
                                         </div>
                                     </div>
                                     <div className="text-left space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Pukul (Waktu)</label>
+                                        <label className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Pukul (Waktu)</label>
                                         <div className="relative">
-                                            <Smartphone className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 transform rotate-90" />
-                                            <input type="time" value={eventTime} onChange={e => setEventTime(e.target.value)} className="w-full pl-16 pr-8 py-5 bg-slate-50 border-none rounded-[1.5rem] focus:ring-4 focus:ring-teal-500/10 text-lg font-bold text-slate-900" />
+                                            <Clock className="absolute left-5 sm:left-6 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-300" />
+                                            <input type="time" value={eventTime} onChange={e => setEventTime(e.target.value)} className="w-full pl-12 sm:pl-16 pr-4 sm:pr-8 py-4 sm:py-5 bg-slate-50 border-none rounded-[1rem] sm:rounded-[1.5rem] focus:ring-4 focus:ring-teal-500/10 text-base sm:text-lg font-bold text-slate-900" style={{ colorScheme: 'light' }} />
                                         </div>
                                     </div>
                                 </div>
                                 <div className="text-left space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Nama Gedung / Lokasi</label>
+                                    <label className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Nama Gedung / Lokasi</label>
                                     <div className="relative">
-                                        <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
-                                        <input type="text" value={eventLocation} onChange={e => setEventLocation(e.target.value)} className="w-full pl-16 pr-8 py-5 bg-slate-50 border-none rounded-[1.5rem] focus:ring-4 focus:ring-teal-500/10 text-lg font-bold text-slate-900 placeholder:text-slate-300" placeholder="Contoh: Hotel Ritz Carlton" />
+                                        <MapPin className="absolute left-5 sm:left-6 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-300" />
+                                        <input type="text" value={eventLocation} onChange={e => setEventLocation(e.target.value)} className="w-full pl-12 sm:pl-16 pr-4 sm:pr-8 py-4 sm:py-5 bg-slate-50 border-none rounded-[1rem] sm:rounded-[1.5rem] focus:ring-4 focus:ring-teal-500/10 text-base sm:text-lg font-bold text-slate-900 placeholder:text-slate-300" placeholder="Contoh: Hotel Ritz Carlton" />
                                     </div>
                                 </div>
                             </div>
@@ -574,197 +557,103 @@ export const OnboardingPage: React.FC = () => {
 
                     {/* STEP 6: GIFT / REKENING */}
                     {currentStep === 6 && (
-                        <m.div key="step6" initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -100 }} className="max-w-xl w-full text-center space-y-8">
+                        <m.div key="step6" initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -100 }} className="max-w-xl w-full text-center space-y-8 px-2 sm:px-0">
                             <div className="space-y-4">
-                                <div className="w-16 h-16 bg-white border border-slate-100 rounded-3xl flex items-center justify-center mx-auto shadow-xl">
-                                    <CreditCard className="w-8 h-8 text-amber-500" />
+                                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white border border-slate-100 rounded-[1.25rem] sm:rounded-3xl flex items-center justify-center mx-auto shadow-xl">
+                                    <CreditCard className="w-6 h-6 sm:w-8 sm:h-8 text-amber-500" />
                                 </div>
-                                <h1 className="text-2xl md:text-3xl font-black text-slate-900 leading-tight px-4">Agar kado cinta dari kerabat bisa tersampaikan dengan mudah...</h1>
-                                <p className="text-slate-500">Kakak mau cantumkan nomor rekening untuk kado digital?</p>
+                                <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 leading-tight px-2 sm:px-4">Agar kado cinta dari kerabat bisa tersampaikan dengan mudah...</h1>
+                                <p className="text-slate-500 text-sm sm:text-base">Kakak mau cantumkan nomor rekening untuk kado digital?</p>
                             </div>
 
                             {/* Preview Card */}
                             <div className="flex flex-col items-center gap-4 mb-4">
-                                <div className="w-full max-w-[480px] mx-auto perspective-1000 transform hover:scale-[1.02] transition-transform duration-500">
-                                    <BankCard
-                                        bankName={bankName}
-                                        accountNumber={accountNumber}
-                                        accountHolder={accountHolder}
-                                        isPreview={true}
-                                    />
+                                <div className="w-full max-w-[480px] mx-auto perspective-1000 transform hover:scale-[1.02] transition-transform duration-500 scale-[0.85] sm:scale-100">
+                                    <BankCard bankName={bankName} accountNumber={accountNumber} accountHolder={accountHolder} isPreview={true} />
                                 </div>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Preview Kartu Digitalmu</p>
+                                <p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-widest">Preview Kartu Digitalmu</p>
                             </div>
 
-                            {/* Bank 1 */}
-                            <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-50 space-y-4 text-left">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Landmark className="w-4 h-4 text-amber-500" />
-                                    <span className="text-xs font-black uppercase tracking-widest text-slate-600">Rekening Utama</span>
-                                </div>
-                                <div className="relative">
-                                    <select
-                                        value={bankName}
-                                        onChange={e => setBankName(e.target.value)}
-                                        className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 appearance-none cursor-pointer"
-                                    >
-                                        <option value="">Pilih Bank...</option>
-                                        {SUPPORTED_BANKS.filter(b => b.id !== 'custom').map(bank => (
-                                            <option key={bank.id} value={bank.name}>{bank.name}</option>
-                                        ))}
-                                        <option value="Custom">Lainnya (Custom)</option>
-                                    </select>
-                                    <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none opacity-20">
-                                        <Plus className="w-4 h-4 rotate-45" />
-                                    </div>
-                                </div>
-                                {bankName === 'Custom' && (
-                                    <input type="text" placeholder="Nama Bank Manual" className="w-full px-5 py-3 bg-teal-500/5 border border-teal-500/10 rounded-xl outline-none font-bold text-slate-900 text-sm" onChange={e => setBankName(e.target.value)} />
-                                )}
-                                <input type="text" value={accountNumber} onChange={e => setAccountNumber(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Nomor Rekening" />
-                                <input type="text" value={accountHolder} onChange={e => setAccountHolder(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Atas Nama" />
-                            </div>
-
-                            {/* Bank 2 (Toggle) */}
-                            {!showBank2 ? (
-                                <button onClick={() => setShowBank2(true)} className="flex items-center gap-2 mx-auto text-teal-600 hover:text-teal-700 font-bold text-sm transition-colors">
-                                    <Plus className="w-4 h-4" />
-                                    Tambah Rekening Kedua
-                                </button>
-                            ) : (
-                                <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-50 space-y-4 text-left">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div className="flex items-center gap-2">
-                                            <Landmark className="w-4 h-4 text-blue-500" />
-                                            <span className="text-xs font-black uppercase tracking-widest text-slate-600">Rekening 2</span>
-                                        </div>
-                                        <button onClick={() => { setShowBank2(false); setBank2Name(''); setBank2Number(''); setBank2Holder(''); }} className="text-slate-400 hover:text-red-500 transition-colors">
-                                            <X className="w-4 h-4" />
-                                        </button>
+                            {/* Bank Inputs */}
+                            <div className="space-y-4">
+                                <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] p-5 sm:p-6 shadow-xl border border-slate-50 space-y-4 text-left">
+                                    <div className="flex items-center gap-2 mb-1 sm:mb-2">
+                                        <Landmark className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500" />
+                                        <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-slate-600">Rekening Utama</span>
                                     </div>
                                     <div className="relative">
-                                        <select
-                                            value={bank2Name}
-                                            onChange={e => setBank2Name(e.target.value)}
-                                            className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 appearance-none cursor-pointer"
-                                        >
+                                        <select value={bankName} onChange={e => setBankName(e.target.value)} className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-slate-50 border-none rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-sm sm:text-base font-bold text-slate-900 appearance-none cursor-pointer">
                                             <option value="">Pilih Bank...</option>
-                                            {SUPPORTED_BANKS.filter(b => b.id !== 'custom').map(bank => (
-                                                <option key={bank.id} value={bank.name}>{bank.name}</option>
-                                            ))}
+                                            {SUPPORTED_BANKS.filter(b => b.id !== 'custom').map(bank => (<option key={bank.id} value={bank.name}>{bank.name}</option>))}
                                             <option value="Custom">Lainnya (Custom)</option>
                                         </select>
-                                        <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none opacity-20">
-                                            <Plus className="w-4 h-4 rotate-45" />
+                                        <ChevronDown className="absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 pointer-events-none opacity-20 w-4 h-4" />
+                                    </div>
+                                    <input type="text" value={accountNumber} onChange={e => setAccountNumber(e.target.value)} className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-slate-50 border-none rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-sm sm:text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Nomor Rekening" />
+                                    <input type="text" value={accountHolder} onChange={e => setAccountHolder(e.target.value)} className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-slate-50 border-none rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-sm sm:text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Atas Nama" />
+                                </div>
+
+                                {!showBank2 ? (
+                                    <button onClick={() => setShowBank2(true)} className="flex items-center gap-2 mx-auto text-teal-600 hover:text-teal-700 font-bold text-xs sm:text-sm transition-colors py-2">
+                                        <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Tambah Rekening Kedua
+                                    </button>
+                                ) : (
+                                    <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] p-5 sm:p-6 shadow-xl border border-slate-50 space-y-4 text-left">
+                                        <div className="flex items-center justify-between mb-1 sm:mb-2">
+                                            <div className="flex items-center gap-2">
+                                                <Landmark className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500" />
+                                                <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-slate-600">Rekening 2</span>
+                                            </div>
+                                            <button onClick={() => { setShowBank2(false); setBank2Name(''); setBank2Number(''); setBank2Holder(''); }} className="text-slate-400 hover:text-red-500 transition-colors">
+                                                <X className="w-4 h-4" />
+                                            </button>
                                         </div>
+                                        <div className="relative">
+                                            <select value={bank2Name} onChange={e => setBank2Name(e.target.value)} className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-slate-50 border-none rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-sm sm:text-base font-bold text-slate-900 appearance-none cursor-pointer">
+                                                <option value="">Pilih Bank...</option>
+                                                {SUPPORTED_BANKS.filter(b => b.id !== 'custom').map(bank => (<option key={bank.id} value={bank.name}>{bank.name}</option>))}
+                                                <option value="Custom">Lainnya (Custom)</option>
+                                            </select>
+                                            <ChevronDown className="absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 pointer-events-none opacity-20 w-4 h-4" />
+                                        </div>
+                                        <input type="text" value={bank2Number} onChange={e => setBank2Number(e.target.value)} className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-slate-50 border-none rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-sm sm:text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Nomor Rekening" />
+                                        <input type="text" value={bank2Holder} onChange={e => setBank2Holder(e.target.value)} className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-slate-50 border-none rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-sm sm:text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Atas Nama" />
                                     </div>
-                                    {bank2Name === 'Custom' && (
-                                        <input type="text" placeholder="Nama Bank Manual" className="w-full px-5 py-3 bg-teal-500/5 border border-teal-500/10 rounded-xl outline-none font-bold text-slate-900 text-sm" onChange={e => setBank2Name(e.target.value)} />
-                                    )}
-                                    <input type="text" value={bank2Number} onChange={e => setBank2Number(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Nomor Rekening" />
-                                    <input type="text" value={bank2Holder} onChange={e => setBank2Holder(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Atas Nama" />
-                                </div>
-                            )}
-
-                            {/* E-Money */}
-                            <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-50 space-y-4 text-left">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Smartphone className="w-4 h-4 text-green-500" />
-                                    <span className="text-xs font-black uppercase tracking-widest text-slate-600">E-Wallet (Opsional)</span>
-                                </div>
-                                <div className="relative">
-                                    <select
-                                        value={emoneyType}
-                                        onChange={e => setEmoneyType(e.target.value)}
-                                        className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 appearance-none cursor-pointer"
-                                    >
-                                        <option value="">Pilih E-Wallet...</option>
-                                        {SUPPORTED_BANKS.filter(b => ['dana', 'ovo', 'gopay', 'shopeepay', 'linkaja'].includes(b.id)).map(bank => (
-                                            <option key={bank.id} value={bank.name}>{bank.name}</option>
-                                        ))}
-                                        <option value="Custom">Lainnya</option>
-                                    </select>
-                                    <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none opacity-20">
-                                        <Plus className="w-4 h-4 rotate-45" />
-                                    </div>
-                                </div>
-                                <input type="text" value={emoneyNumber} onChange={e => setEmoneyNumber(e.target.value)} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300" placeholder="Nomor E-Wallet" />
+                                )}
                             </div>
 
-                            {/* Gift Address */}
-                            <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-50 space-y-4 text-left">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <MapPin className="w-4 h-4 text-rose-500" />
-                                    <span className="text-xs font-black uppercase tracking-widest text-slate-600">Alamat Pengiriman Kado (Opsional)</span>
-                                </div>
-                                <textarea value={giftAddress} onChange={e => setGiftAddress(e.target.value)} rows={3} className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 text-base font-bold text-slate-900 placeholder:text-slate-300 resize-none" placeholder="Alamat lengkap untuk pengiriman kado fisik..." />
-                            </div>
-
-                            <button onClick={nextStep} className="text-slate-400 hover:text-slate-600 font-bold uppercase tracking-widest text-[10px] underline underline-offset-8">Lewati dulu, akan saya isi nanti di editor</button>
+                            <button onClick={nextStep} className="text-slate-400 hover:text-slate-600 font-bold uppercase tracking-widest text-[9px] sm:text-[10px] underline underline-offset-8 py-4">Lewati dulu, akan saya isi nanti di editor</button>
                         </m.div>
                     )}
 
                     {/* STEP 7: SLUG / LINK */}
                     {currentStep === 7 && (
-                        <m.div key="step7" initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -100 }} className="max-w-xl w-full text-center space-y-10">
+                        <m.div key="step7" initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -100 }} className="max-w-xl w-full text-center space-y-8 sm:space-y-10">
                             <div className="space-y-4">
-                                <div className="w-16 h-16 bg-white border border-slate-100 rounded-3xl flex items-center justify-center mx-auto shadow-xl">
-                                    <Landmark className="w-8 h-8 text-emerald-500" />
+                                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white border border-slate-100 rounded-[1.25rem] sm:rounded-3xl flex items-center justify-center mx-auto shadow-xl">
+                                    <Check className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-500" />
                                 </div>
-                                <h1 className="text-3xl font-black text-slate-900 leading-tight">Terakhir, buat link unik untuk undanganmu!</h1>
-                                <p className="text-slate-500">Tentukan alamat website untuk dibagikan ke para tamu.</p>
+                                <h1 className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight">Terakhir, buat link unik untuk undanganmu!</h1>
+                                <p className="text-slate-500 text-sm sm:text-base">Tentukan alamat website untuk dibagikan ke para tamu.</p>
                             </div>
 
-                            <div className="bg-white rounded-[3rem] p-6 md:p-10 shadow-2xl border border-slate-50 space-y-8">
+                            <div className="bg-white rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-10 shadow-2xl border border-slate-50 space-y-8">
                                 <div className="space-y-2">
                                     <label className="block text-left">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 block ml-4">Link Undangan</span>
-                                        <div className="flex flex-col sm:flex-row sm:items-center overflow-hidden rounded-[1.5rem] border border-slate-200 focus-within:ring-4 focus-within:ring-teal-500/10 focus-within:border-teal-500 transition-all">
-                                            <div className="px-6 py-4 sm:py-5 bg-slate-50 text-slate-400 font-bold select-none text-base sm:text-lg border-b sm:border-b-0 sm:border-r border-slate-200 whitespace-nowrap">
-                                                tamuu.id/
-                                            </div>
-                                            <input
-                                                autoFocus
-                                                type="text"
-                                                value={slug}
-                                                onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-'))}
-                                                className="flex-1 px-6 py-4 sm:py-5 bg-white outline-none text-base sm:text-lg font-bold text-slate-900 placeholder:text-slate-200 font-mono"
-                                                placeholder="andi-sarah"
-                                            />
+                                        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 block ml-4">Link Undangan</span>
+                                        <div className="flex flex-col sm:flex-row sm:items-center overflow-hidden rounded-[1rem] sm:rounded-[1.5rem] border border-slate-200 focus-within:ring-4 focus-within:ring-teal-500/10 focus-within:border-teal-500 transition-all">
+                                            <div className="px-5 sm:px-6 py-3 sm:py-5 bg-slate-50 text-slate-400 font-bold select-none text-sm sm:text-base border-b sm:border-b-0 sm:border-r border-slate-200 whitespace-nowrap">tamuu.id/</div>
+                                            <input autoFocus type="text" value={slug} onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-'))} className="flex-1 px-5 sm:px-6 py-3 sm:py-5 bg-white outline-none text-sm sm:text-base font-bold text-slate-900 placeholder:text-slate-200 font-mono" placeholder="andi-sarah" />
                                         </div>
                                     </label>
                                     <div className="flex items-center gap-2 ml-4 mt-2">
-                                        {isCheckingSlug ? (
-                                            <div className="flex items-center gap-2 text-slate-400">
-                                                <PremiumLoader variant="inline" size="sm" color="currentColor" showLabel label="Checking..." />
-                                            </div>
-                                        ) : slug.length > 0 && slug.length < 3 ? (
-                                            <span className="text-[10px] text-amber-500 font-black uppercase tracking-widest">Minimal 3 karakter ya kak</span>
-                                        ) : isSlugAvailable === true ? (
-                                            <div className="flex items-center gap-1.5 text-teal-600">
-                                                <Check className="w-3.5 h-3.5" />
-                                                <span className="text-[10px] font-black uppercase tracking-widest font-mono">Link tersedia!</span>
-                                            </div>
-                                        ) : isSlugAvailable === false ? (
-                                            <div className="flex items-center gap-1.5 text-rose-500">
-                                                <X className="w-3.5 h-3.5" />
-                                                <span className="text-[10px] font-black uppercase tracking-widest font-mono">Waduh, link sudah meledak/terpakai!</span>
-                                            </div>
-                                        ) : (
-                                            <p className="text-left text-[10px] text-slate-400 font-black uppercase tracking-widest">Gunakan huruf kecil, angka, dan tanda hubung (-).</p>
-                                        )}
+                                        {isCheckingSlug ? (<div className="flex items-center gap-2 text-slate-400"><PremiumLoader variant="inline" size="sm" color="currentColor" showLabel label="Checking..." /></div>) : slug.length > 0 && slug.length < 3 ? (<span className="text-[9px] sm:text-[10px] text-amber-500 font-black uppercase tracking-widest">Minimal 3 karakter ya kak</span>) : isSlugAvailable === true ? (<div className="flex items-center gap-1.5 text-teal-600"><Check className="w-3 h-3 sm:w-3.5 sm:h-3.5" /><span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest font-mono">Link tersedia!</span></div>) : isSlugAvailable === false ? (<div className="flex items-center gap-1.5 text-rose-500"><X className="w-3 h-3 sm:w-3.5 sm:h-3.5" /><span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest font-mono">Waduh, link sudah meledak/terpakai!</span></div>) : (<p className="text-left text-[9px] sm:text-[10px] text-slate-400 font-black uppercase tracking-widest">Gunakan huruf kecil, angka, dan tanda hubung (-).</p>)}
                                     </div>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="block text-left">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 block ml-4">Judul Undangan</span>
-                                        <input
-                                            type="text"
-                                            value={invitationName}
-                                            onChange={e => setInvitationName(e.target.value)}
-                                            className="w-full px-8 py-5 bg-slate-50 border border-slate-200 rounded-[1.5rem] focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 outline-none text-lg font-bold text-slate-900 placeholder:text-slate-200 transition-all"
-                                            placeholder={`Pernikahan ${groomName || 'Andi'} & ${brideName || 'Sarah'}`}
-                                        />
+                                        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 block ml-4">Judul Undangan</span>
+                                        <input type="text" value={invitationName} onChange={e => setInvitationName(e.target.value)} className="w-full px-6 sm:px-8 py-4 sm:py-5 bg-slate-50 border border-slate-200 rounded-[1rem] sm:rounded-[1.5rem] focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 outline-none text-base sm:text-lg font-bold text-slate-900 placeholder:text-slate-200 transition-all" placeholder={`Pernikahan ${groomName || 'Andi'} & ${brideName || 'Sarah'}`} />
                                     </label>
                                 </div>
                             </div>
@@ -774,24 +663,22 @@ export const OnboardingPage: React.FC = () => {
             </main>
 
             {/* Sticky Navigation Footer */}
-            <div className="fixed bottom-0 left-0 right-0 p-6 z-30 pointer-events-none">
-                <div className="max-w-xl mx-auto flex items-center justify-between gap-4 pointer-events-auto">
+            <div className="fixed bottom-0 left-0 right-0 p-4 sm:p-6 z-30 pointer-events-none pb-safe">
+                <div className="max-w-xl mx-auto flex items-center justify-between gap-3 sm:gap-4 pointer-events-auto">
                     {currentStep > 1 ? (
-                        <button onClick={prevStep} className="w-16 h-16 bg-white border border-slate-200 rounded-3xl flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all shadow-xl active:scale-90">
-                            <ArrowLeft className="w-6 h-6" />
+                        <button onClick={prevStep} className="w-14 h-14 sm:w-16 sm:h-16 bg-white border border-slate-200 rounded-2xl sm:rounded-3xl flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all shadow-xl active:scale-90">
+                            <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
                         </button>
-                    ) : <div className="w-16" />}
+                    ) : <div className="w-14 sm:w-16" />}
 
                     <button
                         onClick={nextStep}
                         disabled={!isStepValid()}
-                        className={`group relative flex-1 h-16 rounded-[2.5rem] font-black text-xs md:text-sm uppercase tracking-[0.2em] shadow-2xl transition-all flex items-center justify-center gap-3 active:scale-95 ${isStepValid() ? 'bg-slate-900 text-white hover:bg-teal-600' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+                        className={`group relative flex-1 h-14 sm:h-16 rounded-[1.5rem] sm:rounded-[2.5rem] font-black text-[10px] sm:text-xs md:text-sm uppercase tracking-[0.15em] sm:tracking-[0.2em] shadow-2xl transition-all flex items-center justify-center gap-2 sm:gap-3 active:scale-95 ${isStepValid() ? 'bg-slate-900 text-white hover:bg-teal-600' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
                     >
                         {currentStep === 7 ? 'Selesai & Pilih Desain' : 'Lanjut Sekarang'}
-                        <ArrowRight className={`w-5 h-5 transition-transform ${isStepValid() ? 'group-hover:translate-x-1' : ''}`} />
-                        {isStepValid() && (
-                            <m.div layoutId="glow" className="absolute inset-0 rounded-[2.5rem] bg-teal-400/20 blur-xl -z-10" />
-                        )}
+                        <ArrowRight className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${isStepValid() ? 'group-hover:translate-x-1' : ''}`} />
+                        {isStepValid() && (<m.div layoutId="glow" className="absolute inset-0 rounded-[1.5rem] sm:rounded-[2.5rem] bg-teal-400/20 blur-xl -z-10" />)}
                     </button>
                 </div>
             </div>

@@ -3133,7 +3133,7 @@ name = COALESCE(?, name),
                     let { results: invitationResults } = await env.DB.prepare(`
         SELECT i.*, u.expires_at as user_expires_at, u.tier as user_tier
         FROM invitations i
-        JOIN users u ON i.user_id = u.id
+        LEFT JOIN users u ON i.user_id = u.id
         WHERE i.slug = ? OR i.id = ?
     `).bind(slug, slug).all();
 

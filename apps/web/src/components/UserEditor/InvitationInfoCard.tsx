@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { Calendar, Clock, Upload, ExternalLink, Copy, Check, Share2, Settings, CreditCard } from 'lucide-react';
+import { Calendar, Clock, Upload, ExternalLink, Copy, Check, Share2, Settings, CreditCard, FileText, Send } from 'lucide-react';
 import { getPublicDomain } from '@/lib/utils';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SubscriptionStatusWidget } from '../ui/SubscriptionStatusWidget';
@@ -81,33 +81,33 @@ export const InvitationInfoCard: React.FC<InvitationInfoCardProps> = ({ invitati
 
                 {/* Main Info */}
                 <div className="flex-1 min-w-0 w-full text-center lg:text-left space-y-5">
-                    {/* Header: Title & Status */}
+                    {/* Header: Title */}
                     <div className="flex flex-col lg:flex-row items-center lg:items-center gap-3">
                         <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-outfit tracking-tight leading-tight">
                             {invitation.title}
                         </h2>
-                        <span className={`inline-flex items-center gap-2 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] rounded-full border ${invitation.status === 'Published' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
-                            <span className={`relative flex h-2 w-2 ${invitation.status === 'Published' ? '' : 'hidden'}`}>
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                            </span>
-                            {invitation.status}
-                        </span>
                     </div>
 
                     {/* Link Section (Input Style) */}
                     <div className="max-w-xl mx-auto lg:mx-0">
                         <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
                             <div className="flex-1 min-w-[200px] flex items-center gap-0 bg-slate-50 rounded-xl border border-slate-200 p-1.5 focus-within:ring-2 focus-within:ring-teal-500/20 focus-within:border-teal-400 transition-all">
-                                <div className="pl-3 pr-2 text-slate-400 hidden sm:block">
-                                    <ExternalLink className="w-4 h-4" />
-                                </div>
-                                <div className="flex-1 min-w-0 py-1 sm:py-1.5 px-2 sm:px-0">
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Link Undangan</p>
-                                    <p className="text-sm font-bold text-slate-800 truncate font-mono">
-                                        tamuu.id/{invitation.slug}
-                                    </p>
-                                </div>
+                                <a 
+                                    href={`https://${getPublicDomain()}/${invitation.slug}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center flex-1 min-w-0 hover:bg-slate-100/50 rounded-lg transition-all group/link"
+                                >
+                                    <div className="pl-3 pr-2 text-slate-400 hidden sm:block group-hover/link:text-teal-500 transition-colors">
+                                        <ExternalLink className="w-4 h-4" />
+                                    </div>
+                                    <div className="flex-1 min-w-0 py-1 sm:py-1.5 px-2 sm:px-0">
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Link Undangan</p>
+                                        <p className="text-sm font-bold text-slate-800 truncate font-mono group-hover/link:text-teal-600 transition-colors">
+                                            tamuu.id/{invitation.slug}
+                                        </p>
+                                    </div>
+                                </a>
                                 <button
                                     onClick={handleCopyLink}
                                     className={`p-2.5 rounded-lg transition-all shrink-0 ${copied ? 'bg-emerald-500 text-white shadow-md' : 'bg-white text-slate-500 hover:text-teal-600 border border-slate-200 hover:border-teal-200'}`}
@@ -162,22 +162,66 @@ export const InvitationInfoCard: React.FC<InvitationInfoCardProps> = ({ invitati
                 {/* Vertical Divider (Desktop Only) */}
                 <div className="hidden lg:block w-px h-24 bg-slate-100 mx-2" />
 
-                {/* Call to Action */}
-                <div className="flex flex-col justify-center gap-3 w-full lg:w-auto shrink-0">
+                {/* Call to Action - Vertical Stack */}
+                <div className="flex flex-col justify-center gap-3 w-full lg:w-48 shrink-0">
+                    
+                    {/* 1. PUBLISH BUTTON (Top) */}
+                    <m.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                            import('@/lib/api').then(({ invitations }) => {
+                                invitations.update(invitation.id, { is_published: true });
+                            });
+                            useStore.getState().setIsPublished(true);
+                        }}
+                        className={`w-full px-6 py-3.5 rounded-xl font-bold border shadow-sm transition-all font-outfit text-xs uppercase tracking-widest flex items-center justify-center gap-2 group whitespace-nowrap ${
+                            invitation.status === 'Published'
+                                ? 'bg-emerald-50 text-emerald-600 border-emerald-200 ring-2 ring-emerald-500/20'
+                                : 'bg-white text-slate-400 border-slate-200 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50/50'
+                        }`}
+                    >
+                        {invitation.status === 'Published' ? <Check className="w-3.5 h-3.5" /> : <Send className="w-3.5 h-3.5" />}
+                        <span>Publish</span>
+                    </m.button>
+
+                    {/* 2. DRAFT BUTTON (Second) */}
+                    <m.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                            import('@/lib/api').then(({ invitations }) => {
+                                invitations.update(invitation.id, { is_published: false });
+                            });
+                            useStore.getState().setIsPublished(false);
+                        }}
+                        className={`w-full px-6 py-3.5 rounded-xl font-bold border shadow-sm transition-all font-outfit text-xs uppercase tracking-widest flex items-center justify-center gap-2 group whitespace-nowrap ${
+                            invitation.status === 'Draft'
+                                ? 'bg-amber-50 text-amber-600 border-amber-200 ring-2 ring-amber-500/20'
+                                : 'bg-white text-slate-400 border-slate-200 hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50/50'
+                        }`}
+                    >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>Draft</span>
+                    </m.button>
+
+                    {/* 3. INVOICE BUTTON (Third) */}
                     <m.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => navigate('/dashboard?tab=invoice')}
-                        className="px-6 py-3.5 bg-white text-slate-700 font-bold rounded-xl border border-slate-200 shadow-sm hover:bg-slate-50 transition-all font-outfit text-xs uppercase tracking-widest flex items-center justify-center gap-2 group whitespace-nowrap"
+                        className="w-full px-6 py-3.5 bg-white text-slate-700 font-bold rounded-xl border border-slate-200 shadow-sm hover:bg-slate-50 transition-all font-outfit text-xs uppercase tracking-widest flex items-center justify-center gap-2 group whitespace-nowrap"
                     >
                         <CreditCard className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-600 transition-colors" />
                         <span>Invoice</span>
                     </m.button>
+
+                    {/* 4. PERPANJANG BUTTON (Fourth) */}
                     <m.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => navigate('/billing')}
-                        className="px-6 py-3.5 bg-slate-900 text-white font-bold rounded-xl shadow-lg shadow-slate-900/10 hover:shadow-xl hover:shadow-slate-900/20 hover:bg-slate-800 transition-all font-outfit text-xs uppercase tracking-widest flex items-center justify-center gap-2 group whitespace-nowrap"
+                        className="w-full px-6 py-3.5 bg-slate-900 text-white font-bold rounded-xl shadow-lg shadow-slate-900/10 hover:shadow-xl hover:shadow-slate-900/20 hover:bg-slate-800 transition-all font-outfit text-xs uppercase tracking-widest flex items-center justify-center gap-2 group whitespace-nowrap"
                     >
                         <span>Perpanjang</span>
                         <ExternalLink className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 transition-opacity" />

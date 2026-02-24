@@ -1,0 +1,8 @@
+name = "tamuu-worker"
+main = "src/index.js"
+compatibility_date = "2024-02-22"
+account_id = "5b4da9b18bdae9d8b11058dc33db411e"
+
+routes = [
+    { pattern = "api.tamuu.id/*", zone_id = "892dbe6c5414762f7d6b25f5f2a87c97" }
+]

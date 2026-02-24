@@ -255,7 +255,7 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
                 </div>
                 <button
                     onClick={() => setIsAddModalOpen(true)}
-                    className="px-6 py-3.5 bg-teal-500 text-slate-900 font-black rounded-2xl shadow-xl shadow-teal-500/20 hover:shadow-2xl hover:bg-teal-400 -translate-y-0.5 transition-all active:scale-95 text-sm flex items-center gap-2"
+                    className="w-full md:w-auto px-6 py-3.5 bg-teal-500 text-slate-900 font-black rounded-2xl shadow-xl shadow-teal-500/20 hover:shadow-2xl hover:bg-teal-400 -translate-y-0.5 transition-all active:scale-95 text-sm flex items-center justify-center gap-2"
                 >
                     <Plus className="w-5 h-5" />
                     Add {initialRole === 'admin' ? 'Admin' : initialRole === 'reseller' ? 'Reseller' : 'User'}
@@ -266,7 +266,7 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
             <div className="bg-[#111] border border-white/5 rounded-3xl p-6 mb-8">
                 <div className="flex flex-col lg:flex-row gap-4 justify-between">
                     <div className="flex flex-col md:flex-row gap-4 flex-1">
-                        <div className="relative flex-1">
+                        <div className="relative flex-1 w-full">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                             <input
                                 type="text"
@@ -279,7 +279,7 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
                         <select
                             value={filterTier}
                             onChange={(e) => setFilterTier(e.target.value)}
-                            className="bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-500/30 transition-all font-bold uppercase tracking-widest text-xs outline-none cursor-pointer"
+                            className="w-full md:w-auto bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-500/30 transition-all font-bold uppercase tracking-widest text-xs outline-none cursor-pointer"
                         >
                             <option value="all" className="bg-[#111]">All Tiers</option>
                             <option value="free" className="bg-[#111]">FREE</option>
@@ -290,7 +290,7 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
                     </div>
                     <button
                         onClick={fetchUsers}
-                        className="px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-2xl flex items-center justify-center gap-2 transition-all font-bold text-xs uppercase tracking-widest border border-white/5"
+                        className="w-full lg:w-auto px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-2xl flex items-center justify-center gap-2 transition-all font-bold text-xs uppercase tracking-widest border border-white/5"
                     >
                         Refresh Data
                     </button>

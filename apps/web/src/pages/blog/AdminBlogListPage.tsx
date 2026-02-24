@@ -129,21 +129,21 @@ export const AdminBlogListPage = () => {
         switch (status) {
             case 'published':
                 return (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-xs font-bold border border-emerald-500/20">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                         Published
                     </span>
                 );
             case 'pending':
                 return (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 text-xs font-bold border border-amber-500/20">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 text-[10px] font-black uppercase tracking-widest border border-amber-500/20">
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                        Pending Review
+                        Pending
                     </span>
                 );
             default:
                 return (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-500/10 text-slate-400 text-xs font-bold border border-slate-500/20">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-500/10 text-slate-400 text-[10px] font-black uppercase tracking-widest border border-slate-500/20">
                         <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
                         Draft
                     </span>
@@ -159,39 +159,39 @@ export const AdminBlogListPage = () => {
     ];
 
     return (
-        <div className="pt-12 pb-24 px-8 sm:px-12 space-y-12">
+        <div className="pt-12 pb-24 px-4 sm:px-8 lg:px-12 space-y-10 sm:space-y-12">
             {/* Top Navigation Bar */}
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                 <Link
                     to="/admin/dashboard"
-                    className="flex items-center gap-2 text-slate-500 hover:text-white transition-colors group"
+                    className="flex items-center gap-2 text-slate-500 hover:text-white transition-colors group w-fit"
                 >
                     <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 group-hover:border-white/10 group-hover:bg-white/10 transition-all">
                         <ArrowLeft className="w-5 h-5" />
                     </div>
-                    <span className="text-xs font-bold uppercase tracking-widest">Dashboard Admin</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest">Dashboard Admin</span>
                 </Link>
 
-                <div className="h-4 w-[1px] bg-white/10 mx-2" />
+                <div className="hidden sm:block h-4 w-[1px] bg-white/10 mx-2" />
 
-                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20">
-                    <span className="text-[10px] font-bold text-teal-500 uppercase tracking-widest">CMS Mode</span>
+                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 w-fit">
+                    <span className="text-[9px] font-black text-teal-500 uppercase tracking-widest">CMS Mode</span>
                 </div>
             </div>
 
             {/* Header */}
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-8 pt-4">
-                <div className="space-y-3">
-                    <h1 className="text-5xl font-black text-white tracking-tighter leading-none">
+                <div className="space-y-3 text-center md:text-left">
+                    <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tighter leading-none">
                         Blog Management
                     </h1>
-                    <p className="text-lg text-slate-400 font-medium max-w-xl">
+                    <p className="text-base sm:text-lg text-slate-400 font-medium max-w-xl mx-auto md:mx-0">
                         Kelola artikel, draf, dan publikasi konten Tamuu CMS Anda dengan presisi.
                     </p>
                 </div>
                 <Link
                     to="/admin/blog/new"
-                    className="flex items-center gap-2 px-6 py-3 bg-teal-500 hover:bg-teal-400 text-white rounded-full font-bold transition-all shadow-xl shadow-teal-500/10 group"
+                    className="flex items-center justify-center gap-2 px-8 py-4 bg-teal-500 hover:bg-teal-400 text-slate-900 rounded-full font-black uppercase tracking-widest text-[10px] transition-all shadow-xl shadow-teal-500/10 group"
                 >
                     <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
                     Tulis Artikel Baru
@@ -199,7 +199,7 @@ export const AdminBlogListPage = () => {
             </header>
 
             {/* Stats Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 {[
                     { icon: FileText, label: 'Total Articles', value: stats.total, color: 'text-teal-500', bg: 'bg-teal-500/10' },
                     { icon: CheckCircle2, label: 'Published', value: stats.published, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
@@ -210,15 +210,15 @@ export const AdminBlogListPage = () => {
                         key={label}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-white/[0.03] backdrop-blur-sm border border-white/5 rounded-3xl p-6"
+                        className="bg-white/[0.03] backdrop-blur-sm border border-white/5 rounded-3xl p-5 sm:p-6"
                     >
                         <div className="flex items-center justify-between mb-4">
                             <div className={`p-2 ${bg} rounded-xl`}>
-                                <Icon className={`w-5 h-5 ${color}`} />
+                                <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${color}`} />
                             </div>
-                            <span className="text-[10px] tracking-widest uppercase font-bold text-slate-500">{label}</span>
+                            <span className="text-[8px] sm:text-[10px] tracking-widest uppercase font-black text-slate-500 text-right">{label}</span>
                         </div>
-                        <div className="text-3xl font-bold text-white">{typeof value === 'number' ? value.toLocaleString() : value}</div>
+                        <div className="text-xl sm:text-3xl font-bold text-white">{value}</div>
                     </motion.div>
                 ))}
             </div>
@@ -226,13 +226,13 @@ export const AdminBlogListPage = () => {
             {/* Filter Bar */}
             <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
                 {/* Status Tabs */}
-                <div className="flex bg-white/5 p-1 rounded-full border border-white/5 w-full lg:w-auto">
+                <div className="flex bg-white/5 p-1 rounded-full border border-white/5 w-full lg:w-auto overflow-x-auto no-scrollbar">
                     {FILTER_TABS.map(tab => (
                         <button
                             key={tab.value}
                             onClick={() => setStatusFilter(tab.value)}
-                            className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${statusFilter === tab.value
-                                ? 'bg-teal-500 text-white'
+                            className={`flex-1 lg:flex-none px-4 sm:px-6 py-2.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${statusFilter === tab.value
+                                ? 'bg-teal-500 text-slate-900 shadow-lg'
                                 : 'text-slate-400 hover:text-white'
                                 }`}
                         >
@@ -243,184 +243,108 @@ export const AdminBlogListPage = () => {
 
                 {/* Search */}
                 <div className="relative w-full lg:w-96">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
                         placeholder="Cari judul artikel..."
-                        className="w-full bg-white/5 border border-white/5 rounded-full py-3 pl-12 pr-6 text-white placeholder-slate-500 focus:outline-none focus:border-teal-500/50 focus:ring-2 focus:ring-teal-500/20 transition-all"
+                        className="w-full bg-white/5 border border-white/5 rounded-full py-3.5 pl-12 pr-6 text-white placeholder-slate-500 focus:outline-none focus:border-teal-500/50 focus:ring-4 focus:ring-teal-500/10 transition-all text-sm"
                     />
                 </div>
             </div>
 
             {/* Data Table */}
-            <div className="bg-[#111] rounded-3xl border border-white/5 overflow-hidden shadow-2xl">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="border-b border-white/5 bg-white/[0.01]">
-                                <th className="px-8 py-5 text-[10px] tracking-widest uppercase font-bold text-slate-500">Judul</th>
-                                <th className="px-8 py-5 text-[10px] tracking-widest uppercase font-bold text-slate-500">Kategori</th>
-                                <th className="px-8 py-5 text-[10px] tracking-widest uppercase font-bold text-slate-500 text-center">Hero</th>
-                                <th className="px-8 py-5 text-[10px] tracking-widest uppercase font-bold text-slate-500">Status</th>
-                                <th className="px-8 py-5 text-[10px] tracking-widest uppercase font-bold text-slate-500 text-center">Views</th>
-                                <th className="px-8 py-5 text-[10px] tracking-widest uppercase font-bold text-slate-500">Tanggal</th>
-                                <th className="px-8 py-5 text-[10px] tracking-widest uppercase font-bold text-slate-500 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5">
-                            <AnimatePresence>
-                                {filteredPosts.map((post, i) => (
-                                    <motion.tr
-                                        key={post.id}
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0 }}
-                                        transition={{ delay: i * 0.03 }}
-                                        className="group hover:bg-white/[0.02] transition-colors"
-                                    >
-                                        {/* Title + Thumbnail */}
-                                        <td className="px-8 py-5">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 border border-white/5">
-                                                    {post.featured_image ? (
-                                                        <img src={post.featured_image} alt="" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <div className="w-full h-full bg-slate-800 flex items-center justify-center">
-                                                            <ImageIcon className="w-4 h-4 text-slate-600" />
-                                                        </div>
-                                                    )}
+            <div className="bg-[#111] rounded-3xl border border-white/5 overflow-hidden shadow-2xl overflow-x-auto">
+                <table className="w-full text-left border-separate border-spacing-0 min-w-[1000px]">
+                    <thead>
+                        <tr className="border-b border-white/5 bg-white/[0.01]">
+                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Artikel</th>
+                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Kategori</th>
+                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 text-center">Hero</th>
+                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Status</th>
+                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 text-center">Views</th>
+                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Tanggal</th>
+                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                        <AnimatePresence>
+                            {filteredPosts.map((post, i) => (
+                                <motion.tr
+                                    key={post.id}
+                                    layout
+                                    className="hover:bg-white/[0.01] transition-colors group"
+                                >
+                                    <td className="px-8 py-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 border border-white/5">
+                                                {post.featured_image ? (
+                                                    <img src={post.featured_image} alt="" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                                                        <ImageIcon className="w-4 h-4 text-slate-600" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <div className="text-white font-bold mb-1 group-hover:text-teal-400 transition-colors line-clamp-1">
+                                                    {post.title}
                                                 </div>
-                                                <div>
-                                                    <div className="text-white font-semibold mb-1 group-hover:text-teal-500 transition-colors line-clamp-1">
-                                                        {post.title}
-                                                    </div>
-                                                    <div className="font-mono text-[10px] text-slate-500">
-                                                        /blog/{post.slug}
-                                                    </div>
+                                                <div className="font-mono text-[9px] text-slate-500">
+                                                    /blog/{post.slug}
                                                 </div>
                                             </div>
-                                        </td>
-
-                                        {/* Category */}
-                                        <td className="px-8 py-5 text-sm">
-                                            <span className="px-3 py-1 bg-slate-500/10 text-slate-400 rounded-full border border-slate-500/10 text-xs">
-                                                {post.category || 'Uncategorized'}
-                                            </span>
-                                        </td>
-
-                                        {/* Hero Toggle */}
-                                        <td className="px-8 py-5 text-center">
-                                            <button
-                                                onClick={() => handleToggleFeatured(post)}
-                                                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${post.is_featured
-                                                    ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
-                                                    : 'bg-white/5 text-slate-600 border border-white/5 hover:border-white/20'
-                                                    }`}
-                                                title={post.is_featured ? 'Hapus dari Hero' : 'Jadikan Hero'}
-                                            >
-                                                <Star className={`w-4 h-4 ${post.is_featured ? 'fill-current' : ''}`} />
-                                            </button>
-                                        </td>
-
-                                        {/* Status */}
-                                        <td className="px-8 py-5">
-                                            {getStatusBadge(post.status)}
-                                        </td>
-
-                                        {/* Views */}
-                                        <td className="px-8 py-5 text-center text-sm font-medium text-slate-300">
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <span className="px-3 py-1 bg-white/5 text-slate-400 rounded-lg border border-white/5 text-[10px] font-black uppercase tracking-widest">
+                                            {post.category || 'Default'}
+                                        </span>
+                                    </td>
+                                    <td className="px-8 py-6 text-center">
+                                        <button
+                                            onClick={() => handleToggleFeatured(post)}
+                                            className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${post.is_featured
+                                                ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
+                                                : 'bg-white/5 text-slate-600 border border-white/5 hover:border-white/20'
+                                                }`}
+                                        >
+                                            <Star className={`w-4 h-4 ${post.is_featured ? 'fill-current' : ''}`} />
+                                        </button>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        {getStatusBadge(post.status)}
+                                    </td>
+                                    <td className="px-8 py-6 text-center">
+                                        <span className="text-xs font-black text-slate-300 tabular-nums">
                                             {(post.view_count || 0).toLocaleString()}
-                                        </td>
-
-                                        {/* Date */}
-                                        <td className="px-8 py-5 text-sm text-slate-400">
+                                        </span>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <div className="text-xs text-slate-400 font-medium">
                                             {new Date(post.published_at || post.created_at).toLocaleDateString('id-ID', {
                                                 day: '2-digit',
                                                 month: 'short',
                                                 year: 'numeric',
                                             })}
-                                        </td>
-
-                                        {/* Actions */}
-                                        <td className="px-8 py-5">
-                                            <div className="flex items-center justify-end gap-2">
-                                                {post.status === 'pending' && isSuperAdmin && (
-                                                    <button
-                                                        onClick={() => handleApprove(post.id)}
-                                                        className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-emerald-500/10 text-slate-400 hover:text-emerald-500 transition-all"
-                                                        title="Approve & Publish"
-                                                    >
-                                                        <CheckCircle2 className="w-4 h-4" />
-                                                    </button>
-                                                )}
-                                                <a
-                                                    href={`https://${getPublicDomain()}/blog/${post.slug}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-all"
-                                                    title="View Live"
-                                                >
-                                                    <ExternalLink className="w-4 h-4" />
-                                                </a>
-                                                <Link
-                                                    to={`/admin/blog/${post.id}`}
-                                                    className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white/5 text-slate-400 hover:text-teal-500 transition-all"
-                                                    title="Edit"
-                                                >
-                                                    <Edit3 className="w-4 h-4" />
-                                                </Link>
-                                                <button
-                                                    onClick={() => handleDelete(post.id)}
-                                                    className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white/5 text-slate-400 hover:text-red-500 transition-all"
-                                                    title="Delete"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </motion.tr>
-                                ))}
-                            </AnimatePresence>
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Loading */}
-                {loading && (
-                    <div className="p-20 flex flex-col items-center justify-center space-y-4">
-                        <div className="w-8 h-8 border-4 border-teal-500/20 border-t-teal-500 rounded-full animate-spin" />
-                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Memuat Artikel...</p>
-                    </div>
-                )}
-
-                {/* Empty State */}
-                {!loading && filteredPosts.length === 0 && (
-                    <div className="p-20 text-center flex flex-col items-center justify-center space-y-6">
-                        <div className="w-16 h-16 rounded-3xl bg-white/5 flex items-center justify-center">
-                            <FileText className="w-8 h-8 text-slate-600" />
-                        </div>
-                        <div>
-                            <p className="text-lg font-bold text-white">
-                                {searchQuery || statusFilter !== 'all' ? 'Tidak Ditemukan' : 'Belum Ada Artikel'}
-                            </p>
-                            <p className="text-sm text-slate-500 max-w-xs mx-auto mt-1">
-                                {searchQuery || statusFilter !== 'all'
-                                    ? 'Coba ubah filter atau kata kunci pencarian.'
-                                    : 'Mulailah menulis untuk meningkatkan SEO dan trafik Tamuu.'}
-                            </p>
-                        </div>
-                        {!searchQuery && statusFilter === 'all' && (
-                            <Link
-                                to="/admin/blog/new"
-                                className="px-6 py-2 bg-teal-500 text-white rounded-full text-sm font-bold hover:bg-teal-400 transition-all"
-                            >
-                                Tulis Sekarang
-                            </Link>
-                        )}
-                    </div>
-                )}
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <div className="flex items-center justify-end gap-2">
+                                            {post.status === 'pending' && isSuperAdmin && (
+                                                <button onClick={() => handleApprove(post.id)} className="p-2 bg-emerald-500/10 text-emerald-500 rounded-lg hover:bg-emerald-500 hover:text-white transition-all"><CheckCircle2 className="w-4 h-4" /></button>
+                                            )}
+                                            <a href={`https://${getPublicDomain()}/blog/${post.slug}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 text-slate-400 hover:text-white rounded-lg transition-all"><ExternalLink className="w-4 h-4" /></a>
+                                            <Link to={`/admin/blog/${post.id}`} className="p-2 bg-white/5 text-slate-400 hover:text-teal-400 rounded-lg transition-all"><Edit3 className="w-4 h-4" /></Link>
+                                            <button onClick={() => handleDelete(post.id)} className="p-2 bg-white/5 text-slate-400 hover:text-rose-500 rounded-lg transition-all"><Trash2 className="w-4 h-4" /></button>
+                                        </div>
+                                    </td>
+                                </motion.tr>
+                            ))}
+                        </AnimatePresence>
+                    </tbody>
+                </table>
             </div>
         </div>
     );

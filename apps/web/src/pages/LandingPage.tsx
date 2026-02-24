@@ -135,10 +135,10 @@ export const LandingPage: React.FC = () => {
                 </div>
 
                 <div className="max-w-7xl mx-auto px-6 relative">
-                    <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center lg:items-end min-h-[500px] lg:h-[600px]">
+                    <div className="grid lg:grid-cols-2 gap-16 sm:gap-20 lg:gap-8 items-center lg:items-end min-h-[500px] lg:h-[600px]">
                         {/* Left Column: Content - Legacy positioning and entry animations */}
-                        <div className="text-center lg:text-left pb-32 sm:pb-40 lg:pb-60 relative z-10 w-full space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-150">
-                            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-6xl font-black text-white flex flex-col items-center lg:items-start gap-2 md:gap-4 w-full tracking-tight leading-[1.05]">
+                        <div className="text-center lg:text-left pb-12 sm:pb-20 lg:pb-60 relative z-10 w-full space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-150">
+                            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-6xl font-black text-white flex flex-col items-center lg:items-start gap-2 md:gap-4 w-full tracking-tight leading-[1.05]">
                                 <span className="break-words max-w-full">Platform Undangan Digital Premium</span>
                                 <WordRoller />
                             </h1>
@@ -171,7 +171,7 @@ export const LandingPage: React.FC = () => {
                         </div>
 
                         {/* Right Column: Visual (Bride) */}
-                        <div className="relative flex justify-center lg:justify-end items-end order-2 mt-8 lg:mt-0">
+                        <div className="relative flex justify-center lg:justify-end items-end order-2 mt-0 lg:mt-0 mx-auto lg:mx-0">
                             {/* Backing Glow */}
                             <div className="absolute bottom-0 right-0 w-[120%] h-[120%] bg-rose-500/10 blur-[120px] rounded-full -z-10 animate-pulse" />
 

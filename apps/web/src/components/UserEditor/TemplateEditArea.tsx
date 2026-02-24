@@ -12,7 +12,9 @@ import {
     Save,
     Layout,
     AlertCircle,
-    Power
+    Power,
+    FileText,
+    Send
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryClient';

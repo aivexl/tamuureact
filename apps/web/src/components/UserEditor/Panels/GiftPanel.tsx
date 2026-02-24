@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { Landmark, Smartphone, MapPin, Save, Check, AlertCircle, Plus, X } from 'lucide-react';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
-import { users } from '@/lib/api';
+import { users, invitations } from '@/lib/api';
 import { useStore } from '@/store/useStore';
 import { syncBankCardToCanvas, syncGiftAddressToCanvas } from '@/lib/canvasSync';
 import { SUPPORTED_BANKS } from '@/lib/banks';
@@ -14,7 +14,7 @@ interface GiftPanelProps {
 }
 
 export const GiftPanel: React.FC<GiftPanelProps> = ({ onClose }) => {
-    const { user, showModal, sections, updateSectionsBatch } = useStore();
+    const { user, showModal, sections, updateSectionsBatch, id: invitationId } = useStore();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -76,6 +76,8 @@ export const GiftPanel: React.FC<GiftPanelProps> = ({ onClose }) => {
 
         try {
             setSaving(true);
+            
+            // 1. Update User Profile
             await users.updateProfile({
                 id: user.id,
                 bank1Name,
@@ -90,7 +92,7 @@ export const GiftPanel: React.FC<GiftPanelProps> = ({ onClose }) => {
                 giftAddress
             } as any);
 
-            // CANVAS SYNC: Update bank_card and gift_address elements
+            // 2. CANVAS SYNC: Update bank_card and gift_address elements locally
             let synced = syncBankCardToCanvas(sections, {
                 bankName: bank1Name,
                 accountNumber: bank1Number,
@@ -101,6 +103,13 @@ export const GiftPanel: React.FC<GiftPanelProps> = ({ onClose }) => {
                 address: giftAddress,
             });
             updateSectionsBatch(synced);
+
+            // 3. PERSISTENCE: Save the updated sections to the invitation in DB
+            if (invitationId) {
+                await invitations.update(invitationId, {
+                    sections: synced
+                });
+            }
 
             setSuccess(true);
             setTimeout(() => {

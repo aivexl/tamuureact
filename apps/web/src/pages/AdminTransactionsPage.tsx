@@ -179,19 +179,19 @@ export const AdminTransactionsPage: React.FC = () => {
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
                 <div>
                     <h1 className="text-3xl font-bold text-white mb-2">Transactions</h1>
-                    <p className="text-slate-400">Monitor revenue, track payments, and export financial reports.</p>
+                    <p className="text-slate-400 text-sm sm:text-base">Monitor revenue, track payments, and export financial reports.</p>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                     <button
                         onClick={handleExportExcel}
-                        className="px-6 py-3.5 bg-white/5 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/30 text-white font-bold rounded-2xl border border-white/5 transition-all text-sm flex items-center gap-2 group"
+                        className="flex-1 sm:flex-none px-6 py-3.5 bg-white/5 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/30 text-white font-bold rounded-2xl border border-white/5 transition-all text-sm flex items-center justify-center gap-2 group"
                     >
                         <Download className="w-5 h-5 group-hover:scale-110 transition-transform" />
                         Export Excel
                     </button>
                     <button
                         onClick={fetchTransactions}
-                        className="px-6 py-3.5 bg-teal-500 text-slate-900 font-black rounded-2xl shadow-xl shadow-teal-500/20 hover:shadow-2xl hover:bg-teal-400 -translate-y-0.5 transition-all active:scale-95 text-sm flex items-center gap-2"
+                        className="flex-1 sm:flex-none px-6 py-3.5 bg-teal-500 text-slate-900 font-black rounded-2xl shadow-xl shadow-teal-500/20 hover:shadow-2xl hover:bg-teal-400 -translate-y-0.5 transition-all active:scale-95 text-sm flex items-center justify-center gap-2"
                     >
                         <RefreshCw className="w-5 h-5" />
                         Refresh
@@ -200,86 +200,66 @@ export const AdminTransactionsPage: React.FC = () => {
             </div>
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-                <div className="bg-[#111] border border-white/5 rounded-3xl p-6 relative overflow-hidden group">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 mb-8">
+                <div className="col-span-2 sm:col-span-1 bg-[#111] border border-white/5 rounded-3xl p-5 sm:p-6 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <ArrowUpRight className="w-24 h-24 text-teal-500" />
+                        <ArrowUpRight className="w-16 h-16 sm:w-24 sm:h-24 text-teal-500" />
                     </div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Total Revenue</p>
-                    <h3 className="text-3xl font-bold text-white">Rp {totalRevenue.toLocaleString('id-ID')}</h3>
-                    <div className="mt-4 flex items-center gap-2 text-teal-400 text-xs font-bold bg-teal-500/10 w-fit px-3 py-1 rounded-full">
-                        <ArrowUpRight className="w-3 h-3" />
-                        <span>Based on current view</span>
-                    </div>
+                    <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Total Revenue</p>
+                    <h3 className="text-xl sm:text-3xl font-bold text-white">Rp {totalRevenue.toLocaleString('id-ID')}</h3>
                 </div>
 
-                <div className="bg-[#111] border border-white/5 rounded-3xl p-6 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <CheckCircle className="w-24 h-24 text-emerald-500" />
-                    </div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Success Rate</p>
-                    <h3 className="text-3xl font-bold text-white">
+                <div className="bg-[#111] border border-white/5 rounded-3xl p-5 sm:p-6 relative overflow-hidden group">
+                    <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Success Rate</p>
+                    <h3 className="text-xl sm:text-3xl font-bold text-white">
                         {transactions.length > 0
                             ? Math.round((transactions.filter(t => t.status === 'PAID').length / transactions.length) * 100)
                             : 0}%
                     </h3>
-                    <span className="text-xs text-slate-500 mt-2 block">of total transactions</span>
                 </div>
 
-                <div className="bg-[#111] border border-white/5 rounded-3xl p-6 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <Clock className="w-24 h-24 text-amber-500" />
-                    </div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Pending Payments</p>
-                    <h3 className="text-3xl font-bold text-white">
+                <div className="bg-[#111] border border-white/5 rounded-3xl p-5 sm:p-6 relative overflow-hidden group">
+                    <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Pending</p>
+                    <h3 className="text-xl sm:text-3xl font-bold text-white">
                         {transactions.filter(t => t.status === 'PENDING').length}
                     </h3>
-                    <span className="text-xs text-slate-500 mt-2 block">awaiting confirmation</span>
                 </div>
 
-                <div className="bg-[#111] border border-white/5 rounded-3xl p-6 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <XCircle className="w-24 h-24 text-rose-500" />
-                    </div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Cancelled</p>
-                    <h3 className="text-3xl font-bold text-white">
+                <div className="bg-[#111] border border-white/5 rounded-3xl p-5 sm:p-6 relative overflow-hidden group">
+                    <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Cancelled</p>
+                    <h3 className="text-xl sm:text-3xl font-bold text-white">
                         {transactions.filter(t => t.status === 'CANCELLED').length}
                     </h3>
-                    <span className="text-xs text-slate-500 mt-2 block">by user or system</span>
                 </div>
 
-                <div className="bg-[#111] border border-white/5 rounded-3xl p-6 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <RefreshCw className="w-24 h-24 text-slate-500" />
-                    </div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Expired</p>
-                    <h3 className="text-3xl font-bold text-white">
+                <div className="bg-[#111] border border-white/5 rounded-3xl p-5 sm:p-6 relative overflow-hidden group">
+                    <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Expired</p>
+                    <h3 className="text-xl sm:text-3xl font-bold text-white">
                         {transactions.filter(t => t.status === 'EXPIRED').length}
                     </h3>
-                    <span className="text-xs text-slate-500 mt-2 block">time limit reached</span>
                 </div>
             </div>
 
             {/* Filters */}
             <div className="bg-[#111] border border-white/5 rounded-3xl p-6 mb-8">
-                <div className="flex flex-col xl:flex-row gap-4 justify-between">
+                <div className="flex flex-col lg:flex-row gap-4 justify-between">
                     <div className="flex flex-col md:flex-row gap-4 flex-1">
-                        <div className="relative flex-1 min-w-[250px]">
+                        <div className="relative flex-1 w-full lg:max-w-md">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                             <input
                                 type="text"
-                                placeholder="Search by name, email, or order ID..."
+                                placeholder="Search by name, email, or ID..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="w-full bg-white/5 border border-white/10 rounded-2xl pl-11 pr-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-500/30 transition-all font-medium"
                             />
                         </div>
 
-                        <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
+                        <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
                             <select
                                 value={filterStatus}
                                 onChange={(e) => setFilterStatus(e.target.value)}
-                                className="bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-500/30 transition-all font-bold uppercase tracking-widest text-xs outline-none cursor-pointer whitespace-nowrap"
+                                className="bg-white/5 border border-white/10 rounded-2xl px-4 sm:px-6 py-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-500/30 transition-all font-bold uppercase tracking-widest text-[10px] outline-none cursor-pointer whitespace-nowrap"
                             >
                                 <option value="all" className="bg-[#111]">All Status</option>
                                 <option value="PAID" className="bg-[#111]">Success</option>
@@ -291,7 +271,7 @@ export const AdminTransactionsPage: React.FC = () => {
                             <select
                                 value={dateRange}
                                 onChange={(e) => setDateRange(e.target.value)}
-                                className="bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-500/30 transition-all font-bold uppercase tracking-widest text-xs outline-none cursor-pointer whitespace-nowrap"
+                                className="bg-white/5 border border-white/10 rounded-2xl px-4 sm:px-6 py-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-500/30 transition-all font-bold uppercase tracking-widest text-[10px] outline-none cursor-pointer whitespace-nowrap"
                             >
                                 <option value="all" className="bg-[#111]">All Time</option>
                                 <option value="week" className="bg-[#111]">This Week</option>
@@ -305,7 +285,7 @@ export const AdminTransactionsPage: React.FC = () => {
 
             {/* Transactions Table */}
             <div className="bg-[#111] border border-white/5 rounded-3xl overflow-hidden shadow-2xl overflow-x-auto">
-                <table className="w-full text-left border-collapse min-w-[1000px]">
+                <table className="w-full text-left border-separate border-spacing-0 min-w-[1000px]">
                     <thead>
                         <tr className="border-b border-white/5 bg-white/[0.02]">
                             <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Order ID & Date</th>
@@ -319,7 +299,7 @@ export const AdminTransactionsPage: React.FC = () => {
                     <tbody>
                         {isLoading ? (
                             <tr>
-                                <td colSpan={5} className="py-20 text-center">
+                                <td colSpan={6} className="py-20 text-center">
                                     <div className="flex flex-col items-center gap-4">
                                         <div className="w-12 h-12 border-4 border-teal-500/20 border-t-teal-500 rounded-full animate-spin"></div>
                                         <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Fetching Transactions...</p>
@@ -328,7 +308,7 @@ export const AdminTransactionsPage: React.FC = () => {
                             </tr>
                         ) : filteredTransactions.length === 0 ? (
                             <tr>
-                                <td colSpan={5} className="py-20 text-center">
+                                <td colSpan={6} className="py-20 text-center">
                                     <div className="flex flex-col items-center gap-4 opacity-30">
                                         <CreditCard className="w-12 h-12" />
                                         <p className="text-xs font-black uppercase tracking-[0.2em]">No transactions found</p>

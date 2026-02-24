@@ -293,7 +293,7 @@ export const DashboardPage: React.FC = () => {
                                 </div>
 
                                 {/* Stats Cards */}
-                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+                                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                                     {[
                                         { label: 'Undangan', value: stats.invitations, icon: MailIcon, color: 'teal', badge: 'Total' },
                                         { label: 'Tamu', value: stats.guests, icon: UsersIcon, color: 'emerald', badge: 'Pax' },
