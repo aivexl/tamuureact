@@ -1551,7 +1551,7 @@ export default {
             if (path === '/api/shop/merchant/profile' && method === 'PATCH') {
                 try {
                     const body = await request.json();
-                    const { merchant_id, user_id, nama_toko, deskripsi, logo_url, banner_url, category_id } = body;
+                    const { merchant_id, user_id, nama_toko, deskripsi, logo_url, banner_url, category_id, kota } = body;
 
                     // SECURITY: Verify user owns the merchant
                     const owner = await env.DB.prepare('SELECT user_id FROM shop_merchants WHERE id = ?').bind(merchant_id).first();
@@ -1563,9 +1563,10 @@ export default {
                             deskripsi = COALESCE(?, deskripsi),
                             logo_url = COALESCE(?, logo_url),
                             banner_url = COALESCE(?, banner_url),
-                            category_id = COALESCE(?, category_id)
+                            category_id = COALESCE(?, category_id),
+                            kota = COALESCE(?, kota)
                         WHERE id = ?
-                    `).bind(nama_toko, deskripsi, logo_url, banner_url, category_id, merchant_id).run();
+                    `).bind(nama_toko, deskripsi, logo_url, banner_url, category_id, kota, merchant_id).run();
 
                     return json({ success: true }, corsHeaders);
                 } catch (error) {
