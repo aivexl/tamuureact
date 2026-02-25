@@ -1573,22 +1573,35 @@ export default {
                     if (!owner) return json({ error: 'Merchant not found in D1' }, { ...corsHeaders, status: 404 });
                     if (owner.user_id !== user_id) return json({ error: 'Unauthorized ownership' }, { ...corsHeaders, status: 403 });
 
-                    // 2. Atomic Sequential Write
-                    // We avoid .batch() here to isolate the specific failure point if any
-                    await env.DB.prepare(`
+                    // 2. Atomic Sequential Write (SMART IDENTITY MATCHING)
+                    // We match by ID or SLUG to ensure 100% persistence regardless of frontend state
+                    const mResult = await env.DB.prepare(`
                         UPDATE shop_merchants 
                         SET nama_toko = ?, deskripsi = ?, logo_url = ?, banner_url = ?, category_id = ?, kota = ?, updated_at = CURRENT_TIMESTAMP
-                        WHERE id = ?
-                    `).bind(nama_toko || '', deskripsi || '', logo_url || null, banner_url || null, category_id || '', kota || '', merchant_id).run();
+                        WHERE (id = ? OR slug = ?) AND user_id = ?
+                    `).bind(
+                        nama_toko || '', deskripsi || '', logo_url || null, 
+                        banner_url || null, category_id || '', kota || '', 
+                        merchant_id, merchant_id, user_id
+                    ).run();
+
+                    if (mResult.meta.changes === 0) {
+                        console.error('[D1] No rows updated for merchant:', merchant_id);
+                        throw new Error('Merchant identity mismatch or unauthorized');
+                    }
 
                     await env.DB.prepare(`
                         INSERT INTO shop_contacts (merchant_id, whatsapp, instagram, facebook, tiktok, website, email, alamat, kota)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        SELECT id, ?, ?, ?, ?, ?, ?, ?, ? FROM shop_merchants WHERE id = ? OR slug = ?
                         ON CONFLICT(merchant_id) DO UPDATE SET
                             whatsapp = EXCLUDED.whatsapp, instagram = EXCLUDED.instagram, facebook = EXCLUDED.facebook,
                             tiktok = EXCLUDED.tiktok, website = EXCLUDED.website, email = EXCLUDED.email,
                             alamat = EXCLUDED.alamat, kota = EXCLUDED.kota, updated_at = CURRENT_TIMESTAMP
-                    `).bind(merchant_id, whatsapp || '', instagram || '', facebook || '', tiktok || '', website || '', email || '', alamat || '', kota || '').run();
+                    `).bind(
+                        whatsapp || '', instagram || '', facebook || '', tiktok || '', 
+                        website || '', email || '', alamat || '', kota || '',
+                        merchant_id, merchant_id
+                    ).run();
 
                     return json({ 
                         success: true, 
