@@ -90,11 +90,17 @@ export const MerchantSettings: React.FC = () => {
     };
 
     const handleSave = async () => {
-        if (!merchantData?.merchant?.id || !user?.id) return;
-        const loadingToast = toast.loading('Menyimpan perubahan...');
+        const currentSlug = merchantData?.merchant?.slug;
+        if (!currentSlug || !user?.id) {
+            toast.error('Identitas toko tidak ditemukan.');
+            return;
+        }
+
+        const loadingToast = toast.loading('Menyimpan perubahan ke Cloudflare...');
         try {
+            console.log('[Settings] Initiating save for slug:', currentSlug);
             await updateProfile({
-                merchantId: merchantData.merchant.id,
+                merchantId: currentSlug, 
                 userId: user.id,
                 data: {
                     nama_toko: namaToko,
@@ -112,9 +118,10 @@ export const MerchantSettings: React.FC = () => {
                 }
             });
             setIsDirty(false);
-            toast.success('Pengaturan disimpan!', { id: loadingToast });
+            toast.success('Pengaturan berhasil disimpan!', { id: loadingToast });
         } catch (error: any) {
-            toast.error(error.message || 'Gagal menyimpan', { id: loadingToast });
+            console.error('[Settings] Save failure:', error);
+            toast.error(error.message || 'Gagal menyimpan pengaturan.', { id: loadingToast });
         }
     };
 
