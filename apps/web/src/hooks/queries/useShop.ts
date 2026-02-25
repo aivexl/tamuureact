@@ -135,9 +135,11 @@ export const useUpdateMerchantProfile = () => {
         mutationFn: ({ merchantId, userId, data }: { merchantId: string, userId: string, data: any }) =>
             shop.updateMerchantProfile(merchantId, userId, data),
         onSuccess: async (_, variables) => {
-            // Aggressive re-fetch across all related keys
-            await queryClient.invalidateQueries({ queryKey: ['merchant_profile', variables.userId] });
-            await queryClient.invalidateQueries({ queryKey: ['storefront'] });
+            // CTO Nuclear Purge: Physically remove old data from memory
+            queryClient.removeQueries({ queryKey: ['merchant_profile', variables.userId] });
+            queryClient.removeQueries({ queryKey: ['storefront'] });
+            
+            // Force immediate global re-sync
             await queryClient.refetchQueries({ queryKey: ['merchant_profile', variables.userId] });
         }
     });

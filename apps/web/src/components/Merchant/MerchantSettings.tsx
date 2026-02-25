@@ -78,14 +78,16 @@ export const MerchantSettings: React.FC = () => {
     const bannerInputRef = useRef<HTMLInputElement>(null);
     const logoInputRef = useRef<HTMLInputElement>(null);
 
-    // Initialize state
+    // Initialize state - Protected by Hydration Guard
     useEffect(() => {
-        if (merchantData?.merchant) {
+        // CTO Guard: Do not overwrite local state if user has unsaved changes 
+        // or if the system is currently performing a persistence operation.
+        if (merchantData?.merchant && !isSaving && !isDirty) {
             const m = merchantData.merchant;
             const c = merchantData.contacts || {};
             setNamaToko(m.nama_toko || '');
             setDeskripsi(m.deskripsi || '');
-            setKota(m.kota || ''); // Explicitly pull from the core merchant object
+            setKota(m.kota || ''); 
             setLogoUrl(m.logo_url || '');
             setBannerUrl(m.banner_url || '');
             setWhatsapp(c.whatsapp || '');
@@ -95,9 +97,8 @@ export const MerchantSettings: React.FC = () => {
             setWebsite(c.website || '');
             setEmail(c.email || '');
             setAlamat(c.alamat || '');
-            setIsDirty(false);
         }
-    }, [merchantData]);
+    }, [merchantData, isSaving, isDirty]);
 
     const handleChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setter(e.target.value);
