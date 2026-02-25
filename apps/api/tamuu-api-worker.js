@@ -1573,9 +1573,8 @@ export default {
                     if (!owner) return json({ error: 'Merchant not found in D1' }, { ...corsHeaders, status: 404 });
                     if (owner.user_id !== user_id) return json({ error: 'Unauthorized ownership' }, { ...corsHeaders, status: 403 });
 
-                    // 2. Atomic Sequential Write (SMART IDENTITY MATCHING)
-                    // We match by ID or SLUG to ensure 100% persistence regardless of frontend state
-                    const mResult = await env.DB.prepare(`
+                    // 2. ATOMIC EXECUTION (Forced Persistence with Hard Change Verification)
+                    const updateOp = await env.DB.prepare(`
                         UPDATE shop_merchants 
                         SET nama_toko = ?, deskripsi = ?, logo_url = ?, banner_url = ?, category_id = ?, kota = ?, updated_at = CURRENT_TIMESTAMP
                         WHERE (id = ? OR slug = ?) AND user_id = ?
@@ -1585,9 +1584,11 @@ export default {
                         merchant_id, merchant_id, user_id
                     ).run();
 
-                    if (mResult.meta.changes === 0) {
-                        console.error('[D1] No rows updated for merchant:', merchant_id);
-                        throw new Error('Merchant identity mismatch or unauthorized');
+                    if (updateOp.meta.changes === 0) {
+                        return json({ 
+                            error: 'Persistence Refused: Unauthorized or Identity Mismatch', 
+                            debug: { merchant_id, user_id } 
+                        }, { ...corsHeaders, status: 403 });
                     }
 
                     await env.DB.prepare(`
