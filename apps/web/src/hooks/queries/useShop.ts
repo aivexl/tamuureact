@@ -152,6 +152,37 @@ export const useUpdateProductStatus = () => {
     });
 };
 
+export const useShopCarousel = () => {
+    return useQuery({
+        queryKey: ['shop_carousel'],
+        queryFn: () => shop.getCarousel()
+    });
+};
+
+export const useAdminShopCarousel = (token: string) => {
+    return useQuery({
+        queryKey: ['admin_shop_carousel'],
+        queryFn: () => shop.adminGetCarousel(token),
+        enabled: !!token
+    });
+};
+
+export const useAdminAddCarousel = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ token, payload }: { token: string; payload: any }) => shop.adminAddCarousel(token, payload),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin_shop_carousel'] })
+    });
+};
+
+export const useAdminDeleteCarousel = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ token, id }: { token: string; id: string }) => shop.adminDeleteCarousel(token, id),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin_shop_carousel'] })
+    });
+};
+
 export const useBoostShop = () => {
     const queryClient = useQueryClient();
     return useMutation({

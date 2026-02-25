@@ -1158,56 +1158,44 @@ export default {
                 }
             }
 
-            // NEW: 5b. PUBLIC DISCOVERY: All Products (Product-First Discovery)
-            if (path === '/api/shop/products/discovery' && method === 'GET') {
+            // 5c. PUBLIC DISCOVERY: Shop Carousel
+            if (path === '/api/shop/carousel' && method === 'GET') {
                 try {
-                    const category = url.searchParams.get('category');
-                    const search = url.searchParams.get('q');
-                    const city = url.searchParams.get('city');
-
-                    let query = `
-                        SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url 
-                        FROM shop_products p 
-                        JOIN shop_merchants m ON p.merchant_id = m.id
-                        WHERE p.status = 'PUBLISHED' AND m.is_verified = 1
-                    `;
-                    let params = [];
-
-                    if (category && category !== 'All') {
-                        query += ` AND p.kategori_produk = ?`;
-                        params.push(category);
-                    }
-                    if (city && city !== 'All') {
-                        query += ` AND p.kota = ?`;
-                        params.push(city);
-                    }
-                    if (search) {
-                        query += ` AND (p.nama_produk LIKE ? OR p.deskripsi LIKE ? OR m.nama_toko LIKE ?)`;
-                        params.push(`%${search}%`, `%${search}%`, `%${search}%`);
-                    }
-
-                    query += ` ORDER BY p.created_at DESC LIMIT 100`;
-
-                    const productsRes = await env.DB.prepare(query).bind(...params).all();
-                    const products = productsRes.results;
-
-                    // Fetch images for these products
-                    const productIds = products.map(p => p.id);
-                    let productImages = [];
-                    if (productIds.length > 0) {
-                        const placeholders = productIds.map(() => '?').join(',');
-                        const imagesRes = await env.DB.prepare(`SELECT * FROM shop_product_images WHERE product_id IN (${placeholders}) ORDER BY order_index ASC`).bind(...productIds).all();
-                        productImages = imagesRes.results;
-                    }
-
-                    const productsWithImages = products.map(p => ({
-                        ...p,
-                        images: productImages.filter(img => img.product_id === p.id)
-                    }));
-
-                    return json({ success: true, products: productsWithImages }, corsHeaders);
+                    const slides = await env.DB.prepare(`
+                        SELECT * FROM shop_carousel 
+                        WHERE is_active = 1 
+                        ORDER BY order_index ASC
+                    `).all();
+                    return json({ success: true, slides: slides.results }, corsHeaders);
                 } catch (error) {
-                    return json({ error: 'Failed to discover products', details: error.message }, { ...corsHeaders, status: 500 });
+                    return json({ error: 'Failed to fetch carousel' }, { ...corsHeaders, status: 500 });
+                }
+            }
+
+            // ============================================
+            // ADMIN: SHOP MANAGEMENT
+            // ============================================
+            if (path.startsWith('/api/admin/shop/') && method !== 'OPTIONS') {
+                const adminCheck = await verifyAdmin(request, env);
+                if (!adminCheck.isAdmin) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
+
+                if (path === '/api/admin/shop/carousel' && method === 'GET') {
+                    const slides = await env.DB.prepare('SELECT * FROM shop_carousel ORDER BY order_index ASC').all();
+                    return json({ success: true, slides: slides.results }, corsHeaders);
+                }
+
+                if (path === '/api/admin/shop/carousel' && method === 'POST') {
+                    const { image_url, link_url, order_index } = await request.json();
+                    const id = crypto.randomUUID();
+                    await env.DB.prepare('INSERT INTO shop_carousel (id, image_url, link_url, order_index) VALUES (?, ?, ?, ?)')
+                        .bind(id, image_url, link_url || null, order_index || 0).run();
+                    return json({ success: true, id }, corsHeaders);
+                }
+
+                if (path.startsWith('/api/admin/shop/carousel/') && method === 'DELETE') {
+                    const id = path.split('/').pop();
+                    await env.DB.prepare('DELETE FROM shop_carousel WHERE id = ?').bind(id).run();
+                    return json({ success: true }, corsHeaders);
                 }
             }
 

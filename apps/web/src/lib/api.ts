@@ -1096,6 +1096,42 @@ export const shop = {
         return res.json();
     },
 
+    // CAROUSEL
+    async getCarousel() {
+        const res = await safeFetch(`${API_BASE}/api/shop/carousel`);
+        if (!res.ok) throw new Error('Failed to fetch carousel');
+        const data = await res.json();
+        return sanitizeValue(data.slides || []);
+    },
+
+    async adminGetCarousel(token: string) {
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/carousel`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        return sanitizeValue(data.slides || []);
+    },
+
+    async adminAddCarousel(token: string, payload: { image_url: string; link_url?: string; order_index?: number }) {
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/carousel`, {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        return res.json();
+    },
+
+    async adminDeleteCarousel(token: string, id: string) {
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/carousel/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return res.json();
+    },
+
     // ANALYTICS
     async getMerchantAnalytics(merchantId: string) {
         if (!merchantId) return null;

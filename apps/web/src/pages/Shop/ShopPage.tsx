@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -12,11 +12,16 @@ import {
     Sparkles,
     ChevronDown,
     ChevronRight,
+    ChevronLeft,
     Tag,
     ShoppingBag
 } from 'lucide-react';
 import { INDONESIA_REGIONS } from '../../constants/regions';
-import { useProductDiscovery, useShopDirectory } from '../../hooks/queries/useShop';
+import {
+    useProductDiscovery,
+    useShopDirectory,
+    useShopCarousel
+} from '../../hooks/queries/useShop';
 import { useCategories } from '../../hooks/queries';
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
 import { useSEO } from '../../hooks/useSEO';
@@ -34,8 +39,28 @@ export const ShopPage: React.FC = () => {
     const [citySearchQuery, setCitySearchQuery] = useState('');
 
     // Carousel State
+    const { data: slides = [] } = useShopCarousel();
     const [currentSlide, setCurrentSlide] = useState(0);
-    const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+    const [isPaused, setIsPaused] = useState(false);
+
+    // Auto-play Logic
+    useEffect(() => {
+        if (isPaused || slides.length <= 1) return;
+        const timer = setInterval(() => {
+            setCurrentSlide((prev) => (prev + 1) % slides.length);
+        }, 5000);
+        return () => clearInterval(timer);
+    }, [isPaused, slides.length]);
+
+    const nextSlide = (e?: React.MouseEvent) => {
+        e?.stopPropagation();
+        setCurrentSlide((prev) => (prev + 1) % slides.length);
+    };
+
+    const prevSlide = (e?: React.MouseEvent) => {
+        e?.stopPropagation();
+        setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+    };
 
     // Queries
     const { data: products = [], isLoading: isLoadingProducts } = useProductDiscovery({
@@ -69,18 +94,68 @@ export const ShopPage: React.FC = () => {
     return (
         <div className="min-h-screen bg-white text-[#0A1128] font-sans selection:bg-[#FFBF00] selection:text-[#0A1128]">
             <main className="max-w-7xl mx-auto px-6 pb-32">
-                {/* Hero section */}
-                <section className="pt-32 md:pt-40 pb-16 relative">
-                    <div className="text-center mb-12">
-                        <m.h1 
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 }}
-                            className="text-4xl md:text-6xl font-black tracking-tighter text-[#0A1128] mb-6 italic uppercase"
+                {/* Carousel Section */}
+                <section className="pt-32 md:pt-40 pb-12 relative">
+                    {slides.length > 0 ? (
+                        <div 
+                            className="relative w-full aspect-[21/9] md:aspect-[24/7] rounded-[2.5rem] overflow-hidden bg-slate-50 border border-slate-100 group shadow-sm"
+                            onMouseEnter={() => setIsPaused(true)}
+                            onMouseLeave={() => setIsPaused(false)}
                         >
-                            Elevate Your <span className="text-[#FFBF00]">Celebration</span>
-                        </m.h1>
-                    </div>
+                            <AnimatePresence mode="wait">
+                                <m.div
+                                    key={slides[currentSlide].id}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.7, ease: "easeInOut" }}
+                                    className="absolute inset-0 cursor-pointer"
+                                    onClick={() => slides[currentSlide].link_url && (window.location.href = slides[currentSlide].link_url)}
+                                >
+                                    <img
+                                        src={slides[currentSlide].image_url}
+                                        alt={`Slide ${currentSlide + 1}`}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </m.div>
+                            </AnimatePresence>
+
+                            {/* Navigation Arrows */}
+                            {slides.length > 1 && (
+                                <>
+                                    <button
+                                        onClick={prevSlide}
+                                        className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-[#0A1128] opacity-0 group-hover:opacity-100 transition-all hover:bg-white/80 z-10"
+                                    >
+                                        <ChevronLeft className="w-6 h-6" />
+                                    </button>
+                                    <button
+                                        onClick={nextSlide}
+                                        className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-[#0A1128] opacity-0 group-hover:opacity-100 transition-all hover:bg-white/80 z-10"
+                                    >
+                                        <ChevronRight className="w-6 h-6" />
+                                    </button>
+                                </>
+                            )}
+
+                            {/* Pagination Dots */}
+                            <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-3 z-10">
+                                {slides.map((_: any, index: number) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => setCurrentSlide(index)}
+                                        className={`h-1.5 rounded-full transition-all duration-500 ${
+                                            currentSlide === index ? 'w-8 bg-[#0A1128]' : 'w-1.5 bg-white/50 hover:bg-[#0A1128]/50'
+                                        }`}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="w-full aspect-[21/9] md:aspect-[24/7] rounded-[2.5rem] bg-slate-50 border border-slate-100 flex items-center justify-center">
+                            <PremiumLoader variant="inline" label="Loading Shop..." />
+                        </div>
+                    )}
                 </section>
 
                 {/* Search & Filter */}
