@@ -134,29 +134,11 @@ export const useUpdateMerchantProfile = () => {
     return useMutation({
         mutationFn: ({ merchantId, userId, data }: { merchantId: string, userId: string, data: any }) =>
             shop.updateMerchantProfile(merchantId, userId, data),
-        onSuccess: async (result, variables) => {
-            // CTO Standard: Instant Cache Injection
-            // We manually update the cache with the new data so the UI never sees old data again
-            queryClient.setQueryData(['merchant_profile', variables.userId], (oldData: any) => {
-                if (!oldData) return oldData;
-                return {
-                    ...oldData,
-                    merchant: {
-                        ...oldData.merchant,
-                        ...variables.data
-                    },
-                    contacts: {
-                        ...oldData.contacts,
-                        ...variables.data
-                    }
-                };
-            });
-
-            // Nuclear purge of other related caches
-            queryClient.removeQueries({ queryKey: ['storefront'] });
-            
-            // Background sync just to be safe
+        onSuccess: async (_, variables) => {
+            // Force immediate synchronization
+            console.log('[Query] Profile update success, invalidating cache...');
             await queryClient.invalidateQueries({ queryKey: ['merchant_profile', variables.userId] });
+            await queryClient.refetchQueries({ queryKey: ['merchant_profile', variables.userId] });
         }
     });
 };

@@ -5,6 +5,7 @@ import { useMerchantProfile, useUpdateMerchantProfile } from '../../hooks/querie
 import api from '../../lib/api';
 import { INDONESIA_REGIONS } from '../../constants/regions';
 import { MapPin, Search, ChevronDown, Check } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 // Icons
 const StorefrontIcon = ({ className }: { className?: string }) => (
@@ -131,35 +132,54 @@ export const MerchantSettings: React.FC = () => {
     };
 
     const handleSave = async () => {
-        if (!merchantData?.merchant?.id || !user?.id) return;
+        if (!merchantData?.merchant?.id || !user?.id) {
+            console.error('[Settings] Missing ID:', { merchantId: merchantData?.merchant?.id, userId: user?.id });
+            return;
+        }
+
+        const loadingToast = toast.loading('Menyimpan perubahan ke Cloudflare Edge...');
+        console.log('[Settings] Initiating Save with data:', { kota, namaToko, slug: merchantData.merchant.slug });
 
         try {
             setSaveStatus(null);
+            
+            // Explicit payload construction to ensure no stale closure references
+            const payload = {
+                nama_toko: namaToko,
+                deskripsi: deskripsi,
+                kota: kota, // This must be the current state
+                logo_url: logoUrl,
+                banner_url: bannerUrl,
+                whatsapp: whatsapp,
+                instagram: instagram,
+                facebook: facebook,
+                tiktok: tiktok,
+                website: website,
+                email: email,
+                alamat: alamat
+            };
+
             await updateProfile({
                 merchantId: merchantData.merchant.id,
                 userId: user.id,
-                data: {
-                    nama_toko: namaToko,
-                    deskripsi: deskripsi,
-                    kota: kota,
-                    logo_url: logoUrl,
-                    banner_url: bannerUrl,
-                    whatsapp: whatsapp,
-                    instagram: instagram,
-                    facebook: facebook,
-                    tiktok: tiktok,
-                    website: website,
-                    email: email,
-                    alamat: alamat
-                }
+                data: payload
             });
+
+            console.log('[Settings] Save Success Response Received');
+            
             setIsDirty(false);
             setSaveStatus('success');
-            setTimeout(() => setSaveStatus(null), 3000);
+            toast.success('Pengaturan berhasil disimpan secara permanen!', { id: loadingToast });
+            
+            // Force a slight delay before allowing re-hydration to let D1 settle
+            setTimeout(() => {
+                setSaveStatus(null);
+            }, 3000);
+
         } catch (error: any) {
-            console.error('Save failed:', error);
+            console.error('[Settings] Save Exception:', error);
             setSaveStatus('error');
-            alert(error.message || 'Gagal menyimpan pengaturan.');
+            toast.error(error.message || 'Gagal sinkronisasi ke database.', { id: loadingToast });
         }
     };
 
