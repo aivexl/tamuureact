@@ -271,7 +271,7 @@ export const ShopPage: React.FC = () => {
                                         </div>
                                         
                                         {/* Merchant Logo - Moved outside overflow container and positioned with high z-index */}
-                                        <div className="absolute top-24 left-6 w-16 h-16 rounded-2xl border-4 border-white overflow-hidden bg-white shadow-xl z-10 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
+                                        <div className="absolute top-24 left-6 w-16 h-16 rounded-2xl border-4 border-white overflow-hidden bg-white shadow-xl z-10 transition-transform duration-500 group-hover:scale-110">
                                             <img 
                                                 src={merchant.logo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${merchant.nama_toko}`} 
                                                 className="w-full h-full object-cover" 
