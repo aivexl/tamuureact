@@ -85,7 +85,7 @@ export const MerchantSettings: React.FC = () => {
             const c = merchantData.contacts || {};
             setNamaToko(m.nama_toko || '');
             setDeskripsi(m.deskripsi || '');
-            setKota(m.kota || '');
+            setKota(m.kota || ''); // Explicitly pull from the core merchant object
             setLogoUrl(m.logo_url || '');
             setBannerUrl(m.banner_url || '');
             setWhatsapp(c.whatsapp || '');

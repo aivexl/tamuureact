@@ -134,8 +134,11 @@ export const useUpdateMerchantProfile = () => {
     return useMutation({
         mutationFn: ({ merchantId, userId, data }: { merchantId: string, userId: string, data: any }) =>
             shop.updateMerchantProfile(merchantId, userId, data),
-        onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: ['merchant_profile', variables.userId] });
+        onSuccess: async (_, variables) => {
+            // Aggressive re-fetch across all related keys
+            await queryClient.invalidateQueries({ queryKey: ['merchant_profile', variables.userId] });
+            await queryClient.invalidateQueries({ queryKey: ['storefront'] });
+            await queryClient.refetchQueries({ queryKey: ['merchant_profile', variables.userId] });
         }
     });
 };
