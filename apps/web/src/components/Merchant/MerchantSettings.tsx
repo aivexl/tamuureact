@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { m } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useStore } from '../../store/useStore';
 import { useMerchantProfile, useUpdateMerchantProfile } from '../../hooks/queries/useShop';
 import api from '../../lib/api';
+import { INDONESIA_REGIONS } from '../../constants/regions';
+import { MapPin, Search, ChevronDown, Check } from 'lucide-react';
 
 // Icons
 const StorefrontIcon = ({ className }: { className?: string }) => (
@@ -48,8 +50,19 @@ export const MerchantSettings: React.FC = () => {
     // Form States
     const [namaToko, setNamaToko] = useState('');
     const [deskripsi, setDeskripsi] = useState('');
+    const [kota, setKota] = useState('');
     const [logoUrl, setLogoUrl] = useState('');
     const [bannerUrl, setBannerUrl] = useState('');
+    
+    // City selector state
+    const [isLocationOpen, setIsLocationOpen] = useState(false);
+    const [citySearch, setCitySearch] = useState('');
+
+    const filteredCities = React.useMemo(() => {
+        const query = citySearch.toLowerCase();
+        return INDONESIA_REGIONS.filter(city => city.toLowerCase().includes(query));
+    }, [citySearch]);
+
     const [whatsapp, setWhatsapp] = useState('');
     const [instagram, setInstagram] = useState('');
     const [facebook, setFacebook] = useState('');
@@ -72,6 +85,7 @@ export const MerchantSettings: React.FC = () => {
             const c = merchantData.contacts || {};
             setNamaToko(m.nama_toko || '');
             setDeskripsi(m.deskripsi || '');
+            setKota(m.kota || '');
             setLogoUrl(m.logo_url || '');
             setBannerUrl(m.banner_url || '');
             setWhatsapp(c.whatsapp || '');
@@ -123,6 +137,7 @@ export const MerchantSettings: React.FC = () => {
                 data: {
                     nama_toko: namaToko,
                     deskripsi: deskripsi,
+                    kota: kota,
                     logo_url: logoUrl,
                     banner_url: bannerUrl,
                     whatsapp: whatsapp,
@@ -235,17 +250,58 @@ export const MerchantSettings: React.FC = () => {
                                             />
                                         </div>
                                         <div className="space-y-3 relative">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Tautan Toko</label>
-                                            <div className="relative flex items-center">
-                                                <span className="absolute left-6 text-[#FFBF00]/40 text-[10px] font-black uppercase tracking-widest select-none pt-0.5">Link</span>
-                                                <input
-                                                    type="text"
-                                                    value={merchantData?.merchant?.slug || ''}
-                                                    disabled
-                                                    className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-16 pr-6 py-4 text-sm font-bold text-slate-400 cursor-not-allowed"
-                                                />
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Kota / Kabupaten</label>
+                                            <div 
+                                                onClick={() => setIsLocationOpen(!isLocationOpen)}
+                                                className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 flex items-center justify-between cursor-pointer group hover:border-[#FFBF00]/40 transition-all h-[54px]"
+                                            >
+                                                <div className="flex items-center gap-3 overflow-hidden">
+                                                    <MapPin className="w-4 h-4 text-[#FFBF00]/60 shrink-0" />
+                                                    <span className={`text-sm font-bold truncate ${kota ? 'text-[#0A1128]' : 'text-slate-400'}`}>
+                                                        {kota || 'Pilih Wilayah...'}
+                                                    </span>
+                                                </div>
+                                                <ChevronDown className={`w-4 h-4 text-slate-300 transition-transform ${isLocationOpen ? 'rotate-180' : ''}`} />
                                             </div>
-                                            <p className="text-[9px] font-bold text-slate-400 mt-1 ml-1">* Tautan toko hanya bisa diganti 14 hari sekali.</p>
+
+                                            <AnimatePresence>
+                                                {isLocationOpen && (
+                                                    <m.div
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        exit={{ opacity: 0, y: 10 }}
+                                                        className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 shadow-2xl rounded-2xl z-[60] flex flex-col max-h-[300px] overflow-hidden"
+                                                    >
+                                                        <div className="p-4 border-b border-slate-50 flex items-center gap-2">
+                                                            <Search className="w-4 h-4 text-slate-300" />
+                                                            <input 
+                                                                autoFocus
+                                                                type="text"
+                                                                placeholder="Cari kota..."
+                                                                value={citySearch}
+                                                                onChange={(e) => setCitySearch(e.target.value)}
+                                                                className="w-full bg-transparent border-none outline-none text-sm font-semibold text-[#0A1128]"
+                                                            />
+                                                        </div>
+                                                        <div className="flex-1 overflow-y-auto p-2 no-scrollbar">
+                                                            {filteredCities.map((city) => (
+                                                                <button
+                                                                    key={city}
+                                                                    onClick={() => {
+                                                                        setKota(city);
+                                                                        setIsDirty(true);
+                                                                        setIsLocationOpen(false);
+                                                                    }}
+                                                                    className="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 flex items-center justify-between group/item"
+                                                                >
+                                                                    <span className="text-xs font-bold text-slate-600 group-hover/item:text-[#0A1128] transition-colors uppercase tracking-widest">{city}</span>
+                                                                    {kota === city && <Check className="w-3.5 h-3.5 text-[#FFBF00]" />}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </m.div>
+                                                )}
+                                            </AnimatePresence>
                                         </div>
                                     </div>
                                 </div>

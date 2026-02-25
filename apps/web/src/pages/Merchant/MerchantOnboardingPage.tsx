@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { m, AnimatePresence } from 'framer-motion';
-import { Store, Link as LinkIcon, Briefcase, ArrowRight, Check, AlertCircle, X, ChevronDown } from 'lucide-react';
+import { Store, Link as LinkIcon, Briefcase, ArrowRight, Check, AlertCircle, X, ChevronDown, MapPin, Search as SearchIcon } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useStore } from '../../store/useStore';
 import { useOnboardMerchant, useMerchantProfile } from '../../hooks/queries/useShop';
@@ -9,6 +9,7 @@ import { PremiumLoader } from '../../components/ui/PremiumLoader';
 import { useSEO } from '../../hooks/useSEO';
 import { shop } from '../../lib/api';
 import { Navbar } from '../../components/Layout/Navbar';
+import { INDONESIA_REGIONS } from '../../constants/regions';
 
 const SHOP_CATEGORIES = [
     'Makeup Artist',
@@ -49,14 +50,25 @@ export const MerchantOnboardingPage: React.FC = () => {
     const [step, setStep] = useState(1);
     const [namaToko, setNamaToko] = useState('');
     const [categoryId, setCategoryId] = useState('');
+    const [kota, setKota] = useState('');
     const [slug, setSlug] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isCheckingSlug, setIsCheckingSlug] = useState(false);
     const [isSlugAvailable, setIsSlugAvailable] = useState<boolean | null>(null);
 
+    // Location State
+    const [isLocationOpen, setIsLocationOpen] = useState(false);
+    const [citySearchQuery, setCitySearchQuery] = useState('');
+
+    const filteredCities = React.useMemo(() => {
+        const cleanQuery = citySearchQuery.trim().toLowerCase();
+        if (!cleanQuery) return INDONESIA_REGIONS;
+        return INDONESIA_REGIONS.filter(city => city.toLowerCase().includes(cleanQuery));
+    }, [citySearchQuery]);
+
     useSEO({
-        title: 'Buka Toko Jasa - Tamuu Nexus',
-        description: 'Mulai kembangkan bisnis event Anda bersama Tamuu Nexus.'
+        title: 'Buka Toko Jasa - Tamuu Shop',
+        description: 'Mulai kembangkan bisnis event Anda bersama Tamuu Shop.'
     });
 
     // Auto-generate slug from nama_toko if slug is empty
@@ -139,6 +151,7 @@ export const MerchantOnboardingPage: React.FC = () => {
                 nama_toko: namaToko,
                 slug: slug,
                 category_id: mappedCategoryId, // Use mapped ID instead of raw string
+                kota: kota,
                 deskripsi: `Selamat datang di ${namaToko}` // default initial description
             });
 
@@ -157,7 +170,9 @@ export const MerchantOnboardingPage: React.FC = () => {
             setStep(2);
         } else if (step === 2 && categoryId) {
             setStep(3);
-        } else if (step === 3 && slug.length >= 3) {
+        } else if (step === 3 && kota) {
+            setStep(4);
+        } else if (step === 4 && slug.length >= 3) {
             handleComplete();
         }
     };
@@ -165,7 +180,8 @@ export const MerchantOnboardingPage: React.FC = () => {
     const isStepValid = () => {
         if (step === 1) return namaToko.length >= 3;
         if (step === 2) return !!categoryId;
-        if (step === 3) return slug.length >= 5 && slug.length <= 24 && isSlugAvailable === true && !error;
+        if (step === 3) return !!kota;
+        if (step === 4) return slug.length >= 5 && slug.length <= 24 && isSlugAvailable === true && !error;
         return false;
     };
 
@@ -175,7 +191,7 @@ export const MerchantOnboardingPage: React.FC = () => {
             {/* Steps Header */}
             <div className="bg-white border-b border-slate-200 sticky top-[72px] z-20 px-4 sm:px-6 py-4 shadow-sm">
                 <div className="max-w-xl mx-auto flex items-center justify-between gap-1 sm:gap-2">
-                    {[1, 2, 3].map((s) => {
+                    {[1, 2, 3, 4].map((s) => {
                         const isActive = step === s;
                         const isDone = step > s;
                         return (
@@ -185,10 +201,10 @@ export const MerchantOnboardingPage: React.FC = () => {
                                         {isDone ? <Check className="w-3.5 h-3.5" strokeWidth={3} /> : <div className="text-[10px] sm:text-xs font-bold">{s}</div>}
                                     </div>
                                     <span className={`text-[8px] sm:text-[10px] font-bold uppercase tracking-widest ${isActive ? 'text-indigo-600' : 'text-slate-400'}`}>
-                                        {s === 1 ? 'NAMA' : s === 2 ? 'KATEGORI' : 'LINK'}
+                                        {s === 1 ? 'NAMA' : s === 2 ? 'KATEGORI' : s === 3 ? 'LOKASI' : 'LINK'}
                                     </span>
                                 </div>
-                                {s < 3 && (
+                                {s < 4 && (
                                     <div className={`flex-1 h-0.5 mt-[-14px] transition-colors duration-500 ${isDone ? 'bg-indigo-500/30' : 'bg-slate-100'}`} />
                                 )}
                             </React.Fragment>
@@ -250,9 +266,77 @@ export const MerchantOnboardingPage: React.FC = () => {
                         </m.div>
                     )}
 
-                    {/* STEP 3: SLUG */}
+                    {/* STEP 3: LOKASI */}
                     {step === 3 && (
                         <m.div key="step3" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }} className="max-w-[540px] w-full text-center space-y-8 sm:space-y-10">
+                            <div className="space-y-4">
+                                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white border border-slate-100/50 rounded-full flex items-center justify-center mx-auto shadow-sm">
+                                    <MapPin className="w-6 h-6 sm:w-7 sm:h-7 text-indigo-500" strokeWidth={2.5} />
+                                </div>
+                                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 leading-tight">Basis Operasional</h1>
+                                <p className="text-slate-500 text-base sm:text-lg">Di mana lokasi brand Anda saat ini?</p>
+                            </div>
+
+                            <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] p-6 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col gap-6 relative">
+                                <div className="text-left space-y-3">
+                                    <label className="text-[10px] sm:text-xs font-semibold text-slate-400 ml-2 uppercase tracking-widest">Kota / Kabupaten</label>
+                                    
+                                    <div 
+                                        onClick={() => setIsLocationOpen(!isLocationOpen)}
+                                        className="flex items-center w-full bg-slate-50 hover:bg-slate-100/50 transition-all rounded-[1rem] sm:rounded-[1.5rem] px-6 py-4 cursor-pointer min-h-[64px]"
+                                    >
+                                        <MapPin className="w-5 h-5 text-indigo-500 mr-3 shrink-0" />
+                                        <span className={`flex-1 font-bold text-sm sm:text-base ${kota ? 'text-slate-900' : 'text-slate-300'}`}>
+                                            {kota || 'Pilih Wilayah...'}
+                                        </span>
+                                        <ChevronDown className={`w-5 h-5 text-slate-300 transition-transform ${isLocationOpen ? 'rotate-180' : ''}`} />
+                                    </div>
+
+                                    <AnimatePresence>
+                                        {isLocationOpen && (
+                                            <m.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: 10 }}
+                                                className="absolute left-6 right-6 top-full mt-2 bg-white border border-slate-100 shadow-2xl rounded-[1.5rem] z-50 flex flex-col max-h-[300px] overflow-hidden"
+                                            >
+                                                <div className="p-4 border-b border-slate-50 flex items-center gap-2">
+                                                    <SearchIcon className="w-4 h-4 text-slate-300" />
+                                                    <input 
+                                                        autoFocus
+                                                        type="text"
+                                                        placeholder="Cari kota..."
+                                                        value={citySearchQuery}
+                                                        onChange={(e) => setCitySearchQuery(e.target.value)}
+                                                        className="w-full bg-transparent border-none outline-none text-sm font-semibold text-slate-900"
+                                                    />
+                                                </div>
+                                                <div className="flex-1 overflow-y-auto p-2 no-scrollbar">
+                                                    {filteredCities.map((city) => (
+                                                        <button
+                                                            key={city}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setKota(city);
+                                                                setIsLocationOpen(false);
+                                                            }}
+                                                            className="w-full text-left px-4 py-3 rounded-xl hover:bg-indigo-50 text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors uppercase tracking-widest"
+                                                        >
+                                                            {city}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </m.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            </div>
+                        </m.div>
+                    )}
+
+                    {/* STEP 4: SLUG */}
+                    {step === 4 && (
+                        <m.div key="step4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }} className="max-w-[540px] w-full text-center space-y-8 sm:space-y-10">
                             <div className="space-y-4">
                                 <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white border border-slate-100/50 rounded-full flex items-center justify-center mx-auto shadow-sm">
                                     <LinkIcon className="w-6 h-6 sm:w-7 sm:h-7 text-indigo-500" strokeWidth={2.5} />
@@ -333,7 +417,7 @@ export const MerchantOnboardingPage: React.FC = () => {
                             <PremiumLoader variant="inline" size="sm" color="#ffffff" label="Processing..." showLabel />
                         ) : (
                             <>
-                                {step === 3 ? 'Buka Toko Sekarang' : 'Lanjut'}
+                                {step === 4 ? 'Buka Toko Sekarang' : 'Lanjut'}
                                 <ArrowRight className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${isStepValid() ? 'group-hover:translate-x-1' : ''}`} />
                             </>
                         )}

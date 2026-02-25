@@ -204,6 +204,10 @@ export const ProductDetailPage: React.FC = () => {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h3 className="text-lg font-black text-[#0A1128] truncate">{product.nama_toko}</h3>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1 mb-2">
+                                            <MapPin className="w-3 h-3 text-[#FFBF00]" />
+                                            {product.kota || 'Nasional'}
+                                        </p>
                                         <div className="flex items-center gap-4 mt-1">
                                             <div className="flex items-center gap-1">
                                                 <ShoppingBag className="w-3 h-3 text-slate-400" />
