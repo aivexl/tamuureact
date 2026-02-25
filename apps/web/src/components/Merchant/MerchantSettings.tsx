@@ -165,16 +165,13 @@ export const MerchantSettings: React.FC = () => {
                 data: payload
             });
 
-            console.log('[Settings] Save Success Response Received');
+            console.log('[Settings] Save Success Verified by Edge');
             
+            // Hard Sync Strategy: Force component to re-fetch and re-initialize from server
+            setIsInitialized(false); 
             setIsDirty(false);
             setSaveStatus('success');
-            toast.success('Pengaturan berhasil disimpan secara permanen!', { id: loadingToast });
-            
-            // Force a slight delay before allowing re-hydration to let D1 settle
-            setTimeout(() => {
-                setSaveStatus(null);
-            }, 3000);
+            toast.success('Pengaturan berhasil diperbarui secara permanen!');
 
         } catch (error: any) {
             console.error('[Settings] Save Exception:', error);

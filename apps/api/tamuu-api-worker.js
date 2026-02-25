@@ -1556,67 +1556,53 @@ export default {
             }
 
             // 11. MERCHANT: Update Profile (REBUILT FOR PERSISTENCE)
-            if (path === '/api/shop/merchant/profile' && method === 'PATCH') {
-                try {
-                    const body = await request.json();
-                    const { 
-                        merchant_id, user_id, nama_toko, deskripsi, logo_url, banner_url, 
-                        category_id, kota, whatsapp, instagram, facebook, tiktok, 
-                        website, email, alamat 
-                    } = body;
-
-                    // SECURITY: Strict Ownership Check
-                    const owner = await env.DB.prepare('SELECT user_id FROM shop_merchants WHERE id = ?').bind(merchant_id).first();
-                    if (!owner || owner.user_id !== user_id) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 403 });
-
-                    // 1. Update Core Merchant Info - HIGH INTEGRITY BINDING
-                    await env.DB.prepare(`
-                        UPDATE shop_merchants 
-                        SET nama_toko = ?, deskripsi = ?, logo_url = ?, banner_url = ?, category_id = ?, kota = ?, updated_at = CURRENT_TIMESTAMP
-                        WHERE id = ?
-                    `).bind(
-                        nama_toko || '', 
-                        deskripsi || '', 
-                        logo_url || null, 
-                        banner_url || null, 
-                        category_id || '', 
-                        kota || '', 
-                        merchant_id
-                    ).run();
-
-                    // 2. Update Contacts Info - ATOMIC SYNC
-                    await env.DB.prepare(`
-                        INSERT INTO shop_contacts (merchant_id, whatsapp, instagram, facebook, tiktok, website, email, alamat, kota)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        ON CONFLICT(merchant_id) DO UPDATE SET
-                            whatsapp = EXCLUDED.whatsapp, 
-                            instagram = EXCLUDED.instagram, 
-                            facebook = EXCLUDED.facebook,
-                            tiktok = EXCLUDED.tiktok, 
-                            website = EXCLUDED.website, 
-                            email = EXCLUDED.email,
-                            alamat = EXCLUDED.alamat,
-                            kota = EXCLUDED.kota,
-                            updated_at = CURRENT_TIMESTAMP
-                    `).bind(
-                        merchant_id, 
-                        whatsapp || '', 
-                        instagram || '', 
-                        facebook || '', 
-                        tiktok || '', 
-                        website || '', 
-                        email || '', 
-                        alamat || '',
-                        kota || ''
-                    ).run();
-
-                    return json({ success: true, timestamp: Date.now() }, corsHeaders);
-                } catch (error) {
-                    console.error('[CRITICAL] Profile Persistence Failure:', error.message);
-                    return json({ error: 'Database Write Failed', details: error.message }, { ...corsHeaders, status: 500 });
-                }
-            }
-
+                        // 11. MERCHANT: Update Profile (SMART PERSISTENCE)
+                        if (path === '/api/shop/merchant/profile' && method === 'PATCH') {
+                            try {
+                                const body = await request.json();
+                                const { 
+                                    merchant_id, user_id, nama_toko, deskripsi, logo_url, banner_url, 
+                                    category_id, kota, whatsapp, instagram, facebook, tiktok, 
+                                    website, email, alamat 
+                                } = body;
+            
+                                // 1. Strict Ownership & Identity Check
+                                const owner = await env.DB.prepare('SELECT user_id FROM shop_merchants WHERE id = ?').bind(merchant_id).first();
+                                if (!owner) return json({ error: 'Merchant not found' }, { ...corsHeaders, status: 404 });
+                                if (owner.user_id !== user_id) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 403 });
+            
+                                // 2. Perform Atomic Updates
+                                const updateMerchant = await env.DB.prepare(`
+                                    UPDATE shop_merchants 
+                                    SET nama_toko = ?, deskripsi = ?, logo_url = ?, banner_url = ?, category_id = ?, kota = ?, updated_at = CURRENT_TIMESTAMP
+                                    WHERE id = ?
+                                `).bind(
+                                    nama_toko || '', deskripsi || '', logo_url || null, 
+                                    banner_url || null, category_id || '', kota || '', merchant_id
+                                ).run();
+            
+                                if (updateMerchant.meta.changes === 0) {
+                                    throw new Error('Database rejected merchant update');
+                                }
+            
+                                await env.DB.prepare(`
+                                    INSERT INTO shop_contacts (merchant_id, whatsapp, instagram, facebook, tiktok, website, email, alamat, kota)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                    ON CONFLICT(merchant_id) DO UPDATE SET
+                                        whatsapp = EXCLUDED.whatsapp, instagram = EXCLUDED.instagram, facebook = EXCLUDED.facebook,
+                                        tiktok = EXCLUDED.tiktok, website = EXCLUDED.website, email = EXCLUDED.email,
+                                        alamat = EXCLUDED.alamat, kota = EXCLUDED.kota, updated_at = CURRENT_TIMESTAMP
+                                `).bind(
+                                    merchant_id, whatsapp || '', instagram || '', facebook || '', 
+                                    tiktok || '', website || '', email || '', alamat || '', kota || ''
+                                ).run();
+            
+                                return json({ success: true, message: 'Verified Persistence Success' }, corsHeaders);
+                            } catch (error) {
+                                console.error('[CRITICAL] Save Rejection:', error.message);
+                                return json({ error: 'Data not persisted', details: error.message }, { ...corsHeaders, status: 500 });
+                            }
+                        }
             // 12. MERCHANT: Toggle Product Status
             if (path === '/api/shop/product/status' && method === 'PATCH') {
                 try {
