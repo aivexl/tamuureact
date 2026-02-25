@@ -1158,6 +1158,59 @@ export default {
                 }
             }
 
+            // 5b. PUBLIC DISCOVERY: All Products (Product-First Discovery)
+            if (path === '/api/shop/products/discovery' && method === 'GET') {
+                try {
+                    const category = url.searchParams.get('category');
+                    const search = url.searchParams.get('q');
+                    const city = url.searchParams.get('city');
+
+                    let query = `
+                        SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url 
+                        FROM shop_products p 
+                        JOIN shop_merchants m ON p.merchant_id = m.id
+                        WHERE p.status = 'PUBLISHED' AND m.is_verified = 1
+                    `;
+                    let params = [];
+
+                    if (category && category !== 'All' && category !== 'Semua') {
+                        query += ` AND p.kategori_produk = ?`;
+                        params.push(category);
+                    }
+                    if (city && city !== 'All') {
+                        query += ` AND p.kota = ?`;
+                        params.push(city);
+                    }
+                    if (search) {
+                        query += ` AND (p.nama_produk LIKE ? OR p.deskripsi LIKE ? OR m.nama_toko LIKE ?)`;
+                        params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+                    }
+
+                    query += ` ORDER BY p.created_at DESC LIMIT 100`;
+
+                    const productsRes = await env.DB.prepare(query).bind(...params).all();
+                    const products = productsRes.results;
+
+                    // Fetch images for these products
+                    const productIds = products.map(p => p.id);
+                    let productImages = [];
+                    if (productIds.length > 0) {
+                        const placeholders = productIds.map(() => '?').join(',');
+                        const imagesRes = await env.DB.prepare(`SELECT * FROM shop_product_images WHERE product_id IN (${placeholders}) ORDER BY order_index ASC`).bind(...productIds).all();
+                        productImages = imagesRes.results;
+                    }
+
+                    const productsWithImages = products.map(p => ({
+                        ...p,
+                        images: productImages.filter(img => img.product_id === p.id)
+                    }));
+
+                    return json({ success: true, products: productsWithImages }, corsHeaders);
+                } catch (error) {
+                    return json({ error: 'Failed to discover products', details: error.message }, { ...corsHeaders, status: 500 });
+                }
+            }
+
             // 5c. PUBLIC DISCOVERY: Shop Carousel
             if (path === '/api/shop/carousel' && method === 'GET') {
                 try {

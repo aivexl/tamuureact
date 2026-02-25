@@ -39,7 +39,25 @@ export const ShopPage: React.FC = () => {
     const [citySearchQuery, setCitySearchQuery] = useState('');
 
     // Carousel State
-    const { data: slides = [] } = useShopCarousel();
+    const { data: remoteSlides = [] } = useShopCarousel();
+    
+    // CTO-Level Dummy Fallback for Instant Visual Stability
+    const slides = useMemo(() => {
+        if (remoteSlides && remoteSlides.length > 0) return remoteSlides;
+        return [
+            {
+                id: 'dummy-1',
+                image_url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=2000',
+                link_url: '#'
+            },
+            {
+                id: 'dummy-2',
+                image_url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2000',
+                link_url: '#'
+            }
+        ];
+    }, [remoteSlides]);
+
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
 
