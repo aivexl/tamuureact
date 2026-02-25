@@ -926,12 +926,20 @@ export default {
                         "SELECT COUNT(*) as views FROM shop_analytics WHERE merchant_id = ? AND action_type = 'VIEW_PROFILE'"
                     ).bind(merchant.id).first();
 
-                    return json({
+                    return new Response(JSON.stringify({
                         isMerchant: true,
                         merchant: merchant,
                         contacts: contacts || {},
                         stats: { views: analytics?.views || 0 }
-                    }, corsHeaders);
+                    }), {
+                        headers: {
+                            ...corsHeaders,
+                            'Content-Type': 'application/json',
+                            'Cache-Control': 'no-store, no-cache, must-revalidate',
+                            'Pragma': 'no-cache',
+                            'Expires': '0'
+                        }
+                    });
 
                 } catch (error) {
                     console.error('[Shop] Fetch Merchant Error:', error);
@@ -1564,12 +1572,12 @@ export default {
                     // 1. Update Core Merchant Info
                     await env.DB.prepare(`
                         UPDATE shop_merchants 
-                        SET nama_toko = COALESCE(?, nama_toko), 
-                            deskripsi = COALESCE(?, deskripsi),
-                            logo_url = COALESCE(?, logo_url),
-                            banner_url = COALESCE(?, banner_url),
-                            category_id = COALESCE(?, category_id),
-                            kota = COALESCE(?, kota),
+                        SET nama_toko = ?, 
+                            deskripsi = ?,
+                            logo_url = ?,
+                            banner_url = ?,
+                            category_id = ?,
+                            kota = ?,
                             updated_at = CURRENT_TIMESTAMP
                         WHERE id = ?
                     `).bind(nama_toko, deskripsi, logo_url, banner_url, category_id, kota, merchant_id).run();
