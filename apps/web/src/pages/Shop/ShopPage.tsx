@@ -395,12 +395,10 @@ export const ShopPage: React.FC = () => {
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <p className="text-[10px] font-bold text-[#FFBF00] uppercase tracking-widest">{merchant.nama_kategori || 'Vendor'}</p>
-                                                {merchant.kota && (
-                                                    <>
-                                                        <span className="w-1 h-1 rounded-full bg-slate-200" />
-                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{merchant.kota.replace(/^(kota|kab\.)\s+/gi, '')}</p>
-                                                    </>
-                                                )}
+                                                <span className="w-1 h-1 rounded-full bg-slate-200" />
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                    {(merchant.kota || 'Nasional').replace(/^(kota|kab\.)\s+/gi, '')}
+                                                </p>
                                             </div>
                                         </div>
                                     </m.div>
