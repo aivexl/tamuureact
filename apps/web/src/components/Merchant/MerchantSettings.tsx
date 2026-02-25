@@ -189,9 +189,9 @@ export const MerchantSettings: React.FC = () => {
                     <div className="xl:col-span-12 space-y-12">
                         <m.section
                             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-                            className="bg-[#FBFBFB] rounded-[40px] border border-slate-100 p-10 space-y-12 relative overflow-hidden shadow-sm"
+                            className="bg-[#FBFBFB] rounded-[40px] border border-slate-100 p-10 space-y-12 relative shadow-sm"
                         >
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-[#FFBF00]/5 rounded-full blur-[100px]" />
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-[#FFBF00]/5 rounded-full blur-[100px] pointer-events-none" />
 
                             <div className="flex items-center justify-between relative">
                                 <div className="flex items-center gap-4 text-[#0A1128]">
@@ -271,7 +271,7 @@ export const MerchantSettings: React.FC = () => {
                                                         initial={{ opacity: 0, y: 10 }}
                                                         animate={{ opacity: 1, y: 0 }}
                                                         exit={{ opacity: 0, y: 10 }}
-                                                        className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 shadow-2xl rounded-2xl z-[60] flex flex-col max-h-[300px] overflow-hidden"
+                                                        className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 shadow-2xl rounded-2xl z-[70] flex flex-col max-h-[300px] overflow-hidden"
                                                     >
                                                         <div className="p-4 border-b border-slate-50 flex items-center gap-2">
                                                             <Search className="w-4 h-4 text-slate-300" />
@@ -284,7 +284,7 @@ export const MerchantSettings: React.FC = () => {
                                                                 className="w-full bg-transparent border-none outline-none text-sm font-semibold text-[#0A1128]"
                                                             />
                                                         </div>
-                                                        <div className="flex-1 overflow-y-auto p-2 no-scrollbar">
+                                                        <div className="flex-1 overflow-y-auto p-2 no-scrollbar bg-white">
                                                             {filteredCities.map((city) => (
                                                                 <button
                                                                     key={city}
