@@ -81,10 +81,11 @@ export const MerchantSettings: React.FC = () => {
 
     const [isInitialized, setIsInitialized] = useState(false);
 
-    // Initial Hydration - High Integrity Logic
+    // Initial Hydration - STRICT ONCE-ONLY LOGIC
     useEffect(() => {
         // Only initialize once to prevent snap-back during background refetches
         if (merchantData?.merchant && !isInitialized) {
+            console.log('[Settings] performing initial hydration');
             const m = merchantData.merchant;
             const c = merchantData.contacts || {};
             setNamaToko(m.nama_toko || '');
@@ -167,8 +168,7 @@ export const MerchantSettings: React.FC = () => {
 
             console.log('[Settings] Save Success Verified by Edge');
             
-            // Hard Sync Strategy: Force component to re-fetch and re-initialize from server
-            setIsInitialized(false); 
+            // NO SNAP-BACK: Keep isInitialized as true
             setIsDirty(false);
             setSaveStatus('success');
             toast.success('Pengaturan berhasil diperbarui secara permanen!', { id: loadingToast });
