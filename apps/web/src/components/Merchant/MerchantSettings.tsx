@@ -238,7 +238,7 @@ export const MerchantSettings: React.FC = () => {
                                         <img alt="Store Logo" className="w-full h-full object-cover" src={logoUrl || defaultLogo} />
                                     </div>
 
-                                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+                                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
                                         <div className="space-y-3">
                                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Nama Toko</label>
                                             <input
@@ -249,6 +249,7 @@ export const MerchantSettings: React.FC = () => {
                                                 className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-[#0A1128] placeholder-slate-400 focus:ring-1 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40 focus:outline-none transition-all"
                                             />
                                         </div>
+
                                         <div className="space-y-3 relative">
                                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Kota / Kabupaten</label>
                                             <div 
@@ -302,6 +303,20 @@ export const MerchantSettings: React.FC = () => {
                                                     </m.div>
                                                 )}
                                             </AnimatePresence>
+                                        </div>
+
+                                        <div className="space-y-3 relative">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Tautan Toko</label>
+                                            <div className="relative flex items-center">
+                                                <span className="absolute left-6 text-[#FFBF00]/40 text-[10px] font-black uppercase tracking-widest select-none pt-0.5">Link</span>
+                                                <input
+                                                    type="text"
+                                                    value={merchantData?.merchant?.slug || ''}
+                                                    disabled
+                                                    className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-16 pr-6 py-4 text-sm font-bold text-slate-400 cursor-not-allowed"
+                                                />
+                                            </div>
+                                            <p className="text-[9px] font-bold text-slate-400 mt-1 ml-1">* Tautan toko permanen untuk identitas publik.</p>
                                         </div>
                                     </div>
                                 </div>
