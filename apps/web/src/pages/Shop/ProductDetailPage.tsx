@@ -28,7 +28,7 @@ import {
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
 import { useStore } from '../../store/useStore';
 import { useSEO } from '../../hooks/useSEO';
-import { formatCurrency } from '../../lib/utils';
+import { formatCurrency, formatAbbreviatedNumber } from '../../lib/utils';
 import { toast } from 'react-hot-toast';
 
 export const ProductDetailPage: React.FC = () => {
@@ -162,13 +162,23 @@ export const ProductDetailPage: React.FC = () => {
                     {/* RIGHT: Product Info */}
                     <div className="flex flex-col">
                         <div className="space-y-6">
-                            <div className="flex flex-wrap items-center gap-2">
-                                <span className="px-3 py-1 rounded-lg bg-[#FFBF00]/10 text-[#FFBF00] text-[9px] font-black uppercase tracking-widest border border-[#FFBF00]/20">
-                                    {product.kategori_produk}
-                                </span>
-                                <span className="px-3 py-1 rounded-lg bg-slate-50 text-slate-400 text-[9px] font-black uppercase tracking-widest border border-slate-100 flex items-center gap-1">
-                                    <MapPin className="w-3 h-3" /> {product.kota}
-                                </span>
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <span className="px-3 py-1 rounded-lg bg-[#FFBF00]/10 text-[#FFBF00] text-[9px] font-black uppercase tracking-widest border border-[#FFBF00]/20">
+                                        {product.kategori_produk}
+                                    </span>
+                                    <span className="px-3 py-1 rounded-lg bg-slate-50 text-slate-400 text-[9px] font-black uppercase tracking-widest border border-slate-100 flex items-center gap-1">
+                                        <MapPin className="w-3 h-3" /> {product.kota}
+                                    </span>
+                                </div>
+                                
+                                {/* Social Proof: Wishlist Count */}
+                                <div className="flex items-center gap-1.5 px-3 py-1 bg-rose-50 border border-rose-100 rounded-lg">
+                                    <Heart className="w-3 h-3 text-rose-500 fill-rose-500" />
+                                    <span className="text-[10px] font-black text-rose-600 uppercase tracking-tighter">
+                                        {formatAbbreviatedNumber(product.wishlist_count || 0)} Love
+                                    </span>
+                                </div>
                             </div>
 
                             <h1 className="text-4xl font-black text-[#0A1128] uppercase tracking-tight italic leading-none">{product.nama_produk}</h1>

@@ -1436,9 +1436,13 @@ export default {
                 if (!productId) return json({ error: 'Product ID required' }, { ...corsHeaders, status: 400 });
 
                 try {
-                    const product = await env.DB.prepare(
-                        'SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url FROM shop_products p JOIN shop_merchants m ON p.merchant_id = m.id WHERE p.id = ?'
-                    ).bind(productId).first();
+                    const product = await env.DB.prepare(`
+                        SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url,
+                        (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count
+                        FROM shop_products p 
+                        JOIN shop_merchants m ON p.merchant_id = m.id 
+                        WHERE p.id = ?
+                    `).bind(productId).first();
 
                     if (!product) return json({ error: 'Product not found' }, { ...corsHeaders, status: 404 });
 
