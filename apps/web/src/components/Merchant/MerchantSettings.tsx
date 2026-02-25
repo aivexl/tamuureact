@@ -254,52 +254,68 @@ export const MerchantSettings: React.FC = () => {
                                         <div className="space-y-3 relative">
                                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Kota / Kabupaten</label>
                                             <div 
-                                                onClick={() => setIsLocationOpen(!isLocationOpen)}
-                                                className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 flex items-center justify-between cursor-pointer group hover:border-[#FFBF00]/40 transition-all h-[54px]"
+                                                onClick={() => {
+                                                    setIsLocationOpen(!isLocationOpen);
+                                                    setCitySearch('');
+                                                }}
+                                                className={`w-full bg-white border rounded-2xl px-6 py-4 flex items-center justify-between cursor-pointer transition-all h-[54px] ${
+                                                    isLocationOpen ? 'border-[#FFBF00] ring-4 ring-[#FFBF00]/5' : 'border-slate-200 hover:border-[#FFBF00]/40'
+                                                }`}
                                             >
                                                 <div className="flex items-center gap-3 overflow-hidden">
-                                                    <MapPin className="w-4 h-4 text-[#FFBF00]/60 shrink-0" />
+                                                    <MapPin className={`w-4 h-4 shrink-0 transition-colors ${kota ? 'text-[#FFBF00]' : 'text-slate-300'}`} />
                                                     <span className={`text-sm font-bold truncate ${kota ? 'text-[#0A1128]' : 'text-slate-400'}`}>
-                                                        {kota || 'Pilih Wilayah...'}
+                                                        {kota || 'Pilih Wilayah Operasional...'}
                                                     </span>
                                                 </div>
-                                                <ChevronDown className={`w-4 h-4 text-slate-300 transition-transform ${isLocationOpen ? 'rotate-180' : ''}`} />
+                                                <ChevronDown className={`w-4 h-4 text-slate-300 transition-transform duration-300 ${isLocationOpen ? 'rotate-180 text-[#FFBF00]' : ''}`} />
                                             </div>
 
                                             <AnimatePresence>
                                                 {isLocationOpen && (
                                                     <m.div
-                                                        initial={{ opacity: 0, y: 10 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        exit={{ opacity: 0, y: 10 }}
-                                                        className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 shadow-2xl rounded-2xl z-[70] flex flex-col max-h-[300px] overflow-hidden"
+                                                        initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                        exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                                                        className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 shadow-2xl rounded-2xl z-[70] flex flex-col max-h-[350px] overflow-hidden"
                                                     >
-                                                        <div className="p-4 border-b border-slate-50 flex items-center gap-2">
-                                                            <Search className="w-4 h-4 text-slate-300" />
+                                                        <div className="p-4 border-b border-slate-50 flex items-center gap-2 bg-slate-50/50">
+                                                            <Search className="w-4 h-4 text-slate-400" />
                                                             <input 
                                                                 autoFocus
                                                                 type="text"
-                                                                placeholder="Cari kota..."
+                                                                placeholder="Cari wilayah (misal: Jakarta, Bandung...)"
                                                                 value={citySearch}
                                                                 onChange={(e) => setCitySearch(e.target.value)}
-                                                                className="w-full bg-transparent border-none outline-none text-sm font-semibold text-[#0A1128]"
+                                                                className="w-full bg-transparent border-none outline-none text-sm font-semibold text-[#0A1128] placeholder:text-slate-300"
                                                             />
                                                         </div>
                                                         <div className="flex-1 overflow-y-auto p-2 no-scrollbar bg-white">
-                                                            {filteredCities.map((city) => (
-                                                                <button
-                                                                    key={city}
-                                                                    onClick={() => {
-                                                                        setKota(city);
-                                                                        setIsDirty(true);
-                                                                        setIsLocationOpen(false);
-                                                                    }}
-                                                                    className="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 flex items-center justify-between group/item"
-                                                                >
-                                                                    <span className="text-xs font-bold text-slate-600 group-hover/item:text-[#0A1128] transition-colors uppercase tracking-widest">{city}</span>
-                                                                    {kota === city && <Check className="w-3.5 h-3.5 text-[#FFBF00]" />}
-                                                                </button>
-                                                            ))}
+                                                            {filteredCities.length > 0 ? (
+                                                                filteredCities.map((city) => (
+                                                                    <button
+                                                                        key={city}
+                                                                        onClick={() => {
+                                                                            setKota(city);
+                                                                            setIsDirty(true);
+                                                                            setIsLocationOpen(false);
+                                                                            setSaveStatus(null);
+                                                                        }}
+                                                                        className={`w-full text-left px-4 py-3.5 rounded-xl transition-all flex items-center justify-between group/item ${
+                                                                            kota === city ? 'bg-[#FFBF00]/10' : 'hover:bg-slate-50'
+                                                                        }`}
+                                                                    >
+                                                                        <span className={`text-[11px] font-black uppercase tracking-wider transition-colors ${
+                                                                            kota === city ? 'text-[#0A1128]' : 'text-slate-500 group-hover/item:text-[#0A1128]'
+                                                                        }`}>{city}</span>
+                                                                        {kota === city && <Check className="w-4 h-4 text-[#FFBF00]" strokeWidth={3} />}
+                                                                    </button>
+                                                                ))
+                                                            ) : (
+                                                                <div className="py-10 text-center space-y-2">
+                                                                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Wilayah tidak ditemukan</p>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </m.div>
                                                 )}
