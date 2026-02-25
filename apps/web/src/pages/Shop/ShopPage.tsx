@@ -321,19 +321,19 @@ export const ShopPage: React.FC = () => {
                                             <h4 className="text-lg font-black text-[#0A1128] mb-4 line-clamp-1 italic uppercase group-hover:text-[#FFBF00] transition-colors">{product.nama_produk}</h4>
                                             
                                             <div className="mt-auto space-y-4">
-                                                <div className="pt-4 border-t border-slate-50 flex justify-between items-start">
-                                                    <div>
-                                                        <p className="text-[8px] font-black text-[#FFBF00] uppercase tracking-widest mb-1">Harga Mulai</p>
-                                                        <p className="text-xl font-black text-[#0A1128]">
+                                                <div className="pt-4 border-t border-slate-50 flex items-start gap-3">
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-[8px] font-black text-[#FFBF00] uppercase tracking-widest mb-1 truncate">Harga Mulai</p>
+                                                        <p className="text-xl font-black text-[#0A1128] truncate">
                                                             {product.harga_estimasi && !isNaN(Number(product.harga_estimasi)) 
                                                                 ? formatCurrency(product.harga_estimasi) 
                                                                 : (product.harga_estimasi || 'Tanya Harga')}
                                                         </p>
                                                     </div>
                                                     
-                                                    {/* Wishlist Count - Positioned opposite to price label */}
+                                                    {/* Safe-Positioned Wishlist Count */}
                                                     {product.wishlist_count > 0 && (
-                                                        <div className="flex items-center gap-1 text-rose-500 mt-1">
+                                                        <div className="flex items-center gap-1 text-rose-500 mt-1 bg-rose-50/50 px-2 py-1 rounded-md flex-shrink-0">
                                                             <Heart className="w-3 h-3 fill-current" />
                                                             <span className="text-[10px] font-black">{formatAbbreviatedNumber(product.wishlist_count)}</span>
                                                         </div>
@@ -384,10 +384,10 @@ export const ShopPage: React.FC = () => {
                                         </div>
 
                                         <div className="px-6 pt-12 pb-6 flex flex-col flex-1">
-                                            <div className="flex justify-between items-start mb-1">
-                                                <h3 className="text-xl font-black text-[#0A1128] group-hover:text-[#FFBF00] transition-colors truncate flex-1">{merchant.nama_toko}</h3>
+                                            <div className="flex items-start gap-3 mb-1">
+                                                <h3 className="text-xl font-black text-[#0A1128] group-hover:text-[#FFBF00] transition-colors truncate flex-1 min-w-0">{merchant.nama_toko}</h3>
                                                 {merchant.wishlist_count > 0 && (
-                                                    <div className="flex items-center gap-1 text-rose-500 ml-2 mt-1">
+                                                    <div className="flex items-center gap-1 text-rose-500 mt-1.5 flex-shrink-0 bg-rose-50/50 px-2 py-0.5 rounded-md">
                                                         <Heart className="w-3.5 h-3.5 fill-current" />
                                                         <span className="text-[10px] font-black">{formatAbbreviatedNumber(merchant.wishlist_count)}</span>
                                                     </div>
