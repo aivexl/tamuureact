@@ -1569,17 +1569,25 @@ export default {
                     const owner = await env.DB.prepare('SELECT user_id FROM shop_merchants WHERE id = ?').bind(merchant_id).first();
                     if (!owner || owner.user_id !== user_id) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 403 });
 
-                    // 1. Update Core Merchant Info - THE ONLY SOURCE OF TRUTH FOR 'KOTA'
+                    // 1. Update Core Merchant Info - HIGH INTEGRITY BINDING
                     await env.DB.prepare(`
                         UPDATE shop_merchants 
                         SET nama_toko = ?, deskripsi = ?, logo_url = ?, banner_url = ?, category_id = ?, kota = ?, updated_at = CURRENT_TIMESTAMP
                         WHERE id = ?
-                    `).bind(nama_toko, deskripsi, logo_url, banner_url, category_id, kota, merchant_id).run();
+                    `).bind(
+                        nama_toko || '', 
+                        deskripsi || '', 
+                        logo_url || null, 
+                        banner_url || null, 
+                        category_id || '', 
+                        kota || '', 
+                        merchant_id
+                    ).run();
 
-                    // 2. Update Contacts Info (excluding kota to avoid desync)
+                    // 2. Update Contacts Info - ATOMIC SYNC
                     await env.DB.prepare(`
-                        INSERT INTO shop_contacts (merchant_id, whatsapp, instagram, facebook, tiktok, website, email, alamat)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        INSERT INTO shop_contacts (merchant_id, whatsapp, instagram, facebook, tiktok, website, email, alamat, kota)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT(merchant_id) DO UPDATE SET
                             whatsapp = EXCLUDED.whatsapp, 
                             instagram = EXCLUDED.instagram, 
@@ -1588,8 +1596,19 @@ export default {
                             website = EXCLUDED.website, 
                             email = EXCLUDED.email,
                             alamat = EXCLUDED.alamat,
+                            kota = EXCLUDED.kota,
                             updated_at = CURRENT_TIMESTAMP
-                    `).bind(merchant_id, whatsapp, instagram, facebook, tiktok, website, email, alamat).run();
+                    `).bind(
+                        merchant_id, 
+                        whatsapp || '', 
+                        instagram || '', 
+                        facebook || '', 
+                        tiktok || '', 
+                        website || '', 
+                        email || '', 
+                        alamat || '',
+                        kota || ''
+                    ).run();
 
                     return json({ success: true, timestamp: Date.now() }, corsHeaders);
                 } catch (error) {
