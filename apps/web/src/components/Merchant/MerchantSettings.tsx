@@ -90,17 +90,16 @@ export const MerchantSettings: React.FC = () => {
     };
 
     const handleSave = async () => {
-        const currentSlug = merchantData?.merchant?.slug;
-        if (!currentSlug || !user?.id) {
+        if (!merchantData?.merchant?.id || !user?.id) {
             toast.error('Identitas toko tidak ditemukan.');
             return;
         }
 
         const loadingToast = toast.loading('Menyimpan perubahan ke Cloudflare...');
         try {
-            console.log('[Settings] Initiating save for slug:', currentSlug);
+            console.log('[Settings] Initiating save for ID:', merchantData.merchant.id);
             await updateProfile({
-                merchantId: currentSlug, 
+                merchantId: merchantData.merchant.id, // Use UUID ID
                 userId: user.id,
                 data: {
                     nama_toko: namaToko,
