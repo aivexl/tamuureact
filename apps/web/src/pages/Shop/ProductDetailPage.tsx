@@ -186,7 +186,11 @@ export const ProductDetailPage: React.FC = () => {
                             <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-6">
                                 <div className="flex items-center gap-5">
                                     <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white border-4 border-white shadow-lg flex-shrink-0">
-                                        <img src={product.logo_url} alt={product.nama_toko} className="w-full h-full object-cover" />
+                                        <img 
+                                            src={product.logo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${product.nama_toko}`} 
+                                            alt={product.nama_toko} 
+                                            className="w-full h-full object-cover" 
+                                        />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h3 className="text-lg font-black text-[#0A1128] truncate">{product.nama_toko}</h3>
@@ -296,11 +300,21 @@ export const ProductDetailPage: React.FC = () => {
                                     key={p.id}
                                     whileHover={{ y: -8 }}
                                     onClick={() => navigate(`/shop/${p.merchant_slug}/${p.id}`)}
-                                    className="group cursor-pointer bg-white border border-slate-100 rounded-[2rem] overflow-hidden hover:shadow-xl transition-all"
+                                    className="group cursor-pointer bg-white border border-slate-100 rounded-[2rem] overflow-hidden hover:shadow-xl transition-all relative"
                                 >
                                     <div className="aspect-[4/5] overflow-hidden">
-                                        <img src={p.images?.[0]?.image_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={p.nama_produk} />
+                                        <img src={p.images?.[0]?.image_url || 'https://images.unsplash.com/photo-1540553016722-983e48a2cd10?auto=format&fit=crop&q=80'} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={p.nama_produk} />
                                     </div>
+                                    
+                                    {/* Small Merchant Floating Initial/Logo */}
+                                    <div className="absolute top-4 left-4 w-8 h-8 rounded-lg overflow-hidden border-2 border-white shadow-md z-10 bg-white">
+                                        <img 
+                                            src={p.logo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${p.nama_toko}`} 
+                                            className="w-full h-full object-cover" 
+                                            alt="M" 
+                                        />
+                                    </div>
+
                                     <div className="p-6 space-y-2">
                                         <p className="text-[10px] font-black text-[#FFBF00] uppercase tracking-widest truncate">{p.nama_toko}</p>
                                         <h4 className="text-sm font-black text-[#0A1128] uppercase truncate group-hover:text-[#FFBF00] transition-colors">{p.nama_produk}</h4>
