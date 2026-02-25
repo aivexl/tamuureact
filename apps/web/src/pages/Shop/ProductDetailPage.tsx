@@ -176,7 +176,7 @@ export const ProductDetailPage: React.FC = () => {
                                 <div className="flex items-center gap-1.5 px-3 py-1 bg-rose-50 border border-rose-100 rounded-lg">
                                     <Heart className="w-3 h-3 text-rose-500 fill-rose-500" />
                                     <span className="text-[10px] font-black text-rose-600 uppercase tracking-tighter">
-                                        {formatAbbreviatedNumber(product.wishlist_count || 0)} Love
+                                        {formatAbbreviatedNumber(product.wishlist_count || 0)}
                                     </span>
                                 </div>
                             </div>

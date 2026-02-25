@@ -1135,7 +1135,8 @@ export default {
                     const search = url.searchParams.get('q');
 
                     let query = `
-                        SELECT m.id, m.nama_toko, m.slug, m.logo_url, m.banner_url, m.is_sponsored, m.kota, c.nama_kategori 
+                        SELECT m.id, m.nama_toko, m.slug, m.logo_url, m.banner_url, m.is_sponsored, m.kota, c.nama_kategori,
+                        (SELECT COUNT(*) FROM shop_wishlist sw JOIN shop_products sp ON sw.product_id = sp.id WHERE sp.merchant_id = m.id) as wishlist_count
                         FROM shop_merchants m 
                         LEFT JOIN shop_category c ON m.category_id = c.id
                         WHERE m.is_verified = 1
@@ -1169,7 +1170,8 @@ export default {
                     const city = url.searchParams.get('city');
 
                     let query = `
-                        SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url 
+                        SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url,
+                        (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count
                         FROM shop_products p 
                         JOIN shop_merchants m ON p.merchant_id = m.id
                         WHERE p.status = 'PUBLISHED' AND m.is_verified = 1
