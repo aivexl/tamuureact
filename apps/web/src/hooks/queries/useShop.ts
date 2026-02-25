@@ -202,3 +202,19 @@ export const useMerchantAnalytics = (merchantId?: string) => {
         refetchInterval: 60000 // Refetch every minute for "Live" feel
     });
 };
+
+export const useMerchantStats = (merchantId?: string) => {
+    return useQuery({
+        queryKey: ['merchant_stats', merchantId],
+        queryFn: () => shop.getMerchantStats(merchantId!),
+        enabled: !!merchantId
+    });
+};
+
+export const useSmartRecommendations = (productId?: string, category?: string) => {
+    return useQuery({
+        queryKey: ['shop_recommendations', productId],
+        queryFn: () => shop.getRecommendations(productId!, category!),
+        enabled: !!productId && !!category
+    });
+};

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { m, AnimatePresence } from 'framer-motion';
 import {
@@ -11,16 +11,19 @@ import {
     Sparkles,
     ShieldCheck,
     Truck,
-    Clock,
-    ShoppingCart,
     MapPin,
-    Tag
+    Tag,
+    ShoppingBag,
+    Star
 } from 'lucide-react';
 import {
     useProductDetails,
     useTrackInteraction,
     useToggleWishlist,
-    useWishlist
+    useWishlist,
+    useMerchantProducts,
+    useMerchantStats,
+    useSmartRecommendations
 } from '../../hooks/queries/useShop';
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
 import { useStore } from '../../store/useStore';
@@ -34,12 +37,22 @@ export const ProductDetailPage: React.FC = () => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const { user } = useStore();
 
-    const { data: product, isLoading } = useProductDetails(productId || '');
+    // Data Fetching
+    const { data: product, isLoading: isLoadingProduct } = useProductDetails(productId || '');
     const { data: wishlist = [] } = useWishlist(user?.id);
+    const { data: merchantProducts = [] } = useMerchantProducts(product?.merchant_id);
+    const { data: merchantStats } = useMerchantStats(product?.merchant_id);
+    const { data: recommendations = [] } = useSmartRecommendations(productId, product?.kategori_produk);
+    
     const toggleWishlistMutation = useToggleWishlist();
     const track = useTrackInteraction();
 
     const isWishlisted = wishlist.some((item: any) => item.id === productId);
+
+    // Filter other products from same merchant
+    const otherProducts = useMemo(() => 
+        (merchantProducts || []).filter((p: any) => p.id !== productId).slice(0, 10),
+    [merchantProducts, productId]);
 
     useSEO({
         title: product ? `${product.nama_produk} | Tamuu Shop` : 'Product Details - Tamuu Shop',
@@ -52,16 +65,8 @@ export const ProductDetailPage: React.FC = () => {
         }
     }, [product?.id]);
 
-    if (isLoading) return <div className="min-h-screen bg-white flex items-center justify-center"><PremiumLoader color="#0A1128" /></div>;
-    if (!product) return <div className="min-h-screen bg-white flex flex-col items-center justify-center text-[#0A1128]">
-        <h2 className="text-2xl font-black mb-4">Produk Tidak Ditemukan</h2>
-        <button onClick={() => navigate(`/shop/${slug}`)} className="text-[#FFBF00] font-bold">Kembali ke Toko</button>
-    </div>;
-
-    const images = product.images || [];
-
     const handleWhatsApp = () => {
-        const text = `Halo, saya tertarik dengan produk ${product.nama_produk} di Tamuu Shop. Apakah masih tersedia?`;
+        const text = `Halo, saya tertarik dengan produk ${product?.nama_produk} di Tamuu Shop. Apakah masih tersedia?`;
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     };
 
@@ -78,167 +83,233 @@ export const ProductDetailPage: React.FC = () => {
         });
     };
 
+    if (isLoadingProduct) return <div className="min-h-screen bg-white flex items-center justify-center"><PremiumLoader color="#0A1128" /></div>;
+    if (!product) return <div className="min-h-screen bg-white flex flex-col items-center justify-center text-[#0A1128]">
+        <h2 className="text-2xl font-black mb-4">Produk Tidak Ditemukan</h2>
+        <button onClick={() => navigate(`/shop/${slug}`)} className="text-[#FFBF00] font-bold">Kembali ke Toko</button>
+    </div>;
+
+    const images = product.images || [];
+
     return (
         <div className="min-h-screen bg-white text-[#0A1128] font-sans selection:bg-[#FFBF00] selection:text-[#0A1128]">
-            {/* Action Bar */}
-            <div className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex justify-between items-center pointer-events-none">
-                <m.button
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
+            {/* Minimal Action Bar */}
+            <div className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-xl border-b border-slate-50">
+                <button
                     onClick={() => navigate(`/shop/${slug}`)}
-                    className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white/40 backdrop-blur-xl border border-slate-200 pointer-events-auto hover:bg-white/60 transition-all shadow-sm"
+                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 hover:bg-slate-100 transition-all"
                 >
-                    <ArrowLeft className="w-5 h-5 text-[#0A1128]" />
-                </m.button>
-                <m.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="flex gap-2 pointer-events-auto"
-                >
-                    <button className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white/40 backdrop-blur-xl border border-slate-200 hover:bg-white/60 transition-all shadow-sm">
+                    <ArrowLeft className="w-5 h-5" />
+                </button>
+                <div className="flex gap-2">
+                    <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 hover:bg-slate-100 transition-all">
                         <Share2 className="w-5 h-5 text-[#FFBF00]" />
                     </button>
-                </m.div>
+                </div>
             </div>
 
-            <main className="pb-40">
-                {/* Image Carousel */}
-                <div className="relative h-[60vh] md:h-[70vh] w-full group overflow-hidden">
-                    <AnimatePresence mode="wait">
-                        <m.img
-                            key={currentImageIndex}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.5 }}
-                            src={images[currentImageIndex]?.image_url || 'https://images.unsplash.com/photo-1540553016722-983e48a2cd10?auto=format&fit=crop&q=80'}
-                            alt={product.nama_produk}
-                            className="w-full h-full object-cover grayscale-[10%]"
-                        />
-                    </AnimatePresence>
-                    <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent opacity-60" />
+            <main className="pt-24 pb-40">
+                <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16">
+                    {/* LEFT: Image Gallery - Constrained Size */}
+                    <div className="space-y-6">
+                        <div className="relative aspect-square max-h-[550px] w-full rounded-[2.5rem] overflow-hidden bg-slate-50 border border-slate-100 group shadow-sm">
+                            <AnimatePresence mode="wait">
+                                <m.img
+                                    key={currentImageIndex}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    src={images[currentImageIndex]?.image_url || 'https://images.unsplash.com/photo-1540553016722-983e48a2cd10?auto=format&fit=crop&q=80'}
+                                    alt={product.nama_produk}
+                                    className="w-full h-full object-cover"
+                                />
+                            </AnimatePresence>
+                            
+                            {images.length > 1 && (
+                                <>
+                                    <button
+                                        onClick={() => setCurrentImageIndex(prev => (prev > 0 ? prev - 1 : images.length - 1))}
+                                        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-sm"
+                                    >
+                                        <ChevronLeft className="w-5 h-5" />
+                                    </button>
+                                    <button
+                                        onClick={() => setCurrentImageIndex(prev => (prev < images.length - 1 ? prev + 1 : 0))}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-sm"
+                                    >
+                                        <ChevronRight className="w-5 h-5" />
+                                    </button>
+                                </>
+                            )}
+                        </div>
 
-                    {/* Carousel Controls */}
-                    {images.length > 1 && (
-                        <>
-                            <button
-                                onClick={() => setCurrentImageIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1))}
-                                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center hover:bg-white/40 transition-all opacity-0 group-hover:opacity-100 shadow-sm"
-                            >
-                                <ChevronLeft className="w-6 h-6 text-[#0A1128]" />
-                            </button>
-                            <button
-                                onClick={() => setCurrentImageIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0))}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center hover:bg-white/40 transition-all opacity-0 group-hover:opacity-100 shadow-sm"
-                            >
-                                <ChevronRight className="w-6 h-6 text-[#0A1128]" />
-                            </button>
+                        {/* Thumbnails */}
+                        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+                            {images.map((img: any, idx: number) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => setCurrentImageIndex(idx)}
+                                    className={`relative w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all flex-shrink-0 ${
+                                        idx === currentImageIndex ? 'border-[#FFBF00]' : 'border-transparent opacity-60'
+                                    }`}
+                                >
+                                    <img src={img.image_url} className="w-full h-full object-cover" alt="Thumb" />
+                                </button>
+                            ))}
+                        </div>
+                    </div>
 
-                            {/* Pagination Dots */}
-                            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-2">
-                                {images.map((_: any, i: number) => (
-                                    <div
-                                        key={i}
-                                        className={`h-1.5 rounded-full transition-all duration-300 ${i === currentImageIndex ? 'w-8 bg-[#FFBF00]' : 'w-1.5 bg-slate-200'}`}
-                                    />
-                                ))}
-                            </div>
-                        </>
-                    )}
-                </div>
-
-                {/* Content */}
-                <div className="max-w-4xl mx-auto px-6 -mt-8 relative z-10">
-                    <m.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="bg-white rounded-t-[3rem] pt-12 pb-8"
-                    >
-                        <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-10">
-                            <div className="space-y-4">
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-100 rounded-full">
-                                        <Sparkles className="w-3 h-3 text-[#FFBF00]" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Premium Choice</span>
-                                    </div>
-                                    {product.kategori_produk && (
-                                        <div className="flex items-center gap-2 px-3 py-1 bg-[#FFBF00]/5 border border-[#FFBF00]/10 rounded-full">
-                                            <Tag className="w-3 h-3 text-[#FFBF00]" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-[#FFBF00]">{product.kategori_produk}</span>
-                                        </div>
-                                    )}
-                                    {product.kota && (
-                                        <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-100 rounded-full">
-                                            <MapPin className="w-3 h-3 text-slate-400" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{product.kota}</span>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="space-y-1">
-                                    <h2 className="text-3xl md:text-4xl font-black tracking-tight leading-tight text-[#0A1128] uppercase">{product.nama_produk}</h2>
-                                    <p className="text-[10px] text-slate-300 font-bold uppercase tracking-[0.3em]">Vault ID: {product.id}</p>
-                                </div>
-                            </div>
-                            <div className="text-left md:text-right">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Estimasi Harga</p>
-                                <span className="text-3xl md:text-4xl font-black text-[#0A1128] tracking-tighter">
-                                    {product.harga_estimasi || 'Tanyakan Harga'}
+                    {/* RIGHT: Product Info */}
+                    <div className="flex flex-col">
+                        <div className="space-y-6">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <span className="px-3 py-1 rounded-lg bg-[#FFBF00]/10 text-[#FFBF00] text-[9px] font-black uppercase tracking-widest border border-[#FFBF00]/20">
+                                    {product.kategori_produk}
+                                </span>
+                                <span className="px-3 py-1 rounded-lg bg-slate-50 text-slate-400 text-[9px] font-black uppercase tracking-widest border border-slate-100 flex items-center gap-1">
+                                    <MapPin className="w-3 h-3" /> {product.kota}
                                 </span>
                             </div>
-                        </div>
 
-                        {/* Merchant Link Card */}
-                        <Link
-                            to={`/shop/${slug}`}
-                            className="flex items-center justify-between p-6 bg-slate-50 border border-slate-100 rounded-3xl mb-12 hover:border-[#FFBF00]/30 transition-all group shadow-sm"
-                        >
-                            <div className="flex items-center gap-5">
-                                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-white border border-slate-100 shadow-sm">
-                                    <img src={product.logo_url} alt="Merchant" className="w-full h-full object-cover" />
-                                </div>
-                                <div className="space-y-0.5">
-                                    <p className="text-[10px] text-slate-400 uppercase tracking-widest font-black">Official Merchant</p>
-                                    <p className="font-bold text-[#0A1128] group-hover:text-[#FFBF00] transition-colors">{product.nama_toko}</p>
-                                </div>
+                            <h1 className="text-4xl font-black text-[#0A1128] uppercase tracking-tight italic leading-none">{product.nama_produk}</h1>
+                            
+                            <div className="py-6 border-y border-slate-50">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Estimasi Harga</p>
+                                <p className="text-4xl font-black text-[#0A1128] tracking-tighter">
+                                    {product.harga_estimasi && !isNaN(Number(product.harga_estimasi)) 
+                                        ? formatCurrency(product.harga_estimasi) 
+                                        : (product.harga_estimasi || 'Tanyakan Harga')}
+                                </p>
                             </div>
-                            <div className="w-12 h-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-300 group-hover:text-[#FFBF00] group-hover:border-[#FFBF00]/30 transition-all shadow-sm">
-                                <ChevronRight className="w-6 h-6" />
-                            </div>
-                        </Link>
 
-                        {/* Description */}
-                        <div className="space-y-6 mb-16">
-                            <div className="flex items-center gap-3">
-                                <div className="h-4 w-1 bg-[#FFBF00] rounded-full" />
-                                <h3 className="text-sm font-black uppercase tracking-widest text-[#0A1128]">Spesifikasi & Deskripsi</h3>
+                            {/* Enhanced Merchant Card */}
+                            <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-6">
+                                <div className="flex items-center gap-5">
+                                    <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white border-4 border-white shadow-lg flex-shrink-0">
+                                        <img src={product.logo_url} alt={product.nama_toko} className="w-full h-full object-cover" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="text-lg font-black text-[#0A1128] truncate">{product.nama_toko}</h3>
+                                        <div className="flex items-center gap-4 mt-1">
+                                            <div className="flex items-center gap-1">
+                                                <ShoppingBag className="w-3 h-3 text-slate-400" />
+                                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">
+                                                    {merchantStats?.total_products || 0} Produk
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <Heart className="w-3 h-3 text-rose-400 fill-rose-400" />
+                                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">
+                                                    {merchantStats?.total_wishlist || 0} Love
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <Link to={`/shop/${slug}`} className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center hover:bg-[#0A1128] hover:text-white transition-all shadow-sm">
+                                        <ChevronRight className="w-5 h-5" />
+                                    </Link>
+                                </div>
                             </div>
-                            <div className="bg-slate-50 border border-slate-100 p-8 rounded-[2.5rem] text-slate-600 text-sm leading-relaxed font-medium">
-                                {product.deskripsi}
+
+                            {/* Horizontal Grid: Other Products from Store */}
+                            {otherProducts.length > 0 && (
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <h3 className="text-xs font-black uppercase tracking-widest text-[#0A1128]">Produk Lain Dari Toko Ini</h3>
+                                    </div>
+                                    <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 -mx-2 px-2">
+                                        {otherProducts.map((p: any) => (
+                                            <m.div
+                                                key={p.id}
+                                                whileHover={{ y: -4 }}
+                                                onClick={() => navigate(`/shop/${slug}/${p.id}`)}
+                                                className="w-40 flex-shrink-0 cursor-pointer group"
+                                            >
+                                                <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 mb-2 relative">
+                                                    <img src={p.images?.[0]?.image_url} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt={p.nama_produk} />
+                                                </div>
+                                                <p className="text-[10px] font-black text-[#0A1128] uppercase truncate leading-tight">{p.nama_produk}</p>
+                                                <p className="text-[9px] font-bold text-[#FFBF00]">{p.harga_estimasi && !isNaN(Number(p.harga_estimasi)) ? formatCurrency(p.harga_estimasi) : p.harga_estimasi}</p>
+                                            </m.div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* BOTTOM CONTENT SECTION */}
+                <div className="max-w-7xl mx-auto px-6 mt-20 space-y-24">
+                    {/* Description Section */}
+                    <div className="space-y-8">
+                        <div className="flex items-center gap-3">
+                            <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
+                            <h2 className="text-xl font-black uppercase tracking-tighter italic">Deskripsi Produk</h2>
+                        </div>
+                        <div className="p-10 bg-slate-50 rounded-[3rem] border border-slate-100 text-slate-600 text-lg leading-relaxed font-medium max-w-4xl">
+                            {product.deskripsi}
+                        </div>
+                    </div>
+
+                    {/* Features Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-sm flex items-center gap-6">
+                            <div className="w-14 h-14 rounded-2xl bg-teal-50 text-teal-500 flex items-center justify-center">
+                                <ShieldCheck className="w-8 h-8" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kualitas</p>
+                                <p className="text-sm font-bold text-[#0A1128]">Terverifikasi Tamuu</p>
                             </div>
                         </div>
-
-                        {/* Specs / Features Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-20">
-                            <div className="p-6 bg-white border border-slate-100 rounded-3xl flex items-center gap-5 shadow-sm">
-                                <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-500">
-                                    <ShieldCheck className="w-6 h-6" />
-                                </div>
-                                <div className="space-y-0.5">
-                                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest">Quality Assurance</p>
-                                    <p className="text-xs font-bold text-[#0A1128]">Terjamin & Terverifikasi</p>
-                                </div>
+                        <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-sm flex items-center gap-6">
+                            <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center">
+                                <Truck className="w-8 h-8" />
                             </div>
-                            <div className="p-6 bg-white border border-slate-100 rounded-3xl flex items-center gap-5 shadow-sm">
-                                <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-500">
-                                    <Truck className="w-6 h-6" />
-                                </div>
-                                <div className="space-y-0.5">
-                                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest">Global Delivery</p>
-                                    <p className="text-xs font-bold text-[#0A1128]">Layanan Cepat & Aman</p>
-                                </div>
+                            <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Respon</p>
+                                <p className="text-sm font-bold text-[#0A1128]">Vendor Responsif</p>
                             </div>
                         </div>
-                    </m.div>
+                        <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-sm flex items-center gap-6">
+                            <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center">
+                                <Star className="w-8 h-8" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Rating</p>
+                                <p className="text-sm font-bold text-[#0A1128]">Pilihan Terpercaya</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* SMART RECOMMENDATIONS SECTION */}
+                    <div className="space-y-10">
+                        <div className="flex items-center gap-3">
+                            <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
+                            <h2 className="text-xl font-black uppercase tracking-tighter italic">Saran Produk Sejenis</h2>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                            {recommendations.slice(0, 4).map((p: any) => (
+                                <m.div
+                                    key={p.id}
+                                    whileHover={{ y: -8 }}
+                                    onClick={() => navigate(`/shop/${p.merchant_slug}/${p.id}`)}
+                                    className="group cursor-pointer bg-white border border-slate-100 rounded-[2rem] overflow-hidden hover:shadow-xl transition-all"
+                                >
+                                    <div className="aspect-[4/5] overflow-hidden">
+                                        <img src={p.images?.[0]?.image_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={p.nama_produk} />
+                                    </div>
+                                    <div className="p-6 space-y-2">
+                                        <p className="text-[10px] font-black text-[#FFBF00] uppercase tracking-widest truncate">{p.nama_toko}</p>
+                                        <h4 className="text-sm font-black text-[#0A1128] uppercase truncate group-hover:text-[#FFBF00] transition-colors">{p.nama_produk}</h4>
+                                        <p className="text-lg font-black text-[#0A1128] tracking-tight">{p.harga_estimasi && !isNaN(Number(p.harga_estimasi)) ? formatCurrency(p.harga_estimasi) : p.harga_estimasi}</p>
+                                    </div>
+                                </m.div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </main>
 

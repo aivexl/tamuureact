@@ -1132,6 +1132,20 @@ export const shop = {
         return res.json();
     },
 
+    async getMerchantStats(merchantId: string) {
+        const res = await safeFetch(`${API_BASE}/api/shop/merchant/stats?merchant_id=${merchantId}`);
+        if (!res.ok) throw new Error('Failed to fetch merchant stats');
+        const data = await res.json();
+        return sanitizeValue(data.stats);
+    },
+
+    async getRecommendations(productId: string, category: string) {
+        const res = await safeFetch(`${API_BASE}/api/shop/products/recommendations?product_id=${productId}&category=${encodeURIComponent(category)}`);
+        if (!res.ok) throw new Error('Failed to fetch recommendations');
+        const data = await res.json();
+        return sanitizeValue(data.products || []);
+    },
+
     // ANALYTICS
     async getMerchantAnalytics(merchantId: string) {
         if (!merchantId) return null;

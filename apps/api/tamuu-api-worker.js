@@ -1211,6 +1211,74 @@ export default {
                 }
             }
 
+            // 5d. PUBLIC DISCOVERY: Merchant Stats (Products & Love Count)
+            if (path === '/api/shop/merchant/stats' && method === 'GET') {
+                try {
+                    const merchantId = url.searchParams.get('merchant_id');
+                    if (!merchantId) return json({ error: 'Missing merchant_id' }, { ...corsHeaders, status: 400 });
+
+                    const stats = await env.DB.prepare(`
+                        SELECT 
+                            (SELECT COUNT(*) FROM shop_products WHERE merchant_id = ? AND status = 'PUBLISHED') as total_products,
+                            (SELECT COUNT(*) FROM shop_wishlist sw JOIN shop_products sp ON sw.product_id = sp.id WHERE sp.merchant_id = ?) as total_wishlist
+                    `).bind(merchantId, merchantId).first();
+
+                    return json({ success: true, stats }, corsHeaders);
+                } catch (error) {
+                    return json({ error: 'Failed to fetch stats' }, { ...corsHeaders, status: 500 });
+                }
+            }
+
+            // 5e. PUBLIC DISCOVERY: Smart Recommendations
+            if (path === '/api/shop/products/recommendations' && method === 'GET') {
+                try {
+                    const productId = url.searchParams.get('product_id');
+                    const category = url.searchParams.get('category');
+                    const limit = 8;
+
+                    // Step 1: Try Same Category (Excluding current product)
+                    let products = await env.DB.prepare(`
+                        SELECT p.*, m.nama_toko, m.slug as merchant_slug 
+                        FROM shop_products p
+                        JOIN shop_merchants m ON p.merchant_id = m.id
+                        WHERE p.kategori_produk = ? AND p.id != ? AND p.status = 'PUBLISHED' AND m.is_verified = 1
+                        LIMIT ?
+                    `).bind(category, productId, limit).all();
+
+                    // Step 2: Fallback to Global Popular/Newest if not enough results
+                    if (products.results.length < 4) {
+                        const remaining = limit - products.results.length;
+                        const fallback = await env.DB.prepare(`
+                            SELECT p.*, m.nama_toko, m.slug as merchant_slug 
+                            FROM shop_products p
+                            JOIN shop_merchants m ON p.merchant_id = m.id
+                            WHERE p.id != ? AND p.kategori_produk != ? AND p.status = 'PUBLISHED' AND m.is_verified = 1
+                            ORDER BY p.created_at DESC LIMIT ?
+                        `).bind(productId, category, remaining).all();
+                        
+                        products.results = [...products.results, ...fallback.results];
+                    }
+
+                    // Fetch images for recommendations
+                    const pIds = products.results.map(p => p.id);
+                    let pImages = [];
+                    if (pIds.length > 0) {
+                        const placeholders = pIds.map(() => '?').join(',');
+                        const imgRes = await env.DB.prepare(`SELECT * FROM shop_product_images WHERE product_id IN (${placeholders})`).bind(...pIds).all();
+                        pImages = imgRes.results;
+                    }
+
+                    const finalProducts = products.results.map(p => ({
+                        ...p,
+                        images: pImages.filter(img => img.product_id === p.id)
+                    }));
+
+                    return json({ success: true, products: finalProducts }, corsHeaders);
+                } catch (error) {
+                    return json({ error: 'Failed to fetch recommendations' }, { ...corsHeaders, status: 500 });
+                }
+            }
+
             // 5c. PUBLIC DISCOVERY: Shop Carousel
             if (path === '/api/shop/carousel' && method === 'GET') {
                 try {
