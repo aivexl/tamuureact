@@ -171,7 +171,7 @@ export const MerchantSettings: React.FC = () => {
             setIsInitialized(false); 
             setIsDirty(false);
             setSaveStatus('success');
-            toast.success('Pengaturan berhasil diperbarui secara permanen!');
+            toast.success('Pengaturan berhasil diperbarui secara permanen!', { id: loadingToast });
 
         } catch (error: any) {
             console.error('[Settings] Save Exception:', error);
