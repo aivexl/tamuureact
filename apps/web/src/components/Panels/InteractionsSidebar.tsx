@@ -72,52 +72,51 @@ export const InteractionsSidebar: React.FC = () => {
                 <Info className="w-4 h-4 text-white/20 hover:text-white/40 cursor-help" />
             </div>
 
-            {/* Simulation Controls */}
-            <div className="p-4 space-y-4 border-b border-white/10 bg-white/5">
-                <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">Test Guest Name</label>
-                    <div className="relative">
-                        <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/20" />
+            {/* Simulation Controls - Tamuu Signature Architecture */}
+            <div className="p-6 space-y-6 border-b border-white/5 bg-white/[0.02]">
+                <div className="space-y-3">
+                    <label className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] pl-1">Target Recipient</label>
+                    <div className="relative group">
+                        <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/10 group-focus-within:text-premium-accent transition-colors" />
                         <input
                             type="text"
                             value={testName}
                             onChange={(e) => setTestName(e.target.value)}
-                            placeholder="Type a name..."
-                            className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-9 pr-4 text-sm text-white focus:outline-none focus:border-premium-accent/50 transition-colors"
+                            placeholder="Recipient name..."
+                            className="w-full bg-white/[0.03] hover:bg-white/[0.05] border border-white/5 rounded-2xl py-4 pl-12 pr-6 text-sm text-white focus:ring-0 focus:bg-white/[0.08] transition-all duration-500 placeholder:text-white/10"
                         />
                     </div>
                 </div>
 
                 <motion.button
-                    whileHover={{ scale: 1.02, backgroundColor: 'rgba(191, 161, 129, 0.2)' }}
+                    whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleFire}
-                    className="w-full py-4 rounded-xl bg-premium-accent/10 border border-premium-accent/30 flex items-center justify-center gap-3 group overflow-hidden relative shadow-[0_0_20px_rgba(191,161,129,0.1)] hover:shadow-[0_0_30px_rgba(191,161,129,0.2)]"
+                    className="w-full py-4 rounded-2xl bg-premium-accent hover:bg-[#d4ae8b] flex items-center justify-center gap-3 group overflow-hidden relative shadow-2xl shadow-premium-accent/10 transition-all duration-500"
                 >
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                    <Play className="w-4 h-4 text-premium-accent fill-premium-accent" />
-                    <span className="text-sm font-black text-white uppercase tracking-[0.2em] drop-shadow-lg">Fire Blast</span>
+                    <Play className="w-4 h-4 text-slate-900 fill-current" />
+                    <span className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">Deploy Blast</span>
                 </motion.button>
-                <p className="text-[9px] text-white/30 text-center italic">Simulation fires locally on this canvas and any open Preview tabs</p>
+                <p className="text-[8px] text-white/20 text-center uppercase tracking-widest font-bold">Simulation fires locally across edge nodes</p>
             </div>
 
-            {/* Gallery Search & Filter */}
-            <div className="p-4 space-y-3">
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/20" />
+            {/* Gallery Search & Filter - Minimalist Glassmorphism */}
+            <div className="p-6 space-y-5">
+                <div className="relative group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/10 group-focus-within:text-premium-accent transition-colors" />
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search effects..."
-                        className="w-full bg-white/5 border border-white/5 rounded-lg py-2 pl-9 pr-4 text-xs text-white focus:outline-none focus:border-white/20"
+                        placeholder="Filter effects..."
+                        className="w-full bg-white/[0.02] border border-white/5 rounded-full py-3.5 pl-12 pr-6 text-xs text-white placeholder:text-white/10 focus:ring-0 focus:bg-white/[0.05] transition-all duration-500"
                     />
                 </div>
 
-                <div className="flex gap-1 overflow-x-auto no-scrollbar pb-1">
+                <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 -mx-1 px-1">
                     <button
                         onClick={() => setActiveCategory('all')}
-                        className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-medium transition-all ${activeCategory === 'all' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/60 hover:bg-white/5'}`}
+                        className={`shrink-0 px-5 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all duration-500 border ${activeCategory === 'all' ? 'bg-white text-slate-900 border-white shadow-xl' : 'text-white/40 border-white/5 hover:border-white/20 hover:bg-white/5'}`}
                     >
                         All
                     </button>
@@ -125,9 +124,8 @@ export const InteractionsSidebar: React.FC = () => {
                         <button
                             key={cat.id}
                             onClick={() => setActiveCategory(cat.id)}
-                            className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-medium transition-all ${activeCategory === cat.id ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/60 hover:bg-white/5'}`}
+                            className={`shrink-0 flex items-center gap-2 px-5 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all duration-500 border ${activeCategory === cat.id ? 'bg-white text-slate-900 border-white shadow-xl' : 'text-white/40 border-white/5 hover:border-white/20 hover:bg-white/5'}`}
                         >
-                            {cat.icon}
                             {cat.name}
                         </button>
                     ))}

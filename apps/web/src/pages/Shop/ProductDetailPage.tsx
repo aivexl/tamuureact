@@ -12,7 +12,9 @@ import {
     ShieldCheck,
     Truck,
     Clock,
-    ShoppingCart
+    ShoppingCart,
+    MapPin,
+    Tag
 } from 'lucide-react';
 import {
     useProductDetails,
@@ -21,7 +23,6 @@ import {
     useWishlist
 } from '../../hooks/queries/useShop';
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
-import { useAuth } from '../../hooks/useAuth';
 import { useStore } from '../../store/useStore';
 import { useSEO } from '../../hooks/useSEO';
 import { formatCurrency } from '../../lib/utils';
@@ -41,8 +42,8 @@ export const ProductDetailPage: React.FC = () => {
     const isWishlisted = wishlist.some((item: any) => item.id === productId);
 
     useSEO({
-        title: product ? `${product.nama_produk} | Tamuu Nexus` : 'Product Details - Tamuu Nexus',
-        description: product?.deskripsi || 'Detail produk terbaik di Tamuu Nexus.'
+        title: product ? `${product.nama_produk} | Tamuu Shop` : 'Product Details - Tamuu Shop',
+        description: product?.deskripsi || 'Detail produk terbaik di Tamuu Shop.'
     });
 
     useEffect(() => {
@@ -60,7 +61,7 @@ export const ProductDetailPage: React.FC = () => {
     const images = product.images || [];
 
     const handleWhatsApp = () => {
-        const text = `Halo, saya tertarik dengan produk ${product.nama_produk} di Tamuu Nexus. Apakah masih tersedia?`;
+        const text = `Halo, saya tertarik dengan produk ${product.nama_produk} di Tamuu Shop. Apakah masih tersedia?`;
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     };
 
@@ -154,21 +155,34 @@ export const ProductDetailPage: React.FC = () => {
                         className="bg-white rounded-t-[3rem] pt-12 pb-8"
                     >
                         <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-10">
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-100 rounded-full w-fit">
-                                    <Sparkles className="w-3 h-3 text-[#FFBF00]" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Premium Choice</span>
+                            <div className="space-y-4">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-100 rounded-full">
+                                        <Sparkles className="w-3 h-3 text-[#FFBF00]" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Premium Choice</span>
+                                    </div>
+                                    {product.kategori_produk && (
+                                        <div className="flex items-center gap-2 px-3 py-1 bg-[#FFBF00]/5 border border-[#FFBF00]/10 rounded-full">
+                                            <Tag className="w-3 h-3 text-[#FFBF00]" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-[#FFBF00]">{product.kategori_produk}</span>
+                                        </div>
+                                    )}
+                                    {product.kota && (
+                                        <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-100 rounded-full">
+                                            <MapPin className="w-3 h-3 text-slate-400" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{product.kota}</span>
+                                        </div>
+                                    )}
                                 </div>
-                                <h2 className="text-3xl md:text-4xl font-black tracking-tight leading-tight text-[#0A1128]">{product.nama_produk}</h2>
+                                <div className="space-y-1">
+                                    <h2 className="text-3xl md:text-4xl font-black tracking-tight leading-tight text-[#0A1128] uppercase">{product.nama_produk}</h2>
+                                    <p className="text-[10px] text-slate-300 font-bold uppercase tracking-[0.3em]">Vault ID: {product.id}</p>
+                                </div>
                             </div>
                             <div className="text-left md:text-right">
-                                {product.is_discount && (
-                                    <span className="text-sm text-slate-300 line-through block mb-1 font-bold">
-                                        {formatCurrency(product.base_price)}
-                                    </span>
-                                )}
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Estimasi Harga</p>
                                 <span className="text-3xl md:text-4xl font-black text-[#0A1128] tracking-tighter">
-                                    {formatCurrency(product.is_discount ? product.discount_price : product.base_price)}
+                                    {product.harga_estimasi || 'Tanyakan Harga'}
                                 </span>
                             </div>
                         </div>

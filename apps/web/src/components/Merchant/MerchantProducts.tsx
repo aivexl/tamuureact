@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
+import { INDONESIA_REGIONS } from '../../constants/regions';
 import { useStore } from '../../store/useStore';
 import {
     useMerchantProfile,
@@ -9,6 +10,8 @@ import {
     useDeleteMerchantProduct
 } from '../../hooks/queries/useShop';
 import api from '../../lib/api';
+import { formatCurrency } from '../../lib/utils';
+import { Search, MapPin, ChevronDown, Check, X } from 'lucide-react';
 
 // Icons
 const PlusCircleIcon = ({ className }: { className?: string }) => (
@@ -61,6 +64,11 @@ export const MerchantProducts: React.FC = () => {
     const [selectedCategory, setSelectedCategory] = useState('');
     const [customCategory, setCustomCategory] = useState('');
     const [deskripsi, setDeskripsi] = useState('');
+    const [kota, setKota] = useState('Kota Jakarta Selatan');
+
+    // Searchable Kota State
+    const [isKotaOpen, setIsKotaOpen] = useState(false);
+    const [kotaSearchQuery, setKotaSearchQuery] = useState('');
 
     const SHOP_CATEGORIES = [
         'Makeup Artist',
@@ -86,6 +94,8 @@ export const MerchantProducts: React.FC = () => {
         setCustomCategory('');
         setDeskripsi('');
         setImages([]);
+        setKota('Kota Jakarta Selatan');
+        setKotaSearchQuery('');
     };
 
     const handleAddNew = () => {
@@ -109,6 +119,7 @@ export const MerchantProducts: React.FC = () => {
         }
         setDeskripsi(prod.deskripsi || '');
         setImages(prod.images ? prod.images.map((i: any) => i.image_url) : []);
+        setKota(prod.kota || 'Kota Jakarta Selatan');
         setView('edit');
     };
 
@@ -156,7 +167,8 @@ export const MerchantProducts: React.FC = () => {
             harga_estimasi: hargaEstimasi,
             kategori_produk: finalKategori,
             status: finalStatus,
-            images: images
+            images: images,
+            kota: kota
         };
 
         try {
@@ -178,6 +190,13 @@ export const MerchantProducts: React.FC = () => {
     const filteredProducts = products.filter((p: any) =>
         p.nama_produk.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    // Filter regions based on search
+    const filteredRegions = useMemo(() => {
+        const query = kotaSearchQuery.toLowerCase().trim();
+        if (!query) return INDONESIA_REGIONS;
+        return INDONESIA_REGIONS.filter(reg => reg.toLowerCase().includes(query));
+    }, [kotaSearchQuery]);
 
     return (
         <div className="flex flex-col h-full w-full relative bg-white text-slate-900">
@@ -221,27 +240,30 @@ export const MerchantProducts: React.FC = () => {
                                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
                                 className="space-y-10"
                             >
-                                {/* Toolbars */}
-                                <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-                                    <div className="flex items-center gap-4">
-                                        <h3 className="text-lg font-black text-[#0A1128] tracking-tight">
-                                            List Produk/Jasa
-                                        </h3>
-                                        {isLoading && <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-[#FFBF00]"></div>}
+                                {/* Toolbars - Tamuu Signature Minimalist Architecture */}
+                                <div className="flex flex-col sm:flex-row items-center justify-between gap-8 bg-white p-2 rounded-[2.5rem] shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] border border-slate-50">
+                                    <div className="flex items-center gap-6 pl-6">
+                                        <div className="flex flex-col">
+                                            <h3 className="text-sm font-black text-[#0A1128] tracking-tight uppercase">
+                                                Vault Registry
+                                            </h3>
+                                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Manage your digital assets</p>
+                                        </div>
+                                        {isLoading && <div className="animate-spin rounded-full h-3 w-3 border-t-2 border-[#FFBF00]"></div>}
                                     </div>
-                                    <div className="flex gap-3 w-full sm:w-auto">
-                                        <div className="relative flex-1 sm:w-80">
-                                            <SearchIcon className="absolute left-4 top-3.5 text-slate-400 w-4 h-4" />
+                                    <div className="flex gap-3 w-full sm:w-auto pr-2">
+                                        <div className="relative flex-1 sm:w-96">
+                                            <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
                                             <input
                                                 type="text"
                                                 value={searchQuery}
                                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                                placeholder="Cari..."
-                                                className="w-full pl-11 pr-5 py-3.5 bg-[#FBFBFB] border border-slate-200 rounded-2xl text-[11px] font-bold text-[#0A1128] placeholder:text-slate-400 focus:outline-none focus:border-[#FFBF00]/30 focus:ring-1 focus:ring-[#FFBF00]/30 transition-all uppercase tracking-widest"
+                                                placeholder="Search registry..."
+                                                className="w-full pl-12 pr-6 py-4 bg-slate-50/50 border-none rounded-[1.8rem] text-xs font-bold text-[#0A1128] placeholder:text-slate-300 focus:ring-0 transition-all uppercase tracking-widest"
                                             />
                                         </div>
-                                        <button className="p-3.5 bg-[#FBFBFB] border border-slate-200 rounded-2xl text-slate-400 hover:text-[#0A1128] transition-all flex-shrink-0 active:scale-95">
-                                            <FilterIcon className="w-5 h-5" />
+                                        <button className="p-4 bg-slate-50/50 hover:bg-slate-100 rounded-2xl text-slate-400 hover:text-[#0A1128] transition-all flex-shrink-0 active:scale-95">
+                                            <FilterIcon className="w-4 h-4" />
                                         </button>
                                     </div>
                                 </div>
@@ -289,16 +311,24 @@ export const MerchantProducts: React.FC = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="p-8 space-y-4">
-                                                <h4 className="text-lg font-black tracking-tight text-white group-hover:text-[#FFBF00] transition-colors line-clamp-1 italic">{prod.nama_produk}</h4>
-                                                <div className="flex items-end justify-between">
-                                                    <div>
+                                            <div className="p-8 space-y-6">
+                                                <h4 className="text-lg font-black tracking-tight text-[#0A1128] group-hover:text-[#FFBF00] transition-colors line-clamp-1 italic">{prod.nama_produk}</h4>
+                                                
+                                                <div className="flex flex-col gap-4">
+                                                    {/* Price Row - Independent to avoid truncation */}
+                                                    <div className="pt-2 border-t border-slate-50">
                                                         <p className="text-[9px] font-black text-[#FFBF00] uppercase tracking-widest mb-1 opacity-60">Harga</p>
-                                                        <p className="text-xl font-black text-white">{prod.harga_estimasi || '-'}</p>
+                                                        <p className="text-xl font-black text-[#0A1128]">
+                                                            {prod.harga_estimasi && !isNaN(Number(prod.harga_estimasi)) 
+                                                                ? formatCurrency(prod.harga_estimasi) 
+                                                                : (prod.harga_estimasi || '-')}
+                                                        </p>
                                                     </div>
-                                                    <div className="text-right">
-                                                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 opacity-60 line-clamp-1 max-w-24 overflow-hidden text-ellipsis">{prod.kategori_produk || 'Umum'}</p>
-                                                        <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">ID: {prod.id.split('-')[0]}</p>
+
+                                                    {/* Meta Row - Below price row */}
+                                                    <div className="flex items-center justify-between gap-4">
+                                                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest opacity-60 line-clamp-1 flex-1">{prod.kategori_produk || 'Umum'}</p>
+                                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest whitespace-nowrap">{prod.kota || 'Nasional'}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -319,8 +349,14 @@ export const MerchantProducts: React.FC = () => {
                                     <div className="lg:col-span-7 space-y-10">
                                         {/* Basic Info Card */}
                                         <div className="bg-[#FBFBFB] rounded-[40px] border border-slate-100 p-10 space-y-8 shadow-sm relative overflow-hidden">
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFBF00]/5 rounded-full blur-3xl" />
-                                            <h4 className="text-lg font-black text-[#0A1128]">Detail <span className="text-[#FFBF00]">Produk/Jasa</span></h4>
+                                            <div className="flex items-center justify-between">
+                                                <h4 className="text-lg font-black text-[#0A1128]">Detail <span className="text-[#FFBF00]">Produk/Jasa</span></h4>
+                                                {view === 'edit' && editingId && (
+                                                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+                                                        Registry ID: {editingId}
+                                                    </span>
+                                                )}
+                                            </div>
 
                                             <div className="space-y-6">
                                                 <div className="space-y-3">
@@ -366,6 +402,83 @@ export const MerchantProducts: React.FC = () => {
                                                             className="w-full mt-3 bg-white border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-1 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40 focus:outline-none transition-all"
                                                         />
                                                     )}
+                                                </div>
+
+                                                <div className="space-y-3">
+                                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Kota/Kabupaten</label>
+                                                    
+                                                    {/* Searchable Region Selector */}
+                                                    <div className="relative">
+                                                        <div 
+                                                            onClick={() => setIsKotaOpen(!isKotaOpen)}
+                                                            className="flex items-center justify-between w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-[#0A1128] cursor-pointer hover:border-[#FFBF00]/40 transition-all shadow-sm"
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <MapPin className="w-4 h-4 text-[#FFBF00]" />
+                                                                <span className="uppercase tracking-tight">{kota}</span>
+                                                            </div>
+                                                            <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isKotaOpen ? 'rotate-180' : ''}`} />
+                                                        </div>
+
+                                                        <AnimatePresence>
+                                                            {isKotaOpen && (
+                                                                <>
+                                                                    <div className="fixed inset-0 z-40" onClick={() => setIsKotaOpen(false)} />
+                                                                    <m.div
+                                                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                                        className="absolute left-0 right-0 mt-3 bg-white border border-slate-100 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] z-50 overflow-hidden flex flex-col max-h-[350px]"
+                                                                    >
+                                                                        <div className="p-4 border-b border-slate-50 sticky top-0 bg-white/80 backdrop-blur-md">
+                                                                            <div className="relative">
+                                                                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                                                                                <input 
+                                                                                    autoFocus
+                                                                                    type="text"
+                                                                                    placeholder="Cari Kota/Kabupaten..."
+                                                                                    value={kotaSearchQuery}
+                                                                                    onChange={(e) => setKotaSearchQuery(e.target.value)}
+                                                                                    className="w-full bg-slate-50 border-none rounded-xl pl-11 pr-4 py-3 text-sm font-bold text-[#0A1128] focus:ring-0 placeholder:text-slate-300"
+                                                                                />
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div className="flex-1 overflow-y-auto p-2 no-scrollbar">
+                                                                            {filteredRegions.length > 0 ? (
+                                                                                filteredRegions.map((reg) => (
+                                                                                    <button
+                                                                                        key={reg}
+                                                                                        onClick={() => {
+                                                                                            setKota(reg);
+                                                                                            setIsKotaOpen(false);
+                                                                                            setKotaSearchQuery('');
+                                                                                        }}
+                                                                                        className={`w-full flex items-center px-4 py-3.5 rounded-2xl text-left transition-all hover:bg-slate-50 group ${
+                                                                                            kota === reg ? 'bg-[#FFBF00]/5 text-[#0A1128]' : 'text-slate-500'
+                                                                                        }`}
+                                                                                    >
+                                                                                        <MapPin className={`w-3.5 h-3.5 mr-3 transition-colors ${
+                                                                                            kota === reg ? 'text-[#FFBF00]' : 'text-slate-200 group-hover:text-[#FFBF00]'
+                                                                                        }`} />
+                                                                                        <span className="text-xs font-bold uppercase tracking-tight">{reg}</span>
+                                                                                        {kota === reg && (
+                                                                                            <Check className="ml-auto w-4 h-4 text-[#FFBF00]" />
+                                                                                        )}
+                                                                                    </button>
+                                                                                ))
+                                                                            ) : (
+                                                                                <div className="py-12 text-center text-slate-300">
+                                                                                    <X className="w-8 h-8 mx-auto mb-2 opacity-20" />
+                                                                                    <p className="text-[10px] font-black uppercase tracking-widest">Region not found</p>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    </m.div>
+                                                                </>
+                                                            )}
+                                                        </AnimatePresence>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

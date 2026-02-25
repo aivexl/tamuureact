@@ -262,37 +262,42 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
                 </button>
             </div>
 
-            {/* Filters & Actions */}
-            <div className="bg-[#111] border border-white/5 rounded-3xl p-6 mb-8">
-                <div className="flex flex-col lg:flex-row gap-4 justify-between">
-                    <div className="flex flex-col md:flex-row gap-4 flex-1">
-                        <div className="relative flex-1 w-full">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                            <input
-                                type="text"
-                                placeholder="Search by name or email..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl pl-11 pr-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-500/30 transition-all font-medium"
-                            />
-                        </div>
+            {/* Filters & Actions - Tamuu Signature Architecture */}
+            <div className="flex flex-col lg:flex-row gap-8 items-center justify-between bg-white/[0.03] p-3 rounded-[3rem] border border-white/5 backdrop-blur-md mb-12">
+                <div className="flex flex-col md:flex-row gap-4 flex-1 w-full pl-2">
+                    <div className="relative flex-1 w-full group">
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-teal-500 transition-colors" />
+                        <input
+                            type="text"
+                            placeholder="Search accounts by name or email..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 rounded-full py-4 pl-14 pr-8 text-white placeholder-white/20 focus:ring-0 focus:bg-white/[0.08] transition-all duration-500 text-xs font-bold uppercase tracking-widest"
+                        />
+                    </div>
+                    
+                    <div className="relative group">
+                        <Filter className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-teal-500 transition-colors pointer-events-none" />
                         <select
                             value={filterTier}
                             onChange={(e) => setFilterTier(e.target.value)}
-                            className="w-full md:w-auto bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-500/30 transition-all font-bold uppercase tracking-widest text-xs outline-none cursor-pointer"
+                            className="w-full md:w-auto bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 rounded-full py-4 pl-14 pr-10 text-white focus:ring-0 focus:bg-white/[0.08] transition-all duration-500 text-[10px] font-black uppercase tracking-widest appearance-none cursor-pointer"
                         >
-                            <option value="all" className="bg-[#111]">All Tiers</option>
-                            <option value="free" className="bg-[#111]">FREE</option>
-                            <option value="vip" className="bg-[#111]">PRO</option>
-                            <option value="platinum" className="bg-[#111]">ULTIMATE</option>
-                            <option value="vvip" className="bg-[#111]">ELITE</option>
+                            <option value="all" className="bg-slate-900 text-white">All Membership Tiers</option>
+                            <option value="free" className="bg-slate-900 text-white">FREE Access</option>
+                            <option value="vip" className="bg-slate-900 text-white">PRO Tier</option>
+                            <option value="platinum" className="bg-slate-900 text-white">ULTIMATE Tier</option>
+                            <option value="vvip" className="bg-slate-900 text-white">ELITE Tier</option>
                         </select>
                     </div>
+                </div>
+                
+                <div className="flex gap-3 w-full lg:w-auto pr-2">
                     <button
                         onClick={fetchUsers}
-                        className="w-full lg:w-auto px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-2xl flex items-center justify-center gap-2 transition-all font-bold text-xs uppercase tracking-widest border border-white/5"
+                        className="flex-1 lg:flex-none px-10 py-4 bg-white/[0.03] hover:bg-white/[0.08] text-white rounded-full font-black text-[10px] uppercase tracking-widest transition-all duration-500 border border-white/5 active:scale-95 whitespace-nowrap"
                     >
-                        Refresh Data
+                        Sync Registry
                     </button>
                 </div>
             </div>

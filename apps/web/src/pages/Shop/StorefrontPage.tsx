@@ -12,9 +12,9 @@ import {
     Facebook,
     Globe,
     Music2,
-    Mail,
     ChevronRight,
-    ShoppingBag
+    ShoppingBag,
+    Tag
 } from 'lucide-react';
 import { useStorefront, useTrackInteraction } from '../../hooks/queries/useShop';
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
@@ -35,8 +35,8 @@ export const StorefrontPage: React.FC = () => {
     const contacts = data?.contacts || {};
 
     useSEO({
-        title: merchant ? `${merchant.nama_toko} | Tamuu Nexus` : 'Storefront - Tamuu Nexus',
-        description: merchant?.deskripsi || 'Kunjungi toko vendor terbaik di Tamuu Nexus.'
+        title: merchant ? `${merchant.nama_toko} | Tamuu Shop` : 'Storefront - Tamuu Shop',
+        description: merchant?.deskripsi || 'Kunjungi toko vendor terbaik di Tamuu Shop.'
     });
 
     useEffect(() => {
@@ -195,29 +195,44 @@ export const StorefrontPage: React.FC = () => {
                                         </div>
                                     </div>
                                     <div className="p-6 space-y-4 flex flex-1 flex-col font-sans">
-                                        <div>
-                                            <h4 className="font-black text-[#0A1128] line-clamp-2 leading-tight group-hover:text-[#FFBF00] transition-colors">
+                                        <div className="space-y-2">
+                                            <h4 className="font-black text-[#0A1128] line-clamp-2 leading-tight group-hover:text-[#FFBF00] transition-colors uppercase tracking-tight">
                                                 {product.nama_produk}
                                             </h4>
                                         </div>
 
-                                        <div className="mt-auto space-y-6">
-                                            <div>
-                                                {product.is_discount && (
-                                                    <span className="text-[10px] text-slate-300 line-through block mb-1 font-bold">
-                                                        {formatCurrency(product.base_price)}
+                                        <div className="mt-auto space-y-4">
+                                            {/* Price Row - Full Width to prevent truncation */}
+                                            <div className="pt-2 border-t border-slate-50">
+                                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Estimasi Harga</p>
+                                                <span className="text-[#0A1128] font-black text-xl tracking-tight block">
+                                                    {product.harga_estimasi && !isNaN(Number(product.harga_estimasi)) 
+                                                        ? formatCurrency(product.harga_estimasi) 
+                                                        : (product.harga_estimasi || 'Tanyakan Harga')}
+                                                </span>
+                                            </div>
+
+                                            {/* Meta Row - Below Price */}
+                                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                                {product.kategori_produk && (
+                                                    <span className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-[#FFBF00] bg-[#FFBF00]/5 px-2 py-1 rounded-md border border-[#FFBF00]/10">
+                                                        <Tag className="w-2.5 h-2.5" />
+                                                        {product.kategori_produk}
                                                     </span>
                                                 )}
-                                                <span className="text-[#0A1128] font-black text-xl tracking-tight">
-                                                    {formatCurrency(product.is_discount ? product.discount_price : product.base_price)}
-                                                </span>
+                                                {product.kota && (
+                                                    <span className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-slate-400 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
+                                                        <MapPin className="w-2.5 h-2.5" />
+                                                        {product.kota.replace(/^(kota|kab\.)\s+/gi, '')}
+                                                    </span>
+                                                )}
                                             </div>
 
                                             <button
                                                 onClick={() => handleProductClick(product.id)}
-                                                className="w-full border border-slate-100 group-hover:border-[#FFBF00] group-hover:bg-[#FFBF00] text-[#0A1128] transition-all py-4 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2"
+                                                className="w-full border border-slate-100 group-hover:border-[#FFBF00] group-hover:bg-[#FFBF00] text-[#0A1128] transition-all py-4 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm"
                                             >
-                                                Lihat Produk
+                                                Lihat Detail
                                                 <ChevronRight className="w-3.5 h-3.5" />
                                             </button>
                                         </div>

@@ -114,7 +114,7 @@ export const MerchantAds: React.FC = () => {
                             <TelemetryCard
                                 icon={EyeIcon}
                                 label="Total Impressions"
-                                value={totals.productViews.toLocaleString()}
+                                value={totals.productViews?.toLocaleString()}
                                 trend={isBoosted ? "+240%" : "-"}
                                 color="#FFBF00"
                                 delay={0.3}
@@ -122,7 +122,7 @@ export const MerchantAds: React.FC = () => {
                             <TelemetryCard
                                 icon={MousePointerClickIcon}
                                 label="Click Throughs"
-                                value={totals.contactClicks.toLocaleString()}
+                                value={totals.contactClicks?.toLocaleString()}
                                 trend={isBoosted ? "+180%" : "-"}
                                 color="#FF007F"
                                 delay={0.4}
@@ -130,7 +130,7 @@ export const MerchantAds: React.FC = () => {
                             <TelemetryCard
                                 icon={TrendingUpIcon}
                                 label="Inquiry Velocity"
-                                value={`${Math.ceil(totals.contactClicks / 7)}/day`}
+                                value={`${Math.ceil((totals.contactClicks || 0) / 7)}/day`}
                                 trend={isBoosted ? "+310%" : "-"}
                                 color="#11b4d4"
                                 delay={0.5}

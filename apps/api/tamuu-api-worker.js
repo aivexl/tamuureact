@@ -1043,7 +1043,7 @@ export default {
                 if (method === 'POST') {
                     try {
                         const body = await request.json();
-                        const { merchant_id, nama_produk, deskripsi, harga_estimasi, status, images, kategori_produk } = body;
+                        const { merchant_id, nama_produk, deskripsi, harga_estimasi, status, images, kategori_produk, kota } = body;
 
                         if (!merchant_id || !nama_produk || !deskripsi) {
                             return json({ error: 'Missing required fields' }, { ...corsHeaders, status: 400 });
@@ -1052,9 +1052,9 @@ export default {
                         const productId = crypto.randomUUID();
 
                         await env.DB.prepare(`
-                            INSERT INTO shop_products (id, merchant_id, nama_produk, deskripsi, harga_estimasi, status, kategori_produk)
-                            VALUES (?, ?, ?, ?, ?, ?, ?)
-                        `).bind(productId, merchant_id, nama_produk, deskripsi, harga_estimasi || null, status || 'DRAFT', kategori_produk || null).run();
+                            INSERT INTO shop_products (id, merchant_id, nama_produk, deskripsi, harga_estimasi, status, kategori_produk, kota)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        `).bind(productId, merchant_id, nama_produk, deskripsi, harga_estimasi || null, status || 'DRAFT', kategori_produk || null, kota || null).run();
 
                         // Insert images if provided (array of URL strings)
                         if (Array.isArray(images) && images.length > 0) {
@@ -1079,7 +1079,7 @@ export default {
                         if (!productId) return json({ error: 'Product ID required' }, { ...corsHeaders, status: 400 });
 
                         const body = await request.json();
-                        const { nama_produk, deskripsi, harga_estimasi, status, images, kategori_produk } = body;
+                        const { nama_produk, deskripsi, harga_estimasi, status, images, kategori_produk, kota } = body;
 
                         await env.DB.prepare(`
                             UPDATE shop_products 
@@ -1088,9 +1088,10 @@ export default {
                                 harga_estimasi = COALESCE(?, harga_estimasi),
                                 status = COALESCE(?, status),
                                 kategori_produk = COALESCE(?, kategori_produk),
+                                kota = COALESCE(?, kota),
                                 updated_at = CURRENT_TIMESTAMP
                             WHERE id = ?
-                        `).bind(nama_produk, deskripsi, harga_estimasi, status, kategori_produk || null, productId).run();
+                        `).bind(nama_produk, deskripsi, harga_estimasi, status, kategori_produk || null, kota || null, productId).run();
 
                         // Sync images if provided (delete all and re-insert for simplicity)
                         if (Array.isArray(images)) {
@@ -1131,16 +1132,16 @@ export default {
                     const search = url.searchParams.get('q');
 
                     let query = `
-                        SELECT m.id, m.nama_toko, m.slug, m.logo_url, m.banner_url, m.is_sponsored, c.nama_kategori 
+                        SELECT m.id, m.nama_toko, m.slug, m.logo_url, m.banner_url, m.is_sponsored, m.kota, c.nama_kategori 
                         FROM shop_merchants m 
                         LEFT JOIN shop_category c ON m.category_id = c.id
                         WHERE m.is_verified = 1
                     `;
                     let params = [];
 
-                    if (category) {
-                        query += ` AND m.category_id = ?`;
-                        params.push(category);
+                    if (category && category !== 'All' && category !== 'Semua') {
+                        query += ` AND (c.nama_kategori = ? OR m.category_id = ?)`;
+                        params.push(category, category);
                     }
                     if (search) {
                         query += ` AND (m.nama_toko LIKE ? OR m.deskripsi LIKE ?)`;
@@ -1150,10 +1151,63 @@ export default {
                     // Priority: Sponsored first, then newest
                     query += ` ORDER BY m.is_sponsored DESC, m.created_at DESC LIMIT 50`;
 
-                    const merchants = await env.DB.prepare(query).bind(...params).all();
-                    return json({ success: true, merchants: merchants.results }, corsHeaders);
+                    const merchantsRes = await env.DB.prepare(query).bind(...params).all();
+                    return json({ success: true, merchants: merchantsRes.results }, corsHeaders);
                 } catch (error) {
-                    return json({ error: 'Failed to fetch directory' }, { ...corsHeaders, status: 500 });
+                    return json({ error: 'Failed to fetch directory', details: error.message }, { ...corsHeaders, status: 500 });
+                }
+            }
+
+            // NEW: 5b. PUBLIC DISCOVERY: All Products (Product-First Discovery)
+            if (path === '/api/shop/products/discovery' && method === 'GET') {
+                try {
+                    const category = url.searchParams.get('category');
+                    const search = url.searchParams.get('q');
+                    const city = url.searchParams.get('city');
+
+                    let query = `
+                        SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url 
+                        FROM shop_products p 
+                        JOIN shop_merchants m ON p.merchant_id = m.id
+                        WHERE p.status = 'PUBLISHED' AND m.is_verified = 1
+                    `;
+                    let params = [];
+
+                    if (category && category !== 'All') {
+                        query += ` AND p.kategori_produk = ?`;
+                        params.push(category);
+                    }
+                    if (city && city !== 'All') {
+                        query += ` AND p.kota = ?`;
+                        params.push(city);
+                    }
+                    if (search) {
+                        query += ` AND (p.nama_produk LIKE ? OR p.deskripsi LIKE ? OR m.nama_toko LIKE ?)`;
+                        params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+                    }
+
+                    query += ` ORDER BY p.created_at DESC LIMIT 100`;
+
+                    const productsRes = await env.DB.prepare(query).bind(...params).all();
+                    const products = productsRes.results;
+
+                    // Fetch images for these products
+                    const productIds = products.map(p => p.id);
+                    let productImages = [];
+                    if (productIds.length > 0) {
+                        const placeholders = productIds.map(() => '?').join(',');
+                        const imagesRes = await env.DB.prepare(`SELECT * FROM shop_product_images WHERE product_id IN (${placeholders}) ORDER BY order_index ASC`).bind(...productIds).all();
+                        productImages = imagesRes.results;
+                    }
+
+                    const productsWithImages = products.map(p => ({
+                        ...p,
+                        images: productImages.filter(img => img.product_id === p.id)
+                    }));
+
+                    return json({ success: true, products: productsWithImages }, corsHeaders);
+                } catch (error) {
+                    return json({ error: 'Failed to discover products', details: error.message }, { ...corsHeaders, status: 500 });
                 }
             }
 
@@ -2261,7 +2315,7 @@ t.*,
                     const authHeader = `Basic ${btoa(env.MIDTRANS_SERVER_KEY + ':')} `;
 
                     // 2. Fetch status from Midtrans
-                    const midtransRes = await fetch(`${baseUrl} /${orderId}/status`, {
+                    const midtransRes = await fetch(`${baseUrl}/${orderId}/status`, {
                         headers: {
                             'Authorization': authHeader,
                             'Accept': 'application/json'
@@ -2650,7 +2704,7 @@ name = COALESCE(?, name),
 
                 const fileId = crypto.randomUUID();
                 const extension = fileName.split('.').pop() || 'm4a';
-                const key = `user - content / ${userId} /music/${fileId}.${extension} `;
+                const key = `user-content/${userId}/music/${fileId}.${extension}`;
 
                 // For R2, we can't easily generate a presigned URL *inside* a worker without the aws-sdk or a custom signer.
                 // Alternative: Use a "Upload Proxy" endpoint in the worker that pipes the request to R2, 
@@ -3604,14 +3658,14 @@ name = COALESCE(?, name),
                     });
                 }
 
-                const filename = `${Date.now()} - ${file.name}`;
-                const key = `uploads / ${filename}`;
+                const filename = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
+                const key = `uploads/${filename}`;
 
                 await env.ASSETS.put(key, file.stream(), {
                     httpMetadata: { contentType: file.type }
                 });
 
-                const publicUrl = `https://tamuu-api.shafania57.workers.dev/assets/${key}`;
+                const publicUrl = `https://api.tamuu.id/assets/${key}`;
 
                 // Get user_id from form data if provided
                 const userId = formData.get('user_id');
@@ -3630,9 +3684,58 @@ name = COALESCE(?, name),
             // SERVE ASSETS FROM R2
             // ============================================
             if (path.startsWith('/assets/')) {
-                const key = path.replace('/assets/', '');
-                const object = await env.ASSETS.get(key);
-                if (!object) return notFound(corsHeaders);
+                const rawKey = path.replace('/assets/', '');
+                
+                // CTO-Level Atomic Resolution Strategy
+                // We try every possible permutation of encoding/decoding to find the object
+                const decodedOnce = decodeURIComponent(rawKey);
+                const decodedTwice = decodeURIComponent(decodedOnce);
+                
+                const variations = [
+                    decodedOnce,                    // "uploads/file name.webp"
+                    rawKey,                         // "uploads/file%20name.webp"
+                    decodedTwice,                   // In case of double encoding
+                    decodedOnce.replace(/\s+/g, '-'), // In case of space-to-dash auto-conversion
+                    rawKey.replace(/%20/g, ' '),    // Explicit space forcing
+                    decodedOnce.trim()              // Trimming any accidental leading/trailing spaces
+                ];
+
+                const uniqueVariations = [...new Set(variations)];
+                let object = null;
+                let triedKeys = [];
+
+                for (const key of uniqueVariations) {
+                    triedKeys.push(key);
+                    object = await env.ASSETS.get(key);
+                    if (object) break;
+                    
+                    // Recursive Discovery: If not found, try common prefixes
+                    if (!key.startsWith('gallery/') && !key.startsWith('user-content/')) {
+                        const filename = key.split('/').pop();
+                        
+                        const altKey1 = `gallery/${filename}`;
+                        triedKeys.push(altKey1);
+                        object = await env.ASSETS.get(altKey1);
+                        if (object) break;
+
+                        const altKey2 = `user-content/${filename}`;
+                        triedKeys.push(altKey2);
+                        object = await env.ASSETS.get(altKey2);
+                        if (object) break;
+                    }
+                }
+                
+                if (!object) {
+                    // Fail gracefully but with forensic data in headers
+                    return new Response('Asset Not Found', { 
+                        status: 404, 
+                        headers: { 
+                            ...corsHeaders,
+                            'X-Debug-Path': path,
+                            'X-Debug-Tried-Keys': JSON.stringify(triedKeys).substring(0, 500)
+                        } 
+                    });
+                }
 
                 const headers = new Headers();
                 object.writeHttpMetadata(headers);

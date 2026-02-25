@@ -104,26 +104,26 @@ export const WishesPanel: React.FC = () => {
     }
 
     return (
-        <div className="space-y-6">
-            {/* Search & Filter */}
-            <div className="flex flex-col sm:flex-row gap-4 px-1">
-                <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <div className="space-y-8">
+            {/* Search & Filter - Apple Grade Architecture */}
+            <div className="bg-slate-50/50 p-2.5 rounded-[2rem] border border-slate-100 flex flex-col gap-3">
+                <div className="relative group">
+                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-orange-500 transition-colors" />
                     <input
                         type="text"
-                        placeholder="Cari nama atau pesan..."
+                        placeholder="Cari ucapan..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-4 focus:ring-orange-500/5 focus:border-orange-500 outline-none transition-all placeholder:text-slate-400"
+                        className="w-full pl-12 pr-6 py-4 bg-white border-none rounded-full text-sm font-bold text-[#0A1128] placeholder:text-slate-300 focus:ring-0 shadow-sm transition-all"
                     />
                 </div>
-                <div className="flex items-center gap-2 bg-slate-50 border border-slate-100 p-1.5 rounded-2xl">
+                <div className="flex bg-slate-100/50 p-1 rounded-full gap-1">
                     {(['all', 'visible', 'hidden'] as const).map((f) => (
                         <button
                             key={f}
                             onClick={() => setFilter(f)}
-                            className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${filter === f
-                                ? 'bg-white text-orange-600 shadow-sm'
+                            className={`flex-1 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all duration-500 ${filter === f
+                                ? 'bg-white text-[#0A1128] shadow-xl'
                                 : 'text-slate-400 hover:text-slate-600'
                                 }`}
                         >

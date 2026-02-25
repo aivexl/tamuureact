@@ -121,17 +121,17 @@ export const MusicDrawer: React.FC<MusicDrawerProps> = ({ isOpen, onClose, onSel
                             </button>
                         </div>
 
-                        {/* Search & Categories (Library mode) */}
+                        {/* Search & Categories (Library mode) - Tamuu Signature Architecture */}
                         {activeTab === 'library' && (
-                            <div className="p-4 space-y-4">
-                                <div className="relative">
-                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <div className="p-6 space-y-6 bg-slate-50/30">
+                                <div className="relative group">
+                                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-pink-500 transition-colors" />
                                     <input
                                         type="text"
                                         placeholder="Cari lagu by judul atau artis..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-pink-500/20 transition-all font-medium"
+                                        className="w-full pl-12 pr-6 py-4 bg-white border-none rounded-full text-sm font-bold text-[#0A1128] placeholder:text-slate-200 focus:ring-0 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] transition-all"
                                     />
                                 </div>
                                 <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 px-1 -mx-1">
@@ -139,9 +139,9 @@ export const MusicDrawer: React.FC<MusicDrawerProps> = ({ isOpen, onClose, onSel
                                         <button
                                             key={cat}
                                             onClick={() => setActiveCategory(cat)}
-                                            className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all whitespace-nowrap ${activeCategory === cat
-                                                ? 'bg-pink-100 text-pink-600 border-pink-200'
-                                                : 'bg-white text-slate-400 border-slate-100 hover:border-slate-200'
+                                            className={`px-6 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap border ${activeCategory === cat
+                                                ? 'bg-pink-500 text-white border-pink-500 shadow-lg shadow-pink-500/20'
+                                                : 'bg-white text-slate-400 border-slate-50 hover:border-slate-200'
                                                 }`}
                                         >
                                             {cat}

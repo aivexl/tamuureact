@@ -510,45 +510,49 @@ export const GuestManagementPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Toolbar */}
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200">
-                    <div className="relative flex-1 max-w-md w-full">
-                        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                {/* Toolbar - Tamuu Signature Minimalist */}
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-white p-2.5 rounded-[2.5rem] border border-slate-50 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)]">
+                    <div className="relative flex-1 max-w-lg w-full">
+                        <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
-                            placeholder="Cari nama, nomor, atau kode..."
-                            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:border-teal-500 transition-all outline-none"
+                            placeholder="Cari tamu..."
+                            className="w-full pl-12 pr-6 py-4 bg-slate-50/50 border-none rounded-[1.8rem] text-sm font-bold text-[#0A1128] focus:ring-0 transition-all placeholder:text-slate-300"
                         />
                     </div>
-                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto">
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full lg:w-auto pr-2">
                         <button
                             onClick={() => setShowImportModal(true)}
-                            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all font-medium shadow-lg shadow-slate-900/10 whitespace-nowrap"
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-3 px-8 py-4 bg-[#0A1128] text-white rounded-[1.8rem] hover:bg-[#151d3d] transition-all duration-500 font-black text-[10px] uppercase tracking-widest shadow-lg shadow-[#0A1128]/5 active:scale-95 whitespace-nowrap"
                         >
-                            <FileUpIcon className="w-4 h-4" /> Import CSV / Excel
+                            <FileUpIcon className="w-4 h-4 text-teal-400" /> Import Directory
                         </button>
 
                         <div className="relative flex-1 sm:flex-none">
                             <button
                                 onClick={() => setShowExportDropdown(!showExportDropdown)}
-                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-all font-medium whitespace-nowrap"
+                                className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-slate-50/50 hover:bg-slate-100/80 border border-transparent text-slate-600 rounded-[1.8rem] transition-all duration-500 font-black text-[10px] uppercase tracking-widest active:scale-95 whitespace-nowrap"
                             >
                                 <FileDownIcon className="w-4 h-4" /> Export
                             </button>
                             {showExportDropdown && (
-                                <div className="absolute right-0 top-full mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-20 py-2 w-48 overflow-hidden">
-                                    <button onClick={() => handleExport('xlsx')} className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-sm font-bold text-slate-700 flex items-center gap-2">
-                                        Export ke Excel (.xlsx)
+                                <m.div 
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    className="absolute right-0 top-full mt-3 bg-white/80 backdrop-blur-2xl border border-slate-100 rounded-[2rem] shadow-2xl z-[70] py-3 w-56 overflow-hidden"
+                                >
+                                    <button onClick={() => handleExport('xlsx')} className="w-full text-left px-6 py-3.5 hover:bg-[#FFBF00]/10 text-xs font-black uppercase tracking-tight text-[#0A1128] flex items-center gap-3 transition-colors">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Excel Spreadsheet
                                     </button>
-                                    <button onClick={() => handleExport('csv')} className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-sm font-medium text-slate-700 flex items-center gap-2">
-                                        Export ke CSV
+                                    <button onClick={() => handleExport('csv')} className="w-full text-left px-6 py-3.5 hover:bg-[#FFBF00]/10 text-xs font-black uppercase tracking-tight text-[#0A1128] flex items-center gap-3 transition-colors">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Flat CSV File
                                     </button>
-                                    <button onClick={() => handleExport('json')} className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-sm font-medium text-slate-700 flex items-center gap-2">
-                                        Export ke JSON
+                                    <button onClick={() => handleExport('json')} className="w-full text-left px-6 py-3.5 hover:bg-[#FFBF00]/10 text-xs font-black uppercase tracking-tight text-[#0A1128] flex items-center gap-3 transition-colors border-t border-slate-50">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-slate-400" /> Data JSON
                                     </button>
-                                </div>
+                                </m.div>
                             )}
                         </div>
                     </div>

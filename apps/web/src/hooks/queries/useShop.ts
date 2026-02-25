@@ -8,6 +8,13 @@ export const useShopDirectory = (category?: string, query?: string) => {
     });
 };
 
+export const useProductDiscovery = (options: { category?: string; query?: string; city?: string }) => {
+    return useQuery({
+        queryKey: ['shop_product_discovery', options.category, options.query, options.city],
+        queryFn: () => shop.getDiscoverProducts(options)
+    });
+};
+
 export const useStorefront = (slug: string, token?: string) => {
     return useQuery({
         queryKey: ['storefront', slug],

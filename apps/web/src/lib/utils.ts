@@ -89,15 +89,20 @@ export const patchLegacyUrl = (url: string | null | undefined): string => {
 
     // Fix R2 assets if they are still using the legacy bucket domain
     if (url.includes('tamuu-assets.r2.cloudflarestorage.com')) {
-        return url.replace(/https?:\/\/.*?\.r2\.cloudflarestorage\.com/, 'https://api.tamuu.id/assets');
+        url = url.replace(/https?:\/\/.*?\.r2\.cloudflarestorage\.com/, 'https://api.tamuu.id/assets');
+    }
+
+    // Fix malformed upload paths with spaces around slashes (e.g., "uploads / filename")
+    if (url.includes(' / ')) {
+        url = url.replace(/\s+\/\s+/g, '/');
     }
 
     // Redirect legacy workers.dev subdomain to custom domain (if any old references exist)
     if (url.includes('tamuu-api.shafania57.workers.dev')) {
-        return url.replace('tamuu-api.shafania57.workers.dev', 'api.tamuu.id');
+        url = url.replace('tamuu-api.shafania57.workers.dev', 'api.tamuu.id');
     }
 
-    return url;
+    return url.trim();
 };
 
 /**

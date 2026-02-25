@@ -37,7 +37,7 @@ export const MerchantOverview: React.FC<{ setTab?: (tab: string) => void }> = ({
 
     // Fetch real metrics
     const { data: analyticsRes, isLoading: analyticsLoading } = useMerchantAnalytics(merchant?.id);
-    const totals = analyticsRes?.totals || { profileViews: 0, contactClicks: 0, favorites: 0 };
+    const totals = analyticsRes?.totals || { profileViews: 0, productViews: 0, contactClicks: 0, favorites: 0 };
     const chartData = analyticsRes?.chartData || [];
 
     const { data: productsData, isLoading: productsLoading } = useMerchantProducts(merchant?.id);
@@ -123,7 +123,7 @@ export const MerchantOverview: React.FC<{ setTab?: (tab: string) => void }> = ({
                             </div>
                         </div>
                         <div className="flex items-baseline gap-2 mb-1">
-                            <span className="text-4xl font-black text-[#0A1128] tracking-tight">{card.value.toLocaleString()}</span>
+                            <span className="text-4xl font-black text-[#0A1128] tracking-tight">{card.value?.toLocaleString()}</span>
                             <span className="text-xs font-bold text-slate-400">{card.label}</span>
                         </div>
                         <div className="h-1 w-12 bg-[#FFBF00] rounded-full mt-4" />

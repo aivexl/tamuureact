@@ -31,7 +31,7 @@ export const MerchantAnalytics: React.FC = () => {
     const { data: analyticsRes, isLoading } = useMerchantAnalytics(merchantId);
 
     const data = analyticsRes || {};
-    const totals = data.totals || { profileViews: 0, contactClicks: 0, favorites: 0 };
+    const totals = data.totals || { profileViews: 0, contactClicks: 0, favorites: 0, productViews: 0 };
     const chartData = data.chartData || [];
 
     const { data: productsData } = useMerchantProducts(merchantId);
@@ -89,7 +89,7 @@ export const MerchantAnalytics: React.FC = () => {
                             <div className="p-2.5 rounded-xl bg-white border border-slate-100 text-slate-400"><EyeIcon className="w-5 h-5" /></div>
                         </div>
                         <div className="relative z-10">
-                            <p className="text-5xl font-black text-[#0A1128] tracking-tighter">{totals.profileViews.toLocaleString()}</p>
+                            <p className="text-5xl font-black text-[#0A1128] tracking-tighter">{totals.profileViews?.toLocaleString()}</p>
                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2">Visits</p>
                         </div>
                     </m.div>
@@ -107,7 +107,7 @@ export const MerchantAnalytics: React.FC = () => {
                             <div className="p-2.5 rounded-xl bg-white border border-slate-100 text-slate-400"><EyeIcon className="w-5 h-5" /></div>
                         </div>
                         <div className="relative z-10">
-                            <p className="text-5xl font-black text-[#0A1128] tracking-tighter">{totals.productViews.toLocaleString()}</p>
+                            <p className="text-5xl font-black text-[#0A1128] tracking-tighter">{totals.productViews?.toLocaleString()}</p>
                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2">Total Impressions</p>
                         </div>
                     </m.div>
@@ -126,7 +126,7 @@ export const MerchantAnalytics: React.FC = () => {
                             <div className="p-2.5 rounded-xl bg-white text-[#FFBF00] border border-[#FFBF00]/20"><LockOpenIcon className="w-5 h-5 shadow-[0_0_10px_rgba(255,191,0,0.3)]" /></div>
                         </div>
                         <div className="relative z-10">
-                            <p className="text-5xl font-black text-[#0A1128] tracking-tighter">{totals.contactClicks.toLocaleString()}</p>
+                            <p className="text-5xl font-black text-[#0A1128] tracking-tighter">{totals.contactClicks?.toLocaleString()}</p>
                             <p className="text-[10px] text-[#FFBF00]/60 font-bold uppercase tracking-widest mt-2">Unlocked</p>
                         </div>
                     </m.div>

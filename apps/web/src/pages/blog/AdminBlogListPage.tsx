@@ -223,17 +223,17 @@ export const AdminBlogListPage = () => {
                 ))}
             </div>
 
-            {/* Filter Bar */}
-            <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
+            {/* Filter Bar - Tamuu Signature Minimalist Architecture */}
+            <div className="flex flex-col lg:flex-row gap-8 items-center justify-between bg-white/[0.03] p-3 rounded-[3rem] border border-white/5 backdrop-blur-md">
                 {/* Status Tabs */}
-                <div className="flex bg-white/5 p-1 rounded-full border border-white/5 w-full lg:w-auto overflow-x-auto no-scrollbar">
+                <div className="flex bg-black/40 p-1.5 rounded-full border border-white/5 w-full lg:w-auto overflow-x-auto no-scrollbar shadow-inner">
                     {FILTER_TABS.map(tab => (
                         <button
                             key={tab.value}
                             onClick={() => setStatusFilter(tab.value)}
-                            className={`flex-1 lg:flex-none px-4 sm:px-6 py-2.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${statusFilter === tab.value
-                                ? 'bg-teal-500 text-slate-900 shadow-lg'
-                                : 'text-slate-400 hover:text-white'
+                            className={`flex-1 lg:flex-none px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.1em] transition-all duration-500 whitespace-nowrap ${statusFilter === tab.value
+                                ? 'bg-white text-slate-900 shadow-2xl scale-[1.02]'
+                                : 'text-slate-500 hover:text-white'
                                 }`}
                         >
                             {tab.label}
@@ -242,14 +242,14 @@ export const AdminBlogListPage = () => {
                 </div>
 
                 {/* Search */}
-                <div className="relative w-full lg:w-96">
-                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <div className="relative w-full lg:w-[450px] pr-2">
+                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
-                        placeholder="Cari judul artikel..."
-                        className="w-full bg-white/5 border border-white/5 rounded-full py-3.5 pl-12 pr-6 text-white placeholder-slate-500 focus:outline-none focus:border-teal-500/50 focus:ring-4 focus:ring-teal-500/10 transition-all text-sm"
+                        placeholder="Search articles..."
+                        className="w-full bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 rounded-full py-4 pl-14 pr-8 text-white placeholder-white/20 focus:ring-0 focus:bg-white/[0.08] transition-all duration-500 text-xs font-bold uppercase tracking-widest"
                     />
                 </div>
             </div>

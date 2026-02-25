@@ -1116,6 +1116,19 @@ export const shop = {
         return sanitizeValue(data.merchants || []);
     },
 
+    async getDiscoverProducts(options: { category?: string; query?: string; city?: string }) {
+        const params = new URLSearchParams();
+        if (options.category && options.category !== 'All') params.append('category', options.category);
+        if (options.query) params.append('q', options.query);
+        if (options.city && options.city !== 'All') params.append('city', options.city);
+        
+        const url = `${API_BASE}/api/shop/products/discovery${params.toString() ? '?' + params.toString() : ''}`;
+        const res = await safeFetch(url);
+        if (!res.ok) throw new Error('Failed to discover products');
+        const data = await res.json();
+        return sanitizeValue(data.products || []);
+    },
+
     async getStorefront(slug: string, token?: string) {
         const headers: Record<string, string> = {};
         if (token) headers['Authorization'] = `Bearer ${token}`;

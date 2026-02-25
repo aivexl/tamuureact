@@ -90,23 +90,23 @@ export const AdminStoreManagement: React.FC = () => {
             </div>
 
             <div className="bg-[#141414] border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
-                {/* Toolbar */}
-                <div className="p-6 border-b border-white/5 flex flex-col md:flex-row gap-4 justify-between bg-[#1A1A1A]">
-                    <div className="relative w-full md:w-96">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
+                {/* Tamuu Elite Minimalist Toolbar */}
+                <div className="p-4 border-b border-white/5 flex flex-col md:flex-row gap-6 justify-between bg-[#1A1A1A]">
+                    <div className="relative w-full md:w-[450px]">
+                        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-white/20">
                             <Search className="w-4 h-4" />
                         </div>
                         <input
                             type="text"
-                            placeholder="Search merechants by name or email..."
+                            placeholder="Search merchants by name or email..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-[#0A0A0A] border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm text-white focus:outline-none focus:border-teal-500/50 transition-colors"
+                            className="w-full bg-white/[0.03] hover:bg-white/[0.05] border border-white/5 rounded-2xl pl-12 pr-6 py-4 text-sm text-white focus:ring-0 focus:bg-white/[0.08] transition-all duration-500 placeholder:text-white/20"
                         />
                     </div>
-                    <button className="px-5 py-3 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 border border-white/5">
-                        <Filter className="w-4 h-4" />
-                        Filter Status
+                    <button className="px-8 py-4 bg-white/[0.03] hover:bg-white/[0.08] text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl transition-all duration-500 flex items-center justify-center gap-3 border border-white/5 group active:scale-95">
+                        <Filter className="w-4 h-4 text-teal-500 transition-transform duration-500 group-hover:rotate-180" />
+                        Refine Results
                     </button>
                 </div>
 
