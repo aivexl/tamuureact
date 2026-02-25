@@ -263,15 +263,23 @@ export const ShopPage: React.FC = () => {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         onClick={() => navigate(`/shop/${merchant.slug}`)}
-                                        className="group bg-white border border-[#F1F5F9] rounded-[2.5rem] overflow-hidden flex flex-col hover:shadow-2xl transition-all cursor-pointer hover:border-[#FFBF00]/30"
+                                        className="group bg-white border border-[#F1F5F9] rounded-[2.5rem] overflow-hidden flex flex-col hover:shadow-2xl transition-all cursor-pointer hover:border-[#FFBF00]/30 relative"
                                     >
                                         <div className="h-32 bg-slate-100 relative overflow-hidden">
                                             {merchant.banner_url && <img src={merchant.banner_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />}
-                                            <div className="absolute -bottom-6 left-6 w-14 h-14 rounded-2xl border-4 border-white overflow-hidden bg-white shadow-lg">
-                                                <img src={merchant.logo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${merchant.nama_toko}`} className="w-full h-full object-cover" />
-                                            </div>
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                         </div>
-                                        <div className="px-6 pt-10 pb-6 flex flex-col flex-1">
+                                        
+                                        {/* Merchant Logo - Moved outside overflow container and positioned with high z-index */}
+                                        <div className="absolute top-24 left-6 w-16 h-16 rounded-2xl border-4 border-white overflow-hidden bg-white shadow-xl z-10 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
+                                            <img 
+                                                src={merchant.logo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${merchant.nama_toko}`} 
+                                                className="w-full h-full object-cover" 
+                                                alt="Logo"
+                                            />
+                                        </div>
+
+                                        <div className="px-6 pt-12 pb-6 flex flex-col flex-1">
                                             <h3 className="text-xl font-black text-[#0A1128] mb-1 group-hover:text-[#FFBF00] transition-colors">{merchant.nama_toko}</h3>
                                             <div className="flex items-center gap-2">
                                                 <p className="text-[10px] font-bold text-[#FFBF00] uppercase tracking-widest">{merchant.nama_kategori || 'Vendor'}</p>
