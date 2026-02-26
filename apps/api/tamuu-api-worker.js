@@ -943,7 +943,7 @@ export default {
 
                 } catch (error) {
                     console.error('[Shop] Fetch Merchant Error:', error);
-                    return json({ error: 'Failed to fetch merchant data' }, { ...corsHeaders, status: 500 });
+                    return json({ error: 'Failed to fetch merchant data', code: 'DB_ERROR' }, { ...corsHeaders, status: 500 });
                 }
             }
 

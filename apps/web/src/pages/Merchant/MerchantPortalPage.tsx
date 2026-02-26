@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
 import { useStore } from '../../store/useStore';
 import { useMerchantProfile } from '../../hooks/queries/useShop';
@@ -20,15 +20,21 @@ const MenuIcon = ({ className }: { className?: string }) => (
 export const MerchantPortalPage: React.FC = () => {
     const user = useStore(s => s.user);
     const { storeSlug } = useParams<{ storeSlug: string }>();
-    const { data: merchantData, isLoading, isFetching } = useMerchantProfile(user?.id);
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    // CTO Fix: Only trigger query when user ID is definitively available
+    const { data: merchantData, isLoading, isFetching, isError } = useMerchantProfile(user?.id);
+    
     const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+    // Tolerance buffer to prevent layout shift / premature bounce
+    const [showContent, setShowContent] = useState(false);
 
     useSEO({
         title: 'Merchant Portal - Tamuu Nexus',
         description: 'Manage your Tamuu Storefront'
     });
 
-    // Apply light theme exclusively for the portal
     useEffect(() => {
         document.body.style.backgroundColor = '#FFFFFF';
         return () => {
@@ -36,32 +42,63 @@ export const MerchantPortalPage: React.FC = () => {
         };
     }, []);
 
-    // Auth & Permission Check
-    if (!user) return <Navigate to="/login" replace />;
+    // Enterprise Guard: State Resolution Phase
+    useEffect(() => {
+        // Wait until we have a definitive answer from the server (not just cache)
+        if (!isLoading && !isFetching) {
+            
+            // 1. Unauthenticated -> Login
+            if (!user) {
+                navigate('/login', { replace: true, state: { from: location.pathname } });
+                return;
+            }
 
-    // Show loading only on initial load (isLoading).
-    if (isLoading) {
+            // 2. Definitive lack of profile -> User Dashboard / Onboarding
+            if (merchantData && merchantData.isMerchant === false) {
+                console.warn('[Enterprise Guard] User is not a merchant. Redirecting to user dashboard.');
+                navigate('/dashboard', { replace: true });
+                return;
+            }
+
+            // 3. Has profile, but URL slug is wrong or missing -> Auto Correct
+            if (merchantData?.merchant?.slug && storeSlug !== merchantData.merchant.slug) {
+                console.log(`[Enterprise Guard] Slug mismatch. Expected: ${merchantData.merchant.slug}, Got: ${storeSlug}. Correcting.`);
+                const currentPath = location.pathname;
+                const subPathMatch = currentPath.split(`/store/${storeSlug}/`)[1];
+                const subPath = subPathMatch || 'dashboard'; // Preserve where they were trying to go
+                navigate(`/store/${merchantData.merchant.slug}/${subPath}`, { replace: true });
+                return;
+            }
+
+            // 4. All checks passed -> Reveal UI
+            if (merchantData?.merchant) {
+                setShowContent(true);
+            }
+        }
+    }, [user, isLoading, isFetching, merchantData, storeSlug, navigate, location.pathname]);
+
+
+    // Render Blocking State
+    if (!showContent || isLoading || (!merchantData && isFetching)) {
         return (
-            <div className="min-h-screen bg-white flex items-center justify-center">
-                <div className="text-center space-y-4">
-                    <PremiumLoader />
-                    <p className="text-sm text-slate-400 font-medium">Memuat Portal Toko...</p>
-                </div>
+            <div className="min-h-screen bg-white flex flex-col items-center justify-center">
+                <PremiumLoader color="#0A1128" />
+                <p className="mt-6 text-sm text-slate-400 font-black uppercase tracking-widest animate-pulse">Memverifikasi Otorisasi Toko...</p>
             </div>
         );
     }
 
-    // Only bounce them if fetching is truly complete and they have no merchant profile
-    if (!merchantData?.isMerchant || !merchantData?.merchant) {
-        return <Navigate to="/dashboard" replace />;
-    }
-
-    // Ensure the URL matches their actual store slug
-    if (!isLoading && merchantData?.merchant && storeSlug !== merchantData.merchant.slug) {
-        // Extract the current sub-path so we don't redirect them away from "settings" to "dashboard"
-        const currentPath = window.location.pathname;
-        const subPath = currentPath.split(`/store/${storeSlug}/`)[1] || 'dashboard';
-        return <Navigate to={`/store/${merchantData.merchant.slug}/${subPath}`} replace />;
+    if (isError) {
+        return (
+             <div className="min-h-screen bg-white flex flex-col items-center justify-center text-center p-6">
+                <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mb-4">
+                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                </div>
+                <h1 className="text-xl font-bold text-slate-900 mb-2">Gagal Memuat Profil Toko</h1>
+                <p className="text-slate-500 max-w-md mx-auto mb-6">Kami mengalami kendala saat menyinkronkan data toko Anda. Mohon periksa koneksi atau coba muat ulang.</p>
+                <button onClick={() => window.location.reload()} className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-full shadow-lg hover:bg-indigo-700 transition-all">Muat Ulang</button>
+            </div>
+        )
     }
 
     return (

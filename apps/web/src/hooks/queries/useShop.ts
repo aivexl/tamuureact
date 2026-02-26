@@ -62,9 +62,8 @@ export const useMerchantProfile = (userId?: string) => {
         queryKey: ['merchant_profile', userId],
         queryFn: () => shop.getMerchantMe(userId!),
         enabled: !!userId,
-        staleTime: 0,              // Always refetch
-        gcTime: 0,                 // Don't keep cache
-        refetchOnMount: 'always'
+        staleTime: 60 * 1000,      // 1 minute tolerance (prevents layout shift on tab switching)
+        refetchOnWindowFocus: false // Don't refetch just because user alt-tabbed
     });
 };
 
