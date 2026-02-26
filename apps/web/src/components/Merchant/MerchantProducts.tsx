@@ -564,14 +564,18 @@ export const MerchantProducts: React.FC = () => {
                                                 <div className="space-y-3">
                                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tokopedia</label>
                                                     <div className="relative">
-                                                        <Store className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                                                        <div className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 flex items-center justify-center grayscale opacity-50">
+                                                            <img src="/images/logos/marketplace/logo_tokopedia.png" alt="Tokopedia" className="w-full h-full object-contain" />
+                                                        </div>
                                                         <input value={tokopediaUrl} onChange={e => setTokopediaUrl(e.target.value)} placeholder="https://tokopedia.com/..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20" />
                                                     </div>
                                                 </div>
                                                 <div className="space-y-3">
                                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Shopee</label>
                                                     <div className="relative">
-                                                        <ShoppingBag className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                                                        <div className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 flex items-center justify-center grayscale opacity-50">
+                                                            <img src="/images/logos/marketplace/logo_shopee.png" alt="Shopee" className="w-full h-full object-contain" />
+                                                        </div>
                                                         <input value={shopeeUrl} onChange={e => setShopeeUrl(e.target.value)} placeholder="https://shopee.co.id/..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20" />
                                                     </div>
                                                 </div>

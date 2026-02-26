@@ -269,11 +269,21 @@ export const MerchantSettings: React.FC = () => {
                             </div>
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tokopedia</label>
-                                <div className="relative"><Store className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" /><input value={tokopediaUrl} onChange={e => { setTokopediaUrl(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128]" placeholder="tokopedia.com/..." /></div>
+                                <div className="relative">
+                                    <div className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 flex items-center justify-center grayscale opacity-50">
+                                        <img src="/images/logos/marketplace/logo_tokopedia.png" alt="Tokopedia" className="w-full h-full object-contain" />
+                                    </div>
+                                    <input value={tokopediaUrl} onChange={e => { setTokopediaUrl(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128]" placeholder="tokopedia.com/..." />
+                                </div>
                             </div>
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Shopee</label>
-                                <div className="relative"><ShoppingBag className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" /><input value={shopeeUrl} onChange={e => { setShopeeUrl(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128]" placeholder="shopee.co.id/..." /></div>
+                                <div className="relative">
+                                    <div className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 flex items-center justify-center grayscale opacity-50">
+                                        <img src="/images/logos/marketplace/logo_shopee.png" alt="Shopee" className="w-full h-full object-contain" />
+                                    </div>
+                                    <input value={shopeeUrl} onChange={e => { setShopeeUrl(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128]" placeholder="shopee.co.id/..." />
+                                </div>
                             </div>
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Publik</label>
