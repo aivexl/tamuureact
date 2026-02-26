@@ -67,6 +67,7 @@ export const MerchantProducts: React.FC = () => {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [namaProduk, setNamaProduk] = useState('');
     const [hargaEstimasi, setHargaEstimasi] = useState('');
+    const [hargaError, setHargaError] = useState('');
     const [status, setStatus] = useState('DRAFT');
     const [selectedCategory, setSelectedCategory] = useState('');
     const [customCategory, setCustomCategory] = useState('');
@@ -403,14 +404,27 @@ export const MerchantProducts: React.FC = () => {
                                                 </div>
 
                                                 <div className="space-y-3">
-                                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Harga</label>
-                                                    <input
-                                                        type="text"
-                                                        value={hargaEstimasi}
-                                                        onChange={e => setHargaEstimasi(e.target.value)}
-                                                        placeholder="IDR 15,000,000++"
-                                                        className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-[#0A1128] placeholder:text-slate-400 focus:ring-1 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40 focus:outline-none transition-all"
-                                                    />
+                                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Harga (Rp)</label>
+                                                    <div className="relative">
+                                                        <div className="absolute left-6 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">Rp</div>
+                                                        <input
+                                                            type="text"
+                                                            value={hargaEstimasi ? new Intl.NumberFormat('id-ID').format(Number(hargaEstimasi)) : ''}
+                                                            onChange={e => {
+                                                                const val = e.target.value;
+                                                                if (/[^0-9.]/.test(val)) {
+                                                                    setHargaError('Hanya masukkan angka.');
+                                                                } else {
+                                                                    setHargaError('');
+                                                                }
+                                                                const rawValue = val.replace(/[^0-9]/g, '');
+                                                                setHargaEstimasi(rawValue);
+                                                            }}
+                                                            placeholder="15.000.000"
+                                                            className={`w-full bg-white border ${hargaError ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500' : 'border-slate-200 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40'} rounded-2xl pl-14 pr-6 py-4 text-sm font-bold text-[#0A1128] placeholder:text-slate-400 focus:ring-1 focus:outline-none transition-all`}
+                                                        />
+                                                    </div>
+                                                    {hargaError && <p className="text-xs text-red-500 font-bold ml-1">{hargaError}</p>}
                                                 </div>
 
                                                 <div className="space-y-3">
