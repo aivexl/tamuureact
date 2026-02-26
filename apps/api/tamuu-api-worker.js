@@ -992,7 +992,7 @@ export default {
                     `).bind(nama_toko, slug, deskripsi_panjang, logo_url, banner_url, merchant_id).run();
 
                     // Extract new social media fields
-                    const { facebook, tiktok, website } = body;
+                    const { facebook, tiktok, website, youtube, x_url, tokopedia_url, shopee_url } = body;
 
                     // 2. Update shop_contacts (Upsert via REPLACE INTO or UPDATE)
                     // We know they have a row because onboarding seeded it, but we can do an UPDATE.
@@ -1003,11 +1003,15 @@ export default {
                             facebook = COALESCE(?, facebook),
                             tiktok = COALESCE(?, tiktok),
                             website = COALESCE(?, website),
+                            youtube = COALESCE(?, youtube),
+                            x_url = COALESCE(?, x_url),
+                            tokopedia_url = COALESCE(?, tokopedia_url),
+                            shopee_url = COALESCE(?, shopee_url),
                             email = COALESCE(?, email),
                             alamat = COALESCE(?, alamat),
                             updated_at = CURRENT_TIMESTAMP
                         WHERE merchant_id = ?
-                    `).bind(whatsapp, instagram, facebook, tiktok, website, email, alamat, merchant_id).run();
+                    `).bind(whatsapp, instagram, facebook, tiktok, website, youtube, x_url, tokopedia_url, shopee_url, email, alamat, merchant_id).run();
 
                     return json({ success: true, message: 'Settings saved successfully' }, corsHeaders);
                 } catch (error) {

@@ -4,13 +4,16 @@ import { useStore } from '../../store/useStore';
 import { useMerchantProfile, useUpdateMerchantProfile } from '../../hooks/queries/useShop';
 import api from '../../lib/api';
 import { INDONESIA_REGIONS } from '../../constants/regions';
-import { MapPin, Search, ChevronDown, Check, X, Camera, Globe, Mail, Phone, Instagram, Facebook, Link as LinkIcon, ExternalLink, ShieldCheck } from 'lucide-react';
+import { MapPin, Search, ChevronDown, Check, X, Camera, Globe, Mail, Phone, Instagram, Facebook, Link as LinkIcon, ExternalLink, ShieldCheck, Youtube, Twitter, Store, ShoppingBag } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { PremiumLoader } from '../ui/PremiumLoader';
 
 // Icons
 const StorefrontIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
+);
+const TiktokIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
 );
 
 export const MerchantSettings: React.FC = () => {
@@ -31,7 +34,11 @@ export const MerchantSettings: React.FC = () => {
     const [instagram, setInstagram] = useState('');
     const [facebook, setFacebook] = useState('');
     const [tiktok, setTiktok] = useState('');
+    const [youtube, setYoutube] = useState('');
+    const [xUrl, setXUrl] = useState('');
     const [website, setWebsite] = useState('');
+    const [tokopediaUrl, setTokopediaUrl] = useState('');
+    const [shopeeUrl, setShopeeUrl] = useState('');
     const [email, setEmail] = useState('');
     const [alamat, setAlamat] = useState('');
 
@@ -56,7 +63,11 @@ export const MerchantSettings: React.FC = () => {
             setInstagram(c.instagram || '');
             setFacebook(c.facebook || '');
             setTiktok(c.tiktok || '');
+            setYoutube(c.youtube || '');
+            setXUrl(c.x_url || '');
             setWebsite(c.website || '');
+            setTokopediaUrl(c.tokopedia_url || '');
+            setShopeeUrl(c.shopee_url || '');
             setEmail(c.email || '');
             setAlamat(c.alamat || '');
             
@@ -111,7 +122,11 @@ export const MerchantSettings: React.FC = () => {
                     instagram: instagram,
                     facebook: facebook,
                     tiktok: tiktok,
+                    youtube: youtube,
+                    x_url: xUrl,
                     website: website,
+                    tokopedia_url: tokopediaUrl,
+                    shopee_url: shopeeUrl,
                     email: email,
                     alamat: alamat
                 }
@@ -226,15 +241,43 @@ export const MerchantSettings: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">WhatsApp</label>
-                                <div className="relative"><Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" /><input value={whatsapp} onChange={e => { setWhatsapp(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128]" /></div>
+                                <div className="relative"><Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" /><input value={whatsapp} onChange={e => { setWhatsapp(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128]" placeholder="08xxxxxxxx" /></div>
                             </div>
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Instagram</label>
-                                <div className="relative"><Instagram className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" /><input value={instagram} onChange={e => { setInstagram(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128]" /></div>
+                                <div className="relative"><Instagram className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" /><input value={instagram} onChange={e => { setInstagram(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128]" placeholder="@username" /></div>
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">TikTok</label>
+                                <div className="relative"><TiktokIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" /><input value={tiktok} onChange={e => { setTiktok(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128]" placeholder="@username" /></div>
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">YouTube</label>
+                                <div className="relative"><Youtube className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" /><input value={youtube} onChange={e => { setYoutube(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128]" placeholder="youtube.com/..." /></div>
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">X (Twitter)</label>
+                                <div className="relative"><Twitter className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" /><input value={xUrl} onChange={e => { setXUrl(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128]" placeholder="x.com/..." /></div>
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Facebook</label>
+                                <div className="relative"><Facebook className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" /><input value={facebook} onChange={e => { setFacebook(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128]" placeholder="facebook.com/..." /></div>
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Website</label>
+                                <div className="relative"><Globe className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" /><input value={website} onChange={e => { setWebsite(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128]" placeholder="https://..." /></div>
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tokopedia</label>
+                                <div className="relative"><Store className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" /><input value={tokopediaUrl} onChange={e => { setTokopediaUrl(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128]" placeholder="tokopedia.com/..." /></div>
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Shopee</label>
+                                <div className="relative"><ShoppingBag className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" /><input value={shopeeUrl} onChange={e => { setShopeeUrl(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128]" placeholder="shopee.co.id/..." /></div>
                             </div>
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Publik</label>
-                                <div className="relative"><Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" /><input value={email} onChange={e => { setEmail(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128]" /></div>
+                                <div className="relative"><Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" /><input value={email} onChange={e => { setEmail(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128]" placeholder="email@toko.com" /></div>
                             </div>
                         </div>
                     </div>
