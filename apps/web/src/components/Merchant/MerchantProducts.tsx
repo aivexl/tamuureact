@@ -398,7 +398,7 @@ export const MerchantProducts: React.FC = () => {
                                                         type="text"
                                                         value={namaProduk}
                                                         onChange={e => setNamaProduk(e.target.value)}
-                                                        placeholder="e.g. Imperial Venue Hall"
+                                                        placeholder="e.g. Tamuu Venue Hall"
                                                         className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-[#0A1128] placeholder:text-slate-400 focus:ring-1 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40 focus:outline-none transition-all"
                                                     />
                                                 </div>
@@ -673,24 +673,22 @@ export const MerchantProducts: React.FC = () => {
                                 disabled={isBusy}
                                 className="flex-1 md:flex-none px-8 py-3.5 rounded-2xl border border-white/10 bg-[#0A1128] text-white font-black uppercase text-[10px] tracking-widest hover:bg-white/5 transition-all active:scale-95 disabled:opacity-50"
                             >
-                                Abort
+                                Batal
                             </button>
-                            {status !== 'DRAFT' && (
-                                <button
-                                    onClick={() => handleSave('DRAFT')}
-                                    disabled={isBusy || !namaProduk}
-                                    className="flex-1 md:flex-none px-8 py-3.5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-400 font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 disabled:opacity-50"
-                                >
-                                    To Draft
-                                </button>
-                            )}
+                            <button
+                                onClick={() => handleSave('DRAFT')}
+                                disabled={isBusy || !namaProduk}
+                                className="flex-1 md:flex-none px-8 py-3.5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-400 font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 disabled:opacity-50"
+                            >
+                                Simpan Draft
+                            </button>
                             <button
                                 onClick={() => handleSave('PUBLISHED')}
                                 disabled={isBusy || !namaProduk}
                                 className="flex-1 md:flex-none px-12 py-3.5 rounded-2xl bg-[#FFBF00] hover:bg-[#FFD700] text-[#0A1128] font-black uppercase text-[10px] tracking-widest shadow-2xl shadow-[#FFBF00]/20 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
                             >
                                 {isBusy ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-[#0A1128]"></div> : null}
-                                {isBusy ? 'Syncing...' : 'Publish'}
+                                {isBusy ? 'Menyimpan...' : 'Publish'}
                             </button>
                         </div>
                     </m.footer>
