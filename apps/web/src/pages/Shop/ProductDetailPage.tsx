@@ -14,7 +14,9 @@ import {
     MapPin,
     Tag,
     ShoppingBag,
-    Star
+    Star,
+    Copy,
+    Check
 } from 'lucide-react';
 import {
     useProductDetails,
@@ -35,6 +37,15 @@ export const ProductDetailPage: React.FC = () => {
     const { slug, productId } = useParams<{ slug: string, productId: string }>();
     const navigate = useNavigate();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [isCopied, setIsCopied] = useState(false);
+
+    const handleCopyId = () => {
+        const productNo = `tamuu-shop-${product?.id?.substring(0, 8).toUpperCase()}`;
+        navigator.clipboard.writeText(productNo);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+    };
+
     const { user } = useStore();
 
     // Data Fetching
@@ -269,9 +280,24 @@ export const ProductDetailPage: React.FC = () => {
                 <div className="max-w-7xl mx-auto px-6 mt-20 space-y-24">
                     {/* Description Section */}
                     <div className="space-y-8">
-                        <div className="flex items-center gap-3">
-                            <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
-                            <h2 className="text-xl font-black uppercase tracking-tighter italic">Deskripsi Produk</h2>
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
+                                <h2 className="text-xl font-black uppercase tracking-tighter italic">Deskripsi Produk</h2>
+                            </div>
+                            
+                            {/* Product Number - Derived from ID */}
+                            <div 
+                                onClick={handleCopyId}
+                                className="group flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 cursor-pointer transition-all"
+                            >
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                    No. Produk: <span className="text-slate-600 font-black">tamuu-shop-{product.id.substring(0, 8).toUpperCase()}</span>
+                                </span>
+                                <div className="w-6 h-6 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-[#FFBF00] transition-all">
+                                    {isCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                                </div>
+                            </div>
                         </div>
                         <div className="p-10 bg-slate-50 rounded-[3rem] border border-slate-100 text-slate-600 text-lg leading-relaxed font-medium max-w-4xl">
                             {product.deskripsi}

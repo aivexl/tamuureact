@@ -19,11 +19,13 @@ import { formatCurrency } from '../../lib/utils';
 import { toast } from 'react-hot-toast';
 import { PremiumLoader } from '../ui/PremiumLoader';
 import { INDONESIA_REGIONS } from '../../constants/regions';
+import { ConfirmationModal } from '../Modals/ConfirmationModal';
 
 export const AdminProductListing: React.FC = () => {
     const [search, setSearch] = useState('');
     const [isAdding, setIsLocationOpen] = useState(false); // Modal state
     const [editingProduct, setEditingProduct] = useState<any>(null);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
     
     const { data, isLoading } = useAdminProducts();
     const deleteMutation = useAdminDeleteProduct();
@@ -34,20 +36,26 @@ export const AdminProductListing: React.FC = () => {
 
     const filteredProducts = useMemo(() => {
         // ONLY show Admin listings here
-        return products.filter((p: any) => 
-            p.is_admin_listing === 1 && (
-                p.nama_produk.toLowerCase().includes(search.toLowerCase()) ||
-                (p.custom_store_name || '').toLowerCase().includes(search.toLowerCase())
-            )
-        );
+        return products.filter((p: any) => {
+            if (p.is_admin_listing !== 1) return false;
+            
+            const productNo = `tamuu-shop-${p.product_id?.substring(0, 8).toUpperCase()}`;
+            const searchLower = search.toLowerCase();
+
+            return p.nama_produk.toLowerCase().includes(searchLower) ||
+                (p.custom_store_name || '').toLowerCase().includes(searchLower) ||
+                productNo.toLowerCase().includes(searchLower) ||
+                p.product_id.toLowerCase().includes(searchLower);
+        });
     }, [products, search]);
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to permanently purge this listing?')) return;
+    const handleDelete = async () => {
+        if (!deleteId) return;
         
         try {
-            await deleteMutation.mutateAsync(id);
+            await deleteMutation.mutateAsync(deleteId);
             toast.success('Listing purged successfully');
+            setDeleteId(null);
         } catch (err: any) {
             toast.error(err.message || 'Purge failed');
         }
@@ -171,7 +179,7 @@ export const AdminProductListing: React.FC = () => {
                                                 <ExternalLink className="w-4 h-4" />
                                             </a>
                                             <button 
-                                                onClick={() => handleDelete(product.product_id)}
+                                                onClick={() => setDeleteId(product.product_id)}
                                                 className="p-2.5 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-rose-500 hover:border-rose-100 transition-all shadow-sm"
                                             >
                                                 <Trash2 className="w-4 h-4" />
@@ -216,6 +224,17 @@ export const AdminProductListing: React.FC = () => {
                     </div>
                 )}
             </AnimatePresence>
+
+            <ConfirmationModal 
+                isOpen={!!deleteId}
+                onClose={() => setDeleteId(null)}
+                onConfirm={handleDelete}
+                title="Hapus Listing?"
+                message="Anda akan menghapus listing produk admin ini secara permanen. Tindakan ini tidak dapat dibatalkan."
+                confirmText="Hapus Listing"
+                cancelText="Batal"
+                isLoading={deleteMutation.isPending}
+            />
         </div>
     );
 };

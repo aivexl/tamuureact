@@ -15,9 +15,11 @@ import { useAdminProducts, useAdminDeleteProduct } from '../../hooks/queries/use
 import { formatCurrency } from '../../lib/utils';
 import { toast } from 'react-hot-toast';
 import { PremiumLoader } from '../ui/PremiumLoader';
+import { ConfirmationModal } from '../Modals/ConfirmationModal';
 
 export const AdminProductManagement: React.FC = () => {
     const [search, setSearch] = useState('');
+    const [deleteId, setDeleteId] = useState<string | null>(null);
     
     const { data, isLoading } = useAdminProducts();
     const deleteMutation = useAdminDeleteProduct();
@@ -26,19 +28,25 @@ export const AdminProductManagement: React.FC = () => {
     const diagnostics = data?.diagnostics || {};
 
     const filteredProducts = useMemo(() => {
-        return products.filter((p: any) => 
-            p.nama_produk.toLowerCase().includes(search.toLowerCase()) ||
-            (p.nama_toko || '').toLowerCase().includes(search.toLowerCase()) ||
-            (p.custom_store_name || '').toLowerCase().includes(search.toLowerCase())
-        );
+        return products.filter((p: any) => {
+            const productNo = `tamuu-shop-${p.product_id?.substring(0, 8).toUpperCase()}`;
+            const searchLower = search.toLowerCase();
+            
+            return p.nama_produk.toLowerCase().includes(searchLower) ||
+                (p.nama_toko || '').toLowerCase().includes(searchLower) ||
+                (p.custom_store_name || '').toLowerCase().includes(searchLower) ||
+                productNo.toLowerCase().includes(searchLower) ||
+                p.product_id.toLowerCase().includes(searchLower);
+        });
     }, [products, search]);
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('CRITICAL: You are about to permanently purge this product from the global registry. This action cannot be undone and will affect live storefronts. Continue?')) return;
+    const handleDelete = async () => {
+        if (!deleteId) return;
         
         try {
-            await deleteMutation.mutateAsync(id);
+            await deleteMutation.mutateAsync(deleteId);
             toast.success('Product purged from registry');
+            setDeleteId(null);
         } catch (err: any) {
             toast.error(err.message || 'Purge failed');
         }
@@ -167,7 +175,7 @@ export const AdminProductManagement: React.FC = () => {
                                                 <ExternalLink className="w-4 h-4" />
                                             </a>
                                             <button 
-                                                onClick={() => handleDelete(product.product_id)}
+                                                onClick={() => setDeleteId(product.product_id)}
                                                 className="p-2.5 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-rose-500 hover:border-rose-100 transition-all shadow-sm"
                                             >
                                                 <Trash2 className="w-4 h-4" />
@@ -185,6 +193,17 @@ export const AdminProductManagement: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            <ConfirmationModal 
+                isOpen={!!deleteId}
+                onClose={() => setDeleteId(null)}
+                onConfirm={handleDelete}
+                title="Hapus Produk Permanent?"
+                message="CRITICAL: Anda akan menghapus produk ini secara permanen dari registri global. Tindakan ini tidak dapat dibatalkan dan akan memengaruhi etalase toko yang sedang aktif."
+                confirmText="Hapus Sekarang"
+                cancelText="Batal"
+                isLoading={deleteMutation.isPending}
+            />
         </div>
     );
 };

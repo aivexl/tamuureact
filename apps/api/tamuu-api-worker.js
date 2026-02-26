@@ -1281,8 +1281,14 @@ export default {
                         params.push(city);
                     }
                     if (search) {
-                        query += ` AND (p.nama_produk LIKE ? OR p.deskripsi LIKE ? OR m.nama_toko LIKE ?)`;
-                        params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+                        if (search.toLowerCase().startsWith('tamuu-shop-')) {
+                            const rawId = search.substring(11);
+                            query += ` AND p.id LIKE ?`;
+                            params.push(`${rawId}%`);
+                        } else {
+                            query += ` AND (p.nama_produk LIKE ? OR p.deskripsi LIKE ? OR m.nama_toko LIKE ? OR p.id LIKE ?)`;
+                            params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+                        }
                     }
 
                     query += ` ORDER BY p.created_at DESC LIMIT 100`;
