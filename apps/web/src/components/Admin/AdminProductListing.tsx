@@ -114,12 +114,12 @@ export const AdminProductListing: React.FC = () => {
                         {/* Header / Actions */}
                         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
                             <div>
-                                <h2 className="text-2xl font-black text-[#0A1128] uppercase italic tracking-tighter">Global Product Listings</h2>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Admin-posted products with custom branding</p>
+                                <h2 className="text-2xl font-black text-[#0A1128] uppercase italic tracking-tighter block">Global Product Listings</h2>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 block">Admin-posted products with custom branding</p>
                             </div>
                             <button 
                                 onClick={() => { setEditingProduct(null); setView('form'); }}
-                                className="bg-[#0A1128] text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center gap-2 hover:bg-[#FFBF00] transition-all shadow-lg shadow-[#0A1128]/10"
+                                className="bg-[#0A1128] text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center gap-2 hover:bg-[#FFBF00] hover:text-[#0A1128] transition-all shadow-lg shadow-[#0A1128]/10"
                             >
                                 <Plus className="w-4 h-4" />
                                 New Listing
@@ -353,7 +353,7 @@ const ProductForm: React.FC<{ product?: any, onSave: (data: any) => void, onCanc
     return (
         <div className="space-y-10">
             {/* Form Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-50 py-6 mb-10 border-b border-slate-50">
                 <div>
                     <button 
                         onClick={onCancel}
@@ -362,19 +362,32 @@ const ProductForm: React.FC<{ product?: any, onSave: (data: any) => void, onCanc
                         <ArrowLeft className="w-4 h-4" />
                         Kembali ke List
                     </button>
-                    <h2 className="text-3xl font-black text-[#0A1128] uppercase italic tracking-tighter">
+                    <h2 className="text-3xl font-black text-[#0A1128] uppercase italic tracking-tighter block">
                         {isEdit ? 'Sunting Listing' : 'Listing Baru'}
                     </h2>
                 </div>
                 <div className="flex gap-4">
                     <button 
                         onClick={onCancel}
-                        className="px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] text-slate-400 hover:text-[#0A1128] transition-all"
+                        className="px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] text-slate-400 bg-slate-50 hover:bg-slate-100 hover:text-[#0A1128] transition-all"
                     >
                         Batal
                     </button>
                     <button 
-                        onClick={handleSubmit}
+                        onClick={() => {
+                            setFormData(prev => ({ ...prev, status: 'DRAFT' }));
+                            setTimeout(() => handleSubmit({ preventDefault: () => {} } as React.FormEvent), 0);
+                        }}
+                        disabled={loading || !formData.nama_produk || !formData.custom_store_name}
+                        className="bg-slate-800 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-slate-900 transition-all disabled:opacity-50"
+                    >
+                        Simpan Draft
+                    </button>
+                    <button 
+                        onClick={() => {
+                            setFormData(prev => ({ ...prev, status: 'PUBLISHED' }));
+                            setTimeout(() => handleSubmit({ preventDefault: () => {} } as React.FormEvent), 0);
+                        }}
                         disabled={loading || !formData.nama_produk || !formData.custom_store_name}
                         className="bg-[#0A1128] text-white px-10 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-[#0A1128]/10 hover:shadow-xl hover:scale-[1.02] active:scale-95 disabled:opacity-50 flex items-center gap-2 transition-all"
                     >
@@ -431,13 +444,13 @@ const ProductForm: React.FC<{ product?: any, onSave: (data: any) => void, onCanc
                                             value={formData.harga_estimasi ? new Intl.NumberFormat('id-ID').format(Number(formData.harga_estimasi)) : ''}
                                             onChange={e => {
                                                 const val = e.target.value;
-                                                if (/[^0-9.]/.test(val)) {
+                                                const numericVal = val.replace(/[^0-9]/g, '');
+                                                if (val !== numericVal && val.replace(/[.]/g, '') !== numericVal) {
                                                     setHargaError('Hanya masukkan angka.');
                                                 } else {
                                                     setHargaError('');
                                                 }
-                                                const rawValue = val.replace(/[^0-9]/g, '');
-                                                setFormData({ ...formData, harga_estimasi: rawValue });
+                                                setFormData({ ...formData, harga_estimasi: numericVal });
                                             }}
                                             placeholder="15.000.000"
                                             className={`w-full bg-slate-50 border-none rounded-2xl pl-14 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 ${hargaError ? 'focus:ring-red-500/20' : 'focus:ring-[#FFBF00]/20'} transition-all`}
