@@ -213,7 +213,7 @@ export const MerchantOnboardingPage: React.FC = () => {
                 </div>
             </div>
 
-            <main className="flex-1 flex flex-col items-center justify-center py-8 sm:py-12 px-4 sm:px-6 overflow-hidden">
+            <main className="flex-1 flex flex-col items-center justify-center py-8 sm:py-12 px-4 sm:px-6 relative">
                 <AnimatePresence mode="wait">
                     {/* STEP 1: NAMA TOKO */}
                     {step === 1 && (
@@ -268,7 +268,7 @@ export const MerchantOnboardingPage: React.FC = () => {
 
                     {/* STEP 3: LOKASI */}
                     {step === 3 && (
-                        <m.div key="step3" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }} className="max-w-[540px] w-full text-center space-y-8 sm:space-y-10">
+                        <m.div key="step3" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }} className={`max-w-[540px] w-full text-center space-y-8 sm:space-y-10 ${isLocationOpen ? 'relative z-50' : 'relative z-10'}`}>
                             <div className="space-y-4">
                                 <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white border border-slate-100/50 rounded-full flex items-center justify-center mx-auto shadow-sm">
                                     <MapPin className="w-6 h-6 sm:w-7 sm:h-7 text-indigo-500" strokeWidth={2.5} />
@@ -298,7 +298,7 @@ export const MerchantOnboardingPage: React.FC = () => {
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 exit={{ opacity: 0, y: 10 }}
-                                                className="absolute left-6 right-6 top-full mt-2 bg-white border border-slate-100 shadow-2xl rounded-[1.5rem] z-50 flex flex-col max-h-[300px] overflow-hidden"
+                                                className="absolute left-6 right-6 top-full mt-2 bg-white border border-slate-100 shadow-2xl rounded-[1.5rem] z-[100] flex flex-col max-h-[300px] overflow-hidden"
                                             >
                                                 <div className="p-4 border-b border-slate-50 flex items-center gap-2">
                                                     <SearchIcon className="w-4 h-4 text-slate-300" />
@@ -311,7 +311,7 @@ export const MerchantOnboardingPage: React.FC = () => {
                                                         className="w-full bg-transparent border-none outline-none text-sm font-semibold text-slate-900"
                                                     />
                                                 </div>
-                                                <div className="flex-1 overflow-y-auto p-2 no-scrollbar">
+                                                <div className="flex-1 overflow-y-auto p-2 no-scrollbar overscroll-contain">
                                                     {filteredCities.map((city) => (
                                                         <button
                                                             key={city}

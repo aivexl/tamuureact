@@ -16,7 +16,8 @@ import {
     ShieldCheck,
     Briefcase,
     FileText,
-    Store
+    Store,
+    ShoppingBag
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { AdminChatSidebarWrapper } from './AdminChatSidebarWrapper';
@@ -180,13 +181,22 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                     )}
 
                     {hasPermission('management:stores') && (
-                        <SidebarItem
-                            href="/admin/stores"
-                            icon={Store}
-                            label="Store Management"
-                            active={location.pathname === '/admin/stores'}
-                            sidebarOpen={sidebarOpen}
-                        />
+                        <>
+                            <SidebarItem
+                                href="/admin/stores"
+                                icon={Store}
+                                label="Store Management"
+                                active={location.pathname === '/admin/stores'}
+                                sidebarOpen={sidebarOpen}
+                            />
+                            <SidebarItem
+                                href="/admin/products"
+                                icon={ShoppingBag}
+                                label="Product Registry"
+                                active={location.pathname === '/admin/products'}
+                                sidebarOpen={sidebarOpen}
+                            />
+                        </>
                     )}
 
                     <SidebarItem

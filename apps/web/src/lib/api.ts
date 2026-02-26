@@ -1053,7 +1053,8 @@ export const shop = {
     // PRODUCTS CRUD
     async getMerchantProducts(merchantId: string) {
         if (!merchantId) return [];
-        const res = await safeFetch(`${API_BASE}/api/shop/merchant/products?merchant_id=${merchantId}`);
+        // Append a cache buster to strictly avoid browser/edge disk cache returning stale product lists
+        const res = await safeFetch(`${API_BASE}/api/shop/merchant/products?merchant_id=${merchantId}&_t=${Date.now()}`);
         if (!res.ok) throw new Error('Failed to fetch merchant products');
         const data = await res.json();
         return sanitizeValue(data.products || []);
@@ -1092,6 +1093,34 @@ export const shop = {
         if (!res.ok) {
             const errorData = await res.json().catch(() => ({}));
             throw new Error(errorData.error || 'Failed to delete product');
+        }
+        return res.json();
+    },
+
+    // ADMIN SHOP MANAGEMENT
+    async adminGetAllProducts(token: string) {
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/products?_t=${Date.now()}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Failed to fetch global product registry');
+        }
+        const data = await res.json();
+        return {
+            products: sanitizeValue(data.products || []),
+            diagnostics: data.diagnostics
+        };
+    },
+
+    async adminDeleteProduct(productId: string, token: string) {
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/products?id=${productId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Failed to purge product');
         }
         return res.json();
     },

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { shop } from '../../lib/api';
+import { useStore } from '../../store/useStore';
 
 export const useShopDirectory = (category?: string, query?: string) => {
     return useQuery({
@@ -217,5 +218,29 @@ export const useSmartRecommendations = (productId?: string, category?: string) =
         queryKey: ['shop_recommendations', productId],
         queryFn: () => shop.getRecommendations(productId!, category!),
         enabled: !!productId && !!category
+    });
+};
+
+// ============================================
+// ADMIN SHOP MANAGEMENT HOOKS
+// ============================================
+
+export const useAdminProducts = () => {
+    const { user, token } = useStore();
+    return useQuery({
+        queryKey: ['admin_all_products'],
+        queryFn: () => shop.adminGetAllProducts(token || user?.id || ''),
+        enabled: !!(token || user?.id)
+    });
+};
+
+export const useAdminDeleteProduct = () => {
+    const { user, token } = useStore();
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (productId: string) => shop.adminDeleteProduct(productId, token || user?.id || ''),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin_all_products'] });
+        }
     });
 };

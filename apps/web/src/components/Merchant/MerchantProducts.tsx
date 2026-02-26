@@ -190,10 +190,16 @@ export const MerchantProducts: React.FC = () => {
     };
 
     const handleSave = async (forceStatus?: string) => {
-        if (!merchantId) return;
+        if (!merchantId) {
+            console.error('[MerchantProducts] Cannot save: merchantId is missing', { merchantData });
+            alert('Identitas toko tidak ditemukan. Mohon refresh halaman.');
+            return;
+        }
+        
         const finalStatus = (forceStatus || status) as 'DRAFT' | 'PUBLISHED';
         const finalKategori = selectedCategory === 'Lainnya' ? customCategory : selectedCategory;
 
+        console.log('[MerchantProducts] Saving product:', { name: namaProduk, status: finalStatus, merchantId });
         setSaveType(finalStatus);
 
         const payload = {
