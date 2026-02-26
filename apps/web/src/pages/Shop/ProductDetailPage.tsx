@@ -95,12 +95,14 @@ export const ProductDetailPage: React.FC = () => {
         <div className="min-h-screen bg-white text-[#0A1128] font-sans selection:bg-[#FFBF00] selection:text-[#0A1128]">
             {/* Minimal Action Bar */}
             <div className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-xl border-b border-slate-50">
-                <button
-                    onClick={() => navigate(`/shop/${slug}`)}
-                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 hover:bg-slate-100 transition-all"
-                >
-                    <ArrowLeft className="w-5 h-5" />
-                </button>
+                {!product.is_admin_listing ? (
+                    <button
+                        onClick={() => navigate(`/shop/${slug}`)}
+                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 hover:bg-slate-100 transition-all"
+                    >
+                        <ArrowLeft className="w-5 h-5" />
+                    </button>
+                ) : <div />}
                 <div className="flex gap-2">
                     <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 hover:bg-slate-100 transition-all">
                         <Share2 className="w-5 h-5 text-[#FFBF00]" />
@@ -197,35 +199,41 @@ export const ProductDetailPage: React.FC = () => {
                                 <div className="flex items-center gap-5">
                                     <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white border-4 border-white shadow-lg flex-shrink-0">
                                         <img 
-                                            src={product.logo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${product.nama_toko}`} 
-                                            alt={product.nama_toko} 
+                                            src={product.is_admin_listing ? `https://api.dicebear.com/7.x/initials/svg?seed=${product.custom_store_name || 'Admin'}` : (product.logo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${product.nama_toko}`)} 
+                                            alt={product.is_admin_listing ? product.custom_store_name : product.nama_toko} 
                                             className="w-full h-full object-cover" 
                                         />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <h3 className="text-lg font-black text-[#0A1128] truncate">{product.nama_toko}</h3>
+                                        <h3 className="text-lg font-black text-[#0A1128] truncate">
+                                            {product.is_admin_listing ? (product.custom_store_name || 'Official Partner') : product.nama_toko}
+                                        </h3>
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1 mb-2">
                                             <MapPin className="w-3 h-3 text-[#FFBF00]" />
                                             {product.kota || 'Nasional'}
                                         </p>
-                                        <div className="flex items-center gap-4 mt-1">
-                                            <div className="flex items-center gap-1">
-                                                <ShoppingBag className="w-3 h-3 text-slate-400" />
-                                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">
-                                                    {merchantStats?.total_products || 0} Produk
-                                                </span>
+                                        {!product.is_admin_listing && (
+                                            <div className="flex items-center gap-4 mt-1">
+                                                <div className="flex items-center gap-1">
+                                                    <ShoppingBag className="w-3 h-3 text-slate-400" />
+                                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">
+                                                        {merchantStats?.total_products || 0} Produk
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <Heart className="w-3 h-3 text-rose-400 fill-rose-400" />
+                                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">
+                                                        {merchantStats?.total_wishlist || 0} Love
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-1">
-                                                <Heart className="w-3 h-3 text-rose-400 fill-rose-400" />
-                                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">
-                                                    {merchantStats?.total_wishlist || 0} Love
-                                                </span>
-                                            </div>
-                                        </div>
+                                        )}
                                     </div>
-                                    <Link to={`/shop/${slug}`} className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center hover:bg-[#0A1128] hover:text-white transition-all shadow-sm">
-                                        <ChevronRight className="w-5 h-5" />
-                                    </Link>
+                                    {!product.is_admin_listing && (
+                                        <Link to={`/shop/${slug}`} className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center hover:bg-[#0A1128] hover:text-white transition-all shadow-sm">
+                                            <ChevronRight className="w-5 h-5" />
+                                        </Link>
+                                    )}
                                 </div>
                             </div>
 

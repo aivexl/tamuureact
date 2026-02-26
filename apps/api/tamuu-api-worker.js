@@ -1264,10 +1264,11 @@ export default {
 
                     let query = `
                         SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url,
+                        p.is_admin_listing, p.custom_store_name,
                         (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count
                         FROM shop_products p 
-                        JOIN shop_merchants m ON p.merchant_id = m.id
-                        WHERE p.status = 'PUBLISHED' AND m.is_verified = 1
+                        LEFT JOIN shop_merchants m ON p.merchant_id = m.id
+                        WHERE p.status = 'PUBLISHED' AND (m.is_verified = 1 OR p.is_admin_listing = 1)
                     `;
                     let params = [];
 
@@ -1336,10 +1337,10 @@ export default {
 
                     // Step 1: Try Same Category (Excluding current product)
                     let products = await env.DB.prepare(`
-                        SELECT p.*, m.nama_toko, m.slug as merchant_slug 
+                        SELECT p.*, m.nama_toko, m.slug as merchant_slug, p.is_admin_listing, p.custom_store_name 
                         FROM shop_products p
-                        JOIN shop_merchants m ON p.merchant_id = m.id
-                        WHERE p.kategori_produk = ? AND p.id != ? AND p.status = 'PUBLISHED' AND m.is_verified = 1
+                        LEFT JOIN shop_merchants m ON p.merchant_id = m.id
+                        WHERE p.kategori_produk = ? AND p.id != ? AND p.status = 'PUBLISHED' AND (m.is_verified = 1 OR p.is_admin_listing = 1)
                         LIMIT ?
                     `).bind(category, productId, limit).all();
 
@@ -1347,10 +1348,10 @@ export default {
                     if (products.results.length < 4) {
                         const remaining = limit - products.results.length;
                         const fallback = await env.DB.prepare(`
-                            SELECT p.*, m.nama_toko, m.slug as merchant_slug 
+                            SELECT p.*, m.nama_toko, m.slug as merchant_slug, p.is_admin_listing, p.custom_store_name 
                             FROM shop_products p
-                            JOIN shop_merchants m ON p.merchant_id = m.id
-                            WHERE p.id != ? AND p.kategori_produk != ? AND p.status = 'PUBLISHED' AND m.is_verified = 1
+                            LEFT JOIN shop_merchants m ON p.merchant_id = m.id
+                            WHERE p.id != ? AND p.kategori_produk != ? AND p.status = 'PUBLISHED' AND (m.is_verified = 1 OR p.is_admin_listing = 1)
                             ORDER BY p.created_at DESC LIMIT ?
                         `).bind(productId, category, remaining).all();
                         
@@ -1431,6 +1432,8 @@ export default {
                                 p.harga_estimasi, 
                                 p.kota, 
                                 p.merchant_id, 
+                                p.is_admin_listing,
+                                p.custom_store_name,
                                 p.created_at as product_created_at,
                                 m.nama_toko, 
                                 m.slug as merchant_slug
@@ -1483,6 +1486,117 @@ export default {
                     } catch (error) {
                         console.error('[Admin] Global Registry Error:', error.message);
                         return json({ error: 'Failed to fetch global products', details: error.message }, { ...corsHeaders, status: 500 });
+                    }
+                }
+
+                if (path === '/api/admin/shop/products' && method === 'POST') {
+                    try {
+                        const body = await request.json();
+                        const { 
+                            nama_produk, deskripsi, harga_estimasi, status, images, 
+                            kategori_produk, kota, is_admin_listing, custom_store_name,
+                            tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url 
+                        } = body;
+
+                        if (!nama_produk) return json({ error: 'Nama produk required' }, { ...corsHeaders, status: 400 });
+
+                        const productId = crypto.randomUUID();
+                        // Use a dummy merchant ID for admin listings if not provided
+                        const merchantId = body.merchant_id || 'admin-merchant';
+
+                        const statements = [
+                            env.DB.prepare(`
+                                INSERT INTO shop_products (
+                                    id, merchant_id, nama_produk, deskripsi, harga_estimasi, status, 
+                                    kategori_produk, kota, is_admin_listing, custom_store_name,
+                                    tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url
+                                )
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            `).bind(
+                                productId, merchantId, nama_produk, deskripsi || '-', 
+                                harga_estimasi || null, status || 'PUBLISHED', kategori_produk || null, 
+                                kota || null, is_admin_listing ? 1 : 0, custom_store_name || null,
+                                tiktok_url || null, youtube_url || null, x_url || null, 
+                                website_url || null, tokopedia_url || null, shopee_url || null
+                            )
+                        ];
+
+                        if (Array.isArray(images) && images.length > 0) {
+                            for (let i = 0; i < images.length; i++) {
+                                if (images[i]) {
+                                    statements.push(
+                                        env.DB.prepare('INSERT INTO shop_product_images (id, product_id, image_url, order_index) VALUES (?, ?, ?, ?)')
+                                            .bind(crypto.randomUUID(), productId, images[i], i)
+                                    );
+                                }
+                            }
+                        }
+
+                        await env.DB.batch(statements);
+                        return json({ success: true, id: productId }, corsHeaders);
+                    } catch (error) {
+                        return json({ error: 'Failed to create product', details: error.message }, { ...corsHeaders, status: 500 });
+                    }
+                }
+
+                if (path === '/api/admin/shop/products' && method === 'PUT') {
+                    try {
+                        const productId = url.searchParams.get('id');
+                        if (!productId) return json({ error: 'Product ID required' }, { ...corsHeaders, status: 400 });
+
+                        const body = await request.json();
+                        const { 
+                            nama_produk, deskripsi, harga_estimasi, status, images, 
+                            kategori_produk, kota, is_admin_listing, custom_store_name,
+                            tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url 
+                        } = body;
+
+                        const statements = [
+                            env.DB.prepare(`
+                                UPDATE shop_products 
+                                SET nama_produk = COALESCE(?, nama_produk),
+                                    deskripsi = COALESCE(?, deskripsi),
+                                    harga_estimasi = COALESCE(?, harga_estimasi),
+                                    status = COALESCE(?, status),
+                                    kategori_produk = COALESCE(?, kategori_produk),
+                                    kota = COALESCE(?, kota),
+                                    is_admin_listing = COALESCE(?, is_admin_listing),
+                                    custom_store_name = COALESCE(?, custom_store_name),
+                                    tiktok_url = COALESCE(?, tiktok_url),
+                                    youtube_url = COALESCE(?, youtube_url),
+                                    x_url = COALESCE(?, x_url),
+                                    website_url = COALESCE(?, website_url),
+                                    tokopedia_url = COALESCE(?, tokopedia_url),
+                                    shopee_url = COALESCE(?, shopee_url),
+                                    updated_at = CURRENT_TIMESTAMP
+                                WHERE id = ?
+                            `).bind(
+                                nama_produk, deskripsi, harga_estimasi, status, 
+                                kategori_produk || null, kota || null, 
+                                is_admin_listing !== undefined ? (is_admin_listing ? 1 : 0) : null,
+                                custom_store_name || null,
+                                tiktok_url || null, youtube_url || null, x_url || null, 
+                                website_url || null, tokopedia_url || null, shopee_url || null,
+                                productId
+                            )
+                        ];
+
+                        if (Array.isArray(images)) {
+                            statements.push(env.DB.prepare('DELETE FROM shop_product_images WHERE product_id = ?').bind(productId));
+                            for (let i = 0; i < images.length; i++) {
+                                if (images[i]) {
+                                    statements.push(
+                                        env.DB.prepare('INSERT INTO shop_product_images (id, product_id, image_url, order_index) VALUES (?, ?, ?, ?)')
+                                            .bind(crypto.randomUUID(), productId, images[i], i)
+                                    );
+                                }
+                            }
+                        }
+
+                        await env.DB.batch(statements);
+                        return json({ success: true }, corsHeaders);
+                    } catch (error) {
+                        return json({ error: 'Failed to update product', details: error.message }, { ...corsHeaders, status: 500 });
                     }
                 }
 
@@ -1637,9 +1751,10 @@ export default {
                 try {
                     const product = await env.DB.prepare(`
                         SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url,
+                        p.is_admin_listing, p.custom_store_name,
                         (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count
                         FROM shop_products p 
-                        JOIN shop_merchants m ON p.merchant_id = m.id 
+                        LEFT JOIN shop_merchants m ON p.merchant_id = m.id 
                         WHERE p.id = ?
                     `).bind(productId).first();
 

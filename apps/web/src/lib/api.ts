@@ -1125,6 +1125,38 @@ export const shop = {
         return res.json();
     },
 
+    async adminAddProduct(data: any, token: string) {
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/products`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify(sanitizeValue(data))
+        });
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Failed to add product as admin');
+        }
+        return res.json();
+    },
+
+    async adminUpdateProduct(productId: string, data: any, token: string) {
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/products?id=${productId}`, {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify(sanitizeValue(data))
+        });
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Failed to update product as admin');
+        }
+        return res.json();
+    },
+
     // CAROUSEL
     async getCarousel() {
         const res = await safeFetch(`${API_BASE}/api/shop/carousel`);

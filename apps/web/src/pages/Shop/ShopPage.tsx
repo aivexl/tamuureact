@@ -313,7 +313,7 @@ export const ShopPage: React.FC = () => {
                                             />
                                             <div className="absolute top-4 left-4">
                                                 <span className="px-3 py-1 rounded-lg bg-white/90 backdrop-blur-sm text-[8px] font-black uppercase tracking-widest text-[#0A1128] shadow-sm w-fit">
-                                                    {product.nama_toko}
+                                                    {product.is_admin_listing ? (product.custom_store_name || 'Admin') : product.nama_toko}
                                                 </span>
                                             </div>
                                         </div>

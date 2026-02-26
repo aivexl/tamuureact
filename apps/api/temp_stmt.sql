@@ -1,1 +1,1 @@
-ALTER TABLE blog_posts ADD COLUMN tags TEXT;
+ALTER TABLE users ADD COLUMN bank1_holder TEXT;

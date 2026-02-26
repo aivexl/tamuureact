@@ -244,3 +244,25 @@ export const useAdminDeleteProduct = () => {
         }
     });
 };
+
+export const useAdminAddProduct = () => {
+    const { user, token } = useStore();
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (data: any) => shop.adminAddProduct(data, token || user?.id || ''),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin_all_products'] });
+        }
+    });
+};
+
+export const useAdminUpdateProduct = () => {
+    const { user, token } = useStore();
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, data }: { id: string, data: any }) => shop.adminUpdateProduct(id, data, token || user?.id || ''),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin_all_products'] });
+        }
+    });
+};

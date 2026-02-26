@@ -190,6 +190,13 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                                 sidebarOpen={sidebarOpen}
                             />
                             <SidebarItem
+                                href="/admin/product-listing"
+                                icon={FileText}
+                                label="Product Listing"
+                                active={location.pathname === '/admin/product-listing'}
+                                sidebarOpen={sidebarOpen}
+                            />
+                            <SidebarItem
                                 href="/admin/products"
                                 icon={ShoppingBag}
                                 label="Product Registry"
