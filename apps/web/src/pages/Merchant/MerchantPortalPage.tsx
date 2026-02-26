@@ -58,7 +58,10 @@ export const MerchantPortalPage: React.FC = () => {
 
     // Ensure the URL matches their actual store slug
     if (!isLoading && merchantData?.merchant && storeSlug !== merchantData.merchant.slug) {
-        return <Navigate to={`/store/${merchantData.merchant.slug}/dashboard`} replace />;
+        // Extract the current sub-path so we don't redirect them away from "settings" to "dashboard"
+        const currentPath = window.location.pathname;
+        const subPath = currentPath.split(`/store/${storeSlug}/`)[1] || 'dashboard';
+        return <Navigate to={`/store/${merchantData.merchant.slug}/${subPath}`} replace />;
     }
 
     return (
