@@ -85,8 +85,8 @@ export const MerchantOverview: React.FC<{ setTab?: (tab: string) => void }> = ({
                     initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                     className="text-4xl font-black text-[#0A1128] mb-3 tracking-tight flex items-center gap-4"
                 >
-                    Hello, <span className="text-[#FFBF00]">{merchant?.nama_toko || 'Merchant'}</span>
-                    {merchant?.is_sponsored && (
+                    Hello, <span className="text-[#FFBF00]">{merchant?.nama_toko || 'Merchant'}!</span>
+                    {!!merchant?.is_sponsored && (
                         <m.div
                             initial={{ scale: 0 }} animate={{ scale: 1 }}
                             className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFBF00]/10 border border-[#FFBF00]/30 shadow-[0_4px_10px_rgba(255,191,0,0.1)]"
