@@ -67,6 +67,7 @@ export const MerchantProducts: React.FC = () => {
     // Component State
     const [view, setView] = useState<'list' | 'add' | 'edit'>('list');
     const [searchQuery, setSearchQuery] = useState('');
+    const [saveType, setSaveType] = useState<'DRAFT' | 'PUBLISHED' | null>(null);
 
     // Form State
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -190,8 +191,10 @@ export const MerchantProducts: React.FC = () => {
 
     const handleSave = async (forceStatus?: string) => {
         if (!merchantId) return;
-        const finalStatus = forceStatus || status;
+        const finalStatus = (forceStatus || status) as 'DRAFT' | 'PUBLISHED';
         const finalKategori = selectedCategory === 'Lainnya' ? customCategory : selectedCategory;
+
+        setSaveType(finalStatus);
 
         const payload = {
             merchant_id: merchantId,
@@ -216,11 +219,17 @@ export const MerchantProducts: React.FC = () => {
             } else if (view === 'edit' && editingId) {
                 await updateProduct({ id: editingId, data: payload });
             }
+            
+            // CTO Level Robustness: Small delay to allow D1 replication before showing list
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
             setView('list');
             resetForm();
         } catch (error: any) {
             console.error('Save failed:', error);
             alert(error.message || 'Gagal menyimpan produk.');
+        } finally {
+            setSaveType(null);
         }
     };
 
@@ -683,8 +692,9 @@ export const MerchantProducts: React.FC = () => {
                             <button
                                 onClick={() => handleSave('DRAFT')}
                                 disabled={isBusy || !namaProduk}
-                                className="flex-1 md:flex-none px-8 py-3.5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-400 font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 disabled:opacity-50"
+                                className="flex-1 md:flex-none px-8 py-3.5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-400 font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
                             >
+                                {saveType === 'DRAFT' && <div className="animate-spin rounded-full h-3 w-3 border-t-2 border-slate-400"></div>}
                                 Simpan Draft
                             </button>
                             <button
@@ -692,8 +702,8 @@ export const MerchantProducts: React.FC = () => {
                                 disabled={isBusy || !namaProduk}
                                 className="flex-1 md:flex-none px-12 py-3.5 rounded-2xl bg-[#FFBF00] hover:bg-[#FFD700] text-[#0A1128] font-black uppercase text-[10px] tracking-widest shadow-2xl shadow-[#FFBF00]/20 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
                             >
-                                {isBusy ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-[#0A1128]"></div> : null}
-                                {isBusy ? 'Menyimpan...' : 'Publish'}
+                                {saveType === 'PUBLISHED' ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-[#0A1128]"></div> : null}
+                                {saveType === 'PUBLISHED' ? 'Menyimpan...' : 'Publish'}
                             </button>
                         </div>
                     </m.footer>
