@@ -1574,16 +1574,15 @@ export default {
                     if (owner.user_id !== user_id) return json({ error: 'Unauthorized ownership' }, { ...corsHeaders, status: 403 });
 
                     // 2. ATOMIC EXECUTION (Forced Persistence with Hard Change Verification)
-                    const updateOp = await env.DB.prepare(`
-                        UPDATE shop_merchants 
-                        SET nama_toko = ?, deskripsi = ?, logo_url = ?, banner_url = ?, category_id = ?, kota = ?, updated_at = CURRENT_TIMESTAMP
-                        WHERE (id = ? OR slug = ?) AND user_id = ?
-                    `).bind(
-                        nama_toko || '', deskripsi || '', logo_url || null, 
-                        banner_url || null, category_id || '', kota || '', 
-                        merchant_id, merchant_id, user_id
-                    ).run();
-
+                                        const updateOp = await env.DB.prepare(`
+                                            UPDATE shop_merchants
+                                            SET nama_toko = ?, deskripsi = ?, logo_url = ?, banner_url = ?, category_id = COALESCE(NULLIF(?, ''), category_id), updated_at = CURRENT_TIMESTAMP
+                                            WHERE (id = ? OR slug = ?) AND user_id = ?
+                                        `).bind(
+                                            nama_toko || '', deskripsi || '', logo_url || null,
+                                            banner_url || null, category_id || '',
+                                            merchant_id, merchant_id, user_id
+                                        ).run();
                     if (updateOp.meta.changes === 0) {
                         return json({ 
                             error: 'Persistence Refused: Unauthorized or Identity Mismatch', 
