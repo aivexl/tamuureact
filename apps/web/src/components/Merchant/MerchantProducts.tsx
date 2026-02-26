@@ -11,7 +11,14 @@ import {
 } from '../../hooks/queries/useShop';
 import api from '../../lib/api';
 import { formatCurrency } from '../../lib/utils';
-import { Search, MapPin, ChevronDown, Check, X } from 'lucide-react';
+import { Search, MapPin, ChevronDown, Check, X, Store, ShoppingBag, Youtube, Twitter, Globe } from 'lucide-react';
+
+// Custom Icons for Tiktok
+const TiktokIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+    </svg>
+);
 
 // Icons
 const PlusCircleIcon = ({ className }: { className?: string }) => (
@@ -65,6 +72,14 @@ export const MerchantProducts: React.FC = () => {
     const [customCategory, setCustomCategory] = useState('');
     const [deskripsi, setDeskripsi] = useState('');
     const [kota, setKota] = useState('Kota Jakarta Selatan');
+    
+    // Social & Marketplace State
+    const [tiktokUrl, setTiktokUrl] = useState('');
+    const [youtubeUrl, setYoutubeUrl] = useState('');
+    const [xUrl, setXUrl] = useState('');
+    const [websiteUrl, setWebsiteUrl] = useState('');
+    const [tokopediaUrl, setTokopediaUrl] = useState('');
+    const [shopeeUrl, setShopeeUrl] = useState('');
 
     // Searchable Kota State
     const [isKotaOpen, setIsKotaOpen] = useState(false);
@@ -96,6 +111,12 @@ export const MerchantProducts: React.FC = () => {
         setImages([]);
         setKota('Kota Jakarta Selatan');
         setKotaSearchQuery('');
+        setTiktokUrl('');
+        setYoutubeUrl('');
+        setXUrl('');
+        setWebsiteUrl('');
+        setTokopediaUrl('');
+        setShopeeUrl('');
     };
 
     const handleAddNew = () => {
@@ -120,6 +141,12 @@ export const MerchantProducts: React.FC = () => {
         setDeskripsi(prod.deskripsi || '');
         setImages(prod.images ? prod.images.map((i: any) => i.image_url) : []);
         setKota(prod.kota || 'Kota Jakarta Selatan');
+        setTiktokUrl(prod.tiktok_url || '');
+        setYoutubeUrl(prod.youtube_url || '');
+        setXUrl(prod.x_url || '');
+        setWebsiteUrl(prod.website_url || '');
+        setTokopediaUrl(prod.tokopedia_url || '');
+        setShopeeUrl(prod.shopee_url || '');
         setView('edit');
     };
 
@@ -168,7 +195,13 @@ export const MerchantProducts: React.FC = () => {
             kategori_produk: finalKategori,
             status: finalStatus,
             images: images,
-            kota: kota
+            kota: kota,
+            tiktok_url: tiktokUrl,
+            youtube_url: youtubeUrl,
+            x_url: xUrl,
+            website_url: websiteUrl,
+            tokopedia_url: tokopediaUrl,
+            shopee_url: shopeeUrl
         };
 
         try {
@@ -226,7 +259,7 @@ export const MerchantProducts: React.FC = () => {
                         className="flex items-center justify-center gap-3 bg-[#0A1128] border border-white/10 text-white px-8 py-3.5 rounded-2xl transition-all shadow-2xl active:scale-95 group font-black uppercase text-[10px] tracking-widest whitespace-nowrap"
                     >
                         <ArrowLeftIcon className="w-5 h-5 text-[#FFBF00]" />
-                        Registry List
+                        Produk List
                     </m.button>
                 )}
             </header>
@@ -245,7 +278,7 @@ export const MerchantProducts: React.FC = () => {
                                     <div className="flex items-center gap-6 pl-6">
                                         <div className="flex flex-col">
                                             <h3 className="text-sm font-black text-[#0A1128] tracking-tight uppercase">
-                                                List Product/Jasa
+                                                List Produk/Jasa
                                             </h3>
                                         </div>
                                         {isLoading && <div className="animate-spin rounded-full h-3 w-3 border-t-2 border-[#FFBF00]"></div>}
@@ -271,7 +304,7 @@ export const MerchantProducts: React.FC = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                     {filteredProducts.length === 0 ? (
                                         <div className="col-span-full py-24 text-center border-2 border-dashed border-slate-100 rounded-[40px] bg-[#FBFBFB]">
-                                            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">No assets registered in the vault.</p>
+                                            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">No assets registered.</p>
                                         </div>
                                     ) : filteredProducts.map((prod: any, i: number) => (
                                         <m.div
@@ -494,6 +527,56 @@ export const MerchantProducts: React.FC = () => {
                                                 />
                                             </div>
                                         </div>
+
+                                        {/* Social & Marketplace Links Card */}
+                                        <div className="bg-[#FBFBFB] rounded-[40px] border border-slate-100 p-10 space-y-8 shadow-sm relative">
+                                            <h4 className="text-lg font-black text-[#0A1128]">Tautan <span className="text-[#FFBF00]">Eksternal</span></h4>
+                                            
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="space-y-3">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">TikTok</label>
+                                                    <div className="relative">
+                                                        <TiktokIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                                                        <input value={tiktokUrl} onChange={e => setTiktokUrl(e.target.value)} placeholder="https://tiktok.com/@..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20" />
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-3">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">YouTube</label>
+                                                    <div className="relative">
+                                                        <Youtube className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                                                        <input value={youtubeUrl} onChange={e => setYoutubeUrl(e.target.value)} placeholder="https://youtube.com/..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20" />
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-3">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">X (Twitter)</label>
+                                                    <div className="relative">
+                                                        <Twitter className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                                                        <input value={xUrl} onChange={e => setXUrl(e.target.value)} placeholder="https://x.com/..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20" />
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-3">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Website</label>
+                                                    <div className="relative">
+                                                        <Globe className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                                                        <input value={websiteUrl} onChange={e => setWebsiteUrl(e.target.value)} placeholder="https://..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20" />
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-3">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tokopedia</label>
+                                                    <div className="relative">
+                                                        <Store className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                                                        <input value={tokopediaUrl} onChange={e => setTokopediaUrl(e.target.value)} placeholder="https://tokopedia.com/..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20" />
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-3">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Shopee</label>
+                                                    <div className="relative">
+                                                        <ShoppingBag className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                                                        <input value={shopeeUrl} onChange={e => setShopeeUrl(e.target.value)} placeholder="https://shopee.co.id/..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     {/* Right Col */}
@@ -589,7 +672,7 @@ export const MerchantProducts: React.FC = () => {
                                 className="flex-1 md:flex-none px-12 py-3.5 rounded-2xl bg-[#FFBF00] hover:bg-[#FFD700] text-[#0A1128] font-black uppercase text-[10px] tracking-widest shadow-2xl shadow-[#FFBF00]/20 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
                             >
                                 {isBusy ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-[#0A1128]"></div> : null}
-                                {isBusy ? 'Syncing...' : 'Authorize & Push'}
+                                {isBusy ? 'Syncing...' : 'Publish'}
                             </button>
                         </div>
                     </m.footer>

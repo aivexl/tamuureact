@@ -1054,7 +1054,7 @@ export default {
                 if (method === 'POST') {
                     try {
                         const body = await request.json();
-                        const { merchant_id, nama_produk, deskripsi, harga_estimasi, status, images, kategori_produk, kota } = body;
+                        const { merchant_id, nama_produk, deskripsi, harga_estimasi, status, images, kategori_produk, kota, tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url } = body;
 
                         if (!merchant_id || !nama_produk || !deskripsi) {
                             return json({ error: 'Missing required fields' }, { ...corsHeaders, status: 400 });
@@ -1063,9 +1063,9 @@ export default {
                         const productId = crypto.randomUUID();
 
                         await env.DB.prepare(`
-                            INSERT INTO shop_products (id, merchant_id, nama_produk, deskripsi, harga_estimasi, status, kategori_produk, kota)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                        `).bind(productId, merchant_id, nama_produk, deskripsi, harga_estimasi || null, status || 'DRAFT', kategori_produk || null, kota || null).run();
+                            INSERT INTO shop_products (id, merchant_id, nama_produk, deskripsi, harga_estimasi, status, kategori_produk, kota, tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        `).bind(productId, merchant_id, nama_produk, deskripsi, harga_estimasi || null, status || 'DRAFT', kategori_produk || null, kota || null, tiktok_url || null, youtube_url || null, x_url || null, website_url || null, tokopedia_url || null, shopee_url || null).run();
 
                         // Insert images if provided (array of URL strings)
                         if (Array.isArray(images) && images.length > 0) {
@@ -1090,7 +1090,7 @@ export default {
                         if (!productId) return json({ error: 'Product ID required' }, { ...corsHeaders, status: 400 });
 
                         const body = await request.json();
-                        const { nama_produk, deskripsi, harga_estimasi, status, images, kategori_produk, kota } = body;
+                        const { nama_produk, deskripsi, harga_estimasi, status, images, kategori_produk, kota, tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url } = body;
 
                         await env.DB.prepare(`
                             UPDATE shop_products 
@@ -1100,9 +1100,15 @@ export default {
                                 status = COALESCE(?, status),
                                 kategori_produk = COALESCE(?, kategori_produk),
                                 kota = COALESCE(?, kota),
+                                tiktok_url = COALESCE(?, tiktok_url),
+                                youtube_url = COALESCE(?, youtube_url),
+                                x_url = COALESCE(?, x_url),
+                                website_url = COALESCE(?, website_url),
+                                tokopedia_url = COALESCE(?, tokopedia_url),
+                                shopee_url = COALESCE(?, shopee_url),
                                 updated_at = CURRENT_TIMESTAMP
                             WHERE id = ?
-                        `).bind(nama_produk, deskripsi, harga_estimasi, status, kategori_produk || null, kota || null, productId).run();
+                        `).bind(nama_produk, deskripsi, harga_estimasi, status, kategori_produk || null, kota || null, tiktok_url || null, youtube_url || null, x_url || null, website_url || null, tokopedia_url || null, shopee_url || null, productId).run();
 
                         // Sync images if provided (delete all and re-insert for simplicity)
                         if (Array.isArray(images)) {
