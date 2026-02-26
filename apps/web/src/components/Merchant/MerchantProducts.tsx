@@ -245,9 +245,8 @@ export const MerchantProducts: React.FC = () => {
                                     <div className="flex items-center gap-6 pl-6">
                                         <div className="flex flex-col">
                                             <h3 className="text-sm font-black text-[#0A1128] tracking-tight uppercase">
-                                                Vault Registry
+                                                List Product/Jasa
                                             </h3>
-                                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Manage your digital assets</p>
                                         </div>
                                         {isLoading && <div className="animate-spin rounded-full h-3 w-3 border-t-2 border-[#FFBF00]"></div>}
                                     </div>
