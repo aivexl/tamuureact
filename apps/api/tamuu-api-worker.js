@@ -846,7 +846,7 @@ export default {
             if (path === '/api/shop/merchant/onboard' && method === 'POST') {
                 try {
                     const body = await request.json();
-                    const { user_id, nama_toko, slug, category_id, deskripsi } = body;
+                    const { user_id, nama_toko, slug, category_id, deskripsi, kota } = body;
 
                     if (!user_id || !nama_toko || !slug || !category_id) {
                         return json({ error: 'Missing required fields' }, { ...corsHeaders, status: 400 });
@@ -884,10 +884,10 @@ export default {
                         throw new Error(`Gagal menyimpan profil merchant ke database. Constraint violation: category_id=${category_id}`);
                     }
 
-                    // Seed empty Contact profile
+                    // Seed Contact profile with location
                     await env.DB.prepare(
-                        `INSERT INTO shop_contacts (merchant_id) VALUES (?)`
-                    ).bind(merchantId).run();
+                        `INSERT INTO shop_contacts (merchant_id, kota) VALUES (?, ?)`
+                    ).bind(merchantId, kota || '').run();
 
                     // Mark user global role as merchant if needed (optional syncing)
                     try {
