@@ -74,12 +74,16 @@ export const StorefrontPage: React.FC = () => {
 
             <main className="pb-32">
                 {/* Hero Banner */}
-                <div className="relative h-64 w-full overflow-hidden">
-                    <img
-                        src={merchant.banner_url || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80'}
-                        alt="Banner"
-                        className="w-full h-full object-cover grayscale-[10%]"
-                    />
+                <div className="relative h-64 w-full overflow-hidden bg-slate-50">
+                    {merchant.banner_url ? (
+                        <img
+                            src={merchant.banner_url}
+                            alt="Banner"
+                            className="w-full h-full object-cover grayscale-[10%]"
+                        />
+                    ) : (
+                        <div className="w-full h-full bg-[#0A1128]" />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
                 </div>
 

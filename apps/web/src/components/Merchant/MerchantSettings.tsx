@@ -145,9 +145,13 @@ export const MerchantSettings: React.FC = () => {
                         <div className="relative">
                             <div 
                                 onClick={() => bannerInputRef.current?.click()}
-                                className="w-full aspect-[21/7] rounded-[32px] overflow-hidden bg-slate-50 border border-dashed border-slate-200 cursor-pointer group"
+                                className="w-full aspect-[21/7] rounded-[32px] overflow-hidden bg-slate-50 border border-dashed border-slate-200 cursor-pointer group relative"
                             >
-                                <img src={bannerUrl || 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Banner" />
+                                {bannerUrl ? (
+                                    <img src={bannerUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Banner" />
+                                ) : (
+                                    <div className="w-full h-full bg-[#0A1128] group-hover:bg-[#121b38] transition-colors duration-700" />
+                                )}
                                 <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                     <Camera className="w-8 h-8 text-white" />
                                 </div>
