@@ -302,7 +302,11 @@ export const ShopPage: React.FC = () => {
                                         key={product.id}
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        onClick={() => navigate(`/shop/${product.merchant_slug}/${product.id}`)}
+                                        onClick={() => {
+                                            const mSlug = product.merchant_slug === 'admin' ? 'umum' : (product.merchant_slug || (product.is_admin_listing ? 'umum' : 'unknown'));
+                                            const pSlug = product.slug || product.id;
+                                            navigate(`/shop/${mSlug}/${pSlug}`);
+                                        }}
                                         className="group bg-white border border-[#F1F5F9] rounded-[2.5rem] overflow-hidden flex flex-col hover:shadow-2xl hover:border-[#FFBF00]/30 transition-all duration-500 cursor-pointer"
                                     >
                                         <div className="relative h-56 overflow-hidden">
@@ -366,7 +370,10 @@ export const ShopPage: React.FC = () => {
                                         key={merchant.id}
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        onClick={() => navigate(`/shop/${merchant.slug}`)}
+                                        onClick={() => {
+                                            const targetSlug = merchant.slug === 'admin' ? 'official' : merchant.slug;
+                                            navigate(`/shop/${targetSlug}`);
+                                        }}
                                         className="group bg-white border border-[#F1F5F9] rounded-[2.5rem] overflow-hidden flex flex-col hover:shadow-2xl transition-all cursor-pointer hover:border-[#FFBF00]/30 relative"
                                     >
                                         <div className="h-32 bg-slate-100 relative overflow-hidden">

@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 
 import { useStore } from '../../store/useStore';
+import { NotificationBell } from './NotificationBell';
 
 export const Navbar: React.FC = () => {
     const { isAuthenticated, user, logout } = useStore();
@@ -189,67 +190,71 @@ export const Navbar: React.FC = () => {
                             </div>
                         )
                     ) : (
-                        <div className="relative profile-dropdown-container">
-                            <button
-                                onClick={() => setIsProfileOpen(!isProfileOpen)}
-                                className={`flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full border transition-all duration-200 ${isProfileOpen
-                                    ? 'bg-slate-100 border-slate-200'
-                                    : 'bg-transparent border-transparent hover:bg-slate-50 hover:border-slate-100'
-                                    }`}
-                            >
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-rose-500 to-orange-500 flex items-center justify-center text-white text-xs font-bold shadow-sm">
-                                    {user?.name?.charAt(0) || 'U'}
-                                </div>
-                                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''}`} />
-                            </button>
+                        <div className="flex items-center gap-2">
+                            <NotificationBell />
+                            
+                            <div className="relative profile-dropdown-container">
+                                <button
+                                    onClick={() => setIsProfileOpen(!isProfileOpen)}
+                                    className={`flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full border transition-all duration-200 ${isProfileOpen
+                                        ? 'bg-slate-100 border-slate-200'
+                                        : 'bg-transparent border-transparent hover:bg-slate-50 hover:border-slate-100'
+                                        }`}
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-rose-500 to-orange-500 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                                        {user?.name?.charAt(0) || 'U'}
+                                    </div>
+                                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''}`} />
+                                </button>
 
-                            {/* Profile Dropdown */}
-                            <AnimatePresence>
-                                {isProfileOpen && (
-                                    <m.div
-                                        initial={{ opacity: 0, y: 10, scale: 0.95, filter: 'blur(4px)' }}
-                                        animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-                                        exit={{ opacity: 0, y: 10, scale: 0.95, filter: 'blur(4px)' }}
-                                        transition={{ duration: 0.2 }}
-                                        className="absolute right-0 mt-3 w-64 rounded-2xl bg-white/90 backdrop-blur-xl border border-slate-200/50 shadow-2xl overflow-hidden z-[110]"
-                                    >
-                                        <div className="p-4 border-b border-slate-100 bg-slate-50/50">
-                                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Signed in as</p>
-                                            <p className="text-sm font-semibold text-slate-900 truncate">{user?.email || 'user@example.com'}</p>
-                                        </div>
+                                {/* Profile Dropdown */}
+                                <AnimatePresence>
+                                    {isProfileOpen && (
+                                        <m.div
+                                            initial={{ opacity: 0, y: 10, scale: 0.95, filter: 'blur(4px)' }}
+                                            animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                                            exit={{ opacity: 0, y: 10, scale: 0.95, filter: 'blur(4px)' }}
+                                            transition={{ duration: 0.2 }}
+                                            className="absolute right-0 mt-3 w-64 rounded-2xl bg-white/90 backdrop-blur-xl border border-slate-200/50 shadow-2xl overflow-hidden z-[110]"
+                                        >
+                                            <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+                                                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Signed in as</p>
+                                                <p className="text-sm font-semibold text-slate-900 truncate">{user?.email || 'user@example.com'}</p>
+                                            </div>
 
-                                        <div className="p-2 space-y-0.5">
-                                            <Link to="/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
-                                                <User className="w-4 h-4" />
-                                                <span>Profil Saya</span>
-                                            </Link>
-                                            <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
-                                                <LayoutDashboard className="w-4 h-4" />
-                                                <span>Dashboard</span>
-                                            </Link>
-                                            <Link to="/billing" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
-                                                <CreditCard className="w-4 h-4" />
-                                                <span>Billing</span>
-                                            </Link>
-                                        </div>
+                                            <div className="p-2 space-y-0.5">
+                                                <Link to="/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+                                                    <User className="w-4 h-4" />
+                                                    <span>Profil Saya</span>
+                                                </Link>
+                                                <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+                                                    <LayoutDashboard className="w-4 h-4" />
+                                                    <span>Dashboard</span>
+                                                </Link>
+                                                <Link to="/billing" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+                                                    <CreditCard className="w-4 h-4" />
+                                                    <span>Billing</span>
+                                                </Link>
+                                            </div>
 
-                                        <div className="mx-2 h-px bg-slate-100" />
+                                            <div className="mx-2 h-px bg-slate-100" />
 
-                                        <div className="p-2">
-                                            <button
-                                                onClick={() => {
-                                                    logout();
-                                                    navigate('/');
-                                                }}
-                                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors text-left"
-                                            >
-                                                <LogOut className="w-4 h-4" />
-                                                <span>Sign Out</span>
-                                            </button>
-                                        </div>
-                                    </m.div>
-                                )}
-                            </AnimatePresence>
+                                            <div className="p-2">
+                                                <button
+                                                    onClick={() => {
+                                                        logout();
+                                                        navigate('/');
+                                                    }}
+                                                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors text-left"
+                                                >
+                                                    <LogOut className="w-4 h-4" />
+                                                    <span>Sign Out</span>
+                                                </button>
+                                            </div>
+                                        </m.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
                         </div>
                     )}
 

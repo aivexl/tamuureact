@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { shop } from '../../lib/api';
+import { shop, admin } from '../../lib/api';
 import { useStore } from '../../store/useStore';
+import { toast } from 'react-hot-toast';
 
 export const useShopDirectory = (category?: string, query?: string) => {
     return useQuery({
@@ -263,6 +264,53 @@ export const useAdminUpdateProduct = () => {
         mutationFn: ({ id, data }: { id: string, data: any }) => shop.adminUpdateProduct(id, data, token || user?.id || ''),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin_all_products'] });
+        }
+    });
+};
+
+export const useAdminApproveProduct = () => {
+    const { user, token } = useStore();
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (payload: { id: string; is_approved: number; rejection_reason?: string }) => 
+            shop.adminApproveProduct(token || user?.id || '', payload),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin_all_products'] });
+        }
+    });
+};
+
+export const useSubmitReport = () => {
+    return useMutation({
+        mutationFn: (data: { product_id: string, reporter_id?: string, category: string, reason?: string }) => 
+            shop.submitReport(data),
+        onSuccess: () => {
+            toast.success('Laporan Anda telah terkirim. Terima kasih atas kontribusi Anda.');
+        },
+        onError: (err: any) => {
+            toast.error(err.message || 'Gagal mengirim laporan. Silakan coba lagi nanti.');
+        }
+    });
+};
+
+export const useAdminShopReports = () => {
+    const { token } = useStore();
+    return useQuery({
+        queryKey: ['admin_shop_reports'],
+        queryFn: () => admin.getShopReports(token || undefined),
+        enabled: !!token
+    });
+};
+
+export const useUpdateReportStatus = () => {
+    const { token } = useStore();
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ reportId, status }: { reportId: string, status: string }) => 
+            admin.updateShopReportStatus(reportId, status, token || undefined),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin_shop_reports'] });
+            toast.success('Status laporan diperbarui');
         }
     });
 };

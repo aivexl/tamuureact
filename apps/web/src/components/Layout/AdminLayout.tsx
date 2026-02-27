@@ -17,7 +17,8 @@ import {
     Briefcase,
     FileText,
     Store,
-    ShoppingBag
+    ShoppingBag,
+    ShieldAlert
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { AdminChatSidebarWrapper } from './AdminChatSidebarWrapper';
@@ -201,6 +202,13 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                                 icon={ShoppingBag}
                                 label="Product Registry"
                                 active={location.pathname === '/admin/products'}
+                                sidebarOpen={sidebarOpen}
+                            />
+                            <SidebarItem
+                                href="/admin/reports"
+                                icon={ShieldAlert}
+                                label="Product Reports"
+                                active={location.pathname === '/admin/reports'}
                                 sidebarOpen={sidebarOpen}
                             />
                         </>

@@ -16,7 +16,16 @@ import {
     ShoppingBag,
     Star,
     Copy,
-    Check
+    Check,
+    ShieldAlert,
+    Search,
+    ChevronDown,
+    User as UserIcon,
+    LayoutDashboard,
+    CreditCard,
+    LogOut,
+    Map,
+    Megaphone
 } from 'lucide-react';
 import {
     useProductDetails,
@@ -27,17 +36,29 @@ import {
     useMerchantStats,
     useSmartRecommendations
 } from '../../hooks/queries/useShop';
+import { shop } from '../../lib/api';
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
 import { useStore } from '../../store/useStore';
 import { useSEO } from '../../hooks/useSEO';
 import { formatCurrency, formatAbbreviatedNumber } from '../../lib/utils';
 import { toast } from 'react-hot-toast';
+import { ReportProductModal } from '../../components/Modals/ReportProductModal';
+import { INDONESIA_REGIONS } from '../../constants/regions';
 
 export const ProductDetailPage: React.FC = () => {
     const { slug, productId } = useParams<{ slug: string, productId: string }>();
     const navigate = useNavigate();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isCopied, setIsCopied] = useState(false);
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+    const { user, isAuthenticated, logout } = useStore();
+
+    // Search & Location States for Navbar
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedCity, setSelectedCity] = useState('All');
+    const [isLocationOpen, setIsLocationOpen] = useState(false);
+    const [citySearchQuery, setCitySearchQuery] = useState('');
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     const handleCopyId = () => {
         const productNo = `tamuu-shop-${product?.id?.substring(0, 8).toUpperCase()}`;
@@ -46,7 +67,20 @@ export const ProductDetailPage: React.FC = () => {
         setTimeout(() => setIsCopied(false), 2000);
     };
 
-    const { user } = useStore();
+    const handleSearchSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const params = new URLSearchParams();
+        if (searchQuery) params.append('q', searchQuery);
+        if (selectedCity !== 'All') params.append('city', selectedCity);
+        navigate(`/shop?${params.toString()}`);
+    };
+
+    const filteredCities = useMemo(() => {
+        const cleanQuery = citySearchQuery.trim().toLowerCase();
+        const baseCities = ['All', ...INDONESIA_REGIONS];
+        if (!cleanQuery) return baseCities;
+        return baseCities.filter(city => city.toLowerCase().includes(cleanQuery));
+    }, [citySearchQuery]);
 
     // Data Fetching
     const { data: product, isLoading: isLoadingProduct } = useProductDetails(productId || '');
@@ -58,7 +92,21 @@ export const ProductDetailPage: React.FC = () => {
     const toggleWishlistMutation = useToggleWishlist();
     const track = useTrackInteraction();
 
-    const isWishlisted = wishlist.some((item: any) => item.id === productId);
+    const isWishlisted = wishlist.some((item: any) => item.id === product?.id);
+
+    // Fetch Ads
+    const [sidebarAds, setSidebarAds] = useState<any[]>([]);
+    useEffect(() => {
+        const fetchAds = async () => {
+            try {
+                const ads = await shop.getAds('PRODUCT_DETAIL_SIDEBAR');
+                setSidebarAds(ads);
+            } catch (err) {
+                console.error('Failed to fetch ads:', err);
+            }
+        };
+        fetchAds();
+    }, []);
 
     // Filter other products from same merchant
     const otherProducts = useMemo(() => 
@@ -88,42 +136,175 @@ export const ProductDetailPage: React.FC = () => {
             return;
         }
 
-        toggleWishlistMutation.mutate({ userId: user.id, productId: productId || '' });
+        toggleWishlistMutation.mutate({ userId: user.id, productId: product?.id || '' });
         toast.success(isWishlisted ? 'Dihapus dari wishlist' : 'Ditambahkan ke wishlist', {
             icon: <Heart className={`w-4 h-4 ${!isWishlisted ? 'fill-rose-500 text-rose-500' : ''}`} />,
         });
     };
 
+    const handleShare = () => {
+        if (navigator.share) {
+            navigator.share({
+                title: product?.nama_produk,
+                text: product?.deskripsi,
+                url: window.location.href,
+            }).catch(console.error);
+        } else {
+            navigator.clipboard.writeText(window.location.href);
+            toast.success('Link produk disalin!');
+        }
+    };
+
     if (isLoadingProduct) return <div className="min-h-screen bg-white flex items-center justify-center"><PremiumLoader color="#0A1128" /></div>;
     if (!product) return <div className="min-h-screen bg-white flex flex-col items-center justify-center text-[#0A1128]">
         <h2 className="text-2xl font-black mb-4">Produk Tidak Ditemukan</h2>
-        <button onClick={() => navigate(`/shop/${slug}`)} className="text-[#FFBF00] font-bold">Kembali ke Toko</button>
+        <button onClick={() => navigate(`/shop/${slug === 'admin' ? 'umum' : (slug || 'umum')}`)} className="text-[#FFBF00] font-bold">Kembali ke Toko</button>
     </div>;
 
     const images = product.images || [];
 
     return (
         <div className="min-h-screen bg-white text-[#0A1128] font-sans selection:bg-[#FFBF00] selection:text-[#0A1128]">
-            {/* Minimal Action Bar */}
-            <div className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-xl border-b border-slate-50">
-                {!product.is_admin_listing ? (
-                    <button
-                        onClick={() => navigate(`/shop/${slug}`)}
-                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 hover:bg-slate-100 transition-all"
-                    >
-                        <ArrowLeft className="w-5 h-5" />
-                    </button>
-                ) : <div />}
-                <div className="flex gap-2">
-                    <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 hover:bg-slate-100 transition-all">
-                        <Share2 className="w-5 h-5 text-[#FFBF00]" />
-                    </button>
-                </div>
-            </div>
+            {/* COMPREHENSIVE NAVBAR (Public & Search Focused) */}
+            <header className="fixed top-0 left-0 right-0 z-[100] bg-white/80 backdrop-blur-xl border-b border-slate-100 px-6 py-3">
+                <div className="max-w-7xl mx-auto flex items-center justify-between gap-6">
+                    {/* Logo Section */}
+                    <Link to="/" className="flex items-center gap-3 shrink-0 group">
+                        <img src="/images/logo-tamuu-vfinal-v1.webp" alt="Tamuu" className="h-8 w-auto object-contain transition-transform group-hover:scale-105" />
+                    </Link>
 
-            <main className="pt-24 pb-40">
+                    {/* Integrated Search & Location Bar */}
+                    <form onSubmit={handleSearchSubmit} className="hidden lg:flex flex-1 max-w-2xl items-center bg-slate-50 border border-slate-100 rounded-2xl p-1 gap-2 transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-[#FFBF00]/20 focus-within:border-[#FFBF00]/30">
+                        {/* Location Selector */}
+                        <div className="relative">
+                            <div 
+                                onClick={() => setIsLocationOpen(!isLocationOpen)}
+                                className="flex items-center gap-2 px-4 py-2 hover:bg-white rounded-xl cursor-pointer transition-all min-w-[160px]"
+                            >
+                                <MapPin className="w-3.5 h-3.5 text-[#FFBF00]" />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-[#0A1128] whitespace-nowrap">
+                                    {selectedCity === 'All' ? 'Seluruh Indonesia' : selectedCity}
+                                </span>
+                                <ChevronDown className={`w-3 h-3 text-slate-300 transition-transform ${isLocationOpen ? 'rotate-180' : ''}`} />
+                            </div>
+
+                            <AnimatePresence>
+                                {isLocationOpen && (
+                                    <>
+                                        <div className="fixed inset-0 z-[110]" onClick={() => setIsLocationOpen(false)} />
+                                        <m.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: 10 }}
+                                            className="absolute top-full left-0 mt-3 w-64 bg-white border border-slate-100 shadow-2xl rounded-2xl z-[120] overflow-hidden flex flex-col max-h-[350px]"
+                                        >
+                                            <div className="p-3 border-b border-slate-50">
+                                                <input 
+                                                    type="text"
+                                                    placeholder="Cari wilayah..."
+                                                    value={citySearchQuery}
+                                                    onChange={(e) => setCitySearchQuery(e.target.value)}
+                                                    className="w-full bg-slate-50 border-none rounded-lg px-3 py-2 text-xs font-bold"
+                                                />
+                                            </div>
+                                            <div className="flex-1 overflow-y-auto p-1 custom-scrollbar">
+                                                {filteredCities.map((city) => (
+                                                    <button
+                                                        key={city}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setSelectedCity(city);
+                                                            setIsLocationOpen(false);
+                                                        }}
+                                                        className="w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:text-[#0A1128]"
+                                                    >
+                                                        {city === 'All' ? 'Seluruh Indonesia' : city}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </m.div>
+                                    </>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
+                        <div className="w-px h-6 bg-slate-200" />
+
+                        {/* Search Input */}
+                        <div className="flex-1 flex items-center px-2">
+                            <Search className="w-4 h-4 text-slate-300" />
+                            <input 
+                                type="text"
+                                value={searchQuery}
+                                onChange={e => setSearchQuery(e.target.value)}
+                                placeholder="Cari vendor, catering, atau paket..."
+                                className="w-full bg-transparent border-none focus:ring-0 text-sm font-bold text-[#0A1128] py-2 px-3 placeholder:text-slate-300"
+                            />
+                        </div>
+                    </form>
+
+                    {/* Right Actions: Auth or Profile */}
+                    <div className="flex items-center gap-4">
+                        {!isAuthenticated ? (
+                            <div className="flex items-center gap-2">
+                                <Link to="/login" className="px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:text-[#0A1128] transition-colors">Masuk</Link>
+                                <Link to="/signup" className="px-6 py-2.5 bg-[#0A1128] text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-black/10">Daftar</Link>
+                            </div>
+                        ) : (
+                            <div className="relative">
+                                <button 
+                                    onClick={() => setIsProfileOpen(!isProfileOpen)}
+                                    className="flex items-center gap-3 p-1 rounded-full border border-slate-100 hover:bg-slate-50 transition-all group"
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#FFBF00] to-orange-500 flex items-center justify-center text-white text-xs font-black shadow-sm group-hover:scale-105 transition-transform">
+                                        {user?.name?.charAt(0) || 'U'}
+                                    </div>
+                                    <span className="hidden sm:block text-[10px] font-black uppercase tracking-widest text-[#0A1128] mr-2">{user?.name?.split(' ')[0]}</span>
+                                </button>
+
+                                <AnimatePresence>
+                                    {isProfileOpen && (
+                                        <>
+                                            <div className="fixed inset-0 z-[110]" onClick={() => setIsProfileOpen(false)} />
+                                            <m.div
+                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                className="absolute right-0 mt-3 w-64 rounded-2xl bg-white border border-slate-100 shadow-2xl overflow-hidden z-[120]"
+                                            >
+                                                <div className="p-4 border-b border-slate-50 bg-slate-50/50">
+                                                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Signed in as</p>
+                                                    <p className="text-xs font-black text-[#0A1128] truncate">{user?.email}</p>
+                                                </div>
+                                                <div className="p-2 space-y-1">
+                                                    <Link to="/dashboard" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:text-[#0A1128] transition-all">
+                                                        <LayoutDashboard className="w-4 h-4" /> Dashboard
+                                                    </Link>
+                                                    <Link to="/profile" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:text-[#0A1128] transition-all">
+                                                        <UserIcon className="w-4 h-4" /> Profile
+                                                    </Link>
+                                                    <Link to="/billing" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:text-[#0A1128] transition-all">
+                                                        <CreditCard className="w-4 h-4" /> Billing
+                                                    </Link>
+                                                </div>
+                                                <div className="p-2 border-t border-slate-50">
+                                                    <button onClick={() => { logout(); navigate('/'); }} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-rose-500 hover:bg-rose-50 transition-all text-left">
+                                                        <LogOut className="w-4 h-4" /> Sign Out
+                                                    </button>
+                                                </div>
+                                            </m.div>
+                                        </>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </header>
+
+            <main className="pt-32 pb-40">
                 <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16">
-                    {/* LEFT: Image Gallery - Constrained Size */}
+                    {/* LEFT: Image Gallery */}
                     <div className="space-y-6">
                         <div className="relative aspect-square max-h-[550px] w-full rounded-[2.5rem] overflow-hidden bg-slate-50 border border-slate-100 group shadow-sm">
                             <AnimatePresence mode="wait">
@@ -175,7 +356,7 @@ export const ProductDetailPage: React.FC = () => {
                     {/* RIGHT: Product Info */}
                     <div className="flex flex-col">
                         <div className="space-y-6">
-                            <div className="flex flex-wrap items-center gap-4">
+                            <div className="flex flex-wrap items-center justify-between gap-4">
                                 <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
                                     <span className="px-3 py-1 rounded-lg bg-[#FFBF00]/10 text-[#FFBF00] text-[9px] font-black uppercase tracking-widest border border-[#FFBF00]/20 truncate">
                                         {product.kategori_produk}
@@ -185,12 +366,21 @@ export const ProductDetailPage: React.FC = () => {
                                     </span>
                                 </div>
                                 
-                                {/* Social Proof: Wishlist Count - Inset from edge */}
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 border border-rose-100 rounded-lg flex-shrink-0">
-                                    <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
-                                    <span className="text-[11px] font-black text-rose-600 uppercase tracking-tighter">
-                                        {formatAbbreviatedNumber(product.wishlist_count || 0)}
-                                    </span>
+                                {/* INTERACTION HUB: Share + Love */}
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                    <button 
+                                        onClick={handleShare}
+                                        className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 hover:text-[#FFBF00] hover:bg-white transition-all shadow-sm"
+                                        title="Bagikan Produk"
+                                    >
+                                        <Share2 className="w-4 h-4" />
+                                    </button>
+                                    <div className="flex items-center gap-2 pl-3 pr-4 py-2 bg-rose-50 border border-rose-100 rounded-xl min-w-[80px]">
+                                        <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
+                                        <span className="text-xs font-black text-rose-600 uppercase tracking-tighter whitespace-nowrap">
+                                            {formatAbbreviatedNumber(product.wishlist_count || 0)}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -205,7 +395,7 @@ export const ProductDetailPage: React.FC = () => {
                                 </p>
                             </div>
 
-                            {/* Enhanced Merchant Card */}
+                            {/* Merchant Card */}
                             <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-6">
                                 <div className="flex items-center gap-5">
                                     <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white border-4 border-white shadow-lg flex-shrink-0">
@@ -241,7 +431,7 @@ export const ProductDetailPage: React.FC = () => {
                                         )}
                                     </div>
                                     {!product.is_admin_listing && (
-                                        <Link to={`/shop/${slug}`} className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center hover:bg-[#0A1128] hover:text-white transition-all shadow-sm">
+                                        <Link to={`/shop/${product.merchant_slug === 'admin' ? 'umum' : (product.merchant_slug || 'umum')}`} className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center hover:bg-[#0A1128] hover:text-white transition-all shadow-sm">
                                             <ChevronRight className="w-5 h-5" />
                                         </Link>
                                     )}
@@ -249,7 +439,7 @@ export const ProductDetailPage: React.FC = () => {
                             </div>
 
                             {/* Horizontal Grid: Other Products from Store */}
-                            {otherProducts.length > 0 && (
+                            {otherProducts.length > 0 && !product.is_admin_listing && (
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center">
                                         <h3 className="text-xs font-black uppercase tracking-widest text-[#0A1128]">Produk Lain Dari Toko Ini</h3>
@@ -259,7 +449,7 @@ export const ProductDetailPage: React.FC = () => {
                                             <m.div
                                                 key={p.id}
                                                 whileHover={{ y: -4 }}
-                                                onClick={() => navigate(`/shop/${slug}/${p.id}`)}
+                                                onClick={() => navigate(`/shop/${product.merchant_slug === 'admin' ? 'umum' : product.merchant_slug}/${p.slug || p.id}`)}
                                                 className="w-40 flex-shrink-0 cursor-pointer group"
                                             >
                                                 <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 mb-2 relative">
@@ -277,32 +467,154 @@ export const ProductDetailPage: React.FC = () => {
                 </div>
 
                 {/* BOTTOM CONTENT SECTION */}
-                <div className="max-w-7xl mx-auto px-6 mt-20 space-y-24">
-                    {/* Description Section */}
-                    <div className="space-y-8">
-                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                {/* REDESIGNED PRODUCT DETAILS SECTION */}
+                <div className="max-w-7xl mx-auto px-6 mt-20">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                        {/* Deskripsi Card (Left Column - Spans 7/12) */}
+                        <m.div 
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="lg:col-span-7 p-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm space-y-8 flex flex-col h-full"
+                        >
                             <div className="flex items-center gap-3">
                                 <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
                                 <h2 className="text-xl font-black uppercase tracking-tighter italic">Deskripsi Produk</h2>
                             </div>
-                            
-                            {/* Product Number - Derived from ID */}
-                            <div 
-                                onClick={handleCopyId}
-                                className="group flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 cursor-pointer transition-all"
-                            >
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                    No. Produk: <span className="text-slate-600 font-black">tamuu-shop-{product.id.substring(0, 8).toUpperCase()}</span>
-                                </span>
-                                <div className="w-6 h-6 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-[#FFBF00] transition-all">
-                                    {isCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                                </div>
+                            <div className="text-slate-600 text-lg leading-relaxed font-medium whitespace-pre-wrap flex-1">
+                                {product.deskripsi || "Vendor belum memberikan deskripsi lengkap untuk produk ini."}
                             </div>
-                        </div>
-                        <div className="p-10 bg-slate-50 rounded-[3rem] border border-slate-100 text-slate-600 text-lg leading-relaxed font-medium max-w-4xl">
-                            {product.deskripsi}
+                            
+                            <div className="pt-8 border-t border-slate-50 flex items-center justify-between mt-auto">
+                                <div 
+                                    onClick={handleCopyId}
+                                    className="group flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 cursor-pointer transition-all"
+                                >
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                        No. Produk: <span className="text-slate-600 font-black">tamuu-shop-{product.id.substring(0, 8).toUpperCase()}</span>
+                                    </span>
+                                    <div className="w-6 h-6 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-[#FFBF00] transition-all">
+                                        {isCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => setIsReportModalOpen(true)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-100 text-rose-500 transition-all"
+                                >
+                                    <ShieldAlert className="w-4 h-4" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Lapor</span>
+                                </button>
+                            </div>
+                        </m.div>
+
+                        {/* Right Column (Spans 5/12) - Alamat + Maps Stacked */}
+                        <div className="lg:col-span-5 flex flex-col gap-8 h-full">
+                            {/* Alamat Lengkap Card */}
+                            <m.div 
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="p-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6 flex flex-col"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
+                                        <h2 className="text-xl font-black uppercase tracking-tighter italic">Alamat Lengkap</h2>
+                                    </div>
+                                    {product.alamat_lengkap && (
+                                        <button 
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(product.alamat_lengkap);
+                                                toast.success('Alamat disalin!');
+                                            }}
+                                            className="p-3 bg-slate-50 hover:bg-[#FFBF00] hover:text-[#0A1128] rounded-2xl transition-all text-slate-400"
+                                            title="Salin Alamat"
+                                        >
+                                            <Copy className="w-4 h-4" />
+                                        </button>
+                                    )}
+                                </div>
+                                
+                                <div className="flex-1">
+                                    {product.alamat_lengkap ? (
+                                        <div className="space-y-4">
+                                            <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 italic">
+                                                <p className="text-slate-600 text-lg font-bold leading-relaxed uppercase tracking-tight">
+                                                    {product.alamat_lengkap}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                                <MapPin className="w-4 h-4 text-[#FFBF00]" />
+                                                {product.kota || "Lokasi Terverifikasi"}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-6 space-y-4">
+                                            <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto">
+                                                <MapPin className="w-6 h-6 text-slate-200" />
+                                            </div>
+                                            <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Alamat belum tersedia</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {product.google_maps_url && (
+                                    <a 
+                                        href={product.google_maps_url} 
+                                        target="_blank" 
+                                        rel="noreferrer"
+                                        className="w-full h-14 bg-[#0A1128] text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 hover:bg-indigo-600 transition-all shadow-xl shadow-indigo-100"
+                                    >
+                                        <Map className="w-4 h-4 text-[#FFBF00]" />
+                                        Buka Di Google Maps
+                                    </a>
+                                )}
+                            </m.div>
+
+                            {/* Sponsor Banner Card */}
+                            <m.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="p-1 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm flex-1 flex flex-col min-h-[400px] overflow-hidden group"
+                            >
+                                {sidebarAds.length > 0 ? (
+                                    <a 
+                                        href={sidebarAds[0].link_url || '#'} 
+                                        target="_blank" 
+                                        rel="noreferrer"
+                                        className="relative w-full h-full flex-1 rounded-[2.2rem] overflow-hidden block"
+                                    >
+                                        <img 
+                                            src={sidebarAds[0].image_url} 
+                                            alt={sidebarAds[0].title || 'Sponsor'} 
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-8">
+                                            <p className="text-white text-[10px] font-black uppercase tracking-[0.2em]">Official Sponsor</p>
+                                            <h3 className="text-white text-lg font-black italic">{sidebarAds[0].title}</h3>
+                                        </div>
+                                        <div className="absolute top-6 right-6 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full border border-white/30">
+                                            <p className="text-white text-[8px] font-black uppercase tracking-widest">Ads</p>
+                                        </div>
+                                    </a>
+                                ) : (
+                                    <div className="flex-1 flex flex-col items-center justify-center p-10 text-center space-y-6">
+                                        <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center border border-slate-100">
+                                            <Megaphone className="w-8 h-8 text-slate-200" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Sponsorship Space</h3>
+                                            <p className="text-[9px] text-slate-300 font-bold uppercase tracking-tighter">Promosikan brand Anda di sini</p>
+                                        </div>
+                                        <button className="px-6 py-3 bg-slate-50 text-slate-400 border border-slate-100 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-[#0A1128] hover:text-white transition-all">
+                                            Kontak Admin
+                                        </button>
+                                    </div>
+                                )}
+                            </m.div>
                         </div>
                     </div>
+                </div>
+
+                <div className="max-w-7xl mx-auto px-6 mt-24 space-y-24">
 
                     {/* Features Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -347,7 +659,7 @@ export const ProductDetailPage: React.FC = () => {
                                 <m.div
                                     key={p.id}
                                     whileHover={{ y: -8 }}
-                                    onClick={() => navigate(`/shop/${p.merchant_slug}/${p.id}`)}
+                                    onClick={() => navigate(`/shop/${p.merchant_slug}/${p.slug || p.id}`)}
                                     className="group cursor-pointer bg-white border border-slate-100 rounded-[2rem] overflow-hidden hover:shadow-xl transition-all relative"
                                 >
                                     <div className="aspect-[4/5] overflow-hidden">
@@ -397,6 +709,13 @@ export const ProductDetailPage: React.FC = () => {
                     </button>
                 </div>
             </div>
+
+            <ReportProductModal 
+                isOpen={isReportModalOpen}
+                onClose={() => setIsReportModalOpen(false)}
+                productId={product.id}
+                productName={product.nama_produk}
+            />
         </div>
     );
 };

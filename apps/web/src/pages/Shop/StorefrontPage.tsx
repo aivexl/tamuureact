@@ -51,9 +51,11 @@ export const StorefrontPage: React.FC = () => {
         <button onClick={() => navigate('/shop')} className="text-[#FFBF00] font-bold">Kembali ke Direktori</button>
     </div>;
 
-    const handleProductClick = (productId: string) => {
-        track.mutate({ merchantId: merchant.id, actionType: 'CLICK_PRODUCT', productId });
-        navigate(`/shop/${slug}/${productId}`);
+    const handleProductClick = (product: any) => {
+        track.mutate({ merchantId: merchant.id, actionType: 'CLICK_PRODUCT', productId: product.id });
+        const mSlug = slug === 'admin' ? 'umum' : (slug || merchant.slug || 'umum');
+        const pSlug = product.slug || product.id;
+        navigate(`/shop/${mSlug}/${pSlug}`);
     };
 
     return (
@@ -233,7 +235,7 @@ export const StorefrontPage: React.FC = () => {
                                             </div>
 
                                             <button
-                                                onClick={() => handleProductClick(product.id)}
+                                                onClick={() => handleProductClick(product)}
                                                 className="w-full border border-slate-100 group-hover:border-[#FFBF00] group-hover:bg-[#FFBF00] text-[#0A1128] transition-all py-4 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm"
                                             >
                                                 Lihat Detail

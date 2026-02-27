@@ -11,11 +11,11 @@ export const AdminProductListingPage: React.FC = () => {
 
     return (
         <AdminLayout>
-            <div className="w-full h-full max-w-[1600px] mx-auto space-y-10 py-10 px-6">
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-10">
+            <div className="w-full h-full max-w-[1600px] mx-auto space-y-10 py-4 px-6">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/5 pb-10">
                     <div>
-                        <h1 className="text-5xl font-black text-[#0A1128] tracking-tighter italic uppercase block">Product Listing</h1>
-                        <p className="text-slate-400 font-bold uppercase tracking-[0.3em] mt-2 block">Enterprise Marketplace Hub</p>
+                        <h1 className="text-6xl font-black text-white tracking-tighter italic uppercase block">Daftar <span className="text-[#FFBF00]">Produk</span></h1>
+                        <p className="text-slate-500 font-bold uppercase tracking-[0.4em] mt-3 block text-[10px]">Manajemen Produk Admin</p>
                     </div>
                 </div>
                 

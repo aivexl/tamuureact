@@ -48,6 +48,7 @@
         "blurhash": "^2.0.5",
         "canvas-confetti": "^1.9.4",
         "clsx": "^2.1.1",
+        "date-fns": "^4.1.0",
         "framer-motion": "^11.2.10",
         "framer-motion-3d": "^11.2.10",
         "html2canvas": "^1.4.1",

@@ -852,6 +852,59 @@ export const admin = {
             throw new Error(error.error || 'Failed to get AI response');
         }
         return res.json();
+    },
+
+    async getShopReports(token?: string) {
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/reports`, { headers });
+        if (!res.ok) throw new Error('Failed to fetch shop reports');
+        const data = await res.json();
+        return sanitizeValue(data.reports || []);
+    },
+
+    async updateShopReportStatus(reportId: string, status: string, token?: string) {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/reports/${reportId}`, {
+            method: 'PATCH',
+            headers,
+            body: JSON.stringify({ status })
+        });
+        if (!res.ok) throw new Error('Failed to update report status');
+        return res.json();
+    },
+
+    async listAds(token?: string) {
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/ads`, { headers });
+        if (!res.ok) throw new Error('Failed to fetch ads');
+        const data = await res.json();
+        return sanitizeValue(data.ads || []);
+    },
+
+    async saveAd(ad: any, token?: string) {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/ads`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(sanitizeValue(ad))
+        });
+        if (!res.ok) throw new Error('Failed to save ad');
+        return await res.json();
+    },
+
+    async deleteAd(id: string, token?: string) {
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/ads/${id}`, {
+            method: 'DELETE',
+            headers
+        });
+        if (!res.ok) throw new Error('Failed to delete ad');
+        return await res.json();
     }
 };
 
@@ -1157,6 +1210,22 @@ export const shop = {
         return res.json();
     },
 
+    async adminApproveProduct(token: string, payload: { id: string; is_approved: number; rejection_reason?: string }) {
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/products/approve`, {
+            method: 'PATCH',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Approval action failed');
+        }
+        return res.json();
+    },
+
     // CAROUSEL
     async getCarousel() {
         const res = await safeFetch(`${API_BASE}/api/shop/carousel`);
@@ -1250,10 +1319,19 @@ export const shop = {
     },
 
     async getProduct(id: string) {
-        const res = await safeFetch(`${API_BASE}/api/shop/product?id=${id}`);
+        const res = await safeFetch(`${API_BASE}/api/shop/product?id=${id}&_t=${Date.now()}`);
         if (!res.ok) throw new Error('Product not found');
         const data = await res.json();
         return sanitizeValue(data.product);
+    },
+
+    async getAds(position?: string) {
+        let url = `${API_BASE}/api/shop/ads`;
+        if (position) url += `?position=${position}`;
+        const res = await safeFetch(url);
+        if (!res.ok) throw new Error('Failed to fetch ads');
+        const data = await res.json();
+        return sanitizeValue(data.ads || []);
     },
 
     async track(merchantId: string, actionType: string, productId?: string) {
@@ -1315,6 +1393,16 @@ export const shop = {
             body: JSON.stringify({ merchant_id: merchantId, user_id: userId })
         });
         if (!res.ok) throw new Error('Failed to boost shop');
+        return res.json();
+    },
+
+    async submitReport(data: { product_id: string, reporter_id?: string, category: string, reason?: string }) {
+        const res = await safeFetch(`${API_BASE}/api/shop/reports`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error('Failed to submit report');
         return res.json();
     }
 };

@@ -65,6 +65,7 @@ const AdminShopSettingsPage = lazy(() => import('./pages/Admin/AdminShopSettings
 const AdminStoreManagementPage = lazy(() => import('./pages/Admin/AdminStoreManagementPage').then(m => ({ default: m.AdminStoreManagementPage })));
 const AdminProductsPage = lazy(() => import('./pages/Admin/AdminProductsPage').then(m => ({ default: m.AdminProductsPage })));
 const AdminProductListingPage = lazy(() => import('./pages/Admin/AdminProductListingPage').then(m => ({ default: m.AdminProductListingPage })));
+const AdminReportsPage = lazy(() => import('./pages/Admin/AdminReportsPage').then(m => ({ default: m.AdminReportsPage })));
 
 // Shop & Merchant Pages
 const MerchantPortalPage = lazy(() => import('./pages/Merchant/MerchantPortalPage').then(m => ({ default: m.MerchantPortalPage })));
@@ -181,6 +182,7 @@ const App: React.FC = () => {
                                                                  <Route path="/admin/stores" element={<ProtectedRoute requiredRole="admin"><AdminStoreManagementPage /></ProtectedRoute>} />
                                                                  <Route path="/admin/product-listing" element={<ProtectedRoute requiredRole="admin"><AdminProductListingPage /></ProtectedRoute>} />
                                                                  <Route path="/admin/products" element={<ProtectedRoute requiredRole="admin"><AdminProductsPage /></ProtectedRoute>} />
+                                                                 <Route path="/admin/reports" element={<ProtectedRoute requiredRole="admin"><AdminReportsPage /></ProtectedRoute>} />
                                                                 {/* Admin Blog */}
                                 <Route path="/admin/blog" element={<ProtectedRoute requiredRole="admin"><AdminBlogListPage /></ProtectedRoute>} />
                                 <Route path="/admin/blog/new" element={<ProtectedRoute requiredRole="admin"><AdminBlogEditor /></ProtectedRoute>} />

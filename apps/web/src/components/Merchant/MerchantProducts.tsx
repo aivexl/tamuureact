@@ -87,6 +87,8 @@ export const MerchantProducts: React.FC = () => {
     const [websiteUrl, setWebsiteUrl] = useState('');
     const [tokopediaUrl, setTokopediaUrl] = useState('');
     const [shopeeUrl, setShopeeUrl] = useState('');
+    const [alamatLengkap, setAlamatLengkap] = useState('');
+    const [googleMapsUrl, setGoogleMapsUrl] = useState('');
 
     // Searchable Kota State
     const [isKotaOpen, setIsKotaOpen] = useState(false);
@@ -124,6 +126,8 @@ export const MerchantProducts: React.FC = () => {
         setWebsiteUrl('');
         setTokopediaUrl('');
         setShopeeUrl('');
+        setAlamatLengkap('');
+        setGoogleMapsUrl('');
     };
 
     const handleAddNew = () => {
@@ -154,6 +158,8 @@ export const MerchantProducts: React.FC = () => {
         setWebsiteUrl(prod.website_url || '');
         setTokopediaUrl(prod.tokopedia_url || '');
         setShopeeUrl(prod.shopee_url || '');
+        setAlamatLengkap(prod.alamat_lengkap || '');
+        setGoogleMapsUrl(prod.google_maps_url || '');
         setView('edit');
     };
 
@@ -199,6 +205,33 @@ export const MerchantProducts: React.FC = () => {
         const finalStatus = (forceStatus || status) as 'DRAFT' | 'PUBLISHED';
         const finalKategori = selectedCategory === 'Lainnya' ? customCategory : selectedCategory;
 
+        // Strict duplicate name check (blocking)
+        const isDuplicate = products.some((p: any) => 
+            p.nama_produk.toLowerCase().trim() === namaProduk.toLowerCase().trim() && 
+            p.id !== editingId
+        );
+
+        if (isDuplicate) {
+            alert(`Gagal! Anda sudah memiliki produk dengan nama "${namaProduk}". Silakan gunakan nama lain agar link (slug) produk unik.`);
+            return;
+        }
+
+        // Validation for PUBLISHED status
+        if (finalStatus === 'PUBLISHED') {
+            const missingFields = [];
+            if (!namaProduk.trim()) missingFields.push('Nama Produk/Jasa');
+            if (!hargaEstimasi) missingFields.push('Harga (Rp)');
+            if (!finalKategori) missingFields.push('Kategori');
+            if (!kota) missingFields.push('Kota/Kabupaten');
+            if (images.length < 2) missingFields.push('Minimal 2 Foto');
+
+            if (missingFields.length > 0) {
+                // Using alert since react-hot-toast might not be available in this scope or context
+                alert(`Gagal publikasi! Wajib diisi: ${missingFields.join(', ')}`);
+                return;
+            }
+        }
+
         console.log('[MerchantProducts] Saving product:', { name: namaProduk, status: finalStatus, merchantId });
         setSaveType(finalStatus);
 
@@ -216,7 +249,9 @@ export const MerchantProducts: React.FC = () => {
             x_url: xUrl,
             website_url: websiteUrl,
             tokopedia_url: tokopediaUrl,
-            shopee_url: shopeeUrl
+            shopee_url: shopeeUrl,
+            alamat_lengkap: alamatLengkap,
+            google_maps_url: googleMapsUrl
         };
 
         try {
@@ -241,9 +276,12 @@ export const MerchantProducts: React.FC = () => {
 
     const isBusy = isCreating || isUpdating;
 
-    const filteredProducts = products.filter((p: any) =>
-        p.nama_produk.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredProducts = products.filter((p: any) => {
+        const productNo = `tamuu-shop-${p.id?.substring(0, 8).toUpperCase()}`;
+        const searchLower = searchQuery.toLowerCase();
+        return p.nama_produk.toLowerCase().includes(searchLower) ||
+               productNo.toLowerCase().includes(searchLower);
+    });
 
     // Filter regions based on search
     const filteredRegions = useMemo(() => {
@@ -342,7 +380,7 @@ export const MerchantProducts: React.FC = () => {
                                                 />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent opacity-80" />
 
-                                                <div className="absolute top-4 right-4">
+                                                <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
                                                     {prod.status === 'PUBLISHED' ? (
                                                         <span className="px-3 py-1 rounded-full bg-[#FFBF00] text-[#0A1128] text-[9px] font-black uppercase tracking-widest border border-[#FFBF00] shadow-[0_4px_10px_rgba(255,191,0,0.3)]">
                                                             Live
@@ -351,6 +389,32 @@ export const MerchantProducts: React.FC = () => {
                                                         <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-[9px] font-black uppercase tracking-widest border border-slate-200 backdrop-blur-md">
                                                             Draft
                                                         </span>
+                                                    )}
+
+                                                    {prod.status === 'PUBLISHED' && (
+                                                        <>
+                                                            {prod.is_approved === 1 ? (
+                                                                <span className="px-3 py-1 rounded-full bg-teal-500 text-white text-[9px] font-black uppercase tracking-widest shadow-lg flex items-center gap-1.5">
+                                                                    <Check className="w-2.5 h-2.5" /> Approved
+                                                                </span>
+                                                            ) : prod.is_approved === 2 ? (
+                                                                <div className="group/reason relative">
+                                                                    <span className="px-3 py-1 rounded-full bg-rose-500 text-white text-[9px] font-black uppercase tracking-widest shadow-lg flex items-center gap-1.5 cursor-help">
+                                                                        <X className="w-2.5 h-2.5" /> Rejected
+                                                                    </span>
+                                                                    {prod.rejection_reason && (
+                                                                        <div className="absolute top-full right-0 mt-2 w-48 p-3 bg-slate-900 text-white rounded-xl shadow-2xl opacity-0 group-hover/reason:opacity-100 transition-opacity z-10 pointer-events-none border border-white/10">
+                                                                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Reason:</p>
+                                                                            <p className="text-[10px] leading-relaxed italic">"{prod.rejection_reason}"</p>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            ) : (
+                                                                <span className="px-3 py-1 rounded-full bg-amber-500 text-white text-[9px] font-black uppercase tracking-widest shadow-lg flex items-center gap-1.5">
+                                                                    <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> Pending
+                                                                </span>
+                                                            )}
+                                                        </>
                                                     )}
                                                 </div>
 
@@ -379,9 +443,16 @@ export const MerchantProducts: React.FC = () => {
                                                     </div>
 
                                                     {/* Meta Row - Below price row */}
-                                                    <div className="flex items-center justify-between gap-4">
-                                                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest opacity-60 line-clamp-1 flex-1">{prod.kategori_produk || 'Umum'}</p>
-                                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest whitespace-nowrap">{prod.kota || 'Nasional'}</p>
+                                                    <div className="space-y-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="px-2 py-0.5 rounded bg-slate-50 text-slate-400 text-[8px] font-black uppercase tracking-widest border border-slate-100">
+                                                                No. Produk: tamuu-shop-{prod.id.substring(0, 8).toUpperCase()}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between gap-4">
+                                                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest opacity-60 line-clamp-1 flex-1">{prod.kategori_produk || 'Umum'}</p>
+                                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest whitespace-nowrap">{prod.kota || 'Nasional'}</p>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -401,7 +472,7 @@ export const MerchantProducts: React.FC = () => {
                                     {/* Left Col */}
                                     <div className="lg:col-span-7 space-y-10">
                                         {/* Basic Info Card */}
-                                        <div className="bg-[#FBFBFB] rounded-[40px] border border-slate-100 p-10 space-y-8 shadow-sm relative overflow-hidden">
+                                        <div className="relative z-10 bg-[#FBFBFB] rounded-[40px] border border-slate-100 p-10 space-y-8 shadow-sm relative overflow-hidden">
                                             <div className="flex items-center justify-between">
                                                 <h4 className="text-lg font-black text-[#0A1128]">Detail <span className="text-[#FFBF00]">Produk/Jasa</span></h4>
                                                 {view === 'edit' && editingId && (
@@ -413,18 +484,24 @@ export const MerchantProducts: React.FC = () => {
 
                                             <div className="space-y-6">
                                                 <div className="space-y-3">
-                                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Nama Produk/Jasa</label>
+                                                    <div className="flex flex-col ml-1">
+                                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Nama Produk/Jasa</label>
+                                                        <span className="text-[8px] font-bold text-rose-400/60 uppercase tracking-widest mt-0.5">(Wajib Diisi)</span>
+                                                    </div>
                                                     <input
                                                         type="text"
                                                         value={namaProduk}
                                                         onChange={e => setNamaProduk(e.target.value)}
                                                         placeholder="e.g. Tamuu Venue Hall"
-                                                        className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-[#0A1128] placeholder:text-slate-400 focus:ring-1 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40 focus:outline-none transition-all"
+                                                        className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-[#0A1128] placeholder:text-slate-500 focus:ring-1 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40 focus:outline-none transition-all"
                                                     />
                                                 </div>
 
                                                 <div className="space-y-3">
-                                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Harga (Rp)</label>
+                                                    <div className="flex flex-col ml-1">
+                                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Harga (Rp)</label>
+                                                        <span className="text-[8px] font-bold text-rose-400/60 uppercase tracking-widest mt-0.5">(Wajib Diisi)</span>
+                                                    </div>
                                                     <div className="relative">
                                                         <div className="absolute left-6 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">Rp</div>
                                                         <input
@@ -441,14 +518,17 @@ export const MerchantProducts: React.FC = () => {
                                                                 setHargaEstimasi(rawValue);
                                                             }}
                                                             placeholder="15.000.000"
-                                                            className={`w-full bg-white border ${hargaError ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500' : 'border-slate-200 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40'} rounded-2xl pl-14 pr-6 py-4 text-sm font-bold text-[#0A1128] placeholder:text-slate-400 focus:ring-1 focus:outline-none transition-all`}
+                                                            className={`w-full bg-white border ${hargaError ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500' : 'border-slate-200 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40'} rounded-2xl pl-14 pr-6 py-4 text-sm font-bold text-[#0A1128] placeholder:text-slate-500 focus:ring-1 focus:outline-none transition-all`}
                                                         />
                                                     </div>
                                                     {hargaError && <p className="text-xs text-red-500 font-bold ml-1">{hargaError}</p>}
                                                 </div>
 
                                                 <div className="space-y-3">
-                                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Product Category</label>
+                                                    <div className="flex flex-col ml-1">
+                                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Kategori</label>
+                                                        <span className="text-[8px] font-bold text-rose-400/60 uppercase tracking-widest mt-0.5">(Wajib Diisi)</span>
+                                                    </div>
                                                     <select
                                                         value={selectedCategory}
                                                         onChange={e => setSelectedCategory(e.target.value)}
@@ -465,16 +545,19 @@ export const MerchantProducts: React.FC = () => {
                                                             value={customCategory}
                                                             onChange={e => setCustomCategory(e.target.value)}
                                                             placeholder="Masukkan nama kategori kustom..."
-                                                            className="w-full mt-3 bg-white border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-1 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40 focus:outline-none transition-all"
+                                                            className="w-full mt-3 bg-white border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-1 focus:ring-[#FFBF00]/40 focus:border-[#FFBF00]/40 focus:outline-none transition-all placeholder:text-slate-500"
                                                         />
                                                     )}
                                                 </div>
 
                                                 <div className="space-y-3">
-                                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Kota/Kabupaten</label>
+                                                    <div className="flex flex-col ml-1">
+                                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Kota/Kabupaten</label>
+                                                        <span className="text-[8px] font-bold text-rose-400/60 uppercase tracking-widest mt-0.5">(Wajib Diisi)</span>
+                                                    </div>
                                                     
                                                     {/* Searchable Region Selector */}
-                                                    <div className="relative">
+                                                    <div className="relative z-20">
                                                         <div 
                                                             onClick={() => setIsKotaOpen(!isKotaOpen)}
                                                             className="flex items-center justify-between w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-[#0A1128] cursor-pointer hover:border-[#FFBF00]/40 transition-all shadow-sm"
@@ -494,7 +577,7 @@ export const MerchantProducts: React.FC = () => {
                                                                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                                                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                                        className="absolute left-0 right-0 mt-3 bg-white border border-slate-100 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] z-50 overflow-hidden flex flex-col max-h-[350px]"
+                                                                        className="absolute left-0 right-0 mt-3 bg-white border border-slate-100 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] z-[9999] overflow-hidden flex flex-col max-h-[350px]"
                                                                     >
                                                                         <div className="p-4 border-b border-slate-50 sticky top-0 bg-white/80 backdrop-blur-md">
                                                                             <div className="relative">
@@ -556,9 +639,47 @@ export const MerchantProducts: React.FC = () => {
                                                 <textarea
                                                     value={deskripsi}
                                                     onChange={e => setDeskripsi(e.target.value)}
-                                                    className="w-full bg-transparent border-none p-6 text-sm text-slate-600 font-medium focus:ring-0 placeholder:text-slate-400 resize-none min-h-[250px] focus:outline-none"
-                                                    placeholder="Elaborate on the asset's specifications, history, and premium value..."
+                                                    className="w-full bg-transparent border-none p-6 text-sm text-slate-600 font-medium focus:ring-0 placeholder:text-slate-500 resize-none min-h-[250px] focus:outline-none"
+                                                    placeholder="Jelaskan spesifikasi, sejarah, dan nilai premium dari aset ini..."
                                                 />
+                                            </div>
+                                        </div>
+
+                                        {/* Location Detail Card */}
+                                        <div className="bg-[#FBFBFB] rounded-[40px] border border-slate-100 p-10 space-y-8 shadow-sm relative">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center border border-orange-500/20"><MapPin className="w-5 h-5" /></div>
+                                                <div>
+                                                    <h4 className="text-lg font-black text-[#0A1128]">Lokasi <span className="text-[#FFBF00]">Detail</span></h4>
+                                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Alamat & Titik Map</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-6">
+                                                <div className="space-y-3">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Alamat Lengkap</label>
+                                                    <textarea
+                                                        value={alamatLengkap}
+                                                        onChange={e => setAlamatLengkap(e.target.value)}
+                                                        placeholder="Masukkan alamat lengkap operasional atau kantor..."
+                                                        className="w-full bg-white border border-slate-100 rounded-2xl px-8 py-5 text-sm font-bold text-[#0A1128] placeholder:text-slate-500 focus:ring-2 focus:ring-[#FFBF00]/20 transition-all backdrop-blur-md resize-none h-32 outline-none"
+                                                    />
+                                                </div>
+
+                                                <div className="space-y-3">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Link Google Maps (URL)</label>
+                                                    <div className="relative">
+                                                        <Globe className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                                                        <input
+                                                            type="text"
+                                                            value={googleMapsUrl}
+                                                            onChange={e => setGoogleMapsUrl(e.target.value)}
+                                                            placeholder="https://maps.google.com/?q=..."
+                                                            className="w-full bg-white border border-slate-100 rounded-2xl pl-14 pr-8 py-5 text-sm font-bold text-[#0A1128] placeholder:text-slate-500 focus:ring-2 focus:ring-[#FFBF00]/20 transition-all backdrop-blur-md outline-none"
+                                                        />
+                                                    </div>
+                                                    <p className="text-[9px] text-slate-500 italic ml-1">*Buka Google Maps, cari lokasi, lalu salin link (URL) dari browser.</p>
+                                                </div>
                                             </div>
                                         </div>
 
@@ -571,28 +692,28 @@ export const MerchantProducts: React.FC = () => {
                                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">TikTok</label>
                                                     <div className="relative">
                                                         <TiktokIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                                                        <input value={tiktokUrl} onChange={e => setTiktokUrl(e.target.value)} placeholder="https://tiktok.com/@..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20" />
+                                                        <input value={tiktokUrl} onChange={e => setTiktokUrl(e.target.value)} placeholder="https://tiktok.com/@..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20 placeholder:text-slate-500" />
                                                     </div>
                                                 </div>
                                                 <div className="space-y-3">
                                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">YouTube</label>
                                                     <div className="relative">
                                                         <Youtube className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                                                        <input value={youtubeUrl} onChange={e => setYoutubeUrl(e.target.value)} placeholder="https://youtube.com/..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20" />
+                                                        <input value={youtubeUrl} onChange={e => setYoutubeUrl(e.target.value)} placeholder="https://youtube.com/..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20 placeholder:text-slate-500" />
                                                     </div>
                                                 </div>
                                                 <div className="space-y-3">
                                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">X (Twitter)</label>
                                                     <div className="relative">
                                                         <XLogoIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                                                        <input value={xUrl} onChange={e => setXUrl(e.target.value)} placeholder="https://x.com/..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20" />
+                                                        <input value={xUrl} onChange={e => setXUrl(e.target.value)} placeholder="https://x.com/..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20 placeholder:text-slate-500" />
                                                     </div>
                                                 </div>
                                                 <div className="space-y-3">
                                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Website</label>
                                                     <div className="relative">
                                                         <Globe className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                                                        <input value={websiteUrl} onChange={e => setWebsiteUrl(e.target.value)} placeholder="https://..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20" />
+                                                        <input value={websiteUrl} onChange={e => setWebsiteUrl(e.target.value)} placeholder="https://..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20 placeholder:text-slate-500" />
                                                     </div>
                                                 </div>
                                                 <div className="space-y-3">
@@ -601,7 +722,7 @@ export const MerchantProducts: React.FC = () => {
                                                         <div className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 flex items-center justify-center grayscale opacity-50">
                                                             <img src="/images/logos/marketplace/logo_tokopedia.png" alt="Tokopedia" className="w-full h-full object-contain" />
                                                         </div>
-                                                        <input value={tokopediaUrl} onChange={e => setTokopediaUrl(e.target.value)} placeholder="https://tokopedia.com/..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20" />
+                                                        <input value={tokopediaUrl} onChange={e => setTokopediaUrl(e.target.value)} placeholder="https://tokopedia.com/..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20 placeholder:text-slate-500" />
                                                     </div>
                                                 </div>
                                                 <div className="space-y-3">
@@ -610,7 +731,7 @@ export const MerchantProducts: React.FC = () => {
                                                         <div className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 flex items-center justify-center grayscale opacity-50">
                                                             <img src="/images/logos/marketplace/logo_shopee.png" alt="Shopee" className="w-full h-full object-contain" />
                                                         </div>
-                                                        <input value={shopeeUrl} onChange={e => setShopeeUrl(e.target.value)} placeholder="https://shopee.co.id/..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20" />
+                                                        <input value={shopeeUrl} onChange={e => setShopeeUrl(e.target.value)} placeholder="https://shopee.co.id/..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20 placeholder:text-slate-500" />
                                                     </div>
                                                 </div>
                                             </div>
@@ -621,7 +742,10 @@ export const MerchantProducts: React.FC = () => {
                                     <div className="lg:col-span-5 space-y-10">
                                         <div className="bg-[#FBFBFB] rounded-[40px] border border-slate-100 p-10 shadow-sm flex flex-col min-h-[500px] relative">
                                             <div className="flex items-center justify-between mb-8">
-                                                <h4 className="text-lg font-black text-[#0A1128]">Gallery</h4>
+                                                <div className="flex flex-col">
+                                                    <h4 className="text-lg font-black text-[#0A1128]">Galeri Foto</h4>
+                                                    <span className="text-[8px] font-bold text-rose-400/60 uppercase tracking-widest mt-1">(Minimal 2 Foto)</span>
+                                                </div>
                                                 <span className="text-[10px] text-[#FFBF00] font-black tracking-widest">{images.length} / 5</span>
                                             </div>
 
