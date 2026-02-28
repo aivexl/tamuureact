@@ -1,4 +1,5 @@
-import { m } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { motion as m, animate } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
@@ -9,6 +10,21 @@ interface AuthLayoutProps {
     subtitle: string;
     image?: string;
 }
+
+const CountingNumber = ({ value }: { value: number }) => {
+    const [displayValue, setDisplayValue] = useState(0);
+
+    useEffect(() => {
+        const controls = animate(0, value, {
+            duration: 2.5,
+            ease: "easeOut",
+            onUpdate: (latest) => setDisplayValue(Math.floor(latest))
+        });
+        return () => controls.stop();
+    }, [value]);
+
+    return <span>{displayValue.toLocaleString()}</span>;
+};
 
 export const AuthLayout: React.FC<AuthLayoutProps> = ({
     children,
@@ -47,10 +63,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
                         transition={{ delay: 0.5, duration: 0.8 }}
                     >
                         <Link to="/" className="flex items-center gap-4 mb-40 group">
-                            <div className="w-12 h-12 bg-gradient-to-tr from-rose-600 to-rose-400 rounded-2xl flex items-center justify-center shadow-2xl shadow-rose-500/40 group-hover:scale-110 transition-transform duration-500">
-                                <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364-.707.707M6.343 17.657l-.707.707m0-12.728.707.707m11.314 11.314.707.707M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" /></svg>
-                            </div>
-                            <span className="text-3xl font-black tracking-tighter">Tamuu</span>
+                            <img src="/images/logo-tamuu-vfinal-v1.webp" alt="Tamuu Logo" className="h-10 w-auto object-contain group-hover:scale-105 transition-transform duration-500 drop-shadow-lg" />
                         </Link>
 
                         <h1 className="text-6xl font-black leading-[0.9] mb-8 tracking-tighter">
@@ -64,20 +77,29 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
                     </m.div>
                 </div>
 
-                {/* Glassmorphism Bottom Card */}
-                <div className="absolute bottom-12 left-16 z-20">
-                    <div className="backdrop-blur-xl bg-white/5 border border-white/10 p-6 rounded-3xl flex items-center gap-6 max-w-xs shadow-2xl">
-                        <div className="flex -space-x-3">
-                            {['A', 'B', 'C', 'D'].map((initial, i) => (
-                                <div key={i} className="w-10 h-10 rounded-full border-2 border-white/10 overflow-hidden bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center">
-                                    <span className="text-white text-sm font-bold">{initial}</span>
-                                </div>
-                            ))}
+                {/* Glassmorphism Counting Card - Professional Redesign */}
+                <div className="absolute bottom-16 left-16 z-20">
+                    <m.div 
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 1, duration: 0.8 }}
+                        className="backdrop-blur-2xl bg-white/5 border border-white/10 p-8 rounded-[2rem] flex flex-col gap-4 shadow-2xl overflow-hidden relative group"
+                    >
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        
+                        <div className="flex flex-col gap-2 mt-4">
+                            <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/60">
+                                Bergabunglah Bersama
+                            </p>
+                            <span className="text-6xl font-black tracking-tighter text-white flex items-center gap-1 drop-shadow-lg">
+                                <CountingNumber value={10000} />
+                                <span className="text-premium-accent">+</span>
+                            </span>
+                            <span className="text-sm font-black uppercase tracking-[0.4em] text-teal-400">
+                                Pengguna
+                            </span>
                         </div>
-                        <p className="text-xs font-bold text-white/80">
-                            <span className="text-teal-400">10k+</span> Pasangan Bahagia
-                        </p>
-                    </div>
+                    </m.div>
                 </div>
             </div>
 
@@ -99,10 +121,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
                 {/* Mobile Header (Only visible on small screens) */}
                 <div className="lg:hidden absolute top-8 left-6">
                     <Link to="/" className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-rose-600 rounded-xl flex items-center justify-center shadow-lg shadow-rose-500/20">
-                            <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364-.707.707M6.343 17.657l-.707.707m0-12.728.707.707m11.314 11.314.707.707M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" /></svg>
-                        </div>
-                        <span className="text-xl font-black text-white tracking-tighter">Tamuu</span>
+                        <img src="/images/logo-tamuu-vfinal-v1.webp" alt="Tamuu Logo" className="h-8 w-auto object-contain drop-shadow-md" />
                     </Link>
                 </div>
 

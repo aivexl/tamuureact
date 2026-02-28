@@ -291,6 +291,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
             )}
 
             {/* AI CHATBOT SIDEBAR - Enterprise Wrapper for Backward Compatibility */}
+            {/* 
             <AdminChatSidebarWrapper
                 useEnhanced={false} // Set to true untuk aktifkan enhanced version
                 userId={user?.id}
@@ -301,6 +302,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                     aiPersonality: 'professional'
                 }}
             />
+            */}
         </div>
     );
 };

@@ -17,6 +17,27 @@ export const useProductDiscovery = (options: { category?: string; query?: string
     });
 };
 
+export const useSpecialProducts = () => {
+    return useQuery({
+        queryKey: ['shop_products_special'],
+        queryFn: () => shop.getSpecialProducts()
+    });
+};
+
+export const useFeaturedProducts = () => {
+    return useQuery({
+        queryKey: ['shop_products_featured'],
+        queryFn: () => shop.getFeaturedProducts()
+    });
+};
+
+export const useRandomProducts = () => {
+    return useQuery({
+        queryKey: ['shop_products_random'],
+        queryFn: () => shop.getRandomProducts()
+    });
+};
+
 export const useStorefront = (slug: string, token?: string) => {
     return useQuery({
         queryKey: ['storefront', slug],

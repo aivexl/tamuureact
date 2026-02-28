@@ -1,5 +1,16 @@
 # Tamuu Changelog
 
+## [2026-02-28] Feature: Landing Page Vendor Section Redesign & Featured Products
+**Status**: 🟢 In Progress
+**Environment**: Production
+
+### Landing Page Updates
+- **Shop Section Overhaul**: Redesigned the vendor section (`ShopSection.tsx`) to be cleaner and more modern, removing "TAMUU SHOP ECOSYSTEM" text.
+- **Enterprise Card Design**: Replaced old vendor cards with a high-end landscape banner and floating logo design. Removed dummy stats like "Verified" and star ratings.
+- **Improved Navigation**: Added horizontal scroll arrows vertically centered on both vendor and product cards, whilst keeping the "Lihat Semua" button.
+- **Dynamic Featured Products**: Added a new "Featured Products" horizontal carousel above the vendor section displaying exactly 10 products.
+- **Admin Governance**: Integrated landing page products with the Admin Dashboard "Ads" tab using the new `FEATURED_PRODUCT_LANDING` placement. If no ads are configured by the admin, the system automatically falls back to displaying 10 random real products that shuffle on every refresh.
+
 ## [2026-02-23] Feature: Granular Social Media Controls & UI Polish
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
 **Environment**: Production

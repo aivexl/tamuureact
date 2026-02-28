@@ -1309,6 +1309,27 @@ export const shop = {
         return sanitizeValue(data.products || []);
     },
 
+    async getSpecialProducts() {
+        const res = await safeFetch(`${API_BASE}/api/shop/products/special`);
+        if (!res.ok) throw new Error('Failed to fetch special products');
+        const data = await res.json();
+        return sanitizeValue(data.products || []);
+    },
+
+    async getFeaturedProducts() {
+        const res = await safeFetch(`${API_BASE}/api/shop/products/featured`);
+        if (!res.ok) throw new Error('Failed to fetch featured products');
+        const data = await res.json();
+        return sanitizeValue(data.products || []);
+    },
+
+    async getRandomProducts() {
+        const res = await safeFetch(`${API_BASE}/api/shop/products/random`);
+        if (!res.ok) throw new Error('Failed to fetch random products');
+        const data = await res.json();
+        return sanitizeValue(data.products || []);
+    },
+
     async getStorefront(slug: string, token?: string) {
         const headers: Record<string, string> = {};
         if (token) headers['Authorization'] = `Bearer ${token}`;

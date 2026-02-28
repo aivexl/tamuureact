@@ -209,10 +209,21 @@ export default {
                 if (newStatus === 'PAID') {
                     const userId = transaction.user_id;
                     const tier = transaction.tier;
-                    let maxInvitations = tier === 'elite' ? 3 : (tier === 'ultimate' ? 2 : 1);
-                    const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+                    // CTO POLICY: ALL packages are now limited to 1 invitation slot
+                    let maxInvitations = 1; 
+                    
+                    // NEW DURATION POLICY:
+                    // Pro: 90 days, Ultimate: 180 days, Elite: 365 days
+                    let durationDays = 30; // Default
+                    if (tier === 'pro' || tier === 'vip') durationDays = 90;
+                    else if (tier === 'ultimate' || tier === 'platinum') durationDays = 180;
+                    else if (tier === 'elite' || tier === 'vvip') durationDays = 365;
+
+                    const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
 
                     await env.DB.prepare('UPDATE users SET tier = ?, max_invitations = ?, expires_at = ?, updated_at = datetime("now") WHERE id = ?').bind(tier, maxInvitations, expiresAt, userId).run();
+                    // Update all user's invitations expiry date
+                    await env.DB.prepare('UPDATE invitations SET expires_at = ?, updated_at = datetime("now") WHERE user_id = ?').bind(expiresAt, userId).run();
                     await env.DB.prepare('UPDATE billing_transactions SET paid_at = datetime("now") WHERE id = ?').bind(transactionId).run();
                 }
             }
@@ -676,24 +687,34 @@ export default {
                     ).bind(order_id).first();
 
                     if (transaction && transaction.status !== 'PAID') {
-                        const userId = transaction.user_id;
-                        const tier = transaction.tier;
-                        let maxInvitations = 1;
-                        if (tier === 'elite') maxInvitations = 3;
-                        else if (tier === 'ultimate') maxInvitations = 2;
+                    const userId = transaction.user_id;
+                    const tier = transaction.tier;
+                    // CTO POLICY: ALL packages limited to 1 slot
+                    let maxInvitations = 1; 
 
-                        const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+                    let durationDays = 30;
+                    if (tier === 'pro' || tier === 'vip') durationDays = 90;
+                    else if (tier === 'ultimate' || tier === 'platinum') durationDays = 180;
+                    else if (tier === 'elite' || tier === 'vvip') durationDays = 365;
 
-                        // 1. Update Transaction
-                        await env.DB.prepare(
-                            'UPDATE billing_transactions SET status = ?, paid_at = datetime("now"), payment_channel = ? WHERE external_id = ?'
-                        ).bind('PAID', payment_type || 'midtrans', order_id).run();
+                    const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
 
-                        // 2. Provision User
-                        await env.DB.prepare(
-                            'UPDATE users SET tier = ?, max_invitations = ?, expires_at = ?, updated_at = datetime("now") WHERE id = ?'
-                        ).bind(tier, maxInvitations, expiresAt, userId).run();
+                    // 1. Update Transaction
+                    await env.DB.prepare(
+                        'UPDATE billing_transactions SET status = ?, paid_at = datetime("now"), payment_channel = ? WHERE external_id = ?'
+                    ).bind('PAID', payment_type || 'midtrans', order_id).run();
+
+                    // 2. Provision User
+                    await env.DB.prepare(
+                        'UPDATE users SET tier = ?, max_invitations = ?, expires_at = ?, updated_at = datetime("now") WHERE id = ?'
+                    ).bind(tier, maxInvitations, expiresAt, userId).run();
+
+                    // 3. Update all user's invitations expiry date
+                    await env.DB.prepare(
+                        'UPDATE invitations SET expires_at = ?, updated_at = datetime("now") WHERE user_id = ?'
+                    ).bind(expiresAt, userId).run();
                     }
+
                 } else if (transaction_status === 'expire') {
                     // IMPORTANT: Don't overwrite CANCELLED status with EXPIRED
                     // Check current status first
@@ -726,11 +747,15 @@ export default {
                 if (status === 'PAID') {
                     const userId = metadata.userId;
                     const tier = metadata.tier;
-                    let maxInvitations = 1;
-                    if (tier === 'elite') maxInvitations = 3;
-                    else if (tier === 'ultimate') maxInvitations = 2;
+                    // CTO POLICY: ALL packages limited to 1 slot
+                    let maxInvitations = 1; 
 
-                    const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+                    let durationDays = 30;
+                    if (tier === 'pro' || tier === 'vip') durationDays = 90;
+                    else if (tier === 'ultimate' || tier === 'platinum') durationDays = 180;
+                    else if (tier === 'elite' || tier === 'vvip') durationDays = 365;
+
+                    const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
 
                     // 1. Update Transaction
                     await env.DB.prepare(
@@ -741,6 +766,11 @@ export default {
                     await env.DB.prepare(
                         'UPDATE users SET tier = ?, max_invitations = ?, expires_at = ?, updated_at = datetime("now") WHERE id = ?'
                     ).bind(tier, maxInvitations, expiresAt, userId).run();
+
+                    // 3. Update all user's invitations expiry date
+                    await env.DB.prepare(
+                        'UPDATE invitations SET expires_at = ?, updated_at = datetime("now") WHERE user_id = ?'
+                    ).bind(expiresAt, userId).run();
                 }
 
                 return json({ success: true }, corsHeaders);
@@ -1319,7 +1349,7 @@ export default {
                         (SELECT COUNT(*) FROM shop_wishlist sw JOIN shop_products sp ON sw.product_id = sp.id WHERE sp.merchant_id = m.id) as wishlist_count
                         FROM shop_merchants m 
                         LEFT JOIN shop_category c ON m.category_id = c.id
-                        WHERE m.is_verified = 1 AND m.slug != 'admin'
+                        WHERE m.is_verified = 1 AND m.id != 'admin-merchant'
                     `;
                     let params = [];
 
@@ -1403,6 +1433,74 @@ export default {
                 }
             }
 
+            // 5c. PUBLIC DISCOVERY: Special & Featured Products
+            if ((path === '/api/shop/products/special' || path === '/api/shop/products/featured' || path === '/api/shop/products/random' || path === '/api/shop/products/landing-featured') && method === 'GET') {
+                try {
+                    let typeCondition = '';
+                    let orderBy = 'p.created_at DESC';
+                    let limit = 10;
+
+                    if (path.includes('special')) {
+                        typeCondition = 'AND p.is_special = 1';
+                    } else if (path.includes('featured')) {
+                        typeCondition = 'AND p.is_featured = 1';
+                        limit = 8;
+                    } else if (path.includes('landing-featured')) {
+                        typeCondition = 'AND p.is_landing_featured = 1';
+                        limit = 10;
+                    } else if (path.includes('random')) {
+                        orderBy = 'RANDOM()';
+                        limit = 12;
+                    }
+
+                    const query = `
+                        SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url,
+                        p.is_admin_listing, p.custom_store_name,
+                        (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count
+                        FROM shop_products p 
+                        LEFT JOIN shop_merchants m ON p.merchant_id = m.id 
+                        WHERE p.status = 'PUBLISHED' AND p.is_approved = 1 AND (m.is_verified = 1 OR p.is_admin_listing = 1)
+                        ${typeCondition}
+                        ORDER BY ${orderBy} LIMIT ${limit}
+                    `;
+
+                    let productsRes = await env.DB.prepare(query).all();
+                    let products = productsRes.results;
+
+                    // Fallback for landing-featured if none exist
+                    if (path.includes('landing-featured') && products.length === 0) {
+                        const fallbackQuery = `
+                            SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url,
+                            p.is_admin_listing, p.custom_store_name,
+                            (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count
+                            FROM shop_products p 
+                            LEFT JOIN shop_merchants m ON p.merchant_id = m.id 
+                            WHERE p.status = 'PUBLISHED' AND p.is_approved = 1 AND (m.is_verified = 1 OR p.is_admin_listing = 1)
+                            ORDER BY RANDOM() LIMIT ${limit}
+                        `;
+                        productsRes = await env.DB.prepare(fallbackQuery).all();
+                        products = productsRes.results;
+                    }
+
+                    // Fetch images for these products
+                    const productIds = products.map(p => p.id);
+                    let productImages = [];
+                    if (productIds.length > 0) {
+                        const placeholders = productIds.map(() => '?').join(',');
+                        const imagesRes = await env.DB.prepare(`SELECT * FROM shop_product_images WHERE product_id IN (${placeholders}) ORDER BY order_index ASC`).bind(...productIds).all();
+                        productImages = imagesRes.results;
+                    }
+
+                    const productsWithImages = products.map(p => ({
+                        ...p,
+                        images: productImages.filter(img => img.product_id === p.id)
+                    }));
+
+                    return json({ success: true, products: productsWithImages }, corsHeaders);
+                } catch (error) {
+                    return json({ error: 'Failed to fetch specific products', details: error.message }, { ...corsHeaders, status: 500 });
+                }
+            }
             // 5d. PUBLIC DISCOVERY: Merchant Stats (Products & Love Count)
             if (path === '/api/shop/merchant/stats' && method === 'GET') {
                 try {
@@ -1529,6 +1627,9 @@ export default {
                                 p.custom_store_name,
                                 p.is_approved,
                                 p.rejection_reason,
+                                p.is_special,
+                                p.is_featured,
+                                p.is_landing_featured,
                                 p.created_at as product_created_at,
                                 m.nama_toko, 
                                 m.slug as merchant_slug
@@ -1630,7 +1731,7 @@ export default {
                             nama_produk, deskripsi, harga_estimasi, status, images, 
                             kategori_produk, kota, is_admin_listing, custom_store_name,
                             tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url,
-                            alamat_lengkap, google_maps_url
+                            alamat_lengkap, google_maps_url, is_special, is_featured, is_landing_featured
                         } = body;
 
                         const finalStatus = status || 'PUBLISHED';
@@ -1659,9 +1760,9 @@ export default {
                                     id, merchant_id, nama_produk, deskripsi, harga_estimasi, status, 
                                     kategori_produk, kota, is_admin_listing, custom_store_name,
                                     tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url,
-                                    is_approved, slug, alamat_lengkap, google_maps_url
+                                    is_approved, slug, alamat_lengkap, google_maps_url, is_special, is_featured, is_landing_featured
                                 )
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                             `).bind(
                                 productId, merchantId, finalNama || '(Tanpa Nama)', deskripsi || '-', 
                                 harga_estimasi || null, finalStatus, kategori_produk || null, 
@@ -1671,7 +1772,10 @@ export default {
                                 is_admin_listing ? 1 : 0,
                                 slug,
                                 alamat_lengkap || null,
-                                google_maps_url || null
+                                google_maps_url || null,
+                                is_special ? 1 : 0,
+                                is_featured ? 1 : 0,
+                                is_landing_featured ? 1 : 0
                             )
                         ];
 
@@ -1703,7 +1807,7 @@ export default {
                             nama_produk, deskripsi, harga_estimasi, status, images, 
                             kategori_produk, kota, is_admin_listing, custom_store_name,
                             tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url,
-                            alamat_lengkap, google_maps_url
+                            alamat_lengkap, google_maps_url, is_special, is_featured, is_landing_featured
                         } = body;
 
                         let newSlug = undefined;
@@ -1737,6 +1841,9 @@ export default {
                                     slug = COALESCE(?, slug),
                                     alamat_lengkap = COALESCE(?, alamat_lengkap),
                                     google_maps_url = COALESCE(?, google_maps_url),
+                                    is_special = COALESCE(?, is_special),
+                                    is_featured = COALESCE(?, is_featured),
+                                    is_landing_featured = COALESCE(?, is_landing_featured),
                                     updated_at = CURRENT_TIMESTAMP
                                 WHERE id = ?
                             `).bind(
@@ -1749,6 +1856,9 @@ export default {
                                 newSlug,
                                 alamat_lengkap || null,
                                 google_maps_url || null,
+                                is_special !== undefined ? (is_special ? 1 : 0) : null,
+                                is_featured !== undefined ? (is_featured ? 1 : 0) : null,
+                                is_landing_featured !== undefined ? (is_landing_featured ? 1 : 0) : null,
                                 productId
                             )
                         ];
@@ -2272,41 +2382,40 @@ export default {
 
             // USER: AI Chat Support (Intelligence v5.0 - Proactive Agent)
             if (path === '/api/chat' && method === 'POST') {
-                const { messages, userId } = await request.json();
+            const { messages, userId } = await request.json();
 
-                if (!env.GEMINI_API_KEY) {
-                    return json({ error: 'AI Support currently unavailable' }, { ...corsHeaders, status: 503 });
-                }
+            if (!env.GEMINI_API_KEY) {
+                return json({ error: 'AI Support currently unavailable' }, { ...corsHeaders, status: 503 });
+            }
 
-                // SECURITY: Strict session verification
-                let user = null;
-                if (userId) {
-                    user = await env.DB.prepare('SELECT * FROM users WHERE id = ? OR email = ?').bind(userId, userId).first();
-                    if (!user) return json({ error: 'Unauthorized context' }, { ...corsHeaders, status: 403 });
-                }
+            // SECURITY: Strict session verification
+            let user = null;
+            if (userId) {
+                user = await env.DB.prepare('SELECT * FROM users WHERE id = ? OR email = ?').bind(userId, userId).first();
+                if (!user) return json({ error: 'Unauthorized context' }, { ...corsHeaders, status: 403 });
+            }
 
-                const canonicalId = user?.id || userId;
+            const canonicalId = user?.id || userId;
 
-                // TOOLSET DEFINITION (Expert Level v5.2)
-                // --- TAMUU EXPERT SYSTEM v7.0 (MODULAR-KAP) ---
-                const KNOWLEDGE = {
-                    PRODUCT: `
-- FREE: 1 Undangan, Trial 30 Hari.
-- PRO (Rp 99k): 1 Year, Premium Theme, Custom Music. (Best Seller)
-- ULTIMATE (Rp 149k): 2 Undangan, Welcome Display, RSVP Unlimited.
-- ELITE (Rp 199k): 3 Undangan, VVIP Support.
-- Masa aktif paket adalah 1 TAHUN dari tanggal pembayaran (settlement).`,
-                    PLATFORM: `
-- Editor: Dapat diakses di Dashboard untuk mengubah Ornamen, Musik, dan Detail Acara.
-- Link: Format publik adalah tamuu.id/[slug].
-- Sharing: Gunakan tombol 'Share' untuk menyebar ke WhatsApp dengan teks otomatis.
-- Status: 'Draft' (hanya Anda yang bisa lihat), 'Published' (siap disebar).`,
-                    POLICY: `
-- Refund: Maksimal 2x24 jam jika terjadi kendala teknis yang tidak dapat diselesaikan.
-- Data: Undangan yang expired akan tetap tersimpan selama 30 hari sebelum dihapus permanen.
-- Support: Chat ini adalah support resmi Tamuu.`
-                };
-
+            // TOOLSET DEFINITION (Expert Level v5.2)
+            // --- TAMUU EXPERT SYSTEM v7.0 (MODULAR-KAP) ---
+            const KNOWLEDGE = {
+                PRODUCT: `
+            - FREE: 1 Undangan, Trial 30 Hari.
+            - PRO (Rp 99k): 1 Undangan, Aktif 90 Hari, Premium Theme, Custom Music.
+            - ULTIMATE (Rp 149k): 1 Undangan, Aktif 180 Hari, Welcome Display, RSVP Unlimited.
+            - ELITE (Rp 199k): 1 Undangan, Aktif 365 Hari, VVIP Support.
+            - Masa aktif di atas dihitung sejak pembayaran (settlement). Semua paket dibatasi 1 slot undangan aktif.`,
+                PLATFORM: `
+            - Editor: Dapat diakses di Dashboard untuk mengubah Ornamen, Musik, dan Detail Acara.
+            - Link: Format publik adalah tamuu.id/[slug].
+            - Sharing: Gunakan tombol 'Share' untuk menyebar ke WhatsApp dengan teks otomatis.
+            - Status: 'Draft' (hanya Anda yang bisa lihat), 'Published' (siap disebar).`,
+                POLICY: `
+            - Refund: Maksimal 2x24 jam jika terjadi kendala teknis yang tidak dapat diselesaikan.
+            - Data: Undangan yang expired akan tetap tersimpan selama 30 hari sebelum dihapus permanen.
+            - Support: Chat ini adalah support resmi Tamuu.`
+            };
                 // PRE-GROUNDING: Fetch User Context immediately
                 let userContext = "No specific account context.";
                 if (user) {
@@ -2539,18 +2648,18 @@ CONTEXT:
                                 }
                             }
                             else if (name === "get_invitation_details") {
-                                const inv = await env.DB.prepare('SELECT id, name, slug, is_published, category, created_at, user_id FROM invitations WHERE slug = ?').bind(args.slug).first();
+                                const inv = await env.DB.prepare('SELECT id, name, slug, is_published, category, created_at, user_id, expires_at FROM invitations WHERE slug = ?').bind(args.slug).first();
                                 if (inv) {
                                     const rsvp = await env.DB.prepare('SELECT COUNT(*) as total FROM rsvp_responses WHERE invitation_id = ?').bind(inv.id).first();
-                                    const invOwner = await env.DB.prepare('SELECT tier, expires_at FROM users WHERE id = ?').bind(inv.user_id).first();
-                                    const isExpired = invOwner?.expires_at ? new Date(invOwner.expires_at) < new Date() : false;
+                                    const invOwner = await env.DB.prepare('SELECT tier FROM users WHERE id = ?').bind(inv.user_id).first();
+                                    const isExpired = inv.expires_at ? new Date(inv.expires_at) < new Date() : false;
 
                                     toolResult = JSON.stringify({
                                         ...inv,
                                         rsvp_count: rsvp.total,
                                         owner_tier: invOwner?.tier,
                                         is_accessible: inv.is_published && !isExpired,
-                                        diag_msg: !inv.is_published ? "Status is DRAFT. User must click PUBLISH." : (isExpired ? "Subscription EXPIRED. User must renew." : "Link should be active.")
+                                        diag_msg: !inv.is_published ? "Status is DRAFT. User must click PUBLISH." : (isExpired ? "Invitation EXPIRED. User must renew/extend." : "Link should be active.")
                                     });
                                 } else {
                                     toolResult = `Invitation with slug "${args.slug}" not found.`;
@@ -2956,6 +3065,32 @@ CONTEXT:
                 return json({ success: true }, corsHeaders);
             }
 
+            // ============================================
+            // ADMIN: SYSTEM MANAGEMENT
+            // ============================================
+            if (path === '/api/admin/system/cleanup' && method === 'POST') {
+                const adminCheck = await verifyAdmin(request, env);
+                if (!adminCheck.isAdmin) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
+
+                try {
+                    // CTO POLICY: Delete invitations expired for more than 30 days
+                    // D1 doesn't have a built-in scheduler, so we trigger this via Admin API
+                    const result = await env.DB.prepare(`
+                        DELETE FROM invitations 
+                        WHERE expires_at IS NOT NULL 
+                        AND datetime(expires_at) < datetime('now', '-30 days')
+                    `).run();
+
+                    return json({ 
+                        success: true, 
+                        deleted_count: result.meta?.changes || 0,
+                        timestamp: new Date().toISOString()
+                    }, corsHeaders);
+                } catch (error) {
+                    return json({ error: 'Cleanup failed', details: error.message }, { ...corsHeaders, status: 500 });
+                }
+            }
+
             // ADMIN: List Transactions (with filtering)
             if (path.startsWith('/api/admin/transactions') && method === 'GET') {
                 const url = new URL(request.url);
@@ -3063,15 +3198,26 @@ t.*,
                         if (newStatus === 'PAID') {
                             const userId = transaction.user_id;
                             const tier = transaction.tier;
-                            let maxInvitations = 1;
-                            if (tier === 'elite') maxInvitations = 3;
-                            else if (tier === 'ultimate') maxInvitations = 2;
+                            // CTO POLICY: ALL packages are now limited to 1 invitation slot
+                            let maxInvitations = 1; 
+                            
+                            // NEW DURATION POLICY:
+                            // Pro: 90 days, Ultimate: 180 days, Elite: 365 days
+                            let durationDays = 30; // Default
+                            if (tier === 'pro' || tier === 'vip') durationDays = 90;
+                            else if (tier === 'ultimate' || tier === 'platinum') durationDays = 180;
+                            else if (tier === 'elite' || tier === 'vvip') durationDays = 365;
 
-                            const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+                            const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
 
                             await env.DB.prepare(
                                 'UPDATE users SET tier = ?, max_invitations = ?, expires_at = ?, updated_at = datetime("now") WHERE id = ?'
                             ).bind(tier, maxInvitations, expiresAt, userId).run();
+
+                            // Update all user's invitations expiry date
+                            await env.DB.prepare(
+                                'UPDATE invitations SET expires_at = ?, updated_at = datetime("now") WHERE user_id = ?'
+                            ).bind(expiresAt, userId).run();
 
                             await env.DB.prepare(
                                 'UPDATE billing_transactions SET paid_at = datetime("now") WHERE id = ?'
@@ -3884,9 +4030,9 @@ name = COALESCE(?, name),
                         return { data: parseJsonFields(templateResults[0]), source: 'templates' };
                     }
 
-                    // 2. Try Invitation (Join with user to check expiry)
+                    // 2. Try Invitation (Join with user to check tier, use invitation's own expiry)
                     let { results: invitationResults } = await env.DB.prepare(`
-        SELECT i.*, u.expires_at as user_expires_at, u.tier as user_tier
+        SELECT i.*, u.tier as user_tier
         FROM invitations i
         LEFT JOIN users u ON i.user_id = u.id
         WHERE i.slug = ? OR i.id = ?
@@ -3895,9 +4041,9 @@ name = COALESCE(?, name),
                     if (invitationResults && invitationResults.length > 0) {
                         const invitation = invitationResults[0];
 
-                        // SUPER ULTRA LOGIC: Check for Subscription Expiry
+                        // CTO POLICY: Check for Invitation Expiry
                         const now = new Date();
-                        const expiresAt = invitation.user_expires_at ? new Date(invitation.user_expires_at) : null;
+                        const expiresAt = invitation.expires_at ? new Date(invitation.expires_at) : null;
 
                         // If expired, return limited data and expired flag
                         if (expiresAt && now > expiresAt) {
@@ -3950,17 +4096,38 @@ name = COALESCE(?, name),
                 try {
                     const body = await request.json();
                     const userId = body.user_id;
+                    let invitationExpiresAt = null;
 
-                    // Check Gating: Invitation Limit
+                    // Check Gating: Invitation Limit & Subscription Info
                     if (userId) {
-                        const { results } = await env.DB.prepare(
-                            'SELECT tier, max_invitations, invitation_count FROM users WHERE id = ?'
-                        ).bind(userId).all();
+                        const user = await env.DB.prepare(
+                            'SELECT tier, max_invitations, invitation_count, expires_at FROM users WHERE id = ?'
+                        ).bind(userId).first();
 
-                        const user = results[0];
                         if (user && user.invitation_count >= (user.max_invitations || 1)) {
                             return json({ error: 'Invitation limit reached. Please upgrade your plan.' }, { headers: corsHeaders, status: 403 });
                         }
+
+                        // Determine initial expiry for the invitation
+                        if (user && user.expires_at) {
+                            const userExpiry = new Date(user.expires_at);
+                            if (userExpiry > new Date()) {
+                                // Inherit user's subscription expiry if it's in the future
+                                invitationExpiresAt = user.expires_at;
+                            }
+                        }
+                        
+                        // Default to 30 days if no valid subscription expiry
+                        if (!invitationExpiresAt) {
+                            const defaultExpiry = new Date();
+                            defaultExpiry.setDate(defaultExpiry.getDate() + 30);
+                            invitationExpiresAt = defaultExpiry.toISOString();
+                        }
+                    } else {
+                        // For anonymous/email-resolved users, 30 days default
+                        const defaultExpiry = new Date();
+                        defaultExpiry.setDate(defaultExpiry.getDate() + 30);
+                        invitationExpiresAt = defaultExpiry.toISOString();
                     }
 
                     // CTO UNICORN FIX: Smart Slug Resolver
@@ -4011,8 +4178,8 @@ name = COALESCE(?, name),
                     const orbitStr = JSON.stringify(orbit);
 
                     await env.DB.prepare(
-                        `INSERT INTO invitations(id, user_id, name, slug, category, zoom, pan, sections, layers, orbit_layers, orbit, music, thumbnail_url, template_id, is_published, event_date, event_location, venue_name, address, google_maps_url, seo_title, seo_description, og_image) 
-         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                        `INSERT INTO invitations(id, user_id, name, slug, category, zoom, pan, sections, layers, orbit_layers, orbit, music, thumbnail_url, template_id, is_published, event_date, event_location, venue_name, address, google_maps_url, seo_title, seo_description, og_image, expires_at) 
+         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
                     ).bind(
                         id,
                         userId || null,
@@ -4036,7 +4203,8 @@ name = COALESCE(?, name),
                         body.google_maps_url || null,
                         body.seo_title || null,
                         body.seo_description || null,
-                        body.og_image || null
+                        body.og_image || null,
+                        invitationExpiresAt
                     ).run();
 
                     // Update User's Invitation Count
@@ -4101,7 +4269,22 @@ name = COALESCE(?, name),
                         'SELECT * FROM invitations WHERE id = ? OR slug = ?'
                     ).bind(id, id).all();
                     if (results.length === 0) return null;
-                    return parseJsonFields(results[0]);
+                    
+                    const invitation = results[0];
+                    const now = new Date();
+                    const expiresAt = invitation.expires_at ? new Date(invitation.expires_at) : null;
+
+                    // CTO POLICY: Check for Invitation Expiry
+                    if (expiresAt && now > expiresAt) {
+                        return {
+                            id: invitation.id,
+                            name: invitation.name,
+                            slug: invitation.slug,
+                            expired: true
+                        };
+                    }
+
+                    return parseJsonFields(invitation);
                 });
             }
 

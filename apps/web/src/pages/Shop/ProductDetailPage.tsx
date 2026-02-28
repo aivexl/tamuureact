@@ -38,6 +38,7 @@ import {
 } from '../../hooks/queries/useShop';
 import { shop } from '../../lib/api';
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
+import { Footer } from '../../components/Layout/Footer';
 import { useStore } from '../../store/useStore';
 import { useSEO } from '../../hooks/useSEO';
 import { formatCurrency, formatAbbreviatedNumber } from '../../lib/utils';
@@ -59,6 +60,15 @@ export const ProductDetailPage: React.FC = () => {
     const [isLocationOpen, setIsLocationOpen] = useState(false);
     const [citySearchQuery, setCitySearchQuery] = useState('');
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+    // Sync search query from URL on mount
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const q = params.get('q');
+        const city = params.get('city');
+        if (q) setSearchQuery(q);
+        if (city) setSelectedCity(city);
+    }, []);
 
     const handleCopyId = () => {
         const productNo = `tamuu-shop-${product?.id?.substring(0, 8).toUpperCase()}`;
@@ -88,6 +98,7 @@ export const ProductDetailPage: React.FC = () => {
     const { data: merchantProducts = [] } = useMerchantProducts(product?.merchant_id);
     const { data: merchantStats } = useMerchantStats(product?.merchant_id);
     const { data: recommendations = [] } = useSmartRecommendations(productId, product?.kategori_produk);
+    const [visibleRecs, setVisibleRecs] = useState(4);
     
     const toggleWishlistMutation = useToggleWishlist();
     const track = useTrackInteraction();
@@ -280,6 +291,11 @@ export const ProductDetailPage: React.FC = () => {
                                                     <Link to="/dashboard" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:text-[#0A1128] transition-all">
                                                         <LayoutDashboard className="w-4 h-4" /> Dashboard
                                                     </Link>
+                                                    {user?.role === 'admin' && (
+                                                        <Link to="/admin/dashboard" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 hover:text-indigo-900 transition-all">
+                                                            <ShieldAlert className="w-4 h-4" /> Admin Dashboard
+                                                        </Link>
+                                                    )}
                                                     <Link to="/profile" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:text-[#0A1128] transition-all">
                                                         <UserIcon className="w-4 h-4" /> Profile
                                                     </Link>
@@ -396,8 +412,8 @@ export const ProductDetailPage: React.FC = () => {
                             </div>
 
                             {/* Merchant Card */}
-                            <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-6">
-                                <div className="flex items-center gap-5">
+                            <div className="p-6 md:p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-6">
+                                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
                                     <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white border-4 border-white shadow-lg flex-shrink-0">
                                         <img 
                                             src={product.is_admin_listing ? `https://api.dicebear.com/7.x/initials/svg?seed=${product.custom_store_name || 'Admin'}` : (product.logo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${product.nama_toko}`)} 
@@ -405,16 +421,16 @@ export const ProductDetailPage: React.FC = () => {
                                             className="w-full h-full object-cover" 
                                         />
                                     </div>
-                                    <div className="flex-1 min-w-0">
+                                    <div className="flex-1 min-w-0 text-center sm:text-left">
                                         <h3 className="text-lg font-black text-[#0A1128] truncate">
                                             {product.is_admin_listing ? (product.custom_store_name || 'Official Partner') : product.nama_toko}
                                         </h3>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1 mb-2">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center justify-center sm:justify-start gap-1 mb-2">
                                             <MapPin className="w-3 h-3 text-[#FFBF00]" />
                                             {product.kota || 'Nasional'}
                                         </p>
                                         {!product.is_admin_listing && (
-                                            <div className="flex items-center gap-4 mt-1">
+                                            <div className="flex items-center justify-center sm:justify-start gap-4 mt-1">
                                                 <div className="flex items-center gap-1">
                                                     <ShoppingBag className="w-3 h-3 text-slate-400" />
                                                     <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">
@@ -484,10 +500,10 @@ export const ProductDetailPage: React.FC = () => {
                                 {product.deskripsi || "Vendor belum memberikan deskripsi lengkap untuk produk ini."}
                             </div>
                             
-                            <div className="pt-8 border-t border-slate-50 flex items-center justify-between mt-auto">
+                            <div className="pt-8 border-t border-slate-50 flex flex-col sm:flex-row items-center justify-between mt-auto gap-4">
                                 <div 
                                     onClick={handleCopyId}
-                                    className="group flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 cursor-pointer transition-all"
+                                    className="group flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 cursor-pointer transition-all w-full sm:w-auto justify-center"
                                 >
                                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                                         No. Produk: <span className="text-slate-600 font-black">tamuu-shop-{product.id.substring(0, 8).toUpperCase()}</span>
@@ -498,7 +514,7 @@ export const ProductDetailPage: React.FC = () => {
                                 </div>
                                 <button 
                                     onClick={() => setIsReportModalOpen(true)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-100 text-rose-500 transition-all"
+                                    className="flex items-center justify-center gap-2 px-6 py-2 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-100 text-rose-500 transition-all w-full sm:w-auto"
                                 >
                                     <ShieldAlert className="w-4 h-4" />
                                     <span className="text-[10px] font-black uppercase tracking-widest">Lapor</span>
@@ -584,15 +600,12 @@ export const ProductDetailPage: React.FC = () => {
                                     >
                                         <img 
                                             src={sidebarAds[0].image_url} 
-                                            alt={sidebarAds[0].title || 'Sponsor'} 
-                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                            alt="Sponsor" 
+                                            className="w-full h-full object-cover" 
                                         />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-8">
-                                            <p className="text-white text-[10px] font-black uppercase tracking-[0.2em]">Official Sponsor</p>
-                                            <h3 className="text-white text-lg font-black italic">{sidebarAds[0].title}</h3>
-                                        </div>
-                                        <div className="absolute top-6 right-6 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full border border-white/30">
-                                            <p className="text-white text-[8px] font-black uppercase tracking-widest">Ads</p>
+                                        {/* Minimal Ads Tag */}
+                                        <div className="absolute top-6 right-6 px-2.5 py-1 bg-black/20 backdrop-blur-md rounded-lg border border-white/20">
+                                            <p className="text-white text-[7px] font-black uppercase tracking-widest opacity-80">Ads</p>
                                         </div>
                                     </a>
                                 ) : (
@@ -651,48 +664,72 @@ export const ProductDetailPage: React.FC = () => {
                     <div className="space-y-10">
                         <div className="flex items-center gap-3">
                             <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
-                            <h2 className="text-xl font-black uppercase tracking-tighter italic">Saran Produk Sejenis</h2>
+                            <h2 className="text-xl font-black uppercase tracking-tighter italic">Mungkin Kamu Suka</h2>
                         </div>
                         
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                            {recommendations.slice(0, 4).map((p: any) => (
+                        <div className="grid grid-cols-2 md:flex md:flex-wrap md:justify-center gap-4 md:gap-8">
+                            {recommendations.slice(0, visibleRecs).map((p: any) => (
                                 <m.div
                                     key={p.id}
                                     whileHover={{ y: -8 }}
                                     onClick={() => navigate(`/shop/${p.merchant_slug}/${p.slug || p.id}`)}
-                                    className="group cursor-pointer bg-white border border-slate-100 rounded-[2rem] overflow-hidden hover:shadow-xl transition-all relative"
+                                    className="group cursor-pointer bg-white border border-slate-100 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden hover:shadow-xl transition-all relative w-full md:w-[195px] h-[320px] md:h-[380px] flex-shrink-0 flex flex-col"
                                 >
-                                    <div className="aspect-[4/5] overflow-hidden">
+                                    <div className="relative h-[140px] md:h-[180px] overflow-hidden flex-shrink-0">
                                         <img src={p.images?.[0]?.image_url || 'https://images.unsplash.com/photo-1540553016722-983e48a2cd10?auto=format&fit=crop&q=80'} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={p.nama_produk} />
                                     </div>
-                                    
-                                    {/* Small Merchant Floating Initial/Logo */}
-                                    <div className="absolute top-4 left-4 w-8 h-8 rounded-lg overflow-hidden border-2 border-white shadow-md z-10 bg-white">
-                                        <img 
-                                            src={p.logo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${p.nama_toko}`} 
-                                            className="w-full h-full object-cover" 
-                                            alt="M" 
-                                        />
-                                    </div>
 
-                                    <div className="p-6 space-y-2">
-                                        <p className="text-[10px] font-black text-[#FFBF00] uppercase tracking-widest truncate">{p.nama_toko}</p>
-                                        <h4 className="text-sm font-black text-[#0A1128] uppercase truncate group-hover:text-[#FFBF00] transition-colors">{p.nama_produk}</h4>
-                                        <p className="text-lg font-black text-[#0A1128] tracking-tight">{p.harga_estimasi && !isNaN(Number(p.harga_estimasi)) ? formatCurrency(p.harga_estimasi) : p.harga_estimasi}</p>
+                                    <div className="p-3 md:p-4 flex flex-col flex-1 min-w-0">
+                                        <h4 className="text-[10px] md:text-xs font-black text-[#0A1128] uppercase line-clamp-3 group-hover:text-[#FFBF00] transition-colors leading-tight min-h-[2.2rem] md:min-h-[2.8rem] mb-1.5 md:mb-2 pb-1">
+                                            {p.nama_produk}
+                                        </h4>
+                                        <div className="mt-auto space-y-2">
+                                            <div className="pt-2 border-t border-slate-50">
+                                                <p className="text-[11px] md:text-sm font-black text-[#0A1128] tracking-tight truncate">
+                                                    {p.harga_estimasi && !isNaN(Number(p.harga_estimasi)) ? formatCurrency(p.harga_estimasi) : p.harga_estimasi}
+                                                </p>
+                                                <p className="text-[8px] md:text-[9px] font-black text-[#FFBF00] uppercase tracking-widest truncate mt-1">
+                                                    {p.nama_toko}
+                                                </p>
+                                            </div>
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                                                <span className="flex items-center gap-1 text-[7px] md:text-[8px] font-bold text-slate-400 uppercase tracking-widest truncate">
+                                                    <MapPin className="w-2 h-2" />
+                                                    {p.kota?.replace(/^(kota|kab\.)\s+/gi, '') || 'Nasional'}
+                                                </span>
+                                                <span className="flex items-center gap-1 text-[7px] md:text-[8px] font-bold text-slate-400 uppercase tracking-widest truncate">
+                                                    <Tag className="w-2 h-2" />
+                                                    {p.kategori_produk || 'Umum'}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </m.div>
                             ))}
                         </div>
+
+                        {recommendations.length > visibleRecs && visibleRecs < 10 && (
+                            <div className="flex justify-center mt-8">
+                                <button 
+                                    onClick={() => setVisibleRecs(prev => Math.min(prev + 4, 10))}
+                                    className="px-10 py-4 bg-[#0A1128] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-900 transition-all shadow-xl shadow-indigo-100"
+                                >
+                                    Tampilkan Lebih Banyak
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </main>
 
+            <Footer />
+
             {/* Bottom Sticky Action Bar */}
-            <div className="fixed bottom-0 left-0 right-0 z-50 px-6 pb-10 pt-8 bg-gradient-to-t from-white via-white/95 to-transparent">
-                <div className="max-w-3xl mx-auto flex gap-4">
+            <div className="fixed bottom-0 left-0 right-0 z-50 px-6 pb-10 pt-8 pointer-events-none">
+                <div className="max-w-3xl mx-auto flex gap-4 pointer-events-auto">
                     <button
                         onClick={toggleWishlist}
-                        className={`w-16 h-16 rounded-[2rem] border flex items-center justify-center transition-all shadow-sm ${isWishlisted
+                        className={`w-16 h-16 rounded-[2rem] border flex items-center justify-center transition-all shadow-xl ${isWishlisted
                             ? 'bg-rose-50 border-rose-200 text-rose-500'
                             : 'bg-white border-slate-100 text-slate-300 hover:text-rose-500 hover:border-rose-200'
                             }`}
@@ -702,10 +739,10 @@ export const ProductDetailPage: React.FC = () => {
 
                     <button
                         onClick={handleWhatsApp}
-                        className="flex-1 h-16 bg-[#0A1128] text-white rounded-[2rem] font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl shadow-black/10 hover:shadow-black/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
+                        className="flex-1 h-16 bg-[#0A1128] text-white rounded-[2rem] font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl shadow-black/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
                     >
                         <MessageCircle className="w-5 h-5" />
-                        Hubungi Vendor Sekarang
+                        Hubungi Sekarang
                     </button>
                 </div>
             </div>

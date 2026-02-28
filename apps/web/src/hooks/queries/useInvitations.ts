@@ -21,6 +21,7 @@ export interface Invitation {
     layers?: any[];
     is_published?: boolean;
     status?: 'draft' | 'published';
+    expires_at?: string;
     created_at?: string;
     updated_at?: string;
 }

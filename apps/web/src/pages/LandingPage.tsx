@@ -153,7 +153,7 @@ export const LandingPage: React.FC = () => {
                                         if (isAuthenticated) {
                                             navigate('/onboarding');
                                         } else {
-                                            navigate('/login?redirect=/onboarding');
+                                            navigate('/signup');
                                         }
                                     }}
                                     className="group relative inline-flex items-center gap-3 px-7 py-4 sm:px-10 sm:py-5 bg-white text-slate-900 font-black rounded-2xl shadow-2xl shadow-indigo-950/20 hover:bg-slate-50 hover:scale-105 transition-all duration-300 w-full sm:w-auto justify-center"

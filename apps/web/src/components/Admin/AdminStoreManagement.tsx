@@ -15,7 +15,7 @@ const MOCK_MERCHANTS = [
         email: 'budi@nusantara.id',
         status: 'active',
         joinedAt: '2023-11-15',
-        productsCount: 12,
+        productsCount: 9,
         rating: 4.8
     }
 ];

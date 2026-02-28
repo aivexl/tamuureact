@@ -267,7 +267,7 @@ export const AdminShopSettings: React.FC = () => {
                                 </h2>
                                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 flex items-center gap-2">
                                     <AlertCircle className="w-3.5 h-3.5 text-[#FFBF00]" />
-                                    Displayed on Product Detail Sidebars. Recommended Ratio 4:5.
+                                    Control Shop Special Banners and Product Detail Sidebars.
                                 </p>
                             </div>
                             <button
@@ -373,8 +373,10 @@ const AdEditorRow: React.FC<{ ad: any, onSave: (ad: any) => void, onDelete: (id:
                                 onChange={(e) => updateField('position', e.target.value)}
                                 className="w-full bg-[#0A0A0A] border border-white/5 rounded-xl px-4 py-3 text-xs text-white font-bold focus:outline-none appearance-none"
                             >
+                                <option value="SHOP_SPECIAL_FOR_YOU">Shop Special Banner</option>
                                 <option value="PRODUCT_DETAIL_SIDEBAR">Product Sidebar</option>
                                 <option value="SHOP_FOOTER">Shop Footer</option>
+                                <option value="FEATURED_PRODUCT_LANDING">Landing Page Products</option>
                             </select>
                         </div>
                         <div className="w-24">

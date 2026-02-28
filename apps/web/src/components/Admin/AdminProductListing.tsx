@@ -342,17 +342,20 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
         custom_store_name: product?.custom_store_name || '',
         is_admin_listing: 1,
         images: product?.images?.map((img: any) => img.image_url) || [],
-        tokopedia_url: product?.tokopedia_url || '',
-        shopee_url: product?.shopee_url || '',
-        website_url: product?.website_url || '',
-        tiktok_url: product?.tiktok_url || '',
-        youtube_url: product?.youtube_url || '',
-        x_url: product?.x_url || '',
-        alamat_lengkap: product?.alamat_lengkap || '',
-        google_maps_url: product?.google_maps_url || ''
-    });
-
-    const [selectedCategory, setSelectedCategory] = useState(() => {
+                tokopedia_url: product?.tokopedia_url || '',
+                shopee_url: product?.shopee_url || '',
+                website_url: product?.website_url || '',
+                tiktok_url: product?.tiktok_url || '',
+                youtube_url: product?.youtube_url || '',
+                x_url: product?.x_url || '',
+                alamat_lengkap: product?.alamat_lengkap || '',
+                google_maps_url: product?.google_maps_url || '',
+                is_special: product?.is_special || 0,
+                is_featured: product?.is_featured || 0
+            });
+        
+            const [selectedCategory, setSelectedCategory] = useState(
+        () => {
         const cat = product?.kategori_produk || '';
         if (cat === '' || SHOP_CATEGORIES.includes(cat)) return cat;
         return 'Lainnya';
@@ -799,6 +802,48 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                             <p className="text-[11px] text-indigo-300/60 font-bold leading-relaxed text-center italic">
                                 "Foto produk yang menarik dapat meningkatkan kepercayaan calon pembeli secara signifikan."
                             </p>
+                        </div>
+                    </div>
+
+                    {/* Visibility Flags */}
+                    <div className="bg-white/5 backdrop-blur-xl rounded-[2.5rem] border border-white/10 p-10 shadow-2xl space-y-6">
+                        <div className="flex flex-col mb-4">
+                            <h3 className="text-lg font-black text-white uppercase tracking-tight italic">Status Visibilitas Khusus</h3>
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2">Tampilkan produk ini di section eksklusif</p>
+                        </div>
+
+                        <div className="space-y-4">
+                            <label className="flex items-center gap-4 cursor-pointer group">
+                                <div className={`w-12 h-6 rounded-full transition-colors relative flex items-center ${formData.is_special ? 'bg-[#FFBF00]' : 'bg-white/10'}`}>
+                                    <div className={`w-4 h-4 rounded-full bg-white shadow-sm absolute transition-transform ${formData.is_special ? 'translate-x-7' : 'translate-x-1'}`} />
+                                    <input 
+                                        type="checkbox" 
+                                        className="hidden" 
+                                        checked={!!formData.is_special} 
+                                        onChange={e => setFormData({ ...formData, is_special: e.target.checked ? 1 : 0 })} 
+                                    />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-black text-white group-hover:text-[#FFBF00] transition-colors">Spesial Untuk Kamu</p>
+                                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Tampil di banner eksklusif berlatar Navy</p>
+                                </div>
+                            </label>
+
+                            <label className="flex items-center gap-4 cursor-pointer group">
+                                <div className={`w-12 h-6 rounded-full transition-colors relative flex items-center ${formData.is_featured ? 'bg-[#FFBF00]' : 'bg-white/10'}`}>
+                                    <div className={`w-4 h-4 rounded-full bg-white shadow-sm absolute transition-transform ${formData.is_featured ? 'translate-x-7' : 'translate-x-1'}`} />
+                                    <input 
+                                        type="checkbox" 
+                                        className="hidden" 
+                                        checked={!!formData.is_featured} 
+                                        onChange={e => setFormData({ ...formData, is_featured: e.target.checked ? 1 : 0 })} 
+                                    />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-black text-white group-hover:text-[#FFBF00] transition-colors">Produk Featured</p>
+                                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Tampil di grid utama pilihan editor</p>
+                                </div>
+                            </label>
                         </div>
                     </div>
 

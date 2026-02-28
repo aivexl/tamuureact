@@ -149,13 +149,13 @@ export const UpgradePage: React.FC = () => {
                         name="PRO"
                         price="Rp 99k"
                         originalPrice="Rp 149k"
-                        duration="per tahun"
+                        duration="90 hari"
                         icon={Crown}
                         color="bg-indigo-600"
                         isCurrent={user?.tier === 'pro'}
                         features={[
                             "1 Undangan Aktif",
-                            "Masa Aktif 1 Tahun",
+                            "Masa Aktif 90 Hari",
                             "Semua Template Premium",
                             "Orbit Dynamic Animations",
                             "Premium Music Library",
@@ -172,13 +172,14 @@ export const UpgradePage: React.FC = () => {
                         name="ULTIMATE"
                         price="Rp 149k"
                         originalPrice="Rp 249k"
-                        duration="per tahun"
+                        duration="180 hari"
                         icon={Star}
                         color="bg-emerald-600"
                         isPopular={true}
                         isCurrent={user?.tier === 'ultimate'}
                         features={[
-                            "2 Undangan Aktif",
+                            "1 Undangan Aktif",
+                            "Masa Aktif 180 Hari",
                             "Semua Fitur Pro",
                             "Sistem Check-in & Out",
                             "QR Code per Tamu",
@@ -201,7 +202,8 @@ export const UpgradePage: React.FC = () => {
                         color="bg-[#FFBF00]"
                         isCurrent={user?.tier === 'elite'}
                         features={[
-                            "3 Undangan Aktif",
+                            "1 Undangan Aktif",
+                            "Masa Aktif 365 Hari",
                             "Semua Fitur Ultimate",
                             "Advanced Import/Export",
                             "Eksklusivitas Layanan",

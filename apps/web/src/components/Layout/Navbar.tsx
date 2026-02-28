@@ -8,7 +8,8 @@ import {
     ChevronDown,
     Menu,
     X,
-    CreditCard
+    CreditCard,
+    ShieldAlert
 } from 'lucide-react';
 
 import { useStore } from '../../store/useStore';
@@ -231,6 +232,12 @@ export const Navbar: React.FC = () => {
                                                     <LayoutDashboard className="w-4 h-4" />
                                                     <span>Dashboard</span>
                                                 </Link>
+                                                {user?.role === 'admin' && (
+                                                    <Link to="/admin/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 transition-colors">
+                                                        <ShieldAlert className="w-4 h-4" />
+                                                        <span>Admin Dashboard</span>
+                                                    </Link>
+                                                )}
                                                 <Link to="/billing" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
                                                     <CreditCard className="w-4 h-4" />
                                                     <span>Billing</span>

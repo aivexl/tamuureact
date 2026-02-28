@@ -18,9 +18,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             <React.Suspense fallback={null}>
                 <Footer />
             </React.Suspense>
+            {/* 
             <React.Suspense fallback={null}>
                 <UserChatSidebar />
-            </React.Suspense>
+            </React.Suspense> 
+            */}
         </div>
     );
 };
