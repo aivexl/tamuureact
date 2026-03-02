@@ -200,12 +200,17 @@ const SectionItem: React.FC<SectionItemProps> = ({
                                         <div className="space-y-5 flex-1">
                                             {(() => {
                                                 const editableElements = (section.elements || []).filter((el: any) => {
-                                                    if (el.canEditContent === true) return true;
-                                                    const p = el.permissions;
-                                                    // If no permissions object, default to false (Locked by Default)
-                                                    if (!p) return false;
-                                                    // Check for visibility OR any of the edit permissions
-                                                    return p.isVisibleInUserEditor || p.canEditText || p.canEditImage || p.canEditStyle || p.canEditContent || p.canEditPosition;
+                                                    const p = el.permissions || {};
+                                                    // CTO ROBUST PERMISSION ENGINE: 
+                                                    // Only show if explicitly given permission (either legacy root or nested permissions object)
+                                                    return !!(
+                                                        (el as any).isVisibleInUserEditor || p.isVisibleInUserEditor ||
+                                                        (el as any).canEditText || p.canEditText ||
+                                                        (el as any).canEditImage || p.canEditImage ||
+                                                        (el as any).canEditStyle || p.canEditStyle ||
+                                                        (el as any).canEditContent || p.canEditContent ||
+                                                        (el as any).canEditPosition || p.canEditPosition
+                                                    );
                                                 });
 
                                                 if (editableElements.length > 0) {

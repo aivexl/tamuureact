@@ -67,27 +67,18 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
         }
     };
 
-    // Element is visible if specifically set to visible OR has any active edit permission
-    // CTO: Smart Permission Engine. Only show if explicitly authorized OR has active edit rights.
     const isVisible = (() => {
-        const p = element.permissions;
-        
-        // 1. Explicit UI Visibility Flag
-        if (p?.isVisibleInUserEditor === true || (element as any).isVisibleInUserEditor === true) return true;
-
-        // 2. SMART CHECK: Show if ANY edit permission is true
-        if (p?.canEditText || (element as any).canEditText || 
-            p?.canEditImage || (element as any).canEditImage || 
-            p?.canEditStyle || (element as any).canEditStyle || 
-            p?.canEditContent || (element as any).canEditContent ||
-            p?.canEditPosition || (element as any).canEditPosition) return true;
-
-        // 3. Fallback for legacy text elements that might only have name/content but no permissions obj yet
-        // If it's a critical core type like profile_card, and permissions are undefined, we show it to be safe
-        // BUT if permissions exist and are all false, we hide it.
-        if (!p && ((element as any).canEditContent === true || element.type === 'profile_card')) return true;
-
-        return false;
+        // CTO ROBUST PERMISSION ENGINE: 
+        // Only show if explicitly given permission (either legacy root or nested permissions object)
+        const p = element.permissions || {};
+        return !!(
+            (element as any).isVisibleInUserEditor || p.isVisibleInUserEditor ||
+            (element as any).canEditText || p.canEditText ||
+            (element as any).canEditImage || p.canEditImage ||
+            (element as any).canEditStyle || p.canEditStyle ||
+            (element as any).canEditContent || p.canEditContent ||
+            (element as any).canEditPosition || p.canEditPosition
+        );
     })();
 
     if (!isVisible) return null;
