@@ -1,9 +1,18 @@
 # Tamuu Changelog
 
-## [2026-03-02] UI: Gift Address Card Rollback & Aspect Ratio Integrity
+## [2026-03-02] Fix: Gift Address Card Text Wrapping & UI Integrity
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
 **Environment**: Production
 
+### UI/UX Fixes
+- **Robust Text Wrapping**: Implemented dynamic text wrapping for `GiftAddressCard` using `flex-1`, `min-w-0`, and `break-words` to prevent text from overlapping with icons or the copy button.
+- **Visual Safety**: Added `gap-3` and `flex-shrink-0` to UI components (icons/buttons) to guarantee spacing even with long recipient names or complex addresses.
+- **Responsiveness**: Adjusted padding and font sizes for better readability across various screen dimensions.
+
+## [2026-03-02] UI: Gift Address Card Rollback & Aspect Ratio Integrity
+**Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
+**Environment**: Production
+...
 ### UI/UX Updates
 - **Rollback GiftAddressCard**: Reverted the aspect ratio of `GiftAddressCard` back to its original **1.15/1** format to maintain its unique visual identity.
 - **Visual Decoupling**: Separated `GiftAddressElement` from the container logic used by `BankCard`. This ensures that the Gift Address Card is rendered in its original standalone format without forced synchronization with other card elements.

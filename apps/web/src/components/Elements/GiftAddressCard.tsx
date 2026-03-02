@@ -36,77 +36,81 @@ export const GiftAddressCard: React.FC<GiftAddressCardProps> = ({
                 <Home size={320} />
             </div>
 
-            <div className="relative z-10 h-full w-full p-[7%] flex flex-col gap-6">
+            <div className="relative z-10 h-full w-full p-[7%] flex flex-col gap-4 sm:gap-6">
                 {/* HEADER SECTION */}
-                <div className="flex items-center gap-4 border-b border-slate-200/50 pb-4">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-900/20">
-                        <Home size={24} className="text-white" />
+                <div className="flex items-center gap-4 border-b border-slate-200/50 pb-4 flex-shrink-0">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-900/20 flex-shrink-0">
+                        <Home size={20} className="sm:size-24 text-white" />
                     </div>
-                    <div className="flex flex-col">
-                        <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 leading-none mb-1">Shipping Details</span>
-                        <span className="text-[16px] font-black uppercase tracking-widest text-slate-900">Alamat Kirim Kado</span>
+                    <div className="flex flex-col min-w-0">
+                        <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 leading-none mb-1">Shipping Details</span>
+                        <span className="text-[14px] sm:text-[16px] font-black uppercase tracking-widest text-slate-900 truncate">Alamat Kirim Kado</span>
                     </div>
                 </div>
 
                 {/* INFORMATION STACK - Vertical Sections */}
-                <div className="flex-1 flex flex-col justify-between">
+                <div className="flex-1 flex flex-col justify-between min-h-0">
                     
                     {/* SECTION 1: RECIPIENT */}
-                    <div className="flex items-center justify-between group">
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:text-teal-600 transition-colors">
-                                <User size={18} />
+                    <div className="flex items-center justify-between group gap-3">
+                        <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:text-teal-600 transition-colors flex-shrink-0">
+                                <User size={16} className="sm:size-18" />
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Nama Penerima</span>
-                                <span className="text-[15px] sm:text-[18px] font-bold text-slate-900 uppercase tracking-wide truncate max-w-[180px]">
+                            <div className="flex flex-col min-w-0 flex-1">
+                                <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Nama Penerima</span>
+                                <span className="text-[13px] sm:text-[16px] font-bold text-slate-900 uppercase tracking-wide break-words line-clamp-1">
                                     {recipientName || 'NAMA PENERIMA'}
                                 </span>
                             </div>
                         </div>
-                        <AnimatedCopyIcon 
-                            text={recipientName || 'NAMA PENERIMA'} 
-                            size={18} 
-                            className="p-2 rounded-lg bg-slate-50 text-slate-400 hover:text-teal-600 transition-all"
-                            successMessage="Nama disalin!"
-                        />
+                        <div className="flex-shrink-0">
+                            <AnimatedCopyIcon 
+                                text={recipientName || 'NAMA PENERIMA'} 
+                                size={18} 
+                                className="p-2 rounded-lg bg-slate-50 text-slate-400 hover:text-teal-600 transition-all"
+                                successMessage="Nama disalin!"
+                            />
+                        </div>
                     </div>
 
                     {/* SECTION 2: PHONE */}
-                    <div className="flex items-center justify-between group">
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:text-teal-600 transition-colors">
-                                <Phone size={18} />
+                    <div className="flex items-center justify-between group gap-3">
+                        <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:text-teal-600 transition-colors flex-shrink-0">
+                                <Phone size={16} className="sm:size-18" />
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Nomor Telepon</span>
-                                <span className="text-[16px] sm:text-[19px] font-black text-teal-600 tracking-[0.15em] font-mono">
+                            <div className="flex flex-col min-w-0 flex-1">
+                                <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Nomor Telepon</span>
+                                <span className="text-[14px] sm:text-[17px] font-black text-teal-600 tracking-[0.1em] font-mono truncate">
                                     {phoneNumber || '08XXXXXXXXXX'}
                                 </span>
                             </div>
                         </div>
-                        <AnimatedCopyIcon 
-                            text={phoneNumber || '08XXXXXXXXXX'} 
-                            size={18} 
-                            className="p-2 rounded-lg bg-slate-50 text-slate-400 hover:text-teal-600 transition-all"
-                            successMessage="Nomor disalin!"
-                        />
+                        <div className="flex-shrink-0">
+                            <AnimatedCopyIcon 
+                                text={phoneNumber || '08XXXXXXXXXX'} 
+                                size={18} 
+                                className="p-2 rounded-lg bg-slate-50 text-slate-400 hover:text-teal-600 transition-all"
+                                successMessage="Nomor disalin!"
+                            />
+                        </div>
                     </div>
 
                     {/* SECTION 3: ADDRESS */}
-                    <div className="flex items-start justify-between group pt-4 border-t border-slate-100/80">
-                        <div className="flex items-start gap-4 flex-1">
-                            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:text-rose-500 transition-colors shrink-0">
-                                <MapPin size={18} />
+                    <div className="flex items-start justify-between group pt-3 sm:pt-4 border-t border-slate-100/80 gap-3">
+                        <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:text-rose-500 transition-colors flex-shrink-0 mt-0.5">
+                                <MapPin size={16} className="sm:size-18" />
                             </div>
-                            <div className="flex flex-col flex-1">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Detail Alamat Lengkap</span>
-                                <p className="text-[11px] sm:text-[13px] font-bold text-slate-600 leading-[1.5] text-left line-clamp-4 pr-2">
+                            <div className="flex flex-col min-w-0 flex-1">
+                                <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Detail Alamat Lengkap</span>
+                                <p className="text-[10px] sm:text-[12px] font-bold text-slate-600 leading-[1.4] text-left break-words line-clamp-3">
                                     {address || 'Masukkan detail alamat lengkap pengiriman kado di sini...'}
                                 </p>
                             </div>
                         </div>
-                        <div className="pt-1">
+                        <div className="flex-shrink-0 pt-1">
                             <AnimatedCopyIcon 
                                 text={address || 'Alamat lengkap pengiriman kado di sini...'} 
                                 size={18} 
