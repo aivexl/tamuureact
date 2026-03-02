@@ -769,7 +769,6 @@ export interface WeatherConfig {
     showIcon: boolean;
     theme: 'minimal' | 'glass' | 'dynamic';
 }
-
 export interface Layer {
     id: string;
     type: LayerType;
@@ -778,6 +777,8 @@ export interface Layer {
     content?: string;
     imageUrl?: string;
     videoUrl?: string;
+    originalImageUrl?: string;
+    cropConfig?: any;
     x: number;
     y: number;
     width: number;

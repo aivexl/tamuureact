@@ -3303,6 +3303,18 @@ t.*,
                 return json(formatted, corsHeaders);
             }
 
+            // ADMIN: List Feedback
+            if (path === '/api/admin/feedback' && method === 'GET') {
+                const { results } = await env.DB.prepare(`
+                    SELECT f.*, u.email as user_email, u.name as user_name 
+                    FROM feedback f
+                    LEFT JOIN users u ON f.user_id = u.id
+                    ORDER BY f.created_at DESC
+                `).all();
+
+                return json(results, corsHeaders);
+            }
+
             // ADMIN: Delete User (Permanent Removal)
             if (path.startsWith('/api/admin/users/') && method === 'DELETE') {
                 const userId = path.split('/')[4];
@@ -4092,6 +4104,46 @@ name = COALESCE(?, name),
                 }
             }
 
+            if (path === '/api/feedback' && method === 'POST') {
+                try {
+                    const body = await request.json().catch(err => {
+                        console.error('[Feedback] JSON Parse Error:', err);
+                        return null;
+                    });
+
+                    if (!body) return json({ error: 'Invalid JSON body' }, { ...corsHeaders, status: 400 });
+
+                    const { userId, category, message } = body;
+
+                    if (!userId || !category || !message) {
+                        return json({ error: 'Missing required fields (userId, category, message)' }, { ...corsHeaders, status: 400 });
+                    }
+
+                    // Use a more compatible ID generation if crypto.randomUUID is flaky
+                    const id = typeof crypto.randomUUID === 'function' 
+                        ? crypto.randomUUID() 
+                        : Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+                    console.log(`[Feedback] Saving feedback for user ${userId}, category ${category}`);
+
+                    await env.DB.prepare(
+                        'INSERT INTO feedback (id, user_id, category, message) VALUES (?, ?, ?, ?)'
+                    ).bind(id, userId, category, message).run();
+
+                    return json({ success: true, id }, corsHeaders);
+                } catch (error) {
+                    console.error('[Feedback] Critical Submit Error:', error);
+                    return new Response(JSON.stringify({ 
+                        error: 'Failed to submit feedback', 
+                        details: error.message,
+                        code: error.code
+                    }), { 
+                        status: 500,
+                        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                    });
+                }
+            }
+
             if (path === '/api/invitations' && method === 'POST') {
                 try {
                     const body = await request.json();
@@ -4134,12 +4186,16 @@ name = COALESCE(?, name),
                     // Instead of failing with 409, we auto-resolve collisions to ensure zero-friction onboarding
                     let slug = body.slug ? body.slug.toLowerCase().replace(/\s+/g, '-') : null;
                     if (slug) {
-                        // Check for collision
-                        const existing = await env.DB.prepare(
+                        // Check for collision in both invitations and templates
+                        const existingInv = await env.DB.prepare(
                             'SELECT id FROM invitations WHERE slug = ?'
                         ).bind(slug).first();
+                        
+                        const existingTemp = await env.DB.prepare(
+                            'SELECT id FROM templates WHERE slug = ?'
+                        ).bind(slug).first();
 
-                        if (existing) {
+                        if (existingInv || existingTemp) {
                             // Collision detected! Append a random suffix to make it unique
                             // In a high-traffic env, we might loop, but for now a 4-char hash is statistically safe
                             const suffix = Math.random().toString(36).substring(2, 6);

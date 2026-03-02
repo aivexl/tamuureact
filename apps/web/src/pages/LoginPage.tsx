@@ -18,9 +18,9 @@ export const LoginPage: React.FC = () => {
         description: 'Masuk ke akun Tamuu Anda untuk mengelola undangan digital eksklusif Anda.'
     });
 
-    const handleLogin = async (data: any) => {
+    const handleLogin = async (loginData: any) => {
         setLoginError(null);
-        const { error } = await signIn(data.email, data.password);
+        const { data, error } = await signIn(loginData.email, loginData.password);
 
         if (error) {
             // Localize or format standard Supabase error for Tamuu Elite UX
@@ -30,10 +30,16 @@ export const LoginPage: React.FC = () => {
                 setLoginError(error);
             }
         } else {
-            // Handle redirect if present
-            const searchParams = new URLSearchParams(window.location.search);
-            const redirect = searchParams.get('redirect') || '/dashboard';
-            navigate(redirect);
+            // Handle redirect based on role or search params
+            const userRole = data?.user?.user_metadata?.role;
+            
+            if (userRole === 'admin') {
+                navigate('/admin/dashboard');
+            } else {
+                const searchParams = new URLSearchParams(window.location.search);
+                const redirect = searchParams.get('redirect') || '/dashboard';
+                navigate(redirect);
+            }
         }
     };
 

@@ -9,7 +9,7 @@ export const InactivePage: React.FC = () => {
     const navigate = useNavigate();
 
     useSEO({
-        title: 'Invitation Inactive - Tamuu',
+        title: 'Invitation Inactive',
         description: 'This invitation is currently inactive.',
         noindex: true
     });

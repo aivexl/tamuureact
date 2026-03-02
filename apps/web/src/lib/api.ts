@@ -1434,6 +1434,28 @@ export async function healthCheck() {
     return sanitizeValue(data);
 }
 
+// ============================================
+// FEEDBACK API
+// ============================================
+export const feedback = {
+    async submit(data: { userId: string; category: 'bug' | 'feature'; message: string }) {
+        const res = await safeFetch(`${API_BASE}/api/feedback`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sanitizeValue(data))
+        });
+        if (!res.ok) throw new Error('Failed to submit feedback');
+        return res.json();
+    },
+
+    async adminList() {
+        const res = await safeFetch(`${API_BASE}/api/admin/feedback`);
+        if (!res.ok) throw new Error('Failed to fetch feedback list');
+        const data = await res.json();
+        return sanitizeValue(data);
+    }
+};
+
 // Default export for easy migration
 export default {
     templates,
@@ -1450,6 +1472,7 @@ export default {
     preview,
     blog,
     shop,
-    healthCheck
+    healthCheck,
+    feedback
 };
 

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { admin } from '@/lib/api';
+import { formatDateFull } from '@/lib/utils';
 
 // Initial state for real statistics
 const INITIAL_STATS = [
@@ -96,28 +97,7 @@ export const AdminDashboardPage: React.FC = () => {
 
     // Format time distance
     const formatTime = (dateStr: string) => {
-        const date = new Date(dateStr);
-        const now = new Date();
-        const diffMs = now.getTime() - date.getTime();
-        const diffSecs = Math.floor(diffMs / 1000);
-        const diffMins = Math.floor(diffSecs / 60);
-        const diffHours = Math.floor(diffMins / 60);
-
-        if (diffSecs < 60) return `${diffSecs}s ago`;
-
-        // Return HH:mm:ss for today's activities
-        if (date.toDateString() === now.toDateString()) {
-            return date.toLocaleTimeString('id-ID', { hour12: false });
-        }
-
-        return date.toLocaleString('id-ID', {
-            day: 'numeric',
-            month: 'short',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false
-        });
+        return formatDateFull(dateStr);
     };
 
     const getActivityIcon = (type: string) => {

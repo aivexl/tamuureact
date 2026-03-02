@@ -18,7 +18,8 @@ import {
     FileText,
     Store,
     ShoppingBag,
-    ShieldAlert
+    ShieldAlert,
+    MessageSquare
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { AdminChatSidebarWrapper } from './AdminChatSidebarWrapper';
@@ -231,6 +232,13 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                         icon={Activity}
                         label="Live Activity"
                         active={location.pathname.startsWith('/admin/activity')}
+                        sidebarOpen={sidebarOpen}
+                    />
+                    <SidebarItem
+                        href="/admin/feedback"
+                        icon={MessageSquare}
+                        label="User Feedback"
+                        active={location.pathname.startsWith('/admin/feedback')}
                         sidebarOpen={sidebarOpen}
                     />
                     <SidebarItem

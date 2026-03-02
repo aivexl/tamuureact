@@ -164,7 +164,7 @@ export const ProfilePage: React.FC = () => {
     const tierConfig = getTierConfig(profile?.tier || 'free');
 
     useSEO({
-        title: 'Account Settings - Tamuu',
+        title: 'Account Settings',
         description: 'Manage your profile information and security preferences.',
     });
 

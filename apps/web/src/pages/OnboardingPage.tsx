@@ -209,7 +209,7 @@ export const OnboardingPage: React.FC = () => {
     }, [slug]);
 
     useSEO({
-        title: 'Magic Form Onboarding - Tamuu',
+        title: 'Magic Form Onboarding',
         description: 'Cara paling manusiawi untuk membuat undangan digital.',
     });
 

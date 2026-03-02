@@ -175,7 +175,7 @@ export const ParticlesElement: React.FC<{ layer: Layer, onContentLoad?: () => vo
 // ============================================
 import { BankCard } from './BankCard';
 
-export const DigitalGiftElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
+export const DigitalGiftElementLegacy: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
     useEffect(() => {
         onContentLoad?.();
     }, []);
@@ -227,9 +227,9 @@ export const DigitalGiftElement: React.FC<{ layer: Layer, isEditor?: boolean, on
 // ============================================
 // GIFT ADDRESS ELEMENT
 // ============================================
-import { GiftAddressCard } from './GiftAddressCard';
+import { GiftAddressCard as GiftAddressCardLegacy } from './GiftAddressCard';
 
-export const GiftAddressElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
+export const GiftAddressElementLegacy: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
     useEffect(() => {
         onContentLoad?.();
     }, []);
@@ -245,7 +245,7 @@ export const GiftAddressElement: React.FC<{ layer: Layer, isEditor?: boolean, on
             className={`w-full h-full flex flex-col items-center justify-center ${isEditor ? 'p-0' : 'p-2 sm:p-4'}`}
         >
             <div className={`w-full flex flex-col items-center ${isEditor ? 'max-w-none' : 'max-w-[400px]'}`}>
-                <GiftAddressCard
+                <GiftAddressCardLegacy
                     recipientName={config.recipientName}
                     address={config.address}
                     customColor={config.customColor}
@@ -727,4 +727,8 @@ export * from './LiveStreamingElement';
 export * from './QuoteElement';
 export * from './ProfileCardElement';
 export * from './ProfilePhotoElement';
-
+export * from './DigitalGiftElement';
+export * from './GiftAddressElement';
+export * from './ButtonElement';
+export * from './VideoElement';
+export * from './PhotoGridElement';

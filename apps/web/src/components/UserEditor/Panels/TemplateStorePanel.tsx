@@ -23,7 +23,7 @@ export const TemplateStorePanel: React.FC<TemplateStorePanelProps> = ({
     onTemplateChanged
 }) => {
     const { data: templates = [], isLoading } = useTemplates();
-    const { id: storeId, setSections, setOrbitLayers, setThumbnailUrl } = useStore();
+    const { id: storeId, setSections, updateLayersBatch, setOrbitLayers, setThumbnailUrl } = useStore();
     const currentInvitationId = invitationId || storeId;
 
     const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
@@ -61,12 +61,16 @@ export const TemplateStorePanel: React.FC<TemplateStorePanelProps> = ({
             await invitationsApi.update(currentInvitationId, {
                 template_id: selectedTemplate.id,
                 sections: templateData.sections || [],
+                layers: templateData.layers || [],
                 orbit_layers: templateData.orbit_layers || [],
                 thumbnail: selectedTemplate.thumbnail_url || templateData.thumbnail
             });
 
             // 3. Update Zustand store for immediate UI update
             setSections(templateData.sections || []);
+            if (typeof updateLayersBatch === 'function') {
+                updateLayersBatch(templateData.layers || []);
+            }
             setOrbitLayers(templateData.orbit_layers || []);
             if (selectedTemplate.thumbnail_url) {
                 setThumbnailUrl(selectedTemplate.thumbnail_url);

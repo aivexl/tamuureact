@@ -110,8 +110,25 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                 // This replaces 10+ individual setters with a single transaction.
                 hydrateProject(data);
 
+                // CTO: Ultra-Robust Permissions Injection
+                const sanitizedSections = (data.sections || []).map((s: any) => ({
+                    ...s,
+                    elements: (s.elements || []).map((el: any) => ({
+                        ...el,
+                        permissions: {
+                            canEditText: true,
+                            canEditImage: true,
+                            canEditStyle: true,
+                            canEditPosition: false,
+                            canDelete: false,
+                            isVisibleInUserEditor: true,
+                            ...(el.permissions || {})
+                        }
+                    }))
+                }));
+
                 // Deep arrays still need individual syncs if they are handled by separate slices
-                setSections(data.sections || []);
+                setSections(sanitizedSections);
                 if (data.orbit_layers) setOrbitLayers(data.orbit_layers);
 
                 // 3. UI Sync (Local Component State)

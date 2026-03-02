@@ -126,7 +126,7 @@ export const LandingPage: React.FC = () => {
             </Helmet>
 
             {/* Hero Section - Dark Navy Background */}
-            <section className="relative pt-24 pb-0 sm:pt-32 overflow-hidden hero-section" style={{ backgroundColor: '#0A1128' }}>
+            <section className="relative pt-32 pb-0 sm:pt-40 overflow-hidden hero-section" style={{ backgroundColor: '#0A1128' }}>
                 {/* Decorative Glows - Legacy animate-soft-float restored */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
                     <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/20 blur-[120px] rounded-full animate-soft-float" />

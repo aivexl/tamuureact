@@ -11,12 +11,19 @@ import { PremiumLoader } from '../ui/PremiumLoader';
 // Fixed: Proper crop extraction, zoom out support
 // ============================================
 
+export interface CropConfig {
+    crop: Point;
+    zoom: number;
+    rotation: number;
+}
+
 interface ImageCropModalProps {
     isOpen: boolean;
     imageSrc: string | null;
     aspectRatio?: number;
+    initialCropConfig?: CropConfig;
     onClose: () => void;
-    onCropComplete: (croppedImageUrl: string) => void;
+    onCropComplete: (croppedImageUrl: string, config: CropConfig) => void;
 }
 
 /**
@@ -117,6 +124,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
     isOpen,
     imageSrc,
     aspectRatio = 1,
+    initialCropConfig,
     onClose,
     onCropComplete
 }) => {
@@ -125,6 +133,15 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
     const [rotation, setRotation] = useState(0);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+
+    // Initialize from props when modal opens
+    React.useEffect(() => {
+        if (isOpen && initialCropConfig) {
+            setCrop(initialCropConfig.crop);
+            setZoom(initialCropConfig.zoom);
+            setRotation(initialCropConfig.rotation);
+        }
+    }, [isOpen, initialCropConfig]);
 
     const onCropChange = useCallback((location: Point) => {
         setCrop(location);
@@ -155,7 +172,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
                 croppedAreaPixels,
                 rotation
             );
-            onCropComplete(croppedImage);
+            onCropComplete(croppedImage, { crop, zoom, rotation });
             onClose();
         } catch (error) {
             console.error('[ImageCropModal] Crop failed:', error);

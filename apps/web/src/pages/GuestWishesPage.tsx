@@ -41,8 +41,8 @@ export const GuestWishesPage: React.FC = () => {
     const [notification, setNotification] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
     useSEO({
-        title: 'Manajemen Ucapan - Tamuu',
-        description: 'Kelola ucapan dan pesan dari tamu undangan Anda.',
+        title: 'Manajemen Ucapan',
+        description: 'Kelola ucapan dari para tamu undangan Anda.'
     });
 
     const loadWishes = async () => {

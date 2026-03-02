@@ -61,17 +61,18 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.5, duration: 0.8 }}
+                        className="flex flex-col items-center text-center"
                     >
-                        <Link to="/" className="flex items-center gap-4 mb-40 group">
-                            <img src="/images/logo-tamuu-vfinal-v1.webp" alt="Tamuu Logo" className="h-10 w-auto object-contain group-hover:scale-105 transition-transform duration-500 drop-shadow-lg" />
-                        </Link>
+                        <a href="https://tamuu.id" className="inline-block mb-12 group">
+                            <img src="/images/logo-tamuu-vfinal-v1.webp" alt="Tamuu Logo" className="h-16 w-auto object-contain brightness-0 invert group-hover:scale-105 transition-transform duration-500 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]" />
+                        </a>
 
                         <h1 className="text-6xl font-black leading-[0.9] mb-8 tracking-tighter">
                             Tingkatkan <br />
                             <span className="text-premium-accent drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">Momen Spesial</span> <br />
                             Anda.
                         </h1>
-                        <p className="text-xl text-white/80 font-semibold leading-relaxed max-w-md drop-shadow-md">
+                        <p className="text-xl text-white/80 font-semibold leading-relaxed max-w-md drop-shadow-md mx-auto">
                             Bergabunglah dengan ribuan pasangan yang telah menciptakan undangan digital paling eksklusif di dunia.
                         </p>
                     </m.div>
@@ -120,9 +121,9 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
 
                 {/* Mobile Header (Only visible on small screens) */}
                 <div className="lg:hidden absolute top-8 left-6">
-                    <Link to="/" className="flex items-center gap-3">
+                    <a href="https://tamuu.id" className="flex items-center gap-3">
                         <img src="/images/logo-tamuu-vfinal-v1.webp" alt="Tamuu Logo" className="h-8 w-auto object-contain drop-shadow-md" />
-                    </Link>
+                    </a>
                 </div>
 
                 <m.div

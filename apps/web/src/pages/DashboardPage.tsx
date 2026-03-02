@@ -12,6 +12,7 @@ import { BillingHistoryTab } from '../components/Dashboard/BillingHistoryTab';
 import { SubscriptionStatusWidget } from '../components/ui/SubscriptionStatusWidget';
 import { SmartMerchantCard } from '../components/Shop/SmartMerchantCard';
 import { DashboardQuotaWidget } from '../components/Dashboard/DashboardQuotaWidget';
+import { FeedbackTab } from '../components/Dashboard/FeedbackTab';
 
 // ============================================
 // INLINE SVG ICONS (Zero external dependency)
@@ -128,6 +129,11 @@ const ScanIcon = ({ className }: { className?: string }) => (
         <path d="M3 7V5a2 2 0 0 1 2-2h2" /><path d="M17 3h2a2 2 0 0 1 2 2v2" /><path d="M21 17v2a2 2 0 0 1-2 2h-2" /><path d="M7 21H5a2 2 0 0 1-2-2v-2" /><line x1="9" x2="15" y1="12" y2="12" /><line x1="12" x2="12" y1="9" y2="15" />
     </svg>
 );
+const MessageCircleIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-13.5 8.38 8.38 0 0 1 3.8.9L21 3z" />
+    </svg>
+);
 
 
 // Stat types handled by live data
@@ -135,7 +141,7 @@ const ScanIcon = ({ className }: { className?: string }) => (
 // ============================================
 // MENU ITEMS
 // ============================================
-type TabId = 'dashboard' | 'invitations' | 'displays' | 'guests' | 'scan' | 'wishes' | 'invoice' | 'tutorial';
+type TabId = 'dashboard' | 'invitations' | 'displays' | 'guests' | 'scan' | 'wishes' | 'invoice' | 'tutorial' | 'feedback';
 
 const menuItems: { id: TabId; label: string; icon: React.FC<{ className?: string }> }[] = [
     { id: 'dashboard', label: 'Home', icon: LayoutDashboardIcon },
@@ -146,6 +152,7 @@ const menuItems: { id: TabId; label: string; icon: React.FC<{ className?: string
     { id: 'wishes', label: 'Ucapan', icon: MessageSquareIcon },
     { id: 'invoice', label: 'Invoice', icon: FileTextIcon },
     { id: 'tutorial', label: 'Tutorial', icon: GraduationCapIcon },
+    { id: 'feedback', label: 'Feedback', icon: MessageCircleIcon },
 ];
 
 
@@ -178,7 +185,7 @@ export const DashboardPage: React.FC = () => {
     };
 
     useSEO({
-        title: 'Dashboard - Tamuu',
+        title: 'Dashboard',
         description: 'Kelola undangan digital Anda dengan mudah.',
     });
 
@@ -193,7 +200,7 @@ export const DashboardPage: React.FC = () => {
             <aside className={`hidden md:flex fixed md:sticky top-14 left-0 z-40 flex-col bg-white border-r border-slate-200 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'} h-[calc(100vh-3.5rem)] overflow-hidden`}>
                 {/* User Profile Card */}
                 {sidebarOpen && (
-                    <div className="p-6">
+                    <div className="pt-10 px-6 pb-6">
                         <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:border-teal-200 transition-all cursor-pointer">
                             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-teal-500/20 group-hover:scale-105 transition-transform">
                                 {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
@@ -233,16 +240,18 @@ export const DashboardPage: React.FC = () => {
 
 
                 {/* Account Section */}
-                <div className="p-4 border-t border-slate-100 mt-auto">
-                    {sidebarOpen && <p className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Layanan</p>}
-                    <Link to="/profile" className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all group">
-                        <UserIcon className="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110" />
-                        {sidebarOpen && <span className="text-sm font-bold tracking-tight">Edit Profil</span>}
-                    </Link>
-                    <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-rose-600 hover:bg-rose-50 transition-all">
-                        <LogOutIcon className="w-5 h-5 flex-shrink-0" />
-                        {sidebarOpen && <span className="text-sm font-bold tracking-tight">Log Out</span>}
-                    </button>
+                <div className="p-4 border-t border-slate-100 mt-auto space-y-4">
+                    <div>
+                        {sidebarOpen && <p className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Layanan</p>}
+                        <Link to="/profile" className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all group">
+                            <UserIcon className="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110" />
+                            {sidebarOpen && <span className="text-sm font-bold tracking-tight">Edit Profil</span>}
+                        </Link>
+                        <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-rose-600 hover:bg-rose-50 transition-all">
+                            <LogOutIcon className="w-5 h-5 flex-shrink-0" />
+                            {sidebarOpen && <span className="text-sm font-bold tracking-tight">Log Out</span>}
+                        </button>
+                    </div>
                 </div>
             </aside>
 
@@ -268,7 +277,7 @@ export const DashboardPage: React.FC = () => {
             {/* Main Content */}
             <main className="flex-1 flex flex-col min-h-[calc(100vh-3.5rem)] w-full overflow-x-hidden">
                 {/* Content Area */}
-                <div className="flex-1 p-4 md:p-8 bg-gradient-to-br from-white via-white to-teal-50/20 md:from-slate-50 md:via-white md:to-teal-50/30">
+                <div className="flex-1 pt-8 px-4 pb-4 md:pt-12 md:px-8 md:pb-8 bg-gradient-to-br from-white via-white to-teal-50/20 md:from-slate-50 md:via-white md:to-teal-50/30">
                     <AnimatePresence mode="wait">
                         {/* Dashboard Tab */}
                         {activeTab === 'dashboard' && (
@@ -377,14 +386,24 @@ export const DashboardPage: React.FC = () => {
                                                     <SparklesIcon className="w-6 h-6 text-teal-400" />
                                                 </div>
                                                 <h4 className="text-xl md:text-2xl font-black mb-3">
-                                                    {user?.tier === 'free' ? 'Ganti ke PRO' : user?.tier === 'vip' ? 'Ganti ke ULTIMATE' : user?.tier === 'platinum' ? 'Ganti ke ELITE' : 'Premium Active'}
+                                                    {(() => {
+                                                        const tier = user?.tier;
+                                                        if (tier === 'free') return 'Upgrade ke PRO';
+                                                        if (tier === 'pro' || tier === 'vip') return 'Upgrade ke ULTIMATE';
+                                                        if (tier === 'ultimate' || tier === 'platinum') return 'Upgrade ke ELITE';
+                                                        return 'ELITE Member';
+                                                    })()}
                                                 </h4>
                                                 <p className="text-slate-400 mb-8 leading-relaxed text-xs md:text-sm">
-                                                    {user?.tier === 'free'
-                                                        ? 'Buka fitur premium, domain kustom, & kapasitas tamu tanpa batas.'
-                                                        : 'Terima kasih telah berlangganan paket premium kami.'}
+                                                    {(() => {
+                                                        const tier = user?.tier;
+                                                        if (tier === 'free') return 'Buka fitur premium, domain kustom, & kapasitas tamu tanpa batas.';
+                                                        if (tier === 'pro' || tier === 'vip') return 'Dapatkan akses ke fitur eksklusif dan kapasitas yang lebih besar.';
+                                                        if (tier === 'ultimate' || tier === 'platinum') return 'Nikmati pengalaman terbaik dengan fitur Elite kami.';
+                                                        return 'Anda telah menikmati layanan tertinggi dari Tamuu.';
+                                                    })()}
                                                 </p>
-                                                {user?.tier !== 'vvip' && (
+                                                {user?.tier !== 'elite' && user?.tier !== 'vvip' && (
                                                     <Link to="/upgrade" className="inline-flex items-center justify-center gap-2 px-6 py-4 bg-teal-600 text-white font-black rounded-2xl hover:bg-teal-700 transition-all shadow-xl shadow-teal-600/20 active:scale-95 text-sm">
                                                         Upgrade Sekarang
                                                     </Link>
@@ -393,8 +412,9 @@ export const DashboardPage: React.FC = () => {
                                         </div>
 
                                         {/* TAMUU NEXUS: Shop Merchant Pipeline Entry */}
-                                        <div className="pt-2">
+                                        <div className="pt-2 space-y-6">
                                             <SmartMerchantCard />
+                                            <DashboardQuotaWidget />
                                         </div>
                                     </div>
                                 </div>
@@ -590,6 +610,11 @@ export const DashboardPage: React.FC = () => {
                                 <h3 className="text-xl font-semibold text-slate-800 mb-2">Tutorial</h3>
                                 <p className="text-slate-500 text-center">Video tutorial cara menggunakan Tamuu akan segera hadir</p>
                             </m.div>
+                        )}
+
+                        {/* Feedback Tab */}
+                        {activeTab === 'feedback' && (
+                            <FeedbackTab />
                         )}
 
 

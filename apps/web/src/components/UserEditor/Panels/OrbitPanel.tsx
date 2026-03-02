@@ -41,9 +41,51 @@ export const OrbitPanel: React.FC = () => {
                         </div>
 
                         <div className="space-y-4">
-                            {orbit.left.elements && orbit.left.elements.filter(el => el.permissions?.canEditContent !== false && el.permissions?.isVisibleInUserEditor !== false).length > 0 ? (
+                            {orbit.left.elements && orbit.left.elements.filter(el => {
+                                const p = el.permissions || {};
+                                return (
+                                    p.isVisibleInUserEditor || 
+                                    p.canEditText || 
+                                    p.canEditImage || 
+                                    p.canEditStyle || 
+                                    p.canEditContent || 
+                                    p.canEditPosition ||
+                                    (el as any).isVisibleInUserEditor === true ||
+                                    (el as any).canEditContent === true ||
+                                    (el as any).canEditText === true ||
+                                    (el as any).canEditImage === true ||
+                                    (el as any).canEditStyle === true ||
+                                    (el as any).canEditPosition === true ||
+                                    !!(el as any).digitalGiftConfig ||
+                                    !!(el as any).giftAddressConfig ||
+                                    !!(el as any).socialMockupConfig ||
+                                    !!(el as any).profileCardConfig ||
+                                    !!(el as any).mapsConfig
+                                );
+                            }).length > 0 ? (
                                 orbit.left.elements
-                                    .filter(el => el.permissions?.canEditContent !== false && el.permissions?.isVisibleInUserEditor !== false)
+                                    .filter(el => {
+                                        const p = el.permissions || {};
+                                        return (
+                                            p.isVisibleInUserEditor || 
+                                            p.canEditText || 
+                                            p.canEditImage || 
+                                            p.canEditStyle || 
+                                            p.canEditContent || 
+                                            p.canEditPosition ||
+                                            (el as any).isVisibleInUserEditor === true ||
+                                            (el as any).canEditContent === true ||
+                                            (el as any).canEditText === true ||
+                                            (el as any).canEditImage === true ||
+                                            (el as any).canEditStyle === true ||
+                                            (el as any).canEditPosition === true ||
+                                            !!(el as any).digitalGiftConfig ||
+                                            !!(el as any).giftAddressConfig ||
+                                            !!(el as any).socialMockupConfig ||
+                                            !!(el as any).profileCardConfig ||
+                                            !!(el as any).mapsConfig
+                                        );
+                                    })
                                     .map(element => (
                                         <UserElementEditor
                                             key={element.id}
@@ -83,9 +125,51 @@ export const OrbitPanel: React.FC = () => {
                         </div>
 
                         <div className="space-y-4">
-                            {orbit.right.elements && orbit.right.elements.filter(el => el.permissions?.canEditContent !== false && el.permissions?.isVisibleInUserEditor !== false).length > 0 ? (
+                            {orbit.right.elements && orbit.right.elements.filter(el => {
+                                const p = el.permissions || {};
+                                return (
+                                    p.isVisibleInUserEditor || 
+                                    p.canEditText || 
+                                    p.canEditImage || 
+                                    p.canEditStyle || 
+                                    p.canEditContent || 
+                                    p.canEditPosition ||
+                                    (el as any).isVisibleInUserEditor === true ||
+                                    (el as any).canEditContent === true ||
+                                    (el as any).canEditText === true ||
+                                    (el as any).canEditImage === true ||
+                                    (el as any).canEditStyle === true ||
+                                    (el as any).canEditPosition === true ||
+                                    !!(el as any).digitalGiftConfig ||
+                                    !!(el as any).giftAddressConfig ||
+                                    !!(el as any).socialMockupConfig ||
+                                    !!(el as any).profileCardConfig ||
+                                    !!(el as any).mapsConfig
+                                );
+                            }).length > 0 ? (
                                 orbit.right.elements
-                                    .filter(el => el.permissions?.canEditContent !== false && el.permissions?.isVisibleInUserEditor !== false)
+                                    .filter(el => {
+                                        const p = el.permissions || {};
+                                        return (
+                                            p.isVisibleInUserEditor || 
+                                            p.canEditText || 
+                                            p.canEditImage || 
+                                            p.canEditStyle || 
+                                            p.canEditContent || 
+                                            p.canEditPosition ||
+                                            (el as any).isVisibleInUserEditor === true ||
+                                            (el as any).canEditContent === true ||
+                                            (el as any).canEditText === true ||
+                                            (el as any).canEditImage === true ||
+                                            (el as any).canEditStyle === true ||
+                                            (el as any).canEditPosition === true ||
+                                            !!(el as any).digitalGiftConfig ||
+                                            !!(el as any).giftAddressConfig ||
+                                            !!(el as any).socialMockupConfig ||
+                                            !!(el as any).profileCardConfig ||
+                                            !!(el as any).mapsConfig
+                                        );
+                                    })
                                     .map(element => (
                                         <UserElementEditor
                                             key={element.id}

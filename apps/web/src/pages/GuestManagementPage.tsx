@@ -132,7 +132,7 @@ export const GuestManagementPage: React.FC = () => {
     const [showExportDropdown, setShowExportDropdown] = useState(false);
 
     useSEO({
-        title: 'Buku Tamu - Tamuu',
+        title: 'Buku Tamu',
         description: 'Kelola daftar tamu undangan digital Anda.',
     });
 

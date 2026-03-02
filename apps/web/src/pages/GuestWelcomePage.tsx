@@ -13,7 +13,7 @@ export const GuestWelcomePage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     useSEO({
-        title: 'Selamat Datang! - Tamuu',
+        title: 'Selamat Datang!',
         description: 'Selamat datang di acara kami.',
     });
 
