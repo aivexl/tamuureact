@@ -11,7 +11,7 @@ interface UserKonvaPreviewProps {
 /**
  * UserKonvaPreview
  * High-fidelity preview of a section or cinematic stage with Interactive Transformation support.
- * CTO ENTERPRISE LEVEL: Pure DOM-based high-performance rendering with Moveable integration.
+ * CTO ENTERPRISE LEVEL: Fixed coordinate parity and robust permission handling.
  */
 export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, canvasType = 'main' }) => {
     const { 
@@ -81,9 +81,12 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
     useEffect(() => {
         if (selectedLayerId && targetMap.current.has(selectedLayerId)) {
             const el = targetMap.current.get(selectedLayerId);
-            // Permission Check: User can only see the "Blue Box" if they have edit rights
             const layer = elements.find(e => e.id === selectedLayerId);
-            const canEdit = layer?.permissions?.canEditPosition || layer?.permissions?.canEditStyle || (layer as any)?.canEditContent;
+            
+            // CTO ROBUST PERMISSION CHECK: Matches UserElementEditor logic
+            const p = layer?.permissions;
+            const canEdit = p?.canEditPosition || p?.canEditStyle || p?.canEditContent || 
+                            (layer as any)?.canEditPosition || (layer as any)?.canEditStyle || (layer as any)?.canEditContent;
             
             if (canEdit) {
                 setTarget(el || null);
@@ -150,6 +153,11 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
 
                         const adjustedY = element.y + (extraHeight * progress);
 
+                        // CTO ROBUST PERMISSION CHECK: Identical to target logic
+                        const p = element.permissions;
+                        const canInteract = p?.canEditPosition || p?.canEditStyle || p?.canEditContent || 
+                                          (element as any)?.canEditPosition || (element as any)?.canEditStyle || (element as any)?.canEditContent;
+
                         return (
                             <div
                                 key={element.id}
@@ -157,14 +165,16 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
                                     if (el) targetMap.current.set(element.id, el);
                                     else targetMap.current.delete(element.id);
                                 }}
-                                className="absolute"
+                                className="absolute pointer-events-auto"
                                 style={{
                                     left: element.x,
                                     top: adjustedY,
                                     width: element.width,
                                     height: element.height,
                                     zIndex: element.zIndex,
-                                    cursor: (element.permissions?.canEditPosition || (element as any).canEditContent) ? 'grab' : 'default'
+                                    cursor: canInteract ? 'grab' : 'default',
+                                    // Visual guard for selected item
+                                    outline: selectedLayerId === element.id ? '1px solid rgba(191, 161, 129, 0.5)' : 'none'
                                 }}
                                 onMouseDown={(e) => {
                                     e.stopPropagation();
@@ -173,9 +183,9 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
                             >
                                 <AnimatedLayer
                                     layer={element}
-                                    adjustedY={0} // Coordinates handled by parent div for interaction parity
+                                    adjustedY={0} // CTO FIX: Set to 0 because parent handles adjustedY
                                     isOpened={true}
-                                    isEditor={false}
+                                    isEditor={true} // CTO FIX: Essential to prevent double-positioning (resets internal x/y)
                                     forceTrigger={true}
                                 />
                             </div>
