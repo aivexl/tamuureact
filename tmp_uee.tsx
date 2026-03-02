@@ -67,25 +67,39 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
         }
     };
 
-    // Element is visible if specifically set to visible OR has any active edit permission
-    // CTO: Smart Permission Engine. Only show if explicitly authorized OR has active edit rights.
     const isVisible = (() => {
-        const p = element.permissions;
-        
-        // 1. Explicit UI Visibility Flag
-        if (p?.isVisibleInUserEditor === true || (element as any).isVisibleInUserEditor === true) return true;
+        if (permissions.isVisibleInUserEditor || 
+            permissions.canEditText || 
+            permissions.canEditImage || 
+            permissions.canEditStyle || 
+            permissions.canEditPosition || 
+            permissions.canEditContent) return true;
 
-        // 2. SMART CHECK: Show if ANY edit permission is true
-        if (p?.canEditText || (element as any).canEditText || 
-            p?.canEditImage || (element as any).canEditImage || 
-            p?.canEditStyle || (element as any).canEditStyle || 
-            p?.canEditContent || (element as any).canEditContent ||
-            p?.canEditPosition || (element as any).canEditPosition) return true;
+        if ((element as any).isVisibleInUserEditor === true ||
+            (element as any).canEditContent === true ||
+            (element as any).canEditText === true ||
+            (element as any).canEditImage === true ||
+            (element as any).canEditStyle === true ||
+            (element as any).canEditPosition === true) return true;
 
-        // 3. Fallback for legacy text elements that might only have name/content but no permissions obj yet
-        // If it's a critical core type like profile_card, and permissions are undefined, we show it to be safe
-        // BUT if permissions exist and are all false, we hide it.
-        if (!p && ((element as any).canEditContent === true || element.type === 'profile_card')) return true;
+        const isCriticalType = 
+            element.type === 'profile_card' || 
+            element.type === 'photo_grid' || 
+            element.type === 'digital_gift' || 
+            element.type === 'gift_address' ||
+            element.type === 'profile_photo';
+
+        const isUserDataLayer = 
+            !!element.profileCardConfig || 
+            !!element.photoGridConfig || 
+            !!element.digitalGiftConfig || 
+            !!element.mapsConfig ||
+            !!element.giftAddressConfig ||
+            !!element.socialMockupConfig;
+
+        if ((isCriticalType || isUserDataLayer) && element.permissions?.isVisibleInUserEditor !== false) {
+            return true;
+        }
 
         return false;
     })();
