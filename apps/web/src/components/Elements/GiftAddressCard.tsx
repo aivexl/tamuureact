@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { m } from 'framer-motion';
-import { Home, Copy, Check, MapPin } from 'lucide-react';
-import { toast } from 'react-hot-toast';
+import { Home, MapPin, Phone, User } from 'lucide-react';
+import { AnimatedCopyIcon } from '../ui/AnimatedCopyIcon';
 
 interface GiftAddressCardProps {
     recipientName: string;
+    phoneNumber: string;
     address: string;
     customColor?: string;
     className?: string;
@@ -13,99 +14,119 @@ interface GiftAddressCardProps {
 
 export const GiftAddressCard: React.FC<GiftAddressCardProps> = ({
     recipientName,
+    phoneNumber,
     address,
-    customColor = '#f8fafc', // Default slate-50
+    customColor = '#f8fafc',
     className = '',
     isPreview = false
 }) => {
-    const [copiedField, setCopiedField] = useState<string | null>(null);
-
-    const handleCopy = (text: string, fieldName: string) => {
-        if (!text || isPreview) return;
-        navigator.clipboard.writeText(text);
-        setCopiedField(fieldName);
-        toast.success(`${fieldName} copied!`, {
-            id: `copy-address-${fieldName}`,
-        });
-        setTimeout(() => setCopiedField(null), 2000);
-    };
-
-    const CopyIcon = ({ fieldName, size = 12 }: { fieldName: string, size?: number }) => (
-        <div className="ml-2 transition-opacity duration-200 flex-shrink-0 flex items-center justify-center">
-            {copiedField === fieldName ? (
-                <Check size={size} className="text-emerald-500" />
-            ) : (
-                <Copy size={size} className="opacity-20 group-hover:opacity-100 transition-opacity text-slate-400" />
-            )}
-        </div>
-    );
-
     return (
         <m.div
-            className={`relative w-full aspect-[1.586/1] rounded-[16px] overflow-hidden shadow-2xl select-none antialiased border border-slate-100 transform-gpu ${className}`}
+            className={`relative w-full aspect-[1.15/1] rounded-[24px] overflow-hidden shadow-2xl select-none antialiased border border-slate-100 transform-gpu bg-white ${className}`}
             style={{
                 backgroundColor: customColor,
                 WebkitFontSmoothing: 'antialiased',
                 MozOsxFontSmoothing: 'grayscale',
-                imageRendering: 'high-quality'
             } as any}
             initial={!isPreview ? { opacity: 0, scale: 0.98 } : {}}
             animate={{ opacity: 1, scale: 1 }}
         >
-            {/* HOUSE ICON WATERMARK */}
-            <div className="absolute -right-8 -bottom-8 opacity-[0.03] pointer-events-none">
-                <Home size={240} />
+            {/* HOUSE ICON WATERMARK - CTO Subtle Branding */}
+            <div className="absolute -right-12 -bottom-12 opacity-[0.02] pointer-events-none rotate-12">
+                <Home size={320} />
             </div>
 
-            <div className="relative z-10 h-full w-full p-[6%] flex flex-col justify-start gap-[1%]">
-                {/* HEADER */}
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg shadow-slate-900/10">
-                        <Home size={20} className="text-white" />
+            <div className="relative z-10 h-full w-full p-[7%] flex flex-col gap-6">
+                {/* HEADER SECTION */}
+                <div className="flex items-center gap-4 border-b border-slate-200/50 pb-4">
+                    <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-900/20">
+                        <Home size={24} className="text-white" />
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 leading-none">Gift Address</span>
-                        <span className="text-[14px] font-black uppercase tracking-widest text-slate-900 mt-1">Alamat Gift/Kado</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 leading-none mb-1">Shipping Details</span>
+                        <span className="text-[16px] font-black uppercase tracking-widest text-slate-900">Alamat Kirim Kado</span>
                     </div>
                 </div>
 
-                {/* CONTENT */}
-                <div className="w-full flex flex-col items-start gap-0">
-                    {/* RECIPIENT */}
-                    <button
-                        onClick={() => handleCopy(recipientName, 'Recipient Name')}
-                        className={`w-full group flex flex-col items-start outline-none transition-transform active:scale-[0.98] mt-0 ${isPreview ? 'cursor-default' : 'cursor-pointer'}`}
-                    >
-                        <span className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 mb-1">Penerima</span>
-                        <div className="flex items-center w-full">
-                            <span className="text-[16px] sm:text-[20px] font-bold text-slate-900 uppercase tracking-wide truncate flex-1 text-left">
-                                {recipientName || 'NAMA PENERIMA'}
-                            </span>
-                            {!isPreview && <CopyIcon fieldName="Recipient Name" size={14} />}
+                {/* INFORMATION STACK - Vertical Sections */}
+                <div className="flex-1 flex flex-col justify-between">
+                    
+                    {/* SECTION 1: RECIPIENT */}
+                    <div className="flex items-center justify-between group">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:text-teal-600 transition-colors">
+                                <User size={18} />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Nama Penerima</span>
+                                <span className="text-[15px] sm:text-[18px] font-bold text-slate-900 uppercase tracking-wide truncate max-w-[180px]">
+                                    {recipientName || 'NAMA PENERIMA'}
+                                </span>
+                            </div>
                         </div>
-                    </button>
+                        {recipientName && (
+                            <AnimatedCopyIcon 
+                                text={recipientName} 
+                                size={18} 
+                                className="p-2 rounded-lg bg-slate-50 text-slate-400 hover:text-teal-600 transition-all"
+                                successMessage="Nama disalin!"
+                            />
+                        )}
+                    </div>
 
-                    {/* ADDRESS */}
-                    <button
-                        onClick={() => handleCopy(address, 'Address')}
-                        className={`w-full group flex flex-col items-start outline-none transition-transform active:scale-[0.98] mt-0 ${isPreview ? 'cursor-default' : 'cursor-pointer'}`}
-                    >
-                        <div className="flex items-center w-full mb-1">
-                            <MapPin size={10} className="text-rose-500 mr-1.5" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Alamat Lengkap</span>
+                    {/* SECTION 2: PHONE */}
+                    <div className="flex items-center justify-between group">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:text-teal-600 transition-colors">
+                                <Phone size={18} />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Nomor Telepon</span>
+                                <span className="text-[16px] sm:text-[19px] font-black text-teal-600 tracking-[0.15em] font-mono">
+                                    {phoneNumber || '08XXXXXXXXXX'}
+                                </span>
+                            </div>
                         </div>
-                        <div className="flex items-center w-full">
-                            <span className="text-[10px] sm:text-[13px] font-medium text-slate-600 leading-relaxed text-left line-clamp-4 flex-1">
-                                {address || 'Masukkan alamat lengkap di sini...'}
-                            </span>
-                            {!isPreview && <CopyIcon fieldName="Address" size={12} />}
+                        {phoneNumber && (
+                            <AnimatedCopyIcon 
+                                text={phoneNumber} 
+                                size={18} 
+                                className="p-2 rounded-lg bg-slate-50 text-slate-400 hover:text-teal-600 transition-all"
+                                successMessage="Nomor disalin!"
+                            />
+                        )}
+                    </div>
+
+                    {/* SECTION 3: ADDRESS */}
+                    <div className="flex items-start justify-between group pt-4 border-t border-slate-100/80">
+                        <div className="flex items-start gap-4 flex-1">
+                            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:text-rose-500 transition-colors shrink-0">
+                                <MapPin size={18} />
+                            </div>
+                            <div className="flex flex-col flex-1">
+                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Detail Alamat Lengkap</span>
+                                <p className="text-[11px] sm:text-[13px] font-bold text-slate-600 leading-[1.5] text-left line-clamp-4 pr-2">
+                                    {address || 'Masukkan detail alamat lengkap pengiriman kado di sini...'}
+                                </p>
+                            </div>
                         </div>
-                    </button>
+                        {address && (
+                            <div className="pt-1">
+                                <AnimatedCopyIcon 
+                                    text={address} 
+                                    size={18} 
+                                    className="p-2 rounded-lg bg-slate-50 text-slate-400 hover:text-teal-600 transition-all"
+                                    successMessage="Alamat disalin!"
+                                />
+                            </div>
+                        )}
+                    </div>
+
                 </div>
             </div>
 
-            {/* DECORATIVE LINE */}
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-slate-200 opacity-50" />
+            {/* PREMIUM ACCENT LINE */}
+            <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-slate-200 via-teal-100 to-slate-200" />
         </m.div>
     );
 };

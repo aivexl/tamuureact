@@ -6,6 +6,7 @@ import { PremiumLoader } from '../components/ui/PremiumLoader';
 import { motion as m } from 'framer-motion';
 import { useSEO } from '../hooks/useSEO';
 import { useSubscriptionTimer } from '../hooks/useSubscriptionTimer';
+import { AnimatedCopyIcon } from '../components/ui/AnimatedCopyIcon';
 
 // ============================================
 // INLINE SVG ICONS (Zero dependency)
@@ -123,7 +124,6 @@ export const ProfilePage: React.FC = () => {
 
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
-    const [copySuccess, setCopySuccess] = useState(false);
     const [isHoveringTamuuId, setIsHoveringTamuuId] = useState(false);
 
     // Redirect if not authenticated
@@ -182,17 +182,6 @@ export const ProfilePage: React.FC = () => {
         if (success) {
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);
-        }
-    };
-
-    const copyTamuuId = async () => {
-        if (!profile?.tamuuId) return;
-        try {
-            await navigator.clipboard.writeText(profile.tamuuId);
-            setCopySuccess(true);
-            setTimeout(() => setCopySuccess(false), 2000);
-        } catch (err) {
-            console.error('Failed to copy:', err);
         }
     };
 
@@ -484,14 +473,9 @@ export const ProfilePage: React.FC = () => {
                                                 className="block w-full pl-10 pr-12 py-2.5 bg-gradient-to-r from-slate-50 to-indigo-50 border border-indigo-100 rounded-xl text-indigo-700 font-mono text-sm cursor-default tracking-wide"
                                             />
                                             {/* Copy Button */}
-                                            {(isHoveringTamuuId || copySuccess) && (
-                                                <button
-                                                    onClick={copyTamuuId}
-                                                    className={`absolute inset-y-0 right-0 pr-3 flex items-center transition-all ${copySuccess ? 'text-emerald-600' : 'text-indigo-500 hover:text-indigo-700'}`}
-                                                >
-                                                    {copySuccess ? <CheckIcon className="w-4 h-4" /> : <CopyIcon className="w-4 h-4" />}
-                                                </button>
-                                            )}
+                                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                                <AnimatedCopyIcon text={profile.tamuuId} size={16} className={`transition-opacity ${isHoveringTamuuId ? 'opacity-100' : 'opacity-0'}`} />
+                                            </div>
                                         </div>
                                     </div>
                                 </m.div>

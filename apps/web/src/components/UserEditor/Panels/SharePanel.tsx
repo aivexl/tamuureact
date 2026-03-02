@@ -1,23 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { m } from 'framer-motion';
-import { Copy, Share2, MessageCircle, Send, Globe, Check } from 'lucide-react';
+import { Share2, MessageCircle, Send, Globe } from 'lucide-react';
 import { getPublicDomain } from '@/lib/utils';
+import { AnimatedCopyIcon } from '@/components/ui/AnimatedCopyIcon';
 
 interface SharePanelProps {
     slug: string;
 }
 
 export const SharePanel: React.FC<SharePanelProps> = ({ slug }) => {
-    const [copied, setCopied] = useState(false);
     const host = getPublicDomain();
     const url = `${host}/preview/${slug}`;
-
-
-    const handleCopy = () => {
-        navigator.clipboard.writeText(`https://${url}`);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
 
     const shareOptions = [
         { id: 'whatsapp', name: 'WhatsApp', icon: MessageCircle, color: 'bg-emerald-500', link: `https://wa.me/?text=Buka%20undangan%20saya%20di%20https://${url}` },
@@ -38,17 +31,13 @@ export const SharePanel: React.FC<SharePanelProps> = ({ slug }) => {
                 </div>
 
                 <div className="flex items-center gap-2 p-2 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                    <div className="flex-1 px-4 text-left font-bold text-slate-900 truncate">
+                    <div className="flex-1 px-4 text-left font-bold text-slate-900 truncate italic">
                         {url}
                     </div>
-                    <button
-                        onClick={handleCopy}
-                        className={`px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center gap-2 ${copied ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-900 text-white hover:bg-slate-800'
-                            }`}
-                    >
-                        {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                        {copied ? 'Salin!' : 'Salin'}
-                    </button>
+                    <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all">
+                        <AnimatedCopyIcon text={`https://${url}`} size={16} successMessage="Link disalin!" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Salin Link</span>
+                    </div>
                 </div>
             </div>
 

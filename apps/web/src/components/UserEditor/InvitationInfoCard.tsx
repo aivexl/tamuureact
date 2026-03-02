@@ -1,10 +1,11 @@
-import React, { useRef, useState } from 'react';
-import { m, AnimatePresence } from 'framer-motion';
-import { Calendar, Clock, Upload, ExternalLink, Copy, Check, Share2, Settings, CreditCard, FileText, Send } from 'lucide-react';
+import React, { useRef } from 'react';
+import { m } from 'framer-motion';
+import { Calendar, Clock, Upload, ExternalLink, Check, Share2, Settings, CreditCard, FileText, Send } from 'lucide-react';
 import { getPublicDomain } from '@/lib/utils';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { SubscriptionStatusWidget } from '../ui/SubscriptionStatusWidget';
 import { useStore } from '@/store/useStore';
+import { AnimatedCopyIcon } from '../ui/AnimatedCopyIcon';
 
 interface InvitationInfoCardProps {
     invitation: {
@@ -24,19 +25,12 @@ export const InvitationInfoCard: React.FC<InvitationInfoCardProps> = ({ invitati
     const navigate = useNavigate();
     const { user } = useStore();
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [copied, setCopied] = useState(false);
 
     const handleUploadClick = () => {
         fileInputRef.current?.click();
     };
 
-    const handleCopyLink = () => {
-        const publicDomain = getPublicDomain();
-        const url = `${publicDomain}/${invitation.slug}`;
-        navigator.clipboard.writeText(`https://${url}`);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
+    const publicDomain = getPublicDomain();
 
     return (
         <m.div
@@ -93,7 +87,7 @@ export const InvitationInfoCard: React.FC<InvitationInfoCardProps> = ({ invitati
                         <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
                             <div className="flex-1 min-w-[200px] flex items-center gap-0 bg-slate-50 rounded-xl border border-slate-200 p-1.5 focus-within:ring-2 focus-within:ring-teal-500/20 focus-within:border-teal-400 transition-all">
                                 <a 
-                                    href={`https://${getPublicDomain()}/${invitation.slug}`}
+                                    href={`https://${publicDomain}/${invitation.slug}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex items-center flex-1 min-w-0 hover:bg-slate-100/50 rounded-lg transition-all group/link"
@@ -104,17 +98,18 @@ export const InvitationInfoCard: React.FC<InvitationInfoCardProps> = ({ invitati
                                     <div className="flex-1 min-w-0 py-1 sm:py-1.5 px-2 sm:px-0">
                                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Link Undangan</p>
                                         <p className="text-sm font-bold text-slate-800 truncate font-mono group-hover/link:text-teal-600 transition-colors">
-                                            tamuu.id/{invitation.slug}
+                                            {publicDomain}/{invitation.slug}
                                         </p>
                                     </div>
                                 </a>
-                                <button
-                                    onClick={handleCopyLink}
-                                    className={`p-2.5 rounded-lg transition-all shrink-0 ${copied ? 'bg-emerald-500 text-white shadow-md' : 'bg-white text-slate-500 hover:text-teal-600 border border-slate-200 hover:border-teal-200'}`}
-                                    title="Salin Link"
-                                >
-                                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                                </button>
+                                <div className="p-1">
+                                    <AnimatedCopyIcon 
+                                        text={`https://${publicDomain}/${invitation.slug}`} 
+                                        size={18} 
+                                        className="p-2.5 rounded-lg bg-white text-slate-500 hover:text-teal-600 border border-slate-200 hover:border-teal-200 transition-all"
+                                        successMessage="Link disalin!"
+                                    />
+                                </div>
                             </div>
 
                             <div className="flex items-center gap-2 shrink-0">

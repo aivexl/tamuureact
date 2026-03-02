@@ -9,6 +9,7 @@ import * as XLSX from 'xlsx';
 import { guests as guestsApi, invitations as invitationsApi } from '../lib/api';
 import { PremiumLoader } from '../components/ui/PremiumLoader';
 import { getPublicDomain } from '../lib/utils';
+import { AnimatedCopyIcon } from '../components/ui/AnimatedCopyIcon';
 
 // ============================================
 // INLINE SVG ICONS
@@ -26,11 +27,6 @@ const PlusIcon = ({ className }: { className?: string }) => (
 const SearchIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
-    </svg>
-);
-const CopyIcon = ({ className }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
     </svg>
 );
 const MessageSquareIcon = ({ className }: { className?: string }) => (
@@ -212,20 +208,6 @@ export const GuestManagementPage: React.FC = () => {
         }
     };
 
-    const copyGeneralLink = () => {
-        if (!invitation) return;
-        const publicDomain = getPublicDomain();
-        navigator.clipboard.writeText(`https://${publicDomain}/${invitation.slug}`);
-        showToast('Link umum disalin!');
-    };
-
-    const copyGuestLink = (guest: Guest) => {
-        if (!invitation) return;
-        const publicDomain = getPublicDomain();
-        navigator.clipboard.writeText(`https://${publicDomain}/${invitation.slug}?to=${encodeURIComponent(guest.name)}`);
-        showToast(`Link untuk ${guest.name} disalin!`);
-    };
-
     const shareWhatsApp = async (guest: Guest) => {
         if (!invitation) return;
         const phone = guest.phone || '';
@@ -259,13 +241,11 @@ export const GuestManagementPage: React.FC = () => {
                 check_in_code: checkInCode
             };
             const newGuest = await guestsApi.create(gData);
-            // Map keys from snake_case DB to camelCase component types if needed
-            // But let's assume they match for now or update Guest interface
             setGuests(prev => [newGuest, ...prev]);
             setShowAddModal(false);
             setFormData({ name: '', phone: '', address: 'di tempat', tableNumber: '', tier: 'reguler', guestCount: 1 });
             showToast('Tamu berhasil ditambahkan!');
-            fetchData(); // Refresh to ensure correct camelCase mapping from D1
+            fetchData();
         } catch (error) {
             console.error('Failed to add guest:', error);
             showToast('Gagal menambah tamu.');
@@ -333,10 +313,6 @@ export const GuestManagementPage: React.FC = () => {
         setShowQRModal(true);
     };
 
-    // ============================================
-    // IMPORT / EXPORT LOGIC
-    // ============================================
-
     const downloadImportFormat = (format: 'csv' | 'xlsx') => {
         const data = [
             { 'Tier': 'VIP', 'Nama': 'Contoh Nama VIP', 'No WhatsApp': '081234567890', 'Alamat': 'Jakarta', 'Jumlah': 2, 'Meja': 'Meja A1' },
@@ -354,10 +330,6 @@ export const GuestManagementPage: React.FC = () => {
             XLSX.utils.book_append_sheet(workbook, worksheet, 'Format Import');
             XLSX.writeFile(workbook, 'format-import-tamu.csv', { bookType: 'csv' });
         }
-    };
-
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        // Redundant - now handled inside ImportModal
     };
 
     const confirmImport = (pendingGuests: any[]) => {
@@ -389,7 +361,7 @@ export const GuestManagementPage: React.FC = () => {
             'ID': g.checkInCode,
             'Tier': g.tier.toUpperCase(),
             'Nama': g.name,
-            'WhatsApp': g.phone ? `+ ${g.phone} ` : '-',
+            'WhatsApp': g.phone ? `+${g.phone}` : '-',
             'Alamat': g.address,
             'Meja': g.tableNumber || '-',
             'Jumlah': g.guestCount,
@@ -401,12 +373,12 @@ export const GuestManagementPage: React.FC = () => {
             const worksheet = XLSX.utils.json_to_sheet(exportData);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, 'Daftar Tamu');
-            XLSX.writeFile(workbook, `export -tamu - ${invitationId || 'data'}.xlsx`);
+            XLSX.writeFile(workbook, `export-tamu-${invitationId || 'data'}.xlsx`);
         } else if (format === 'json') {
             const blob = new Blob([JSON.stringify(guests, null, 2)], { type: 'application/json' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `export -tamu - ${invitationId || 'data'}.json`;
+            link.download = `export-tamu-${invitationId || 'data'}.json`;
             link.click();
         } else {
             const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -414,7 +386,7 @@ export const GuestManagementPage: React.FC = () => {
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `export -tamu - ${invitationId || 'data'}.csv`;
+            link.download = `export-tamu-${invitationId || 'data'}.csv`;
             link.click();
         }
         setShowExportDropdown(false);
@@ -435,6 +407,8 @@ export const GuestManagementPage: React.FC = () => {
         );
     }
 
+    const publicDomain = getPublicDomain();
+
     return (
         <div className="min-h-screen bg-slate-50 pt-14">
             {/* Page Header */}
@@ -448,9 +422,14 @@ export const GuestManagementPage: React.FC = () => {
                         <p className="text-slate-500">Kelola tamu dan kirim undangan personal dengan mudah.</p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button onClick={copyGeneralLink} className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-700 hover:bg-slate-50 transition-all shadow-sm">
-                            <CopyIcon className="w-4 h-4" /> Copy General Link
-                        </button>
+                        <div className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-700 hover:bg-slate-50 transition-all shadow-sm">
+                            <AnimatedCopyIcon 
+                                text={`https://${publicDomain}/${invitation?.slug}`} 
+                                size={16} 
+                                successMessage="Link umum disalin!" 
+                            />
+                            <span className="text-sm font-medium">Copy General Link</span>
+                        </div>
                         <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-5 py-2.5 bg-teal-600 text-white font-semibold rounded-xl hover:bg-teal-700 transition-all shadow-lg shadow-teal-600/20">
                             <PlusIcon className="w-5 h-5" /> Tambah Tamu
                         </button>
@@ -510,7 +489,7 @@ export const GuestManagementPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Toolbar - Tamuu Signature Minimalist */}
+                {/* Toolbar */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-white p-2.5 rounded-[2.5rem] border border-slate-50 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)]">
                     <div className="relative flex-1 max-w-lg w-full">
                         <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
@@ -581,7 +560,7 @@ export const GuestManagementPage: React.FC = () => {
                             <tbody className="divide-y divide-slate-100">
                                 {filteredGuests.length === 0 ? (
                                     <tr>
-                                        <td colSpan={10} className="px-6 py-12 text-center text-slate-400 italic">
+                                        <td colSpan={12} className="px-6 py-12 text-center text-slate-400 italic">
                                             Belum ada data tamu. Klik "Tambah Tamu" untuk memulai.
                                         </td>
                                     </tr>
@@ -590,7 +569,7 @@ export const GuestManagementPage: React.FC = () => {
                                         <tr key={guest.id} className="hover:bg-slate-50 transition-all duration-200">
                                             <td className="px-4 py-4 text-[12px] font-mono text-slate-500 uppercase font-bold">{guest.checkInCode}</td>
                                             <td className="px-4 py-4">
-                                                <span className={`text - [9px] font - black uppercase tracking - widest px - 2 py - 1 rounded - lg ring - 1 ring - inset ${getTierBadge(guest.tier)} `}>
+                                                <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ring-1 ring-inset ${getTierBadge(guest.tier)}`}>
                                                     {guest.tier === 'reguler' ? 'REG' : guest.tier.toUpperCase()}
                                                 </span>
                                             </td>
@@ -621,7 +600,7 @@ export const GuestManagementPage: React.FC = () => {
                                             </td>
                                             <td className="px-4 py-4">
                                                 <div className="flex items-center justify-center gap-1">
-                                                    <button onClick={() => shareWhatsApp(guest)} className={`p - 2 rounded - xl transition - all hover: scale - 110 ${guest.sharedAt ? 'bg-emerald-500 text-white' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'} `} title="Kirim WhatsApp">
+                                                    <button onClick={() => shareWhatsApp(guest)} className={`p-2 rounded-xl transition-all hover:scale-110 ${guest.sharedAt ? 'bg-emerald-500 text-white' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`} title="Kirim WhatsApp">
                                                         {guest.sharedAt ? <CheckIcon className="w-4 h-4" /> : <MessageSquareIcon className="w-4 h-4" />}
                                                     </button>
                                                     <button
@@ -631,9 +610,13 @@ export const GuestManagementPage: React.FC = () => {
                                                     >
                                                         <QrCodeIcon className="w-5 h-5" />
                                                     </button>
-                                                    <button onClick={() => copyGuestLink(guest)} className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-xl transition-all" title="Salin Link">
-                                                        <CopyIcon className="w-4 h-4" />
-                                                    </button>
+                                                    <div className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-xl transition-all">
+                                                        <AnimatedCopyIcon 
+                                                            text={`https://${publicDomain}/${invitation?.slug}?to=${encodeURIComponent(guest.name)}`} 
+                                                            size={16} 
+                                                            successMessage={`Link untuk ${guest.name} disalin!`} 
+                                                        />
+                                                    </div>
                                                     <button onClick={() => openEditModal(guest)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition-all" title="Edit">
                                                         <Edit2Icon className="w-4 h-4" />
                                                     </button>

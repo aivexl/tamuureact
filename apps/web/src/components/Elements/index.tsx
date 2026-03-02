@@ -180,15 +180,17 @@ export const DigitalGiftElement: React.FC<{ layer: Layer, isEditor?: boolean, on
         onContentLoad?.();
     }, []);
 
-    const config = layer.digitalGiftConfig || {
-        title: 'Kado Digital',
-        description: 'Doa restu Anda adalah kado terindah, namun jika ingin memberi lebih...',
-        bankName: 'Bank Central Asia',
-        accountNumber: '1234567890',
-        accountHolder: 'John Doe',
-        buttonText: '',
-        theme: 'gold',
-        customColor: undefined
+    // CTO ULTRA ROBUST MAPPING: property-level defaults
+    const rawConfig = layer.digitalGiftConfig || (layer as any).digital_gift_config || {};
+    const config = {
+        title: rawConfig.title || (rawConfig as any).title || 'Kado Digital',
+        description: rawConfig.description || (rawConfig as any).description || 'Doa restu Anda adalah kado terindah, namun jika ingin memberi lebih...',
+        bankName: rawConfig.bankName || (rawConfig as any).bank_name || 'Bank Central Asia',
+        accountNumber: rawConfig.accountNumber || (rawConfig as any).account_number || '1234567890',
+        accountHolder: rawConfig.accountHolder || (rawConfig as any).account_holder || 'John Doe',
+        buttonText: rawConfig.buttonText || (rawConfig as any).button_text || '',
+        theme: rawConfig.theme || (rawConfig as any).theme || 'gold',
+        customColor: rawConfig.customColor || (rawConfig as any).custom_color || undefined
     };
 
 
@@ -234,10 +236,13 @@ export const GiftAddressElement: React.FC<{ layer: Layer, isEditor?: boolean, on
         onContentLoad?.();
     }, []);
 
-    const config = layer.giftAddressConfig || {
-        recipientName: 'Nama Penerima',
-        address: 'Alamat lengkap pengiriman kado/gift...',
-        customColor: '#f8fafc'
+    // CTO ULTRA ROBUST MAPPING: property-level defaults for maximum resilience in /preview
+    const rawConfig = layer.giftAddressConfig || (layer as any).gift_address_config || {};
+    const config = {
+        recipientName: rawConfig.recipientName || (rawConfig as any).recipient_name || 'Nama Penerima',
+        phoneNumber: rawConfig.phoneNumber || (rawConfig as any).phone_number || '',
+        address: rawConfig.address || (rawConfig as any).address_detail || 'Alamat lengkap pengiriman kado/gift...',
+        customColor: rawConfig.customColor || (rawConfig as any).custom_color || '#f8fafc'
     };
 
     return (
@@ -247,6 +252,7 @@ export const GiftAddressElement: React.FC<{ layer: Layer, isEditor?: boolean, on
             <div className={`w-full flex flex-col items-center ${isEditor ? 'max-w-none' : 'max-w-[400px]'}`}>
                 <GiftAddressCard
                     recipientName={config.recipientName}
+                    phoneNumber={config.phoneNumber}
                     address={config.address}
                     customColor={config.customColor}
                     isPreview={isEditor}
@@ -458,7 +464,7 @@ export const GlassCardElement: React.FC<{ layer: Layer, onContentLoad?: () => vo
 export const SocialMockupElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ layer, onContentLoad }) => {
     useEffect(() => {
         onContentLoad?.();
-    }, []);
+    }, [layer.socialMockupConfig, onContentLoad]);
 
     const config = (layer.socialMockupConfig || {
         platform: 'instagram',
@@ -469,6 +475,7 @@ export const SocialMockupElement: React.FC<{ layer: Layer, onContentLoad?: () =>
         fontSize: 18,
         textColor: '#ffffff'
     }) as any;
+    
     const {
         platform = 'instagram',
         username = 'tamuu.id',
@@ -483,9 +490,9 @@ export const SocialMockupElement: React.FC<{ layer: Layer, onContentLoad?: () =>
         switch (platform) {
             case 'instagram': return { icon: <Instagram size={14} />, color: '#E4405F', name: 'Instagram' };
             case 'twitter': return { icon: <Twitter size={14} />, color: '#1DA1F2', name: 'Twitter' };
-            case 'tiktok': return { icon: <div className="flex items-center justify-center bg-black rounded-full p-0.5"><Twitter size={10} className="text-white" /></div>, color: '#000000', name: 'TikTok' };
-            case 'whatsapp': return { icon: <div className="flex items-center justify-center bg-[#25D366] rounded-full p-0.5 text-white"><ExternalLink size={10} /></div>, color: '#25D366', name: 'WhatsApp' };
-            default: return { icon: <Monitor size={14} />, color: '#6366f1', name: 'Social' };
+            case 'tiktok': return { icon: <Music size={14} />, color: '#000000', name: 'TikTok' };
+            case 'whatsapp': return { icon: <ExternalLink size={14} />, color: '#25D366', name: 'WhatsApp' };
+            default: return { icon: <Share2 size={14} />, color: '#6366f1', name: 'Social' };
         }
     };
 
@@ -727,4 +734,3 @@ export * from './LiveStreamingElement';
 export * from './QuoteElement';
 export * from './ProfileCardElement';
 export * from './ProfilePhotoElement';
-

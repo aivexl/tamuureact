@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { ImageIcon, Plus, Trash2, Crop as CropIcon, Lock } from 'lucide-react';
+import { ImageIcon, Plus, Trash2, Crop as CropIcon, Lock, UploadCloud } from 'lucide-react';
 import { ElementCardProps } from './Registry';
 import { ImageCropModal, CropConfig } from '@/components/Modals/ImageCropModal';
 
@@ -66,7 +66,7 @@ export const ImageCard: React.FC<ElementCardProps> = ({ element, handleUpdate, p
                             onClick={() => fileInputRef.current?.click()}
                             className="p-3 bg-white text-slate-700 rounded-xl hover:scale-110 active:scale-95 transition-all shadow-lg"
                         >
-                            <Plus className="w-5 h-5" />
+                            <UploadCloud className="w-5 h-5 text-teal-500" />
                         </button>
                     </div>
                 ) : (

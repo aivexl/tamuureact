@@ -96,7 +96,7 @@ export function syncBankCardToCanvas(
  */
 export function syncGiftAddressToCanvas(
     sections: Section[],
-    data: { recipientName: string; address: string }
+    data: { recipientName: string; phoneNumber: string; address: string }
 ): Section[] {
     return syncElements(
         sections,
@@ -106,6 +106,7 @@ export function syncGiftAddressToCanvas(
             giftAddressConfig: {
                 ...el.giftAddressConfig,
                 recipientName: data.recipientName,
+                phoneNumber: data.phoneNumber,
                 address: data.address,
             }
         })

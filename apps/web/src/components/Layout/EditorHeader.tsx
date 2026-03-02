@@ -2,12 +2,13 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore, useTemporalStore } from '@/store/useStore';
 import {
-    ArrowLeft, Play, Save, Sparkles, Check,
-    Undo2, Redo2, Edit2, X, ExternalLink, Link, Wand2, Shield,
+    ArrowLeft, Play, Save, Check,
+    Undo2, Redo2, Edit2, X, ExternalLink, Wand2,
     PanelLeft, PanelBottom, PanelRight, FileText, Send
 } from 'lucide-react';
 import { PremiumLoader } from '../ui/PremiumLoader';
 import { templates, invitations, userDisplayDesigns } from '@/lib/api';
+import { AnimatedCopyIcon } from '../ui/AnimatedCopyIcon';
 
 // ============================================
 // TYPES
@@ -40,8 +41,6 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
 }) => {
     const {
         layers,
-        isAnimationPlaying,
-        setAnimationPlaying,
         slug,
         sanitizeAllLayers,
         sanitizeAllSectionElements,
@@ -198,16 +197,6 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
     // COMPUTED VALUES
     // ============================================
 
-    const [copied, setCopied] = useState(false);
-
-    const handleCopyLink = useCallback(() => {
-        const target = slug || templateId || 'draft';
-        const url = `${window.location.origin}/preview/${target}`;
-        navigator.clipboard.writeText(url);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    }, [templateId, slug]);
-
     const formattedLastSaved = (() => {
         if (!lastSavedAt) return null;
         const now = new Date();
@@ -355,15 +344,12 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
                     <span className="text-[9px] font-mono text-white/40 truncate max-w-[80px]">
                         {slug || templateId || 'draft'}
                     </span>
-                    <motion.button
-                        whileHover={{ scale: 1.1, color: '#bfa181' }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={handleCopyLink}
-                        className="p-1 rounded text-white/20 transition-colors"
-                        title="Copy Preview Link"
-                    >
-                        {copied ? <Check className="w-3 h-3 text-green-500" /> : <Link className="w-3 h-3" />}
-                    </motion.button>
+                    <AnimatedCopyIcon 
+                        text={`${window.location.origin}/preview/${slug || templateId || 'draft'}`} 
+                        size={14} 
+                        className="text-white/20 hover:text-premium-accent"
+                        successMessage="Preview link disalin!"
+                    />
                 </div>
             </div>
 

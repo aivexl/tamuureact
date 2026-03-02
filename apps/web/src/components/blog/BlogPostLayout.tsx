@@ -2,9 +2,10 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, useScroll, useSpring } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Copy, Check, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 import { BlogCard, BlogPost } from './BlogCard';
+import { AnimatedCopyIcon } from '../ui/AnimatedCopyIcon';
 
 interface BlogPostLayoutProps {
     post: BlogPost;
@@ -13,13 +14,6 @@ interface BlogPostLayoutProps {
 
 const ShareBar = ({ title, slug }: { title: string; slug: string }) => {
     const url = `https://tamuu.id/blog/${slug}`;
-    const [copied, setCopied] = React.useState(false);
-
-    const copyLink = () => {
-        navigator.clipboard.writeText(url);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
 
     return (
         <div className="flex flex-wrap items-center gap-3 mt-12 pt-8 border-t border-slate-100">
@@ -31,11 +25,10 @@ const ShareBar = ({ title, slug }: { title: string; slug: string }) => {
                 <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`} target="_blank" rel="noreferrer" className="w-10 h-10 bg-white border border-slate-100 rounded-full shadow-sm flex items-center justify-center text-slate-500 hover:text-sky-500 hover:border-sky-200 transition-all">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
                 </a>
-                <button onClick={copyLink} className="w-10 h-10 bg-white border border-slate-100 rounded-full shadow-sm flex items-center justify-center text-slate-500 hover:text-teal-500 transition-all">
-                    {copied ? <Check className="w-4 h-4 text-teal-500" /> : <Copy className="w-4 h-4" />}
-                </button>
+                <div className="w-10 h-10 bg-white border border-slate-100 rounded-full shadow-sm flex items-center justify-center text-slate-500 hover:text-teal-500 transition-all">
+                    <AnimatedCopyIcon text={url} size={16} successMessage="Link blog disalin!" />
+                </div>
             </div>
-            {copied && <span className="text-[10px] text-teal-500 font-black uppercase tracking-widest ml-2">Copied!</span>}
         </div>
     );
 };

@@ -6,14 +6,14 @@ import { GiftAddressConfig } from '@/store/layersSlice';
 export const GiftAddressCard: React.FC<ElementCardProps> = ({ element, handleUpdate, permissions }) => {
     const [showStyling, setShowStyling] = useState(false);
 
-    // CTO: Resilience Initialization with any cast to bypass missing props in fallback
+    // CTO: Resilience Initialization with Unified Naming
     const config: GiftAddressConfig = element.giftAddressConfig || ({
-        receiverName: '',
+        recipientName: '',
         phoneNumber: '',
-        fullAddress: '',
+        address: '',
         buttonText: 'Salin Alamat',
         theme: 'custom',
-        customColor: '#bfa181'
+        customColor: '#f8fafc'
     } as any);
 
     const canEdit = permissions.canEditText || permissions.canEditContent;
@@ -22,7 +22,7 @@ export const GiftAddressCard: React.FC<ElementCardProps> = ({ element, handleUpd
         <div className="space-y-5">
             {canEdit ? (
                 <>
-                    {/* Receiver Name */}
+                    {/* Recipient Name */}
                     <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Penerima</label>
                         <div className="relative group">
@@ -31,9 +31,9 @@ export const GiftAddressCard: React.FC<ElementCardProps> = ({ element, handleUpd
                             </div>
                             <input
                                 type="text"
-                                value={(config as any).receiverName || ''}
+                                value={config.recipientName || ''}
                                 onChange={(e) => handleUpdate({
-                                    giftAddressConfig: { ...config, receiverName: e.target.value } as any
+                                    giftAddressConfig: { ...config, recipientName: e.target.value } as any
                                 })}
                                 className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all"
                                 placeholder="Nama Lengkap"
@@ -68,9 +68,9 @@ export const GiftAddressCard: React.FC<ElementCardProps> = ({ element, handleUpd
                                 <MapPin className="w-4 h-4" />
                             </div>
                             <textarea
-                                value={(config as any).fullAddress || ''}
+                                value={config.address || ''}
                                 onChange={(e) => handleUpdate({
-                                    giftAddressConfig: { ...config, fullAddress: e.target.value } as any
+                                    giftAddressConfig: { ...config, address: e.target.value } as any
                                 })}
                                 className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all min-h-[80px] resize-none"
                                 placeholder="Jalan, RT/RW, Kec, Kota, Kode Pos"
@@ -85,8 +85,9 @@ export const GiftAddressCard: React.FC<ElementCardProps> = ({ element, handleUpd
                         <span className="text-[10px] font-black uppercase tracking-widest">Data Alamat Dikunci</span>
                     </div>
                     <div className="space-y-1">
-                        <p className="text-xs font-bold text-slate-700">{(config as any).receiverName || 'Belum diisi'}</p>
-                        <p className="text-[10px] text-slate-500">{(config as any).fullAddress || 'Belum ada alamat'}</p>
+                        <p className="text-xs font-bold text-slate-700">{config.recipientName || 'Belum diisi'}</p>
+                        <p className="text-[10px] font-bold text-slate-500 font-mono">{config.phoneNumber || 'No Telp Belum diisi'}</p>
+                        <p className="text-[10px] text-slate-500">{config.address || 'Belum ada alamat'}</p>
                     </div>
                 </div>
             )}
@@ -110,7 +111,7 @@ export const GiftAddressCard: React.FC<ElementCardProps> = ({ element, handleUpd
                                 <div className="flex gap-2">
                                     <input
                                         type="color"
-                                        value={(config as any).customColor || '#bfa181'}
+                                        value={config.customColor || '#f8fafc'}
                                         onChange={(e) => handleUpdate({
                                             giftAddressConfig: { ...config, customColor: e.target.value } as any
                                         })}
@@ -118,7 +119,7 @@ export const GiftAddressCard: React.FC<ElementCardProps> = ({ element, handleUpd
                                     />
                                     <input
                                         type="text"
-                                        value={(config as any).customColor || '#bfa181'}
+                                        value={config.customColor || '#f8fafc'}
                                         onChange={(e) => handleUpdate({
                                             giftAddressConfig: { ...config, customColor: e.target.value } as any
                                         })}

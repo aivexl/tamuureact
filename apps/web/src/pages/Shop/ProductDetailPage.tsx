@@ -15,8 +15,6 @@ import {
     Tag,
     ShoppingBag,
     Star,
-    Copy,
-    Check,
     ShieldAlert,
     Search,
     ChevronDown,
@@ -45,12 +43,12 @@ import { formatCurrency, formatAbbreviatedNumber } from '../../lib/utils';
 import { toast } from 'react-hot-toast';
 import { ReportProductModal } from '../../components/Modals/ReportProductModal';
 import { INDONESIA_REGIONS } from '../../constants/regions';
+import { AnimatedCopyIcon } from '../../components/ui/AnimatedCopyIcon';
 
 export const ProductDetailPage: React.FC = () => {
     const { slug, productId } = useParams<{ slug: string, productId: string }>();
     const navigate = useNavigate();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [isCopied, setIsCopied] = useState(false);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const { user, isAuthenticated, logout } = useStore();
 
@@ -69,13 +67,6 @@ export const ProductDetailPage: React.FC = () => {
         if (q) setSearchQuery(q);
         if (city) setSelectedCity(city);
     }, []);
-
-    const handleCopyId = () => {
-        const productNo = `tamuu-shop-${product?.id?.substring(0, 8).toUpperCase()}`;
-        navigator.clipboard.writeText(productNo);
-        setIsCopied(true);
-        setTimeout(() => setIsCopied(false), 2000);
-    };
 
     const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -502,14 +493,13 @@ export const ProductDetailPage: React.FC = () => {
                             
                             <div className="pt-8 border-t border-slate-50 flex flex-col sm:flex-row items-center justify-between mt-auto gap-4">
                                 <div 
-                                    onClick={handleCopyId}
-                                    className="group flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 cursor-pointer transition-all w-full sm:w-auto justify-center"
+                                    className="group flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 transition-all w-full sm:w-auto justify-center"
                                 >
                                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                                         No. Produk: <span className="text-slate-600 font-black">tamuu-shop-{product.id.substring(0, 8).toUpperCase()}</span>
                                     </span>
-                                    <div className="w-6 h-6 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-[#FFBF00] transition-all">
-                                        {isCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                                    <div className="w-10 h-10 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-[#FFBF00] transition-all">
+                                        <AnimatedCopyIcon text={`tamuu-shop-${product.id.substring(0, 8).toUpperCase()}`} size={16} successMessage="ID Produk disalin!" />
                                     </div>
                                 </div>
                                 <button 
@@ -536,16 +526,9 @@ export const ProductDetailPage: React.FC = () => {
                                         <h2 className="text-xl font-black uppercase tracking-tighter italic">Alamat Lengkap</h2>
                                     </div>
                                     {product.alamat_lengkap && (
-                                        <button 
-                                            onClick={() => {
-                                                navigator.clipboard.writeText(product.alamat_lengkap);
-                                                toast.success('Alamat disalin!');
-                                            }}
-                                            className="p-3 bg-slate-50 hover:bg-[#FFBF00] hover:text-[#0A1128] rounded-2xl transition-all text-slate-400"
-                                            title="Salin Alamat"
-                                        >
-                                            <Copy className="w-4 h-4" />
-                                        </button>
+                                        <div className="p-1 bg-slate-50 hover:bg-[#FFBF00]/10 rounded-2xl transition-all">
+                                            <AnimatedCopyIcon text={product.alamat_lengkap} size={20} className="text-slate-400 hover:text-[#0A1128]" successMessage="Alamat disalin!" />
+                                        </div>
                                     )}
                                 </div>
                                 

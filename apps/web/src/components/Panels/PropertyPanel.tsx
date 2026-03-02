@@ -2669,6 +2669,16 @@ export const PropertyPanel: React.FC = () => {
                                 />
                             </div>
                             <div>
+                                <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Phone Number</label>
+                                <input
+                                    type="text"
+                                    value={layer.giftAddressConfig?.phoneNumber || ''}
+                                    onChange={(e) => handleUpdate({ giftAddressConfig: { ...layer.giftAddressConfig!, phoneNumber: e.target.value } })}
+                                    className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none text-white"
+                                    placeholder="0812xxxxxxxx"
+                                />
+                            </div>
+                            <div>
                                 <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Full Address</label>
                                 <textarea
                                     value={layer.giftAddressConfig?.address || ''}

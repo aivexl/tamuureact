@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { Landmark, Smartphone, MapPin, Save, Check, AlertCircle, Plus, X } from 'lucide-react';
+import { Landmark, Smartphone, MapPin, Save, Check, AlertCircle, Plus, X, Phone } from 'lucide-react';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { users, invitations } from '@/lib/api';
 import { useStore } from '@/store/useStore';
@@ -36,6 +36,7 @@ export const GiftPanel: React.FC<GiftPanelProps> = ({ onClose }) => {
 
     // Address
     const [giftRecipient, setGiftRecipient] = useState('');
+    const [giftPhone, setGiftPhone] = useState('');
     const [giftAddress, setGiftAddress] = useState('');
 
     useEffect(() => {
@@ -59,6 +60,7 @@ export const GiftPanel: React.FC<GiftPanelProps> = ({ onClose }) => {
                     setEmoneyType(data.emoneyType || '');
                     setEmoneyNumber(data.emoneyNumber || '');
                     setGiftRecipient(data.giftRecipient || '');
+                    setGiftPhone(data.giftPhone || '');
                     setGiftAddress(data.giftAddress || '');
                 }
             } catch (error) {
@@ -89,6 +91,7 @@ export const GiftPanel: React.FC<GiftPanelProps> = ({ onClose }) => {
                 emoneyType,
                 emoneyNumber,
                 giftRecipient,
+                giftPhone,
                 giftAddress
             } as any);
 
@@ -100,6 +103,7 @@ export const GiftPanel: React.FC<GiftPanelProps> = ({ onClose }) => {
             });
             synced = syncGiftAddressToCanvas(synced, {
                 recipientName: giftRecipient,
+                phoneNumber: giftPhone,
                 address: giftAddress,
             });
             updateSectionsBatch(synced);
@@ -158,6 +162,7 @@ export const GiftPanel: React.FC<GiftPanelProps> = ({ onClose }) => {
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center block">Kartu Alamat</span>
                         <GiftAddressCard
                             recipientName={giftRecipient}
+                            phoneNumber={giftPhone}
                             address={giftAddress}
                             isPreview={true}
                         />
@@ -313,6 +318,15 @@ export const GiftPanel: React.FC<GiftPanelProps> = ({ onClose }) => {
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Nama Penerima</label>
                             <input value={giftRecipient} onChange={e => setGiftRecipient(e.target.value)} type="text" placeholder="Masukkan nama penerima..." className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-rose-500/10 outline-none font-bold text-slate-700" />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Nomor Telepon</label>
+                            <div className="relative">
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                                    <Phone className="w-4 h-4 text-slate-300" />
+                                </div>
+                                <input value={giftPhone} onChange={e => setGiftPhone(e.target.value)} type="text" placeholder="08xxxxxxxxxx" className="w-full pl-11 pr-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-rose-500/10 outline-none font-bold text-slate-700" />
+                            </div>
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Alamat Lengkap</label>

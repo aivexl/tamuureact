@@ -895,7 +895,15 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                 {type === 'gift_address' && (
                     <div className="grid gap-3">
                         <button
-                            onClick={() => onSelect({ giftAddressConfig: { customColor: '#f8fafc' } })}
+                            onClick={() => onSelect({ 
+                                giftAddressConfig: { 
+                                    recipientName: 'Nama Penerima',
+                                    phoneNumber: '0812xxxxxxxx',
+                                    address: 'Alamat lengkap pengiriman kado...',
+                                    customColor: '#f8fafc',
+                                    buttonText: 'Salin Alamat'
+                                } 
+                            })}
                             className="w-full p-4 rounded-xl bg-slate-50/50 border border-slate-200 text-left relative overflow-hidden group"
                         >
                             <div className="absolute -right-4 -bottom-4 opacity-[0.05] pointer-events-none">
@@ -903,7 +911,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                             </div>
                             <div className="relative z-10">
                                 <span className="text-xs font-bold text-slate-900 uppercase tracking-widest">Minimalist Home</span>
-                                <p className="text-[10px] text-slate-500 mt-1">Clean white card with house icon</p>
+                                <p className="text-[10px] text-slate-500 mt-1">Clean white card with house icon & phone number</p>
                             </div>
                         </button>
                     </div>
