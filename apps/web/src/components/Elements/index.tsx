@@ -240,7 +240,7 @@ export const GiftAddressElement: React.FC<{ layer: Layer, isEditor?: boolean, on
     const rawConfig = layer.giftAddressConfig || (layer as any).gift_address_config || {};
     const config = {
         recipientName: rawConfig.recipientName || (rawConfig as any).recipient_name || 'Nama Penerima',
-        phoneNumber: rawConfig.phoneNumber || (rawConfig as any).phone_number || '',
+        phoneNumber: rawConfig.phoneNumber || (rawConfig as any).phone_number || (rawConfig as any).phone || '08XXXXXXXXXX',
         address: rawConfig.address || (rawConfig as any).address_detail || 'Alamat lengkap pengiriman kado/gift...',
         customColor: rawConfig.customColor || (rawConfig as any).custom_color || '#f8fafc'
     };

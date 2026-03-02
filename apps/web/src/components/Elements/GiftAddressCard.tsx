@@ -64,14 +64,12 @@ export const GiftAddressCard: React.FC<GiftAddressCardProps> = ({
                                 </span>
                             </div>
                         </div>
-                        {recipientName && (
-                            <AnimatedCopyIcon 
-                                text={recipientName} 
-                                size={18} 
-                                className="p-2 rounded-lg bg-slate-50 text-slate-400 hover:text-teal-600 transition-all"
-                                successMessage="Nama disalin!"
-                            />
-                        )}
+                        <AnimatedCopyIcon 
+                            text={recipientName || 'NAMA PENERIMA'} 
+                            size={18} 
+                            className="p-2 rounded-lg bg-slate-50 text-slate-400 hover:text-teal-600 transition-all"
+                            successMessage="Nama disalin!"
+                        />
                     </div>
 
                     {/* SECTION 2: PHONE */}
@@ -87,14 +85,12 @@ export const GiftAddressCard: React.FC<GiftAddressCardProps> = ({
                                 </span>
                             </div>
                         </div>
-                        {phoneNumber && (
-                            <AnimatedCopyIcon 
-                                text={phoneNumber} 
-                                size={18} 
-                                className="p-2 rounded-lg bg-slate-50 text-slate-400 hover:text-teal-600 transition-all"
-                                successMessage="Nomor disalin!"
-                            />
-                        )}
+                        <AnimatedCopyIcon 
+                            text={phoneNumber || '08XXXXXXXXXX'} 
+                            size={18} 
+                            className="p-2 rounded-lg bg-slate-50 text-slate-400 hover:text-teal-600 transition-all"
+                            successMessage="Nomor disalin!"
+                        />
                     </div>
 
                     {/* SECTION 3: ADDRESS */}
@@ -110,16 +106,14 @@ export const GiftAddressCard: React.FC<GiftAddressCardProps> = ({
                                 </p>
                             </div>
                         </div>
-                        {address && (
-                            <div className="pt-1">
-                                <AnimatedCopyIcon 
-                                    text={address} 
-                                    size={18} 
-                                    className="p-2 rounded-lg bg-slate-50 text-slate-400 hover:text-teal-600 transition-all"
-                                    successMessage="Alamat disalin!"
-                                />
-                            </div>
-                        )}
+                        <div className="pt-1">
+                            <AnimatedCopyIcon 
+                                text={address || 'Alamat lengkap pengiriman kado di sini...'} 
+                                size={18} 
+                                className="p-2 rounded-lg bg-slate-50 text-slate-400 hover:text-teal-600 transition-all"
+                                successMessage="Alamat disalin!"
+                            />
+                        </div>
                     </div>
 
                 </div>
