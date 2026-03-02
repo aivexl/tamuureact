@@ -634,11 +634,11 @@ export const PropertyInspector: React.FC = () => {
 
             <div className="h-[1px] bg-white/10" />
 
-            {/* Permissions Section (Admin Only) */}
+            {/* Layer Configuration & Permissions (Admin Only) */}
             <section className="space-y-4">
                 <div className="flex items-center gap-2 text-white/60 mb-2">
                     <Shield className="w-4 h-4" />
-                    <h4 className="text-[10px] font-bold uppercase tracking-widest">Permissions</h4>
+                    <h4 className="text-[10px] font-bold uppercase tracking-widest">Layer Configuration & Permissions</h4>
                 </div>
 
                 <div className="space-y-4">

@@ -429,7 +429,7 @@ Invitations are organized into multiple **Sections** (e.g., Opening, Bride & Gro
 - **Concept**: Dynamic vertical layout that reacts to user content height (e.g. long names).
 - **Implementation**: Real-time dimension tracking via `ResizeObserver` reported to the Zustand store.
 - **Mechanism**: `AnimatedLayer.tsx` calculates a `relativeShift` based on the targeted anchor's height, preventing element overlaps automatically.
-- **Admin Control**: Granular permissions (Text, Style, Image, Position) enforced in `UserElementEditor.tsx` and previewed via **Simulation Mode**.
+- **Admin Control**: Granular permissions (Text, Style, Image, Position) enforced in `UserElementEditor.tsx` and previewed via **Pro Designer View**.
 
 ### 🤖 AI Support Core (Intelligence v5.0)
 - **Proactive Autonomous Agent**: Transitioned from a passive chatbot to an autonomous agent capable of executing business logic via **Function Calling**.

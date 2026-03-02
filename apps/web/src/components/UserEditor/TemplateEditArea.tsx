@@ -22,7 +22,7 @@ import { PremiumLoader } from '../ui/PremiumLoader';
 import { UserKonvaPreview } from './UserKonvaPreview';
 import { UserElementEditor } from './UserElementEditor';
 import { useStore } from '@/store/useStore';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { getPublicDomain } from '@/lib/utils';
 import { invitations as invitationsApi } from '@/lib/api';
 
@@ -52,6 +52,19 @@ const SectionItem: React.FC<SectionItemProps> = ({
     const controls = useDragControls();
     // Use REF for instant state checking in same event loop
     const wasDraggingRef = useRef(false);
+    const { user, templateId } = useStore();
+    const navigate = useNavigate();
+
+    const isAdmin = user?.role === 'admin';
+
+    const handleProDesignerJump = () => {
+        if (templateId) {
+            navigate(`/admin/editor/${templateId}`);
+        } else {
+            // Fallback if no templateId, though unlikely for invitations
+            console.warn('[Jump] No template source ID found for this invitation');
+        }
+    };
 
     // Citadel Toggle: Explicitly block expansion if we just dragged
     const handleExpandToggle = (e: React.MouseEvent, id: string) => {

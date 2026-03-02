@@ -1,5 +1,23 @@
 # Tamuu Changelog
 
+## [2026-03-02] Feature: Pro Designer View & Terminology Alignment
+**Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
+**Environment**: Production
+
+### Admin & User Editor Alignment
+- **Terminology Sync**: Standardized the label "Permissions & Visibility" to **"Layer Configuration & Permissions"** across `PropertyPanel.tsx` and `PropertyInspector.tsx` to match the end-user's mental model.
+- **Pro Designer Branding**: Rebranded "Simulation Mode" to **"Pro Designer View"** throughout the application and documentation (`ARCHITECTURE.md`).
+- **Enhanced Simulation Flow**:
+    - Restored the **Pro Designer toggle** in the Admin Editor element header for template creators.
+    - Refactored the Simulation interface with a branded indigo header and a functional **"Back to Admin"** button for seamless exit.
+- **Cross-Editor Navigation**: Implemented a functional **"Pro Designer"** button in the User Editor's `TemplateEditArea.tsx`. Admin users can now jump directly from a live invitation editor back into its source **Template Builder**.
+- **State Management**: Updated `canvasSlice.ts` to persist and track `templateId` for invitations, enabling robust cross-editor routing.
+
+### Deployment
+- **Forced Turbo Build**: Executed a full repository build with `--force` to ensure all assets are correctly invalidated and re-compiled.
+- **Multi-Project Deployment**: Synchronized production deployment to both `tamuu` and `tamuu-app` Cloudflare Pages projects.
+- **API Synchronization**: Re-deployed API workers to ensure complete system consistency across environments.
+
 ## [2026-03-02] Feature: Interactive UserEditor & Precision Gift Address Controls
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
 **Environment**: Production

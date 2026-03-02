@@ -9,6 +9,7 @@ export interface CanvasState {
     projectName: string;
     thumbnailUrl?: string; // Optional thumbnail URL
     category?: string; // Template category
+    templateId?: string; // Source template ID for invitations
     templateType: 'invitation' | 'display';
     isTemplate: boolean;
     isSimulationMode: boolean;
@@ -75,6 +76,7 @@ export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
         slug: data.slug || '',
         projectName: data.name || 'Untitled Design',
         category: data.category || 'Wedding',
+        templateId: data.template_id,
         thumbnailUrl: data.thumbnail_url,
         music: data.music,
         isPublished: !!data.is_published,

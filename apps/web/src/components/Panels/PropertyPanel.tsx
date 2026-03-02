@@ -216,6 +216,7 @@ export const PropertyPanel: React.FC = () => {
         openImageCropModal,
         isTemplate,
         isSimulationMode,
+        setIsSimulationMode,
 
         // Motion Engine
         playhead,
@@ -382,21 +383,31 @@ export const PropertyPanel: React.FC = () => {
     };
 
     // ============================================
-    // SIMULATION MODE: SHOW USER VIEW
+    // PRO DESIGNER VIEW (SIMULATION): SHOW USER VIEW
     // ============================================
     if (isTemplate && isSimulationMode && layer) {
         return (
             <div className="h-full flex flex-col bg-slate-50">
-                <div className="p-4 border-b border-slate-200 bg-amber-500/10 flex items-center gap-2">
-                    <Monitor className="w-4 h-4 text-amber-600" />
-                    <span className="text-xs font-black text-amber-700 uppercase tracking-widest">Simulation: User View</span>
+                <div className="p-4 border-b border-slate-200 bg-indigo-600 flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-white">
+                        <Settings2 className="w-4 h-4" />
+                        <span className="text-xs font-black uppercase tracking-widest">Pro Designer View</span>
+                    </div>
+                    <button
+                        onClick={() => setIsSimulationMode(false)}
+                        className="bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded text-[10px] font-bold uppercase transition-colors flex items-center gap-1"
+                    >
+                        <X className="w-3 h-3" />
+                        Back to Admin
+                    </button>
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                     <UserElementEditor element={layer} sectionId={activeSectionId || ''} />
 
-                    <div className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                        <p className="text-[10px] text-slate-400 font-medium italic">
-                            In Simulation Mode, you are seeing what the end-user sees. Admin controls are hidden, and permissions are enforced.
+                    <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 shadow-sm">
+                        <p className="text-[10px] text-indigo-400 font-medium italic leading-relaxed">
+                            <Info className="w-3 h-3 inline mr-1" />
+                            Pro Designer View: You are seeing what the end-user sees. Admin property controls are hidden, and template permissions are strictly enforced here.
                         </p>
                     </div>
                 </div>
@@ -829,6 +840,17 @@ export const PropertyPanel: React.FC = () => {
                         <p className="text-[10px] text-white/40 font-mono">{layer.name}</p>
                     </div>
                     <div className="flex items-center gap-1">
+                        {isTemplate && (
+                            <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => setIsSimulationMode(!isSimulationMode)}
+                                className={`p-2 rounded-lg ${isSimulationMode ? 'text-indigo-400 bg-indigo-500/10' : 'text-white/40 hover:bg-white/5'}`}
+                                title={isSimulationMode ? "Exit Pro Designer View" : "Enter Pro Designer View"}
+                            >
+                                <Settings2 className="w-4 h-4" />
+                            </motion.button>
+                        )}
                         <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
@@ -2967,9 +2989,9 @@ export const PropertyPanel: React.FC = () => {
                     </SectionComponent>
                 )}
 
-                {/* Permissions & Visibility - Mandatory for Master Templates (Admin Only) */}
+                {/* Layer Configuration & Permissions - Mandatory for Master Templates (Admin Only) */}
                 {isTemplate && (
-                    <SectionComponent title="Permissions & Visibility" icon={<Shield className="w-4 h-4 text-orange-400" />}>
+                    <SectionComponent title="Layer Configuration & Permissions" icon={<Shield className="w-4 h-4 text-orange-400" />}>
                         <div className="space-y-4">
                             <p className="text-[10px] text-white/40 italic leading-relaxed px-1">
                                 Control what the end-user can see and modify in their own editor.
