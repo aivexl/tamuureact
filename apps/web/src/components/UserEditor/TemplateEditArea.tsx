@@ -50,8 +50,10 @@ const SectionItem: React.FC<SectionItemProps> = ({
     saveStatus
 }) => {
     const controls = useDragControls();
+    // Use REF for instant state checking in same event loop
     const wasDraggingRef = useRef(false);
 
+    // Citadel Toggle: Explicitly block expansion if we just dragged
     const handleExpandToggle = (e: React.MouseEvent, id: string) => {
         e.stopPropagation();
         if (wasDraggingRef.current) return;
@@ -67,6 +69,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
                 wasDraggingRef.current = true;
             }}
             onDragEnd={() => {
+                // Keep true long enough to consume the trailing click event
                 setTimeout(() => {
                     wasDraggingRef.current = false;
                 }, 10);
@@ -84,6 +87,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
                     : 'border-slate-100 shadow-sm hover:shadow-md'
                     }`}
             >
+                {/* 1. THE FORTRESS DRAG STRIP - PHYSICALLY DISTINCT COLUMN */}
                 <div
                     onPointerDown={(e) => {
                         e.preventDefault();
@@ -99,8 +103,12 @@ const SectionItem: React.FC<SectionItemProps> = ({
                     <GripVertical className="w-6 h-6" />
                 </div>
 
+                {/* 2. MAIN CONTENT AREA */}
                 <div className="flex-1 flex flex-col pointer-events-none relative">
+                    {/* Header Area */}
                     <div className="p-8 flex items-center gap-6">
+                        {/* THE CITADEL: TRIGGER REDUCTION */}
+                        {/* Thumbnail Icon Area - PRIMARY TRIGGER */}
                         <div
                             onClick={(e) => handleExpandToggle(e, section.id)}
                             className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-700 shadow-inner cursor-pointer pointer-events-auto z-20 hover:scale-110 active:scale-95 ${section.isVisible ? 'bg-slate-50 text-slate-600' : 'bg-slate-100 text-slate-400 grayscale'
@@ -109,6 +117,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
                             <Layout className="w-7 h-7" />
                         </div>
 
+                        {/* Title Info - NO TRIGGER (Display Only) */}
                         <div className="flex-1">
                             <h4 className={`text-xl font-black tracking-tight font-outfit transition-all duration-500 ${section.isVisible ? 'text-slate-900' : 'text-slate-400 line-through'}`}>
                                 {section.title}
@@ -119,6 +128,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
                         </div>
 
                         <div className="flex items-center gap-3">
+                            {/* Visibility Toggle */}
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -132,6 +142,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
                                 {section.isVisible ? <Eye className="w-6 h-6" /> : <EyeOff className="w-6 h-6" />}
                             </button>
 
+                            {/* Chevron Toggle - SECONDARY TRIGGER */}
                             <button
                                 onClick={(e) => handleExpandToggle(e, section.id)}
                                 className={`p-3.5 rounded-2xl border border-transparent transition-all duration-700 pointer-events-auto z-20 hover:bg-slate-50 active:scale-95 ${expandedSection === section.id ? 'rotate-180 bg-indigo-50 text-indigo-500' : 'text-slate-300'}`}
@@ -141,6 +152,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
                         </div>
                     </div>
 
+                    {/* Section Body */}
                     <AnimatePresence>
                         {expandedSection === section.id && (
                             <m.div
@@ -157,16 +169,19 @@ const SectionItem: React.FC<SectionItemProps> = ({
                                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Real-time Render</span>
                                         </div>
                                         <div className="relative group/preview flex items-center justify-center p-0 bg-slate-50/50 rounded-[3rem] border border-slate-100 overflow-hidden min-h-[500px]">
+                                            {/* LEFT ORBIT PREVIEW (MUTED) */}
                                             <div className="absolute left-4 top-1/2 -translate-y-1/2 w-[18%] h-[60%] opacity-20 group-hover/preview:opacity-100 transition-all duration-1000 rounded-r-[2rem] overflow-hidden border border-slate-200/50 shadow-2xl scale-90 group-hover/preview:scale-100 blur-[2px] group-hover/preview:blur-0">
                                                 <UserKonvaPreview canvasType="orbit-left" />
                                             </div>
 
+                                            {/* CLEAN VIEWPORT - No frame, no bezel, pure design parity */}
                                             <div className="relative w-full max-w-[414px] mx-auto z-10 flex items-center justify-center">
                                                 <div className="relative aspect-[9/20.5] w-full bg-[#0a0a0a] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.3)] border border-slate-200/20 overflow-hidden">
                                                     <UserKonvaPreview sectionId={section.id} />
                                                 </div>
                                             </div>
 
+                                            {/* RIGHT ORBIT PREVIEW (MUTED) */}
                                             <div className="absolute right-4 top-1/2 -translate-y-1/2 w-[18%] h-[60%] opacity-20 group-hover/preview:opacity-100 transition-all duration-1000 rounded-l-[2rem] overflow-hidden border border-slate-200/50 shadow-2xl scale-90 group-hover/preview:scale-100 blur-[2px] group-hover/preview:blur-0">
                                                 <UserKonvaPreview canvasType="orbit-right" />
                                             </div>
@@ -185,17 +200,12 @@ const SectionItem: React.FC<SectionItemProps> = ({
                                         <div className="space-y-5 flex-1">
                                             {(() => {
                                                 const editableElements = (section.elements || []).filter((el: any) => {
-                                                    const p = el.permissions || {};
-                                                    // CTO ROBUST PERMISSION ENGINE: 
-                                                    // Only show if explicitly given permission (either legacy root or nested permissions object)
-                                                    return !!(
-                                                        (el as any).isVisibleInUserEditor || p.isVisibleInUserEditor ||
-                                                        (el as any).canEditText || p.canEditText ||
-                                                        (el as any).canEditImage || p.canEditImage ||
-                                                        (el as any).canEditStyle || p.canEditStyle ||
-                                                        (el as any).canEditContent || p.canEditContent ||
-                                                        (el as any).canEditPosition || p.canEditPosition
-                                                    );
+                                                    if (el.canEditContent === true) return true;
+                                                    const p = el.permissions;
+                                                    // If no permissions object, default to false (Locked by Default)
+                                                    if (!p) return false;
+                                                    // Check for visibility OR any of the edit permissions
+                                                    return p.isVisibleInUserEditor || p.canEditText || p.canEditImage || p.canEditStyle || p.canEditContent || p.canEditPosition;
                                                 });
 
                                                 if (editableElements.length > 0) {
@@ -221,6 +231,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
                                             })()}
                                         </div>
 
+                                        {/* Section Save Button - Proportional Right Alignment */}
                                         <div className="pt-8 mt-auto flex justify-end">
                                             <m.button
                                                 onClick={handleSave}
@@ -272,23 +283,31 @@ export const TemplateEditArea: React.FC = () => {
     const [expandedSection, setExpandedSection] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'invitation' | 'orbit'>('invitation');
     const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+    const [isReordering, setIsReordering] = useState(false);
     const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
+    // CITADEL: Strict Init Protection
     const hasInitializedRef = useRef(false);
+
+    // FORTRESS: Local State Buffering
     const [localSections, setLocalSections] = useState(sections);
     const isInternalUpdate = useRef(false);
 
+    // Sync store -> local
     useEffect(() => {
         if (!isInternalUpdate.current) {
+            console.log('[Editor] Syncing store sections to local state:', sections.length);
             const sorted = [...sections].sort((a, b) => a.order - b.order);
             setLocalSections(sorted);
 
+            // Auto-expand first section if nothing is expanded and we have data
             if (sorted.length > 0 && !expandedSection) {
                 setExpandedSection(sorted[0].id);
             }
         }
     }, [sections]);
 
+    // Set first section as expanded ONLY ON INITIAL MOUNT
     useEffect(() => {
         if (localSections.length > 0 && !hasInitializedRef.current) {
             setExpandedSection(localSections[0].id);
@@ -296,24 +315,32 @@ export const TemplateEditArea: React.FC = () => {
         }
     }, [localSections]);
 
+    // Manual save function
     const handleSave = async () => {
         if (!invitationId) return;
 
         setSaveStatus('saving');
         try {
+            console.log('[Save] Saving invitation changes...');
             await invitationsApi.update(invitationId, {
                 sections,
                 orbit_layers: orbit,
                 music: useStore.getState().music
             });
             setSaveStatus('saved');
+            console.log('[Save] Changes saved successfully');
+
+            // Invalidate queries to sync dashboard
             queryClient.invalidateQueries({ queryKey: queryKeys.invitations.all });
+
+            // Reset to idle after 3 seconds
             setTimeout(() => setSaveStatus('idle'), 3000);
         } catch (error) {
             console.error('[Save] Failed to save:', error);
             setSaveStatus('error');
         }
     };
+
 
     const toggleExpand = (id: string) => {
         setExpandedSection(expandedSection === id ? null : id);
@@ -334,20 +361,29 @@ export const TemplateEditArea: React.FC = () => {
     const handleReorder = (reordered: typeof localSections) => {
         isInternalUpdate.current = true;
         setLocalSections(reordered);
+
+        // Normalize orders and update store
         const normalized = reordered.map((s, idx) => ({ ...s, order: idx }));
         updateSectionsBatch(normalized);
+
+        // Release internal update lock after store has likely settled
         setTimeout(() => {
             isInternalUpdate.current = false;
         }, 100);
     };
 
     const handlePreview = () => {
+        // BILLIONAIRE PATHING: Fallback to UUID if slug is missing
         const previewSlug = slug || invitationId;
         if (previewSlug) {
+            // UNICORN STEERING: Force use of root domain (tamuu.id) instead of app subdomain
             const publicDomain = getPublicDomain();
             const targetUrl = `${window.location.protocol}//${publicDomain}/${previewSlug}`;
+
+            console.log('[Preview] Opening:', targetUrl);
             window.open(targetUrl, '_blank');
         } else {
+            console.error('[Preview] Critical Error: Both Slug and ID are missing');
             showModal({
                 title: 'Gagal Membuat Preview',
                 message: 'Maaf, link preview tidak bisa dibuat karena data identitas undangan tidak lengkap. Hubungi admin.',
@@ -362,6 +398,7 @@ export const TemplateEditArea: React.FC = () => {
         try {
             await invitationsApi.update(invitationId, { is_published: val });
             setIsPublished(val);
+            // Invalidate queries to sync dashboard
             queryClient.invalidateQueries({ queryKey: queryKeys.invitations.all });
         } catch (err: any) {
             console.error('[TemplateEditArea] Failed to update status:', err);
@@ -377,6 +414,7 @@ export const TemplateEditArea: React.FC = () => {
 
     return (
         <div className="space-y-8 pb-32 font-outfit">
+            {/* PREMIUM TAB SWITCHER */}
             <div className="flex justify-center mb-8 sm:mb-12 px-4">
                 <div className="bg-white/80 backdrop-blur-xl p-1.5 sm:p-2 rounded-[2rem] sm:rounded-[3rem] border border-slate-200 shadow-xl flex items-center gap-1 sm:gap-1.5 w-full sm:w-auto overflow-x-auto no-scrollbar">
                     <button
@@ -418,6 +456,7 @@ export const TemplateEditArea: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col lg:flex-row items-center gap-4 w-full lg:w-auto">
+                    {/* Status Toggle - Mobile: Top / Desktop: Last */}
                     <m.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
@@ -500,6 +539,7 @@ export const TemplateEditArea: React.FC = () => {
                         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                         className="space-y-8"
                     >
+                        {/* ORBIT CARDS GRID */}
                         <div className="grid grid-cols-1 gap-8">
                             {/* ORBIT LEFT CARD */}
                             <div className="bg-white/90 backdrop-blur-3xl rounded-none border border-slate-200 shadow-2xl overflow-hidden group/orbit transition-all duration-1000">
@@ -532,15 +572,9 @@ export const TemplateEditArea: React.FC = () => {
                                     <div className="space-y-8 p-12 overflow-y-auto max-h-[896px]">
                                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-4">Orbit Layer Matrix</span>
                                         <div className="space-y-5">
-                                            {orbit.left.elements && orbit.left.elements.filter(el => {
-                                                const p = el.permissions || {};
-                                                return !!((el as any).isVisibleInUserEditor || p.isVisibleInUserEditor || (el as any).canEditText || p.canEditText || (el as any).canEditImage || p.canEditImage || (el as any).canEditStyle || p.canEditStyle || (el as any).canEditContent || p.canEditContent || (el as any).canEditPosition || p.canEditPosition);
-                                            }).length > 0 ? (
+                                            {orbit.left.elements && orbit.left.elements.filter(el => el.permissions?.canEditContent !== false && el.permissions?.isVisibleInUserEditor !== false).length > 0 ? (
                                                 orbit.left.elements
-                                                    .filter(el => {
-                                                        const p = el.permissions || {};
-                                                        return !!((el as any).isVisibleInUserEditor || p.isVisibleInUserEditor || (el as any).canEditText || p.canEditText || (el as any).canEditImage || p.canEditImage || (el as any).canEditStyle || p.canEditStyle || (el as any).canEditContent || p.canEditContent || (el as any).canEditPosition || p.canEditPosition);
-                                                    })
+                                                    .filter(el => el.permissions?.canEditContent !== false && el.permissions?.isVisibleInUserEditor !== false)
                                                     .map(element => (
                                                         <UserElementEditor
                                                             key={`orbit-left-${element.id}`}
@@ -593,15 +627,9 @@ export const TemplateEditArea: React.FC = () => {
                                     <div className="space-y-8 p-12 overflow-y-auto max-h-[896px]">
                                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-4">Orbit Layer Matrix</span>
                                         <div className="space-y-5">
-                                            {orbit.right.elements && orbit.right.elements.filter(el => {
-                                                const p = el.permissions || {};
-                                                return !!((el as any).isVisibleInUserEditor || p.isVisibleInUserEditor || (el as any).canEditText || p.canEditText || (el as any).canEditImage || p.canEditImage || (el as any).canEditStyle || p.canEditStyle || (el as any).canEditContent || p.canEditContent || (el as any).canEditPosition || p.canEditPosition);
-                                            }).length > 0 ? (
+                                            {orbit.right.elements && orbit.right.elements.filter(el => el.permissions?.canEditContent !== false && el.permissions?.isVisibleInUserEditor !== false).length > 0 ? (
                                                 orbit.right.elements
-                                                    .filter(el => {
-                                                        const p = el.permissions || {};
-                                                        return !!((el as any).isVisibleInUserEditor || p.isVisibleInUserEditor || (el as any).canEditText || p.canEditText || (el as any).canEditImage || p.canEditImage || (el as any).canEditStyle || p.canEditStyle || (el as any).canEditContent || p.canEditContent || (el as any).canEditPosition || p.canEditPosition);
-                                                    })
+                                                    .filter(el => el.permissions?.canEditContent !== false && el.permissions?.isVisibleInUserEditor !== false)
                                                     .map(element => (
                                                         <UserElementEditor
                                                             key={`orbit-right-${element.id}`}

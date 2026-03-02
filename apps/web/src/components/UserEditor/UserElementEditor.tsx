@@ -68,14 +68,24 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
     };
 
     // Element is visible if specifically set to visible OR has any active edit permission
-    // CTO: Strict Permission Engine. "Jangan munculkan jika tidak ada izinnya"
+    // CTO: Smart Permission Engine. Only show if explicitly authorized OR has active edit rights.
     const isVisible = (() => {
-        // Evaluate the unified permissions object we just built
-        if (permissions.isVisibleInUserEditor) return true;
-        if (permissions.canEditText || permissions.canEditContent || permissions.canEditImage || permissions.canEditStyle || permissions.canEditPosition) return true;
+        const p = element.permissions;
         
-        // Legacy fallback only for explicit v1 flags that might not be in the permissions object yet
-        if ((element as any).canEditContent === true) return true;
+        // 1. Explicit UI Visibility Flag
+        if (p?.isVisibleInUserEditor === true || (element as any).isVisibleInUserEditor === true) return true;
+
+        // 2. SMART CHECK: Show if ANY edit permission is true
+        if (p?.canEditText || (element as any).canEditText || 
+            p?.canEditImage || (element as any).canEditImage || 
+            p?.canEditStyle || (element as any).canEditStyle || 
+            p?.canEditContent || (element as any).canEditContent ||
+            p?.canEditPosition || (element as any).canEditPosition) return true;
+
+        // 3. Fallback for legacy text elements that might only have name/content but no permissions obj yet
+        // If it's a critical core type like profile_card, and permissions are undefined, we show it to be safe
+        // BUT if permissions exist and are all false, we hide it.
+        if (!p && ((element as any).canEditContent === true || element.type === 'profile_card')) return true;
 
         return false;
     })();
