@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useEffect } from 'react';
+import React, { useCallback, useRef, useEffect, useMemo } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { Layer } from '@/store/layersSlice';
 import { AnimatedLayer } from '../Preview/AnimatedLayer';
@@ -36,6 +36,24 @@ export const CanvasElement: React.FC<CanvasElementProps> = ({
     const editableRef = useRef<HTMLDivElement>(null);
     const flipX = layer.flipHorizontal ? -1 : 1;
     const flipY = layer.flipVertical ? -1 : 1;
+
+    // CTO ASPECT RATIO GUARD: Ensure gift_address always matches its 1.15/1 visual identity
+    // This fixes the "Blue Box" mismatch for legacy elements or manual resizes
+    const adjustedDimensions = useMemo(() => {
+        if (layer.type === 'gift_address') {
+            const currentRatio = layer.width / layer.height;
+            const targetRatio = 1.15 / 1;
+            
+            // If the deviation is significant (> 1%), force the height to match width
+            if (Math.abs(currentRatio - targetRatio) > 0.01) {
+                return {
+                    width: layer.width,
+                    height: Math.round(layer.width / targetRatio)
+                };
+            }
+        }
+        return { width: layer.width, height: layer.height };
+    }, [layer.type, layer.width, layer.height]);
 
     // Transform value based on store state
     const transformValue = `rotate(${layer.rotation || 0}deg) scale(${flipX * (layer.scale || 1)}, ${flipY * (layer.scale || 1)})`;
@@ -93,8 +111,8 @@ export const CanvasElement: React.FC<CanvasElementProps> = ({
                 position: 'absolute',
                 left: layer.x,
                 top: layer.y,
-                width: layer.width,
-                height: layer.height,
+                width: adjustedDimensions.width,
+                height: adjustedDimensions.height,
                 transform: transformValue,
                 transformOrigin: 'center center',
                 opacity: layer.opacity ?? 1,
@@ -148,7 +166,11 @@ export const CanvasElement: React.FC<CanvasElementProps> = ({
                         }`}
                 >
                     <AnimatedLayer
-                        layer={layer}
+                        layer={{
+                            ...layer,
+                            width: adjustedDimensions.width,
+                            height: adjustedDimensions.height
+                        }}
                         adjustedY={layer.y}
                         isOpened={false}
                         isEditor={true}

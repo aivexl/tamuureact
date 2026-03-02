@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import Moveable from 'react-moveable';
 import { useStore } from '@/store/useStore';
 import { AnimatedLayer } from '../Preview/AnimatedLayer';
 
@@ -9,12 +10,21 @@ interface UserKonvaPreviewProps {
 
 /**
  * UserKonvaPreview
- * High-fidelity preview of a section or cinematic stage.
- * CTO ENTERPRISE LEVEL: Pure DOM-based high-performance rendering for previews.
+ * High-fidelity preview of a section or cinematic stage with Interactive Transformation support.
+ * CTO ENTERPRISE LEVEL: Pure DOM-based high-performance rendering with Moveable integration.
  */
 export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, canvasType = 'main' }) => {
-    const { sections, orbit } = useStore();
+    const { 
+        sections, 
+        orbit, 
+        selectedLayerId, 
+        selectLayer, 
+        updateElementInSection,
+        updateOrbitCanvas
+    } = useStore();
+    
     const containerRef = useRef<HTMLDivElement>(null);
+    const viewportRef = useRef<HTMLDivElement>(null);
     const [scale, setScale] = useState(1);
     const [containerHeight, setContainerHeight] = useState(896);
 
@@ -64,13 +74,51 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
     const coverHeight = containerHeight / (scale || 1);
     const extraHeight = coverHeight - DESIGN_HEIGHT;
 
+    // INTERACTION LOGIC
+    const targetMap = useRef<Map<string, HTMLDivElement>>(new Map());
+    const [target, setTarget] = useState<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (selectedLayerId && targetMap.current.has(selectedLayerId)) {
+            const el = targetMap.current.get(selectedLayerId);
+            // Permission Check: User can only see the "Blue Box" if they have edit rights
+            const layer = elements.find(e => e.id === selectedLayerId);
+            const canEdit = layer?.permissions?.canEditPosition || layer?.permissions?.canEditStyle || (layer as any)?.canEditContent;
+            
+            if (canEdit) {
+                setTarget(el || null);
+            } else {
+                setTarget(null);
+            }
+        } else {
+            setTarget(null);
+        }
+    }, [selectedLayerId, elements]);
+
+    const handleUpdate = (updates: any) => {
+        if (!selectedLayerId) return;
+        if (canvasType === 'main' && sectionId) {
+            updateElementInSection(sectionId, selectedLayerId, updates);
+        } else if (canvasType.startsWith('orbit')) {
+            const side = canvasType === 'orbit-left' ? 'left' : 'right';
+            const updatedElements = orbit[side].elements.map(el => 
+                el.id === selectedLayerId ? { ...el, ...updates } : el
+            );
+            updateOrbitCanvas(side, { elements: updatedElements });
+        }
+    };
+
     return (
         <div
             ref={containerRef}
             className="relative w-full h-full flex items-start justify-start overflow-hidden bg-[#0a0a0a] transition-all duration-1000"
+            onMouseDown={(e) => {
+                if (e.target === e.currentTarget) selectLayer(null);
+            }}
         >
             {/* The Scaled Render Viewport */}
             <div
+                ref={viewportRef}
                 style={{
                     width: DESIGN_WIDTH,
                     height: coverHeight, // DESIGN UNITS VP HEIGHT
@@ -93,30 +141,97 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
                     .filter(el => el.isVisible !== false)
                     .sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0))
                     .map((element) => {
-                        // PORTED FROM PreviewView.tsx (LIVE ENGINE)
-                        // Robust height detection for interpolation
                         const elAny = element as any;
                         const elementHeight = element.height || elAny.size?.height || (elAny.textStyle?.fontSize) || 0;
                         const maxTop = DESIGN_HEIGHT - elementHeight;
 
-                        // Progress determines if the element is near the top (0) or bottom (1)
                         let progress = maxTop > 0 ? element.y / maxTop : 0;
                         progress = Math.max(0, Math.min(1, progress));
 
-                        // Apply linear interpolation (LIQUID STRETCH)
                         const adjustedY = element.y + (extraHeight * progress);
 
                         return (
-                            <AnimatedLayer
+                            <div
                                 key={element.id}
-                                layer={element}
-                                adjustedY={adjustedY} // THE MAGIC PARITY FIX
-                                isOpened={true}
-                                isEditor={false}
-                                forceTrigger={true}
-                            />
+                                ref={(el) => {
+                                    if (el) targetMap.current.set(element.id, el);
+                                    else targetMap.current.delete(element.id);
+                                }}
+                                className="absolute"
+                                style={{
+                                    left: element.x,
+                                    top: adjustedY,
+                                    width: element.width,
+                                    height: element.height,
+                                    zIndex: element.zIndex,
+                                    cursor: (element.permissions?.canEditPosition || (element as any).canEditContent) ? 'grab' : 'default'
+                                }}
+                                onMouseDown={(e) => {
+                                    e.stopPropagation();
+                                    selectLayer(element.id);
+                                }}
+                            >
+                                <AnimatedLayer
+                                    layer={element}
+                                    adjustedY={0} // Coordinates handled by parent div for interaction parity
+                                    isOpened={true}
+                                    isEditor={false}
+                                    forceTrigger={true}
+                                />
+                            </div>
                         );
                     })}
+
+                {/* Moveable Interaction Layer */}
+                {target && (
+                    <Moveable
+                        target={target}
+                        draggable={true}
+                        resizable={true}
+                        rotatable={true}
+                        snappable={true}
+                        origin={false}
+                        useResizeObserver={true}
+                        useMutationObserver={true}
+                        throttleDrag={1}
+                        throttleResize={1}
+                        throttleRotate={1}
+                        renderDirections={["nw", "n", "ne", "w", "e", "sw", "s", "se"]}
+                        zoom={1 / scale} // CTO FIX: Correct handle scaling
+                        onDrag={({ left, top }) => {
+                            target.style.left = `${left}px`;
+                            target.style.top = `${top}px`;
+                        }}
+                        onDragEnd={({ lastEvent }) => {
+                            if (lastEvent) {
+                                handleUpdate({ x: lastEvent.left, y: lastEvent.top });
+                            }
+                        }}
+                        onResize={({ width, height, drag }) => {
+                            target.style.width = `${width}px`;
+                            target.style.height = `${height}px`;
+                            target.style.transform = drag.transform;
+                        }}
+                        onResizeEnd={({ lastEvent }) => {
+                            if (lastEvent) {
+                                handleUpdate({
+                                    width: lastEvent.width,
+                                    height: lastEvent.height,
+                                    x: lastEvent.drag.left,
+                                    y: lastEvent.drag.top
+                                });
+                            }
+                        }}
+                        onRotate={({ transform }) => {
+                            target.style.transform = transform;
+                        }}
+                        onRotateEnd={({ lastEvent }) => {
+                            if (lastEvent) {
+                                handleUpdate({ rotation: lastEvent.rotate });
+                            }
+                        }}
+                    />
+                )}
 
                 {/* Section Overlay (if any) */}
                 {section?.overlayOpacity ? (
@@ -130,7 +245,7 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
             {/* Hint for developers (minimalist) */}
             <div className="absolute bottom-2 right-2 pointer-events-none opacity-20">
                 <p className="text-[6px] font-black text-white uppercase tracking-[0.2em]">
-                    TAMUU V3 ENGINE
+                    TAMUU V3 INTERACTIVE ENGINE
                 </p>
             </div>
         </div>

@@ -1,9 +1,18 @@
 # Tamuu Changelog
 
-## [2026-03-02] Fix: Gift Address Card Text Wrapping & UI Integrity
+## [2026-03-02] Feature: Interactive UserEditor & Precision Gift Address Controls
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
 **Environment**: Production
 
+### UI/UX Enhancements
+- **Interactive User Canvas**: Upgraded `UserKonvaPreview` from a static renderer to an interactive engine. Users can now select and resize elements directly on the canvas if granted permission by the admin.
+- **Precision Bounding Box**: Implemented an automated aspect ratio guard for `GiftAddressCard` to ensure the blue selection box (transformer) perfectly aligns with its **1.15/1** ratio, fixing mismatches in the admin editor.
+- **Permission Sync**: Integrated granular permission checks (`canEditPosition`, `canEditStyle`) into the User Editor's Moveable layer to maintain administrative governance.
+
+## [2026-03-02] Fix: Gift Address Card Text Wrapping & UI Integrity
+**Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
+**Environment**: Production
+...
 ### UI/UX Fixes
 - **Robust Text Wrapping**: Implemented dynamic text wrapping for `GiftAddressCard` using `flex-1`, `min-w-0`, and `break-words` to prevent text from overlapping with icons or the copy button.
 - **Visual Safety**: Added `gap-3` and `flex-shrink-0` to UI components (icons/buttons) to guarantee spacing even with long recipient names or complex addresses.
