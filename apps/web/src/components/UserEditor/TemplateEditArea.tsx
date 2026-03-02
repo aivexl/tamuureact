@@ -168,10 +168,10 @@ const SectionItem: React.FC<SectionItemProps> = ({
                                         <div className="flex items-center justify-between px-2">
                                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Real-time Render</span>
                                         </div>
-                                        <div className="relative group/preview flex items-center justify-center p-0 bg-slate-50/50 rounded-[3rem] border border-slate-100 overflow-hidden min-h-[500px]">
+                                        <div className="relative group/preview">
                                             {/* LEFT ORBIT PREVIEW (MUTED) */}
-                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 w-[18%] h-[60%] opacity-20 group-hover/preview:opacity-100 transition-all duration-1000 rounded-r-[2rem] overflow-hidden border border-slate-200/50 shadow-2xl scale-90 group-hover/preview:scale-100 blur-[2px] group-hover/preview:blur-0">
-                                                <UserKonvaPreview canvasType="orbit-left" />
+                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 w-[18%] h-[60%] opacity-20 group-hover/preview:opacity-100 transition-all duration-1000 rounded-r-[2rem] overflow-hidden border border-slate-200/50 shadow-2xl scale-90 group-hover/preview:scale-100 blur-[2px] group-hover/preview:blur-0 z-0">
+                                              <UserKonvaPreview canvasType="orbit-left" />
                                             </div>
 
                                             {/* CLEAN VIEWPORT - No frame, no bezel, pure design parity */}
@@ -202,10 +202,36 @@ const SectionItem: React.FC<SectionItemProps> = ({
                                                 const editableElements = (section.elements || []).filter((el: any) => {
                                                     if (el.canEditContent === true) return true;
                                                     const p = el.permissions;
-                                                    // If no permissions object, default to false (Locked by Default)
-                                                    if (!p) return false;
+                                                    
+                                                    // Legacy Critical Type Fallback
+                                                    const isCriticalType = 
+                                                        el.type === 'profile_card' || 
+                                                        el.type === 'countdown' || 
+                                                        el.type === 'maps_point' || 
+                                                        el.type === 'rsvp_form' ||
+                                                        el.type === 'rsvp_wishes' ||
+                                                        el.type === 'digital_gift' ||
+                                                        el.type === 'gift_address' ||
+                                                        el.type === 'love_story' ||
+                                                        el.type === 'profile_photo';
+
+                                                    // If no permissions object, allow critical types or explicit true
+                                                    if (!p) {
+                                                        return isCriticalType || (el as any).isVisibleInUserEditor === true;
+                                                    }
+                                                    
                                                     // Check for visibility OR any of the edit permissions
-                                                    return p.isVisibleInUserEditor || p.canEditText || p.canEditImage || p.canEditStyle || p.canEditContent || p.canEditPosition;
+                                                    if (p.isVisibleInUserEditor || p.canEditText || p.canEditImage || p.canEditStyle || p.canEditContent || p.canEditPosition) {
+                                                        return true;
+                                                    }
+
+                                                    // If permissions exist but everything is false/undefined, we still show critical types
+                                                    // UNLESS they were explicitly toggled off (isVisibleInUserEditor === false)
+                                                    if (isCriticalType && p.isVisibleInUserEditor !== false) {
+                                                        return true;
+                                                    }
+
+                                                    return false;
                                                 });
 
                                                 if (editableElements.length > 0) {
@@ -572,9 +598,21 @@ export const TemplateEditArea: React.FC = () => {
                                     <div className="space-y-8 p-12 overflow-y-auto max-h-[896px]">
                                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-4">Orbit Layer Matrix</span>
                                         <div className="space-y-5">
-                                            {orbit.left.elements && orbit.left.elements.filter(el => el.permissions?.canEditContent !== false && el.permissions?.isVisibleInUserEditor !== false).length > 0 ? (
+                                            {orbit.left.elements && orbit.left.elements.filter(el => {
+                                                const p = el.permissions;
+                                                const isCriticalType = el.type === 'profile_card' || el.type === 'countdown' || el.type === 'maps_point' || el.type === 'rsvp_form' || el.type === 'rsvp_wishes' || el.type === 'digital_gift' || el.type === 'gift_address' || el.type === 'love_story' || el.type === 'profile_photo';
+                                                if (!p) return isCriticalType || (el as any).isVisibleInUserEditor === true;
+                                                if (p.isVisibleInUserEditor || p.canEditText || p.canEditImage || p.canEditStyle || p.canEditContent || p.canEditPosition) return true;
+                                                return isCriticalType && p.isVisibleInUserEditor !== false;
+                                            }).length > 0 ? (
                                                 orbit.left.elements
-                                                    .filter(el => el.permissions?.canEditContent !== false && el.permissions?.isVisibleInUserEditor !== false)
+                                                    .filter(el => {
+                                                        const p = el.permissions;
+                                                        const isCriticalType = el.type === 'profile_card' || el.type === 'countdown' || el.type === 'maps_point' || el.type === 'rsvp_form' || el.type === 'rsvp_wishes' || el.type === 'digital_gift' || el.type === 'gift_address' || el.type === 'love_story' || el.type === 'profile_photo';
+                                                        if (!p) return isCriticalType || (el as any).isVisibleInUserEditor === true;
+                                                        if (p.isVisibleInUserEditor || p.canEditText || p.canEditImage || p.canEditStyle || p.canEditContent || p.canEditPosition) return true;
+                                                        return isCriticalType && p.isVisibleInUserEditor !== false;
+                                                    })
                                                     .map(element => (
                                                         <UserElementEditor
                                                             key={`orbit-left-${element.id}`}
@@ -627,9 +665,21 @@ export const TemplateEditArea: React.FC = () => {
                                     <div className="space-y-8 p-12 overflow-y-auto max-h-[896px]">
                                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-4">Orbit Layer Matrix</span>
                                         <div className="space-y-5">
-                                            {orbit.right.elements && orbit.right.elements.filter(el => el.permissions?.canEditContent !== false && el.permissions?.isVisibleInUserEditor !== false).length > 0 ? (
+                                            {orbit.right.elements && orbit.right.elements.filter(el => {
+                                                const p = el.permissions;
+                                                const isCriticalType = el.type === 'profile_card' || el.type === 'countdown' || el.type === 'maps_point' || el.type === 'rsvp_form' || el.type === 'rsvp_wishes' || el.type === 'digital_gift' || el.type === 'gift_address' || el.type === 'love_story' || el.type === 'profile_photo';
+                                                if (!p) return isCriticalType || (el as any).isVisibleInUserEditor === true;
+                                                if (p.isVisibleInUserEditor || p.canEditText || p.canEditImage || p.canEditStyle || p.canEditContent || p.canEditPosition) return true;
+                                                return isCriticalType && p.isVisibleInUserEditor !== false;
+                                            }).length > 0 ? (
                                                 orbit.right.elements
-                                                    .filter(el => el.permissions?.canEditContent !== false && el.permissions?.isVisibleInUserEditor !== false)
+                                                    .filter(el => {
+                                                        const p = el.permissions;
+                                                        const isCriticalType = el.type === 'profile_card' || el.type === 'countdown' || el.type === 'maps_point' || el.type === 'rsvp_form' || el.type === 'rsvp_wishes' || el.type === 'digital_gift' || el.type === 'gift_address' || el.type === 'love_story' || el.type === 'profile_photo';
+                                                        if (!p) return isCriticalType || (el as any).isVisibleInUserEditor === true;
+                                                        if (p.isVisibleInUserEditor || p.canEditText || p.canEditImage || p.canEditStyle || p.canEditContent || p.canEditPosition) return true;
+                                                        return isCriticalType && p.isVisibleInUserEditor !== false;
+                                                    })
                                                     .map(element => (
                                                         <UserElementEditor
                                                             key={`orbit-right-${element.id}`}
