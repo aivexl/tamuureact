@@ -239,8 +239,6 @@ export const GiftAddressElement: React.FC<{ layer: Layer, isEditor?: boolean, on
     // CTO ULTRA ROBUST MAPPING: property-level defaults for maximum resilience in /preview
     const rawConfig = layer.giftAddressConfig || (layer as any).gift_address_config || {};
     const config = {
-        title: rawConfig.title || (rawConfig as any).title || '',
-        note: rawConfig.note || (rawConfig as any).note || '',
         recipientName: rawConfig.recipientName || (rawConfig as any).recipient_name || 'Nama Penerima',
         phoneNumber: rawConfig.phoneNumber || (rawConfig as any).phone_number || (rawConfig as any).phone || '08XXXXXXXXXX',
         address: rawConfig.address || (rawConfig as any).address_detail || 'Alamat lengkap pengiriman kado/gift...',
@@ -251,21 +249,7 @@ export const GiftAddressElement: React.FC<{ layer: Layer, isEditor?: boolean, on
         <div
             className={`w-full h-full flex flex-col items-center justify-center ${isEditor ? 'p-0' : 'p-2 sm:p-4'}`}
         >
-            <div className={`w-full flex flex-col items-center ${isEditor ? 'max-w-none gap-1' : 'max-w-[400px] gap-4 sm:gap-6'}`}>
-                {(config.title || config.note) && (
-                    <div className={`text-center space-y-1 sm:space-y-2 ${isEditor ? 'mb-1' : 'mb-2 sm:mb-4'}`}>
-                        {config.title && (
-                            <h3 className="text-sm sm:text-lg font-black tracking-tight text-white uppercase drop-shadow-md">
-                                {config.title}
-                            </h3>
-                        )}
-                        {config.note && (
-                            <p className="text-[9px] sm:text-[11px] text-white/60 leading-relaxed font-medium">
-                                {config.note}
-                            </p>
-                        )}
-                    </div>
-                )}
+            <div className={`w-full flex flex-col items-center ${isEditor ? 'max-w-none' : 'max-w-[400px]'}`}>
                 <GiftAddressCard
                     recipientName={config.recipientName}
                     phoneNumber={config.phoneNumber}

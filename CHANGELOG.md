@@ -1,5 +1,19 @@
 # Tamuu Changelog
 
+## [2026-03-02] UI: Gift Address Card Rollback & Aspect Ratio Integrity
+**Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
+**Environment**: Production
+
+### UI/UX Updates
+- **Rollback GiftAddressCard**: Reverted the aspect ratio of `GiftAddressCard` back to its original **1.15/1** format to maintain its unique visual identity.
+- **Visual Decoupling**: Separated `GiftAddressElement` from the container logic used by `BankCard`. This ensures that the Gift Address Card is rendered in its original standalone format without forced synchronization with other card elements.
+- **Consistency Restoration**: Restored the original internal padding, gaps, and border-radius (16px for BankCard) to match the established design language before the standardization attempt.
+
+### Deployment
+- **Forced Turbo Build**: Executed a full repository build with `--force` to ensure all assets are correctly invalidated and re-compiled.
+- **Multi-Project Deployment**: Synchronized production deployment to both `tamuu` and `tamuu-app` Cloudflare Pages projects.
+- **API Synchronization**: Re-deployed API workers to ensure complete system consistency across environments.
+
 ## [2026-02-28] Feature: Landing Page Vendor Section Redesign & Featured Products
 **Status**: 🟢 In Progress
 **Environment**: Production

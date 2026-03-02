@@ -33,7 +33,7 @@ export const BankCard: React.FC<BankCardProps> = ({
 
     return (
         <m.div
-            className={`relative w-full aspect-[1.586/1] rounded-[20px] sm:rounded-[24px] overflow-hidden shadow-2xl select-none antialiased transform-gpu ${className}`}
+            className={`relative w-full aspect-[1.586/1] rounded-[16px] overflow-hidden shadow-2xl select-none antialiased transform-gpu ${className}`}
             style={{
                 backgroundColor: brandColor,
                 WebkitFontSmoothing: 'antialiased',
