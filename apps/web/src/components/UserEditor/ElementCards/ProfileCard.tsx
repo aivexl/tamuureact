@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Type, ChevronDown, Palette } from 'lucide-react';
+import { User, Type, ChevronDown, Palette, Lock } from 'lucide-react';
 import { ElementCardProps } from './Registry';
 import { ProfileCardConfig } from '@/store/layersSlice';
 
@@ -20,73 +20,87 @@ export const ProfileCard: React.FC<ElementCardProps> = ({ element, handleUpdate,
                       (config as any).role === 'mempelai_wanita' || (config as any).role === 'Bride' ? 'Mempelai Wanita' : 
                       (config as any).role;
 
+    const canEdit = permissions.canEditText || permissions.canEditContent;
+
     return (
         <div className="space-y-5">
-            {/* Name Input */}
-            <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                    Nama {roleLabel}
-                </label>
-                <div className="relative group">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-500 transition-colors">
-                        <User className="w-4 h-4" />
+            {canEdit ? (
+                <>
+                    {/* Name Input */}
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                            Nama {roleLabel}
+                        </label>
+                        <div className="relative group">
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-500 transition-colors">
+                                <User className="w-4 h-4" />
+                            </div>
+                            <input
+                                type="text"
+                                value={config.name || ''}
+                                onChange={(e) => handleUpdate({
+                                    profileCardConfig: { ...config, name: e.target.value } as any
+                                })}
+                                className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all"
+                                placeholder="Nama Lengkap"
+                            />
+                        </div>
                     </div>
-                    <input
-                        type="text"
-                        disabled={!permissions.canEditText}
-                        value={config.name || ''}
-                        onChange={(e) => handleUpdate({
-                            profileCardConfig: { ...config, name: e.target.value } as any
-                        })}
-                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all disabled:opacity-50"
-                        placeholder="Nama Lengkap"
-                    />
-                </div>
-            </div>
 
-            {/* Parents Input */}
-            <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                    Nama Orang Tua
-                </label>
-                <div className="relative group">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-500 transition-colors">
-                        <Type className="w-4 h-4" />
+                    {/* Parents Input */}
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                            Nama Orang Tua
+                        </label>
+                        <div className="relative group">
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-500 transition-colors">
+                                <Type className="w-4 h-4" />
+                            </div>
+                            <input
+                                type="text"
+                                value={(config as any).parents || ''}
+                                onChange={(e) => handleUpdate({
+                                    profileCardConfig: { ...config, parents: e.target.value } as any
+                                })}
+                                className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all"
+                                placeholder="Putra/Putri dari..."
+                            />
+                        </div>
                     </div>
-                    <input
-                        type="text"
-                        disabled={!permissions.canEditText}
-                        value={(config as any).parents || ''}
-                        onChange={(e) => handleUpdate({
-                            profileCardConfig: { ...config, parents: e.target.value } as any
-                        })}
-                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all disabled:opacity-50"
-                        placeholder="Putra/Putri dari..."
-                    />
-                </div>
-            </div>
 
-            {/* Role Selection */}
-            <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                    Posisi / Role
-                </label>
-                <select
-                    disabled={!permissions.canEditText}
-                    value={config.role || ''}
-                    onChange={(e) => handleUpdate({
-                        profileCardConfig: { ...config, role: e.target.value } as any
-                    })}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 transition-all disabled:opacity-50"
-                >
-                    <option value="mempelai_pria">Mempelai Pria</option>
-                    <option value="mempelai_wanita">Mempelai Wanita</option>
-                    <option value="ayah_wanita">Ayah Wanita</option>
-                    <option value="ibu_wanita">Ibu Wanita</option>
-                    <option value="ayah_pria">Ayah Pria</option>
-                    <option value="ibu_pria">Ibu Pria</option>
-                </select>
-            </div>
+                    {/* Role Selection */}
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                            Posisi / Role
+                        </label>
+                        <select
+                            value={config.role || ''}
+                            onChange={(e) => handleUpdate({
+                                profileCardConfig: { ...config, role: e.target.value } as any
+                            })}
+                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all"
+                        >
+                            <option value="mempelai_pria">Mempelai Pria</option>
+                            <option value="mempelai_wanita">Mempelai Wanita</option>
+                            <option value="ayah_wanita">Ayah Wanita</option>
+                            <option value="ibu_wanita">Ibu Wanita</option>
+                            <option value="ayah_pria">Ayah Pria</option>
+                            <option value="ibu_pria">Ibu Pria</option>
+                        </select>
+                    </div>
+                </>
+            ) : (
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
+                    <div className="flex items-center gap-2 text-amber-600">
+                        <Lock className="w-3.5 h-3.5" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Data Profil Dikunci</span>
+                    </div>
+                    <div className="space-y-1">
+                        <p className="text-xs font-bold text-slate-700">{config.name || 'Belum diisi'}</p>
+                        <p className="text-[10px] text-slate-500">{roleLabel}</p>
+                    </div>
+                </div>
+            )}
 
             {/* STYLING TOGGLE */}
             {permissions.canEditStyle && (

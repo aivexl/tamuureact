@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Clock, Calendar, ChevronDown, Palette } from 'lucide-react';
+import { Clock, Calendar, ChevronDown, Palette, Lock } from 'lucide-react';
 import { ElementCardProps } from './Registry';
 
 export const CountdownCard: React.FC<ElementCardProps> = ({ element, handleUpdate, permissions }) => {
@@ -15,27 +15,43 @@ export const CountdownCard: React.FC<ElementCardProps> = ({ element, handleUpdat
         customColor: '#000000'
     } as any);
 
+    const canEdit = permissions.canEditText || permissions.canEditContent;
+
     return (
         <div className="space-y-5">
-            <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                    Tanggal Target Acara
-                </label>
-                <div className="relative group">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-500 transition-colors">
-                        <Calendar className="w-4 h-4" />
+            {canEdit ? (
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                        Tanggal Target Acara
+                    </label>
+                    <div className="relative group">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-500 transition-colors">
+                            <Calendar className="w-4 h-4" />
+                        </div>
+                        <input
+                            type="datetime-local"
+                            value={config.targetDate ? new Date(config.targetDate).toISOString().slice(0, 16) : ''}
+                            onChange={(e) => handleUpdate({
+                                countdownConfig: { ...config, targetDate: new Date(e.target.value).toISOString() }
+                            })}
+                            className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all"
+                        />
                     </div>
-                    <input
-                        type="datetime-local"
-                        disabled={!permissions.canEditText}
-                        value={config.targetDate ? new Date(config.targetDate).toISOString().slice(0, 16) : ''}
-                        onChange={(e) => handleUpdate({
-                            countdownConfig: { ...config, targetDate: new Date(e.target.value).toISOString() }
-                        })}
-                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all disabled:opacity-50"
-                    />
                 </div>
-            </div>
+            ) : (
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
+                    <div className="flex items-center gap-2 text-amber-600">
+                        <Lock className="w-3.5 h-3.5" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Countdown Dikunci</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-slate-700">
+                        <Calendar className="w-4 h-4 text-slate-400" />
+                        <span className="text-xs font-bold">
+                            {config.targetDate ? new Date(config.targetDate).toLocaleDateString('id-ID', { dateStyle: 'long', timeStyle: 'short' }) : 'Belum diatur'}
+                        </span>
+                    </div>
+                </div>
+            )}
 
             {permissions.canEditStyle && (
                 <div className="pt-2 border-t border-slate-100">

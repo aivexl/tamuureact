@@ -11,26 +11,12 @@ export const TextCard: React.FC<ElementCardProps> = ({ element, handleUpdate, pe
 
     return (
         <div className="space-y-4">
-            {/* Layer Identity - Billionaire Clarity */}
-            <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                    Nama Elemen
-                </label>
-                <input
-                    type="text"
-                    value={element.name || ''}
-                    onChange={(e) => handleUpdate({ name: e.target.value })}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 transition-all"
-                    placeholder="Contoh: Nama Pasangan"
-                />
-            </div>
-
-            {/* Content Input */}
-            <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                    Konten Teks
-                </label>
-                {permissions.canEditText ? (
+            {/* Content Input - Only show if user has edit text permissions */}
+            {(permissions.canEditText || permissions.canEditContent) && (
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                        Konten Teks
+                    </label>
                     <textarea
                         value={element.content || ''}
                         onChange={(e) => handleUpdate({ content: e.target.value })}
@@ -39,14 +25,23 @@ export const TextCard: React.FC<ElementCardProps> = ({ element, handleUpdate, pe
                         placeholder="Mulai mengetik... (Enter untuk baris baru)"
                         style={{ minHeight: '48px' }}
                     />
-                ) : (
+                </div>
+            )}
+
+            {/* Read-only view if no edit permission but visible */}
+            {(!permissions.canEditText && !permissions.canEditContent) && (
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                        Konten Teks (Hanya Lihat)
+                    </label>
                     <div className="px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-xl text-sm font-medium text-slate-400 italic whitespace-pre-wrap">
                         {element.content || 'Konten dikunci oleh admin'}
                     </div>
-                )}
-            </div>
+                </div>
+            )}
 
-            {(permissions.canEditStyle || permissions.canEditText) && (
+            {/* Styling Toggle - ONLY show if canEditStyle is true */}
+            {permissions.canEditStyle && (
                 <div className="pt-2 border-t border-slate-100">
                     <button
                         onClick={() => setShowStyling(!showStyling)}

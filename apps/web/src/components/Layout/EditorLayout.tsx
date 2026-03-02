@@ -205,18 +205,32 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                     // are stripped before entering the application state.
                     const sanitizedData = sanitizeValue(data);
 
+                    // CTO STRICT LOCKDOWN MIGRATION
+                    // If permissions are not explicitly locked down yet, force them all to false.
+                    // This fulfills the "existing pun ikut berubah" mandate.
+                    const lockdownPermissions = (el: any) => ({
+                        ...el,
+                        permissions: {
+                            canEditContent: el.permissions?.canEditContent === true,
+                            canEditImage: el.permissions?.canEditImage === true,
+                            canEditStyle: el.permissions?.canEditStyle === true,
+                            canEditPosition: el.permissions?.canEditPosition === true,
+                            canDelete: el.permissions?.canDelete === true,
+                            isVisibleInUserEditor: el.permissions?.isVisibleInUserEditor === true,
+                        }
+                    });
+
                     const validSections = Array.isArray(sanitizedData.sections) ? (sanitizedData.sections as Section[]) : [];
                     const validLayers = Array.isArray(sanitizedData.layers) ? (sanitizedData.layers as Layer[]) : [];
 
                     const processedSections = validSections
-                        .filter(s => s && typeof s === 'object') // Guard against null/undefined/primitive sections
+                        .filter(s => s && typeof s === 'object')
                         .map(s => ({
                             ...s,
                             id: s.id || generateId('section'),
-                            elements: Array.isArray(s.elements) ? s.elements : [] // Guard against undefined elements
+                            elements: (Array.isArray(s.elements) ? s.elements : []).map(lockdownPermissions)
                         }));
 
-                    // CTO FIX: If no sections exist (new template), create a default one
                     const finalSections = processedSections.length > 0 ? processedSections : [{
                         id: generateId('section'),
                         key: 'opening',
@@ -229,17 +243,16 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                         elements: []
                     }];
 
-                    // Deep guard for Orbit (TV Stage) to prevent crashes on old/incomplete data
                     const validOrbit = {
                         left: {
                             backgroundColor: sanitizedData.orbit?.left?.backgroundColor || 'transparent',
                             isVisible: sanitizedData.orbit?.left?.isVisible ?? true,
-                            elements: Array.isArray(sanitizedData.orbit?.left?.elements) ? sanitizedData.orbit?.left?.elements : []
+                            elements: (Array.isArray(sanitizedData.orbit?.left?.elements) ? sanitizedData.orbit?.left?.elements : []).map(lockdownPermissions)
                         },
                         right: {
                             backgroundColor: sanitizedData.orbit?.right?.backgroundColor || 'transparent',
                             isVisible: sanitizedData.orbit?.right?.isVisible ?? true,
-                            elements: Array.isArray(sanitizedData.orbit?.right?.elements) ? sanitizedData.orbit?.right?.elements : []
+                            elements: (Array.isArray(sanitizedData.orbit?.right?.elements) ? sanitizedData.orbit?.right?.elements : []).map(lockdownPermissions)
                         }
                     };
 

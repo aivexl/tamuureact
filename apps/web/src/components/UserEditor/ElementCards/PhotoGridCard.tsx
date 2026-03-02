@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { Trash2, Plus, Image as ImageIcon, Crop as CropIcon } from 'lucide-react';
+import { Trash2, Plus, Image as ImageIcon, Crop as CropIcon, Lock } from 'lucide-react';
 import { ElementCardProps } from './Registry';
 import { ImageCropModal, CropConfig } from '@/components/Modals/ImageCropModal';
 import { PhotoGridConfig } from '@/store/layersSlice';
@@ -10,6 +10,8 @@ export const PhotoGridCard: React.FC<ElementCardProps> = ({ element, handleUpdat
     const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null);
     const [croppingIndex, setCroppingIndex] = useState<number | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const canEdit = permissions.canEditImage;
 
     // CTO: Resilience Initialization with any cast to bypass strict interface requirements in fallback
     const config: PhotoGridConfig = element.photoGridConfig || ({
@@ -66,11 +68,13 @@ export const PhotoGridCard: React.FC<ElementCardProps> = ({ element, handleUpdat
     };
 
     const handleAddClick = () => {
+        if (!canEdit) return;
         setCroppingIndex(null);
         fileInputRef.current?.click();
     };
 
     const handleEditClick = (index: number) => {
+        if (!canEdit) return;
         setCroppingIndex(index);
         fileInputRef.current?.click();
     };
@@ -81,7 +85,7 @@ export const PhotoGridCard: React.FC<ElementCardProps> = ({ element, handleUpdat
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                     Koleksi Foto ({images.length})
                 </label>
-                {permissions.canEditImage && (
+                {canEdit && (
                     <button
                         onClick={handleAddClick}
                         className="flex items-center gap-1.5 text-teal-600 hover:text-teal-700 text-[10px] font-black uppercase tracking-widest transition-all"
@@ -105,7 +109,7 @@ export const PhotoGridCard: React.FC<ElementCardProps> = ({ element, handleUpdat
                         >
                             <img src={url} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" />
                             
-                            {permissions.canEditImage && (
+                            {canEdit ? (
                                 <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                     <button
                                         onClick={() => handleEditClick(index)}
@@ -122,11 +126,15 @@ export const PhotoGridCard: React.FC<ElementCardProps> = ({ element, handleUpdat
                                         <Trash2 className="w-4 h-4" />
                                     </button>
                                 </div>
+                            ) : (
+                                <div className="absolute top-2 right-2 p-1.5 bg-black/20 backdrop-blur-md rounded-lg text-white/80">
+                                    <Lock className="w-3 h-3" />
+                                </div>
                             )}
                         </m.div>
                     ))}
 
-                    {permissions.canEditImage && images.length === 0 && (
+                    {canEdit && images.length === 0 && (
                         <button
                             onClick={handleAddClick}
                             className="col-span-full h-32 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center gap-2 text-slate-400 hover:border-teal-300 hover:bg-teal-50/30 hover:text-teal-600 transition-all"
@@ -140,13 +148,15 @@ export const PhotoGridCard: React.FC<ElementCardProps> = ({ element, handleUpdat
                 </AnimatePresence>
             </div>
 
-            <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleFileChange}
-            />
+            {canEdit && (
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileChange}
+                />
+            )}
 
             <ImageCropModal
                 isOpen={isCropOpen}
@@ -161,11 +171,11 @@ export const PhotoGridCard: React.FC<ElementCardProps> = ({ element, handleUpdat
             />
 
             <div className="flex items-start gap-3 p-4 bg-teal-50/50 rounded-2xl border border-teal-100/50">
-                <ImageIcon className="w-4 h-4 text-teal-500 mt-0.5" />
+                {canEdit ? <ImageIcon className="w-4 h-4 text-teal-500 mt-0.5" /> : <Lock className="w-4 h-4 text-amber-500 mt-0.5" />}
                 <div className="flex flex-col gap-0.5">
-                    <span className="text-[10px] font-black text-teal-700 uppercase tracking-widest">Optimasi Foto</span>
+                    <span className="text-[10px] font-black text-teal-700 uppercase tracking-widest">{canEdit ? 'Optimasi Foto' : 'Koleksi Dikunci'}</span>
                     <span className="text-[10px] text-teal-600/80 leading-relaxed font-medium">
-                        Foto akan otomatis di-crop menjadi kotak agar tata letak grid tetap rapi dan estetik.
+                        {canEdit ? 'Foto akan otomatis di-crop menjadi kotak agar tata letak grid tetap rapi dan estetik.' : 'Hubungi admin jika Anda ingin menambah atau mengubah koleksi foto.'}
                     </span>
                 </div>
             </div>

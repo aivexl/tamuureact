@@ -1129,166 +1129,6 @@ export const PropertyPanel: React.FC = () => {
                     </div>
                 </SectionComponent>
 
-                {/* ============================================ */}
-                {/* ADMIN - USER PERMISSIONS & ANCHORING */}
-                {/* ============================================ */}
-                {isTemplate && !isSimulationMode && (
-                    <SectionComponent title="User Permissions & Anchoring" icon={<Shield className="w-4 h-4 text-premium-accent" />}>
-                        <div className="space-y-4 p-3 bg-premium-accent/5 rounded-xl border border-premium-accent/10">
-                            {/* Granular Permissions */}
-                            <div className="space-y-3">
-                                <label className="text-[10px] text-premium-accent font-bold uppercase tracking-wider flex items-center gap-2">
-                                    <Lock className="w-3 h-3" /> User Can Edit:
-                                </label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {[
-                                        { key: 'canEditText', label: 'Text', type: 'text' },
-                                        { key: 'canEditImage', label: 'Image', type: 'image' },
-                                        { key: 'canEditStyle', label: 'Style', any: true },
-                                        { key: 'canEditPosition', label: 'Position', any: true },
-                                        { key: 'canDelete', label: 'Delete', any: true },
-                                        { key: 'isVisibleInUserEditor', label: 'Visible', any: true },
-                                    ].map((perm) => {
-                                        if (perm.type && layer.type !== perm.type && !perm.any) return null;
-                                        const isChecked = layer.permissions?.[perm.key as keyof typeof layer.permissions] ?? false;
-                                        return (
-                                            <button
-                                                key={perm.key}
-                                                onClick={() => {
-                                                    const nextChecked = !isChecked;
-                                                    const newPermissions = {
-                                                        ...(layer.permissions || {
-                                                            canEditText: false,
-                                                            canEditImage: false,
-                                                            canEditStyle: false,
-                                                            canEditPosition: false,
-                                                            canDelete: false,
-                                                            isVisibleInUserEditor: false,
-                                                            isContentProtected: false
-                                                        }),
-                                                        [perm.key]: nextChecked
-                                                    };
-
-                                                    // AUTO-UX: If any edit permission is turned ON, also enable 'Visible'
-                                                    if (nextChecked && perm.key !== 'isVisibleInUserEditor' && perm.key !== 'isContentProtected') {
-                                                        newPermissions.isVisibleInUserEditor = true;
-                                                    }
-
-                                                    // AUTO-UX: If 'Text' is turned ON, also enable 'Style' so they get the toolbar
-                                                    if (nextChecked && perm.key === 'canEditText' && layer.type === 'text') {
-                                                        newPermissions.canEditStyle = true;
-                                                    }
-
-                                                    handleUpdate({ permissions: newPermissions });
-                                                }}
-                                                className={`flex items-center justify-between px-2 py-1.5 rounded-lg border transition-all ${isChecked ? 'bg-premium-accent/10 border-premium-accent/30 text-premium-accent' : 'bg-white/5 border-white/5 text-white/40'}`}
-                                            >
-                                                <span className="text-[10px] font-medium">{perm.label}</span>
-                                                <div className={`w-3 h-3 rounded-sm border flex items-center justify-center ${isChecked ? 'bg-premium-accent border-premium-accent' : 'border-white/20'}`}>
-                                                    {isChecked && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            <div className="h-[1px] bg-premium-accent/10 my-2" />
-
-                            {/* Anchoring / Smart Position */}
-                            <div className="space-y-3">
-                                <label className="text-[10px] text-premium-accent font-bold uppercase tracking-wider flex items-center gap-2">
-                                    <Anchor className="w-3 h-3" /> Smart Anchoring:
-                                </label>
-
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-[9px] text-white/40">Enable Relative Shifting</span>
-                                    <button
-                                        onClick={() => handleUpdate({
-                                            anchoring: {
-                                                targetId: layer.anchoring?.targetId || '',
-                                                edge: layer.anchoring?.edge || 'bottom',
-                                                offset: layer.anchoring?.offset || 20,
-                                                isRelative: !layer.anchoring?.isRelative
-                                            }
-                                        })}
-                                        className={`w-8 h-4 rounded-full transition-colors relative ${layer.anchoring?.isRelative ? 'bg-premium-accent' : 'bg-white/10'}`}
-                                    >
-                                        <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${layer.anchoring?.isRelative ? 'left-[18px]' : 'left-0.5'}`} />
-                                    </button>
-                                </div>
-
-                                {layer.anchoring?.isRelative && (
-                                    <div className="space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
-                                        {/* Magic Button */}
-                                        <button
-                                            onClick={() => {
-                                                if (activeCanvas === 'main' && activeSectionId) {
-                                                    autoAnchorElement(activeSectionId, layer.id);
-                                                }
-                                            }}
-                                            className="w-full flex items-center justify-center gap-2 bg-premium-accent/20 hover:bg-premium-accent/30 text-premium-accent rounded-lg py-2 text-[10px] font-bold uppercase tracking-wider transition-all border border-premium-accent/20"
-                                        >
-                                            <Sparkles className="w-3 h-3" />
-                                            Active Smart Layout (Auto-Wrap Text)
-                                        </button>
-
-                                        <div className="space-y-1">
-                                            <label className="text-[8px] text-white/30 uppercase font-bold">Anchor Target</label>
-                                            <select
-                                                value={layer.anchoring?.targetId || ''}
-                                                onChange={(e) => handleUpdate({ anchoring: { ...layer.anchoring!, targetId: e.target.value } })}
-                                                className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white/80 focus:outline-none focus:border-premium-accent/50 appearance-none cursor-pointer"
-                                            >
-                                                <option value="" className="bg-[#1a1a1a] text-white">Select Element...</option>
-                                                {/* Filter elements in the same context that are NOT the current element */}
-                                                {(activeCanvas === 'main' ? activeSection?.elements : orbit[activeCanvas as 'left' | 'right'].elements)
-                                                    ?.filter(l => l.id !== layer.id)
-                                                    .map(l => (
-                                                        <option key={l.id} value={l.id} className="bg-[#1a1a1a] text-white">
-                                                            {l.name ? l.name : (
-                                                                l.type === 'text'
-                                                                    ? `Text: "${l.content?.substring(0, 20)}..."`
-                                                                    : `${l.type.charAt(0).toUpperCase() + l.type.slice(1)}${l.imageUrl ? ` (${l.imageUrl.split('/').pop()?.substring(0, 10)})` : ''}`
-                                                            )}
-                                                        </option>
-                                                    ))
-                                                }
-                                            </select>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-2">
-                                            <div className="space-y-1">
-                                                <label className="text-[8px] text-white/30 uppercase font-bold">Edge</label>
-                                                <select
-                                                    value={layer.anchoring?.edge || 'bottom'}
-                                                    onChange={(e) => handleUpdate({ anchoring: { ...layer.anchoring!, edge: e.target.value as any } })}
-                                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white/80 appearance-none cursor-pointer"
-                                                >
-                                                    <option value="top" className="bg-[#1a1a1a] text-white">Top</option>
-                                                    <option value="bottom" className="bg-[#1a1a1a] text-white">Bottom</option>
-                                                </select>
-                                            </div>
-                                            <div className="space-y-1">
-                                                <label className="text-[8px] text-white/30 uppercase font-bold">Offset</label>
-                                                <input
-                                                    type="number"
-                                                    value={layer.anchoring?.offset || 0}
-                                                    onChange={(e) => handleUpdate({ anchoring: { ...layer.anchoring!, offset: Number(e.target.value) } })}
-                                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white"
-                                                />
-                                            </div>
-                                        </div>
-                                        <p className="text-[8px] text-white/20 italic">
-                                            {layer.name} will maintain this distance from the target even if the target grows.
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </SectionComponent>
-                )}
-
                 {/* Image/GIF Config - Only for image and gif elements */}
                 {(layer.type === 'image' || layer.type === 'gif' || layer.type === 'sticker') && (
                     <SectionComponent title="Image Settings" icon={<Palette className="w-4 h-4" />}>
@@ -3131,11 +2971,11 @@ export const PropertyPanel: React.FC = () => {
                 {isTemplate && (
                     <SectionComponent title="Permissions & Visibility" icon={<Shield className="w-4 h-4 text-orange-400" />}>
                         <div className="space-y-4">
-                            <p className="text-[10px] text-white/40 italic leading-relaxed">
+                            <p className="text-[10px] text-white/40 italic leading-relaxed px-1">
                                 Control what the end-user can see and modify in their own editor.
                             </p>
 
-                            <div className="space-y-3">
+                            <div className="space-y-2.5">
                                 {[
                                     { key: 'isVisibleInUserEditor', label: 'Visible in User Editor' },
                                     { key: 'canEditContent', label: 'Can Edit Content/Text' },
@@ -3144,25 +2984,124 @@ export const PropertyPanel: React.FC = () => {
                                     { key: 'canEditPosition', label: 'Can Edit Position' },
                                     { key: 'canDelete', label: 'Can User Delete' },
                                 ].map((perm) => (
-                                    <div key={perm.key} className="flex items-center justify-between">
-                                        <span className="text-[10px] text-white/70">{perm.label}</span>
+                                    <div key={perm.key} className="flex items-center justify-between p-2.5 bg-white/5 rounded-xl border border-white/5 hover:bg-white/10 transition-all">
+                                        <span className="text-[10px] font-bold text-white/70 uppercase tracking-tight">{perm.label}</span>
                                         <motion.button
                                             whileTap={{ scale: 0.95 }}
-                                            onClick={() => handleUpdate({
-                                                permissions: {
-                                                    ...(layer.permissions || {}),
-                                                    [perm.key]: !(layer.permissions?.[perm.key as keyof LayerPermissions] ?? true)
+                                            onClick={() => {
+                                                const isChecked = layer.permissions?.[perm.key as keyof LayerPermissions] === true;
+                                                const nextChecked = !isChecked;
+                                                const newPermissions = {
+                                                    ...(layer.permissions || {
+                                                        canEditContent: false,
+                                                        canEditImage: false,
+                                                        canEditStyle: false,
+                                                        canEditPosition: false,
+                                                        canDelete: false,
+                                                        isVisibleInUserEditor: false
+                                                    }),
+                                                    [perm.key]: nextChecked
+                                                };
+
+                                                // CTO AUTO-UX (Useful feature from Section 1)
+                                                // If turning ON any edit permission, also force Visible to ON
+                                                if (nextChecked && perm.key !== 'isVisibleInUserEditor') {
+                                                    newPermissions.isVisibleInUserEditor = true;
                                                 }
-                                            })}
-                                            className={`w-10 h-5 rounded-full transition-colors ${(layer.permissions?.[perm.key as keyof LayerPermissions] ?? true) ? 'bg-orange-500' : 'bg-white/10'}`}
+
+                                                handleUpdate({ permissions: newPermissions });
+                                            }}
+                                            className={`w-10 h-5 rounded-full transition-colors relative ${(layer.permissions?.[perm.key as keyof LayerPermissions] === true) ? 'bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.3)]' : 'bg-white/10'}`}
                                         >
                                             <motion.div
-                                                className="w-4 h-4 bg-white rounded-full shadow-sm"
-                                                animate={{ x: (layer.permissions?.[perm.key as keyof LayerPermissions] ?? true) ? 22 : 2 }}
+                                                className="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm"
+                                                animate={{ x: (layer.permissions?.[perm.key as keyof LayerPermissions] === true) ? 22 : 2 }}
                                             />
                                         </motion.button>
                                     </div>
                                 ))}
+                            </div>
+
+                            {/* SMART ANCHORING - Integrated useful feature from Section 1 */}
+                            <div className="mt-6 pt-6 border-t border-white/10 space-y-4">
+                                <label className="text-[10px] text-premium-accent font-black uppercase tracking-widest flex items-center gap-2 px-1">
+                                    <Anchor className="w-3.5 h-3.5" /> Smart Layout Anchoring
+                                </label>
+
+                                <div className="flex items-center justify-between p-2.5 bg-premium-accent/5 rounded-xl border border-premium-accent/10">
+                                    <span className="text-[10px] font-bold text-white/60 uppercase tracking-tight">Enable Relative Shifting</span>
+                                    <button
+                                        onClick={() => handleUpdate({
+                                            anchoring: {
+                                                targetId: layer.anchoring?.targetId || '',
+                                                edge: layer.anchoring?.edge || 'bottom',
+                                                offset: layer.anchoring?.offset || 20,
+                                                isRelative: !layer.anchoring?.isRelative
+                                            }
+                                        })}
+                                        className={`w-10 h-5 rounded-full transition-colors relative ${layer.anchoring?.isRelative ? 'bg-premium-accent' : 'bg-white/10'}`}
+                                    >
+                                        <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${layer.anchoring?.isRelative ? 'left-[22px]' : 'left-0.5'}`} />
+                                    </button>
+                                </div>
+
+                                {layer.anchoring?.isRelative && (
+                                    <div className="space-y-4 p-4 bg-white/5 rounded-2xl border border-white/5 animate-in fade-in zoom-in-95 duration-300">
+                                        <button
+                                            onClick={() => {
+                                                if (activeCanvas === 'main' && activeSectionId) {
+                                                    autoAnchorElement(activeSectionId, layer.id);
+                                                }
+                                            }}
+                                            className="w-full flex items-center justify-center gap-2 bg-premium-accent/20 hover:bg-premium-accent/30 text-premium-accent rounded-xl py-3 text-[10px] font-black uppercase tracking-widest transition-all border border-premium-accent/20"
+                                        >
+                                            <Sparkles className="w-3.5 h-3.5" />
+                                            Sync Layout Order
+                                        </button>
+
+                                        <div className="space-y-1.5">
+                                            <label className="text-[9px] text-white/30 uppercase font-black tracking-tighter ml-1">Follow Element:</label>
+                                            <select
+                                                value={layer.anchoring?.targetId || ''}
+                                                onChange={(e) => handleUpdate({ anchoring: { ...layer.anchoring!, targetId: e.target.value } })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-premium-accent/50 appearance-none cursor-pointer"
+                                            >
+                                                <option value="" className="bg-[#0a0a0a]">Select Element...</option>
+                                                {(activeCanvas === 'main' ? activeSection?.elements : orbit[activeCanvas as 'left' | 'right'].elements)
+                                                    ?.filter(l => l.id !== layer.id)
+                                                    .map(l => (
+                                                        <option key={l.id} value={l.id} className="bg-[#0a0a0a]">
+                                                            {l.name || `${l.type.toUpperCase()} (#${l.id.substring(0, 4)})`}
+                                                        </option>
+                                                    ))
+                                                }
+                                            </select>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="space-y-1.5">
+                                                <label className="text-[9px] text-white/30 uppercase font-black tracking-tighter ml-1">Edge</label>
+                                                <select
+                                                    value={layer.anchoring?.edge || 'bottom'}
+                                                    onChange={(e) => handleUpdate({ anchoring: { ...layer.anchoring!, edge: e.target.value as any } })}
+                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                                                >
+                                                    <option value="top" className="bg-[#0a0a0a]">Top</option>
+                                                    <option value="bottom" className="bg-[#0a0a0a]">Bottom</option>
+                                                </select>
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[9px] text-white/30 uppercase font-black tracking-tighter ml-1">Offset (PX)</label>
+                                                <input
+                                                    type="number"
+                                                    value={layer.anchoring?.offset || 0}
+                                                    onChange={(e) => handleUpdate({ anchoring: { ...layer.anchoring!, offset: Number(e.target.value) } })}
+                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </SectionComponent>

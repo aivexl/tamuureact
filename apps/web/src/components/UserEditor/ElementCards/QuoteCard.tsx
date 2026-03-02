@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Quote as QuoteIcon, Type, User, ChevronDown, Palette } from 'lucide-react';
+import { Quote as QuoteIcon, Type, User, ChevronDown, Palette, Lock } from 'lucide-react';
 import { ElementCardProps } from './Registry';
 
 export const QuoteCard: React.FC<ElementCardProps> = ({ element, handleUpdate, permissions }) => {
@@ -13,42 +13,57 @@ export const QuoteCard: React.FC<ElementCardProps> = ({ element, handleUpdate, p
         customColor: '#475569'
     } as any);
 
+    const canEdit = permissions.canEditText || permissions.canEditContent;
+
     return (
         <div className="space-y-5">
-            {/* Quote Text */}
-            <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Isi Kutipan / Ayat</label>
-                <textarea
-                    disabled={!permissions.canEditText}
-                    value={config.text || element.content || ''}
-                    onChange={(e) => handleUpdate({
-                        content: e.target.value,
-                        quoteConfig: { ...config, text: e.target.value }
-                    })}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all disabled:opacity-50 min-h-[100px] resize-none"
-                    placeholder="Masukkan kutipan atau ayat..."
-                />
-            </div>
-
-            {/* Author Text */}
-            <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sumber / Penulis</label>
-                <div className="relative group">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-500 transition-colors">
-                        <User className="w-4 h-4" />
+            {canEdit ? (
+                <>
+                    {/* Quote Text */}
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Isi Kutipan / Ayat</label>
+                        <textarea
+                            value={config.text || element.content || ''}
+                            onChange={(e) => handleUpdate({
+                                content: e.target.value,
+                                quoteConfig: { ...config, text: e.target.value }
+                            })}
+                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all min-h-[100px] resize-none"
+                            placeholder="Masukkan kutipan atau ayat..."
+                        />
                     </div>
-                    <input
-                        type="text"
-                        disabled={!permissions.canEditText}
-                        value={config.author || ''}
-                        onChange={(e) => handleUpdate({
-                            quoteConfig: { ...config, author: e.target.value }
-                        })}
-                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all disabled:opacity-50"
-                        placeholder="Contoh: Anonymous, Nama Pasangan, dsb."
-                    />
+
+                    {/* Author Text */}
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sumber / Penulis</label>
+                        <div className="relative group">
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-500 transition-colors">
+                                <User className="w-4 h-4" />
+                            </div>
+                            <input
+                                type="text"
+                                value={config.author || ''}
+                                onChange={(e) => handleUpdate({
+                                    quoteConfig: { ...config, author: e.target.value }
+                                })}
+                                className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all"
+                                placeholder="Contoh: Anonymous, Nama Pasangan, dsb."
+                            />
+                        </div>
+                    </div>
+                </>
+            ) : (
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
+                    <div className="flex items-center gap-2 text-amber-600">
+                        <Lock className="w-3.5 h-3.5" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Kutipan Dikunci</span>
+                    </div>
+                    <div className="space-y-1">
+                        <p className="text-[10px] text-slate-600 italic leading-relaxed line-clamp-2">"{config.text || element.content || 'Belum ada kutipan'}"</p>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">— {config.author || 'Anonim'}</p>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* STYLING TOGGLE */}
             {permissions.canEditStyle && (
