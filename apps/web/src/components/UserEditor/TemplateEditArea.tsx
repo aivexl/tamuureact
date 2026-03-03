@@ -213,12 +213,34 @@ const SectionItem: React.FC<SectionItemProps> = ({
                                         <div className="space-y-5 flex-1">
                                             {(() => {
                                                 const editableElements = (section.elements || []).filter((el: any) => {
-                                                    if (el.canEditContent === true) return true;
-                                                    const p = el.permissions;
-                                                    // If no permissions object, default to false (Locked by Default)
-                                                    if (!p) return false;
-                                                    // Check for visibility OR any of the edit permissions
-                                                    return p.isVisibleInUserEditor || p.canEditText || p.canEditImage || p.canEditStyle || p.canEditContent || p.canEditPosition;
+                                                    // 1. Explicit permission object check
+                                                    const p = el.permissions || {};
+                                                    
+                                                    // 2. Base visibility or edit rights
+                                                    if (
+                                                        p.isVisibleInUserEditor || 
+                                                        p.canEditText || 
+                                                        p.canEditImage || 
+                                                        p.canEditStyle || 
+                                                        p.canEditContent || 
+                                                        p.canEditPosition ||
+                                                        el.canEditContent === true ||
+                                                        el.isVisibleInUserEditor === true
+                                                    ) return true;
+
+                                                    // 3. SMART CTO FALLBACK: User-Data Layers should show up if config exists
+                                                    // This ensures elements like Gift Cards and RSVPs are editable even if permissions object is sparse
+                                                    if (
+                                                        !!el.giftAddressConfig || 
+                                                        !!el.digitalGiftConfig || 
+                                                        !!el.rsvpWishesConfig || 
+                                                        !!el.rsvpFormConfig || 
+                                                        !!el.profileCardConfig ||
+                                                        !!el.mapsConfig ||
+                                                        !!el.socialMockupConfig
+                                                    ) return true;
+
+                                                    return false;
                                                 });
 
                                                 if (editableElements.length > 0) {

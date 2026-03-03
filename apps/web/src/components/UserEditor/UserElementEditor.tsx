@@ -82,10 +82,25 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
             p?.canEditContent || (element as any).canEditContent ||
             p?.canEditPosition || (element as any).canEditPosition) return true;
 
-        // 3. Fallback for legacy text elements that might only have name/content but no permissions obj yet
-        // If it's a critical core type like profile_card, and permissions are undefined, we show it to be safe
+        // 3. Fallback for elements that might only have name/content but no permissions obj yet
+        // If it's a critical core type or has config data, and permissions are undefined, we show it to be safe
         // BUT if permissions exist and are all false, we hide it.
-        if (!p && ((element as any).canEditContent === true || element.type === 'profile_card')) return true;
+        if (!p) {
+            const isCriticalType = 
+                element.type === 'profile_card' || 
+                element.type === 'gift_address' || 
+                element.type === 'digital_gift' ||
+                element.type === 'rsvp_wishes' ||
+                element.type === 'rsvp_form';
+
+            const hasConfig = 
+                !!element.giftAddressConfig || 
+                !!element.digitalGiftConfig || 
+                !!element.rsvpWishesConfig || 
+                !!element.profileCardConfig;
+
+            if (isCriticalType || hasConfig || (element as any).canEditContent === true) return true;
+        }
 
         return false;
     })();

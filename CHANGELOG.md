@@ -1,5 +1,18 @@
 # Tamuu Changelog
 
+## [2026-03-02] Fix: Smart Visibility for Gift Address & User-Data Layers
+**Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
+**Environment**: Production
+
+### Core Fixes
+- **Smart Element Filtering**: Resolved an issue where `gift_address`, `digital_gift`, and `rsvp_wishes` elements were hidden from the User Editor's configuration list.
+- **Config-Based Detection**: Implemented a "Smart" filter in `TemplateEditArea.tsx` and `OrbitPanel.tsx` that automatically detects interactive layers based on their configuration objects (`giftAddressConfig`, etc.), ensuring they appear in the editor even if permission objects are partially defined.
+- **Internal Guard Hardening**: Updated `UserElementEditor.tsx` to include more critical interactive types in the visibility fallback logic, maintaining strict administrative control while allowing intuitive user editing.
+
+### UI/UX Consistency
+- **Unified Logic**: Standardized visibility logic across the Invitation (Main) and Orbit (Stage) editor tabs for absolute precision.
+- **Pro Designer Refinement**: Ensured the "Layer Configuration" list accurately reflects all editable components when in Pro Designer view.
+
 ## [2026-03-02] Feature: Pro Designer View & Terminology Alignment
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
 **Environment**: Production

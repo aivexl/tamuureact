@@ -53,11 +53,10 @@ export const OrbitPanel: React.FC = () => {
                                     (el as any).isVisibleInUserEditor === true ||
                                     (el as any).canEditContent === true ||
                                     (el as any).canEditText === true ||
-                                    (el as any).canEditImage === true ||
-                                    (el as any).canEditStyle === true ||
-                                    (el as any).canEditPosition === true ||
                                     !!(el as any).digitalGiftConfig ||
                                     !!(el as any).giftAddressConfig ||
+                                    !!(el as any).rsvpWishesConfig ||
+                                    !!(el as any).rsvpFormConfig ||
                                     !!(el as any).socialMockupConfig ||
                                     !!(el as any).profileCardConfig ||
                                     !!(el as any).mapsConfig
@@ -76,11 +75,10 @@ export const OrbitPanel: React.FC = () => {
                                             (el as any).isVisibleInUserEditor === true ||
                                             (el as any).canEditContent === true ||
                                             (el as any).canEditText === true ||
-                                            (el as any).canEditImage === true ||
-                                            (el as any).canEditStyle === true ||
-                                            (el as any).canEditPosition === true ||
                                             !!(el as any).digitalGiftConfig ||
                                             !!(el as any).giftAddressConfig ||
+                                            !!(el as any).rsvpWishesConfig ||
+                                            !!(el as any).rsvpFormConfig ||
                                             !!(el as any).socialMockupConfig ||
                                             !!(el as any).profileCardConfig ||
                                             !!(el as any).mapsConfig
