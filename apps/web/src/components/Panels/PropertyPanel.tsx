@@ -56,30 +56,60 @@ const NumberInput: React.FC<NumberInputProps> = ({
     onChange,
     onKeyframe,
     isKeyframed
-}) => (
-    <div className="space-y-1">
-        <div className="flex items-center justify-between">
-            <label className="text-[9px] text-white/30 uppercase font-bold">{label}</label>
-            {onKeyframe && (
-                <button
-                    onClick={onKeyframe}
-                    className={`p-0.5 rounded transition-colors ${isKeyframed ? 'text-[#0D99FF]' : 'text-white/10 hover:text-white/30'}`}
-                >
-                    <Diamond className={`w-2.5 h-2.5 ${isKeyframed ? 'fill-current' : ''}`} />
-                </button>
-            )}
+}) => {
+    const handleIncrement = () => {
+        let next = value + step;
+        if (max !== undefined) next = Math.min(max, next);
+        onChange(Number(next.toFixed(2))); // avoid floating point errors
+    };
+
+    const handleDecrement = () => {
+        let next = value - step;
+        if (min !== undefined) next = Math.max(min, next);
+        onChange(Number(next.toFixed(2)));
+    };
+
+    return (
+        <div className="space-y-1">
+            <div className="flex items-center justify-between">
+                <label className="text-[9px] text-white/30 uppercase font-bold">{label}</label>
+                {onKeyframe && (
+                    <button
+                        onClick={onKeyframe}
+                        className={`p-0.5 rounded transition-colors ${isKeyframed ? 'text-[#0D99FF]' : 'text-white/10 hover:text-white/30'}`}
+                    >
+                        <Diamond className={`w-2.5 h-2.5 ${isKeyframed ? 'fill-current' : ''}`} />
+                    </button>
+                )}
+            </div>
+            <div className="relative flex items-center">
+                <input
+                    type="number"
+                    value={value}
+                    step={step}
+                    min={min}
+                    max={max}
+                    onChange={(e) => onChange(Number(e.target.value))}
+                    className={`w-full bg-white/5 border rounded-lg px-3 py-1.5 pr-8 text-xs focus:border-[#0D99FF]/50 focus:outline-none transition-colors font-mono ${isKeyframed ? 'border-[#0D99FF]/30' : 'border-white/5'}`}
+                />
+                <div className="absolute right-1 top-1 bottom-1 flex flex-col justify-between py-0.5 pr-1">
+                    <button 
+                        onClick={handleIncrement}
+                        className="text-white/30 hover:text-white/70 transition-colors bg-transparent border-none p-0 flex items-center justify-center leading-none"
+                    >
+                        <ChevronUp className="w-3 h-3" />
+                    </button>
+                    <button 
+                        onClick={handleDecrement}
+                        className="text-white/30 hover:text-white/70 transition-colors bg-transparent border-none p-0 flex items-center justify-center leading-none"
+                    >
+                        <ChevronDown className="w-3 h-3" />
+                    </button>
+                </div>
+            </div>
         </div>
-        <input
-            type="number"
-            value={value}
-            step={step}
-            min={min}
-            max={max}
-            onChange={(e) => onChange(Number(e.target.value))}
-            className={`w-full bg-white/5 border rounded-lg px-3 py-1.5 text-xs focus:border-[#0D99FF]/50 focus:outline-none transition-colors font-mono ${isKeyframed ? 'border-[#0D99FF]/30' : 'border-white/5'}`}
-        />
-    </div>
-);
+    );
+};
 
 interface SelectInputProps {
     label: string;
