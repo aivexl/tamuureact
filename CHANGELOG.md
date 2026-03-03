@@ -1,5 +1,14 @@
 # Tamuu Changelog
 
+## [2026-03-03] Fix: Text Scaling and Bounding Box in Admin Editor
+**Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
+**Environment**: Production
+
+### Core Fixes
+- **Dynamic Text Scaling**: Upgraded the `SeamlessCanvas` resize handler to correctly scale the `fontSize` of text layers when the bounding box is resized. This brings Canva/Figma-like text scaling behavior to the Admin Editor.
+- **Liquid Layout Snapping**: Modified `TextElement` to use `w-fit` and `h-fit` instead of `w-full` allowing the `ResizeObserver` to accurately capture the exact pixel dimensions of the text content. The selection bounding box now tightly hugs the text instead of expanding artificially.
+- **Sub-pixel Stabilization**: Added rounding logic (`Math.round`) to the continuous text auto-sizing loop to prevent infinite layout thrashing and stabilize the canvas rendering engine.
+
 ## [2026-03-03] UI: Premium Social Media Copy Animation
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
 **Environment**: Production
