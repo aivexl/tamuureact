@@ -48,7 +48,11 @@ export const BaseCardWrapper: React.FC<BaseCardWrapperProps> = ({ element, permi
                         {(() => {
                             const isLocked = isProtected ||
                                 (element.type === 'text' && !permissions.canEditText) ||
-                                ((element.type === 'image' || element.type === 'gif') && !permissions.canEditImage);
+                                ((element.type === 'image' || element.type === 'gif') && !permissions.canEditImage) ||
+                                (element.type === 'gift_address' && !permissions.canEditContent) ||
+                                (element.type === 'digital_gift' && !permissions.canEditContent) ||
+                                (element.type === 'rsvp_wishes' && !permissions.canEditContent) ||
+                                (element.type === 'rsvp_form' && !permissions.canEditContent);
 
                             if (!isLocked) return null;
 

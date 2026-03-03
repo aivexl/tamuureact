@@ -12,17 +12,47 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
     const { updateElementInSection, updateLayer, sections, updateSectionsBatch } = useStore();
     const { id: invitationId } = useParams<{ id: string }>();
 
-    const permissions = {
-        canEditText: (element as any).canEditText || (element as any).canEditContent || element.permissions?.canEditText || element.permissions?.canEditContent || false,
-        canEditImage: (element as any).canEditImage || element.permissions?.canEditImage || false,
-        canEditStyle: (element as any).canEditStyle || element.permissions?.canEditStyle || false,
-        canEditPosition: (element as any).canEditPosition || element.permissions?.canEditPosition || false,
-        canDelete: element.permissions?.canDelete || false,
-        isVisibleInUserEditor: (element as any).isVisibleInUserEditor || element.permissions?.isVisibleInUserEditor || false,
-        isContentProtected: element.permissions?.isContentProtected || false,
-        canEditContent: (element as any).canEditContent || element.permissions?.canEditContent || false,
-        ...(element.permissions || {}) // Allow other granular permissions
-    };
+    // CTO MEGA RESOLUTION: Unified Permission Matrix
+    const permissions = (() => {
+        const p = element.permissions;
+        
+        // Check if this is a "User-Data" element that REQUIRES editing by design
+        const isCriticalType = 
+            element.type === 'profile_card' || 
+            element.type === 'gift_address' || 
+            element.type === 'digital_gift' ||
+            element.type === 'rsvp_wishes' ||
+            element.type === 'rsvp_form' ||
+            element.type === 'guest_wishes';
+
+        // 1. If NO permissions object exists (Legacy or Newly Added), 
+        // we grant "Smart Defaults" for critical types to ensure zero-friction UX.
+        if (!p) {
+            return {
+                canEditText: isCriticalType || (element as any).canEditText || (element as any).canEditContent || false,
+                canEditImage: (element as any).canEditImage || false,
+                canEditStyle: (element as any).canEditStyle || false,
+                canEditPosition: (element as any).canEditPosition || false,
+                canDelete: false,
+                isVisibleInUserEditor: isCriticalType || (element as any).isVisibleInUserEditor || false,
+                isContentProtected: false,
+                canEditContent: isCriticalType || (element as any).canEditContent || false
+            };
+        }
+
+        // 2. If permissions object EXISTS, we trust it but still provide fallbacks for key aliases
+        return {
+            canEditText: p.canEditText || p.canEditContent || false,
+            canEditImage: p.canEditImage || false,
+            canEditStyle: p.canEditStyle || false,
+            canEditPosition: p.canEditPosition || false,
+            canDelete: p.canDelete || false,
+            isVisibleInUserEditor: p.isVisibleInUserEditor || false,
+            isContentProtected: p.isContentProtected || false,
+            canEditContent: p.canEditContent || p.canEditText || false,
+            ...p
+        };
+    })();
 
     const isProtected = permissions.isContentProtected === true;
 
@@ -67,43 +97,15 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
         }
     };
 
-    // Element is visible if specifically set to visible OR has any active edit permission
-    // CTO: Smart Permission Engine. Only show if explicitly authorized OR has active edit rights.
-    const isVisible = (() => {
-        const p = element.permissions;
-        
-        // 1. Explicit UI Visibility Flag
-        if (p?.isVisibleInUserEditor === true || (element as any).isVisibleInUserEditor === true) return true;
-
-        // 2. SMART CHECK: Show if ANY edit permission is true
-        if (p?.canEditText || (element as any).canEditText || 
-            p?.canEditImage || (element as any).canEditImage || 
-            p?.canEditStyle || (element as any).canEditStyle || 
-            p?.canEditContent || (element as any).canEditContent ||
-            p?.canEditPosition || (element as any).canEditPosition) return true;
-
-        // 3. Fallback for elements that might only have name/content but no permissions obj yet
-        // If it's a critical core type or has config data, and permissions are undefined, we show it to be safe
-        // BUT if permissions exist and are all false, we hide it.
-        if (!p) {
-            const isCriticalType = 
-                element.type === 'profile_card' || 
-                element.type === 'gift_address' || 
-                element.type === 'digital_gift' ||
-                element.type === 'rsvp_wishes' ||
-                element.type === 'rsvp_form';
-
-            const hasConfig = 
-                !!element.giftAddressConfig || 
-                !!element.digitalGiftConfig || 
-                !!element.rsvpWishesConfig || 
-                !!element.profileCardConfig;
-
-            if (isCriticalType || hasConfig || (element as any).canEditContent === true) return true;
-        }
-
-        return false;
-    })();
+    // CTO SMART VISIBILITY: Element is visible ONLY IF it has an explicit visibility flag 
+    // OR at least one edit permission is granted. This satisfies the "Don't show if no permissions" request.
+    const isVisible = 
+        permissions.isVisibleInUserEditor || 
+        permissions.canEditText || 
+        permissions.canEditImage || 
+        permissions.canEditStyle || 
+        permissions.canEditContent || 
+        permissions.canEditPosition;
 
     if (!isVisible) return null;
 

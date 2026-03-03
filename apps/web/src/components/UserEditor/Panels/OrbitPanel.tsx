@@ -42,46 +42,46 @@ export const OrbitPanel: React.FC = () => {
 
                         <div className="space-y-4">
                             {orbit.left.elements && orbit.left.elements.filter(el => {
-                                const p = el.permissions || {};
+                                const p = el.permissions;
+                                const isCriticalType = 
+                                    el.type === 'profile_card' || 
+                                    el.type === 'gift_address' || 
+                                    el.type === 'digital_gift' ||
+                                    el.type === 'rsvp_wishes' ||
+                                    el.type === 'rsvp_form' ||
+                                    el.type === 'guest_wishes';
+
+                                if (!p) return isCriticalType || (el as any).canEditContent === true || (el as any).isVisibleInUserEditor === true;
+
                                 return (
                                     p.isVisibleInUserEditor || 
                                     p.canEditText || 
                                     p.canEditImage || 
                                     p.canEditStyle || 
                                     p.canEditContent || 
-                                    p.canEditPosition ||
-                                    (el as any).isVisibleInUserEditor === true ||
-                                    (el as any).canEditContent === true ||
-                                    (el as any).canEditText === true ||
-                                    !!(el as any).digitalGiftConfig ||
-                                    !!(el as any).giftAddressConfig ||
-                                    !!(el as any).rsvpWishesConfig ||
-                                    !!(el as any).rsvpFormConfig ||
-                                    !!(el as any).socialMockupConfig ||
-                                    !!(el as any).profileCardConfig ||
-                                    !!(el as any).mapsConfig
+                                    p.canEditPosition
                                 );
                             }).length > 0 ? (
                                 orbit.left.elements
                                     .filter(el => {
-                                        const p = el.permissions || {};
+                                        const p = el.permissions;
+                                        const isCriticalType = 
+                                            el.type === 'profile_card' || 
+                                            el.type === 'gift_address' || 
+                                            el.type === 'digital_gift' ||
+                                            el.type === 'rsvp_wishes' ||
+                                            el.type === 'rsvp_form' ||
+                                            el.type === 'guest_wishes';
+
+                                        if (!p) return isCriticalType || (el as any).canEditContent === true || (el as any).isVisibleInUserEditor === true;
+
                                         return (
                                             p.isVisibleInUserEditor || 
                                             p.canEditText || 
                                             p.canEditImage || 
                                             p.canEditStyle || 
                                             p.canEditContent || 
-                                            p.canEditPosition ||
-                                            (el as any).isVisibleInUserEditor === true ||
-                                            (el as any).canEditContent === true ||
-                                            (el as any).canEditText === true ||
-                                            !!(el as any).digitalGiftConfig ||
-                                            !!(el as any).giftAddressConfig ||
-                                            !!(el as any).rsvpWishesConfig ||
-                                            !!(el as any).rsvpFormConfig ||
-                                            !!(el as any).socialMockupConfig ||
-                                            !!(el as any).profileCardConfig ||
-                                            !!(el as any).mapsConfig
+                                            p.canEditPosition
                                         );
                                     })
                                     .map(element => (
@@ -124,48 +124,46 @@ export const OrbitPanel: React.FC = () => {
 
                         <div className="space-y-4">
                             {orbit.right.elements && orbit.right.elements.filter(el => {
-                                const p = el.permissions || {};
+                                const p = el.permissions;
+                                const isCriticalType = 
+                                    el.type === 'profile_card' || 
+                                    el.type === 'gift_address' || 
+                                    el.type === 'digital_gift' ||
+                                    el.type === 'rsvp_wishes' ||
+                                    el.type === 'rsvp_form' ||
+                                    el.type === 'guest_wishes';
+
+                                if (!p) return isCriticalType || (el as any).canEditContent === true || (el as any).isVisibleInUserEditor === true;
+
                                 return (
                                     p.isVisibleInUserEditor || 
                                     p.canEditText || 
                                     p.canEditImage || 
                                     p.canEditStyle || 
                                     p.canEditContent || 
-                                    p.canEditPosition ||
-                                    (el as any).isVisibleInUserEditor === true ||
-                                    (el as any).canEditContent === true ||
-                                    (el as any).canEditText === true ||
-                                    (el as any).canEditImage === true ||
-                                    (el as any).canEditStyle === true ||
-                                    (el as any).canEditPosition === true ||
-                                    !!(el as any).digitalGiftConfig ||
-                                    !!(el as any).giftAddressConfig ||
-                                    !!(el as any).socialMockupConfig ||
-                                    !!(el as any).profileCardConfig ||
-                                    !!(el as any).mapsConfig
+                                    p.canEditPosition
                                 );
                             }).length > 0 ? (
                                 orbit.right.elements
                                     .filter(el => {
-                                        const p = el.permissions || {};
+                                        const p = el.permissions;
+                                        const isCriticalType = 
+                                            el.type === 'profile_card' || 
+                                            el.type === 'gift_address' || 
+                                            el.type === 'digital_gift' ||
+                                            el.type === 'rsvp_wishes' ||
+                                            el.type === 'rsvp_form' ||
+                                            el.type === 'guest_wishes';
+
+                                        if (!p) return isCriticalType || (el as any).canEditContent === true || (el as any).isVisibleInUserEditor === true;
+
                                         return (
                                             p.isVisibleInUserEditor || 
                                             p.canEditText || 
                                             p.canEditImage || 
                                             p.canEditStyle || 
                                             p.canEditContent || 
-                                            p.canEditPosition ||
-                                            (el as any).isVisibleInUserEditor === true ||
-                                            (el as any).canEditContent === true ||
-                                            (el as any).canEditText === true ||
-                                            (el as any).canEditImage === true ||
-                                            (el as any).canEditStyle === true ||
-                                            (el as any).canEditPosition === true ||
-                                            !!(el as any).digitalGiftConfig ||
-                                            !!(el as any).giftAddressConfig ||
-                                            !!(el as any).socialMockupConfig ||
-                                            !!(el as any).profileCardConfig ||
-                                            !!(el as any).mapsConfig
+                                            p.canEditPosition
                                         );
                                     })
                                     .map(element => (

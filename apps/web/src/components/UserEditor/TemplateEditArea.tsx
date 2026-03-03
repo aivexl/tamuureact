@@ -213,34 +213,33 @@ const SectionItem: React.FC<SectionItemProps> = ({
                                         <div className="space-y-5 flex-1">
                                             {(() => {
                                                 const editableElements = (section.elements || []).filter((el: any) => {
-                                                    // 1. Explicit permission object check
-                                                    const p = el.permissions || {};
+                                                    const p = el.permissions;
                                                     
-                                                    // 2. Base visibility or edit rights
-                                                    if (
+                                                    // CTO: Core User-Data types that should be editable by default
+                                                    const isCriticalType = 
+                                                        el.type === 'profile_card' || 
+                                                        el.type === 'gift_address' || 
+                                                        el.type === 'digital_gift' ||
+                                                        el.type === 'rsvp_wishes' ||
+                                                        el.type === 'rsvp_form' ||
+                                                        el.type === 'guest_wishes';
+
+                                                    // 1. If NO permissions object exists (Legacy/New), 
+                                                    // we show critical types or legacy flags to ensure zero-friction UX.
+                                                    if (!p) {
+                                                        return isCriticalType || el.canEditContent === true || el.isVisibleInUserEditor === true;
+                                                    }
+
+                                                    // 2. If permissions object EXISTS, we strictly respect the Admin's toggles.
+                                                    // If all are false, the element will hide from the list.
+                                                    return (
                                                         p.isVisibleInUserEditor || 
                                                         p.canEditText || 
                                                         p.canEditImage || 
                                                         p.canEditStyle || 
                                                         p.canEditContent || 
-                                                        p.canEditPosition ||
-                                                        el.canEditContent === true ||
-                                                        el.isVisibleInUserEditor === true
-                                                    ) return true;
-
-                                                    // 3. SMART CTO FALLBACK: User-Data Layers should show up if config exists
-                                                    // This ensures elements like Gift Cards and RSVPs are editable even if permissions object is sparse
-                                                    if (
-                                                        !!el.giftAddressConfig || 
-                                                        !!el.digitalGiftConfig || 
-                                                        !!el.rsvpWishesConfig || 
-                                                        !!el.rsvpFormConfig || 
-                                                        !!el.profileCardConfig ||
-                                                        !!el.mapsConfig ||
-                                                        !!el.socialMockupConfig
-                                                    ) return true;
-
-                                                    return false;
+                                                        p.canEditPosition
+                                                    );
                                                 });
 
                                                 if (editableElements.length > 0) {

@@ -1,21 +1,22 @@
 # Tamuu Changelog
 
-## [2026-03-02] Fix: Smart Visibility for Gift Address & User-Data Layers
+## [2026-03-02] Fix: Smart Permission Engine & Gift Address Unlocking
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
 **Environment**: Production
 
 ### Core Fixes
-- **Smart Element Filtering**: Resolved an issue where `gift_address`, `digital_gift`, and `rsvp_wishes` elements were hidden from the User Editor's configuration list.
-- **Config-Based Detection**: Implemented a "Smart" filter in `TemplateEditArea.tsx` and `OrbitPanel.tsx` that automatically detects interactive layers based on their configuration objects (`giftAddressConfig`, etc.), ensuring they appear in the editor even if permission objects are partially defined.
-- **Internal Guard Hardening**: Updated `UserElementEditor.tsx` to include more critical interactive types in the visibility fallback logic, maintaining strict administrative control while allowing intuitive user editing.
+- **Smart Permission Engine**: Re-engineered `UserElementEditor.tsx` to handle permission resolution with high-fidelity fallbacks. Critical user-data layers (`gift_address`, `digital_gift`, `rsvp_wishes`, etc.) now correctly default to editable if no explicit permissions object exists, resolving the "Locked Data" issue for newly added elements.
+- **Strict Intent Visibility**: Updated `TemplateEditArea.tsx` and `OrbitPanel.tsx` to hide elements strictly based on administrative intent. Elements are only hidden if permissions are explicitly defined and all toggles are set to false.
+- **UI Integrity**: Hardened `BaseCardWrapper.tsx` to provide consistent "Locked by Admin" visual feedback for all interactive element types, including Gift and RSVP cards.
 
-### UI/UX Consistency
-- **Unified Logic**: Standardized visibility logic across the Invitation (Main) and Orbit (Stage) editor tabs for absolute precision.
-- **Pro Designer Refinement**: Ensured the "Layer Configuration" list accurately reflects all editable components when in Pro Designer view.
+### UI/UX Enhancements
+- **Smart Element Filtering**: Resolved an issue where `gift_address`, `digital_gift`, and `rsvp_wishes` elements were hidden from the User Editor's configuration list.
+- **Config-Based Detection**: Implemented a "Smart" filter that automatically detects interactive layers based on their configuration objects, ensuring they appear in the editor even if permission objects are partially defined.
 
 ## [2026-03-02] Feature: Pro Designer View & Terminology Alignment
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
 **Environment**: Production
+...
 
 ### Admin & User Editor Alignment
 - **Terminology Sync**: Standardized the label "Permissions & Visibility" to **"Layer Configuration & Permissions"** across `PropertyPanel.tsx` and `PropertyInspector.tsx` to match the end-user's mental model.
