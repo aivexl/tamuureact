@@ -1,5 +1,22 @@
 # Tamuu Changelog
 
+## [2026-03-03] UI: Apple-Standard Social Media Card Redesign
+**Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
+**Environment**: Production
+
+### Social Media Redesign (Apple Standard)
+- **Obsidian Glass Aesthetic**: Redesigned `SocialMockupElement` with a premium glassmorphism look, featuring high-fidelity blurs, subtle borders, and refined shadows.
+- **High-Fidelity SVG Logos**: Replaced generic icons with official high-fidelity SVG glyphs for **X (formerly Twitter)**, **Instagram**, **TikTok**, and **WhatsApp**.
+- **Floating Icon Design**: Removed background circles from all social logos to achieve a clean, minimalist "floating" appearance consistent with modern Apple UI.
+- **Enhanced Platform Selection**: Overhauled the selection interface in `AssetSelectionModal.tsx` from a simple grid to professional high-fidelity preview cards.
+- **Platform Rebranding**: Fully updated all references of "Twitter" to "X" across the inspector panel (`SocialMockupCard.tsx`) and property settings (`PropertyPanel.tsx`).
+- **Professional Navigation**: Standardized the use of `ChevronRight` for social links to provide a more elegant and premium feel.
+
+### Deployment
+- **API Worker Sync**: Re-deployed `tamuu-api` to ensure backend consistency.
+- **Dual-Project Deployment**: Synchronized production assets to both `tamuu` and `tamuu-app` Cloudflare Pages projects.
+- **Forced Production Build**: Executed `turbo run build --force` to guarantee fresh artifacts across the monorepo.
+
 ## [2026-03-02] Fix: Smart Permission Engine & Gift Address Unlocking
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
 **Environment**: Production

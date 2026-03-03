@@ -2721,14 +2721,13 @@ export const PropertyPanel: React.FC = () => {
                                 value={layer.socialMockupConfig?.platform || 'instagram'}
                                 options={[
                                     { value: 'instagram', label: 'Instagram' },
-                                    { value: 'twitter', label: 'Twitter' },
+                                    { value: 'twitter', label: 'X (Twitter)' },
                                     { value: 'tiktok', label: 'TikTok' },
                                     { value: 'whatsapp', label: 'WhatsApp' },
                                     { value: 'other', label: 'Other/Custom' }
                                 ]}
                                 onChange={(v) => handleUpdate({ socialMockupConfig: { ...layer.socialMockupConfig!, platform: v as any } })}
-                            />
-                            <div>
+                            />                            <div>
                                 <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Username / ID</label>
                                 <input
                                     type="text"

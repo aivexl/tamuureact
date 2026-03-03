@@ -574,7 +574,7 @@ const elementConfigs: ElementConfig[] = [
     },
     {
         type: 'social_mockup',
-        icon: <Monitor className="w-5 h-5" />,
+        icon: <Share2 className="w-5 h-5" />,
         label: 'Social',
         color: 'hover:bg-sky-500/10 hover:border-sky-500/30',
         createDefault: () => ({
