@@ -11,6 +11,7 @@ import {
     Play, Pause, ChevronRight, Copy
 } from 'lucide-react';
 import { useAudioController } from '@/hooks/useAudioController';
+import { AnimatedCopyIcon } from '@/components/ui/AnimatedCopyIcon';
 
 // ============================================
 // PARTICLES ELEMENT (Confetti, Fireworks, etc.)
@@ -568,12 +569,7 @@ export const SocialMockupElement: React.FC<{ layer: Layer, onContentLoad?: () =>
     };
 
     const styles = getVariantStyles();
-
-    const handleCopy = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        const textToCopy = platform === 'whatsapp' ? username : `@${username}`;
-        navigator.clipboard.writeText(textToCopy);
-    };
+    const textToCopy = platform === 'whatsapp' ? username : `@${username}`;
 
     return (
         <div
@@ -594,7 +590,7 @@ export const SocialMockupElement: React.FC<{ layer: Layer, onContentLoad?: () =>
                         {info.icon}
                     </div>
                 )}
-                <div className="flex flex-col min-w-0">
+                <div className="flex flex-col min-w-0 leading-none">
                     <span
                         className={`truncate ${styles.handle} text-sm md:text-base`}
                         style={{
@@ -608,13 +604,12 @@ export const SocialMockupElement: React.FC<{ layer: Layer, onContentLoad?: () =>
                 </div>
             </div>
 
-            <button
-                onClick={handleCopy}
+            <AnimatedCopyIcon
+                text={textToCopy}
+                size={18}
                 className={`p-2 rounded-lg transition-all duration-300 active:scale-90 flex-shrink-0 ${variant === 'luxury' ? 'text-white/30 hover:text-white hover:bg-white/10' : variant === 'solid' ? 'text-slate-300 hover:text-slate-600 hover:bg-slate-100' : 'text-white/20 hover:text-white/60 hover:bg-white/5'}`}
-                title="Copy to clipboard"
-            >
-                <Copy size={18} strokeWidth={2.5} />
-            </button>
+                showToast={false}
+            />
         </div>
     );
 };

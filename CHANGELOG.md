@@ -1,5 +1,14 @@
 # Tamuu Changelog
 
+## [2026-03-03] UI: Premium Social Media Copy Animation
+**Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
+**Environment**: Production
+
+### Functional Updates
+- **AnimatedCopyIcon Integration**: Migrated the social media copy button to the specialized `AnimatedCopyIcon` component.
+- **Micro-interactions**: Added high-fidelity feedback animations, including a spring-animated checklist state and smooth icon transitions.
+- **Standardized Copy Logic**: Replaced manual clipboard handling with the centralized, robust copy engine used throughout the enterprise platform.
+
 ## [2026-03-03] UI: Social Media Copy-to-Clipboard Functionality
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
 **Environment**: Production
