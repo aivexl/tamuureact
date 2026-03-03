@@ -8,7 +8,7 @@ import {
     MessageSquare, Users, Circle, Triangle, Diamond, Star, Zap, Wind, Layout,
     Gift, Music, QrCode, Waves, Layers, Monitor, Share2, Sun, Hash, PlaySquare,
     Component, Palette, Eye, Shield, CreditCard, ExternalLink, Instagram, Twitter,
-    Play, Pause, ChevronRight
+    Play, Pause, ChevronRight, Copy
 } from 'lucide-react';
 import { useAudioController } from '@/hooks/useAudioController';
 
@@ -569,9 +569,15 @@ export const SocialMockupElement: React.FC<{ layer: Layer, onContentLoad?: () =>
 
     const styles = getVariantStyles();
 
+    const handleCopy = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const textToCopy = platform === 'whatsapp' ? username : `@${username}`;
+        navigator.clipboard.writeText(textToCopy);
+    };
+
     return (
         <div
-            className="w-full h-full px-6 flex items-center justify-between overflow-hidden transition-all duration-500 group cursor-pointer"
+            className="w-full h-full px-6 flex items-center justify-between overflow-hidden transition-all duration-500 group"
             style={{
                 ...styles.container,
                 borderRadius: 20,
@@ -602,9 +608,13 @@ export const SocialMockupElement: React.FC<{ layer: Layer, onContentLoad?: () =>
                 </div>
             </div>
 
-            <div className={`flex-shrink-0 transition-all duration-500 group-hover:translate-x-1 ${styles.arrow}`}>
-                <ChevronRight size={18} strokeWidth={2.5} />
-            </div>
+            <button
+                onClick={handleCopy}
+                className={`p-2 rounded-lg transition-all duration-300 active:scale-90 flex-shrink-0 ${variant === 'luxury' ? 'text-white/30 hover:text-white hover:bg-white/10' : variant === 'solid' ? 'text-slate-300 hover:text-slate-600 hover:bg-slate-100' : 'text-white/20 hover:text-white/60 hover:bg-white/5'}`}
+                title="Copy to clipboard"
+            >
+                <Copy size={18} strokeWidth={2.5} />
+            </button>
         </div>
     );
 };

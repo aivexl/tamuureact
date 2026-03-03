@@ -1,6 +1,15 @@
 # Tamuu Changelog
 
-## [2026-03-03] UI: Apple-Standard Social Media Card Redesign
+## [2026-03-03] UI: Social Media Copy-to-Clipboard Functionality
+**Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
+**Environment**: Production
+
+### Functional Updates
+- **Click-to-Copy Integration**: Replaced the standard navigation arrow on social media cards with a functional **Copy button**.
+- **User UX Improvement**: Guests can now instantly copy social media handles or WhatsApp numbers to their clipboard with a single tap.
+- **Visual Feedback**: Implemented premium active-state scaling and hover effects for the Copy icon, maintaining the Apple Obsidian Glass aesthetic.
+
+### UI: Apple-Standard Social Media Card Redesign
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
 **Environment**: Production
 
