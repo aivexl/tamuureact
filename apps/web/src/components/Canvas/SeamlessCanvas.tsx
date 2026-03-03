@@ -1067,6 +1067,8 @@ const SectionFrame: React.FC<{
                         <Moveable
                             {...({} as any)}
                             target={targets}
+                            useResizeObserver={true}
+                            useMutationObserver={true}
                             draggable={true}
                             resizable={true}
                             rotatable={true}
@@ -1322,6 +1324,8 @@ const SideCanvas: React.FC<{
                     <Moveable
                         {...({} as any)}
                         target={targets}
+                        useResizeObserver={true}
+                        useMutationObserver={true}
                         draggable={true}
                         resizable={true}
                         rotatable={true}
