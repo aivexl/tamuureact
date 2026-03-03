@@ -1,5 +1,13 @@
 # Tamuu Changelog
 
+## [2026-03-03] Fix: Real-time Bounding Box Sync on Manual Property Resizing
+**Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
+**Environment**: Production
+
+### Core Fixes
+- **Mutation & Resize Observation**: Enabled `useResizeObserver={true}` and `useMutationObserver={true}` on all `Moveable` instances across the Admin Editor's Seamless Canvas (Main Canvas and Orbit Stages). 
+- **Real-time Synchronization**: Resolved an issue where manually adjusting the `fontSize` or `lineHeight` via the Property Panel caused the text to resize but left the virtual selection bounding box behind. The blue selection box will now auto-update and tightly frame the text element in real-time as properties are modified.
+
 ## [2026-03-03] Fix: Text Scaling and Bounding Box in Admin Editor
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
 **Environment**: Production
