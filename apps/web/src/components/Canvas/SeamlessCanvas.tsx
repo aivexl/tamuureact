@@ -519,12 +519,29 @@ export const SeamlessCanvas: React.FC = () => {
                                 onContextMenu={handleContextMenu}
                                 onDimensionsDetected={(id, w, h) => {
                                     const layer = (section.elements || []).find(el => el.id === id);
-                                    if (layer && ((layer.width === 100 && layer.height === 100) || (layer.width === 200 && layer.height === 200))) {
+                                    if (!layer) return;
+                                    
+                                    // 1. Initial size fix (100x100 or 200x200 placeholders)
+                                    if ((layer.width === 100 && layer.height === 100) || (layer.width === 200 && layer.height === 200)) {
                                         const ratio = w / h;
                                         let finalW = 200;
                                         let finalH = 200 / ratio;
                                         if (finalH > 400) { finalH = 400; finalW = 400 * ratio; }
                                         updateElementInSection(section.id, id, { width: finalW, height: finalH });
+                                        return;
+                                    }
+
+                                    // 2. Continuous Text Auto-Sizing (Liquid Layout for Text)
+                                    if (layer.type === 'text') {
+                                        // Update the bounding box to match the actual text DOM size tightly
+                                        // Use Math.round to avoid subpixel endless loops
+                                        const snapW = Math.round(w);
+                                        const snapH = Math.round(h);
+                                        
+                                        // Only update if the difference is significant (e.g., > 2px) to prevent layout thrashing
+                                        if (Math.abs(layer.width - snapW) > 2 || Math.abs(layer.height - snapH) > 2) {
+                                            updateElementInSection(section.id, id, { width: snapW, height: snapH });
+                                        }
                                     }
                                 }}
                                 onMoveUp={() => reorderSections(index, index - 1)}
@@ -1078,15 +1095,39 @@ const SectionFrame: React.FC<{
                                 e.target.style.width = `${e.width}px`;
                                 e.target.style.height = `${e.height}px`;
                                 e.target.style.transform = e.drag.transform;
+
+                                const id = e.target.getAttribute('data-element-id');
+                                const targetLayer = section?.elements?.find((el: any) => el.id === id);
+                                if (targetLayer && targetLayer.type === 'text') {
+                                    const scaleRatio = e.width / targetLayer.width;
+                                    const newFontSize = (targetLayer.textStyle?.fontSize || 24) * scaleRatio;
+                                    const textDiv = e.target.querySelector('div');
+                                    if (textDiv) {
+                                        textDiv.style.fontSize = `${newFontSize}px`;
+                                    }
+                                }
                             }}
                             onResizeEnd={(e: any) => {
                                 const id = e.target.getAttribute('data-element-id');
-                                if (id) onElementResize(id, {
-                                    width: e.lastEvent.width,
-                                    height: e.lastEvent.height,
-                                    x: e.lastEvent.drag.left,
-                                    y: e.lastEvent.drag.top
-                                });
+                                if (id) {
+                                    const targetLayer = section?.elements?.find((el: any) => el.id === id);
+                                    const updates: any = {
+                                        width: e.lastEvent.width,
+                                        height: e.lastEvent.height,
+                                        x: e.lastEvent.drag.left,
+                                        y: e.lastEvent.drag.top
+                                    };
+                                    
+                                    if (targetLayer && targetLayer.type === 'text') {
+                                        const scaleRatio = e.lastEvent.width / targetLayer.width;
+                                        const newFontSize = (targetLayer.textStyle?.fontSize || 24) * scaleRatio;
+                                        updates.textStyle = {
+                                            ...(targetLayer.textStyle || {}),
+                                            fontSize: Math.max(8, Math.round(newFontSize))
+                                        };
+                                    }
+                                    onElementResize(id, updates);
+                                }
                             }}
                             onRotate={(e: OnRotate) => {
                                 e.target.style.transform = e.drag.transform;

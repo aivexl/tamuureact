@@ -260,7 +260,7 @@ const TextElement: React.FC<{ layer: Layer, onContentLoad?: () => void, onDimens
     return (
         <div
             ref={textRef}
-            className="w-full h-fit flex items-center justify-center select-none"
+            className="w-fit h-fit flex items-center justify-center select-none"
             style={{
                 fontFamily: style?.fontFamily || 'Outfit',
                 fontSize: `${style?.fontSize || 24}px`,
