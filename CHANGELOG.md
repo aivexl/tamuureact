@@ -1,5 +1,15 @@
 # Tamuu Changelog
 
+## [2026-03-04] Fix: Ultra-Deep Text Bounding Box Auto-Sync & Zero-Gap Policy
+**Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
+**Environment**: Production / FAANG Enterprise Standard
+
+### Core Fixes
+- **Autonomous Dimension Synchronization**: Enhanced `TextElement` with a native `ResizeObserver` that reports real-time physical footprint changes directly back to the store's persistence layer (`layer.width/height`).
+- **Zero-Gap Policy**: Implemented `Math.ceil` rounding and a 1px delta threshold to ensure the blue selection box perfectly "shrink-wraps" text content, eliminating visual mismatches during manual font-size or content updates in the Property Panel.
+- **Editor-Only Optimization**: Synchronized resizing logic is strictly gated by the `isEditor` state, ensuring zero performance overhead in production/preview environments.
+- **Full Monorepo Build**: Executed forced Turbo build and deployed across all Cloudflare projects (`tamuu` and `tamuu-app`).
+
 ## [2026-03-04] UI: Optimized Initial Workspace & Default Panel States
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
 **Environment**: Production

@@ -52,7 +52,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenI
     const renderContent = () => {
         switch (layer.type) {
             case 'text':
-                return <TextElement layer={layer} onContentLoad={onContentLoad} onDimensionsDetected={onDimensionsDetected} />;
+                return <TextElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} onDimensionsDetected={onDimensionsDetected} />;
             case 'image':
             case 'gif':
             case 'sticker':
@@ -188,28 +188,52 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenI
 };
 
 
-// CTO ENTERPRISE FIX: Professional text rendering
-const TextElement: React.FC<{ layer: Layer, onContentLoad?: () => void, onDimensionsDetected?: (w: number, h: number) => void }> = ({ layer, onContentLoad, onDimensionsDetected }) => {
+// CTO ENTERPRISE FIX: Professional text rendering with Auto-Sizing
+const TextElement: React.FC<{ 
+    layer: Layer, 
+    isEditor?: boolean,
+    onContentLoad?: () => void, 
+    onDimensionsDetected?: (w: number, h: number) => void 
+}> = ({ layer, isEditor, onContentLoad, onDimensionsDetected }) => {
     const textRef = React.useRef<HTMLDivElement>(null);
+    const updateLayer = useStore(state => state.updateLayer);
 
     useEffect(() => {
         onContentLoad?.();
     }, []);
 
-    // Detect dimensions for Liquid Layout
+    // Detect dimensions for Liquid Layout and Virtual Box Sync
     useEffect(() => {
-        if (!textRef.current || !onDimensionsDetected) return;
+        if (!textRef.current) return;
 
         const observer = new ResizeObserver((entries) => {
             for (let entry of entries) {
                 const { width, height } = entry.contentRect;
-                onDimensionsDetected(width, height);
+                
+                // 1. Notify Liquid Layout Engine
+                onDimensionsDetected?.(width, height);
+
+                // 2. CTO FIX: AUTO-RESIZE PERSISTENCE
+                // Only sync back to store if in Editor mode and difference is significant (> 1px)
+                // We use Math.ceil + padding offset to ensure "tight-fit" encapsulation
+                if (isEditor) {
+                    const roundedW = Math.ceil(width + 8); // Account for 4px padding on both sides
+                    const roundedH = Math.ceil(height + 8);
+                    
+                    const diffW = Math.abs(roundedW - layer.width);
+                    const diffH = Math.abs(roundedH - layer.height);
+
+                    if (diffW > 1 || diffH > 1) {
+                        // Surgical update: Sync persistence layer with physical reality
+                        updateLayer(layer.id, { width: roundedW, height: roundedH });
+                    }
+                }
             }
         });
 
         observer.observe(textRef.current);
         return () => observer.disconnect();
-    }, [onDimensionsDetected]);
+    }, [isEditor, layer.id, layer.width, layer.height, onDimensionsDetected, updateLayer]);
 
     const style = layer.textStyle;
     const curved = layer.curvedTextConfig;
