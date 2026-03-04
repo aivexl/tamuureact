@@ -198,6 +198,7 @@ const TextElement: React.FC<{
     onDimensionsDetected?: (w: number, h: number) => void 
 }> = ({ layer, isEditor, onContentLoad, onDimensionsDetected }) => {
     const textRef = useRef<HTMLDivElement>(null);
+    const lastSyncRef = useRef<{ w: number, h: number }>({ w: 0, h: 0 });
     const updateLayer = useStore(state => state.updateLayer);
     const { content, textStyle, curvedTextConfig, id, width, height } = layer;
 
@@ -209,23 +210,29 @@ const TextElement: React.FC<{
     useLayoutEffect(() => {
         if (!isEditor || !textRef.current) return;
 
-        // Measure the true rendered dimensions of the text content.
-        const newWidth = textRef.current.scrollWidth;
-        const newHeight = textRef.current.scrollHeight;
+        // 1. Measure the physical footprint of the text.
+        const rect = textRef.current.getBoundingClientRect();
+        const measuredW = Math.ceil(rect.width);
+        const measuredH = Math.ceil(rect.height);
 
-        // Notify the Liquid Layout engine of the new dimensions.
-        onDimensionsDetected?.(newWidth, newHeight);
+        // 2. STABILITY GUARD: Prevent Infinite Loops (Error #185)
+        // Check against store and local lock. Only update if change is significant (> 1px).
+        const diffW = Math.abs(measuredW - width);
+        const diffH = Math.abs(measuredH - height);
+        const hasChangedLocally = measuredW !== lastSyncRef.current.w || measuredH !== lastSyncRef.current.h;
 
-        // Check for significant differences to prevent update loops.
-        const widthDiff = Math.abs(newWidth - width);
-        const heightDiff = Math.abs(newHeight - height);
-
-        // Synchronize Konva state if the real dimensions have changed.
-        if (widthDiff > 1 || heightDiff > 1) {
-            updateLayer(id, { width: newWidth, height: newHeight });
+        if (hasChangedLocally && (diffW > 1 || diffH > 1)) {
+            // Update local lock immediately
+            lastSyncRef.current = { w: measuredW, h: measuredH };
+            
+            // Notify layout engine
+            onDimensionsDetected?.(measuredW, measuredH);
+            
+            // Sync to store
+            updateLayer(id, { width: measuredW, height: measuredH });
         }
 
-    }, [content, textStyle, isEditor, id, width, height, onDimensionsDetected, updateLayer]);
+    }, [content, textStyle, isEditor, id, onDimensionsDetected, updateLayer]); // REMOVED width/height from dependencies to stop the loop
 
     if (curvedTextConfig?.enabled) {
         const radius = curvedTextConfig.radius || 100;
