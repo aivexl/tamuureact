@@ -1,5 +1,13 @@
 # Tamuu Changelog
 
+## [2026-03-04] Enhancement: Text Element V2 (Perfect-Fit Algorithm)
+**Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
+**Environment**: Production
+
+### Architectural Updates
+- **Perfect-Fit Algorithm**: Refactored `TextElement` to utilize a `useLayoutEffect` based measurement strategy instead of `ResizeObserver`. This imperatively syncs the Konva bounding box to the real DOM text dimensions.
+- **Precision Alignment**: Accurately measures `scrollWidth` and `scrollHeight` of the text node directly within the React layout phase to prevent visual tearing and ensure the blue selection box strictly maps to the visible content boundaries.
+
 ## [2026-03-04] Fix: Ultra-Deep Text Bounding Box Auto-Sync & Zero-Gap Policy
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
 **Environment**: Production / FAANG Enterprise Standard

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { patchLegacyUrl } from '@/lib/utils';
@@ -188,123 +188,110 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenI
 };
 
 
-// CTO ENTERPRISE FIX: Professional text rendering with Auto-Sizing
+// ============================================
+// TEXT ELEMENT V2 (PERFECT-FIT ALGORITHM)
+// ============================================
 const TextElement: React.FC<{ 
     layer: Layer, 
     isEditor?: boolean,
     onContentLoad?: () => void, 
     onDimensionsDetected?: (w: number, h: number) => void 
 }> = ({ layer, isEditor, onContentLoad, onDimensionsDetected }) => {
-    const textRef = React.useRef<HTMLDivElement>(null);
+    const textRef = useRef<HTMLDivElement>(null);
     const updateLayer = useStore(state => state.updateLayer);
+    const { content, textStyle, curvedTextConfig, id, width, height } = layer;
 
     useEffect(() => {
         onContentLoad?.();
-    }, []);
+    }, [onContentLoad]);
 
-    // Detect dimensions for Liquid Layout and Virtual Box Sync
-    useEffect(() => {
-        if (!textRef.current) return;
+    // PERFECT-FIT ALGORITHM: Imperatively sync Konva box to real DOM text dimensions.
+    useLayoutEffect(() => {
+        if (!isEditor || !textRef.current) return;
 
-        const observer = new ResizeObserver((entries) => {
-            for (let entry of entries) {
-                const { width, height } = entry.contentRect;
-                
-                // 1. Notify Liquid Layout Engine
-                onDimensionsDetected?.(width, height);
+        // Measure the true rendered dimensions of the text content.
+        const newWidth = textRef.current.scrollWidth;
+        const newHeight = textRef.current.scrollHeight;
 
-                // 2. CTO FIX: AUTO-RESIZE PERSISTENCE
-                // Only sync back to store if in Editor mode and difference is significant (> 1px)
-                // We use Math.ceil + padding offset to ensure "tight-fit" encapsulation
-                if (isEditor) {
-                    const roundedW = Math.ceil(width + 8); // Account for 4px padding on both sides
-                    const roundedH = Math.ceil(height + 8);
-                    
-                    const diffW = Math.abs(roundedW - layer.width);
-                    const diffH = Math.abs(roundedH - layer.height);
+        // Notify the Liquid Layout engine of the new dimensions.
+        onDimensionsDetected?.(newWidth, newHeight);
 
-                    if (diffW > 1 || diffH > 1) {
-                        // Surgical update: Sync persistence layer with physical reality
-                        updateLayer(layer.id, { width: roundedW, height: roundedH });
-                    }
-                }
-            }
-        });
+        // Check for significant differences to prevent update loops.
+        const widthDiff = Math.abs(newWidth - width);
+        const heightDiff = Math.abs(newHeight - height);
 
-        observer.observe(textRef.current);
-        return () => observer.disconnect();
-    }, [isEditor, layer.id, layer.width, layer.height, onDimensionsDetected, updateLayer]);
+        // Synchronize Konva state if the real dimensions have changed.
+        if (widthDiff > 1 || heightDiff > 1) {
+            updateLayer(id, { width: newWidth, height: newHeight });
+        }
 
-    const style = layer.textStyle;
-    const curved = layer.curvedTextConfig;
+    }, [content, textStyle, isEditor, id, width, height, onDimensionsDetected, updateLayer]);
 
-    if (curved?.enabled) {
-        const radius = curved.radius || 100;
-        const width = layer.width || 200;
-        const height = layer.height || 200;
-        const centerX = width / 2;
-        const centerY = height / 2;
-        const startAngle = curved.angle || 0;
+    if (curvedTextConfig?.enabled) {
+        const radius = curvedTextConfig.radius || 100;
+        const curvedWidth = width || 200;
+        const curvedHeight = height || 200;
+        const centerX = curvedWidth / 2;
+        const centerY = curvedHeight / 2;
 
         return (
             <svg
-                ref={textRef as any}
-                viewBox={`0 0 ${width} ${height}`}
+                ref={textRef as any} // SVG ref for layout effect measurement
+                viewBox={`0 0 ${curvedWidth} ${curvedHeight}`}
                 className="w-full h-full overflow-visible"
                 style={{ filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.3))' }}
             >
                 <defs>
                     <path
-                        id={`curved-path-${layer.id}`}
-                        d={`M ${centerX - radius},${centerY} A ${radius},${radius} 0 1 ${curved.reverse ? 0 : 1} ${centerX + radius},${centerY}`}
+                        id={`curved-path-${id}`}
+                        d={`M ${centerX - radius},${centerY} A ${radius},${radius} 0 1 ${curvedTextConfig.reverse ? 0 : 1} ${centerX + radius},${centerY}`}
                     />
                 </defs>
                 <text
-                    fill={style?.color || '#ffffff'}
+                    fill={textStyle?.color || '#ffffff'}
                     style={{
-                        fontFamily: style?.fontFamily || 'Outfit',
-                        fontSize: `${style?.fontSize || 24}px`,
-                        fontWeight: style?.fontWeight || 'normal',
-                        fontStyle: style?.fontStyle || 'normal',
-                        letterSpacing: `${curved.spacing || 0}px`
+                        fontFamily: textStyle?.fontFamily || 'Outfit',
+                        fontSize: `${textStyle?.fontSize || 24}px`,
+                        fontWeight: textStyle?.fontWeight || 'normal',
+                        fontStyle: textStyle?.fontStyle || 'normal',
+                        letterSpacing: `${curvedTextConfig.spacing || 0}px`
                     }}
                 >
-                    <textPath xlinkHref={`#curved-path-${layer.id}`} startOffset="50%" textAnchor="middle">
-                        {layer.content || 'Text'}
+                    <textPath xlinkHref={`#curved-path-${id}`} startOffset="50%" textAnchor="middle">
+                        {content || 'Text'}
                     </textPath>
                 </text>
             </svg>
         );
     }
 
-    // Detect multiline: either explicitly set OR content contains newlines
-    const hasNewlines = layer.content?.includes('\n') || false;
-    const isMultiline = style?.multiline === true || hasNewlines;
+    const hasNewlines = content?.includes('\n') || false;
 
     return (
         <div
             ref={textRef}
-            className="w-fit h-fit flex items-center justify-center select-none"
+            className="flex items-center justify-center select-none"
             style={{
-                fontFamily: style?.fontFamily || 'Outfit',
-                fontSize: `${style?.fontSize || 24}px`,
-                fontWeight: style?.fontWeight || 'normal',
-                fontStyle: style?.fontStyle || 'normal',
-                textAlign: style?.textAlign || 'center',
-                color: style?.color || '#ffffff',
-                textDecoration: style?.textDecoration || 'none',
-                lineHeight: style?.lineHeight || 1.2,
-                letterSpacing: style?.letterSpacing || 0,
-                // 'pre' preserves newlines but doesn't auto-wrap at word boundaries
-                // 'nowrap' prevents any wrapping when there are no newlines
-                whiteSpace: hasNewlines ? 'pre' : 'nowrap',
-                overflow: 'visible',
-                padding: '4px',
-                minHeight: '100%',
-                boxSizing: 'border-box'
+                // Use layer dimensions for layout, let content overflow for measurement.
+                width: isEditor ? 'fit-content' : '100%',
+                height: isEditor ? 'fit-content' : '100%',
+                minWidth: isEditor ? '1px' : 'auto', // Prevents collapse when empty
+                fontFamily: textStyle?.fontFamily || 'Outfit',
+                fontSize: `${textStyle?.fontSize || 24}px`,
+                fontWeight: textStyle?.fontWeight || 'normal',
+                fontStyle: textStyle?.fontStyle || 'normal',
+                textAlign: textStyle?.textAlign || 'center',
+                color: textStyle?.color || '#ffffff',
+                textDecoration: textStyle?.textDecoration || 'none',
+                lineHeight: textStyle?.lineHeight || 1.2,
+                letterSpacing: `${textStyle?.letterSpacing || 0}px`,
+                whiteSpace: hasNewlines ? 'pre-wrap' : 'nowrap', // Allow wrapping for multiline
+                overflow: 'visible', // CRITICAL: Let content size be measurable
+                padding: 0, // CRITICAL: Ensure zero padding for precise measurement
+                boxSizing: 'content-box' // CRITICAL: Measurements based on content only
             }}
         >
-            {layer.content || 'Text'}
+            {content || (isEditor ? '' : 'Text')} 
         </div>
     );
 };
@@ -331,7 +318,7 @@ const ImageElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?:
             const timer = setTimeout(() => setLoaded(true), 500);
             return () => clearTimeout(timer);
         }
-    }, [layer.imageUrl, isEditor]); // Removed onContentLoad from dependency to avoid loop
+    }, [layer.imageUrl, isEditor, onContentLoad]);
 
     if (!layer.imageUrl) {
         return (
@@ -402,7 +389,7 @@ const ImageElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?:
 const IconElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ layer, onContentLoad }) => {
     useEffect(() => {
         onContentLoad?.();
-    }, []); // Non-resource element, reveal immediately
+    }, [onContentLoad]);
 
     const style = layer.iconStyle;
     const iconName = style?.iconName || 'heart';
@@ -422,7 +409,7 @@ const IconElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ l
 const ButtonElement: React.FC<{ layer: Layer, onOpenInvitation?: () => void, onContentLoad?: () => void }> = ({ layer, onOpenInvitation, onContentLoad }) => {
     useEffect(() => {
         onContentLoad?.();
-    }, []); // Non-resource element, reveal immediately
+    }, [onContentLoad]);
 
     // Default config if none provided
     const defaultConfig = {
@@ -510,7 +497,7 @@ const ButtonElement: React.FC<{ layer: Layer, onOpenInvitation?: () => void, onC
 const ShapeElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ layer, onContentLoad }) => {
     useEffect(() => {
         onContentLoad?.();
-    }, []);
+    }, [onContentLoad]);
 
     const config = layer.shapeConfig;
     if (!config) return null;
@@ -640,7 +627,7 @@ const LottieElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?
                     onContentLoad?.();
                 });
         });
-    }, [config?.url]);
+    }, [config?.url, onContentLoad]);
 
     // CTO MASTER SYNC: Hard reset or frame-jump for Lottie
     useEffect(() => {
@@ -674,7 +661,7 @@ const LottieElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?
 const MapsElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ layer, onContentLoad }) => {
     useEffect(() => {
         onContentLoad?.();
-    }, []);
+    }, [onContentLoad]);
 
     const config = layer.mapsConfig;
     return (
@@ -691,7 +678,7 @@ const MapsElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ l
 const VideoElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ layer, onContentLoad }) => {
     useEffect(() => {
         onContentLoad?.();
-    }, []);
+    }, [onContentLoad]);
 
     return (
         <div className="w-full h-full bg-black/40 rounded-xl flex items-center justify-center border border-white/10">
@@ -706,7 +693,7 @@ const VideoElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ 
 const RSVPFormElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ layer, onContentLoad }) => {
     useEffect(() => {
         onContentLoad?.();
-    }, []);
+    }, [onContentLoad]);
 
     const config = layer.rsvpFormConfig;
     return (
@@ -727,7 +714,7 @@ const RSVPFormElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = 
 const GuestWishesElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ layer, onContentLoad }) => {
     useEffect(() => {
         onContentLoad?.();
-    }, []);
+    }, [onContentLoad]);
 
     return (
         <div className="w-full h-full bg-white/5 rounded-xl border border-white/10 p-4 flex flex-col gap-3">
@@ -749,7 +736,7 @@ const FlyingBirdElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentL
 
     useEffect(() => {
         onContentLoad?.();
-    }, []);
+    }, [onContentLoad]);
 
     const config = layer.flyingBirdConfig;
     const flapSpeed = config?.flapSpeed || 0.3;
@@ -782,7 +769,7 @@ const PhotoGridElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLo
 
     useEffect(() => {
         onContentLoad?.();
-    }, []);
+    }, [onContentLoad]);
 
     const config = layer.photoGridConfig;
     if (!config) return null;
@@ -947,7 +934,7 @@ const InteractionElement: React.FC<{ layer: Layer, isEditor?: boolean, onContent
 
     useEffect(() => {
         onContentLoad?.();
-    }, []);
+    }, [onContentLoad]);
 
     const config = layer.interactionConfig;
     const effect = config?.effect || 'confetti';
@@ -1012,7 +999,7 @@ const InteractionElement: React.FC<{ layer: Layer, isEditor?: boolean, onContent
 const PlaceholderElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ layer, onContentLoad }) => {
     useEffect(() => {
         onContentLoad?.();
-    }, []);
+    }, [onContentLoad]);
 
     return (
         <div className="w-full h-full bg-white/5 rounded border-2 border-dashed border-white/10 flex items-center justify-center">
