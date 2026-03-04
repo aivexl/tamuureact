@@ -16,19 +16,35 @@ export const ProfileCard: React.FC<ElementCardProps> = ({ element, handleUpdate,
         customColor: '#bfa181'
     } as any);
 
-    // FORTRESS: Local state buffering to fix the "jumping cursor" bug
+    // FORTRESS: Local state and Ref for high-performance input
     const [localName, setLocalName] = React.useState(config.name || '');
     const [localParents, setLocalParents] = React.useState((config as any).parents || '');
+    const isTypingRef = React.useRef(false);
 
     // Sync local state when external data changes
     React.useEffect(() => {
-        if (config.name !== localName) setLocalName(config.name || '');
+        if (!isTypingRef.current && config.name !== localName) setLocalName(config.name || '');
     }, [config.name]);
 
     React.useEffect(() => {
         const extParents = (config as any).parents || '';
-        if (extParents !== localParents) setLocalParents(extParents);
+        if (!isTypingRef.current && extParents !== localParents) setLocalParents(extParents);
     }, [(config as any).parents]);
+
+    // CITADEL: Debounced Update
+    const debouncedUpdate = React.useCallback(
+        (() => {
+            let timeout: any;
+            return (updates: any) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    handleUpdate(updates);
+                    setTimeout(() => { isTypingRef.current = false; }, 50);
+                }, 100);
+            };
+        })(),
+        [handleUpdate]
+    );
 
     const roleLabel = (config as any).role === 'mempelai_pria' || (config as any).role === 'Groom' ? 'Mempelai Pria' : 
                       (config as any).role === 'mempelai_wanita' || (config as any).role === 'Bride' ? 'Mempelai Wanita' : 
@@ -54,9 +70,16 @@ export const ProfileCard: React.FC<ElementCardProps> = ({ element, handleUpdate,
                                 value={localName}
                                 onChange={(e) => {
                                     const val = e.target.value;
+                                    isTypingRef.current = true;
                                     setLocalName(val);
-                                    handleUpdate({
+                                    debouncedUpdate({
                                         profileCardConfig: { ...config, name: val } as any
+                                    });
+                                }}
+                                onBlur={() => {
+                                    isTypingRef.current = false;
+                                    handleUpdate({
+                                        profileCardConfig: { ...config, name: localName } as any
                                     });
                                 }}
                                 className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all"
@@ -79,9 +102,16 @@ export const ProfileCard: React.FC<ElementCardProps> = ({ element, handleUpdate,
                                 value={localParents}
                                 onChange={(e) => {
                                     const val = e.target.value;
+                                    isTypingRef.current = true;
                                     setLocalParents(val);
-                                    handleUpdate({
+                                    debouncedUpdate({
                                         profileCardConfig: { ...config, parents: val } as any
+                                    });
+                                }}
+                                onBlur={() => {
+                                    isTypingRef.current = false;
+                                    handleUpdate({
+                                        profileCardConfig: { ...config, parents: localParents } as any
                                     });
                                 }}
                                 className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all"

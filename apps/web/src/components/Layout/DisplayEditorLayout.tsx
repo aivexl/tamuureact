@@ -16,6 +16,7 @@ import { Layers, List, Settings } from 'lucide-react';
 import { SettingsSidebar } from '../Panels/SettingsSidebar';
 import { useNavigate } from 'react-router-dom';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { SmartFontInjector } from '../ui/SmartFontInjector';
 
 // ============================================
 // DISPLAY EDITOR LAYOUT
@@ -188,6 +189,7 @@ export const DisplayEditorLayout: React.FC<DisplayEditorLayoutProps> = ({ templa
     // ============================================
     return (
         <div className="w-full h-screen bg-[#050505] text-white overflow-hidden font-outfit relative">
+            <SmartFontInjector />
             {/* Header */}
             <header className="h-14 bg-black/50 backdrop-blur-xl border-b border-white/10 flex items-center justify-between px-4 fixed top-0 left-0 right-0 z-50">
                 {/* Left */}

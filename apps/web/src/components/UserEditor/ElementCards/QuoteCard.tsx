@@ -15,16 +15,37 @@ export const QuoteCard: React.FC<ElementCardProps> = ({ element, handleUpdate, p
 
     const canEdit = permissions.canEditText || permissions.canEditContent;
 
-    // FORTRESS: Local state buffering to fix the "jumping cursor" bug
+    // FORTRESS: Local state and Ref for high-performance input
     const [localText, setLocalText] = React.useState(config.text || element.content || '');
+    const isTypingRef = React.useRef(false);
 
     // Sync local state when external data changes
     React.useEffect(() => {
-        const externalText = config.text || element.content || '';
-        if (externalText !== localText) {
-            setLocalText(externalText);
+        if (!isTypingRef.current) {
+            const externalText = config.text || element.content || '';
+            if (externalText !== localText) {
+                setLocalText(externalText);
+            }
         }
     }, [config.text, element.content]);
+
+    // CITADEL: Debounced Update
+    const debouncedUpdate = React.useCallback(
+        (() => {
+            let timeout: any;
+            return (val: string) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    handleUpdate({
+                        content: val,
+                        quoteConfig: { ...config, text: val }
+                    });
+                    setTimeout(() => { isTypingRef.current = false; }, 50);
+                }, 100);
+            };
+        })(),
+        [handleUpdate, config]
+    );
 
     return (
         <div className="space-y-5">
@@ -37,10 +58,15 @@ export const QuoteCard: React.FC<ElementCardProps> = ({ element, handleUpdate, p
                             value={localText}
                             onChange={(e) => {
                                 const val = e.target.value;
+                                isTypingRef.current = true;
                                 setLocalText(val);
+                                debouncedUpdate(val);
+                            }}
+                            onBlur={() => {
+                                isTypingRef.current = false;
                                 handleUpdate({
-                                    content: val,
-                                    quoteConfig: { ...config, text: val }
+                                    content: localText,
+                                    quoteConfig: { ...config, text: localText }
                                 });
                             }}
                             className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all min-h-[100px] resize-none"

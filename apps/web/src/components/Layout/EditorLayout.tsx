@@ -19,6 +19,7 @@ import { Layers, List, Settings } from 'lucide-react';
 import { SettingsSidebar } from '../Panels/SettingsSidebar';
 import { useClockEngine } from '@/hooks/useClockEngine';
 import { SequenceTimeline } from '../AdminEditor/SequenceTimeline';
+import { SmartFontInjector } from '../ui/SmartFontInjector';
 
 
 interface EditorLayoutProps {
@@ -310,6 +311,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
 
     return (
         <div className="w-full h-full flex flex-col bg-[#050505]">
+            <SmartFontInjector />
             <EditorHeader
                 templateId={templateId}
                 templateName={projectName || 'Untitled Template'}

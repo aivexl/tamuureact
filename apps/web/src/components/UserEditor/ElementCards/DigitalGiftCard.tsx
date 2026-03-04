@@ -19,28 +19,44 @@ export const DigitalGiftCard: React.FC<ElementCardProps> = ({ element, handleUpd
         customColor: '#bfa181'
     } as any);
 
-    // FORTRESS: Local state buffering to fix the "jumping cursor" bug
+    // FORTRESS: Local state and Ref for high-performance input
     const [localDescription, setLocalDescription] = React.useState(config.description || '');
     const [localAccountNumber, setLocalAccountNumber] = React.useState(config.accountNumber || '');
     const [localAccountHolder, setLocalAccountHolder] = React.useState(config.accountHolder || '');
     const [localTitle, setLocalTitle] = React.useState(config.title || '');
+    const isTypingRef = React.useRef(false);
 
     // Sync local state when external data changes
     React.useEffect(() => {
-        if (config.description !== localDescription) setLocalDescription(config.description || '');
+        if (!isTypingRef.current && config.description !== localDescription) setLocalDescription(config.description || '');
     }, [config.description]);
 
     React.useEffect(() => {
-        if (config.accountNumber !== localAccountNumber) setLocalAccountNumber(config.accountNumber || '');
+        if (!isTypingRef.current && config.accountNumber !== localAccountNumber) setLocalAccountNumber(config.accountNumber || '');
     }, [config.accountNumber]);
 
     React.useEffect(() => {
-        if (config.accountHolder !== localAccountHolder) setLocalAccountHolder(config.accountHolder || '');
+        if (!isTypingRef.current && config.accountHolder !== localAccountHolder) setLocalAccountHolder(config.accountHolder || '');
     }, [config.accountHolder]);
 
     React.useEffect(() => {
-        if (config.title !== localTitle) setLocalTitle(config.title || '');
+        if (!isTypingRef.current && config.title !== localTitle) setLocalTitle(config.title || '');
     }, [config.title]);
+
+    // CITADEL: Debounced Update
+    const debouncedUpdate = React.useCallback(
+        (() => {
+            let timeout: any;
+            return (updates: any) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    handleUpdate(updates);
+                    setTimeout(() => { isTypingRef.current = false; }, 50);
+                }, 100);
+            };
+        })(),
+        [handleUpdate]
+    );
 
     const isBankKnown = SUPPORTED_BANKS.find(b => b.name === config.bankName);
     const canEdit = permissions.canEditText || permissions.canEditContent;
@@ -63,9 +79,16 @@ export const DigitalGiftCard: React.FC<ElementCardProps> = ({ element, handleUpd
                                 value={localTitle}
                                 onChange={(e) => {
                                     const val = e.target.value;
+                                    isTypingRef.current = true;
                                     setLocalTitle(val);
-                                    handleUpdate({
+                                    debouncedUpdate({
                                         digitalGiftConfig: { ...config, title: val }
+                                    });
+                                }}
+                                onBlur={() => {
+                                    isTypingRef.current = false;
+                                    handleUpdate({
+                                        digitalGiftConfig: { ...config, title: localTitle }
                                     });
                                 }}
                                 className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all"
@@ -83,9 +106,16 @@ export const DigitalGiftCard: React.FC<ElementCardProps> = ({ element, handleUpd
                             value={localDescription}
                             onChange={(e) => {
                                 const val = e.target.value;
+                                isTypingRef.current = true;
                                 setLocalDescription(val);
-                                handleUpdate({
+                                debouncedUpdate({
                                     digitalGiftConfig: { ...config, description: val }
+                                });
+                            }}
+                            onBlur={() => {
+                                isTypingRef.current = false;
+                                handleUpdate({
+                                    digitalGiftConfig: { ...config, description: localDescription }
                                 });
                             }}
                             className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all"
@@ -156,9 +186,16 @@ export const DigitalGiftCard: React.FC<ElementCardProps> = ({ element, handleUpd
                                     value={localAccountNumber}
                                     onChange={(e) => {
                                         const val = e.target.value;
+                                        isTypingRef.current = true;
                                         setLocalAccountNumber(val);
-                                        handleUpdate({
+                                        debouncedUpdate({
                                             digitalGiftConfig: { ...config, accountNumber: val }
+                                        });
+                                    }}
+                                    onBlur={() => {
+                                        isTypingRef.current = false;
+                                        handleUpdate({
+                                            digitalGiftConfig: { ...config, accountNumber: localAccountNumber }
                                         });
                                     }}
                                     className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all"
@@ -180,9 +217,16 @@ export const DigitalGiftCard: React.FC<ElementCardProps> = ({ element, handleUpd
                                     value={localAccountHolder}
                                     onChange={(e) => {
                                         const val = e.target.value;
+                                        isTypingRef.current = true;
                                         setLocalAccountHolder(val);
-                                        handleUpdate({
+                                        debouncedUpdate({
                                             digitalGiftConfig: { ...config, accountHolder: val }
+                                        });
+                                    }}
+                                    onBlur={() => {
+                                        isTypingRef.current = false;
+                                        handleUpdate({
+                                            digitalGiftConfig: { ...config, accountHolder: localAccountHolder }
                                         });
                                     }}
                                     className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all"

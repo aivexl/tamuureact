@@ -1,5 +1,23 @@
 # Tamuu Changelog
 
+## [2026-03-04] Fix: Admin Editor Font Rendering & Layout Coverage
+**Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
+**Environment**: Production
+
+### Core Fixes
+- **SmartFontInjector Integration**: Extended the automatic Google Font injection system to the Admin Editor and Display Editor layouts. Previously, fonts only rendered correctly in User Editor/Preview.
+- **Unified Design Parity**: Ensures that all design elements in Seamless, Orbit, and Display modes use the exact intended typography, matching 1:1 with the production preview.
+
+## [2026-03-04] Fix: High-Performance Typing & Cursor Persistence (Layer Configuration)
+**Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
+**Environment**: Production
+
+### Core Fixes
+- **Selection Lock Architecture**: Introduced `isTypingRef` state locking in all text editors within the Layer Configuration panel. This prevents external state synchronizations from resetting the cursor position while a user is actively typing.
+- **Citadel Debounced Engine**: Implemented a 100ms debounced update cycle for the global store. This allows for real-time preview updates without the performance overhead or race conditions that cause cursor jumping.
+- **Atomic Blur Sync**: Added `onBlur` safety handlers to ensure the final typed content is always accurately persisted to the global store, regardless of debouncing cycles.
+- **Coverage**: Applied to `TextCard`, `QuoteCard`, `ProfileCard`, and `DigitalGiftCard` components.
+
 ## [2026-03-04] Fix: User Editor "Jumping Cursor" Resolution
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
 **Environment**: Production

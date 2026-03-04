@@ -9,16 +9,37 @@ export const TextCard: React.FC<ElementCardProps> = ({ element, handleUpdate, pe
     const [showStyling, setShowStyling] = useState(false);
     const { elementDimensions } = useStore();
 
-    // FORTRESS: Local state buffering to fix the "jumping cursor" bug
-    // This ensures the input maintains its selection range during rapid store updates.
+    // FORTRESS: Local state and Ref for high-performance input
     const [localContent, setLocalContent] = React.useState(element.content || '');
+    const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+    const isTypingRef = React.useRef(false);
 
     // Sync local state when element.content changes externally (e.g. undo/redo, template switch)
+    // ONLY sync if user is not currently typing to avoid cursor jumps
     React.useEffect(() => {
-        if (element.content !== localContent) {
+        if (!isTypingRef.current && element.content !== localContent) {
             setLocalContent(element.content || '');
         }
     }, [element.content]);
+
+    // CITADEL: Debounced Update to avoid heavy global re-renders on every keystroke
+    // But fast enough to feel "real-time" (100ms)
+    const debouncedUpdate = React.useCallback(
+        (() => {
+            let timeout: any;
+            return (val: string) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    handleUpdate({ content: val });
+                    // Only release the "typing" lock after the store update has propagated
+                    setTimeout(() => {
+                        isTypingRef.current = false;
+                    }, 50);
+                }, 100);
+            };
+        })(),
+        [handleUpdate]
+    );
 
     return (
         <div className="space-y-4">
@@ -29,11 +50,17 @@ export const TextCard: React.FC<ElementCardProps> = ({ element, handleUpdate, pe
                         Konten Teks
                     </label>
                     <textarea
+                        ref={textareaRef}
                         value={localContent}
                         onChange={(e) => {
                             const val = e.target.value;
+                            isTypingRef.current = true;
                             setLocalContent(val);
-                            handleUpdate({ content: val });
+                            debouncedUpdate(val);
+                        }}
+                        onBlur={() => {
+                            isTypingRef.current = false;
+                            handleUpdate({ content: localContent });
                         }}
                         className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none resize-none"
                         rows={Math.max(1, Math.min(6, (localContent.split('\n').length || 1)))}
