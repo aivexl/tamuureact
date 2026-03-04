@@ -15,6 +15,17 @@ export const QuoteCard: React.FC<ElementCardProps> = ({ element, handleUpdate, p
 
     const canEdit = permissions.canEditText || permissions.canEditContent;
 
+    // FORTRESS: Local state buffering to fix the "jumping cursor" bug
+    const [localText, setLocalText] = React.useState(config.text || element.content || '');
+
+    // Sync local state when external data changes
+    React.useEffect(() => {
+        const externalText = config.text || element.content || '';
+        if (externalText !== localText) {
+            setLocalText(externalText);
+        }
+    }, [config.text, element.content]);
+
     return (
         <div className="space-y-5">
             {canEdit ? (
@@ -23,11 +34,15 @@ export const QuoteCard: React.FC<ElementCardProps> = ({ element, handleUpdate, p
                     <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Isi Kutipan / Ayat</label>
                         <textarea
-                            value={config.text || element.content || ''}
-                            onChange={(e) => handleUpdate({
-                                content: e.target.value,
-                                quoteConfig: { ...config, text: e.target.value }
-                            })}
+                            value={localText}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                setLocalText(val);
+                                handleUpdate({
+                                    content: val,
+                                    quoteConfig: { ...config, text: val }
+                                });
+                            }}
                             className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all min-h-[100px] resize-none"
                             placeholder="Masukkan kutipan atau ayat..."
                         />

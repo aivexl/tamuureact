@@ -16,6 +16,20 @@ export const ProfileCard: React.FC<ElementCardProps> = ({ element, handleUpdate,
         customColor: '#bfa181'
     } as any);
 
+    // FORTRESS: Local state buffering to fix the "jumping cursor" bug
+    const [localName, setLocalName] = React.useState(config.name || '');
+    const [localParents, setLocalParents] = React.useState((config as any).parents || '');
+
+    // Sync local state when external data changes
+    React.useEffect(() => {
+        if (config.name !== localName) setLocalName(config.name || '');
+    }, [config.name]);
+
+    React.useEffect(() => {
+        const extParents = (config as any).parents || '';
+        if (extParents !== localParents) setLocalParents(extParents);
+    }, [(config as any).parents]);
+
     const roleLabel = (config as any).role === 'mempelai_pria' || (config as any).role === 'Groom' ? 'Mempelai Pria' : 
                       (config as any).role === 'mempelai_wanita' || (config as any).role === 'Bride' ? 'Mempelai Wanita' : 
                       (config as any).role;
@@ -37,10 +51,14 @@ export const ProfileCard: React.FC<ElementCardProps> = ({ element, handleUpdate,
                             </div>
                             <input
                                 type="text"
-                                value={config.name || ''}
-                                onChange={(e) => handleUpdate({
-                                    profileCardConfig: { ...config, name: e.target.value } as any
-                                })}
+                                value={localName}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setLocalName(val);
+                                    handleUpdate({
+                                        profileCardConfig: { ...config, name: val } as any
+                                    });
+                                }}
                                 className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all"
                                 placeholder="Nama Lengkap"
                             />
@@ -58,10 +76,14 @@ export const ProfileCard: React.FC<ElementCardProps> = ({ element, handleUpdate,
                             </div>
                             <input
                                 type="text"
-                                value={(config as any).parents || ''}
-                                onChange={(e) => handleUpdate({
-                                    profileCardConfig: { ...config, parents: e.target.value } as any
-                                })}
+                                value={localParents}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setLocalParents(val);
+                                    handleUpdate({
+                                        profileCardConfig: { ...config, parents: val } as any
+                                    });
+                                }}
                                 className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all"
                                 placeholder="Putra/Putri dari..."
                             />

@@ -1,5 +1,18 @@
 # Tamuu Changelog
 
+## [2026-03-04] Fix: User Editor "Jumping Cursor" Resolution
+**Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
+**Environment**: Production
+
+### Core Fixes
+- **Atomic Selection Buffering**: Implemented a "Fortress" local state buffering strategy for all text-based inputs in the User Editor. This prevents the native browser selection (cursor position) from being reset to the end of the line during rapid global store synchronization.
+- **Enhanced Card Components**: Applied the fix to critical editor components:
+    - `TextCard.tsx`: Standard text elements.
+    - `QuoteCard.tsx`: Quotes and verses.
+    - `ProfileCard.tsx`: Groom/Bride name and parent fields.
+    - `DigitalGiftCard.tsx`: Bank account details and gift descriptions.
+- **State Synchronization**: Added `useEffect` guards to ensure local buffers stay in sync with external state changes (like Undo/Redo) while maintaining focus during manual entry.
+
 ## [2026-03-04] Fix: User Editor Modal Z-Index & Grid Panel Accessibility
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
 **Environment**: Production

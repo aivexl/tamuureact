@@ -19,6 +19,29 @@ export const DigitalGiftCard: React.FC<ElementCardProps> = ({ element, handleUpd
         customColor: '#bfa181'
     } as any);
 
+    // FORTRESS: Local state buffering to fix the "jumping cursor" bug
+    const [localDescription, setLocalDescription] = React.useState(config.description || '');
+    const [localAccountNumber, setLocalAccountNumber] = React.useState(config.accountNumber || '');
+    const [localAccountHolder, setLocalAccountHolder] = React.useState(config.accountHolder || '');
+    const [localTitle, setLocalTitle] = React.useState(config.title || '');
+
+    // Sync local state when external data changes
+    React.useEffect(() => {
+        if (config.description !== localDescription) setLocalDescription(config.description || '');
+    }, [config.description]);
+
+    React.useEffect(() => {
+        if (config.accountNumber !== localAccountNumber) setLocalAccountNumber(config.accountNumber || '');
+    }, [config.accountNumber]);
+
+    React.useEffect(() => {
+        if (config.accountHolder !== localAccountHolder) setLocalAccountHolder(config.accountHolder || '');
+    }, [config.accountHolder]);
+
+    React.useEffect(() => {
+        if (config.title !== localTitle) setLocalTitle(config.title || '');
+    }, [config.title]);
+
     const isBankKnown = SUPPORTED_BANKS.find(b => b.name === config.bankName);
     const canEdit = permissions.canEditText || permissions.canEditContent;
 
@@ -37,10 +60,14 @@ export const DigitalGiftCard: React.FC<ElementCardProps> = ({ element, handleUpd
                             </div>
                             <input
                                 type="text"
-                                value={config.title || ''}
-                                onChange={(e) => handleUpdate({
-                                    digitalGiftConfig: { ...config, title: e.target.value }
-                                })}
+                                value={localTitle}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setLocalTitle(val);
+                                    handleUpdate({
+                                        digitalGiftConfig: { ...config, title: val }
+                                    });
+                                }}
                                 className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all"
                                 placeholder="Contoh: Kirim Hadiah"
                             />
@@ -53,10 +80,14 @@ export const DigitalGiftCard: React.FC<ElementCardProps> = ({ element, handleUpd
                             Deskripsi Pesan
                         </label>
                         <textarea
-                            value={config.description || ''}
-                            onChange={(e) => handleUpdate({
-                                digitalGiftConfig: { ...config, description: e.target.value }
-                            })}
+                            value={localDescription}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                setLocalDescription(val);
+                                handleUpdate({
+                                    digitalGiftConfig: { ...config, description: val }
+                                });
+                            }}
                             className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all"
                             placeholder="Contoh: Doa restu Anda adalah hadiah terindah..."
                             rows={2}
@@ -122,10 +153,14 @@ export const DigitalGiftCard: React.FC<ElementCardProps> = ({ element, handleUpd
                                 </div>
                                 <input
                                     type="text"
-                                    value={config.accountNumber || ''}
-                                    onChange={(e) => handleUpdate({
-                                        digitalGiftConfig: { ...config, accountNumber: e.target.value }
-                                    })}
+                                    value={localAccountNumber}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        setLocalAccountNumber(val);
+                                        handleUpdate({
+                                            digitalGiftConfig: { ...config, accountNumber: val }
+                                        });
+                                    }}
                                     className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all"
                                     placeholder="0000000000"
                                 />
@@ -142,10 +177,14 @@ export const DigitalGiftCard: React.FC<ElementCardProps> = ({ element, handleUpd
                                 </div>
                                 <input
                                     type="text"
-                                    value={config.accountHolder || ''}
-                                    onChange={(e) => handleUpdate({
-                                        digitalGiftConfig: { ...config, accountHolder: e.target.value }
-                                    })}
+                                    value={localAccountHolder}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        setLocalAccountHolder(val);
+                                        handleUpdate({
+                                            digitalGiftConfig: { ...config, accountHolder: val }
+                                        });
+                                    }}
                                     className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all"
                                     placeholder="Nama Pemilik"
                                 />

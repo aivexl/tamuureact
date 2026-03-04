@@ -9,6 +9,17 @@ export const TextCard: React.FC<ElementCardProps> = ({ element, handleUpdate, pe
     const [showStyling, setShowStyling] = useState(false);
     const { elementDimensions } = useStore();
 
+    // FORTRESS: Local state buffering to fix the "jumping cursor" bug
+    // This ensures the input maintains its selection range during rapid store updates.
+    const [localContent, setLocalContent] = React.useState(element.content || '');
+
+    // Sync local state when element.content changes externally (e.g. undo/redo, template switch)
+    React.useEffect(() => {
+        if (element.content !== localContent) {
+            setLocalContent(element.content || '');
+        }
+    }, [element.content]);
+
     return (
         <div className="space-y-4">
             {/* Content Input - Only show if user has edit text permissions */}
@@ -18,10 +29,14 @@ export const TextCard: React.FC<ElementCardProps> = ({ element, handleUpdate, pe
                         Konten Teks
                     </label>
                     <textarea
-                        value={element.content || ''}
-                        onChange={(e) => handleUpdate({ content: e.target.value })}
+                        value={localContent}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            setLocalContent(val);
+                            handleUpdate({ content: val });
+                        }}
                         className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none resize-none"
-                        rows={Math.max(1, Math.min(6, (element.content?.split('\n').length || 1)))}
+                        rows={Math.max(1, Math.min(6, (localContent.split('\n').length || 1)))}
                         placeholder="Mulai mengetik... (Enter untuk baris baru)"
                         style={{ minHeight: '48px' }}
                     />
