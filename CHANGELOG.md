@@ -1,5 +1,13 @@
 # Tamuu Changelog
 
+## [2026-03-04] UI: Optimized Initial Workspace & Default Panel States
+**Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
+**Environment**: Production
+
+### Core Enhancements
+- **Workspace Optimization**: Set the Sequence Timeline panel to be hidden (`isBottomPanelOpen: false`) by default when entering the Admin Editor. This provides a cleaner, more focused design environment for initial layout tasks.
+- **Persistent Accessibility**: Maintained instant access to the timeline via the primary navigation toggle, ensuring no loss of functionality for power users.
+
 ## [2026-03-03] Fix: Real-time Bounding Box Sync on Manual Property Resizing
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
 **Environment**: Production

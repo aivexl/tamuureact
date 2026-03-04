@@ -68,7 +68,7 @@ export const createUISlice: StateCreator<UIState> = (set) => ({
 
     isLeftPanelOpen: true,
     isRightPanelOpen: true,
-    isBottomPanelOpen: true,
+    isBottomPanelOpen: false,
 
     imageCropModal: {
         isOpen: false,
