@@ -1,5 +1,21 @@
 # Tamuu Changelog
 
+## [2026-03-04] Fix: User Editor Modal Z-Index & Grid Panel Accessibility
+**Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
+**Environment**: Production
+
+### Core Fixes
+- **Modal Layering Resolution**: Resolved a critical UI conflict where sub-modals (Image Crop, Music Drawer, Confirmation Dialogs) were appearing behind the main User Editor panel due to insufficient z-index values.
+- **Unified Z-Index Architecture**: Implemented a global "Top-Layer" standard by elevating the following components to `z-[5000]` or higher:
+    - `ConfirmationModal.tsx`
+    - `ImageCropModal.tsx`
+    - `MusicDrawer.tsx`
+    - `ImportModal.tsx`
+    - `ThumbnailSelectionModal.tsx`
+    - `QRModal.tsx`
+    - `AuthModal.tsx`
+- **User Flow Restoration**: This fix ensures that all "Grid Panel" interactions (changing music, uploading gallery photos, configuring gift addresses) are now fully accessible and can be closed/confirmed without the interface appearing to hang.
+
 ## [2026-03-04] Enhancement: Text Element V2 (Perfect-Fit Algorithm)
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
 **Environment**: Production

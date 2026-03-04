@@ -69,7 +69,7 @@ export const MusicDrawer: React.FC<MusicDrawerProps> = ({ isOpen, onClose, onSel
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100]"
+                        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[5000]"
                     />
 
                     {/* Drawer Content */}
@@ -78,7 +78,7 @@ export const MusicDrawer: React.FC<MusicDrawerProps> = ({ isOpen, onClose, onSel
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="fixed inset-y-0 right-0 w-full max-w-md bg-white/80 backdrop-blur-3xl shadow-2xl z-[101] flex flex-col border-l border-white/20"
+                        className="fixed inset-y-0 right-0 w-full max-w-md bg-white/80 backdrop-blur-3xl shadow-2xl z-[5001] flex flex-col border-l border-white/20"
                     >
                         {/* Header */}
                         <div className="p-6 flex items-center justify-between border-b border-slate-100">

@@ -40,7 +40,7 @@ export const QRModal: React.FC<QRModalProps> = ({
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-[5000] flex items-center justify-center p-4">
                     {/* Backdrop */}
                     <m.div
                         initial={{ opacity: 0 }}
