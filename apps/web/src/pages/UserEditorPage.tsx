@@ -186,6 +186,7 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
 
                 {/* 2. Feature Menu */}
                 <IconGridMenu onOpenPanel={(panelId: string) => {
+                    console.log('[UserEditor] Opening panel:', panelId);
                     if (panelId === 'guests') {
                         navigate(`/guests/${id}`);
                     } else {
