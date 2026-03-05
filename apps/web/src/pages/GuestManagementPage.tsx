@@ -77,6 +77,7 @@ interface Guest {
     id: string;
     checkInCode: string;
     name: string;
+    slug: string;
     phone: string | null;
     address: string;
     tableNumber: string;
@@ -146,13 +147,13 @@ export const GuestManagementPage: React.FC = () => {
                 guestsApi.list(invitationId!),
                 invitationsApi.get(invitationId!)
             ]);
-            // Map snake_case from DB if necessary, but D1 results usually match keys if selected as *
-            // Let's ensure guestCount vs guest_count naming consistency
+            // Map snake_case from DB if necessary
             const mappedGuests = guestList.map((g: any) => ({
                 ...g,
                 guestCount: g.guest_count || g.guestCount || 1,
                 tableNumber: g.table_number || g.tableNumber || '',
                 checkInCode: g.check_in_code || g.checkInCode || '',
+                slug: g.slug || '',
                 sharedAt: g.shared_at || g.sharedAt || null,
                 checkedInAt: g.checked_in_at || g.checkedInAt || null,
                 checkedOutAt: g.checked_out_at || g.checkedOutAt || null,
@@ -171,7 +172,8 @@ export const GuestManagementPage: React.FC = () => {
     const filteredGuests = guests.filter(g =>
         g.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         g.phone?.includes(searchQuery) ||
-        g.checkInCode.toLowerCase().includes(searchQuery.toLowerCase())
+        g.checkInCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        g.slug.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const stats = {
@@ -212,7 +214,8 @@ export const GuestManagementPage: React.FC = () => {
         if (!invitation) return;
         const phone = guest.phone || '';
         const publicDomain = getPublicDomain();
-        const message = `${invitationMessage}\n\nLink Undangan: https://${publicDomain}/${invitation.slug}?to=${encodeURIComponent(guest.name)}`;
+        const personalLink = `https://${publicDomain}/${invitation.slug}/${guest.slug}`;
+        const message = `${invitationMessage}\n\nLink Undangan: ${personalLink}`;
         window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
 
         // Mark as shared in DB
@@ -229,7 +232,6 @@ export const GuestManagementPage: React.FC = () => {
     const handleAddGuest = async () => {
         if (!formData.name || !invitationId) return;
         try {
-            const checkInCode = `${invitation?.slug?.substring(0, 2).toUpperCase() || 'TM'}${String(guests.length + 1).padStart(3, '0')}`;
             const gData = {
                 invitation_id: invitationId,
                 name: formData.name,
@@ -237,11 +239,16 @@ export const GuestManagementPage: React.FC = () => {
                 address: formData.address,
                 table_number: formData.tableNumber,
                 tier: formData.tier,
-                guest_count: formData.guestCount,
-                check_in_code: checkInCode
+                guest_count: formData.guestCount
             };
             const newGuest = await guestsApi.create(gData);
-            setGuests(prev => [newGuest, ...prev]);
+            setGuests(prev => [{
+                ...newGuest,
+                guestCount: newGuest.guest_count || 1,
+                tableNumber: newGuest.table_number || '',
+                checkInCode: newGuest.check_in_code || '',
+                slug: newGuest.slug || '',
+            }, ...prev]);
             setShowAddModal(false);
             setFormData({ name: '', phone: '', address: 'di tempat', tableNumber: '', tier: 'reguler', guestCount: 1 });
             showToast('Tamu berhasil ditambahkan!');
@@ -332,35 +339,41 @@ export const GuestManagementPage: React.FC = () => {
         }
     };
 
-    const confirmImport = (pendingGuests: any[]) => {
+    const confirmImport = async (pendingGuests: any[]) => {
+        if (!invitationId) return;
         setIsImporting(true);
-        setTimeout(() => {
-            const newGuests: Guest[] = pendingGuests.map((ig, i) => ({
-                id: `import-${Date.now()}-${i}`,
-                checkInCode: `IM${String(guests.length + i + 1).padStart(3, '0')}`,
+        try {
+            const formattedGuests = pendingGuests.map(ig => ({
                 name: ig.name,
                 phone: ig.phone ? normalizePhone(ig.phone) : null,
-                address: ig.address,
-                tableNumber: ig.tableNumber,
-                tier: ig.tier,
-                guestCount: ig.guestCount,
-                sharedAt: null,
-                checkedInAt: null,
-                checkedOutAt: null
+                address: ig.address || 'di tempat',
+                table_number: ig.tableNumber || '',
+                tier: ig.tier || 'reguler',
+                guest_count: ig.guestCount || 1,
             }));
 
-            setGuests(prev => [...newGuests, ...prev]);
+            // Use the API to bulk create
+            await guestsApi.bulkCreate(invitationId, formattedGuests);
+            
             setShowImportModal(false);
+            showToast(`Berhasil mengimpor ${formattedGuests.length} tamu!`);
+            fetchData();
+        } catch (error) {
+            console.error('Failed to import guests:', error);
+            showToast('Gagal mengimpor data tamu.');
+        } finally {
             setIsImporting(false);
-            showToast(`Berhasil mengimpor ${newGuests.length} tamu!`);
-        }, 1000);
+        }
     };
 
     const handleExport = (format: 'csv' | 'json' | 'xlsx') => {
+        const publicDomain = getPublicDomain();
         const exportData = guests.map(g => ({
-            'ID': g.checkInCode,
+            'Token/ID': g.checkInCode,
             'Tier': g.tier.toUpperCase(),
             'Nama': g.name,
+            'Slug URL': g.slug,
+            'Personal Link': `https://${publicDomain}/${invitation?.slug}/${g.slug}`,
             'WhatsApp': g.phone ? `+${g.phone}` : '-',
             'Alamat': g.address,
             'Meja': g.tableNumber || '-',
@@ -543,16 +556,16 @@ export const GuestManagementPage: React.FC = () => {
                         <table className="w-full text-left border-separate border-spacing-0" style={{ minWidth: '1000px' }}>
                             <thead>
                                 <tr className="bg-[#2C5F5F] text-white">
-                                    <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap">ID</th>
+                                    <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap">Token/ID</th>
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap">Tier</th>
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap">Nama Tamu</th>
+                                    <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap">Slug URL</th>
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap">No WhatsApp</th>
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap">Alamat</th>
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap">Meja</th>
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center">Jumlah</th>
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center">Status WA</th>
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center">Check-in</th>
-                                    <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center">Check-out</th>
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center">Kehadiran</th>
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center">Aksi</th>
                                 </tr>
@@ -574,6 +587,7 @@ export const GuestManagementPage: React.FC = () => {
                                                 </span>
                                             </td>
                                             <td className="px-4 py-4 text-[13px] font-bold text-slate-800">{guest.name}</td>
+                                            <td className="px-4 py-4 text-[11px] font-mono text-slate-400 truncate max-w-[150px]">{guest.slug}</td>
                                             <td className="px-4 py-4 text-[12px] text-slate-600 font-medium">+{guest.phone || '-'}</td>
                                             <td className="px-4 py-4 text-[12px] text-slate-600 truncate max-w-[120px]">{guest.address}</td>
                                             <td className="px-4 py-4 text-[12px] font-bold text-indigo-600">{guest.tableNumber || '-'}</td>
@@ -587,9 +601,6 @@ export const GuestManagementPage: React.FC = () => {
                                             </td>
                                             <td className="px-4 py-4 text-center text-[11px] font-bold text-slate-500 tabular-nums">
                                                 {formatTime(guest.checkedInAt)}
-                                            </td>
-                                            <td className="px-4 py-4 text-center text-[11px] font-bold text-slate-500 tabular-nums">
-                                                {formatTime(guest.checkedOutAt)}
                                             </td>
                                             <td className="px-4 py-4 text-center">
                                                 {guest.checkedInAt ? (
@@ -612,7 +623,7 @@ export const GuestManagementPage: React.FC = () => {
                                                     </button>
                                                     <div className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-xl transition-all">
                                                         <AnimatedCopyIcon 
-                                                            text={`https://${publicDomain}/${invitation?.slug}?to=${encodeURIComponent(guest.name)}`} 
+                                                            text={`https://${publicDomain}/${invitation?.slug}/${guest.slug}`} 
                                                             size={16} 
                                                             successMessage={`Link untuk ${guest.name} disalin!`} 
                                                         />

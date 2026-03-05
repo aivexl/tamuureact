@@ -1250,8 +1250,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                         <GuestQRModal
                             isOpen={isQRModalOpen}
                             onClose={() => setIsQRModalOpen(false)}
-                            guestName={useStore.getState().isTemplate ? "John Doe & Partner" : (useStore.getState().greetingName || "Guest Name")}
-                            guestId={useStore.getState().isTemplate ? "TMU-2026-X99" : (useStore.getState().id || "UNKNOWN")}
+                            guestName={useStore.getState().isTemplate ? "John Doe & Partner" : (useStore.getState().guestData?.name || useStore.getState().greetingName || "Guest Name")}
+                            checkInCode={useStore.getState().isTemplate ? "X9K2PJ" : (useStore.getState().guestData?.check_in_code || "UNKNOWN")}
                         />
                     </>
                 )}

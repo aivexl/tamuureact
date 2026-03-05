@@ -237,6 +237,7 @@ const App: React.FC = () => {
                             MUST be after specific routes to avoid collisions.
                         */}
                         <Route path="/:slug" element={<PreviewPage />} />
+                        <Route path="/:slug/:guestSlug" element={<PreviewPage />} />
 
                         <Route path="/display/:slug" element={<GuestWelcomeDisplay />} />
                         <Route path="/remote/:id" element={<RemoteTriggerPage />} />

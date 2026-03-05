@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { PreviewView } from '@/components/Preview/PreviewView';
 import { useStore, type Layer } from '@/store/useStore';
@@ -9,60 +9,73 @@ import { useSEO } from '@/hooks/useSEO';
 import api from '@/lib/api';
 
 export const PreviewPage: React.FC = () => {
-    const { slug } = useParams<{ slug: string }>();
+    const { slug, guestSlug } = useParams<{ slug: string; guestSlug?: string }>();
     const navigate = useNavigate();
     const { data: previewResponse, isLoading: isQueryLoading, isError, error } = usePreviewData(slug);
+    const [isGuestLoading, setIsGuestLoading] = useState(false);
 
     useEffect(() => {
         // GHOST V4.0: UNICORN REDIRECT GUARD
-        // If query definitively failed, check if it might be a blog post first
         if (isError && slug) {
             console.error('[PreviewPage] Failed to resolve slug:', slug, {
                 error,
                 timestamp: new Date().toISOString()
             });
 
-            // Try to check if this is a blog post slug
             const checkBlogPost = async () => {
                 try {
                     const blogPost = await api.blog.getPost(slug);
                     if (blogPost) {
-                        // Redirect to blog page
-                        console.log('[PreviewPage] Slug is a blog post, redirecting to /blog/' + slug);
                         navigate(`/blog/${slug}`, { replace: true });
                         return;
                     }
-                } catch {
-                    // Not a blog post either, proceed with normal fallback
-                }
+                } catch { }
 
-                // Only redirect to home if not in development
                 if (import.meta.env.PROD) {
                     const timer = setTimeout(() => {
                         navigate('/', { replace: true });
-                    }, 3000); // 3 second grace period
+                    }, 3000);
                     return () => clearTimeout(timer);
                 }
             };
 
             checkBlogPost();
-            return; // Added return here to prevent further execution if there's an error
+            return;
         }
-
 
         if (slug === 'draft' || !previewResponse) return;
 
         const { data, source } = previewResponse;
 
-        // SUPER ULTRA: Expiry Guard
         if (data?.expired) {
-            console.log('[PreviewPage] Invitation Expired. Redirecting to Inactive Page.');
             navigate(`/inactive/${slug}`, { replace: true });
             return;
         }
 
-        // Safety check to ensure we have actual invitation/template data
         if (!data) return;
+
+        // UNIFIED IDENTITY: Resolve Guest Data if guestSlug exists
+        const resolveGuest = async () => {
+            if (guestSlug) {
+                setIsGuestLoading(true);
+                try {
+                    console.log('[PreviewPage] Resolving guest identity:', guestSlug);
+                    const guestData = await api.guests.getBySlug(guestSlug);
+                    if (guestData) {
+                        useStore.getState().setGuestData(guestData);
+                        console.log('[PreviewPage] Guest resolved:', guestData.name);
+                    }
+                } catch (e) {
+                    console.warn('[PreviewPage] Guest resolution failed or not found:', guestSlug);
+                } finally {
+                    setIsGuestLoading(false);
+                }
+            } else {
+                useStore.getState().setGuestData(undefined);
+            }
+        };
+
+        resolveGuest();
 
         console.log(`[PreviewPage] Hydrating from ${source}:`, data.id);
 
@@ -77,7 +90,6 @@ export const PreviewPage: React.FC = () => {
             elements: s.elements || rawLayers.filter((l: any) => l.sectionId === s.id) || []
         }));
 
-        // CTO ROBUST HYDRATION: Check both orbit and orbit_layers for actual elements
         const currentOrbit = useStore.getState().orbit;
         const hasOrbit = data.orbit?.left?.elements?.length > 0 || data.orbit?.right?.elements?.length > 0;
         const hasOrbitLayers = data.orbit_layers?.left?.elements?.length > 0 || data.orbit_layers?.right?.elements?.length > 0;
@@ -115,15 +127,15 @@ export const PreviewPage: React.FC = () => {
             isTemplate: source === 'templates',
             templateType: data.type === 'display' ? 'display' : 'invitation'
         });
-    }, [slug, previewResponse, isError, navigate]);
+    }, [slug, guestSlug, previewResponse, isError, navigate]);
 
-    // SEO & Bot Blocking Logic
-    // Only allow indexing for templates (Public Library), block all user invitations
     const isTemplate = previewResponse?.source === 'templates';
     const invitationData = previewResponse?.data;
+    const guestData = useStore(state => state.guestData);
 
-    // Respect user-defined Sosmed Preview title/description
-    const seoTitle = (invitationData?.seo_title || invitationData?.name || slug || 'Invitation').toUpperCase();
+    // DYNAMIC SEO: Personalize social preview if guest exists
+    const baseTitle = (invitationData?.seo_title || invitationData?.name || slug || 'Invitation').toUpperCase();
+    const seoTitle = guestData ? `${baseTitle} - KHUSUS UNTUK ${guestData.name.toUpperCase()}` : baseTitle;
     const seoDescription = invitationData?.seo_description || (isTemplate
         ? 'Premium Wedding Invitation Templates by Tamuu'
         : 'Exclusive Digital Invitation - Private Access');
@@ -132,10 +144,10 @@ export const PreviewPage: React.FC = () => {
         title: seoTitle,
         description: seoDescription,
         image: invitationData?.og_image || invitationData?.thumbnail_url,
-        noindex: !isTemplate // Block if not a template
+        noindex: !isTemplate
     });
 
-    const isLoading = slug !== 'draft' && isQueryLoading;
+    const isLoading = (slug !== 'draft' && isQueryLoading) || isGuestLoading;
 
     if (isLoading) {
         return <PremiumLoader />;

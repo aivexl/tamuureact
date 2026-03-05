@@ -7,10 +7,10 @@ interface GuestQRModalProps {
     isOpen: boolean;
     onClose: () => void;
     guestName: string;
-    guestId: string;
+    checkInCode: string;
 }
 
-export const GuestQRModal: React.FC<GuestQRModalProps> = ({ isOpen, onClose, guestName, guestId }) => {
+export const GuestQRModal: React.FC<GuestQRModalProps> = ({ isOpen, onClose, guestName, checkInCode }) => {
     return (
         <AnimatePresence>
             {isOpen && (
@@ -54,7 +54,7 @@ export const GuestQRModal: React.FC<GuestQRModalProps> = ({ isOpen, onClose, gue
                                 {/* QR Container */}
                                 <div className="bg-white p-6 rounded-2xl inline-block mb-6 shadow-inner">
                                     <QRCode
-                                        value={guestId}
+                                        value={checkInCode}
                                         size={200}
                                         style={{ height: "auto", maxWidth: "100%", width: "100%" }}
                                         viewBox={`0 0 256 256`}
@@ -78,8 +78,8 @@ export const GuestQRModal: React.FC<GuestQRModalProps> = ({ isOpen, onClose, gue
                                             <Ticket className="w-3 h-3" />
                                             UNIQUE ID
                                         </div>
-                                        <p className="font-mono text-amber-200/80 text-sm tracking-widest">
-                                            {guestId}
+                                        <p className="font-mono text-amber-200/80 text-sm tracking-widest uppercase font-black">
+                                            {checkInCode}
                                         </p>
                                     </div>
                                 </div>

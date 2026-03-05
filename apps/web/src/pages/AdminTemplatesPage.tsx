@@ -185,65 +185,73 @@ export const AdminTemplatesPage: React.FC = () => {
                         <button onClick={() => setIsCreateModalOpen(true)} className="mt-4 text-teal-400 font-bold hover:underline">Create One</button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
                         {filteredTemplates.map(template => (
                             <motion.div
                                 layout
-                                initial={{ opacity: 0, scale: 0.95 }}
+                                initial={{ opacity: 0, scale: 0.98 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 key={template.id}
-                                className="group bg-[#111] rounded-2xl border border-white/10 overflow-hidden hover:shadow-2xl hover:border-teal-500/30 transition-all duration-500"
+                                className="group bg-[#0D0D0D] rounded-xl border border-white/5 overflow-hidden hover:border-teal-500/40 transition-all duration-300 flex flex-col"
                             >
-                                {/* Thumbnail */}
-                                <div className={`relative overflow-hidden ${template.type === 'display' ? 'aspect-video' : 'aspect-[9/16]'}`}>
+                                {/* Compact Thumbnail */}
+                                <div className={`relative overflow-hidden bg-[#151515] ${template.type === 'display' ? 'aspect-video' : 'aspect-[9/16]'}`}>
                                     {template.thumbnail_url ? (
-                                        <img src={template.thumbnail_url} alt={template.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                        <img src={template.thumbnail_url} alt={template.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                     ) : (
-                                        <div className="w-full h-full bg-white/5 flex items-center justify-center">
-                                            {template.type === 'display' ? <Monitor className="w-12 h-12 text-slate-700" /> : <Smartphone className="w-12 h-12 text-slate-700" />}
+                                        <div className="w-full h-full flex items-center justify-center opacity-20">
+                                            {template.type === 'display' ? <Monitor className="w-8 h-8 text-white" /> : <Smartphone className="w-8 h-8 text-white" />}
                                         </div>
                                     )}
-
-                                    {/* Overlay Actions */}
-                                    <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3">
-                                        <button
-                                            onClick={() => {
-                                                const editorPath = template.type === 'display'
-                                                    ? `/admin/display-editor/${template.slug || template.id}`
-                                                    : `/admin/editor/${template.slug || template.id}`;
-                                                navigate(editorPath);
-                                            }}
-                                            className="p-3 bg-white rounded-xl hover:scale-110 transition-transform active:scale-90"
-                                            title="Edit Template"
-                                        >
-                                            <Edit3 className="w-5 h-5 text-slate-900" />
-                                        </button>
-                                        <button
-                                            onClick={(e) => handleDelete(template.id, e)}
-                                            className="p-3 bg-white rounded-xl hover:scale-110 transition-transform active:scale-90 hover:text-rose-600"
-                                            title="Hapus"
-                                        >
-                                            <Trash2 className="w-5 h-5" />
-                                        </button>
+                                    
+                                    {/* Type Badge (Floating Top Right) */}
+                                    <div className="absolute top-2 right-2">
+                                        <div className="bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest text-white/60 border border-white/10">
+                                            {template.type === 'display' ? 'TV' : 'MOB'}
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Meta */}
-                                <div className="p-5">
-                                    <h3 className="font-bold text-white truncate mb-1">{template.name}</h3>
-                                    <div className="flex items-center justify-between mt-2">
-                                        <span className="text-[10px] font-black uppercase tracking-widest bg-white/10 px-2 py-1 rounded text-slate-400">
-                                            {template.type === 'display' ? 'TV FORMAT' : 'MOBILE FORMAT'}
-                                        </span>
-                                        <span className="text-[10px] text-slate-500">
-                                            {new Date(template.updated_at).toLocaleDateString()}
-                                        </span>
+                                {/* Content Area */}
+                                <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between">
+                                    <div className="mb-3">
+                                        <h3 className="text-xs sm:text-sm font-bold text-white/90 truncate leading-tight mb-3" title={template.name}>
+                                            {template.name}
+                                        </h3>
+                                        
+                                        {/* Persistent Sharp Actions */}
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => {
+                                                    const editorPath = template.type === 'display'
+                                                        ? `/admin/display-editor/${template.slug || template.id}`
+                                                        : `/admin/editor/${template.slug || template.id}`;
+                                                    navigate(editorPath);
+                                                }}
+                                                className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-teal-500/10 hover:bg-teal-500 text-teal-500 hover:text-slate-900 transition-all duration-200 rounded-lg text-[10px] font-black uppercase tracking-wider"
+                                            >
+                                                <Edit3 className="w-3 h-3" /> Edit
+                                            </button>
+                                            <button
+                                                onClick={(e) => handleDelete(template.id, e)}
+                                                className="w-10 flex items-center justify-center py-2 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white transition-all duration-200 rounded-lg"
+                                                title="Hapus"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Ultra Muted Footer Info */}
+                                    <div className="pt-3 border-t border-white/5 flex items-center justify-between text-[8px] font-bold text-white/20 uppercase tracking-[0.1em]">
+                                        <span>ID: {template.id.substring(0, 6)}</span>
+                                        <span>{new Date(template.updated_at).toLocaleDateString('id-ID')}</span>
                                     </div>
                                 </div>
                             </motion.div>
                         ))}
                     </div>
-                )}
+                )/* Content Grid */}
             </div>
 
             {/* Creation Modal */}

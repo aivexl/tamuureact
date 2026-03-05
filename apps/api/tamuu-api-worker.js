@@ -73,6 +73,15 @@ export default {
                 .replace(/-+$/, '');      // Trim - from end of text
         };
 
+        const generateToken = (length = 6) => {
+            const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        };
+
         // HELPER: Hybrid AI (Gemini 2.0 -> Groq Fallback)
         const fetchAI = async (sysPrompt, userMsgs, tools = null) => {
             const providers = [
@@ -3349,6 +3358,14 @@ t.*,
                 return json(results, corsHeaders);
             }
 
+            // [NEW] Resolve Guest by Slug (for Dynamic Injection)
+            if (path.startsWith('/api/guests/by-slug/') && method === 'GET') {
+                const slug = path.split('/').pop();
+                const guest = await env.DB.prepare('SELECT * FROM guests WHERE slug = ?').bind(slug).first();
+                if (!guest) return json({ error: 'Guest not found' }, { ...corsHeaders, status: 404 });
+                return json(guest, corsHeaders);
+            }
+
             if (path.startsWith('/api/guests/') && method === 'GET') {
                 const id = path.split('/')[3];
                 const guest = await env.DB.prepare('SELECT * FROM guests WHERE id = ?').bind(id).first();
@@ -3359,21 +3376,62 @@ t.*,
             if (path === '/api/guests' && method === 'POST') {
                 const body = await request.json();
                 const id = body.id || crypto.randomUUID();
+                const token = body.check_in_code || generateToken(6);
+                const slug = body.slug || `${generateSlug(body.name || 'guest')}-${token}`;
+
                 await env.DB.prepare(
-                    `INSERT INTO guests(id, invitation_id, name, phone, address, table_number, tier, guest_count, check_in_code)
-VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                    `INSERT INTO guests(id, invitation_id, name, slug, phone, address, table_number, tier, guest_count, check_in_code)
+                     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
                 ).bind(
                     id,
                     body.invitation_id,
                     body.name,
+                    slug,
                     body.phone || null,
                     body.address || 'di tempat',
                     body.table_number || null,
                     body.tier || 'reguler',
                     body.guest_count || 1,
-                    body.check_in_code || null
+                    token
                 ).run();
-                return json({ id, ...body }, corsHeaders);
+                return json({ id, slug, check_in_code: token, ...body }, corsHeaders);
+            }
+
+            // [NEW] Bulk Create Guests (Enterprise Import)
+            if (path === '/api/guests/bulk' && method === 'POST') {
+                const { invitation_id, guests } = await request.json();
+                if (!invitation_id || !Array.isArray(guests)) return json({ error: 'Invalid payload' }, { ...corsHeaders, status: 400 });
+
+                // Process in batches of 50 to avoid D1 limits
+                const BATCH_SIZE = 50;
+                let processedCount = 0;
+
+                for (let i = 0; i < guests.length; i += BATCH_SIZE) {
+                    const batch = guests.slice(i, i + BATCH_SIZE);
+                    const statements = batch.map(g => {
+                        const token = generateToken(6);
+                        const slug = `${generateSlug(g.name || 'guest')}-${token}`;
+                        return env.DB.prepare(
+                            `INSERT INTO guests(id, invitation_id, name, slug, phone, address, table_number, tier, guest_count, check_in_code)
+                             VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                        ).bind(
+                            crypto.randomUUID(),
+                            invitation_id,
+                            g.name,
+                            slug,
+                            g.phone || null,
+                            g.address || 'di tempat',
+                            g.table_number || null,
+                            g.tier || 'reguler',
+                            g.guest_count || 1,
+                            token
+                        );
+                    });
+                    await env.DB.batch(statements);
+                    processedCount += statements.length;
+                }
+
+                return json({ success: true, count: processedCount }, corsHeaders);
             }
 
             if (path.startsWith('/api/guests/') && method === 'PATCH') {
@@ -3435,27 +3493,42 @@ name = COALESCE(?, name),
                     return json({ success: false, error: 'Guest not found', code: 'NOT_FOUND' }, { ...corsHeaders, status: 404 });
                 }
 
-                // Duplicate check-in prevention
-                if (guest.checked_in_at) {
-                    return json({
-                        success: false,
-                        error: 'Guest already checked in',
-                        code: 'ALREADY_CHECKED_IN',
-                        guest: {
-                            id: guest.id,
-                            name: guest.name,
-                            tier: guest.tier,
-                            table_number: guest.table_number,
-                            checked_in_at: guest.checked_in_at
-                        }
-                    }, { ...corsHeaders, status: 409 });
-                }
-
                 // Perform check-in
                 const checkedInAt = new Date().toISOString();
-                await env.DB.prepare(`
-    UPDATE guests SET checked_in_at = ? WHERE id = ?
-    `).bind(checkedInAt, guest.id).run();
+                await env.DB.prepare('UPDATE guests SET checked_in_at = ? WHERE id = ?').bind(checkedInAt, guest.id).run();
+
+                // CTO UNIFIED SIGNAL: Just send the data, UI will handle the Admin-defined visuals
+                const timestamp = Date.now();
+                const triggerPayload = JSON.stringify({
+                    effect: 'confetti', // Default effect
+                    name: guest.name,
+                    tier: guest.tier, // Information for "Tamuu VIP" label
+                    style: 'cinematic',
+                    timestamp
+                });
+
+                // Update both invitation and associated display designs to show the name
+                ctx.waitUntil((async () => {
+                    try {
+                        // 1. Update the invitation record
+                        await env.DB.prepare(`
+                            UPDATE invitations 
+                            SET sections = json_set(COALESCE(sections, '[]'), '$[0].activeTrigger', json(?)),
+                                updated_at = datetime('now')
+                            WHERE id = ?
+                        `).bind(triggerPayload, guest.invitation_id).run();
+
+                        // 2. Find any user display designs linked to this invitation and update them too
+                        await env.DB.prepare(`
+                            UPDATE user_display_designs 
+                            SET content = json_set(COALESCE(content, '{}'), '$.activeTrigger', json(?)),
+                                updated_at = datetime('now')
+                            WHERE invitation_id = ?
+                        `).bind(triggerPayload, guest.invitation_id).run();
+                    } catch (broadcastError) {
+                        console.error('[Broadcast] Failed to signal TV:', broadcastError);
+                    }
+                })());
 
                 return json({
                     success: true,

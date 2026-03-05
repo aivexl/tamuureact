@@ -666,6 +666,12 @@ export const guests = {
         return true;
     },
 
+    async getBySlug(slug: string) {
+        const res = await safeFetch(`${API_BASE}/api/guests/by-slug/${slug}`);
+        if (!res.ok) throw new Error('Guest not found');
+        return res.json();
+    },
+
     async checkIn(idOrCode: string) {
         const res = await safeFetch(`${API_BASE}/api/guests/${idOrCode}/checkin`, {
             method: 'POST',
@@ -682,6 +688,16 @@ export const guests = {
         });
         const data = await res.json();
         return sanitizeValue(data);
+    },
+
+    async bulkCreate(invitationId: string, guests: any[]) {
+        const res = await safeFetch(`${API_BASE}/api/guests/bulk`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ invitation_id: invitationId, guests: sanitizeValue(guests) })
+        });
+        if (!res.ok) throw new Error('Failed to bulk create guests');
+        return res.json();
     }
 };
 
@@ -754,7 +770,7 @@ export const admin = {
         return sanitizeValue(data);
     },
 
-    async triggerDisplay(displayId: string, data: { name: string; effect?: string; style?: string; timestamp: number }) {
+    async triggerDisplay(displayId: string, data: { name: string; tier?: string; effect?: string; style?: string; timestamp: number }) {
         const res = await safeFetch(`${API_BASE}/api/trigger/${displayId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

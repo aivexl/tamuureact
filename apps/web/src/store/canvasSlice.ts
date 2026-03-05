@@ -1,5 +1,15 @@
 import { StateCreator } from 'zustand';
 
+export interface GuestData {
+    id: string;
+    name: string;
+    check_in_code: string;
+    slug: string;
+    tier: string;
+    table_number?: string;
+    guest_count: number;
+}
+
 export interface CanvasState {
     zoom: number;
     pan: { x: number; y: number };
@@ -22,6 +32,9 @@ export interface CanvasState {
         source_type: 'library' | 'gdrive' | 'user';
     };
     isPublished: boolean;
+    guestData?: GuestData;
+    greetingName?: string;
+    greetingTier?: string;
     setId: (id: string) => void;
     setThumbnailUrl: (url: string) => void;
     setProjectName: (name: string) => void;
@@ -37,6 +50,9 @@ export interface CanvasState {
     setMusic: (music: CanvasState['music']) => void;
     setIsPublished: (isPublished: boolean) => void;
     setExportFormat: (format: 'mobile' | 'desktop' | 'print' | null) => void;
+    setGuestData: (data: GuestData | undefined) => void;
+    setGreetingName: (name: string | undefined) => void;
+    setGreetingTier: (tier: string | undefined) => void;
     hydrateProject: (data: any) => void;
     resetStore: () => void;
 }
@@ -56,6 +72,9 @@ export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
     music: undefined,
     isPublished: false,
     exportFormat: null,
+    guestData: undefined,
+    greetingName: undefined,
+    greetingTier: undefined,
     setZoom: (zoom) => set({ zoom }),
     setPan: (pan) => set({ pan }),
     setBackgroundColor: (backgroundColor) => set({ backgroundColor }),
@@ -71,6 +90,9 @@ export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
     setMusic: (music) => set({ music }),
     setIsPublished: (isPublished) => set({ isPublished }),
     setExportFormat: (exportFormat) => set({ exportFormat }),
+    setGuestData: (guestData) => set({ guestData }),
+    setGreetingName: (greetingName) => set({ greetingName }),
+    setGreetingTier: (greetingTier) => set({ greetingTier }),
     hydrateProject: (data) => set({
         id: data.id,
         slug: data.slug || '',
@@ -92,6 +114,7 @@ export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
         music: undefined,
         isPublished: false,
         isSimulationMode: false,
-        thumbnailUrl: undefined
+        thumbnailUrl: undefined,
+        guestData: undefined
     })
 });

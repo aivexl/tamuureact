@@ -340,6 +340,8 @@ export const MusicPlayerElement: React.FC<{ layer: Layer, isEditor?: boolean, on
 // ============================================
 export const QRCodeElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
     const { triggerGlobalEffect } = useStore();
+    const guestData = useStore(state => state.guestData);
+    
     useEffect(() => { onContentLoad?.(); }, []);
 
     const config = layer.qrCodeConfig || {
@@ -349,6 +351,9 @@ export const QRCodeElement: React.FC<{ layer: Layer, isEditor?: boolean, onConte
         interactiveEnabled: false,
         successEffect: 'confetti'
     };
+    
+    // UNIFIED IDENTITY: If guestData exists, the QR code value is their check-in code
+    const qrValue = guestData ? guestData.check_in_code : (config.value || 'https://tamuu.id');
     const fg = config.foreground || '#000000';
 
     const handleTrigger = () => {
@@ -367,18 +372,27 @@ export const QRCodeElement: React.FC<{ layer: Layer, isEditor?: boolean, onConte
                 className="w-full h-full p-3 bg-white flex items-center justify-center overflow-hidden shadow-xl"
                 style={{ borderRadius: 12 }}
             >
-                <svg viewBox="0 0 100 100" className="w-full h-full">
-                    <rect x="0" y="0" width="100" height="100" fill="transparent" />
-                    <rect x="5" y="5" width="35" height="35" stroke={fg} strokeWidth="6" fill="none" rx="4" />
-                    <rect x="13" y="13" width="19" height="19" fill={fg} rx="2" />
-                    <rect x="60" y="5" width="35" height="35" stroke={fg} strokeWidth="6" fill="none" rx="4" />
-                    <rect x="68" y="13" width="19" height="19" fill={fg} rx="2" />
-                    <rect x="5" y="60" width="35" height="35" stroke={fg} strokeWidth="6" fill="none" rx="4" />
-                    <rect x="13" y="68" width="19" height="19" fill={fg} rx="2" />
-                    <path d="M50 5 v90 M5 50 h90 M50 50 h25 v15 h-25 z M75 75 h20 v20 h-20 z" stroke={fg} strokeWidth="3" fill="none" strokeLinecap="round" />
-                    <rect x="65" y="65" width="15" height="15" fill={fg} opacity="0.6" rx="2" />
-                    <rect x="50" y="85" width="10" height="10" fill={fg} rx="1" />
-                </svg>
+                <div className="w-full h-full flex flex-col items-center justify-center gap-1">
+                    <svg viewBox="0 0 100 100" className="w-full aspect-square">
+                        <rect x="0" y="0" width="100" height="100" fill="transparent" />
+                        <rect x="5" y="5" width="35" height="35" stroke={fg} strokeWidth="6" fill="none" rx="4" />
+                        <rect x="13" y="13" width="19" height="19" fill={fg} rx="2" />
+                        <rect x="60" y="5" width="35" height="35" stroke={fg} strokeWidth="6" fill="none" rx="4" />
+                        <rect x="68" y="13" width="19" height="19" fill={fg} rx="2" />
+                        <rect x="5" y="60" width="35" height="35" stroke={fg} strokeWidth="6" fill="none" rx="4" />
+                        <rect x="13" y="68" width="19" height="19" fill={fg} rx="2" />
+                        <path d="M50 5 v90 M5 50 h90 M50 50 h25 v15 h-25 z M75 75 h20 v20 h-20 z" stroke={fg} strokeWidth="3" fill="none" strokeLinecap="round" />
+                        <rect x="65" y="65" width="15" height="15" fill={fg} opacity="0.6" rx="2" />
+                        <rect x="50" y="85" width="10" height="10" fill={fg} rx="1" />
+                    </svg>
+                    
+                    {/* Display the token text below the QR if guest is resolved */}
+                    {guestData && (
+                        <div className="text-[10px] font-mono font-black text-slate-900 tracking-widest uppercase">
+                            {guestData.check_in_code}
+                        </div>
+                    )}
+                </div>
 
                 {/* Interaction Label (Preview only if enabled) */}
                 {config.interactiveEnabled && !isEditor && (

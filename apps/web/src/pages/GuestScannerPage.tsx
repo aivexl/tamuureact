@@ -136,13 +136,15 @@ export const GuestScannerPage: React.FC = () => {
                 setGuestName(result.guest.name);
                 setCheckInStatus('success');
 
-                // Trigger display blast for visual effect
-                await triggerBlast(result.guest.name);
+                // Trigger display blast for visual effect with tier info
+                await triggerBlast(result.guest.name, result.guest.tier);
             } else if (result.code === 'ALREADY_CHECKED_IN') {
                 // DUPLICATE: Already checked in
                 setGuestName(result.guest.name);
                 setCheckInStatus('duplicate');
                 setError(`${result.guest.name} sudah check-in sebelumnya!`);
+                // Optional: still blast if admin wants to re-welcome
+                await triggerBlast(result.guest.name, result.guest.tier);
             } else if (result.code === 'NOT_FOUND') {
                 setCheckInStatus('error');
                 setError('QR Code tidak dikenali. Pastikan tamu terdaftar.');
@@ -159,16 +161,18 @@ export const GuestScannerPage: React.FC = () => {
         }
     };
 
-    const triggerBlast = async (name: string) => {
+    const triggerBlast = async (name: string, tier?: string) => {
         try {
             // CTO: Use the standardized Command Bus API for display sync
+            // Including TIER for "Tamuu VIP" label on screen
             await adminApi.triggerDisplay(id!, {
                 name: name,
+                tier: tier,
                 effect: 'confetti',
                 style: 'cinematic',
                 timestamp: Date.now()
             });
-            console.log(`[Scanner] Blast triggered for ${name}`);
+            console.log(`[Scanner] Blast triggered for ${name} (${tier})`);
         } catch (err: any) {
             console.warn('Display sync failed, but check-in was successful');
         }

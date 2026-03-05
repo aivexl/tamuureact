@@ -109,18 +109,29 @@ export const NameBoardElement: React.FC<NameBoardElementProps> = ({ layer, isEdi
         ...layer.nameBoardConfig
     };
 
-    // Get greetingName from store for dynamic display
-    const greetingName = useStore(state => state.greetingName);
-
     useEffect(() => {
         onContentLoad?.();
     }, []);
 
     // Determine displayed name: 
     // - In editor: always show config.displayText
-    // - In preview/runtime: show greetingName IF triggered, otherwise show nothing or generic "Welcome"
-    // IMPROVEMENT: Logic to avoid showing "Guest Name" placeholder in the actual event
-    const displayedName = isEditor ? config.displayText : greetingName;
+    // - In preview/runtime: prioritize guestData.name (Personal Invitation)
+    // - Fallback: greetingName (Welcome Display Trigger)
+    // - Final Fallback: config.displayText (Generic)
+    const guestData = useStore(state => state.guestData);
+    const greetingName = useStore(state => state.greetingName);
+    const greetingTier = useStore(state => state.greetingTier);
+
+    // Prioritize store's greetingName (real-time checkin) over invitation's guestData
+    const displayedName = isEditor 
+        ? config.displayText 
+        : (greetingName || guestData?.name || config.displayText);
+    
+    // Determine the tier label
+    const displayedTier = isEditor 
+        ? undefined 
+        : (greetingTier || guestData?.tier);
+
     const hasName = !!displayedName;
 
     const variant = NAME_BOARD_VARIANTS.find(v => v.id === config.variant) || NAME_BOARD_VARIANTS[0];
@@ -224,10 +235,24 @@ export const NameBoardElement: React.FC<NameBoardElementProps> = ({ layer, isEdi
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -5 }}
-                    className="text-center leading-tight"
-                    style={getTextStyle()}
+                    className="flex flex-col items-center gap-2 text-center leading-tight"
                 >
-                    {displayedName}
+                    {/* TIER LABEL: Exclusive "Tamuu VIP" Branding */}
+                    {displayedTier && (displayedTier === 'vip' || displayedTier === 'vvip') && (
+                        <m.div 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md mb-2"
+                        >
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-premium-accent drop-shadow-sm">
+                                Tamuu {displayedTier.toUpperCase()}
+                            </span>
+                        </m.div>
+                    )}
+
+                    <div style={getTextStyle()}>
+                        {displayedName}
+                    </div>
                 </m.div>
             </AnimatePresence>
 

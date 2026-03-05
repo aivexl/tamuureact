@@ -977,12 +977,13 @@ export interface LayersState {
     activeEffect: 'none' | string;
     activeEffects: { id: string, type: string, origin: { x: number, y: number }, timestamp: number }[];
     greetingName: string;
+    greetingTier?: string;
     greetingStyle: 'cinematic' | 'simple' | 'none';
     lastInteractionId: number;
     interactionNonce: number; // Incrementing counter to force re-animation
     triggerGlobalEffect: (effect: string, origin?: { x: number, y: number }) => void;
     triggerInteraction: (name: string, effect: string, style?: 'cinematic' | 'simple' | 'none', origin?: { x: number, y: number }, customResetDuration?: number) => void;
-    triggerBatchInteractions: (name: string, interactions: { effect: string, style?: 'cinematic' | 'simple' | 'none', origin?: { x: number, y: number }, resetDuration?: number }[]) => void;
+    triggerBatchInteractions: (name: string, interactions: { effect: string, style?: 'cinematic' | 'simple' | 'none', origin?: { x: number, y: number }, resetDuration?: number, tier?: string }[]) => void;
     removeActiveEffect: (id: string) => void;
     // ENTERPRISE V5: Dimension Tracking for Smart Position
     elementDimensions: Record<string, { width: number, height: number }>;
@@ -1328,18 +1329,21 @@ export const createLayersSlice: StateCreator<LayersState> = (set, get) => ({
         const batchId = `batch-${timestamp}`;
         const primaryInteraction = interactions[0];
         const style = primaryInteraction.style || 'cinematic';
+        const tier = primaryInteraction.tier;
 
-        console.log(`[Store] triggerBatchInteractions: ${name} | count: ${interactions.length} | nonce: ${get().interactionNonce + 1}`);
+        console.log(`[Store] triggerBatchInteractions: ${name} | tier: ${tier} | count: ${interactions.length} | nonce: ${get().interactionNonce + 1}`);
 
         // Dev Sync: Write to localStorage for cross-tab preview
         if (typeof window !== 'undefined') {
             localStorage.setItem('tamuu_interaction_event', JSON.stringify({
                 name,
+                tier,
                 interactions: interactions.map(i => ({
                     effect: i.effect,
                     style: i.style || 'cinematic',
                     origin: i.origin || { x: 0.5, y: 0.5 },
-                    resetDuration: i.resetDuration
+                    resetDuration: i.resetDuration,
+                    tier: i.tier
                 })),
                 timestamp
             }));
@@ -1354,6 +1358,7 @@ export const createLayersSlice: StateCreator<LayersState> = (set, get) => ({
 
         set((state) => ({
             greetingName: name || state.greetingName,
+            greetingTier: tier || state.greetingTier,
             activeEffect: primaryInteraction.effect,
             greetingStyle: style,
             lastInteractionId: timestamp,
@@ -1371,6 +1376,7 @@ export const createLayersSlice: StateCreator<LayersState> = (set, get) => ({
                     const isStillSame = state.lastInteractionId === timestamp;
                     return {
                         greetingName: isStillSame ? '' : state.greetingName,
+                        greetingTier: isStillSame ? undefined : state.greetingTier,
                         activeEffects: state.activeEffects.filter(e => e.id !== effectId),
                         activeEffect: state.activeEffects.length > 1
                             ? state.activeEffects[state.activeEffects.length - 2].type
