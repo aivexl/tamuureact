@@ -730,6 +730,32 @@ const elementConfigs: ElementConfig[] = [
         })
     },
     {
+        type: 'welcome_board' as LayerType,
+        icon: <Monitor className="w-5 h-5 text-purple-400" />,
+        label: 'Welcome Board',
+        color: 'hover:bg-purple-500/10 hover:border-purple-500/30',
+        createDefault: () => ({
+            width: 600,
+            height: 200,
+            type: 'welcome_board',
+            nameBoardConfig: {
+                variant: 1,
+                displayText: 'Welcome Guest',
+                fontFamily: 'Playfair Display',
+                fontSize: 64,
+                textColor: '#f8f9fa',
+                backgroundColor: '#1a1a2e',
+                borderColor: '#4a4a6a',
+                borderWidth: 2,
+                borderRadius: 16,
+                shadowEnabled: true,
+                gradientEnabled: false,
+                gradientStart: '#667eea',
+                gradientEnd: '#764ba2'
+            }
+        })
+    },
+    {
         type: 'live_streaming',
         icon: <Monitor className="w-5 h-5" />,
         label: 'Live Stream',

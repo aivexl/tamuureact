@@ -46,6 +46,7 @@ export type LayerType =
     | 'share_context'
     | 'interaction'
     | 'name_board'
+    | 'welcome_board'
     | 'love_story'
     | 'qr_code'
     | 'gift_address'

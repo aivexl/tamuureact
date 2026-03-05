@@ -635,6 +635,8 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
             case 'quote': return 'Pilih Gaya Quote';
             case 'profile_card': return 'Pilih Peran Profil';
             case 'profile_photo': return 'Pilih Bentuk Foto Profil';
+            case 'name_board': return 'Add Name Board (Invitation)';
+            case 'welcome_board': return 'Add Welcome Board (TV Display)';
             default: {
                 const label = type?.replace('_', ' ') || '';
                 return `MISSING_TYPE: Add ${label.charAt(0).toUpperCase() + label.slice(1)}`;
@@ -852,7 +854,109 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                     </div>
                 )}
 
-                {/* PHOTO GRID */}
+                {/* WELCOME BOARD (TV DISPLAY) - 27 Premium Variants */}
+                {type === 'welcome_board' && (
+                    <div className="space-y-4">
+                        <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl mb-4">
+                            <h4 className="text-xs font-bold text-purple-400 mb-1 flex items-center gap-2">
+                                <Monitor className="w-3 h-3" />
+                                Welcome Board TV
+                            </h4>
+                            <p className="text-[10px] text-white/60 leading-relaxed">
+                                Elemen ini akan otomatis menampilkan nama tamu yang melakukan check-in di pintu masuk (via QR Scanner).
+                            </p>
+                        </div>
+                        {[
+                            {
+                                id: 'classic', name: 'Classic', icon: '🎨', items: [
+                                    { id: 1, name: 'Elegant', bg: '#1a1a2e', text: '#f8f9fa' },
+                                    { id: 2, name: 'Light', bg: '#ffffff', text: '#2d3436' },
+                                    { id: 3, name: 'Gold', bg: '#0a0a0a', text: '#d4af37' },
+                                    { id: 4, name: 'Rose', bg: '#fff5f5', text: '#c53030' },
+                                    { id: 5, name: 'Navy', bg: '#1a365d', text: '#ffffff' },
+                                ]
+                            },
+                            {
+                                id: 'glass', name: 'Glass', icon: '✨', items: [
+                                    { id: 6, name: 'Frosted', bg: 'rgba(255,255,255,0.1)', text: '#ffffff' },
+                                    { id: 7, name: 'Dark', bg: 'rgba(0,0,0,0.3)', text: '#ffffff' },
+                                    { id: 8, name: 'Blue', bg: 'rgba(59,130,246,0.2)', text: '#ffffff' },
+                                    { id: 9, name: 'Purple', bg: 'rgba(139,92,246,0.2)', text: '#ffffff' },
+                                    { id: 10, name: 'Rose', bg: 'rgba(244,63,94,0.15)', text: '#ffffff' },
+                                ]
+                            },
+                            {
+                                id: 'neon', name: 'Neon', icon: '💡', items: [
+                                    { id: 11, name: 'Cyan', bg: '#0a0a0a', text: '#00ffff' },
+                                    { id: 12, name: 'Pink', bg: '#0a0a0a', text: '#ff00ff' },
+                                    { id: 13, name: 'Green', bg: '#0a0a0a', text: '#00ff00' },
+                                    { id: 14, name: 'Orange', bg: '#0a0a0a', text: '#ff6600' },
+                                    { id: 15, name: 'Blue', bg: '#0a0a0a', text: '#0066ff' },
+                                ]
+                            },
+                            {
+                                id: 'badge', name: 'Badge', icon: '🏆', items: [
+                                    { id: 16, name: 'VIP', bg: 'linear-gradient(135deg, #d4af37, #f4e4a6)', text: '#1a1a1a' },
+                                    { id: 17, name: 'Premium', bg: 'linear-gradient(135deg, #667eea, #764ba2)', text: '#ffffff' },
+                                    { id: 18, name: 'Royal', bg: 'linear-gradient(135deg, #1a1a2e, #4a4a6a)', text: '#d4af37' },
+                                    { id: 19, name: 'Coral', bg: 'linear-gradient(135deg, #ff6b6b, #ee5a5a)', text: '#ffffff' },
+                                    { id: 20, name: 'Ocean', bg: 'linear-gradient(135deg, #4facfe, #00f2fe)', text: '#ffffff' },
+                                ]
+                            },
+                            {
+                                id: 'luxury', name: 'Luxury', icon: '💎', items: [
+                                    { id: 21, name: 'Black Tie', bg: '#000000', text: '#d4af37' },
+                                    { id: 22, name: 'Champagne', bg: '#f5f5dc', text: '#8b7355' },
+                                    { id: 23, name: 'Velvet', bg: '#800020', text: '#ffd700' },
+                                    { id: 24, name: 'Midnight', bg: '#0c0c1e', text: '#e8e8e8' },
+                                ]
+                            },
+                            {
+                                id: 'minimal', name: 'Minimal', icon: '⬜', items: [
+                                    { id: 25, name: 'Pure White', bg: '#ffffff', text: '#000000' },
+                                    { id: 26, name: 'Pure Black', bg: '#000000', text: '#ffffff' },
+                                    { id: 27, name: 'Soft Gray', bg: '#f0f0f0', text: '#333333' },
+                                ]
+                            },
+                        ].map((category) => (
+                            <div key={category.id}>
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-sm">{category.icon}</span>
+                                    <span className="text-xs font-bold uppercase tracking-wider text-white/60">{category.name}</span>
+                                    <span className="text-[9px] text-white/30">({category.items.length})</span>
+                                </div>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {category.items.map((preset) => (
+                                        <button
+                                            key={preset.id}
+                                            onClick={() => onSelect({
+                                                nameBoardConfig: {
+                                                    variant: preset.id,
+                                                    displayText: 'Welcome Guest',
+                                                    fontFamily: 'Playfair Display',
+                                                    fontSize: 64,
+                                                    textColor: preset.text,
+                                                    backgroundColor: preset.bg,
+                                                    borderColor: preset.text + '40',
+                                                    borderWidth: 2,
+                                                    borderRadius: 16,
+                                                    shadowEnabled: true,
+                                                    gradientEnabled: false,
+                                                    gradientStart: '#667eea',
+                                                    gradientEnd: '#764ba2'
+                                                }
+                                            })}
+                                            className="p-3 rounded-xl border border-white/10 hover:border-purple-500/50 transition-all text-center group"
+                                            style={{ background: preset.bg.includes('gradient') ? preset.bg : preset.bg }}
+                                        >
+                                            <div className="text-[10px] font-bold truncate" style={{ color: preset.text }}>{preset.name}</div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
                 {type === 'photo_grid' && (
                     <div className="grid grid-cols-2 gap-3">
                         {PHOTO_GRID_PRESETS.map((preset, i) => (

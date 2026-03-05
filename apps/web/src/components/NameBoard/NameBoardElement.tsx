@@ -113,27 +113,27 @@ export const NameBoardElement: React.FC<NameBoardElementProps> = ({ layer, isEdi
         onContentLoad?.();
     }, []);
 
-    // Determine displayed name: 
-    // - In editor: always show config.displayText
-    // - In preview/runtime: prioritize guestData.name (Personal Invitation)
-    // - Fallback: greetingName (Welcome Display Trigger)
-    // - Final Fallback: config.displayText (Generic)
     const guestData = useStore(state => state.guestData);
     const greetingName = useStore(state => state.greetingName);
     const greetingTier = useStore(state => state.greetingTier);
 
-    // Prioritize store's greetingName (real-time checkin) over invitation's guestData
-    const displayedName = isEditor 
-        ? config.displayText 
-        : (greetingName || guestData?.name || config.displayText);
-    
-    // Determine the tier label
-    const displayedTier = isEditor 
-        ? undefined 
-        : (greetingTier || guestData?.tier);
+    let displayedName = config.displayText;
+    let displayedTier = undefined;
+
+    if (isEditor) {
+        displayedName = config.displayText;
+        displayedTier = undefined;
+    } else if (layer.type === 'welcome_board') {
+        // WELCOME BOARD (TV DISPLAY): Only shows name when triggered via checkin/remote
+        displayedName = greetingName || ''; // Empty or config.displayText if you want standby text
+        displayedTier = greetingTier;
+    } else {
+        // NAME BOARD (INVITATION): Always shows guest name from URL permanently
+        displayedName = guestData?.name || config.displayText;
+        displayedTier = guestData?.tier;
+    }
 
     const hasName = !!displayedName;
-
     const variant = NAME_BOARD_VARIANTS.find(v => v.id === config.variant) || NAME_BOARD_VARIANTS[0];
 
     // Determine background style

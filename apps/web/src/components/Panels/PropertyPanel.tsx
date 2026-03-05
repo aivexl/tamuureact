@@ -2492,9 +2492,9 @@ export const PropertyPanel: React.FC = () => {
                     )
                 }
 
-                {/* Name Board Config - Only for name_board elements */}
+                {/* Name Board Config - Only for name_board or welcome_board elements */}
                 {
-                    layer.type === 'name_board' && (
+                    (layer.type === 'name_board' || layer.type === 'welcome_board') && (
                         <SectionComponent title="Name Board Setup" icon={<Users className="w-4 h-4 text-amber-400" />}>
                             <div className="space-y-4">
                                 {/* Variant Gallery */}
