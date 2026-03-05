@@ -423,15 +423,15 @@ export const GuestManagementPage: React.FC = () => {
     const publicDomain = getPublicDomain();
 
     return (
-        <div className="min-h-screen bg-slate-50 pt-14">
+        <div className="min-h-screen bg-slate-50 pt-20">
             {/* Page Header */}
-            <div className="bg-white border-b border-slate-200 px-4 lg:px-8 py-6">
+            <div className="bg-white border-b border-slate-200 px-4 lg:px-8 pt-10 pb-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="space-y-1">
-                        <button onClick={() => navigate(-1)} className="flex items-center text-sm text-slate-500 hover:text-teal-600 transition-colors mb-2">
-                            <ArrowLeftIcon className="w-4 h-4 mr-1" /> Kembali
+                    <div className="space-y-2">
+                        <button onClick={() => navigate(-1)} className="flex items-center text-sm font-semibold text-slate-400 hover:text-teal-600 transition-colors mb-4 group">
+                            <ArrowLeftIcon className="w-4 h-4 mr-1.5 transition-transform group-hover:-translate-x-1" /> Kembali
                         </button>
-                        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Buku Tamu Digital</h1>
+                        <h1 className="text-4xl font-black text-slate-900 tracking-tight">Buku Tamu Digital</h1>
                         <p className="text-slate-500">Kelola tamu dan kirim undangan personal dengan mudah.</p>
                     </div>
                     <div className="flex items-center gap-3">
