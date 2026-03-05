@@ -116,6 +116,146 @@ const PHOTO_GRID_PRESETS = [
     { label: 'Cluster', variant: 'cluster', icon: <div className="relative w-full h-full"><div className="absolute top-0 left-0 w-3/5 h-3/5 bg-white/20 rounded-sm rotate-[-10deg]" /><div className="absolute bottom-0 right-0 w-3/5 h-3/5 bg-white/10 rounded-sm rotate-[10deg] border border-white/20" /></div> },
 ];
 
+const PHOTO_FRAME_PRESETS = [
+    {
+        label: 'Polaroid Classic',
+        variant: 'polaroid',
+        icon: <div className="w-full h-full bg-white border border-gray-200 shadow-sm flex flex-col p-1.5 pt-1.5">
+            <div className="flex-1 bg-gray-100 rounded-sm" />
+            <div className="h-4 mt-1 bg-gray-50 flex items-center px-1">
+                <div className="w-8 h-1 bg-gray-200 rounded-full" />
+            </div>
+        </div>,
+        config: {
+            frameConfig: {
+                variant: 'polaroid',
+                backgroundColor: '#ffffff',
+                padding: 16,
+                bottomPadding: 48,
+                borderRadius: 2,
+                shadowEnabled: true
+            }
+        }
+    },
+    {
+        label: 'Gallery Frame',
+        variant: 'gallery',
+        icon: <div className="w-full h-full bg-white border-2 border-neutral-800 shadow-2xl flex p-2">
+            <div className="flex-1 bg-neutral-100 rounded-none border border-neutral-200" />
+        </div>,
+        config: {
+            frameConfig: {
+                variant: 'gallery',
+                backgroundColor: '#ffffff',
+                padding: 24,
+                borderRadius: 0,
+                shadowEnabled: true
+            }
+        }
+    },
+    {
+        label: 'Film Strip',
+        variant: 'film-strip',
+        icon: <div className="w-full h-full bg-neutral-900 flex flex-col p-1 gap-1">
+            <div className="flex justify-between px-1"><div className="w-1 h-1 bg-white/20 rounded-sm" /><div className="w-1 h-1 bg-white/20 rounded-sm" /></div>
+            <div className="flex-1 bg-neutral-800 rounded-sm" />
+            <div className="flex justify-between px-1"><div className="w-1 h-1 bg-white/20 rounded-sm" /><div className="w-1 h-1 bg-white/20 rounded-sm" /></div>
+        </div>,
+        config: {
+            frameConfig: {
+                variant: 'film-strip',
+                backgroundColor: '#171717',
+                padding: 12,
+                borderRadius: 4
+            }
+        }
+    },
+    {
+        label: 'Washi Tape',
+        variant: 'washi-tape',
+        icon: <div className="w-full h-full bg-white border border-neutral-200 shadow-sm flex flex-col p-1 relative">
+            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-6 h-2 bg-premium-accent/40 rotate-2" />
+            <div className="flex-1 bg-neutral-100 rounded-sm mt-1" />
+        </div>,
+        config: {
+            frameConfig: {
+                variant: 'washi-tape',
+                backgroundColor: '#ffffff',
+                padding: 12,
+                bottomPadding: 12,
+                borderRadius: 2
+            }
+        }
+    },
+    {
+        label: 'Modern Arch',
+        variant: 'arch',
+        icon: <div className="w-full h-full bg-white border border-neutral-200 shadow-sm flex flex-col p-1 rounded-t-full">
+            <div className="flex-1 bg-neutral-100 rounded-t-full" />
+        </div>,
+        config: {
+            frameConfig: {
+                variant: 'arch',
+                backgroundColor: '#ffffff',
+                padding: 12,
+                borderRadius: 100 // Large radius for arch
+            }
+        }
+    },
+    {
+        label: 'Instagram Light',
+        variant: 'instagram',
+        icon: <div className="w-full h-full bg-white border border-gray-100 shadow-sm flex flex-col rounded-md overflow-hidden">
+            <div className="h-3 flex items-center px-1 gap-1">
+                <div className="w-2 h-2 rounded-full bg-gray-200" />
+                <div className="w-6 h-1 bg-gray-100 rounded-full" />
+            </div>
+            <div className="flex-1 bg-gray-50" />
+            <div className="h-3 flex items-center px-1 gap-1">
+                <Heart className="w-2 h-2 text-gray-300" />
+                <MessageSquare className="w-2 h-2 text-gray-300" />
+                <Share2 className="w-2 h-2 text-gray-300" />
+            </div>
+        </div>,
+        config: {
+            frameConfig: {
+                variant: 'instagram',
+                theme: 'light',
+                showIcons: true,
+                username: 'Username',
+                avatarUrl: '',
+                showLikeCount: true
+            }
+        }
+    },
+    {
+        label: 'Instagram Dark',
+        variant: 'instagram-dark',
+        icon: <div className="w-full h-full bg-black border border-white/10 shadow-sm flex flex-col rounded-md overflow-hidden">
+            <div className="h-3 flex items-center px-1 gap-1">
+                <div className="w-2 h-2 rounded-full bg-white/20" />
+                <div className="w-6 h-1 bg-white/10 rounded-full" />
+            </div>
+            <div className="flex-1 bg-white/5" />
+            <div className="h-3 flex items-center px-1 gap-1">
+                <Heart className="w-2 h-2 text-white/30" />
+                <MessageSquare className="w-2 h-2 text-white/30" />
+                <Share2 className="w-2 h-2 text-white/30" />
+            </div>
+        </div>,
+        config: {
+            frameConfig: {
+                variant: 'instagram',
+                theme: 'dark',
+                showIcons: true,
+                username: 'Username',
+                avatarUrl: '',
+                showLikeCount: true
+            }
+        }
+    }
+];
+
 // RSVP + Wishes Variant Presets (matches legacy ElementStyle types)
 const RSVP_WISHES_PRESETS = [
     // Row 1: Basic Styles
@@ -482,6 +622,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
             case 'rsvp_form': return 'RSVP Form';
             case 'rsvp_wishes': return 'RSVP + Guest Wishes';
             case 'photo_grid': return 'Photo Grid Layout';
+            case 'photo_frame': return 'Photo Frame Templates';
             case 'confetti': return 'Confetti Style';
             case 'music_player': return 'Music Library';
             case 'svg_wave': return 'Wave & Blob Presets';
@@ -721,6 +862,24 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                                 className="flex flex-col gap-2 p-3 rounded-xl bg-white/5 hover:bg-premium-accent/20 border border-white/5 hover:border-premium-accent/40 transition-all group"
                             >
                                 <div className="w-full aspect-square p-2 bg-black/20 rounded-lg overflow-hidden group-hover:scale-105 transition-transform">
+                                    {preset.icon}
+                                </div>
+                                <span className="text-[10px] text-white/50 group-hover:text-white/80 font-medium">{preset.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {/* PHOTO FRAME */}
+                {type === 'photo_frame' && (
+                    <div className="grid grid-cols-2 gap-3">
+                        {PHOTO_FRAME_PRESETS.map((preset, i) => (
+                            <button
+                                key={i}
+                                onClick={() => onSelect({ ...preset.config })}
+                                className="flex flex-col gap-2 p-3 rounded-xl bg-white/5 hover:bg-premium-accent/20 border border-white/5 hover:border-premium-accent/40 transition-all group"
+                            >
+                                <div className="w-full aspect-square p-2 bg-black/40 rounded-lg overflow-hidden group-hover:scale-105 transition-transform">
                                     {preset.icon}
                                 </div>
                                 <span className="text-[10px] text-white/50 group-hover:text-white/80 font-medium">{preset.label}</span>

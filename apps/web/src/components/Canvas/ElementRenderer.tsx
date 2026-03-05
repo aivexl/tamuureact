@@ -3,7 +3,7 @@ import { m, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { patchLegacyUrl } from '@/lib/utils';
 import { Layer } from '@/store/layersSlice';
-import { X, Upload, Play, MailOpen, MapPin, Clock, ExternalLink, MessageSquare, Heart, Star, Image as ImageIcon } from 'lucide-react';
+import { X, Upload, Play, MailOpen, MapPin, Clock, ExternalLink, MessageSquare, Heart, Star, Image as ImageIcon, Users, Share2, Film } from 'lucide-react';
 import Lottie from 'lottie-react';
 import * as LucideIcons from 'lucide-react';
 import { shapePaths } from '@/lib/shape-paths';
@@ -82,6 +82,8 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenI
                 return <FlyingBirdElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             case 'photo_grid':
                 return <PhotoGridElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
+            case 'photo_frame':
+                return <PhotoFrameElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
 
             // ENTERPRISE V3 ELEMENTS
             case 'confetti':
@@ -929,6 +931,183 @@ const PhotoGridElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLo
             />
             {renderGrid()}
         </>
+    );
+};
+
+// ============================================
+// PHOTO FRAME ELEMENT (Polaroid & Instagram)
+// ============================================
+const PhotoFrameElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
+    useEffect(() => {
+        onContentLoad?.();
+    }, [onContentLoad]);
+
+    const config = layer.frameConfig;
+    if (!config) return null;
+
+    const variant = config.variant || 'polaroid';
+    const isDark = config.theme === 'dark';
+
+    // COMMON PLACEHOLDER CONTENT
+    const Placeholder = ({ icon: Icon, text }: { icon: any, text: string }) => (
+        <div className={`flex-1 flex flex-col items-center justify-center relative overflow-hidden`}>
+            <Icon className={`w-8 h-8 opacity-20`} />
+            <span className="text-[9px] uppercase tracking-widest font-black mt-2 opacity-30">{text}</span>
+        </div>
+    );
+
+    const renderFrame = () => {
+        switch (variant) {
+            case 'polaroid':
+                return (
+                    <div 
+                        className="w-full h-full flex flex-col shadow-2xl overflow-hidden" 
+                        style={{ 
+                            backgroundColor: config.backgroundColor || '#ffffff',
+                            padding: config.padding || 16,
+                            paddingBottom: config.bottomPadding || 48,
+                            borderRadius: config.borderRadius || 2
+                        }}
+                    >
+                        <div className="flex-1 bg-neutral-100 flex flex-col items-center justify-center border border-neutral-200/50 rounded-sm">
+                            <ImageIcon className="w-8 h-8 text-neutral-300" />
+                            <span className="text-[10px] text-neutral-400 mt-2 font-medium uppercase tracking-tighter">Upload Photo</span>
+                        </div>
+                        <div className="h-8 mt-2 flex items-center justify-center">
+                            <div className="w-24 h-1 bg-neutral-100 rounded-full" />
+                        </div>
+                    </div>
+                );
+
+            case 'gallery':
+                return (
+                    <div 
+                        className="w-full h-full flex flex-col shadow-[0_30px_60px_-12px_rgba(0,0,0,0.5)] border-2 border-neutral-800" 
+                        style={{ 
+                            backgroundColor: config.backgroundColor || '#ffffff',
+                            padding: config.padding || 24
+                        }}
+                    >
+                        <div className="flex-1 bg-neutral-50 border border-neutral-200 flex items-center justify-center">
+                            <Placeholder icon={ImageIcon} text="Fine Art Print" />
+                        </div>
+                    </div>
+                );
+
+            case 'film-strip':
+                const holeCount = 5;
+                const holes = Array.from({ length: holeCount }).map((_, i) => (
+                    <div key={i} className="w-2 h-3 bg-neutral-900 rounded-sm" />
+                ));
+                return (
+                    <div className="w-full h-full bg-neutral-950 flex flex-col p-2 gap-2 shadow-xl">
+                        {/* Top Holes */}
+                        <div className="flex justify-around items-center h-4 px-2 opacity-40">
+                            {holes}
+                        </div>
+                        {/* Film Content */}
+                        <div className="flex-1 bg-neutral-900 border-y-2 border-neutral-800 flex items-center justify-center">
+                            <Placeholder icon={Film} text="Frame 01" />
+                        </div>
+                        {/* Bottom Holes */}
+                        <div className="flex justify-around items-center h-4 px-2 opacity-40">
+                            {holes}
+                        </div>
+                    </div>
+                );
+
+            case 'washi-tape':
+                return (
+                    <div className="w-full h-full relative pt-4">
+                        {/* Tape Graphic */}
+                        <div 
+                            className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-6 bg-premium-accent/40 backdrop-blur-[1px] rotate-[-2deg] z-10 shadow-sm border-x border-premium-accent/20"
+                            style={{ maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)' }}
+                        />
+                        <div 
+                            className="w-full h-full bg-white shadow-lg flex flex-col p-3 border border-neutral-100"
+                            style={{ borderRadius: config.borderRadius || 2 }}
+                        >
+                            <div className="flex-1 bg-neutral-50 flex items-center justify-center rounded-sm">
+                                <Placeholder icon={ImageIcon} text="Memories" />
+                            </div>
+                        </div>
+                    </div>
+                );
+
+            case 'arch':
+                return (
+                    <div 
+                        className="w-full h-full bg-white shadow-xl flex flex-col p-3 overflow-hidden"
+                        style={{ borderTopLeftRadius: '50% 100%', borderTopRightRadius: '50% 100%' }}
+                    >
+                        <div 
+                            className="flex-1 bg-neutral-50 flex items-center justify-center border border-neutral-100"
+                            style={{ borderTopLeftRadius: '50% 100%', borderTopRightRadius: '50% 100%' }}
+                        >
+                            <Placeholder icon={ImageIcon} text="Elegance" />
+                        </div>
+                    </div>
+                );
+
+            case 'instagram':
+                return (
+                    <div 
+                        className={`w-full h-full flex flex-col rounded-xl overflow-hidden border ${isDark ? 'bg-black border-white/10 text-white' : 'bg-white border-neutral-100 text-black'} shadow-xl`}
+                    >
+                        {/* Header */}
+                        <div className="h-12 flex items-center px-3 gap-3 border-b border-neutral-100/10">
+                            <div className={`w-8 h-8 rounded-full border ${isDark ? 'bg-white/10 border-white/5' : 'bg-neutral-100 border-neutral-200'} flex items-center justify-center overflow-hidden`}>
+                                <Users className={`w-4 h-4 ${isDark ? 'text-white/20' : 'text-neutral-300'}`} />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[11px] font-bold leading-none">{config.username || 'Username'}</span>
+                                <span className={`text-[9px] leading-none mt-1 opacity-50`}>{config.location || 'Original Audio'}</span>
+                            </div>
+                            <div className="ml-auto flex gap-0.5">
+                                <div className={`w-1 h-1 rounded-full ${isDark ? 'bg-white/40' : 'bg-neutral-300'}`} />
+                                <div className={`w-1 h-1 rounded-full ${isDark ? 'bg-white/40' : 'bg-neutral-300'}`} />
+                                <div className={`w-1 h-1 rounded-full ${isDark ? 'bg-white/40' : 'bg-neutral-300'}`} />
+                            </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className={`flex-1 ${isDark ? 'bg-white/5' : 'bg-neutral-50'} flex items-center justify-center`}>
+                            <Placeholder icon={ImageIcon} text="Post Image" />
+                        </div>
+
+                        {/* Footer */}
+                        <div className="p-3">
+                            <div className="flex items-center gap-4 mb-2">
+                                <Heart className="w-5 h-5 opacity-70" />
+                                <MessageSquare className="w-5 h-5 opacity-70" />
+                                <Share2 className="w-5 h-5 opacity-70" />
+                                <div className="ml-auto">
+                                    <Star className="w-5 h-5 opacity-20" />
+                                </div>
+                            </div>
+                            {config.showLikeCount !== false && (
+                                <div className="text-[11px] font-bold mb-1">
+                                    {config.likeCount?.toLocaleString() || '1,234'} likes
+                                </div>
+                            )}
+                            <div className="text-[11px] leading-tight">
+                                <span className="font-bold mr-2">{config.username || 'Username'}</span>
+                                <span className="opacity-80 truncate">Captured moments...</span>
+                            </div>
+                        </div>
+                    </div>
+                );
+
+            default:
+                return <PlaceholderElement layer={layer} onContentLoad={onContentLoad} />;
+        }
+    };
+
+    return (
+        <div className="w-full h-full animate-in fade-in zoom-in-95 duration-500">
+            {renderFrame()}
+        </div>
     );
 };
 

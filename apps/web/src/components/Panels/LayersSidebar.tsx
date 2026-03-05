@@ -57,6 +57,7 @@ const layerIcons: Record<LayerType, React.ReactNode> = {
     live_streaming: <Monitor className="w-4 h-4" />,
     profile_card: <Users className="w-4 h-4" />,
     profile_photo: <Users className="w-4 h-4" />,
+    photo_frame: <Monitor className="w-4 h-4" />,
     quote: <Quote className="w-4 h-4" />
 };
 

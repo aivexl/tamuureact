@@ -1,5 +1,20 @@
 # Tamuu Changelog
 
+## [2026-03-05] Feature: Premium Photo Frame System (Enterprise Design Suite)
+**Status**: 🔵 Deploying
+**Environment**: Production
+
+### Core Features
+- **Photo Frame Architecture**: Introduced a new `photo_frame` element type with 6 premium variants:
+    - **Classic Polaroid**: Authentic instant-photo aesthetic with customizable padding and handwriting-ready caption area.
+    - **Instagram Simulation**: High-fidelity social media post mockup with profile headers, dynamic like counts, and dark/light mode parity.
+    - **Gallery Frame**: High-end minimalist border with deep floating shadows for fine-art pre-wedding displays.
+    - **Film Strip**: Cinematic nostalgic strip design with realistic sprocket hole details.
+    - **Washi Tape**: Creative scrapbook aesthetic featuring semi-transparent decorative tape overlays.
+    - **Modern Arch**: Architecturally-inspired curved frames matching 2024-2026 wedding design trends.
+- **Admin Configuration Suite**: Added comprehensive controls in the Property Panel for real-time adjustments of usernames, engagement metrics, padding, and theme modes.
+- **Pure CSS Rendering**: All frames are built using advanced Tailwind/CSS techniques to ensure zero performance overhead and perfect resolution at any scale.
+
 ## [2026-03-04] Fix: Admin Editor Font Rendering & Layout Coverage
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
 **Environment**: Production

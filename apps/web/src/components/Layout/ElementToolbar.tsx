@@ -363,6 +363,23 @@ const elementConfigs: ElementConfig[] = [
         })
     },
     {
+        type: 'photo_frame' as any,
+        icon: <Monitor className="w-5 h-5 text-premium-accent" />,
+        label: 'Frames',
+        color: 'hover:bg-premium-accent/10 hover:border-premium-accent/30',
+        createDefault: () => ({
+            width: 320,
+            height: 400,
+            frameConfig: {
+                variant: 'polaroid',
+                backgroundColor: '#ffffff',
+                padding: 20,
+                bottomPadding: 60,
+                showIcons: false
+            }
+        })
+    },
+    {
         type: 'confetti',
         icon: <Sparkles className="w-5 h-5" />,
         label: 'Confetti',

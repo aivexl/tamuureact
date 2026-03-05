@@ -52,7 +52,8 @@ export type LayerType =
     | 'quote'
     | 'live_streaming'
     | 'profile_card'
-    | 'profile_photo';
+    | 'profile_photo'
+    | 'photo_frame';
 
 
 // ============================================
@@ -126,6 +127,26 @@ export const DEFAULT_PROFILE_PHOTO_CONFIG: ProfilePhotoConfig = {
     showBorder: true,
     label: 'Mempelai Pria'
 };
+
+// ============================================
+// PHOTO FRAME TYPES
+// ============================================
+export interface FrameConfig {
+    variant: 'polaroid' | 'instagram' | 'gallery' | 'film-strip' | 'washi-tape' | 'arch' | 'custom';
+    backgroundColor?: string;
+    padding?: number;
+    bottomPadding?: number;
+    borderRadius?: number;
+    shadowEnabled?: boolean;
+    // Instagram specific
+    theme?: 'light' | 'dark';
+    username?: string;
+    avatarUrl?: string;
+    location?: string;
+    showIcons?: boolean;
+    showLikeCount?: boolean;
+    likeCount?: number;
+}
 
 // ============================================
 // STYLE CONFIGS
@@ -769,6 +790,7 @@ export interface WeatherConfig {
     showIcon: boolean;
     theme: 'minimal' | 'glass' | 'dynamic';
 }
+
 export interface Layer {
     id: string;
     type: LayerType;
@@ -876,6 +898,7 @@ export interface Layer {
     liveStreamingConfig?: LiveStreamingConfig;
     profileCardConfig?: ProfileCardConfig;
     profilePhotoConfig?: ProfilePhotoConfig;
+    frameConfig?: FrameConfig;
 
     // ENTERPRISE V2 FEATURES
     maskConfig?: MaskConfig;

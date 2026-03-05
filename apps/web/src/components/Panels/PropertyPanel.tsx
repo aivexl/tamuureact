@@ -2922,6 +2922,116 @@ export const PropertyPanel: React.FC = () => {
                     </SectionComponent>
                 )}
 
+                {/* Photo Frame Settings */}
+                {layer.type === 'photo_frame' && (
+                    <SectionComponent title="Photo Frame Settings" icon={<Monitor className="w-4 h-4 text-premium-accent" />}>
+                        <div className="space-y-4">
+                            <SelectInput
+                                label="Frame Style"
+                                value={layer.frameConfig?.variant || 'polaroid'}
+                                options={[
+                                    { value: 'polaroid', label: '📸 Classic Polaroid' },
+                                    { value: 'gallery', label: '🖼️ Gallery Frame' },
+                                    { value: 'film-strip', label: '🎞️ Film Strip' },
+                                    { value: 'washi-tape', label: '📌 Washi Tape' },
+                                    { value: 'arch', label: '🏛️ Modern Arch' },
+                                    { value: 'instagram', label: '📸 Instagram Post' }
+                                ]}
+                                onChange={(v) => handleUpdate({ frameConfig: { ...layer.frameConfig!, variant: v as any } })}
+                            />
+
+                            {/* Instagram Specific Controls */}
+                            {layer.frameConfig?.variant === 'instagram' && (
+                                <div className="space-y-4 pt-2 border-t border-white/5 animate-in fade-in duration-300">
+                                    <div>
+                                        <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Username</label>
+                                        <input
+                                            type="text"
+                                            value={layer.frameConfig?.username || ''}
+                                            onChange={(e) => handleUpdate({ frameConfig: { ...layer.frameConfig!, username: e.target.value } })}
+                                            className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none text-white"
+                                            placeholder="Username"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Location</label>
+                                        <input
+                                            type="text"
+                                            value={layer.frameConfig?.location || ''}
+                                            onChange={(e) => handleUpdate({ frameConfig: { ...layer.frameConfig!, location: e.target.value } })}
+                                            className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none text-white"
+                                            placeholder="Location (e.g. Jakarta, Indonesia)"
+                                        />
+                                    </div>
+                                    <NumberInput
+                                        label="Likes Count"
+                                        value={layer.frameConfig?.likeCount || 1234}
+                                        onChange={(v) => handleUpdate({ frameConfig: { ...layer.frameConfig!, likeCount: v } })}
+                                    />
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[9px] text-white/30 uppercase font-bold">Dark Mode</span>
+                                        <motion.button
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => handleUpdate({ frameConfig: { ...layer.frameConfig!, theme: layer.frameConfig?.theme === 'dark' ? 'light' : 'dark' } })}
+                                            className={`w-10 h-5 rounded-full transition-colors ${layer.frameConfig?.theme === 'dark' ? 'bg-premium-accent' : 'bg-white/10'}`}
+                                        >
+                                            <motion.div
+                                                className="w-4 h-4 bg-white rounded-full shadow-sm"
+                                                animate={{ x: layer.frameConfig?.theme === 'dark' ? 22 : 2 }}
+                                            />
+                                        </motion.button>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[9px] text-white/30 uppercase font-bold">Show Action Icons</span>
+                                        <motion.button
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => handleUpdate({ frameConfig: { ...layer.frameConfig!, showIcons: !(layer.frameConfig?.showIcons ?? true) } })}
+                                            className={`w-10 h-5 rounded-full transition-colors ${layer.frameConfig?.showIcons !== false ? 'bg-premium-accent' : 'bg-white/10'}`}
+                                        >
+                                            <motion.div
+                                                className="w-4 h-4 bg-white rounded-full shadow-sm"
+                                                animate={{ x: layer.frameConfig?.showIcons !== false ? 22 : 2 }}
+                                            />
+                                        </motion.button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Polaroid Specific Controls */}
+                            {layer.frameConfig?.variant === 'polaroid' && (
+                                <div className="space-y-4 pt-2 border-t border-white/5 animate-in fade-in duration-300">
+                                    <ColorInput
+                                        label="Frame Background"
+                                        value={layer.frameConfig?.backgroundColor || '#ffffff'}
+                                        onChange={(v) => handleUpdate({ frameConfig: { ...layer.frameConfig!, backgroundColor: v } })}
+                                    />
+                                    <NumberInput
+                                        label="Inner Padding"
+                                        value={layer.frameConfig?.padding || 16}
+                                        min={0}
+                                        max={100}
+                                        onChange={(v) => handleUpdate({ frameConfig: { ...layer.frameConfig!, padding: v } })}
+                                    />
+                                    <NumberInput
+                                        label="Bottom Padding (Caption)"
+                                        value={layer.frameConfig?.bottomPadding || 48}
+                                        min={20}
+                                        max={200}
+                                        onChange={(v) => handleUpdate({ frameConfig: { ...layer.frameConfig!, bottomPadding: v } })}
+                                    />
+                                    <NumberInput
+                                        label="Corner Radius"
+                                        value={layer.frameConfig?.borderRadius || 2}
+                                        min={0}
+                                        max={50}
+                                        onChange={(v) => handleUpdate({ frameConfig: { ...layer.frameConfig!, borderRadius: v } })}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    </SectionComponent>
+                )}
+
                 {/* Profile Card Config */}
                 {layer.type === 'profile_card' && (
                     <SectionComponent title="Profile Card Settings" icon={<Users className="w-4 h-4 text-emerald-400" />}>
@@ -4453,3 +4563,7 @@ export const PropertyPanel: React.FC = () => {
     );
 };
 
+// ============================================
+// PHOTO FRAME SETTINGS (Isolated for stability)
+// ============================================
+// No changes needed here, incorporated into main render above
