@@ -1004,30 +1004,38 @@ export const PropertyPanel: React.FC = () => {
 
                         const { visualWidth, visualHeight, designWidth, designHeight } = getVisualBounds();
 
-                        // Calculate alignment positions using visual bounds
+                        // Precise Absolute Positioning (v2)
+                        // We calculate the delta required to move the visual center/edge to the target
                         const alignLeft = () => {
-                            const offsetX = (visualWidth - (layer.width || 0)) / 2;
-                            handleAlignmentUpdate({ x: offsetX });
+                            const currentVisualX = layer.x - (visualWidth - (layer.width * (layer.scale || 1))) / 2;
+                            handleAlignmentUpdate({ x: layer.x - currentVisualX });
                         };
+
                         const alignCenterX = () => {
-                            const offsetX = (visualWidth - (layer.width || 0)) / 2;
-                            handleAlignmentUpdate({ x: (designWidth - visualWidth) / 2 + offsetX });
+                            const currentVisualCenterX = layer.x + (layer.width * (layer.scale || 1)) / 2;
+                            const targetVisualCenterX = designWidth / 2;
+                            handleAlignmentUpdate({ x: layer.x + (targetVisualCenterX - currentVisualCenterX) });
                         };
+
                         const alignRight = () => {
-                            const offsetX = (visualWidth - (layer.width || 0)) / 2;
-                            handleAlignmentUpdate({ x: designWidth - visualWidth + offsetX });
+                            const currentVisualRight = layer.x + (layer.width * (layer.scale || 1)) / 2 + (visualWidth / 2);
+                            handleAlignmentUpdate({ x: layer.x + (designWidth - currentVisualRight) });
                         };
+
                         const alignTop = () => {
-                            const offsetY = (visualHeight - (layer.height || 0)) / 2;
-                            handleAlignmentUpdate({ y: offsetY });
+                            const currentVisualY = layer.y - (visualHeight - (layer.height * (layer.scale || 1))) / 2;
+                            handleAlignmentUpdate({ y: layer.y - currentVisualY });
                         };
+
                         const alignMiddleY = () => {
-                            const offsetY = (visualHeight - (layer.height || 0)) / 2;
-                            handleAlignmentUpdate({ y: (designHeight - visualHeight) / 2 + offsetY });
+                            const currentVisualCenterY = layer.y + (layer.height * (layer.scale || 1)) / 2;
+                            const targetVisualCenterY = designHeight / 2;
+                            handleAlignmentUpdate({ y: layer.y + (targetVisualCenterY - currentVisualCenterY) });
                         };
+
                         const alignBottom = () => {
-                            const offsetY = (visualHeight - (layer.height || 0)) / 2;
-                            handleAlignmentUpdate({ y: designHeight - visualHeight + offsetY });
+                            const currentVisualBottom = layer.y + (layer.height * (layer.scale || 1)) / 2 + (visualHeight / 2);
+                            handleAlignmentUpdate({ y: layer.y + (designHeight - currentVisualBottom) });
                         };
 
                         return (
