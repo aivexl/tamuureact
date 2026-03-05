@@ -1,5 +1,18 @@
 # Tamuu Changelog
 
+## [0.5.0] - 2026-03-05
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Unified Identity & Real-time Welcoming
+- **Unified Identity System**: Implementation of 6-character alphanumeric tokens unifying Personal Links, QR Codes, and Check-in logic.
+- **Auto-Broadcast Engine**: Re-engineered the backend to automatically trigger the Welcome Display upon a successful guest scan.
+- **Decoupled Identity Elements**:
+    - **Name Board**: Permanent guest name display optimized for Digital Invitations.
+    - **Welcome Board**: Triggered guest name display with dynamic **"Tamuu VIP"** label support for TV Displays.
+- **High-Density Admin UI**: Overhauled the `AdminTemplatesPage` with a pro-standard grid system (up to 6 columns) and persistent action buttons.
+- **Technical Excellence**: Added missing TypeScript layer icons (`welcome_board`, `gift_address`) and hardened the `AssetSelectionModal` with 27 premium display variants.
+
 ## [2026-03-05] Feature: Admin Direct Upload & Permission-Based Love Story Editing
 **Status**: 🟢 Deployed
 **Environment**: Production

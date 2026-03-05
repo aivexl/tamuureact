@@ -812,6 +812,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                                     { id: 25, name: 'Pure White', bg: '#ffffff', text: '#000000' },
                                     { id: 26, name: 'Pure Black', bg: '#000000', text: '#ffffff' },
                                     { id: 27, name: 'Soft Gray', bg: '#f0f0f0', text: '#333333' },
+                                    { id: 28, name: 'Transparent', bg: 'transparent', text: '#ffffff' },
                                 ]
                             },
                         ].map((category) => (
@@ -916,6 +917,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                                     { id: 25, name: 'Pure White', bg: '#ffffff', text: '#000000' },
                                     { id: 26, name: 'Pure Black', bg: '#000000', text: '#ffffff' },
                                     { id: 27, name: 'Soft Gray', bg: '#f0f0f0', text: '#333333' },
+                                    { id: 28, name: 'Transparent', bg: 'transparent', text: '#ffffff' },
                                 ]
                             },
                         ].map((category) => (

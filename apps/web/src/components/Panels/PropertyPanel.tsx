@@ -2501,7 +2501,7 @@ export const PropertyPanel: React.FC = () => {
                                 <div>
                                     <label className="text-[10px] font-bold text-white/60 uppercase tracking-wider mb-2 block">Style Variant</label>
                                     <div className="grid grid-cols-3 gap-2 max-h-[200px] overflow-y-auto custom-scrollbar">
-                                        {Array.from({ length: 27 }, (_, i) => i + 1).map((v) => {
+                                        {Array.from({ length: 28 }, (_, i) => i + 1).map((v) => {
                                             const variants = [
                                                 { id: 1, name: 'Classic Elegant', bg: '#1a1a2e', text: '#f8f9fa' },
                                                 { id: 2, name: 'Classic Light', bg: '#ffffff', text: '#2d3436' },

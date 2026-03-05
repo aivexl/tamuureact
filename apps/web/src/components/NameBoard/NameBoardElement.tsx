@@ -82,6 +82,7 @@ export const NAME_BOARD_VARIANTS = [
     { id: 25, name: 'Pure White', category: 'minimal', bgColor: '#ffffff', textColor: '#000000', borderColor: 'transparent' },
     { id: 26, name: 'Pure Black', category: 'minimal', bgColor: '#000000', textColor: '#ffffff', borderColor: 'transparent' },
     { id: 27, name: 'Soft Gray', category: 'minimal', bgColor: '#f0f0f0', textColor: '#333333', borderColor: 'transparent' },
+    { id: 28, name: 'Pure Transparent', category: 'minimal', bgColor: 'transparent', textColor: '#ffffff', borderColor: 'transparent' },
 ];
 
 export const getDefaultConfig = (): NameBoardConfig => ({
