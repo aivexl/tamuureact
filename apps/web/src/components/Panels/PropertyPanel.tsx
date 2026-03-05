@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { Layer, AnimationType, TextStyle, CountdownConfig, ButtonConfig, QuoteConfig, ShapeConfig, IconStyle, RSVPWishesConfig, RSVPVariantId, LayerPermissions } from '@/store/layersSlice';
@@ -59,16 +59,49 @@ const NumberInput: React.FC<NumberInputProps> = ({
     onKeyframe,
     isKeyframed
 }) => {
+    // Local state to handle string input (including empty string)
+    const [inputValue, setInputValue] = useState<string>(value.toString());
+
+    // Sync local state with prop value when it changes externally
+    useEffect(() => {
+        if (value.toString() !== inputValue && inputValue !== "") {
+            setInputValue(value.toString());
+        }
+    }, [value]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        setInputValue(val);
+
+        if (val === "") return; // Allow empty input temporarily
+
+        const num = Number(val);
+        if (!isNaN(num)) {
+            onChange(num);
+        }
+    };
+
+    const handleBlur = () => {
+        // Fallback to prop value if input is empty on blur
+        if (inputValue === "") {
+            setInputValue(value.toString());
+        }
+    };
+
     const handleIncrement = () => {
         let next = value + step;
         if (max !== undefined) next = Math.min(max, next);
-        onChange(Number(next.toFixed(2))); // avoid floating point errors
+        const final = Number(next.toFixed(2));
+        setInputValue(final.toString());
+        onChange(final);
     };
 
     const handleDecrement = () => {
         let next = value - step;
         if (min !== undefined) next = Math.max(min, next);
-        onChange(Number(next.toFixed(2)));
+        const final = Number(next.toFixed(2));
+        setInputValue(final.toString());
+        onChange(final);
     };
 
     return (
@@ -87,11 +120,12 @@ const NumberInput: React.FC<NumberInputProps> = ({
             <div className="relative flex items-center">
                 <input
                     type="number"
-                    value={value}
+                    value={inputValue}
                     step={step}
                     min={min}
                     max={max}
-                    onChange={(e) => onChange(Number(e.target.value))}
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
                     className={`w-full bg-white/5 border rounded-lg px-3 py-1.5 pr-8 text-xs focus:border-[#0D99FF]/50 focus:outline-none transition-colors font-mono ${isKeyframed ? 'border-[#0D99FF]/30' : 'border-white/5'}`}
                 />
                 <div className="absolute right-1 top-1 bottom-1 flex flex-col justify-between py-0.5 pr-1">
@@ -2566,73 +2600,94 @@ export const PropertyPanel: React.FC = () => {
                                     />
                                 </div>
 
-                                {/* Font Selection */}
-                                <SelectInput
-                                    label="Font Family"
-                                    value={layer.nameBoardConfig?.fontFamily || 'Playfair Display'}
-                                    isFontPicker={true}
-                                    options={[
-                                        { value: 'Playfair Display', label: 'Playfair Display' },
-                                        { value: 'Great Vibes', label: 'Great Vibes' },
-                                        { value: 'Cormorant Garamond', label: 'Cormorant Garamond' },
-                                        { value: 'Montserrat', label: 'Montserrat' },
-                                        { value: 'Outfit', label: 'Outfit' },
-                                        { value: 'Inter', label: 'Inter' },
-                                        { value: 'Poppins', label: 'Poppins' },
-                                    ]}
-                                    onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, fontFamily: v } })}
-                                />
+                                {/* Typography Section */}
+                                <div className="p-3 bg-white/5 rounded-xl border border-white/10 space-y-4">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Type className="w-3 h-3 text-premium-accent" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Typography</span>
+                                    </div>
 
-                                {/* Font Size */}
-                                <NumberInput
-                                    label="Font Size"
-                                    value={layer.nameBoardConfig?.fontSize || 48}
-                                    min={12}
-                                    max={120}
-                                    step={2}
-                                    onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, fontSize: v } })}
-                                />
+                                    <SelectInput
+                                        label="Font Family"
+                                        value={layer.nameBoardConfig?.fontFamily || 'Playfair Display'}
+                                        isFontPicker={true}
+                                        options={[
+                                            { value: 'Playfair Display', label: 'Playfair Display' },
+                                            { value: 'Great Vibes', label: 'Great Vibes' },
+                                            { value: 'Cormorant Garamond', label: 'Cormorant Garamond' },
+                                            { value: 'Montserrat', label: 'Montserrat' },
+                                            { value: 'Outfit', label: 'Outfit' },
+                                            { value: 'Inter', label: 'Inter' },
+                                            { value: 'Poppins', label: 'Poppins' },
+                                        ]}
+                                        onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, fontFamily: v } })}
+                                    />
 
-                                {/* Colors */}
-                                <div className="grid grid-cols-2 gap-3">
-                                    <ColorInput
-                                        label="Text Color"
-                                        value={layer.nameBoardConfig?.textColor || '#f8f9fa'}
-                                        onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, textColor: v } })}
-                                    />
-                                    <ColorInput
-                                        label="Background"
-                                        value={layer.nameBoardConfig?.backgroundColor || '#1a1a2e'}
-                                        onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, backgroundColor: v } })}
-                                    />
-                                </div>
-
-                                {/* Border */}
-                                <div className="grid grid-cols-2 gap-3">
-                                    <ColorInput
-                                        label="Border Color"
-                                        value={layer.nameBoardConfig?.borderColor || '#4a4a6a'}
-                                        onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, borderColor: v } })}
-                                    />
                                     <NumberInput
-                                        label="Border Width"
-                                        value={layer.nameBoardConfig?.borderWidth || 2}
-                                        min={0}
-                                        max={10}
-                                        step={1}
-                                        onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, borderWidth: v } })}
+                                        label="Font Size"
+                                        value={layer.nameBoardConfig?.fontSize || 48}
+                                        min={12}
+                                        max={120}
+                                        step={2}
+                                        onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, fontSize: v } })}
                                     />
                                 </div>
 
-                                {/* Border Radius */}
-                                <NumberInput
-                                    label="Corner Radius"
-                                    value={layer.nameBoardConfig?.borderRadius || 16}
-                                    min={0}
-                                    max={50}
-                                    step={2}
-                                    onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, borderRadius: v } })}
-                                />
+                                {/* Visual Styles Grid */}
+                                <div className="p-3 bg-white/5 rounded-xl border border-white/10 space-y-4">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Palette className="w-3 h-3 text-premium-accent" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Visual Styles</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <ColorInput
+                                            label="Text Color"
+                                            value={layer.nameBoardConfig?.textColor || '#f8f9fa'}
+                                            onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, textColor: v } })}
+                                        />
+                                        <ColorInput
+                                            label="Background"
+                                            value={layer.nameBoardConfig?.backgroundColor || '#1a1a2e'}
+                                            onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, backgroundColor: v } })}
+                                        />
+                                    </div>
+
+                                    <div className="h-[1px] bg-white/5 w-full" />
+
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[9px] font-bold text-white/30 uppercase tracking-tighter">Border & Shape</span>
+                                        <button 
+                                            onClick={() => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, borderWidth: 0 } })}
+                                            className="text-[8px] text-premium-accent hover:text-white transition-colors uppercase font-black tracking-widest"
+                                        >
+                                            Disable Border
+                                        </button>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <ColorInput
+                                            label="Border Color"
+                                            value={layer.nameBoardConfig?.borderColor || '#4a4a6a'}
+                                            onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, borderColor: v } })}
+                                        />
+                                        <NumberInput
+                                            label="Border Width"
+                                            value={layer.nameBoardConfig?.borderWidth ?? 2}
+                                            min={0}
+                                            max={20}
+                                            onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, borderWidth: v } })}
+                                        />
+                                    </div>
+
+                                    <NumberInput
+                                        label="Corner Radius"
+                                        value={layer.nameBoardConfig?.borderRadius || 16}
+                                        min={0}
+                                        max={100}
+                                        onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, borderRadius: v } })}
+                                    />
+                                </div>
 
                                 {/* Shadow Toggle */}
                                 <div className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
