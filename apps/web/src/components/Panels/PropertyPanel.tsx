@@ -365,15 +365,12 @@ export const PropertyPanel: React.FC = () => {
         }
     };
 
-    // 4. Handle Alignment Updates: Deselect then reselect to force Moveable remount
+    // 4. Handle Alignment Updates: Update store directly without deselecting
     const handleAlignmentUpdate = (updates: Partial<Layer>) => {
         if (!layer) return;
         const layerId = layer.id;
 
-        // First deselect
-        selectLayer(null);
-
-        // Update position
+        // Update position directly
         if (activeCanvas === 'main' && activeSectionId) {
             updateElementInSection(activeSectionId, layerId, updates);
         } else if (activeCanvas === 'left' || activeCanvas === 'right') {
@@ -381,11 +378,6 @@ export const PropertyPanel: React.FC = () => {
         } else {
             useStore.getState().updateLayer(layerId, updates);
         }
-
-        // Reselect after a brief delay to allow position update to propagate
-        setTimeout(() => {
-            selectLayer(layerId);
-        }, 50);
     };
 
     const handleRemove = () => {

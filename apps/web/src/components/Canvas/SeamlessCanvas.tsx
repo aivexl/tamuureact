@@ -1090,6 +1090,7 @@ const SectionFrame: React.FC<{
                                 e.target.style.top = `${e.top}px`;
                             }}
                             onDragEnd={(e: any) => {
+                                if (!e.lastEvent) return;
                                 const id = e.target.getAttribute('data-element-id');
                                 if (id) onElementResize(id, { x: e.lastEvent.left, y: e.lastEvent.top });
                             }}
@@ -1110,14 +1111,15 @@ const SectionFrame: React.FC<{
                                 }
                             }}
                             onResizeEnd={(e: any) => {
+                                if (!e.lastEvent) return;
                                 const id = e.target.getAttribute('data-element-id');
                                 if (id) {
                                     const targetLayer = section?.elements?.find((el: any) => el.id === id);
                                     const updates: any = {
                                         width: e.lastEvent.width,
                                         height: e.lastEvent.height,
-                                        x: e.lastEvent.drag.left,
-                                        y: e.lastEvent.drag.top
+                                        x: e.lastEvent.drag?.left ?? e.lastEvent.left,
+                                        y: e.lastEvent.drag?.top ?? e.lastEvent.top
                                     };
                                     
                                     if (targetLayer && targetLayer.type === 'text') {
@@ -1135,6 +1137,7 @@ const SectionFrame: React.FC<{
                                 e.target.style.transform = e.drag.transform;
                             }}
                             onRotateEnd={(e: any) => {
+                                if (!e.lastEvent) return;
                                 const id = e.target.getAttribute('data-element-id');
                                 if (id) onElementResize(id, { rotation: e.lastEvent.rotate });
                             }}
