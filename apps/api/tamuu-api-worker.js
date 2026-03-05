@@ -4431,25 +4431,23 @@ name = COALESCE(?, name),
 
             if (path.match(/^\/api\/invitations\/[^/]+$/) && method === 'PUT') {
                 const id = path.split('/')[3];
-                const body = await request.json();
                 const traceId = Math.random().toString(36).substring(7);
-                console.log(`[PUT Invitations] [${traceId}] Updating invitation ${id}, published: ${body.is_published}`);
-
-                // CTO FIX: Handle partial updates by only stringifying if field is present
-                const pan = body.pan !== undefined ? JSON.stringify(body.pan) : null;
-                const sections = body.sections !== undefined ? JSON.stringify(body.sections) : null;
-                const layers = body.layers !== undefined ? JSON.stringify(body.layers) : null;
-                const orbitRaw = body.orbit !== undefined ? body.orbit : body.orbit_layers;
-                const orbit = orbitRaw !== undefined ? JSON.stringify(orbitRaw) : null;
-                const music = body.music !== undefined ? JSON.stringify(body.music) : null;
-
+                
                 try {
-                    console.log(`[DB] Updating invitation ${id} with:`, {
-                        name: body.name,
-                        is_published: body.is_published,
-                        has_sections: !!body.sections,
-                        has_music: !!music
-                    });
+                    const body = await request.json();
+                    console.log(`[PUT Invitations] [${traceId}] Updating: ${id}`);
+
+                    // CTO Optimization: Precise Field Extraction with null-safety
+                    const pan = body.pan !== undefined ? (typeof body.pan === 'string' ? body.pan : JSON.stringify(body.pan)) : undefined;
+                    const sections = body.sections !== undefined ? (typeof body.sections === 'string' ? body.sections : JSON.stringify(body.sections)) : undefined;
+                    const layers = body.layers !== undefined ? (typeof body.layers === 'string' ? body.layers : JSON.stringify(body.layers)) : undefined;
+                    
+                    const orbitRaw = body.orbit_layers !== undefined ? body.orbit_layers : body.orbit;
+                    const orbit = orbitRaw !== undefined ? (typeof orbitRaw === 'string' ? orbitRaw : JSON.stringify(orbitRaw)) : undefined;
+                    
+                    const music = body.music !== undefined ? (typeof body.music === 'string' ? body.music : JSON.stringify(body.music)) : undefined;
+
+                    console.log(`[DB] [${traceId}] Applying update logic...`);
                     await env.DB.prepare(
                         `UPDATE invitations SET 
         name = COALESCE(?, name),
@@ -4479,21 +4477,22 @@ name = COALESCE(?, name),
         quote_author = COALESCE(?, quote_author),
         lucky_draw_settings = COALESCE(?, lucky_draw_settings),
         display_design_id = COALESCE(?, display_design_id),
+        template_id = COALESCE(?, template_id),
         updated_at = datetime('now')
      WHERE id = ? OR slug = ?`
                     ).bind(
                         body.name ?? null,
                         body.slug ?? null,
-                        body.thumbnail_url ?? null,
+                        body.thumbnail_url ?? body.thumbnail ?? null,
                         body.category ?? null,
                         body.zoom ?? null,
-                        pan,
-                        sections,
-                        layers,
-                        orbit, // orbit_layers
-                        orbit, // orbit (alias)
+                        pan ?? null,
+                        sections ?? null,
+                        layers ?? null,
+                        orbit ?? null, // orbit_layers
+                        orbit ?? null, // orbit (alias)
                         body.is_published !== undefined ? (body.is_published ? 1 : 0) : null,
-                        music,
+                        music ?? null,
                         body.event_date ?? null,
                         body.event_location ?? null,
                         body.venue_name ?? null,
@@ -4509,16 +4508,18 @@ name = COALESCE(?, name),
                         body.quote_author ?? null,
                         body.lucky_draw_settings ? JSON.stringify(body.lucky_draw_settings) : null,
                         body.display_design_id ?? null,
+                        body.template_id ?? null,
                         id, // WHERE id = ?
                         id  // OR slug = ?
                     ).run();
-                    return json({ id, updated: true }, corsHeaders);
+                    return json({ id, updated: true, traceId }, corsHeaders);
                 } catch (dbError) {
-                    console.error('[DB Error] Update invitation failed:', dbError.message);
+                    console.error(`[DB Error] [${traceId}] Update failed:`, dbError.message);
                     return json({
                         error: 'Database update failed',
                         details: dbError.message,
-                        code: 'DB_ERROR'
+                        code: 'DB_ERROR',
+                        traceId
                     }, { headers: corsHeaders, status: 500 });
                 }
             }

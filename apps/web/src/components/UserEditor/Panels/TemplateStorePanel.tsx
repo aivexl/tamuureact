@@ -57,14 +57,18 @@ export const TemplateStorePanel: React.FC<TemplateStorePanelProps> = ({
                 throw new Error('Template not found');
             }
 
-            // 2. Update the invitation with new template
-            await invitationsApi.update(currentInvitationId, {
+            // CTO Optimization: Clean payload to avoid protocol errors on large JSON
+            // We only send essential design fields
+            const cleanPayload = {
                 template_id: selectedTemplate.id,
                 sections: templateData.sections || [],
                 layers: templateData.layers || [],
-                orbit_layers: templateData.orbit_layers || [],
-                thumbnail: selectedTemplate.thumbnail_url || templateData.thumbnail
-            });
+                orbit_layers: templateData.orbit_layers || templateData.orbit || [],
+                thumbnail_url: selectedTemplate.thumbnail_url || templateData.thumbnail
+            };
+
+            // 2. Update the invitation with new template
+            await invitationsApi.update(currentInvitationId, cleanPayload);
 
             // 3. Update Zustand store for immediate UI update
             setSections(templateData.sections || []);
