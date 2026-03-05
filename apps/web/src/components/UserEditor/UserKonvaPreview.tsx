@@ -10,34 +10,45 @@ interface UserKonvaPreviewProps {
 /**
  * UserKonvaPreview
  * High-fidelity preview of a section or cinematic stage.
- * CTO ENTERPRISE LEVEL: Pure DOM-based high-performance rendering for previews.
+ * CTO ENTERPRISE LEVEL: Pure Math-Driven Liquid Rendering.
+ * Decoupled from DOM height to prevent chaotic jumps during accordion transitions.
  */
 export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, canvasType = 'main' }) => {
     const { sections, orbit } = useStore();
     const containerRef = useRef<HTMLDivElement>(null);
     const [scale, setScale] = useState(1);
-    const [containerHeight, setContainerHeight] = useState(896);
 
     const section = sectionId ? sections.find(s => s.id === sectionId) : null;
     const orbitCanvas = canvasType === 'orbit-left' ? orbit.left : (canvasType === 'orbit-right' ? orbit.right : null);
 
-    // CTO ENTERPRISE DIMENSIONS
+    // CTO ENTERPRISE PURE MATH CONSTANTS
+    // Because the parent container strictly enforces aspect-[9/20.5] for 'main'
+    // and aspect-[800/896] for 'orbit', the internal design space is a mathematical constant!
     const DESIGN_WIDTH = canvasType === 'main' ? 414 : 800;
     const DESIGN_HEIGHT = 896;
+    
+    // coverHeight = DESIGN_WIDTH * ASPECT_RATIO
+    // Main Aspect: 20.5 / 9. Orbit Aspect: 896 / 800.
+    const CONSTANT_COVER_HEIGHT = canvasType === 'main' ? (414 * 20.5 / 9) : 896; // 943 for main, 896 for orbit
+    const CONSTANT_EXTRA_HEIGHT = Math.max(0, CONSTANT_COVER_HEIGHT - DESIGN_HEIGHT); // 47 for main, 0 for orbit
 
-    // CTO FIX: Multi-canvas Scaling Engine with Liquid Parity
+    // Only track scale for visual transform mapping. 
+    // Layout math is now completely immune to DOM fluctuations!
     useEffect(() => {
         const updateScale = () => {
             if (containerRef.current) {
-                const { width, height } = containerRef.current.getBoundingClientRect();
-                const scaleW = width / DESIGN_WIDTH;
-                const scaleH = height / DESIGN_HEIGHT;
+                const rect = containerRef.current.getBoundingClientRect();
+                const width = rect.width;
 
-                // For main, we follow width (Liquid). For orbit, we fit.
-                const newScale = canvasType === 'main' ? scaleW : Math.min(scaleW, scaleH);
+                // Safety: Ignore 0 width during unmounted states
+                if (width <= 0) return;
 
-                setScale(newScale);
-                setContainerHeight(height);
+                // Scale is simply DOM Width / Design Width
+                const newScale = width / DESIGN_WIDTH;
+
+                if (newScale > 0) {
+                    setScale(newScale);
+                }
             }
         };
 
@@ -45,7 +56,7 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
         const resizeObserver = new ResizeObserver(updateScale);
         if (containerRef.current) resizeObserver.observe(containerRef.current);
         return () => resizeObserver.disconnect();
-    }, [canvasType, DESIGN_WIDTH, DESIGN_HEIGHT]);
+    }, [DESIGN_WIDTH]);
 
     if (!section && canvasType === 'main') {
         return (
@@ -60,20 +71,18 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
     const backgroundColor = canvasType === 'main' ? (section?.backgroundColor || '#0a0a0a') : (orbitCanvas?.backgroundColor || 'transparent');
     const backgroundUrl = canvasType === 'main' ? section?.backgroundUrl : orbitCanvas?.backgroundUrl;
 
-    // LIQUID MATH: Calculate viewport expansion (Design Units)
-    const coverHeight = containerHeight / (scale || 1);
-    const extraHeight = coverHeight - DESIGN_HEIGHT;
-
     return (
         <div
             ref={containerRef}
-            className="relative w-full h-full flex items-start justify-start overflow-hidden bg-[#0a0a0a] transition-all duration-1000"
+            className="relative w-full h-full flex items-start justify-start overflow-hidden bg-[#0a0a0a]"
+            style={{ transition: 'none' }} // Disable top-level transition to keep math pure
         >
             {/* The Scaled Render Viewport */}
             <div
                 style={{
                     width: DESIGN_WIDTH,
-                    height: coverHeight, // DESIGN UNITS VP HEIGHT
+                    // Use Math.ceil to prevent the "sisa ruang kosong" sub-pixel bleed issue
+                    height: Math.ceil(CONSTANT_COVER_HEIGHT), 
                     backgroundColor: backgroundColor,
                     backgroundImage: backgroundUrl ? `url(${backgroundUrl})` : 'none',
                     backgroundSize: 'cover',
@@ -82,7 +91,6 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
                     transformOrigin: 'top left', // PURE SYNC
                     position: 'relative',
                     overflow: 'visible',
-                    transition: 'all 0.5s cubic-bezier(0.22, 1, 0.36, 1)',
                     boxShadow: canvasType === 'main' ? 'none' : '0 20px 50px rgba(0,0,0,0.3)',
                     borderRadius: canvasType === 'main' ? 0 : '2rem',
                     flexShrink: 0
@@ -93,18 +101,15 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
                     .filter(el => el.isVisible !== false)
                     .sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0))
                     .map((element) => {
-                        // PORTED FROM PreviewView.tsx (LIVE ENGINE)
-                        // Robust height detection for interpolation
                         const elAny = element as any;
                         const elementHeight = element.height || elAny.size?.height || (elAny.textStyle?.fontSize) || 0;
                         const maxTop = DESIGN_HEIGHT - elementHeight;
 
-                        // Progress determines if the element is near the top (0) or bottom (1)
                         let progress = maxTop > 0 ? element.y / maxTop : 0;
                         progress = Math.max(0, Math.min(1, progress));
 
-                        // Apply linear interpolation (LIQUID STRETCH)
-                        const adjustedY = element.y + (extraHeight * progress);
+                        // Pure deterministic math! 
+                        const adjustedY = element.y + (CONSTANT_EXTRA_HEIGHT * progress);
 
                         return (
                             <AnimatedLayer
@@ -130,9 +135,11 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
             {/* Hint for developers (minimalist) */}
             <div className="absolute bottom-2 right-2 pointer-events-none opacity-20">
                 <p className="text-[6px] font-black text-white uppercase tracking-[0.2em]">
-                    TAMUU V3 ENGINE
+                    TAMUU V3 PURE MATH ENGINE
                 </p>
             </div>
         </div>
     );
 };
+
+
