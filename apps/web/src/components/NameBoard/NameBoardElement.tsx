@@ -136,9 +136,12 @@ export const NameBoardElement: React.FC<NameBoardElementProps> = ({ layer, isEdi
 
     const hasName = !!displayedName;
     const variant = NAME_BOARD_VARIANTS.find(v => v.id === config.variant) || NAME_BOARD_VARIANTS[0];
+    const isPureTransparent = variant.id === 28;
 
     // Determine background style
     const getBackgroundStyle = (): React.CSSProperties => {
+        if (isPureTransparent) return { background: 'transparent', backgroundColor: 'transparent' };
+        
         if (config.gradientEnabled) {
             return {
                 background: `linear-gradient(135deg, ${config.gradientStart}, ${config.gradientEnd})`,
@@ -154,7 +157,7 @@ export const NameBoardElement: React.FC<NameBoardElementProps> = ({ layer, isEdi
 
     // Shadow styles based on variant category
     const getShadowStyle = (): React.CSSProperties => {
-        if (!config.shadowEnabled) return {};
+        if (isPureTransparent || !config.shadowEnabled) return {};
 
         switch (variant.category) {
             case 'neon':
@@ -182,7 +185,7 @@ export const NameBoardElement: React.FC<NameBoardElementProps> = ({ layer, isEdi
 
     // Glass effect for glass variants
     const getGlassEffect = (): React.CSSProperties => {
-        if (variant.category !== 'glass') return {};
+        if (isPureTransparent || variant.category !== 'glass') return {};
         return {
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
@@ -203,11 +206,11 @@ export const NameBoardElement: React.FC<NameBoardElementProps> = ({ layer, isEdi
             display: 'block'
         };
 
-        if (variant.category === 'neon') {
+        if (!isPureTransparent && variant.category === 'neon') {
             baseStyle.textShadow = `0 0 10px ${config.textColor || variant.textColor}, 0 0 20px ${config.textColor || variant.textColor}, 0 0 40px ${config.textColor || variant.textColor}`;
         }
 
-        if (variant.category === 'luxury') {
+        if (!isPureTransparent && variant.category === 'luxury') {
             baseStyle.background = `linear-gradient(135deg, ${config.textColor || variant.textColor}, ${config.borderColor || variant.borderColor})`;
             baseStyle.WebkitBackgroundClip = 'text';
             baseStyle.WebkitTextFillColor = 'transparent';
@@ -227,10 +230,10 @@ export const NameBoardElement: React.FC<NameBoardElementProps> = ({ layer, isEdi
                 ...getBackgroundStyle(),
                 ...getShadowStyle(),
                 ...getGlassEffect(),
-                borderWidth: config.borderWidth,
-                borderStyle: config.borderWidth > 0 ? 'solid' : 'none',
-                borderColor: config.borderColor || variant.borderColor,
-                borderRadius: config.borderRadius,
+                borderWidth: isPureTransparent ? 0 : config.borderWidth,
+                borderStyle: !isPureTransparent && config.borderWidth > 0 ? 'solid' : 'none',
+                borderColor: isPureTransparent ? 'transparent' : (config.borderColor || variant.borderColor),
+                borderRadius: isPureTransparent ? 0 : config.borderRadius,
             }}
         >
             <AnimatePresence mode="wait">
