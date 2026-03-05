@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
-import { AnimatedLayer } from '../Preview/AnimatedLayer';
+import { AnimatedLayer, clearAnimationCache } from '../Preview/AnimatedLayer';
 
 interface UserKonvaPreviewProps {
     sectionId?: string;
@@ -18,6 +18,11 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
     const [scale, setScale] = useState(1);
     const [containerHeight, setContainerHeight] = useState(896);
 
+    // CTO FIX: Clear cache when context switches to ensure fresh entrance animations
+    useEffect(() => {
+        clearAnimationCache();
+    }, [sectionId, canvasType]);
+
     const section = sectionId ? sections.find(s => s.id === sectionId) : null;
     const orbitCanvas = canvasType === 'orbit-left' ? orbit.left : (canvasType === 'orbit-right' ? orbit.right : null);
 
@@ -29,15 +34,23 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
     useEffect(() => {
         const updateScale = () => {
             if (containerRef.current) {
-                const { width, height } = containerRef.current.getBoundingClientRect();
+                const rect = containerRef.current.getBoundingClientRect();
+                const width = rect.width;
+                const height = rect.height;
+
+                // CTO SAFETY: Ignore 0 dimensions during mount/animation to avoid NaN in liquid math
+                if (width <= 0 || height <= 0) return;
+
                 const scaleW = width / DESIGN_WIDTH;
                 const scaleH = height / DESIGN_HEIGHT;
 
                 // For main, we follow width (Liquid). For orbit, we fit.
                 const newScale = canvasType === 'main' ? scaleW : Math.min(scaleW, scaleH);
 
-                setScale(newScale);
-                setContainerHeight(height);
+                if (newScale > 0) {
+                    setScale(newScale);
+                    setContainerHeight(height);
+                }
             }
         };
 
@@ -61,13 +74,14 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
     const backgroundUrl = canvasType === 'main' ? section?.backgroundUrl : orbitCanvas?.backgroundUrl;
 
     // LIQUID MATH: Calculate viewport expansion (Design Units)
-    const coverHeight = containerHeight / (scale || 1);
-    const extraHeight = coverHeight - DESIGN_HEIGHT;
+    const coverHeight = scale > 0 ? containerHeight / scale : DESIGN_HEIGHT;
+    const extraHeight = Math.max(0, coverHeight - DESIGN_HEIGHT);
 
     return (
         <div
             ref={containerRef}
-            className="relative w-full h-full flex items-start justify-start overflow-hidden bg-[#0a0a0a] transition-all duration-1000"
+            className="relative w-full h-full flex items-start justify-start overflow-hidden bg-[#0a0a0a]"
+            style={{ transition: 'none' }} // Disable top-level transition to keep math pure
         >
             {/* The Scaled Render Viewport */}
             <div
@@ -82,7 +96,6 @@ export const UserKonvaPreview: React.FC<UserKonvaPreviewProps> = ({ sectionId, c
                     transformOrigin: 'top left', // PURE SYNC
                     position: 'relative',
                     overflow: 'visible',
-                    transition: 'all 0.5s cubic-bezier(0.22, 1, 0.36, 1)',
                     boxShadow: canvasType === 'main' ? 'none' : '0 20px 50px rgba(0,0,0,0.3)',
                     borderRadius: canvasType === 'main' ? 0 : '2rem',
                     flexShrink: 0

@@ -429,6 +429,26 @@ export const SeamlessCanvas: React.FC = () => {
     const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.1, 2));
     const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.1, 0.5));
 
+    // CTO FIX: Scroll to active section when it changes from outside (e.g. Sidebar)
+    useEffect(() => {
+        if (!activeSectionId || !containerRef.current || activeCanvas !== 'main') return;
+        
+        const index = sortedSections.findIndex(s => s.id === activeSectionId);
+        if (index === -1) return;
+
+        // Check if it's already reasonably centered to avoid constant jumping
+        const container = containerRef.current;
+        const targetScrollTop = index * (dynamicSectionHeight + 64);
+        const currentScrollTop = container.scrollTop;
+        
+        if (Math.abs(currentScrollTop - targetScrollTop) > 100) {
+            container.scrollTo({
+                top: targetScrollTop,
+                behavior: 'smooth'
+            });
+        }
+    }, [activeSectionId, sortedSections, dynamicSectionHeight, activeCanvas]);
+
     // Feature 4: Context Menu Actions
     const handleContextMenu = (e: React.MouseEvent, id: string) => {
         e.preventDefault();
@@ -1067,6 +1087,7 @@ const SectionFrame: React.FC<{
                         <Moveable
                             {...({} as any)}
                             target={targets}
+                            zoom={zoom}
                             useResizeObserver={true}
                             useMutationObserver={true}
                             draggable={true}
@@ -1327,6 +1348,7 @@ const SideCanvas: React.FC<{
                     <Moveable
                         {...({} as any)}
                         target={targets}
+                        zoom={editorScale}
                         useResizeObserver={true}
                         useMutationObserver={true}
                         draggable={true}
