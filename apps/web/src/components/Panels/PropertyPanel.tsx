@@ -191,28 +191,41 @@ interface ColorInputProps {
     onChange: (v: string) => void;
 }
 
-const ColorInput: React.FC<ColorInputProps> = ({ label, value, onChange }) => (
-    <div className="space-y-1">
-        <label className="text-[9px] text-white/30 uppercase font-bold block">{label}</label>
-        <div className="flex gap-2">
-            <div className="relative group">
+const ColorInput: React.FC<ColorInputProps> = ({ label, value, onChange }) => {
+    // CTO Sanitization: Native color input strictly requires 6-digit hex (#RRGGBB).
+    // If value has alpha (8-digit hex like #FFFFFF40), we strip it for the picker.
+    const getDisplayHex = (hex: string) => {
+        if (!hex) return '#000000';
+        if (/^#[0-9a-f]{8}$/i.test(hex)) return hex.substring(0, 7);
+        if (/^#[0-9a-f]{6}$/i.test(hex)) return hex;
+        return '#000000';
+    };
+
+    const displayValue = getDisplayHex(value);
+
+    return (
+        <div className="space-y-1">
+            <label className="text-[9px] text-white/30 uppercase font-bold block">{label}</label>
+            <div className="flex gap-2">
+                <div className="relative group">
+                    <input
+                        type="color"
+                        value={displayValue}
+                        onChange={(e) => onChange(e.target.value)}
+                        className="w-8 h-8 rounded-lg border border-white/10 cursor-pointer bg-transparent overflow-hidden"
+                    />
+                </div>
                 <input
-                    type="color"
-                    value={/#[0-9a-f]{6}/i.test(value) ? value : '#000000'}
+                    type="text"
+                    value={value}
                     onChange={(e) => onChange(e.target.value)}
-                    className="w-8 h-8 rounded-lg border border-white/10 cursor-pointer bg-transparent overflow-hidden"
+                    className="flex-1 bg-white/5 border border-white/5 rounded-lg px-3 py-1.5 text-xs focus:border-[#0D99FF]/50 focus:outline-none font-mono tracking-tight uppercase"
+                    placeholder="#000000"
                 />
             </div>
-            <input
-                type="text"
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className="flex-1 bg-white/5 border border-white/5 rounded-lg px-3 py-1.5 text-xs focus:border-[#0D99FF]/50 focus:outline-none font-mono tracking-tight"
-                placeholder="#000000"
-            />
         </div>
-    </div>
-);
+    );
+};
 
 interface RangeInputProps {
     label: string;
@@ -952,10 +965,9 @@ export const PropertyPanel: React.FC = () => {
                     {/* CTO COMPUTE: Use correct design dimensions based on active canvas context */}
                     {(() => {
                         const isOrbit = activeCanvas === 'left' || activeCanvas === 'right';
-                        const designWidth = isOrbit ? 800 : 414;
-                        const designHeight = 896;
 
                         // CTO FIX: Calculate VISUAL bounding box accounting for rotation and scale
+                        // CTO: Precise Alignment Engine
                         const getVisualBounds = () => {
                             const w = layer.width || 0;
                             const h = layer.height || 0;
@@ -972,10 +984,25 @@ export const PropertyPanel: React.FC = () => {
                             const visualWidth = scaledW * cos + scaledH * sin;
                             const visualHeight = scaledW * sin + scaledH * cos;
 
-                            return { visualWidth, visualHeight, scaledW, scaledH };
+                            // CTO: Define Contextual Design Dimensions
+                            const isDisplay = useStore.getState().templateType === 'display';
+                            const isOrbit = activeCanvas === 'left' || activeCanvas === 'right';
+                            
+                            // 1920 for TV, 800 for Orbit, 414 for Mobile
+                            const currentDesignWidth = isDisplay ? 1920 : (isOrbit ? 800 : 414);
+                            const currentDesignHeight = isDisplay ? 1080 : 896;
+
+                            return { 
+                                visualWidth, 
+                                visualHeight, 
+                                scaledW, 
+                                scaledH, 
+                                designWidth: currentDesignWidth, 
+                                designHeight: currentDesignHeight 
+                            };
                         };
 
-                        const { visualWidth, visualHeight } = getVisualBounds();
+                        const { visualWidth, visualHeight, designWidth, designHeight } = getVisualBounds();
 
                         // Calculate alignment positions using visual bounds
                         const alignLeft = () => {
@@ -2640,7 +2667,7 @@ export const PropertyPanel: React.FC = () => {
                                         <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Visual Styles</span>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-3">
                                         <ColorInput
                                             label="Text Color"
                                             value={layer.nameBoardConfig?.textColor || '#f8f9fa'}
@@ -2665,28 +2692,29 @@ export const PropertyPanel: React.FC = () => {
                                         </button>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-3">
                                         <ColorInput
                                             label="Border Color"
                                             value={layer.nameBoardConfig?.borderColor || '#4a4a6a'}
                                             onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, borderColor: v } })}
                                         />
-                                        <NumberInput
-                                            label="Border Width"
-                                            value={layer.nameBoardConfig?.borderWidth ?? 2}
-                                            min={0}
-                                            max={20}
-                                            onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, borderWidth: v } })}
-                                        />
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <NumberInput
+                                                label="Border Width"
+                                                value={layer.nameBoardConfig?.borderWidth ?? 2}
+                                                min={0}
+                                                max={20}
+                                                onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, borderWidth: v } })}
+                                            />
+                                            <NumberInput
+                                                label="Corner Radius"
+                                                value={layer.nameBoardConfig?.borderRadius || 16}
+                                                min={0}
+                                                max={100}
+                                                onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, borderRadius: v } })}
+                                            />
+                                        </div>
                                     </div>
-
-                                    <NumberInput
-                                        label="Corner Radius"
-                                        value={layer.nameBoardConfig?.borderRadius || 16}
-                                        min={0}
-                                        max={100}
-                                        onChange={(v) => handleUpdate({ nameBoardConfig: { ...layer.nameBoardConfig!, borderRadius: v } })}
-                                    />
                                 </div>
 
                                 {/* Shadow Toggle */}

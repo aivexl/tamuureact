@@ -198,6 +198,9 @@ export const NameBoardElement: React.FC<NameBoardElementProps> = ({ layer, isEdi
             fontWeight: 700,
             letterSpacing: variant.category === 'luxury' ? '0.15em' : '0.05em',
             textTransform: variant.category === 'luxury' ? 'uppercase' : 'none',
+            textAlign: 'center', // Force center alignment
+            width: '100%',
+            display: 'block'
         };
 
         if (variant.category === 'neon') {
