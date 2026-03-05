@@ -16,12 +16,14 @@ import {
     Component, Palette, Eye, Shield, CreditCard,
     ChevronDown, ChevronUp, GripVertical, Settings2, Trash2, Copy, Lock, Unlock,
     Maximize2, Minimize2, Move, RotateCw, Type as TextIcon, Plus, Info, Home,
-    MousePointer2, FlipHorizontal2, FlipVertical2, Anchor, Bold, Italic, AlignLeft, AlignCenter, AlignRight, Quote, Check, Calendar, Sliders, MoveHorizontal, ArrowUpToLine, ArrowDownToLine
+    MousePointer2, FlipHorizontal2, FlipVertical2, Anchor, Bold, Italic, AlignLeft, AlignCenter, AlignRight, Quote, Check, Calendar, Sliders, MoveHorizontal, ArrowUpToLine, ArrowDownToLine,
+    UploadCloud
 } from 'lucide-react';
 
 import { ElementToolbar } from '@/components/Layout/ElementToolbar';
 import { UserElementEditor } from '@/components/UserEditor/UserElementEditor';
 import { LoveStoryPanel } from './LoveStoryPanel';
+import { storage } from '@/lib/api';
 
 // ============================================
 // UI COMPONENTS
@@ -1182,21 +1184,45 @@ export const PropertyPanel: React.FC = () => {
                 </SectionComponent>
 
                 {/* Image/GIF Config - Only for image and gif elements */}
-                {(layer.type === 'image' || layer.type === 'gif' || layer.type === 'sticker') && (
+                {(layer.type === 'image' || layer.type === 'gif' || layer.type === 'sticker' || layer.type === 'profile_photo' || layer.type === 'photo_frame') && (
                     <SectionComponent title="Image Settings" icon={<Palette className="w-4 h-4" />}>
                         <div className="space-y-4">
                             <div>
                                 <label className="text-[9px] text-white/30 uppercase font-bold mb-1 block">Image URL</label>
-                                <input
-                                    type="text"
-                                    value={layer.imageUrl || ''}
-                                    onChange={(e) => handleUpdate({ imageUrl: e.target.value })}
-                                    className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none"
-                                    placeholder="https://example.com/image.jpg"
-                                />
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={layer.imageUrl || ''}
+                                        onChange={(e) => handleUpdate({ imageUrl: e.target.value })}
+                                        className="flex-1 bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none"
+                                        placeholder="https://example.com/image.jpg"
+                                    />
+                                    <button
+                                        onClick={() => {
+                                            const input = document.createElement('input');
+                                            input.type = 'file';
+                                            input.accept = 'image/*';
+                                            input.onchange = async (e) => {
+                                                const file = (e.target as HTMLInputElement).files?.[0];
+                                                if (!file) return;
+                                                try {
+                                                    const result = await storage.upload(file);
+                                                    handleUpdate({ imageUrl: result.url });
+                                                } catch (error) {
+                                                    console.error('Upload failed:', error);
+                                                }
+                                            };
+                                            input.click();
+                                        }}
+                                        className="p-2 bg-premium-accent/10 border border-premium-accent/20 rounded-lg text-premium-accent hover:bg-premium-accent/20 transition-colors"
+                                        title="Upload Image"
+                                    >
+                                        <UploadCloud className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
                             <div className="text-[10px] text-white/30 text-center">
-                                Paste an image URL or drag and drop an image onto the canvas
+                                Paste an image URL or upload a file manually
                             </div>
                         </div>
                     </SectionComponent>

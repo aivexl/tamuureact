@@ -525,13 +525,13 @@ const PARTICLE_PRESETS = {
 };
 
 const LOVE_STORY_PRESETS = [
-    { label: 'Elegant', variant: 'elegant', description: 'Sophisticated vertical timeline', icon: '✨' },
-    { label: 'Modern', variant: 'modern', description: 'Clean and bold icon style', icon: '📱' },
-    { label: 'Zigzag', variant: 'zigzag', description: 'Dynamic alternating flow', icon: '⚡' },
-    { label: 'Cards', variant: 'cards', description: 'Minimalist stacked cards', icon: '🎴' },
-    { label: 'Numbered', variant: 'numbered_list', description: 'Modern numbered sequence', icon: '🔢' },
-    { label: 'Premium', variant: 'premium_zigzag', description: 'Curved luxury timeline', icon: '💎' },
-    { label: 'Floating', variant: 'floating_glass', description: 'Elegant glass cards', icon: '🫧' },
+    { label: 'Eternal', variant: 'elegant', description: 'Classic serif with hairline vertical paths', icon: <div className="w-full h-full bg-neutral-900 rounded flex flex-col items-center justify-center p-2 gap-1.5"><div className="w-px h-full bg-white/10" /><div className="w-2 h-2 rounded-full border border-premium-accent" /><div className="w-10 h-1 bg-white/20 rounded-full" /></div> },
+    { label: 'Narrative', variant: 'modern', description: 'Bold asymmetric editorial layout', icon: <div className="w-full h-full bg-neutral-950 rounded flex flex-col p-2 gap-2"><div className="text-[10px] font-black text-white/10 italic">01</div><div className="w-full h-1 bg-white/40 rounded-full" /><div className="w-3/4 h-1 bg-white/10 rounded-full" /></div> },
+    { label: 'Odyssey', variant: 'zigzag', description: 'Modern dynamic flow with density', icon: <div className="w-full h-full bg-neutral-900 rounded relative"><div className="absolute left-1/2 top-0 bottom-0 w-px bg-premium-accent/20" /><div className="absolute top-1/4 left-2 w-6 h-1 bg-white/20 rounded-full" /><div className="absolute top-3/4 right-2 w-6 h-1 bg-white/20 rounded-full" /></div> },
+    { label: 'Gallery', variant: 'cards', description: 'Floating elevated frames with soft depth', icon: <div className="w-full h-full bg-neutral-950 rounded flex items-center justify-center"><div className="w-[70%] h-3/4 bg-neutral-800 rounded-lg shadow-2xl border border-white/5" /></div> },
+    { label: 'Chronicle', variant: 'numbered_list', description: 'Structural Fortune 500 aesthetic', icon: <div className="w-full h-full bg-neutral-900 rounded p-2 flex gap-2"><div className="w-4 h-4 bg-white/5 rounded-sm" /><div className="flex-1 space-y-1.5"><div className="w-full h-1 bg-white/20" /><div className="w-3/4 h-1 bg-white/10" /></div></div> },
+    { label: 'Prestige', variant: 'premium_zigzag', description: 'Cinematic curves and luxury strokes', icon: <div className="w-full h-full bg-neutral-950 rounded overflow-hidden relative"><svg className="absolute inset-0 w-full h-full opacity-30"><path d="M0,50 Q25,0 50,50 T100,50" fill="none" stroke="#bfa181" strokeWidth="1" strokeDasharray="2 2" /></svg><div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full border border-premium-accent" /></div> },
+    { label: 'Ethereal', variant: 'floating_glass', description: 'Pure Apple glassmorphism & glow', icon: <div className="w-full h-full bg-gradient-to-br from-neutral-900 to-black rounded flex items-center justify-center p-2"><div className="w-full h-full rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 shadow-glow" /></div> },
 ];
 
 const PROFILE_PHOTO_PRESETS = [
@@ -1032,6 +1032,38 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                                 <div>
                                     <div className="text-xs font-bold text-white">{preset.label}</div>
                                     <div className="text-[10px] text-white/40">Premium vector path</div>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {/* LOVE STORY */}
+                {type === 'love_story' && (
+                    <div className="grid grid-cols-2 gap-3">
+                        {LOVE_STORY_PRESETS.map((preset, i) => (
+                            <button
+                                key={i}
+                                onClick={() => onSelect({ 
+                                    loveStoryConfig: { 
+                                        variant: preset.variant,
+                                        markerStyle: 'heart',
+                                        themeColor: '#bfa181',
+                                        lineThickness: 1,
+                                        events: [
+                                            { id: '1', date: '2020', title: 'First Meeting', description: 'The day our eyes first met and the world stopped spinning.' },
+                                            { id: '2', date: '2022', title: 'The Proposal', description: 'Under the starlit sky, we promised forever to each other.' }
+                                        ]
+                                    } 
+                                })}
+                                className="flex flex-col gap-3 p-3 rounded-2xl bg-white/5 hover:bg-premium-accent/10 border border-white/5 hover:border-premium-accent/30 transition-all group text-left"
+                            >
+                                <div className="w-full aspect-[4/3] rounded-xl overflow-hidden group-hover:scale-[1.02] transition-transform duration-500">
+                                    {preset.icon}
+                                </div>
+                                <div>
+                                    <span className="text-[11px] font-black text-white/90 uppercase tracking-widest block">{preset.label}</span>
+                                    <p className="text-[9px] text-white/30 mt-1 leading-relaxed line-clamp-2">{preset.description}</p>
                                 </div>
                             </button>
                         ))}

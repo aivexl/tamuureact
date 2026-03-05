@@ -1,5 +1,26 @@
 # Tamuu Changelog
 
+## [2026-03-05] Feature: Admin Direct Upload & Permission-Based Love Story Editing
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Core Implementation
+- **Admin Media Autonomy**: Integrated Cloudflare R2 direct upload engine into the Admin Property Panel. Admins can now manually upload assets for `image`, `gif`, `sticker`, `profile_photo`, and `photo_frame` elements, bypassing manual URL pasting.
+- **Permission-Driven Narrative**: Refactored `LoveStoryCard` to respect template-level permissions. End-users can only modify their timeline if `canEditContent` is explicitly enabled by the template designer.
+- **Enterprise-Grade UI Locking**: Implemented a "Locked by Admin" state for User Editor cards. When permissions are restricted, interactive inputs are gracefully disabled with high-contrast visibility, maintaining UI integrity while enforcing business logic.
+- **Registry Sync**: Updated `ElementRegistry` and `UserElementEditor` to ensure consistent permission propagation across all premium narrative elements.
+
+## [2026-03-05] Feature: Premium Love Story Redesign (Apple Design Standards)
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### UI/UX Overhaul
+- **Total Redesign**: Completely refactored the "Love Story" (Kisah) element with 7 premium variants following Fortune 500 aesthetics.
+- **Eternal & Prestige Variants**: Introduced high-end serif typography and cinematic curved paths with gradient strokes.
+- **Ethereal Glassmorphism**: Implemented deep glass effects with subtle light leaks and spring-based micro-interactions.
+- **Asset Selection Modal**: Integrated a full-fidelity selection UI for Kisah elements with visual-first presets, replacing legacy emoji-based icons.
+- **Zero-Cropping Engine**: Optimized scaling logic to ensure timeline legibility across all mobile baseline dimensions.
+
 ## [2026-03-05] Feature: Premium Photo Frame System (Enterprise Design Suite)
 **Status**: 🔵 Deploying
 **Environment**: Production
