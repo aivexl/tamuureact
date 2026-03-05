@@ -16,7 +16,7 @@ import { Toaster } from 'react-hot-toast';
 // localhost is treated as app domain for development
 const getIsAppDomain = (): boolean => {
     const host = window.location.hostname;
-    return host.startsWith('app.') || host === 'localhost' || host === '127.0.0.1';
+    return host.startsWith('app.') || host.includes('tamuu-app') || host === 'localhost' || host === '127.0.0.1';
 };
 
 // ============================================

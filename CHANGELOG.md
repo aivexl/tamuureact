@@ -6,6 +6,9 @@
 
 ### Guest Management & System Stability
 - **Fix: Guest Creation 500 Error**: Applied missing D1 migrations (`0045_enhanced_guests_unified_identity.sql`) to the production database, resolving a critical failure caused by the missing `slug` column.
+- **Fix: Navigation Deadlock**: Resolved an issue where navigating from the User Editor to the Guest Management page would change the URL but fail to load the view.
+    - **Domain Detection**: Enhanced `getIsAppDomain` to support Cloudflare Pages preview domains (`tamuu-app`).
+    - **Clean Navigation**: Implemented `window.location.href` for Guest Management transitions to ensure a fresh state and avoid SPA routing conflicts.
 - **UI: Guest Management Layout Refinement**: Increased top padding (`pt-20`) and adjusted header spacing (`pt-10 pb-8`) on the Guest Management page to ensure the "Kembali" button is proportionally positioned and not cramped against the navbar.
 - **Database Consistency**: Synchronized all pending migrations across local and remote D1 environments.
 

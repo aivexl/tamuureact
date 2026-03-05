@@ -188,7 +188,8 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                 <IconGridMenu onOpenPanel={(panelId: string) => {
                     console.log('[UserEditor] Opening panel:', panelId);
                     if (panelId === 'guests') {
-                        navigate(`/guests/${id}`);
+                        // Force a clean load for Guest Management to avoid editor state pollution
+                        window.location.href = `/guests/${id}`;
                     } else {
                         setActivePanel(panelId);
                     }
