@@ -540,8 +540,8 @@ export const RSVPWishesElement: React.FC<RSVPWishesElementProps> = ({
                 />
             </div>
 
-            {/* Wishes Section - CTO: Taller height (400px minimum) for preview scrollability */}
-            <div className="mt-6 pt-6 border-t flex-col flex min-h-[400px] sm:min-h-[500px]" style={{ borderColor: `${config.textColor}25` }}>
+            {/* Wishes Section - CTO: Natural height to prevent clipping, relies on root scroll */}
+            <div className="mt-6 pt-6 border-t flex-col flex" style={{ borderColor: `${config.textColor}25` }}>
                 <div className="flex items-center justify-between mb-4 flex-shrink-0">
                     <div>
                         <h3 className="text-sm sm:text-base font-black tracking-tight opacity-100" style={{ color: config.textColor, ...crispTextStyle }}>
@@ -560,8 +560,8 @@ export const RSVPWishesElement: React.FC<RSVPWishesElementProps> = ({
                     </div>
                 </div>
 
-                {/* The scrollable area for wishes */}
-                <div className="h-[350px] sm:h-[450px] overflow-y-auto custom-scrollbar pr-2 -mr-2 pb-8">
+                {/* The stack area for wishes (relies on root element scrolling) */}
+                <div className="pb-8">
                     <GuestWishesSection
                         refreshKey={refreshKey}
                         config={config}
