@@ -117,15 +117,17 @@ export const GuestWishesPage: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 pt-20 pb-24 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-slate-50 pt-28 pb-24 px-4 sm:px-6 lg:px-8">
             <div className="max-w-6xl mx-auto space-y-8">
 
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div className="space-y-2 text-center md:text-left">
-                        <Link to="/dashboard" className="inline-flex items-center text-[10px] sm:text-xs font-bold text-slate-400 hover:text-teal-600 uppercase tracking-widest transition-colors">
-                            <ArrowLeft className="w-3 h-3 mr-1.5" /> Kembali
-                        </Link>
+                        <div className="mb-4">
+                            <Link to="/dashboard" className="inline-flex items-center text-[10px] sm:text-xs font-bold text-slate-400 hover:text-teal-600 uppercase tracking-widest transition-colors">
+                                <ArrowLeft className="w-3 h-3 mr-1.5" /> Kembali
+                            </Link>
+                        </div>
                         <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Ucapan Tamu</h1>
                         <p className="text-sm sm:text-base text-slate-500 font-medium">Kelola pesan manis dan doa restu dari para tamu undangan Anda.</p>
                     </div>
