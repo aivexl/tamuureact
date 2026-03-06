@@ -78,7 +78,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenI
             case 'guest_wishes':
                 return <GuestWishesElement layer={layer} onContentLoad={onContentLoad} />;
             case 'rsvp_wishes':
-                return <RSVPWishesElement layer={layer} isEditor={isEditor} invitationId={invitationId} onContentLoad={onContentLoad} />;
+                return <RSVPWishesElement layer={layer} isEditor={isEditor} invitationId={invitationId} onContentLoad={onContentLoad} onDimensionsDetected={onDimensionsDetected} />;
             case 'flying_bird':
                 return <FlyingBirdElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             case 'photo_grid':

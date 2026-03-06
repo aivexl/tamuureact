@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
 import { m } from 'framer-motion';
 import { Layer, RSVPWishesConfig } from '@/store/layersSlice';
 import { getVariantStyle, DEFAULT_RSVP_WISHES_CONFIG, VariantStyle } from '@/lib/rsvp-variants';
@@ -43,17 +43,6 @@ const getContrastColor = (hexcolor: string) => {
     const b = parseInt(hex.substring(4, 6), 16);
     const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
     return (yiq >= 140) ? '#000000' : '#ffffff';
-};
-
-// CTO FIX: Hardware acceleration (translate3d/will-change) on text layers forces the browser
-// to rasterize the text to a texture before applying the transform. This disables sub-pixel
-// anti-aliasing on Windows/Chrome, resulting in "gradient-like", "rainbow-fringed", or "blurry"
-// text. To fix the "unprofessional gradient text" issue, we MUST remove 3D transforms here
-// and rely PURELY on logical text smoothing. The parent AnimatedLayer already provides the stage.
-const crispTextStyle: React.CSSProperties = {
-    WebkitFontSmoothing: 'antialiased',
-    MozOsxFontSmoothing: 'grayscale',
-    textRendering: 'optimizeLegibility',
 };
 
 // ============================================
@@ -127,12 +116,11 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isDisabled, invita
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="text-center py-6"
-                style={crispTextStyle}
             >
                 <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-green-500/20 flex items-center justify-center">
                     <Check className="w-6 h-6 text-green-500" />
                 </div>
-                <h3 className="text-base font-semibold" style={{ color: config.textColor, ...crispTextStyle }}>
+                <h3 className="text-base font-semibold" style={{ color: config.textColor }}>
                     {config.thankYouMessage}
                 </h3>
             </m.div>
@@ -142,12 +130,19 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isDisabled, invita
     const primaryColor = config.primaryColor || variant.accentColor;
     const contrastColor = getContrastColor(primaryColor);
 
+    // Force solid input colors to prevent any visual gradients
+    const solidInputStyle: React.CSSProperties = {
+        color: '#1a1a1a', // strictly solid dark gray/black
+        WebkitFontSmoothing: 'auto', // let browser render inputs normally
+        opacity: 1
+    };
+
     return (
-        <form onSubmit={handleSubmit} className="space-y-3" style={crispTextStyle}>
+        <form onSubmit={handleSubmit} className="space-y-3">
             {/* Name Field */}
             {config.showNameField && (
                 <div>
-                    <label className={`block text-xs font-black mb-1.5 opacity-100 ${variant.labelClass || ''}`} style={{ color: config.textColor, ...crispTextStyle }}>
+                    <label className={`block text-xs font-black mb-1.5 opacity-100 ${variant.labelClass || ''}`} style={{ color: config.textColor }}>
                         {config.nameLabel || 'Nama Lengkap'} *
                     </label>
                     <input
@@ -160,7 +155,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isDisabled, invita
                         className={`w-full px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs transition-all outline-none border focus:opacity-100 ${variant.inputClass}`}
                         style={{
                             ...variant.inputStyle,
-                            ...crispTextStyle,
+                            ...solidInputStyle,
                             borderRadius: config.borderRadius,
                         }}
                     />
@@ -170,7 +165,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isDisabled, invita
             {/* Phone Field */}
             {config.showPhoneField && (
                 <div>
-                    <label className={`block text-xs font-black mb-1.5 opacity-100 ${variant.labelClass || ''}`} style={{ color: config.textColor, ...crispTextStyle }}>
+                    <label className={`block text-xs font-black mb-1.5 opacity-100 ${variant.labelClass || ''}`} style={{ color: config.textColor }}>
                         {config.phoneLabel || 'Nomor WhatsApp'}
                     </label>
                     <input
@@ -178,10 +173,10 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isDisabled, invita
                         value={formData.phone}
                         onChange={(e) => handleChange('phone', e.target.value)}
                         placeholder="08xxxxxxxxxx"
-                        className={`w-full px-3 py-2 text-xs transition-all outline-none ${variant.inputClass}`}
+                        className={`w-full px-3 py-2 text-xs transition-all outline-none border ${variant.inputClass}`}
                         style={{
                             ...variant.inputStyle,
-                            ...crispTextStyle,
+                            ...solidInputStyle,
                             borderRadius: config.borderRadius,
                             backgroundColor: config.inputBackgroundColor,
                             borderColor: config.inputBorderColor
@@ -193,7 +188,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isDisabled, invita
             {/* Email Field */}
             {config.showEmailField && (
                 <div>
-                    <label className={`block text-xs font-black mb-1.5 opacity-100 ${variant.labelClass || ''}`} style={{ color: config.textColor, ...crispTextStyle }}>
+                    <label className={`block text-xs font-black mb-1.5 opacity-100 ${variant.labelClass || ''}`} style={{ color: config.textColor }}>
                         {config.emailLabel || 'Email'}
                     </label>
                     <input
@@ -204,7 +199,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isDisabled, invita
                         className={`w-full px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs transition-all outline-none border ${variant.inputClass}`}
                         style={{
                             ...variant.inputStyle,
-                            ...crispTextStyle,
+                            ...solidInputStyle,
                             borderRadius: config.borderRadius,
                         }}
                     />
@@ -214,7 +209,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isDisabled, invita
             {/* Attendance - Inline compact buttons */}
             {config.showAttendanceField && (
                 <div>
-                    <label className={`block text-xs font-black mb-2 opacity-100 ${variant.labelClass || ''}`} style={{ color: config.textColor, ...crispTextStyle }}>
+                    <label className={`block text-xs font-black mb-2 opacity-100 ${variant.labelClass || ''}`} style={{ color: config.textColor }}>
                         {config.attendanceLabel || 'Kehadiran'} *
                     </label>
                     <div className="flex flex-wrap gap-1.5">
@@ -234,11 +229,11 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isDisabled, invita
                                         : 'bg-black/[0.05] dark:bg-white/[0.05] border-black/[0.1] dark:border-white/[0.1] hover:bg-black/[0.1] dark:hover:bg-white/[0.1] opacity-80'
                                         }`}
                                     style={{
-                                        ...crispTextStyle,
                                         borderRadius: config.borderRadius,
                                         backgroundColor: isSelected ? primaryColor : undefined,
                                         color: isSelected ? contrastColor : config.textColor,
-                                        borderColor: isSelected ? 'transparent' : (variant.id === 'outline' ? config.textColor : undefined)
+                                        borderColor: isSelected ? 'transparent' : (variant.id === 'outline' ? config.textColor : undefined),
+                                        WebkitFontSmoothing: 'auto'
                                     }}
                                 >
                                     {label}
@@ -252,7 +247,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isDisabled, invita
             {/* Guest Count - Compact inline */}
             {config.showGuestCountField && formData.attendance === 'attending' && (
                 <div className="flex items-center gap-3 py-0.5 sm:py-1">
-                    <label className={`text-[10px] font-black uppercase tracking-tight opacity-100 ${variant.labelClass || ''}`} style={{ color: config.textColor, ...crispTextStyle }}>
+                    <label className={`text-[10px] font-black uppercase tracking-tight opacity-100 ${variant.labelClass || ''}`} style={{ color: config.textColor }}>
                         {config.guestCountLabel || 'Jumlah Tamu'}:
                     </label>
                     <div className="flex items-center gap-1.5">
@@ -260,18 +255,18 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isDisabled, invita
                             type="button"
                             onClick={() => handleChange('guestCount', Math.max(1, formData.guestCount - 1))}
                             className="w-6 h-6 rounded-full bg-black/[0.05] dark:bg-white/[0.05] flex items-center justify-center text-xs font-black hover:bg-black/[0.1] dark:hover:bg-white/[0.1] transition-colors border border-black/[0.1] dark:border-white/[0.1]"
-                            style={{ color: config.textColor, ...crispTextStyle }}
+                            style={{ color: config.textColor }}
                         >
                             -
                         </button>
-                        <span className="text-sm font-black w-4 text-center opacity-100" style={{ color: config.textColor, ...crispTextStyle }}>
+                        <span className="text-sm font-black w-4 text-center opacity-100" style={{ color: config.textColor }}>
                             {formData.guestCount}
                         </span>
                         <button
                             type="button"
                             onClick={() => handleChange('guestCount', Math.min(config.guestCountMax, formData.guestCount + 1))}
                             className="w-6 h-6 rounded-full bg-black/[0.05] dark:bg-white/[0.05] flex items-center justify-center text-xs font-black hover:bg-black/[0.1] dark:hover:bg-white/[0.1] transition-colors border border-black/[0.1] dark:border-white/[0.1]"
-                            style={{ color: config.textColor, ...crispTextStyle }}
+                            style={{ color: config.textColor }}
                         >
                             +
                         </button>
@@ -282,7 +277,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isDisabled, invita
             {/* Message - Compact textarea */}
             {config.showMessageField && (
                 <div>
-                    <label className={`block text-xs font-black mb-1.5 opacity-100 ${variant.labelClass || ''}`} style={{ color: config.textColor, ...crispTextStyle }}>
+                    <label className={`block text-xs font-black mb-1.5 opacity-100 ${variant.labelClass || ''}`} style={{ color: config.textColor }}>
                         {config.messageLabel || 'Ucapan & Doa'} {config.requireMessage && '*'}
                     </label>
                     <textarea
@@ -292,10 +287,10 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isDisabled, invita
                         rows={2}
                         maxLength={config.messageMaxLength}
                         required={config.requireMessage}
-                        className={`w-full px-3 py-2 text-xs transition-all outline-none resize-none ${variant.inputClass}`}
+                        className={`w-full px-3 py-2 text-xs transition-all outline-none resize-none border ${variant.inputClass}`}
                         style={{
                             ...variant.inputStyle,
-                            ...crispTextStyle,
+                            ...solidInputStyle,
                             borderRadius: config.borderRadius,
                             backgroundColor: config.inputBackgroundColor,
                             borderColor: config.inputBorderColor
@@ -306,7 +301,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isDisabled, invita
 
             {/* Error */}
             {error && (
-                <div className="text-red-500 text-xs text-center py-1 font-bold" style={crispTextStyle}>{error}</div>
+                <div className="text-red-500 text-xs text-center py-1 font-bold">{error}</div>
             )}
 
             {/* Submit Button */}
@@ -316,12 +311,12 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isDisabled, invita
                 className={`w-full flex items-center justify-center gap-2 py-3 px-6 text-sm font-black transition-all disabled:opacity-50 shadow-md active:scale-95 opacity-100 ${variant.buttonClass}`}
                 style={{
                     ...variant.buttonStyle,
-                    ...crispTextStyle,
                     backgroundColor: primaryColor,
                     borderRadius: config.borderRadius,
                     color: config.buttonTextColor || contrastColor,
                     paddingTop: '0.75rem',
-                    paddingBottom: '0.75rem'
+                    paddingBottom: '0.75rem',
+                    WebkitFontSmoothing: 'auto'
                 }}
             >
                 {isSubmitting ? (
@@ -366,29 +361,28 @@ const WishCard: React.FC<WishCardProps> = ({ wish, config, variant, index }) => 
             className={`flex gap-2 sm:gap-3 p-3 sm:p-4 transition-all ${variant.wishCardClass}`}
             style={{
                 ...variant.wishCardStyle,
-                ...crispTextStyle,
                 borderRadius: config.borderRadius
             }}
         >
             {config.showWishAvatar && (
                 <div
                     className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white text-[11px] sm:text-xs font-black flex-shrink-0"
-                    style={{ backgroundColor: getColor(wish.name), ...crispTextStyle }}
+                    style={{ backgroundColor: getColor(wish.name) }}
                 >
                     {getInitial(wish.name)}
                 </div>
             )}
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5 sm:mb-1">
-                    <span className="font-black text-[11px] sm:text-xs tracking-tight opacity-100" style={{ color: config.textColor, ...crispTextStyle }}>{wish.name}</span>
+                    <span className="font-black text-[11px] sm:text-xs tracking-tight opacity-100" style={{ color: config.textColor }}>{wish.name}</span>
                     {wish.attendance === 'attending' && (
-                        <span className="text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 font-black border border-green-500/10 opacity-100" style={crispTextStyle}>Hadir</span>
+                        <span className="text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 font-black border border-green-500/10 opacity-100">Hadir</span>
                     )}
                 </div>
                 {/* CTO: Professional high-contrast text */}
-                <p className="text-[11px] sm:text-xs leading-snug sm:leading-relaxed opacity-100 font-medium" style={{ color: config.textColor, ...crispTextStyle }}>{wish.message}</p>
+                <p className="text-[11px] sm:text-xs leading-snug sm:leading-relaxed opacity-100 font-medium" style={{ color: config.textColor }}>{wish.message}</p>
                 {config.showWishTimestamp && (
-                    <div className="text-[8px] sm:text-[9px] opacity-70 mt-1 sm:mt-2 font-bold" style={{ color: config.textColor, ...crispTextStyle }}>{wish.submittedAt}</div>
+                    <div className="text-[8px] sm:text-[9px] opacity-70 mt-1 sm:mt-2 font-bold" style={{ color: config.textColor }}>{wish.submittedAt}</div>
                 )}
             </div>
         </m.div>
@@ -463,7 +457,7 @@ const GuestWishesSection: React.FC<GuestWishesSectionProps & { variant: VariantS
 
     if (wishes.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-6 text-center opacity-70" style={crispTextStyle}>
+            <div className="flex flex-col items-center justify-center py-6 text-center opacity-70">
                 <Heart className="w-5 h-5 mb-2 opacity-80" />
                 <p className="text-[10px] font-black opacity-100">Belum ada ucapan</p>
                 <p className="text-[9px] font-bold">Jadilah yang pertama!</p>
@@ -488,47 +482,89 @@ interface RSVPWishesElementProps {
     isEditor?: boolean;
     invitationId?: string;
     onContentLoad?: () => void;
+    onDimensionsDetected?: (w: number, h: number) => void;
 }
 
 export const RSVPWishesElement: React.FC<RSVPWishesElementProps> = ({
     layer,
     isEditor,
     invitationId: propInvitationId,
-    onContentLoad
+    onContentLoad,
+    onDimensionsDetected
 }) => {
-    // CTO: Get invitation ID from store if not provided via props (fallback for public preview)
     const storeId = useStore(state => state.id);
+    const updateLayer = useStore(state => state.updateLayer);
     const invitationId = propInvitationId || storeId;
 
     const config = layer.rsvpWishesConfig || DEFAULT_RSVP_WISHES_CONFIG;
     const variantId = config.style || config.variant || 'modern';
     const variant = useMemo(() => getVariantStyle(variantId as any), [variantId]);
 
+    const rootRef = useRef<HTMLDivElement>(null);
+    const lastSyncRef = useRef<{ w: number, h: number }>({ w: 0, h: 0 });
+
     useEffect(() => { onContentLoad?.(); }, [onContentLoad]);
 
     const [refreshKey, setRefreshKey] = useState(0);
     const handleSubmitSuccess = () => setRefreshKey(prev => prev + 1);
 
+    // PERFECT-FIT AUTO-HEIGHT ALGORITHM FOR EDITOR AND PRODUCTION
+    // This ensures the element is never cut off by expanding its bounding box
+    // to strictly wrap the Form + exactly 350px of Wishes.
+    useLayoutEffect(() => {
+        if (!rootRef.current) return;
+
+        const observer = new ResizeObserver((entries) => {
+            const entry = entries[0];
+            if (!entry) return;
+
+            // Measure the exact layout footprint required by the child elements
+            const rect = entry.contentRect;
+            const measuredW = Math.ceil(rect.width);
+            const measuredH = Math.ceil(rect.height);
+
+            const hasChangedLocally = measuredW !== lastSyncRef.current.w || measuredH !== lastSyncRef.current.h;
+
+            if (hasChangedLocally) {
+                lastSyncRef.current = { w: measuredW, h: measuredH };
+
+                if (onDimensionsDetected) {
+                    onDimensionsDetected(measuredW, measuredH);
+                }
+
+                if (isEditor && (Math.abs(measuredW - layer.width) > 5 || Math.abs(measuredH - layer.height) > 5)) {
+                    // Force the store to update so the blue selection box adapts
+                    updateLayer(layer.id, { height: measuredH });
+                }
+            }
+        });
+
+        observer.observe(rootRef.current);
+        return () => observer.disconnect();
+    }, [layer.id, layer.width, layer.height, isEditor, onDimensionsDetected, updateLayer]);
+
     return (
         <div
-            className={`w-full h-full flex flex-col transition-all duration-500 overflow-hidden ${variant.containerClass}`}
+            ref={rootRef}
+            // CTO: h-fit ensures the wrapper is naturally sized to its content.
+            // If the parent AnimatedLayer enforces a smaller height, the flex-col handles it.
+            className={`w-full h-fit flex flex-col transition-all duration-500 ${variant.containerClass}`}
             style={{
                 ...variant.containerStyle,
-                ...crispTextStyle,
                 backgroundColor: config.backgroundColor || variant.containerStyle?.backgroundColor,
                 borderRadius: config.borderRadius,
                 fontFamily: config.fontFamily || variant.fontFamily,
                 padding: 0
             }}
         >
-            <div className="w-full flex-1 flex flex-col min-h-0">
-                {/* Form Section - Fixed */}
+            <div className="w-full flex flex-col">
+                {/* Form Section - Natural Height */}
                 <div className="w-full flex-shrink-0 pt-6 px-6 sm:pt-8 sm:px-8">
-                    <h2 className={`text-center leading-tight mb-1 opacity-100 font-black ${variant.titleClass.replace('text-2xl', 'text-xl sm:text-2xl').replace('text-3xl', 'text-2xl sm:text-3xl').replace('text-4xl', 'text-3xl sm:text-4xl').replace('text-5xl', 'text-4xl sm:text-5xl')}`} style={{ color: config.textColor, ...crispTextStyle }}>
+                    <h2 className={`text-center leading-tight mb-1 opacity-100 font-black ${variant.titleClass.replace('text-2xl', 'text-xl sm:text-2xl').replace('text-3xl', 'text-2xl sm:text-3xl').replace('text-4xl', 'text-3xl sm:text-4xl').replace('text-5xl', 'text-4xl sm:text-5xl')}`} style={{ color: config.textColor }}>
                         {config.title}
                     </h2>
                     {config.subtitle && (
-                        <p className={`text-center mb-4 sm:mb-6 text-[11px] sm:text-xs leading-relaxed font-bold opacity-100 ${variant.subtitleClass || ''}`} style={{ color: config.textColor, ...crispTextStyle }}>
+                        <p className={`text-center mb-4 sm:mb-6 text-[11px] sm:text-xs leading-relaxed font-bold opacity-100 ${variant.subtitleClass || ''}`} style={{ color: config.textColor }}>
                             {config.subtitle}
                         </p>
                     )}
@@ -541,14 +577,14 @@ export const RSVPWishesElement: React.FC<RSVPWishesElementProps> = ({
                     />
                 </div>
 
-                {/* Wishes Section - Scrollable, minimum 3 cards visibility (approx 250px-300px) */}
-                <div className="mt-6 pt-6 border-t flex flex-col flex-1 min-h-[300px]" style={{ borderColor: `${config.textColor}15` }}>
+                {/* Wishes Section - Fixed internal scroll height (~3.5 cards) */}
+                <div className="mt-6 pt-6 border-t flex flex-col w-full h-[350px] flex-shrink-0" style={{ borderColor: `${config.textColor}15` }}>
                     <div className="flex items-center justify-between mb-4 flex-shrink-0 px-6 sm:px-8">
                         <div>
-                            <h3 className="text-sm sm:text-base font-black tracking-tight opacity-100" style={{ color: config.textColor, ...crispTextStyle }}>
+                            <h3 className="text-sm sm:text-base font-black tracking-tight opacity-100" style={{ color: config.textColor }}>
                                 {config.wishesTitle || 'Ucapan & Doa'}
                             </h3>
-                            <p className="text-[10px] sm:text-[11px] opacity-100 font-bold" style={{ color: config.textColor, ...crispTextStyle }}>
+                            <p className="text-[10px] sm:text-[11px] opacity-100 font-bold" style={{ color: config.textColor }}>
                                 {config.wishesSubtitle || 'Pesan dari keluarga dan sahabat'}
                             </p>
                         </div>

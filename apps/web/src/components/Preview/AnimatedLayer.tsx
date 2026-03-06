@@ -759,6 +759,8 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         return {};
     }, [elegantSpinAnimation, pathAnimation, loopingConfig, isEditor]);
 
+    const is3DLayer = !['text', 'quote', 'rsvp_wishes', 'digital_gift', 'gift_address', 'social_mockup', 'profile'].includes(layer.type);
+
     return (
         <m.div
             ref={ref}
@@ -774,8 +776,8 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                 width: `${layer.width}px`,
                 height: `${layer.height}px`,
                 zIndex: layer.zIndex,
-                perspective: '1200px',
-                transformStyle: 'preserve-3d',
+                perspective: is3DLayer ? '1200px' : 'none',
+                transformStyle: is3DLayer ? 'preserve-3d' : 'flat',
                 pointerEvents: isEditor && (motionStyles.opacity === 0 || layer.isLocked) ? 'none' : 'auto',
             }}
         >
