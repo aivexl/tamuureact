@@ -413,18 +413,22 @@ const GuestWishesSection: React.FC<GuestWishesSectionProps & { variant: VariantS
             return;
         }
 
-        const formatTimeAgo = (date: Date): string => {
+        const formatTimeAgo = (dateStr: string): string => {
+            // CTO FIX: Cloudflare D1 returns SQLite datetime as "YYYY-MM-DD HH:MM:SS" (UTC).
+            // We MUST append 'Z' to force Javascript to parse it as UTC, then calculate diff against local now.
+            const parsedDate = new Date(dateStr.replace(' ', 'T') + 'Z');
             const now = new Date();
-            const diffMs = now.getTime() - date.getTime();
+            const diffMs = now.getTime() - parsedDate.getTime();
             const diffMins = Math.floor(diffMs / 60000);
             const diffHours = Math.floor(diffMs / 3600000);
             const diffDays = Math.floor(diffMs / 86400000);
 
-            if (diffMins < 1) return 'Baru saja';
+            // Time offset safeguard for slight server-client sync variations
+            if (diffMins < 1 || diffMs < 0) return 'Baru saja';
             if (diffMins < 60) return `${diffMins} m lalu`;
             if (diffHours < 24) return `${diffHours} j lalu`;
             if (diffDays < 7) return `${diffDays} h lalu`;
-            return date.toLocaleDateString('id-ID');
+            return parsedDate.toLocaleDateString('id-ID');
         };
 
         const fetchWishes = async () => {
@@ -439,7 +443,7 @@ const GuestWishesSection: React.FC<GuestWishesSectionProps & { variant: VariantS
                             name: d.name,
                             message: d.message,
                             attendance: d.attendance,
-                            submittedAt: formatTimeAgo(new Date(d.submitted_at))
+                            submittedAt: formatTimeAgo(d.submitted_at)
                         })));
                 }
             } catch (err) {
