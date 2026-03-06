@@ -378,6 +378,12 @@ const WishCard: React.FC<WishCardProps> = ({ wish, config, variant, index }) => 
                     {wish.attendance === 'attending' && (
                         <span className="text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 font-black border border-green-500/10 opacity-100">Hadir</span>
                     )}
+                    {wish.attendance === 'not_attending' && (
+                        <span className="text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 font-black border border-red-500/10 opacity-100">Tidak Hadir</span>
+                    )}
+                    {wish.attendance === 'maybe' && (
+                        <span className="text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-full bg-orange-500/10 text-orange-600 dark:text-orange-400 font-black border border-orange-500/10 opacity-100">Belum Pasti</span>
+                    )}
                 </div>
                 {/* CTO: Professional high-contrast text */}
                 <p className="text-[11px] sm:text-xs leading-snug sm:leading-relaxed opacity-100 font-medium" style={{ color: config.textColor }}>{wish.message}</p>
