@@ -26,6 +26,7 @@ interface AnimatedLayerProps {
     onOpenInvitation?: () => void;
     scrollContainerRef?: React.RefObject<any>;
     isEditor?: boolean;
+    invitationId?: string;
     forceTrigger?: boolean;
     isSectionActive?: boolean;
     onDimensionsDetected?: (width: number, height: number) => void;
@@ -39,6 +40,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
     onOpenInvitation,
     scrollContainerRef,
     isEditor = false,
+    invitationId,
     forceTrigger = false,
     isSectionActive = true,
     onDimensionsDetected,
@@ -747,6 +749,15 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         };
     }, [layer.motionPathConfig, layer.x, adjustedY, layer.width, layer.height, isEditor]);
 
+    // Sub-pixel rendering and anti-aliasing fixes for scaled DOM elements
+    const subpixelStyle: React.CSSProperties = {
+        backfaceVisibility: 'hidden',
+        WebkitBackfaceVisibility: 'hidden',
+        transform: 'translateZ(0)',
+        WebkitFontSmoothing: 'antialiased',
+        MozOsxFontSmoothing: 'grayscale',
+    };
+
     const loopingProps = useMemo(() => {
         if (isEditor) return {};
         // In Preview Mode, loops, elegant spins, and motion paths should always run regardless of entrance state,
@@ -775,6 +786,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                 perspective: '1200px',
                 transformStyle: 'preserve-3d',
                 pointerEvents: isEditor && (motionStyles.opacity === 0 || layer.isLocked) ? 'none' : 'auto',
+                ...subpixelStyle
             }}
         >
             {/* LAYER 2: GLOBAL MOTION STAGE (Translation & Floating) */}
@@ -789,6 +801,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                     scale: motionStyles.scale,
                     opacity: motionStyles.opacity,
                     filter: motionStyles.filter,
+                    ...subpixelStyle
                 } : {
                     // CTO ENTERPRISE PREVIEW ENGINE: Bound to 60fps MotionValues
                     x: mvX,
@@ -796,6 +809,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                     rotate: mvRotate,
                     scale: mvScale,
                     filter: mvFilter,
+                    ...subpixelStyle
                     // Note: opacity is handled by variants in Layer 1
                 }}
             >
@@ -807,6 +821,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                         transform: isEditor
                             ? 'none'
                             : `rotate(${baseRotate}deg) scale(${baseScale * flipX}, ${baseScale * flipY})`,
+                        ...subpixelStyle
                     }}
                 >
                     {isMarqueeEnabled && (marqueeConfig?.mode || 'seamless') === 'seamless' ? (
@@ -818,18 +833,18 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                                 <div className="seamless-marquee-container">
                                     <div className={`seamless-marquee-track${isVertical ? '-vertical' : ''} animate-seamless-${direction}`} style={{ '--marquee-duration': `${duration}s`, ...(isVertical ? { height: 'fit-content' } : { width: 'fit-content' }) } as any}>
                                         <div className="flex-shrink-0" style={isVertical ? { height: layer.height } : { width: layer.width }}>
-                                            <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={isEditor} onContentLoad={handleContentLoad} onDimensionsDetected={handleDimensions} />
+                                            <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={isEditor} invitationId={invitationId} onContentLoad={handleContentLoad} onDimensionsDetected={handleDimensions} />
                                         </div>
                                         <div className="flex-shrink-0" style={isVertical ? { height: layer.height } : { width: layer.width }}>
-                                            <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={isEditor} onContentLoad={handleContentLoad} onDimensionsDetected={handleDimensions} />
+                                            <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={isEditor} invitationId={invitationId} onContentLoad={handleContentLoad} onDimensionsDetected={handleDimensions} />
                                         </div>
                                     </div>
                                 </div>
                             );
                         })()
                     ) : (
-                        <div className="w-full h-full relative" style={{ ...(isMarqueeTileMode ? { backgroundImage: `url(${layer.imageUrl})`, backgroundRepeat: 'repeat', backgroundSize: 'auto', backgroundColor: 'transparent' } : {}) }}>
-                            {!isMarqueeTileMode && <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={isEditor} onContentLoad={handleContentLoad} onDimensionsDetected={handleDimensions} />}
+                        <div className="w-full h-full relative" style={{ ...(isMarqueeTileMode ? { backgroundImage: `url(${layer.imageUrl})`, backgroundRepeat: 'repeat', backgroundSize: 'auto', backgroundColor: 'transparent' } : {}), ...subpixelStyle }}>
+                            {!isMarqueeTileMode && <ElementRenderer layer={layer} onOpenInvitation={onOpenInvitation} isEditor={isEditor} invitationId={invitationId} onContentLoad={handleContentLoad} onDimensionsDetected={handleDimensions} />}
                         </div>
                     )}
                 </div>

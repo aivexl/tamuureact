@@ -1,5 +1,15 @@
 # Tamuu Changelog
 
+## [0.5.1] - 2026-03-06
+**Status**: 🟢 Deploying
+**Environment**: Production
+
+### RSVP & Guest Wishes Refinement
+- **UI/UX Optimization**: Updated the default RSVP submit button text from "Kirim RSVP" to "Kirim" for a cleaner, more direct user experience.
+- **Component Simplification**: Removed the standalone "RSVP Form" element from the Asset Selection Modal and Element Toolbar to streamline user choices. The combined "RSVP + Guest Wishes" element is now the primary, unified tool for guest confirmations.
+- **Visual Fidelity Fixes**: Implemented enterprise-grade sub-pixel rendering fixes (`backface-visibility: hidden`, `translateZ(0)`) across the RSVP/Wishes layer to eliminate blurry text and shadow artifacts when scaled on the canvas.
+- **Functional Connectivity**: Fixed `invitationId` prop propagation issues ensuring RSVP submissions correctly reach the database from public preview modes.
+
 ## [0.5.0] - 2026-03-05
 **Status**: 🟢 Deployed
 **Environment**: Production

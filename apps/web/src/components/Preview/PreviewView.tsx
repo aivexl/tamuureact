@@ -1065,6 +1065,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                                                                     adjustedY={adjustedY}
                                                                     isOpened={isOpened}
                                                                     isEditor={false}
+                                                                    invitationId={propId}
                                                                     onOpenInvitation={handleOpenInvitation}
                                                                     scrollContainerRef={scrollContainerRef}
                                                                     forceTrigger={forceTrigger}

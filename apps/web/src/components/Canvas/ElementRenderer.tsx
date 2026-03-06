@@ -41,11 +41,12 @@ interface ElementRendererProps {
     layer: Layer;
     onOpenInvitation?: () => void;
     isEditor?: boolean;
+    invitationId?: string;
     onContentLoad?: () => void;
     onDimensionsDetected?: (width: number, height: number) => void;
 }
 
-export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenInvitation, isEditor, onContentLoad, onDimensionsDetected }) => {
+export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenInvitation, isEditor, invitationId, onContentLoad, onDimensionsDetected }) => {
     // SAFETY CHECK: If width or height is clearly corrupted (> 800px), we constrain the display container
     const isExploded = layer.width > 800 || layer.height > 800;
 
@@ -77,7 +78,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenI
             case 'guest_wishes':
                 return <GuestWishesElement layer={layer} onContentLoad={onContentLoad} />;
             case 'rsvp_wishes':
-                return <RSVPWishesElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
+                return <RSVPWishesElement layer={layer} isEditor={isEditor} invitationId={invitationId} onContentLoad={onContentLoad} />;
             case 'flying_bird':
                 return <FlyingBirdElement layer={layer} isEditor={isEditor} onContentLoad={onContentLoad} />;
             case 'photo_grid':

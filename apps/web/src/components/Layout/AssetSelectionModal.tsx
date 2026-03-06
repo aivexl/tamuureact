@@ -619,7 +619,6 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
             case 'shape': return 'Select Shape';
             case 'button': return 'Add Button';
             case 'countdown': return 'Add Countdown';
-            case 'rsvp_form': return 'RSVP Form';
             case 'rsvp_wishes': return 'RSVP + Guest Wishes';
             case 'photo_grid': return 'Photo Grid Layout';
             case 'photo_frame': return 'Photo Frame Templates';

@@ -234,27 +234,6 @@ const elementConfigs: ElementConfig[] = [
         })
     },
     {
-        type: 'rsvp_form',
-        icon: <MessageSquare className="w-5 h-5" />,
-        label: 'RSVP',
-        color: 'hover:bg-emerald-500/10 hover:border-emerald-500/30',
-        createDefault: () => ({
-            width: 320,
-            height: 200,
-            rsvpFormConfig: {
-                title: 'RSVP Form',
-                showNameField: true,
-                showEmailField: true,
-                showPhoneField: false,
-                showMessageField: true,
-                showAttendanceField: true,
-                buttonColor: '#bfa181',
-                submitButtonText: 'Kirim Ucapan',
-                style: 'modern'
-            }
-        })
-    },
-    {
         type: 'lottie',
         icon: <Zap className="w-5 h-5" />,
         label: 'Lottie',

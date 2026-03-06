@@ -5,6 +5,7 @@ import { getVariantStyle, DEFAULT_RSVP_WISHES_CONFIG, VariantStyle } from '@/lib
 import { Send, Check, Heart, Users } from 'lucide-react';
 import { rsvp } from '@/lib/api';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
+import { useStore } from '@/store/useStore';
 
 // ============================================
 // TYPES
@@ -44,18 +45,27 @@ const getContrastColor = (hexcolor: string) => {
     return (yiq >= 140) ? '#000000' : '#ffffff';
 };
 
+// Sub-pixel rendering and anti-aliasing fixes for scaled DOM elements
+const subpixelStyle: React.CSSProperties = {
+    backfaceVisibility: 'hidden',
+    WebkitBackfaceVisibility: 'hidden',
+    transform: 'translateZ(0)',
+    WebkitFontSmoothing: 'antialiased',
+    MozOsxFontSmoothing: 'grayscale',
+};
+
 // ============================================
 // COMPACT RSVP FORM
 // ============================================
 interface RSVPFormProps {
     config: RSVPWishesConfig;
     variant: VariantStyle;
-    isPreview?: boolean;
+    isDisabled?: boolean;
     invitationId?: string;
     onSubmitSuccess?: () => void;
 }
 
-const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isPreview, invitationId, onSubmitSuccess }) => {
+const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isDisabled, invitationId, onSubmitSuccess }) => {
     const [formData, setFormData] = useState<RSVPSubmission>({
         name: '',
         email: '',
@@ -76,7 +86,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isPreview, invitat
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (isPreview || !invitationId) return;
+        if (isDisabled || !invitationId) return;
 
         if (config.showNameField && formData.name.length < config.nameMinLength) {
             setError(`Nama minimal ${config.nameMinLength} karakter`);
@@ -115,11 +125,12 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isPreview, invitat
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="text-center py-6"
+                style={subpixelStyle}
             >
                 <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-green-500/20 flex items-center justify-center">
                     <Check className="w-6 h-6 text-green-500" />
                 </div>
-                <h3 className="text-base font-semibold" style={{ color: config.textColor }}>
+                <h3 className="text-base font-semibold" style={{ color: config.textColor, ...subpixelStyle }}>
                     {config.thankYouMessage}
                 </h3>
             </m.div>
@@ -130,11 +141,11 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isPreview, invitat
     const contrastColor = getContrastColor(primaryColor);
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-3" style={subpixelStyle}>
             {/* Name Field */}
             {config.showNameField && (
                 <div>
-                    <label className={`block text-xs font-black mb-1.5 opacity-90 ${variant.labelClass || ''}`} style={{ color: config.textColor }}>
+                    <label className={`block text-xs font-black mb-1.5 ${variant.labelClass || ''}`} style={{ color: config.textColor, ...subpixelStyle }}>
                         {config.nameLabel || 'Nama Lengkap'} *
                     </label>
                     <input
@@ -147,6 +158,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isPreview, invitat
                         className={`w-full px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs transition-all outline-none border focus:opacity-100 ${variant.inputClass}`}
                         style={{
                             ...variant.inputStyle,
+                            ...subpixelStyle,
                             borderRadius: config.borderRadius,
                         }}
                     />
@@ -156,7 +168,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isPreview, invitat
             {/* Phone Field */}
             {config.showPhoneField && (
                 <div>
-                    <label className={`block text-xs font-medium mb-1.5 ${variant.labelClass || ''}`} style={{ color: config.textColor }}>
+                    <label className={`block text-xs font-medium mb-1.5 ${variant.labelClass || ''}`} style={{ color: config.textColor, ...subpixelStyle }}>
                         {config.phoneLabel || 'Nomor WhatsApp'}
                     </label>
                     <input
@@ -167,6 +179,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isPreview, invitat
                         className={`w-full px-3 py-2 text-xs transition-all outline-none ${variant.inputClass}`}
                         style={{
                             ...variant.inputStyle,
+                            ...subpixelStyle,
                             borderRadius: config.borderRadius,
                             backgroundColor: config.inputBackgroundColor,
                             borderColor: config.inputBorderColor
@@ -178,7 +191,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isPreview, invitat
             {/* Email Field */}
             {config.showEmailField && (
                 <div>
-                    <label className={`block text-xs font-medium mb-1.5 ${variant.labelClass || ''}`} style={{ color: config.textColor }}>
+                    <label className={`block text-xs font-medium mb-1.5 ${variant.labelClass || ''}`} style={{ color: config.textColor, ...subpixelStyle }}>
                         {config.emailLabel || 'Email'}
                     </label>
                     <input
@@ -189,6 +202,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isPreview, invitat
                         className={`w-full px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs transition-all outline-none border ${variant.inputClass}`}
                         style={{
                             ...variant.inputStyle,
+                            ...subpixelStyle,
                             borderRadius: config.borderRadius,
                         }}
                     />
@@ -198,7 +212,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isPreview, invitat
             {/* Attendance - Inline compact buttons */}
             {config.showAttendanceField && (
                 <div>
-                    <label className={`block text-xs font-medium mb-2 ${variant.labelClass || ''}`} style={{ color: config.textColor }}>
+                    <label className={`block text-xs font-medium mb-2 ${variant.labelClass || ''}`} style={{ color: config.textColor, ...subpixelStyle }}>
                         {config.attendanceLabel || 'Kehadiran'} *
                     </label>
                     <div className="flex flex-wrap gap-1.5">
@@ -218,6 +232,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isPreview, invitat
                                         : 'bg-black/[0.1] dark:bg-white/[0.1] border-black/[0.1] dark:border-white/[0.1] hover:bg-black/[0.15] dark:hover:bg-white/[0.15]'
                                         }`}
                                     style={{
+                                        ...subpixelStyle,
                                         borderRadius: config.borderRadius,
                                         backgroundColor: isSelected ? primaryColor : undefined,
                                         color: isSelected ? contrastColor : config.textColor,
@@ -235,7 +250,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isPreview, invitat
             {/* Guest Count - Compact inline */}
             {config.showGuestCountField && formData.attendance === 'attending' && (
                 <div className="flex items-center gap-3 py-0.5 sm:py-1">
-                    <label className={`text-[10px] font-bold uppercase tracking-tight ${variant.labelClass || ''}`} style={{ color: config.textColor }}>
+                    <label className={`text-[10px] font-bold uppercase tracking-tight ${variant.labelClass || ''}`} style={{ color: config.textColor, ...subpixelStyle }}>
                         {config.guestCountLabel || 'Jumlah Tamu'}:
                     </label>
                     <div className="flex items-center gap-1.5">
@@ -243,18 +258,18 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isPreview, invitat
                             type="button"
                             onClick={() => handleChange('guestCount', Math.max(1, formData.guestCount - 1))}
                             className="w-6 h-6 rounded-full bg-black/[0.1] dark:bg-white/[0.1] flex items-center justify-center text-xs font-black hover:bg-black/[0.2] dark:hover:bg-white/[0.2] transition-colors border border-black/[0.1] dark:border-white/[0.1] shadow-sm"
-                            style={{ color: config.textColor }}
+                            style={{ color: config.textColor, ...subpixelStyle }}
                         >
                             -
                         </button>
-                        <span className="text-sm font-black w-4 text-center" style={{ color: config.textColor }}>
+                        <span className="text-sm font-black w-4 text-center" style={{ color: config.textColor, ...subpixelStyle }}>
                             {formData.guestCount}
                         </span>
                         <button
                             type="button"
                             onClick={() => handleChange('guestCount', Math.min(config.guestCountMax, formData.guestCount + 1))}
                             className="w-6 h-6 rounded-full bg-black/[0.1] dark:bg-white/[0.1] flex items-center justify-center text-xs font-black hover:bg-black/[0.2] dark:hover:bg-white/[0.2] transition-colors border border-black/[0.1] dark:border-white/[0.1] shadow-sm"
-                            style={{ color: config.textColor }}
+                            style={{ color: config.textColor, ...subpixelStyle }}
                         >
                             +
                         </button>
@@ -265,7 +280,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isPreview, invitat
             {/* Message - Compact textarea */}
             {config.showMessageField && (
                 <div>
-                    <label className={`block text-xs font-medium mb-1.5 ${variant.labelClass || ''}`} style={{ color: config.textColor }}>
+                    <label className={`block text-xs font-medium mb-1.5 ${variant.labelClass || ''}`} style={{ color: config.textColor, ...subpixelStyle }}>
                         {config.messageLabel || 'Ucapan & Doa'} {config.requireMessage && '*'}
                     </label>
                     <textarea
@@ -278,6 +293,7 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isPreview, invitat
                         className={`w-full px-3 py-2 text-xs transition-all outline-none resize-none ${variant.inputClass}`}
                         style={{
                             ...variant.inputStyle,
+                            ...subpixelStyle,
                             borderRadius: config.borderRadius,
                             backgroundColor: config.inputBackgroundColor,
                             borderColor: config.inputBorderColor
@@ -288,16 +304,17 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isPreview, invitat
 
             {/* Error */}
             {error && (
-                <div className="text-red-500 text-xs text-center py-1">{error}</div>
+                <div className="text-red-500 text-xs text-center py-1 font-bold" style={subpixelStyle}>{error}</div>
             )}
 
             {/* Submit Button */}
             <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isDisabled}
                 className={`w-full flex items-center justify-center gap-2 py-3 px-6 text-sm font-black transition-all disabled:opacity-50 ${variant.buttonClass}`}
                 style={{
                     ...variant.buttonStyle,
+                    ...subpixelStyle,
                     backgroundColor: primaryColor,
                     borderRadius: config.borderRadius,
                     color: config.buttonTextColor || contrastColor,
@@ -346,27 +363,28 @@ const WishCard: React.FC<WishCardProps> = ({ wish, config, variant, index }) => 
             className={`flex gap-2 sm:gap-3 p-3 sm:p-4 transition-all ${variant.wishCardClass}`}
             style={{
                 ...variant.wishCardStyle,
+                ...subpixelStyle,
                 borderRadius: config.borderRadius
             }}
         >
             {config.showWishAvatar && (
                 <div
                     className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white text-[11px] sm:text-xs font-black flex-shrink-0 shadow-inner"
-                    style={{ backgroundColor: getColor(wish.name) }}
+                    style={{ backgroundColor: getColor(wish.name), ...subpixelStyle }}
                 >
                     {getInitial(wish.name)}
                 </div>
             )}
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5 sm:mb-1">
-                    <span className="font-black text-[11px] sm:text-xs tracking-tight" style={{ color: config.textColor }}>{wish.name}</span>
+                    <span className="font-black text-[11px] sm:text-xs tracking-tight" style={{ color: config.textColor, ...subpixelStyle }}>{wish.name}</span>
                     {wish.attendance === 'attending' && (
-                        <span className="text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 font-black border border-green-500/10">Hadir</span>
+                        <span className="text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 font-black border border-green-500/10" style={subpixelStyle}>Hadir</span>
                     )}
                 </div>
-                <p className="text-[11px] sm:text-xs opacity-80 leading-snug sm:leading-relaxed" style={{ color: config.textColor }}>{wish.message}</p>
+                <p className="text-[11px] sm:text-xs leading-snug sm:leading-relaxed" style={{ color: config.textColor, ...subpixelStyle }}>{wish.message}</p>
                 {config.showWishTimestamp && (
-                    <div className="text-[8px] sm:text-[9px] opacity-40 mt-1 sm:mt-2 font-bold" style={{ color: config.textColor }}>{wish.submittedAt}</div>
+                    <div className="text-[8px] sm:text-[9px] opacity-60 mt-1 sm:mt-2 font-bold" style={{ color: config.textColor, ...subpixelStyle }}>{wish.submittedAt}</div>
                 )}
             </div>
         </m.div>
@@ -379,7 +397,6 @@ const WishCard: React.FC<WishCardProps> = ({ wish, config, variant, index }) => 
 interface GuestWishesSectionProps {
     config: RSVPWishesConfig;
     invitationId?: string;
-    isPreview?: boolean;
     refreshKey: number;
 }
 
@@ -387,18 +404,12 @@ const GuestWishesSection: React.FC<GuestWishesSectionProps & { variant: VariantS
     config,
     variant,
     invitationId,
-    isPreview,
     refreshKey
 }) => {
     const [wishes, setWishes] = useState<GuestWish[]>([]);
-    const [loading, setLoading] = useState(!isPreview);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (isPreview) {
-            setLoading(false);
-            return;
-        }
-
         if (!invitationId) {
             setLoading(false);
             return;
@@ -440,9 +451,7 @@ const GuestWishesSection: React.FC<GuestWishesSectionProps & { variant: VariantS
         };
 
         fetchWishes();
-        // Note: D1 doesn't support realtime subscriptions like Supabase
-        // Consider polling or manual refresh for real-time updates
-    }, [invitationId, isPreview, config.wishesMaxDisplay, refreshKey]);
+    }, [invitationId, config.wishesMaxDisplay, refreshKey]);
 
     if (loading) {
         return <div className="flex justify-center py-8"><PremiumLoader variant="inline" size="sm" color={config.textColor} /></div>;
@@ -450,7 +459,7 @@ const GuestWishesSection: React.FC<GuestWishesSectionProps & { variant: VariantS
 
     if (wishes.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-6 text-center opacity-40">
+            <div className="flex flex-col items-center justify-center py-6 text-center opacity-60" style={subpixelStyle}>
                 <Heart className="w-5 h-5 mb-2" />
                 <p className="text-[10px] font-bold">Belum ada ucapan</p>
                 <p className="text-[9px]">Jadilah yang pertama!</p>
@@ -473,7 +482,6 @@ const GuestWishesSection: React.FC<GuestWishesSectionProps & { variant: VariantS
 interface RSVPWishesElementProps {
     layer: Layer;
     isEditor?: boolean;
-    isPreview?: boolean;
     invitationId?: string;
     onContentLoad?: () => void;
 }
@@ -481,10 +489,13 @@ interface RSVPWishesElementProps {
 export const RSVPWishesElement: React.FC<RSVPWishesElementProps> = ({
     layer,
     isEditor,
-    isPreview,
-    invitationId,
+    invitationId: propInvitationId,
     onContentLoad
 }) => {
+    // CTO: Get invitation ID from store if not provided via props (fallback for public preview)
+    const storeId = useStore(state => state.id);
+    const invitationId = propInvitationId || storeId;
+
     const config = layer.rsvpWishesConfig || DEFAULT_RSVP_WISHES_CONFIG;
     const variantId = config.style || config.variant || 'modern';
     const variant = useMemo(() => getVariantStyle(variantId as any), [variantId]);
@@ -499,6 +510,7 @@ export const RSVPWishesElement: React.FC<RSVPWishesElementProps> = ({
             className={`w-full h-full overflow-y-auto custom-scrollbar transition-all duration-500 flex flex-col ${variant.containerClass}`}
             style={{
                 ...variant.containerStyle,
+                ...subpixelStyle,
                 backgroundColor: config.backgroundColor || variant.containerStyle?.backgroundColor,
                 borderRadius: config.borderRadius,
                 fontFamily: config.fontFamily || variant.fontFamily,
@@ -507,31 +519,31 @@ export const RSVPWishesElement: React.FC<RSVPWishesElementProps> = ({
         >
             {/* Form Section */}
             <div className="w-full flex-shrink-0">
-                <h2 className={`text-center leading-tight mb-0.5 ${variant.titleClass.replace('text-2xl', 'text-lg sm:text-xl').replace('text-3xl', 'text-xl sm:text-2xl').replace('text-4xl', 'text-2xl sm:text-3xl').replace('text-5xl', 'text-3xl sm:text-4xl')}`} style={{ color: config.textColor }}>
+                <h2 className={`text-center leading-tight mb-0.5 ${variant.titleClass.replace('text-2xl', 'text-lg sm:text-xl').replace('text-3xl', 'text-xl sm:text-2xl').replace('text-4xl', 'text-2xl sm:text-3xl').replace('text-5xl', 'text-3xl sm:text-4xl')}`} style={{ color: config.textColor, ...subpixelStyle }}>
                     {config.title}
                 </h2>
                 {config.subtitle && (
-                    <p className={`text-center opacity-70 mb-3 sm:mb-4 text-[10px] sm:text-[11px] leading-tight sm:leading-relaxed ${variant.subtitleClass || ''}`} style={{ color: config.textColor }}>
+                    <p className={`text-center opacity-80 mb-3 sm:mb-4 text-[10px] sm:text-[11px] leading-tight sm:leading-relaxed ${variant.subtitleClass || ''}`} style={{ color: config.textColor, ...subpixelStyle }}>
                         {config.subtitle}
                     </p>
                 )}
                 <RSVPForm
                     config={config}
                     variant={variant}
-                    isPreview={isEditor || isPreview}
+                    isDisabled={isEditor}
                     invitationId={invitationId}
                     onSubmitSuccess={handleSubmitSuccess}
                 />
             </div>
 
             {/* Wishes Section */}
-            <div className="mt-4 pt-4 border-t flex-1 flex flex-col min-h-0" style={{ borderColor: `${config.textColor}15` }}>
+            <div className="mt-4 pt-4 border-t flex-1 flex flex-col min-h-0" style={{ borderColor: `${config.textColor}25` }}>
                 <div className="flex items-center justify-between mb-3 flex-shrink-0">
                     <div>
-                        <h3 className="text-xs sm:text-sm font-black tracking-tight" style={{ color: config.textColor }}>
+                        <h3 className="text-xs sm:text-sm font-black tracking-tight" style={{ color: config.textColor, ...subpixelStyle }}>
                             {config.wishesTitle || 'Ucapan'}
                         </h3>
-                        <p className="text-[9px] sm:text-[10px] opacity-70 font-black" style={{ color: config.textColor }}>
+                        <p className="text-[9px] sm:text-[10px] opacity-80 font-black" style={{ color: config.textColor, ...subpixelStyle }}>
                             {config.wishesSubtitle || 'Doa dari para tamu'}
                         </p>
                     </div>
@@ -550,7 +562,6 @@ export const RSVPWishesElement: React.FC<RSVPWishesElementProps> = ({
                         config={config}
                         variant={variant}
                         invitationId={invitationId}
-                        isPreview={isEditor || isPreview}
                     />
                 </div>
             </div>

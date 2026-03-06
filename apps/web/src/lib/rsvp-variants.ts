@@ -16,7 +16,7 @@ export const DEFAULT_RSVP_WISHES_CONFIG: RSVPWishesConfig = {
     // Content Labels
     title: 'Konfirmasi Kehadiran',
     subtitle: 'Kami menantikan kehadiran Anda',
-    submitButtonText: 'Kirim RSVP',
+    submitButtonText: 'Kirim',
     wishesTitle: 'Ucapan & Doa',
     wishesSubtitle: 'Dari para tamu undangan',
     thankYouMessage: 'Terima kasih atas konfirmasi Anda!',
