@@ -341,6 +341,24 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         let finalScale = 0; // Relative to base scale
         let finalFilter = 'none';
 
+        // 0. KEYFRAME INTERPOLATION (60fps continuous in Preview)
+        // CTO FIX: Keyframes must be part of the 60fps loop to prevent coordinate jumping
+        if (layer.keyframes && layer.keyframes.length > 0) {
+            const startTime = layer.sequence?.startTime || 0;
+            const duration = layer.sequence?.duration || 2000;
+            const effectiveTime = time % (startTime + duration); // Loop for preview feeling
+            
+            const kfX = interpolate(effectiveTime, layer.keyframes, layer.x, 'x');
+            const kfY = interpolate(effectiveTime, layer.keyframes, layer.y, 'y');
+            const kfR = interpolate(effectiveTime, layer.keyframes, baseRotate, 'rotation');
+            const kfS = interpolate(effectiveTime, layer.keyframes, baseScale, 'scale');
+
+            finalX += (kfX - layer.x);
+            finalY += (kfY - layer.y);
+            finalRotate += (kfR - baseRotate);
+            finalScale += (kfS / baseScale - 1);
+        }
+
         // 1. Motion Path Engine (60fps continuous)
         const mpConfig = layer.motionPathConfig;
         if (mpConfig?.enabled && mpConfig.points && mpConfig.points.length > 0) {
@@ -352,12 +370,9 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                 loop: mpConfig.loop ?? true
             }, layer.x, layer.y);
 
-            // Convert absolute canvas coords to local relative offset
-            // The getPathPosition returns the offset from layer.x, layer.y
             finalX += pos.x;
             finalY += pos.y;
             finalRotate += pos.rotation;
-            // Native Framer uses additive transforms
         }
 
         // 2. Loop & Elegant Spin Engine
@@ -381,9 +396,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                 const C = (maxS + minS) / 2;
                 const A = (maxS - minS) / 2;
 
-                if (A === 0) {
-                    finalScale += (C - 1);
-                } else {
+                if (A !== 0) {
                     let ratio = (1.0 - C) / A;
                     ratio = Math.max(-1, Math.min(1, ratio));
                     const phi = Math.asin(ratio);

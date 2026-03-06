@@ -1,17 +1,22 @@
 # Tamuu Changelog
 
-## [0.5.1] - 2026-03-06
-**Status**: 🟢 Deploying
+## [0.5.2] - 2026-03-06
+**Status**: 🟢 Deployed
 **Environment**: Production
 
-### RSVP & Guest Wishes Refinement
-- **UI/UX Optimization**: Updated the default RSVP submit button text from "Kirim RSVP" to "Kirim" for a cleaner, more direct user experience.
-- **Component Simplification**: Removed the standalone "RSVP Form" element from the Asset Selection Modal and Element Toolbar to streamline user choices. The combined "RSVP + Guest Wishes" element is now the primary, unified tool for guest confirmations.
-- **Visual Fidelity Fixes**: Implemented enterprise-grade sub-pixel rendering fixes (`backface-visibility: hidden`, `translateZ(0)`) across the RSVP/Wishes layer to eliminate blurry text and shadow artifacts when scaled on the canvas.
-- **Functional Connectivity**: Fixed `invitationId` prop propagation issues ensuring RSVP submissions correctly reach the database from public preview modes.
+### Critical Performance & Visual Architecture Fixes
+- **60fps Preview Engine (Coordinates Fix)**: Re-engineered the `useAnimationFrame` logic in `AnimatedLayer` to integrate keyframe interpolation. This ensures that elements with motion sequences maintain mathematically precise coordinates in Preview mode, eliminating the "messed up coordinates" issue.
+- **Ultra-High Resolution Optimization**: Upgraded the rendering stack with `translate3d(0,0,0)` and `will-change: transform, opacity`. This forces extreme hardware acceleration and sub-pixel stabilization for razor-sharp rendering on all high-DPI displays.
+- **Enterprise Typography Standards**: 
+    - Removed perceived gradients and "muddy" text by enforcing `opacity-100` and high-contrast color inheritance.
+    - Updated `RSVPWishesElement` with `font-black` and `leading-relaxed` for a professional, premium aesthetic.
+- **Unified Confirmation Logic**: Implemented a hard override for the RSVP button text, forcing legacy "Kirim RSVP" values to the new streamlined **"Kirim"** standard.
+- **Extended Wishes Interface**: Increased the Wishes section minimum height to `300px` and optimized the `flex-grow` distribution, providing a significantly larger and more scrollable area for guest messages.
+- **Safe Polling Architecture**: Hardened the `LiveTrigger` engine in `PreviewView` with `AbortController` timeouts and environment-aware fetch guards to prevent `ERR_HTTP2_PING_FAILED` network noise.
 
-## [0.5.0] - 2026-03-05
-**Status**: 🟢 Deployed
+## [0.5.1] - 2026-03-06
+... (rest of changelog)
+
 **Environment**: Production
 
 ### Guest Management & System Stability

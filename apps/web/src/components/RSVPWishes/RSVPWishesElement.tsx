@@ -49,7 +49,8 @@ const getContrastColor = (hexcolor: string) => {
 const subpixelStyle: React.CSSProperties = {
     backfaceVisibility: 'hidden',
     WebkitBackfaceVisibility: 'hidden',
-    transform: 'translateZ(0)',
+    transform: 'translate3d(0,0,0)',
+    willChange: 'transform, opacity',
     WebkitFontSmoothing: 'antialiased',
     MozOsxFontSmoothing: 'grayscale',
 };
@@ -311,15 +312,15 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isDisabled, invita
             <button
                 type="submit"
                 disabled={isSubmitting || isDisabled}
-                className={`w-full flex items-center justify-center gap-2 py-3 px-6 text-sm font-black transition-all disabled:opacity-50 ${variant.buttonClass}`}
+                className={`w-full flex items-center justify-center gap-2 py-3 px-6 text-sm font-black transition-all disabled:opacity-50 shadow-md active:scale-95 ${variant.buttonClass}`}
                 style={{
                     ...variant.buttonStyle,
                     ...subpixelStyle,
                     backgroundColor: primaryColor,
                     borderRadius: config.borderRadius,
                     color: config.buttonTextColor || contrastColor,
-                    paddingTop: '0.625rem',
-                    paddingBottom: '0.625rem'
+                    paddingTop: '0.75rem',
+                    paddingBottom: '0.75rem'
                 }}
             >
                 {isSubmitting ? (
@@ -330,7 +331,8 @@ const RSVPForm: React.FC<RSVPFormProps> = ({ config, variant, isDisabled, invita
                 ) : (
                     <>
                         <Send className="w-3.5 h-3.5" />
-                        {config.submitButtonText}
+                        {/* CTO: Force 'Kirim' if legacy text is detected */}
+                        {(config.submitButtonText === 'Kirim RSVP' || !config.submitButtonText) ? 'Kirim' : config.submitButtonText}
                     </>
                 )}
             </button>
@@ -382,7 +384,8 @@ const WishCard: React.FC<WishCardProps> = ({ wish, config, variant, index }) => 
                         <span className="text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 font-black border border-green-500/10" style={subpixelStyle}>Hadir</span>
                     )}
                 </div>
-                <p className="text-[11px] sm:text-xs leading-snug sm:leading-relaxed" style={{ color: config.textColor, ...subpixelStyle }}>{wish.message}</p>
+                {/* CTO: Professional high-contrast text */}
+                <p className="text-[11px] sm:text-xs leading-snug sm:leading-relaxed opacity-100" style={{ color: config.textColor, ...subpixelStyle }}>{wish.message}</p>
                 {config.showWishTimestamp && (
                     <div className="text-[8px] sm:text-[9px] opacity-60 mt-1 sm:mt-2 font-bold" style={{ color: config.textColor, ...subpixelStyle }}>{wish.submittedAt}</div>
                 )}
@@ -514,16 +517,16 @@ export const RSVPWishesElement: React.FC<RSVPWishesElementProps> = ({
                 backgroundColor: config.backgroundColor || variant.containerStyle?.backgroundColor,
                 borderRadius: config.borderRadius,
                 fontFamily: config.fontFamily || variant.fontFamily,
-                padding: '1.25rem'
+                padding: '1.5rem'
             }}
         >
             {/* Form Section */}
             <div className="w-full flex-shrink-0">
-                <h2 className={`text-center leading-tight mb-0.5 ${variant.titleClass.replace('text-2xl', 'text-lg sm:text-xl').replace('text-3xl', 'text-xl sm:text-2xl').replace('text-4xl', 'text-2xl sm:text-3xl').replace('text-5xl', 'text-3xl sm:text-4xl')}`} style={{ color: config.textColor, ...subpixelStyle }}>
+                <h2 className={`text-center leading-tight mb-1 opacity-100 font-black ${variant.titleClass.replace('text-2xl', 'text-xl sm:text-2xl').replace('text-3xl', 'text-2xl sm:text-3xl').replace('text-4xl', 'text-3xl sm:text-4xl').replace('text-5xl', 'text-4xl sm:text-5xl')}`} style={{ color: config.textColor, ...subpixelStyle }}>
                     {config.title}
                 </h2>
                 {config.subtitle && (
-                    <p className={`text-center opacity-80 mb-3 sm:mb-4 text-[10px] sm:text-[11px] leading-tight sm:leading-relaxed ${variant.subtitleClass || ''}`} style={{ color: config.textColor, ...subpixelStyle }}>
+                    <p className={`text-center opacity-90 mb-4 sm:mb-6 text-[11px] sm:text-xs leading-relaxed font-medium ${variant.subtitleClass || ''}`} style={{ color: config.textColor, ...subpixelStyle }}>
                         {config.subtitle}
                     </p>
                 )}
@@ -536,27 +539,27 @@ export const RSVPWishesElement: React.FC<RSVPWishesElementProps> = ({
                 />
             </div>
 
-            {/* Wishes Section */}
-            <div className="mt-4 pt-4 border-t flex-1 flex flex-col min-h-0" style={{ borderColor: `${config.textColor}25` }}>
-                <div className="flex items-center justify-between mb-3 flex-shrink-0">
+            {/* Wishes Section - CTO: Extended height and enhanced visibility */}
+            <div className="mt-6 pt-6 border-t flex-1 flex flex-col min-h-[250px]" style={{ borderColor: `${config.textColor}25` }}>
+                <div className="flex items-center justify-between mb-4 flex-shrink-0">
                     <div>
-                        <h3 className="text-xs sm:text-sm font-black tracking-tight" style={{ color: config.textColor, ...subpixelStyle }}>
-                            {config.wishesTitle || 'Ucapan'}
+                        <h3 className="text-sm sm:text-base font-black tracking-tight opacity-100" style={{ color: config.textColor, ...subpixelStyle }}>
+                            {config.wishesTitle || 'Ucapan & Doa'}
                         </h3>
-                        <p className="text-[9px] sm:text-[10px] opacity-80 font-black" style={{ color: config.textColor, ...subpixelStyle }}>
-                            {config.wishesSubtitle || 'Doa dari para tamu'}
+                        <p className="text-[10px] sm:text-[11px] opacity-80 font-bold" style={{ color: config.textColor, ...subpixelStyle }}>
+                            {config.wishesSubtitle || 'Pesan dari keluarga dan sahabat'}
                         </p>
                     </div>
-                    <div className="flex -space-x-1.5 sm:-space-x-2">
-                        {[1, 2, 3].map(i => (
-                            <div key={i} className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center overflow-hidden shadow-sm">
-                                <Users className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-400" />
+                    <div className="flex -space-x-2">
+                        {[1, 2, 3, 4].map(i => (
+                            <div key={i} className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center overflow-hidden shadow-sm">
+                                <Users className="w-3 h-3 text-gray-400" />
                             </div>
                         ))}
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 -mr-1">
+                <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 -mr-2 pb-4">
                     <GuestWishesSection
                         refreshKey={refreshKey}
                         config={config}

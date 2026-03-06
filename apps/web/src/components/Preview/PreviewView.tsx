@@ -221,13 +221,22 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         if (!isOpen || !propId || propIsTemplate) return;
 
         const pollTriggers = async () => {
+            if (!API_BASE) return; // Prevent fetching if API_BASE is empty/invalid
+
             try {
-                const baseUrl = API_BASE;
                 const endpoint = templateType === 'display'
                     ? `/api/user-display-designs/${propId}`
                     : `/api/invitations/${propId}`;
 
-                const response = await safeFetch(`${baseUrl}${endpoint}`);
+                const url = `${API_BASE}${endpoint}`;
+                
+                // CTO: Enterprise-grade safe fetch with timeout and status check
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
                 if (!response.ok) return;
 
                 const data = await response.json();
@@ -243,12 +252,14 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                     lastTriggerRef.current = trigger;
                 }
             } catch (err) {
-                // Silently handle polling errors
-                console.error('[LiveTrigger] Polling failed:', err);
+                // Silently handle polling errors to prevent console noise in production
+                if (import.meta.env.DEV) {
+                    console.error('[LiveTrigger] Polling failed:', err);
+                }
             }
         };
 
-        const interval = setInterval(pollTriggers, 2000);
+        const interval = setInterval(pollTriggers, 3000); // Relaxed interval
         pollTriggers(); // Initial check
 
         return () => clearInterval(interval);
