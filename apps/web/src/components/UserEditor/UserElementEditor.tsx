@@ -23,7 +23,8 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
             element.type === 'digital_gift' ||
             element.type === 'rsvp_wishes' ||
             element.type === 'rsvp_form' ||
-            element.type === 'guest_wishes';
+            element.type === 'guest_wishes' ||
+            element.type === 'photo_frame';
 
         // 1. If NO permissions object exists (Legacy or Newly Added), 
         // we grant "Smart Defaults" for critical types to ensure zero-friction UX.

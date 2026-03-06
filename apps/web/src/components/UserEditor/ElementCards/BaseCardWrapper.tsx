@@ -23,6 +23,7 @@ export const BaseCardWrapper: React.FC<BaseCardWrapperProps> = ({ element, permi
             case 'quote': return <Quote className="w-4 h-4" />;
             case 'social_mockup': return <Share2 className="w-4 h-4" />;
             case 'profile_photo': return <ImageIcon className="w-4 h-4" />;
+            case 'photo_frame': return <ImageIcon className="w-4 h-4" />;
             case 'profile_card': return <Type className="w-4 h-4" />;
             case 'digital_gift': return <CreditCard className="w-4 h-4" />;
             case 'gift_address': return <Home className="w-4 h-4" />;
@@ -48,7 +49,7 @@ export const BaseCardWrapper: React.FC<BaseCardWrapperProps> = ({ element, permi
                         {(() => {
                             const isLocked = isProtected ||
                                 (element.type === 'text' && !permissions.canEditText) ||
-                                ((element.type === 'image' || element.type === 'gif') && !permissions.canEditImage) ||
+                                ((element.type === 'image' || element.type === 'gif' || element.type === 'profile_photo' || element.type === 'photo_frame') && !permissions.canEditImage) ||
                                 (element.type === 'gift_address' && !permissions.canEditContent) ||
                                 (element.type === 'digital_gift' && !permissions.canEditContent) ||
                                 (element.type === 'rsvp_wishes' && !permissions.canEditContent) ||

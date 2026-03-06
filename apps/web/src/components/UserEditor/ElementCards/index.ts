@@ -31,7 +31,8 @@ export const ElementRegistry: Record<string, CardComponent> = {
     button: ButtonCard,
     open_invitation_button: ButtonCard,
     video: VideoCard,
-    photo_grid: PhotoGridCard
+    photo_grid: PhotoGridCard,
+    photo_frame: ImageCard
 };
 
 export { BaseCardWrapper } from './BaseCardWrapper';

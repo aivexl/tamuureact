@@ -1,5 +1,14 @@
 # Tamuu Changelog
 
+## [0.5.5] - 2026-03-06
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### User Editor: Photo Frame Support & Permission Fixes
+- **Feature: Photo Frame Native Support**: Integrated the `photo_frame` element type into the `ElementRegistry`, correctly mapping it to the `ImageCard` editor. Users can now natively upload and crop photos for frame-based elements.
+- **Fix: Permission Resolution (Smart Defaults)**: Added `photo_frame` to the list of critical user-data types in `UserElementEditor.tsx`. This ensures frame elements default to being editable and visible in the User Editor even if explicit permissions have not yet been defined in the template.
+- **Visual Fix: "Locked by Admin" Parity**: Updated `BaseCardWrapper.tsx` to correctly display the Image icon for photo frames and resolved a bug where frames were erroneously displaying as "Locked" despite having active photo-edit permissions.
+
 ## [0.5.4] - 2026-03-06
 **Status**: 🟢 Deployed
 **Environment**: Production
