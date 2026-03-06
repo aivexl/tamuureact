@@ -38,13 +38,17 @@ export const Modal: React.FC<ModalProps> = ({
                     />
 
                     {/* Content */}
-                    <div className="fixed inset-0 z-[4001] flex items-center justify-center p-4 pointer-events-none">
+                    <div 
+                        className="fixed inset-0 z-[4001] flex items-center justify-center p-4 cursor-pointer"
+                        onClick={onClose}
+                    >
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            className={`w-full ${sizeClasses[size]} bg-white rounded-[3rem] shadow-2xl pointer-events-auto overflow-hidden flex flex-col max-h-[90vh]`}
+                            onClick={(e) => e.stopPropagation()}
+                            className={`w-full ${sizeClasses[size]} bg-white rounded-[3rem] shadow-2xl cursor-default overflow-hidden flex flex-col max-h-[90vh]`}
                         >
                             {/* Header */}
                             <div className="px-8 py-6 border-b border-slate-50 flex items-center justify-between bg-white/80 backdrop-blur-sm sticky top-0 z-10">

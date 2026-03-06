@@ -1,5 +1,13 @@
 # Tamuu Changelog
 
+## [0.5.7] - 2026-03-06
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### User Editor: Modal Interaction Enhancements
+- **Feature: Global Click-Outside Support**: Upgraded the `Modal` component to support closing via clicks or taps anywhere outside the modal content area (on the backdrop). This provides a more intuitive and fluid UX across both desktop and mobile devices.
+- **Improved Event Handling**: Refined the modal's event propagation logic to ensure that clicks inside the modal content do not trigger accidental closing, while maintaining high responsiveness for the backdrop interactions.
+
 ## [0.5.6] - 2026-03-06
 **Status**: 🟢 Deployed
 **Environment**: Production
