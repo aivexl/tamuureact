@@ -1,5 +1,15 @@
 # Tamuu Changelog
 
+## [0.5.3] - 2026-03-06
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Enterprise RSVP UI/UX Redesign
+- **Total Architectural Overhaul**: Redesigned all 20 RSVP form variants (Classic, Modern, Brutalist, etc.) to meet Apple-tier, Fortune 500 enterprise standards.
+- **Ultra-High Definition Typography**: Implemented strict `opacity-100` overrides, solid color interpolation for placeholders (removing alpha channels), and `WebkitFontSmoothing: antialiased` to ensure razor-sharp text rendering across all DPIs without sub-pixel gradient artifacts.
+- **Isolated Component Scrolling**: Re-engineered the root bounding box of the RSVP component to be strictly non-scrollable (`overflow-hidden`), locking the input form in place.
+- **Dynamic Wishes Container**: The "Ucapan & Doa" (Wishes) section was refactored into a `flex-1` container with a `min-h-[300px]` internal scrolling zone, ensuring at least 3 cards are always visible while naturally stacking additional entries.
+
 ## [0.5.2] - 2026-03-06
 **Status**: 🟢 Deployed
 **Environment**: Production
