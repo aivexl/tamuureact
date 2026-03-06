@@ -4600,12 +4600,11 @@ name = COALESCE(?, name),
 
                 const body = await request.json();
                 await env.DB.prepare(
-                    `UPDATE rsvp_responses SET 
-        is_visible = COALESCE(?, is_visible),
-        attendance = COALESCE(?, attendance),
-        message = COALESCE(?, message),
-        updated_at = datetime('now')
-     WHERE id = ? `
+                    `UPDATE rsvp_responses SET
+            is_visible = COALESCE(?, is_visible),
+            attendance = COALESCE(?, attendance),
+            message = COALESCE(?, message)
+            WHERE id = ? `
                 ).bind(
                     body.is_visible !== undefined ? (body.is_visible ? 1 : 0) : null,
                     body.attendance ?? null,
@@ -4614,7 +4613,6 @@ name = COALESCE(?, name),
                 ).run();
                 return json({ id, updated: true }, corsHeaders);
             }
-
             // INVITIATION ANALYTICS
             if (path.match(/^\/api\/invitations\/[^/]+\/analytics$/) && method === 'GET') {
                 const invitationId = path.split('/')[3];
