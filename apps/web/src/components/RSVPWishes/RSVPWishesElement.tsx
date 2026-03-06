@@ -511,63 +511,65 @@ export const RSVPWishesElement: React.FC<RSVPWishesElementProps> = ({
 
     return (
         <div
-            className={`w-full h-full overflow-y-auto custom-scrollbar transition-all duration-500 flex flex-col ${variant.containerClass}`}
+            className={`w-full h-full flex flex-col transition-all duration-500 overflow-hidden ${variant.containerClass}`}
             style={{
                 ...variant.containerStyle,
                 ...crispTextStyle,
                 backgroundColor: config.backgroundColor || variant.containerStyle?.backgroundColor,
                 borderRadius: config.borderRadius,
                 fontFamily: config.fontFamily || variant.fontFamily,
-                padding: '1.5rem'
+                padding: 0
             }}
         >
-            {/* Form Section */}
-            <div className="w-full flex-shrink-0">
-                <h2 className={`text-center leading-tight mb-1 opacity-100 font-black ${variant.titleClass.replace('text-2xl', 'text-xl sm:text-2xl').replace('text-3xl', 'text-2xl sm:text-3xl').replace('text-4xl', 'text-3xl sm:text-4xl').replace('text-5xl', 'text-4xl sm:text-5xl')}`} style={{ color: config.textColor, ...crispTextStyle }}>
-                    {config.title}
-                </h2>
-                {config.subtitle && (
-                    <p className={`text-center mb-4 sm:mb-6 text-[11px] sm:text-xs leading-relaxed font-bold opacity-100 ${variant.subtitleClass || ''}`} style={{ color: config.textColor, ...crispTextStyle }}>
-                        {config.subtitle}
-                    </p>
-                )}
-                <RSVPForm
-                    config={config}
-                    variant={variant}
-                    isDisabled={isEditor}
-                    invitationId={invitationId}
-                    onSubmitSuccess={handleSubmitSuccess}
-                />
-            </div>
-
-            {/* Wishes Section - CTO: Natural height to prevent clipping, relies on root scroll */}
-            <div className="mt-6 pt-6 border-t flex-col flex" style={{ borderColor: `${config.textColor}25` }}>
-                <div className="flex items-center justify-between mb-4 flex-shrink-0">
-                    <div>
-                        <h3 className="text-sm sm:text-base font-black tracking-tight opacity-100" style={{ color: config.textColor, ...crispTextStyle }}>
-                            {config.wishesTitle || 'Ucapan & Doa'}
-                        </h3>
-                        <p className="text-[10px] sm:text-[11px] opacity-100 font-bold" style={{ color: config.textColor, ...crispTextStyle }}>
-                            {config.wishesSubtitle || 'Pesan dari keluarga dan sahabat'}
+            <div className="w-full flex-1 flex flex-col min-h-0">
+                {/* Form Section - Fixed */}
+                <div className="w-full flex-shrink-0 pt-6 px-6 sm:pt-8 sm:px-8">
+                    <h2 className={`text-center leading-tight mb-1 opacity-100 font-black ${variant.titleClass.replace('text-2xl', 'text-xl sm:text-2xl').replace('text-3xl', 'text-2xl sm:text-3xl').replace('text-4xl', 'text-3xl sm:text-4xl').replace('text-5xl', 'text-4xl sm:text-5xl')}`} style={{ color: config.textColor, ...crispTextStyle }}>
+                        {config.title}
+                    </h2>
+                    {config.subtitle && (
+                        <p className={`text-center mb-4 sm:mb-6 text-[11px] sm:text-xs leading-relaxed font-bold opacity-100 ${variant.subtitleClass || ''}`} style={{ color: config.textColor, ...crispTextStyle }}>
+                            {config.subtitle}
                         </p>
-                    </div>
-                    <div className="flex -space-x-2">
-                        {[1, 2, 3, 4].map(i => (
-                            <div key={i} className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center overflow-hidden shadow-sm">
-                                <Users className="w-3 h-3 text-gray-400" />
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* The stack area for wishes (relies on root element scrolling) */}
-                <div className="pb-8">
-                    <GuestWishesSection
-                        refreshKey={refreshKey}
+                    )}
+                    <RSVPForm
                         config={config}
                         variant={variant}
+                        isDisabled={isEditor}
                         invitationId={invitationId}
+                        onSubmitSuccess={handleSubmitSuccess}
                     />
+                </div>
+
+                {/* Wishes Section - Scrollable, minimum 3 cards visibility (approx 250px-300px) */}
+                <div className="mt-6 pt-6 border-t flex flex-col flex-1 min-h-[300px]" style={{ borderColor: `${config.textColor}15` }}>
+                    <div className="flex items-center justify-between mb-4 flex-shrink-0 px-6 sm:px-8">
+                        <div>
+                            <h3 className="text-sm sm:text-base font-black tracking-tight opacity-100" style={{ color: config.textColor, ...crispTextStyle }}>
+                                {config.wishesTitle || 'Ucapan & Doa'}
+                            </h3>
+                            <p className="text-[10px] sm:text-[11px] opacity-100 font-bold" style={{ color: config.textColor, ...crispTextStyle }}>
+                                {config.wishesSubtitle || 'Pesan dari keluarga dan sahabat'}
+                            </p>
+                        </div>
+                        <div className="flex -space-x-2">
+                            {[1, 2, 3, 4].map(i => (
+                                <div key={i} className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center overflow-hidden shadow-sm">
+                                    <Users className="w-3 h-3 text-gray-400" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* The stack area for wishes (Internal Scrollable) */}
+                    <div className="flex-1 overflow-y-auto custom-scrollbar px-6 sm:px-8 pb-8">
+                        <GuestWishesSection
+                            refreshKey={refreshKey}
+                            config={config}
+                            variant={variant}
+                            invitationId={invitationId}
+                        />
+                    </div>
                 </div>
             </div>
         </div>

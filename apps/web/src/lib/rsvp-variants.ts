@@ -11,9 +11,8 @@ export type RSVPVariantId =
 // ============================================
 export const DEFAULT_RSVP_WISHES_CONFIG: RSVPWishesConfig = {
     style: 'modern',
-    variant: 'modern' as any, // Backward compat
+    variant: 'modern' as any,
 
-    // Content Labels
     title: 'Konfirmasi Kehadiran',
     subtitle: 'Kami menantikan kehadiran Anda',
     submitButtonText: 'Kirim',
@@ -21,7 +20,6 @@ export const DEFAULT_RSVP_WISHES_CONFIG: RSVPWishesConfig = {
     wishesSubtitle: 'Dari para tamu undangan',
     thankYouMessage: 'Terima kasih atas konfirmasi Anda!',
 
-    // Form Fields
     showNameField: true,
     showEmailField: false,
     showPhoneField: true,
@@ -31,7 +29,6 @@ export const DEFAULT_RSVP_WISHES_CONFIG: RSVPWishesConfig = {
     showMealPreference: false,
     showSongRequest: false,
 
-    // Field Labels
     nameLabel: 'Nama Lengkap',
     emailLabel: 'Email',
     phoneLabel: 'Nomor WhatsApp',
@@ -39,24 +36,20 @@ export const DEFAULT_RSVP_WISHES_CONFIG: RSVPWishesConfig = {
     guestCountLabel: 'Jumlah Tamu',
     messageLabel: 'Ucapan & Doa',
 
-    // Attendance Options
     attendanceOptions: {
         attending: 'Hadir',
         notAttending: 'Tidak Hadir',
         maybe: 'Belum Pasti'
     },
 
-    // Guest Count
     guestCountMax: 5,
     guestCountDefault: 1,
 
-    // Styling Defaults (will be overridden by variant if not explicitly set)
-    primaryColor: '#bfa181',
+    primaryColor: '#000000',
     backgroundColor: '#ffffff',
-    textColor: '#1f2937',
-    borderRadius: 8,
+    textColor: '#1d1d1f',
+    borderRadius: 16,
 
-    // Wishes Display
     wishesLayout: 'list',
     wishesMaxDisplay: 50,
     showWishTimestamp: true,
@@ -64,18 +57,15 @@ export const DEFAULT_RSVP_WISHES_CONFIG: RSVPWishesConfig = {
     wishCardStyle: 'minimal',
     wishesAutoScroll: false,
 
-    // Validation
     nameMinLength: 2,
     nameMaxLength: 100,
     messageMinLength: 0,
     messageMaxLength: 500,
     requireMessage: false,
 
-    // Anti-Spam
     enableCaptcha: false,
     captchaType: 'simple',
 
-    // Animations
     formAnimation: 'slide-up',
     wishCardAnimation: 'fade',
     submitButtonAnimation: 'pulse',
@@ -87,29 +77,17 @@ export const DEFAULT_RSVP_WISHES_CONFIG: RSVPWishesConfig = {
 export interface VariantStyle {
     id: RSVPVariantId;
     name: string;
-
-    // Container Styles
     containerClass: string;
     containerStyle?: React.CSSProperties;
-
-    // Input Styles
     inputClass: string;
     inputStyle?: React.CSSProperties;
-
-    // Button Styles
     buttonClass: string;
     buttonStyle?: React.CSSProperties;
-
-    // Text Styles
     titleClass: string;
     subtitleClass?: string;
     labelClass?: string;
-
-    // Individual Card Style (for wishes)
     wishCardClass: string;
     wishCardStyle?: React.CSSProperties;
-
-    // Design Tokens
     accentColor: string;
     fontFamily?: string;
 }
@@ -118,201 +96,201 @@ export const RSVP_VARIANTS: Record<RSVPVariantId, VariantStyle> = {
     classic: {
         id: 'classic',
         name: 'Classic Signature',
-        containerClass: 'bg-white border border-gray-200 shadow-sm p-6',
-        inputClass: 'border-b border-gray-300 rounded-none focus:border-amber-600 transition-all font-serif text-amber-950 placeholder:text-gray-400',
-        buttonClass: 'bg-amber-600 hover:bg-amber-700 text-white font-serif uppercase tracking-widest py-3 font-bold',
-        titleClass: 'text-2xl font-serif text-amber-900 mb-6 font-medium italic',
-        wishCardClass: 'bg-white border-l-2 border-amber-500 shadow-sm p-3 mb-2',
-        accentColor: '#d97706'
+        containerClass: 'bg-[#faf9f6] border border-[#e5e0d8] shadow-[0_8px_30px_rgba(0,0,0,0.04)] rounded-2xl p-6 sm:p-8',
+        inputClass: 'bg-white border border-[#e5e0d8] rounded-xl focus:border-[#bfa181] focus:ring-4 focus:ring-[#bfa181]/10 transition-all font-serif text-[#4a4238] placeholder:text-gray-400 px-4 py-3',
+        buttonClass: 'bg-[#bfa181] hover:bg-[#a68a6b] text-white font-serif uppercase tracking-[0.15em] py-3.5 rounded-xl font-medium transition-colors shadow-md shadow-[#bfa181]/20 active:scale-[0.98]',
+        titleClass: 'text-2xl sm:text-3xl font-serif text-[#4a4238] mb-6 font-medium text-center',
+        wishCardClass: 'bg-white border border-[#e5e0d8] rounded-xl shadow-sm p-4 mb-3',
+        accentColor: '#bfa181'
     },
     minimal: {
         id: 'minimal',
         name: 'Clean Minimal',
-        containerClass: 'bg-white shadow-xl shadow-gray-100 p-6 rounded-3xl',
-        inputClass: 'bg-gray-50 border-none rounded-xl focus:ring-1 focus:ring-black transition-all px-3 py-2 text-gray-900 placeholder:text-gray-400',
-        buttonClass: 'bg-black text-white px-8 py-3 rounded-full font-black tracking-tight hover:scale-105 transition-transform',
-        titleClass: 'text-xl font-black tracking-tight text-gray-900 mb-4',
-        wishCardClass: 'border-b border-gray-50 py-3 last:border-0',
-        accentColor: '#000000'
+        containerClass: 'bg-white shadow-[0_8px_40px_rgba(0,0,0,0.06)] p-6 sm:p-8 rounded-[2rem] border border-black/[0.04]',
+        inputClass: 'bg-gray-50/80 border border-gray-100 rounded-2xl focus:bg-white focus:border-black/20 focus:ring-4 focus:ring-black/5 transition-all px-4 py-3 text-gray-900 placeholder:text-gray-400 font-medium',
+        buttonClass: 'bg-[#1d1d1f] text-white px-8 py-3.5 rounded-2xl font-semibold tracking-tight hover:bg-[#000000] active:scale-[0.98] transition-all shadow-md',
+        titleClass: 'text-2xl font-semibold tracking-tight text-[#1d1d1f] mb-6 text-center',
+        wishCardClass: 'bg-gray-50/80 rounded-2xl p-4 mb-3 border border-gray-100/50',
+        accentColor: '#1d1d1f'
     },
     modern: {
         id: 'modern',
         name: 'Soft Modern',
-        containerClass: 'bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(37,99,235,0.08)] p-8',
-        inputClass: 'bg-blue-50/50 border-transparent rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-500 px-4 py-3 placeholder:text-gray-400 text-blue-950 font-medium',
-        buttonClass: 'bg-blue-600 text-white rounded-2xl font-black py-3.5 hover:shadow-lg hover:shadow-blue-200 transition-all active:scale-95 shadow-lg',
-        titleClass: 'text-2xl font-black text-gray-900 tracking-tighter mb-4',
-        wishCardClass: 'bg-blue-50/30 rounded-2xl p-4 border border-blue-50/50 mb-3',
+        containerClass: 'bg-white rounded-[24px] shadow-[0_20px_60px_-15px_rgba(37,99,235,0.12)] p-6 sm:p-8 border border-blue-50/80',
+        inputClass: 'bg-[#f4f7fb] border border-transparent rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 px-4 py-3 placeholder:text-gray-400 text-slate-800 transition-all font-medium',
+        buttonClass: 'bg-blue-600 text-white rounded-2xl font-semibold py-3.5 hover:bg-blue-700 active:scale-[0.98] transition-all shadow-[0_8px_20px_-8px_rgba(37,99,235,0.6)]',
+        titleClass: 'text-2xl font-bold text-slate-900 tracking-tight mb-6 text-center',
+        wishCardClass: 'bg-[#f4f7fb] rounded-2xl p-4 mb-3 border border-transparent',
         accentColor: '#2563eb'
     },
     elegant: {
         id: 'elegant',
         name: 'Elegant Script',
-        containerClass: 'bg-[#fdfbf7] border-2 border-amber-100 p-8 rounded-sm relative after:absolute after:inset-1 after:border after:border-amber-100 after:pointer-events-none',
-        inputClass: 'bg-white border border-amber-50 rounded-sm focus:border-amber-600 px-4 py-2 font-serif italic text-amber-950 placeholder:text-gray-400',
-        buttonClass: 'bg-amber-800 text-white font-serif italic tracking-widest py-3 rounded-sm hover:-translate-y-1 transition-all shadow-xl font-bold',
-        titleClass: 'text-3xl font-serif italic text-amber-900 text-center mb-6',
-        wishCardClass: 'bg-white/50 border border-amber-50 p-4 font-serif italic mb-3',
-        accentColor: '#92400e'
+        containerClass: 'bg-white border border-[#f1ede6] p-6 sm:p-8 rounded-[2rem] shadow-[0_10px_40px_rgba(212,175,55,0.06)]',
+        inputClass: 'bg-[#fcfbf9] border border-[#f1ede6] rounded-xl focus:border-[#d4af37] focus:ring-4 focus:ring-[#d4af37]/10 px-4 py-3 font-serif text-[#5c5446] placeholder:text-gray-400 transition-all',
+        buttonClass: 'bg-[#d4af37] text-white font-serif tracking-[0.1em] py-3.5 rounded-xl hover:bg-[#c5a028] transition-all shadow-lg shadow-[#d4af37]/25 font-medium active:scale-[0.98]',
+        titleClass: 'text-3xl font-serif text-[#5c5446] text-center mb-6',
+        wishCardClass: 'bg-[#fcfbf9] border border-[#f1ede6] p-4 font-serif mb-3 rounded-xl',
+        accentColor: '#d4af37'
     },
     rustic: {
         id: 'rustic',
         name: 'Rustic Warmth',
-        containerClass: 'bg-[#fffaf0] border-t-8 border-[#8b4513]/40 p-6 rounded-xl relative overflow-hidden',
-        inputClass: 'bg-white/60 border border-[#8b4513]/20 rounded-lg px-4 py-2 placeholder-[#8b4513]/40 focus:bg-white text-[#8b4513]',
-        buttonClass: 'bg-[#8b4513] text-white font-black py-3 rounded-lg hover:bg-[#6d3610] shadow-md transition-colors',
-        titleClass: 'text-2xl font-bold text-[#8b4513] mb-4 font-serif',
-        wishCardClass: 'bg-[#8b4513]/5 border-l-2 border-[#8b4513]/20 p-3 mb-2',
+        containerClass: 'bg-[#faf7f2] border border-[#8b4513]/10 p-6 sm:p-8 rounded-[1.5rem] shadow-[0_8px_30px_rgba(139,69,19,0.06)]',
+        inputClass: 'bg-white border border-[#8b4513]/15 rounded-xl px-4 py-3 placeholder:text-gray-400 focus:border-[#8b4513]/40 focus:ring-4 focus:ring-[#8b4513]/10 text-[#5c3a21] transition-all',
+        buttonClass: 'bg-[#8b4513] text-white font-semibold py-3.5 rounded-xl hover:bg-[#70360e] shadow-md shadow-[#8b4513]/20 transition-all active:scale-[0.98]',
+        titleClass: 'text-2xl font-bold text-[#5c3a21] mb-6 font-serif text-center',
+        wishCardClass: 'bg-white border border-[#8b4513]/10 rounded-xl p-4 mb-3 shadow-sm',
         accentColor: '#8b4513'
     },
     romantic: {
         id: 'romantic',
         name: 'Sweet Romance',
-        containerClass: 'bg-[#fff0f5]/80 backdrop-blur-sm rounded-[3rem] p-8 border-4 border-white shadow-2xl shadow-rose-200',
-        inputClass: 'bg-white border-2 border-rose-50 rounded-full px-6 py-2.5 focus:border-rose-300 transition-colors text-rose-900 placeholder:text-gray-400',
-        buttonClass: 'bg-gradient-to-r from-rose-400 to-pink-500 text-white rounded-full font-black py-3 hover:scale-105 shadow-lg shadow-rose-200 transition-all',
-        titleClass: 'text-2xl font-semibold text-rose-800 mb-4 text-center',
-        wishCardClass: 'bg-white/60 rounded-3xl p-4 border border-rose-100/50 mb-3',
-        accentColor: '#fb7185'
+        containerClass: 'bg-[#fff0f5]/90 backdrop-blur-xl rounded-[2.5rem] p-6 sm:p-8 border border-white/60 shadow-[0_20px_50px_rgba(251,113,133,0.12)]',
+        inputClass: 'bg-white/80 border border-rose-100 rounded-2xl px-4 py-3 focus:bg-white focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50 transition-all text-rose-900 placeholder:text-gray-400',
+        buttonClass: 'bg-rose-500 text-white rounded-2xl font-semibold py-3.5 hover:bg-rose-600 shadow-[0_8px_20px_-6px_rgba(244,63,94,0.5)] active:scale-[0.98] transition-all',
+        titleClass: 'text-2xl font-semibold text-rose-800 mb-6 text-center tracking-tight',
+        wishCardClass: 'bg-white/80 rounded-2xl p-4 border border-rose-50 mb-3 shadow-sm',
+        accentColor: '#f43f5e'
     },
     floral: {
         id: 'floral',
         name: 'Spring Floral',
-        containerClass: 'bg-white p-6 rounded-3xl border-x-8 border-pink-200 shadow-xl',
-        inputClass: 'bg-pink-50/30 border-2 border-pink-100 rounded-2xl focus:bg-white focus:border-pink-400 text-pink-900 placeholder:text-gray-400',
-        buttonClass: 'bg-pink-500 text-white rounded-2xl font-black py-3 hover:bg-pink-600 transition-colors shadow-lg shadow-pink-100',
-        titleClass: 'text-2xl font-black text-pink-900 mb-6 uppercase tracking-widest text-center',
-        wishCardClass: 'bg-pink-50/20 rounded-2xl p-4 border border-pink-100/30 mb-2',
+        containerClass: 'bg-white p-6 sm:p-8 rounded-[2rem] border border-pink-100 shadow-[0_15px_40px_rgba(236,72,153,0.08)]',
+        inputClass: 'bg-pink-50/50 border border-pink-100 rounded-2xl focus:bg-white focus:border-pink-300 focus:ring-4 focus:ring-pink-200/50 text-pink-900 placeholder:text-gray-400 px-4 py-3 transition-all',
+        buttonClass: 'bg-pink-500 text-white rounded-2xl font-semibold py-3.5 hover:bg-pink-600 transition-all shadow-[0_8px_20px_-6px_rgba(236,72,153,0.4)] active:scale-[0.98]',
+        titleClass: 'text-2xl font-bold text-pink-900 mb-6 tracking-tight text-center',
+        wishCardClass: 'bg-pink-50/40 rounded-2xl p-4 border border-pink-100/50 mb-3',
         accentColor: '#ec4899'
     },
     boho: {
         id: 'boho',
         name: 'Boho Spirit',
-        containerClass: 'bg-[#fbf7f5] p-8 rounded-[2rem] border border-[#d2b48c]/30 shadow-inner',
-        inputClass: 'bg-transparent border-b border-[#d2b48c] rounded-none focus:border-b-2 transition-all px-0 py-2 font-medium italic text-[#8b6b4e] placeholder:text-[#d2b48c]/50',
-        buttonClass: 'bg-[#d2b48c] text-[#fbf7f5] rounded-full font-black tracking-[0.2em] py-3.5 uppercase hover:bg-[#c19a6b]',
-        titleClass: 'text-2xl font-light tracking-[0.3em] uppercase text-[#8b6b4e] mb-8 text-center',
-        wishCardClass: 'border-l border-[#d2b48c]/40 pl-4 py-3 italic mb-4',
-        accentColor: '#8b6b4e'
+        containerClass: 'bg-[#fcfbf9] p-6 sm:p-8 rounded-[2rem] border border-[#d2b48c]/40 shadow-[0_10px_40px_rgba(210,180,140,0.1)]',
+        inputClass: 'bg-white border border-[#d2b48c]/40 rounded-xl focus:border-[#a68a6b] focus:ring-4 focus:ring-[#d2b48c]/20 transition-all px-4 py-3 text-[#5c4a3d] placeholder:text-gray-400 font-medium',
+        buttonClass: 'bg-[#a68a6b] text-white rounded-xl font-semibold tracking-wide py-3.5 hover:bg-[#8b7355] transition-all shadow-md active:scale-[0.98]',
+        titleClass: 'text-2xl font-medium tracking-[0.1em] uppercase text-[#5c4a3d] mb-6 text-center',
+        wishCardClass: 'bg-white border border-[#d2b48c]/30 rounded-xl p-4 mb-3 shadow-sm',
+        accentColor: '#a68a6b'
     },
     luxury: {
         id: 'luxury',
         name: 'Midnight Luxury',
-        containerClass: 'bg-[#0f1115] text-white p-8 border-2 border-[#d4af37]/40 rounded-lg shadow-[0_0_60px_rgba(212,175,55,0.15)] ring-1 ring-[#d4af37]/20 ring-offset-4 ring-offset-[#0f1115]',
-        inputClass: 'bg-white/5 border border-[#d4af37]/20 rounded-none text-white focus:border-[#d4af37] focus:bg-white/10 transition-all placeholder:text-gray-400',
-        buttonClass: 'bg-gradient-to-b from-[#d4af37] to-[#aa8b2c] text-black font-black uppercase tracking-[0.2em] py-4 rounded-none hover:brightness-110 active:scale-[0.98]',
-        titleClass: 'text-xl font-bold text-[#d4af37] uppercase tracking-[0.4em] mb-10 text-center border-b border-[#d4af37]/20 pb-4',
-        wishCardClass: 'bg-gradient-to-br from-white/5 to-transparent border border-[#d4af37]/10 p-4 mb-4 shadow-2xl',
+        containerClass: 'bg-[#0f1115] text-white p-6 sm:p-8 border border-[#d4af37]/30 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5),0_0_40px_rgba(212,175,55,0.08)]',
+        inputClass: 'bg-white/5 border border-white/10 rounded-xl text-white focus:border-[#d4af37] focus:ring-4 focus:ring-[#d4af37]/20 focus:bg-white/10 transition-all placeholder:text-gray-400 px-4 py-3',
+        buttonClass: 'bg-[#d4af37] text-[#0f1115] font-bold tracking-[0.1em] py-3.5 rounded-xl hover:bg-[#eadd8a] active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(212,175,55,0.3)]',
+        titleClass: 'text-2xl font-bold text-[#d4af37] tracking-[0.15em] mb-6 text-center uppercase',
+        wishCardClass: 'bg-white/5 border border-white/10 rounded-xl p-4 mb-3 backdrop-blur-md',
         accentColor: '#d4af37'
     },
     dark: {
         id: 'dark',
         name: 'Deep Slate',
-        containerClass: 'bg-slate-900 text-white p-6 rounded-3xl border border-slate-800 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)]',
-        inputClass: 'bg-slate-800/50 border-slate-700/50 rounded-xl text-white focus:border-indigo-500 focus:bg-slate-800 transition-colors placeholder:text-gray-400',
-        buttonClass: 'bg-indigo-600 text-white font-black py-3.5 rounded-xl hover:bg-indigo-500 shadow-lg shadow-indigo-900/20 active:scale-95 transition-all',
-        titleClass: 'text-2xl font-bold text-indigo-100 mb-6 tracking-tight',
-        wishCardClass: 'bg-slate-800/30 border border-slate-700/50 p-4 rounded-xl mb-3',
+        containerClass: 'bg-[#1e293b] text-white p-6 sm:p-8 rounded-[2rem] border border-slate-700/50 shadow-[0_20px_50px_rgba(0,0,0,0.3)]',
+        inputClass: 'bg-slate-800/80 border border-slate-700 rounded-xl text-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 focus:bg-slate-800 transition-all placeholder:text-gray-400 px-4 py-3',
+        buttonClass: 'bg-indigo-500 text-white font-semibold py-3.5 rounded-xl hover:bg-indigo-400 shadow-[0_8px_20px_-6px_rgba(99,102,241,0.5)] active:scale-[0.98] transition-all',
+        titleClass: 'text-2xl font-bold text-white mb-6 tracking-tight text-center',
+        wishCardClass: 'bg-slate-800/80 border border-slate-700 rounded-xl p-4 mb-3',
         accentColor: '#6366f1'
     },
     glass: {
         id: 'glass',
         name: 'Frosted Glass',
-        containerClass: 'bg-white/20 backdrop-blur-2xl border border-white/30 p-8 rounded-[2.5rem] shadow-2xl shadow-black/10',
-        inputClass: 'bg-white/10 backdrop-blur border border-white/20 rounded-2xl text-white placeholder:text-gray-400 focus:bg-white/20 focus:border-white/50 transition-all',
-        buttonClass: 'bg-white text-black font-black py-4 rounded-2xl hover:bg-opacity-90 active:scale-95 transition-all shadow-xl',
-        titleClass: 'text-2xl font-black text-white text-center mb-6 drop-shadow-xl tracking-tighter',
-        wishCardClass: 'bg-white/10 backdrop-blur-xl border border-white/10 p-4 rounded-2xl mb-3',
-        accentColor: '#ffffff'
+        containerClass: 'bg-white/60 backdrop-blur-2xl border border-white/50 p-6 sm:p-8 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)]',
+        inputClass: 'bg-white/50 border border-white/60 rounded-xl text-gray-900 placeholder:text-gray-400 focus:bg-white/80 focus:border-white focus:ring-4 focus:ring-white/50 transition-all px-4 py-3',
+        buttonClass: 'bg-[#1d1d1f] text-white font-semibold py-3.5 rounded-xl hover:bg-[#000000] active:scale-[0.98] transition-all shadow-md',
+        titleClass: 'text-2xl font-bold text-gray-900 text-center mb-6 tracking-tight',
+        wishCardClass: 'bg-white/60 backdrop-blur-xl border border-white/50 p-4 rounded-xl mb-3 shadow-sm',
+        accentColor: '#1d1d1f'
     },
     neon: {
         id: 'neon',
         name: 'Cyber Neon',
-        containerClass: 'bg-black text-white p-6 rounded-none border-t-2 border-b-2 border-cyan-400 shadow-[0_0_30px_rgba(34,211,238,0.2)]',
-        inputClass: 'bg-black border border-cyan-900 rounded-none text-cyan-300 focus:border-cyan-400 focus:shadow-[0_0_15px_rgba(34,211,238,0.3)] transition-all uppercase text-[10px] tracking-widest placeholder:text-gray-400',
-        buttonClass: 'bg-cyan-400 text-black font-black py-3 hover:translate-x-1 hover:-translate-y-1 transition-transform shadow-[4px_4px_0px_#083344] active:shadow-none active:translate-x-0 active:translate-y-0',
-        titleClass: 'text-4xl font-black italic text-cyan-400 uppercase tracking-tighter mb-8 skew-x-[-12deg]',
-        wishCardClass: 'bg-cyan-900/10 border-l-4 border-cyan-400 p-4 mb-4 font-mono text-[11px]',
-        accentColor: '#22d3ee'
+        containerClass: 'bg-[#09090b] text-white p-6 sm:p-8 rounded-[2rem] border border-cyan-500/30 shadow-[0_0_40px_rgba(6,182,212,0.15)]',
+        inputClass: 'bg-[#18181b] border border-cyan-900 rounded-xl text-cyan-50 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/20 transition-all placeholder:text-gray-400 px-4 py-3',
+        buttonClass: 'bg-cyan-500 text-[#09090b] font-bold py-3.5 rounded-xl hover:bg-cyan-400 transition-all shadow-[0_0_20px_rgba(6,182,212,0.4)] active:scale-[0.98]',
+        titleClass: 'text-2xl font-bold text-cyan-400 tracking-tight mb-6 text-center',
+        wishCardClass: 'bg-[#18181b] border border-cyan-900/50 rounded-xl p-4 mb-3',
+        accentColor: '#06b6d4'
     },
     vintage: {
         id: 'vintage',
         name: 'Old Newspaper',
-        containerClass: 'bg-[#f4f1ea] p-6 border-[3px] border-[#3d2b1f] shadow-[12px_12px_0px_#3d2b1f] font-serif relative overflow-hidden',
-        inputClass: 'bg-transparent border border-[#3d2b1f] rounded-none px-4 py-2 font-serif focus:bg-[#3d2b1f]/5 transition-colors text-[#3d2b1f] placeholder:text-[#3d2b1f]/30',
-        buttonClass: 'bg-[#3d2b1f] text-white font-serif uppercase py-3 rounded-none hover:bg-black transition-colors font-black',
-        titleClass: 'text-3xl font-serif font-black underline decoration-2 underline-offset-4 text-[#3d2b1f] mb-8 uppercase text-center',
-        wishCardClass: 'border border-[#3d2b1f]/20 p-4 bg-[#ede8da] mb-4 shadow-sm',
+        containerClass: 'bg-[#f5f2eb] p-6 sm:p-8 border border-[#3d2b1f]/20 rounded-[1.5rem] shadow-[0_10px_30px_rgba(61,43,31,0.08)] font-serif',
+        inputClass: 'bg-white/60 border border-[#3d2b1f]/20 rounded-xl px-4 py-3 font-serif focus:bg-white focus:border-[#3d2b1f]/40 focus:ring-4 focus:ring-[#3d2b1f]/10 transition-all text-[#3d2b1f] placeholder:text-gray-400',
+        buttonClass: 'bg-[#3d2b1f] text-white font-serif uppercase py-3.5 rounded-xl hover:bg-[#2a1d15] transition-all font-semibold shadow-md active:scale-[0.98]',
+        titleClass: 'text-2xl font-serif font-bold text-[#3d2b1f] mb-6 text-center',
+        wishCardClass: 'bg-white/60 border border-[#3d2b1f]/10 rounded-xl p-4 mb-3 shadow-sm',
         accentColor: '#3d2b1f'
     },
     bold: {
         id: 'bold',
         name: 'High Contrast',
-        containerClass: 'bg-orange-500 p-8 border-4 border-black shadow-[15px_15px_0px_rgba(0,0,0,1)] rounded-none',
-        inputClass: 'bg-white border-4 border-black rounded-none px-4 py-3 font-black text-lg text-black placeholder:text-gray-400',
-        buttonClass: 'bg-black text-white font-black text-xl tracking-tighter py-4 uppercase hover:translate-x-[5px] hover:translate-y-[5px] hover:shadow-none transition-all shadow-[10px_10px_0px_rgba(255,255,255,0.3)]',
-        titleClass: 'text-5xl font-black uppercase tracking-tighter text-black mb-10 leading-none underline decoration-8',
-        wishCardClass: 'bg-white border-4 border-black p-4 font-black shadow-[8px_8px_0px_black] mb-6',
+        containerClass: 'bg-white p-6 sm:p-8 border-[3px] border-black shadow-[8px_8px_0px_rgba(0,0,0,1)] rounded-2xl',
+        inputClass: 'bg-gray-50 border-2 border-black rounded-xl px-4 py-3 font-semibold text-black placeholder:text-gray-400 focus:bg-white focus:ring-4 focus:ring-black/10 transition-all',
+        buttonClass: 'bg-black text-white font-bold text-lg py-3.5 rounded-xl hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all shadow-[4px_4px_0px_rgba(0,0,0,0.2)] active:scale-[0.98]',
+        titleClass: 'text-3xl font-black uppercase tracking-tight text-black mb-6 text-center',
+        wishCardClass: 'bg-white border-2 border-black rounded-xl p-4 mb-3 shadow-[4px_4px_0px_rgba(0,0,0,1)]',
         accentColor: '#000000'
     },
     outline: {
         id: 'outline',
         name: 'Linear Outline',
-        containerClass: 'bg-white border-2 border-gray-900 p-6 rounded-none',
-        inputClass: 'bg-transparent border-2 border-gray-100 focus:border-gray-900 rounded-none transition-all text-gray-900 placeholder:text-gray-400',
-        buttonClass: 'bg-transparent border-2 border-gray-900 text-gray-900 font-black py-3 hover:bg-gray-900 hover:text-white transition-all',
-        titleClass: 'text-2xl font-black text-gray-900 mb-6 border-b-4 border-gray-900 p-2 inline-block',
-        wishCardClass: 'border-b-2 border-gray-100 p-3 mb-2',
+        containerClass: 'bg-white border border-gray-300 p-6 sm:p-8 rounded-[2rem] shadow-[0_10px_40px_rgba(0,0,0,0.03)]',
+        inputClass: 'bg-transparent border border-gray-300 focus:border-gray-900 focus:ring-4 focus:ring-gray-900/10 rounded-xl transition-all text-gray-900 placeholder:text-gray-400 px-4 py-3',
+        buttonClass: 'bg-gray-900 text-white font-semibold py-3.5 rounded-xl hover:bg-black transition-all shadow-md active:scale-[0.98]',
+        titleClass: 'text-2xl font-semibold text-gray-900 mb-6 text-center tracking-tight',
+        wishCardClass: 'bg-white border border-gray-200 rounded-xl p-4 mb-3',
         accentColor: '#111827'
     },
     pastel: {
         id: 'pastel',
         name: 'Pastel Dream',
-        containerClass: 'bg-purple-50 p-6 rounded-[4rem] border-8 border-white shadow-2xl shadow-purple-200',
-        inputClass: 'bg-white border-none rounded-3xl shadow-inner focus:ring-4 focus:ring-purple-200 transition-all text-purple-900 placeholder:text-gray-400',
-        buttonClass: 'bg-purple-400 text-white rounded-full font-black py-3.5 shadow-lg shadow-purple-200 hover:brightness-105 active:scale-95 transition-all',
-        titleClass: 'text-2xl font-black text-purple-900 text-center mb-6 tracking-tight',
-        wishCardClass: 'bg-white/80 rounded-[2.5rem] p-5 shadow-sm mb-3 border border-white',
-        accentColor: '#a78bfa'
+        containerClass: 'bg-[#fbfaff] p-6 sm:p-8 rounded-[2rem] border border-indigo-50 shadow-[0_20px_50px_rgba(99,102,241,0.06)]',
+        inputClass: 'bg-white border border-indigo-50 rounded-xl focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all text-slate-800 placeholder:text-gray-400 px-4 py-3',
+        buttonClass: 'bg-indigo-400 text-white rounded-xl font-semibold py-3.5 shadow-[0_8px_20px_-6px_rgba(129,140,248,0.5)] hover:bg-indigo-500 active:scale-[0.98] transition-all',
+        titleClass: 'text-2xl font-bold text-indigo-900 text-center mb-6 tracking-tight',
+        wishCardClass: 'bg-white rounded-xl p-4 shadow-sm border border-indigo-50 mb-3',
+        accentColor: '#818cf8'
     },
     geometric: {
         id: 'geometric',
         name: 'Geo Grid',
-        containerClass: 'bg-white p-6 border-2 border-indigo-600 rounded-none relative after:absolute after:bottom-0 after:right-0 after:w-16 after:h-16 after:bg-indigo-600 after:clip-path-polygon-[100%_0,100%_100%,0_100%]',
-        inputClass: 'bg-indigo-50/50 border-2 border-indigo-100 rounded-none focus:border-indigo-600 transition-all font-mono text-indigo-900 placeholder:text-gray-400',
-        buttonClass: 'bg-indigo-600 text-white font-mono uppercase font-black py-3 rounded-none hover:bg-white hover:text-indigo-600 border-2 border-indigo-600 transition-all',
-        titleClass: 'text-xl font-mono font-black text-indigo-900 uppercase tracking-widest mb-6',
-        wishCardClass: 'bg-indigo-50 border border-indigo-100 p-3 font-mono text-[11px] mb-2',
-        accentColor: '#4f46e5'
+        containerClass: 'bg-white p-6 sm:p-8 border border-slate-200 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.05)]',
+        inputClass: 'bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all text-slate-900 placeholder:text-gray-400 px-4 py-3 font-medium',
+        buttonClass: 'bg-blue-600 text-white font-semibold py-3.5 rounded-xl hover:bg-blue-700 transition-all shadow-[0_8px_20px_-6px_rgba(37,99,235,0.4)] active:scale-[0.98]',
+        titleClass: 'text-2xl font-bold text-slate-900 tracking-tight mb-6 text-center',
+        wishCardClass: 'bg-slate-50 border border-slate-100 rounded-xl p-4 mb-3',
+        accentColor: '#2563eb'
     },
     brutalist: {
         id: 'brutalist',
         name: 'Neo Brutalist',
-        containerClass: 'bg-[#ff90e8] p-8 border-4 border-black shadow-[10px_10px_0px_#000000] rotate-[-1deg]',
-        inputClass: 'bg-white border-4 border-black p-4 text-black focus:shadow-[5px_5px_0px_#000000] transition-shadow rounded-none font-black placeholder:text-gray-400',
-        buttonClass: 'bg-black text-white font-black text-xl border-4 border-black py-4 shadow-[8px_8px_0px_#23a094] hover:shadow-none transition-all active:translate-x-1 active:translate-y-1',
-        titleClass: 'text-4xl font-black uppercase text-black mb-8 bg-white border-4 border-black p-4 inline-block transform rotate-1 shadow-[6px_6px_0px_#000000]',
-        wishCardClass: 'bg-white border-4 border-black p-4 shadow-[6px_6px_0px_#000000] mb-6',
-        accentColor: '#000000'
+        containerClass: 'bg-gray-100 p-6 sm:p-8 border-2 border-black rounded-3xl shadow-[8px_8px_0px_#000000]',
+        inputClass: 'bg-white border-2 border-black p-3 text-black focus:ring-4 focus:ring-black/10 transition-all rounded-xl font-medium placeholder:text-gray-400',
+        buttonClass: 'bg-[#ff5757] text-black font-bold text-lg border-2 border-black py-3.5 rounded-xl shadow-[4px_4px_0px_#000000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all active:scale-[0.98]',
+        titleClass: 'text-2xl font-black uppercase text-black mb-6 text-center',
+        wishCardClass: 'bg-white border-2 border-black rounded-xl p-4 shadow-[4px_4px_0px_#000000] mb-3',
+        accentColor: '#ff5757'
     },
     cloud: {
         id: 'cloud',
         name: 'Cloud Soft',
-        containerClass: 'bg-white shadow-[0_30px_100px_rgba(0,0,0,0.06)] rounded-[3rem] p-10 border border-gray-50 flex flex-col items-center',
-        inputClass: 'bg-gray-100/50 border-none rounded-full px-8 py-3.5 focus:bg-white focus:ring-4 focus:ring-blue-50 transition-all text-gray-900 placeholder:text-gray-400',
-        buttonClass: 'bg-blue-400 text-white rounded-full font-black py-4 px-12 shadow-2xl shadow-blue-200 hover:scale-105 active:scale-95 transition-all text-lg',
-        titleClass: 'text-3xl font-black text-blue-900/40 text-center mb-8 tracking-tighter uppercase',
-        wishCardClass: 'bg-white rounded-[2.5rem] p-6 shadow-xl shadow-gray-100 mb-4 w-full',
-        accentColor: '#60a5fa'
+        containerClass: 'bg-white shadow-[0_30px_60px_rgba(14,165,233,0.08)] rounded-[2.5rem] p-6 sm:p-8 border border-sky-50',
+        inputClass: 'bg-sky-50/50 border border-sky-100/50 rounded-2xl px-4 py-3 focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-200/50 transition-all text-slate-800 placeholder:text-gray-400 font-medium',
+        buttonClass: 'bg-sky-500 text-white rounded-2xl font-semibold py-3.5 shadow-[0_8px_20px_-6px_rgba(14,165,233,0.4)] hover:bg-sky-600 active:scale-[0.98] transition-all',
+        titleClass: 'text-2xl font-bold text-sky-950 text-center mb-6 tracking-tight',
+        wishCardClass: 'bg-sky-50/30 rounded-2xl p-4 shadow-sm border border-sky-50 mb-3',
+        accentColor: '#0ea5e9'
     },
     monochrome: {
         id: 'monochrome',
         name: 'Pure Mono',
-        containerClass: 'bg-white p-6 border-x border-gray-900 flex flex-col',
-        inputClass: 'bg-transparent border-b border-gray-900 rounded-none px-0 py-2 focus:border-b-2 transition-all text-black placeholder:text-gray-400',
-        buttonClass: 'bg-gray-900 text-white font-black py-3 px-8 uppercase tracking-[0.4em] hover:bg-white hover:text-gray-900 border border-gray-900 transition-all',
-        titleClass: 'text-xs font-bold uppercase tracking-[0.8em] text-center text-gray-400 mb-12',
-        wishCardClass: 'py-4 border-b border-gray-50 last:border-0 mb-2',
+        containerClass: 'bg-white p-6 sm:p-8 border border-gray-200 rounded-[2rem] shadow-[0_10px_40px_rgba(0,0,0,0.04)] flex flex-col',
+        inputClass: 'bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:bg-white focus:border-black focus:ring-4 focus:ring-black/5 transition-all text-black placeholder:text-gray-400 font-medium',
+        buttonClass: 'bg-black text-white font-semibold py-3.5 rounded-xl hover:bg-gray-900 shadow-md active:scale-[0.98] transition-all',
+        titleClass: 'text-2xl font-bold tracking-tight text-center text-black mb-6',
+        wishCardClass: 'bg-gray-50 border border-gray-100 rounded-xl p-4 mb-3',
         accentColor: '#000000'
     }
 };
@@ -321,16 +299,10 @@ export const RSVP_VARIANTS: Record<RSVPVariantId, VariantStyle> = {
 // HELPER FUNCTIONS
 // ============================================
 
-/**
- * Get variant style by ID
- */
 export function getVariantStyle(variantId: RSVPVariantId): VariantStyle {
     return RSVP_VARIANTS[variantId] || RSVP_VARIANTS.modern;
 }
 
-/**
- * Create config with variant defaults
- */
 export function createRSVPWishesConfig(variantId: RSVPVariantId, overrides?: Partial<RSVPWishesConfig>): RSVPWishesConfig {
     return {
         ...DEFAULT_RSVP_WISHES_CONFIG,
