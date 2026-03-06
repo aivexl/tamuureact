@@ -1,5 +1,14 @@
 # Tamuu Changelog
 
+## [0.5.8] - 2026-03-06
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Critical: Storage & Performance Optimization
+- **Fix: LocalStorage Quota Exceeded**: Resolved a critical `DOMException` that prevented users from saving or uploading images when their browser's storage limit was reached.
+- **Selective Persistence Strategy**: Re-engineered the Zustand storage middleware to exclude heavy collections (`sections`, `layers`, `orbit`) from `localStorage`. Since this data is natively hydrated from the Cloudflare D1 API during editor initialization, persisting it locally was redundant and caused storage overflows (5MB limit).
+- **Session Stability**: Maintained persistence for essential metadata (ID, Slug, Zoom, Pan, Music) to ensure a seamless UI state during page refreshes without the risk of storage failures.
+
 ## [0.5.7] - 2026-03-06
 **Status**: 🟢 Deployed
 **Environment**: Production

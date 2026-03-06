@@ -49,19 +49,20 @@ export const useStore = create<StoreState>()(
         {
             name: 'tamuu-storage',
             partialize: (state) => ({
-                layers: state.layers,
-                sections: state.sections,
+                // CRITICAL: We NO LONGER persist sections, layers, or orbit to localStorage.
+                // These collections can exceed the 5MB quota (DOMException: quota exceeded)
+                // because they might contain large base64 image strings or thousands of nodes.
+                // Since EditorLayout.tsx handles hydration from the API, we only need to
+                // persist high-level metadata here for session continuity.
                 zoom: state.zoom,
                 pan: state.pan,
                 slug: state.slug,
                 projectName: state.projectName,
                 id: state.id,
-                orbit: state.orbit,
                 music: state.music,
                 isPublished: state.isPublished,
                 // NOTE: user and token are intentionally NOT persisted here.
                 // AuthProvider.tsx is the sole source of truth for auth state.
-                // This prevents stale tier data from localStorage overriding fresh D1 data.
             }),
             onRehydrateStorage: () => (state) => {
                 if (!state) return;
