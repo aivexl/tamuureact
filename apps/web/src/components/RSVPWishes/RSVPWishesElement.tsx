@@ -637,13 +637,15 @@ export const RSVPWishesElement: React.FC<RSVPWishesElementProps> = ({
                             </div>
 
                             {/* The stack area for wishes (Internal Scrollable) */}
-                            <div className="flex-1 overflow-y-auto custom-scrollbar px-6 sm:px-8 pb-8">
-                                <GuestWishesSection
-                                    refreshKey={refreshKey}
-                                    config={config}
-                                    variant={variant}
-                                    invitationId={invitationId}
-                                />
+                            <div className="flex-1 relative overflow-hidden">
+                                <div className="absolute inset-0 overflow-y-auto custom-scrollbar px-6 sm:px-8 pb-8">
+                                    <GuestWishesSection
+                                        refreshKey={refreshKey}
+                                        config={config}
+                                        variant={variant}
+                                        invitationId={invitationId}
+                                    />
+                                </div>
                             </div>
                         </div>
                     )}
