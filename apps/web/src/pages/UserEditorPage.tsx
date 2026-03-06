@@ -198,79 +198,79 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
 
                 {/* 4. Main Edit Area */}
                 <TemplateEditArea />
-
-                {/* Panels Modal */}
-                <Modal
-                    isOpen={activePanel !== null}
-                    onClose={() => setActivePanel(null)}
-                    title={(() => {
-                        const titles: Record<string, string> = {
-                            theme: 'Tema Undangan',
-                            music: 'Musik Latar',
-                            template: 'Koleksi Template',
-                            wishes: 'Ucapan & Doa',
-                            display: 'Display Desain',
-                            analytics: 'Statistik & Analitik',
-                            share: 'Bagikan Undangan',
-                            download: 'Download Assets',
-                            eventDate: 'Tanggal Acara',
-                            location: 'Lokasi Acara',
-                            gift: 'Kado Digital',
-                            seo: 'Sosmed Preview',
-                            gallery: 'Galeri Foto',
-                            livestream: 'Live Streaming',
-                            lovestory: 'Kisah Cinta',
-                            quotes: 'Quote Undangan',
-                            luckydraw: 'Lucky Draw',
-                            settings: 'Pengaturan Undangan',
-                            profile_photo: 'Foto Profil'
-                        };
-                        return titles[activePanel || ''] || (activePanel ? activePanel.charAt(0).toUpperCase() + activePanel.slice(1) : '');
-                    })()}
-                    size="lg"
-                >
-                    {activePanel === 'music' && <MusicPanel />}
-
-                    {activePanel === 'display' && <DisplayStorePanel invitationId={invitation?.id} />}
-                    {activePanel === 'template' && <TemplateStorePanel invitationId={invitation?.id} />}
-                    {activePanel === 'wishes' && <WishesPanel />}
-                    {activePanel === 'analytics' && <AnalyticsPanel />}
-                    {activePanel === 'share' && <SharePanel slug={invitation?.slug} />}
-                    {activePanel === 'download' && <ExportPanel previewRef={previewRef as React.RefObject<HTMLElement>} />}
-                    {activePanel === 'eventDate' && <EventDatePanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
-                    {activePanel === 'location' && <LocationPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
-                    {activePanel === 'gift' && <GiftPanel onClose={() => setActivePanel(null)} />}
-                    {activePanel === 'seo' && <SEOPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
-                    {activePanel === 'gallery' && <GalleryPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
-                    {activePanel === 'livestream' && <LiveStreamPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
-                    {activePanel === 'lovestory' && <LoveStoryPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
-                    {activePanel === 'quotes' && <QuotesPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
-                    {activePanel === 'luckydraw' && <LuckyDrawPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
-                    {activePanel === 'profile_photo' && <ProfilePhotoPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
-                    {activePanel === 'settings' && (
-                        <SettingsPanel
-                            invitationId={invitation?.id}
-                            invitation={invitation}
-                            onClose={() => setActivePanel(null)}
-                            onUpdated={(updates) => setInvitation((prev: any) => ({ ...prev, ...updates }))}
-                        />
-                    )}
-                    {!['music', 'theme', 'display', 'template', 'share', 'download', 'wishes', 'analytics', 'eventDate', 'location', 'gift', 'seo', 'gallery', 'livestream', 'lovestory', 'quotes', 'luckydraw', 'settings', 'guests', 'profile_photo'].includes(activePanel || '') && (
-                        <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
-                            <div className="w-20 h-20 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-slate-300">
-                                <Sparkles className="w-10 h-10" />
-                            </div>
-                            <div>
-                                <h4 className="font-black text-slate-800 tracking-tight text-xl uppercase tracking-widest">Segera Hadir</h4>
-                                <p className="text-sm text-slate-400 font-medium max-w-xs mx-auto">Fitur <span className="text-teal-600 font-bold">{activePanel?.toUpperCase()}</span> sedang dalam tahap pengembangan premium.</p>
-                            </div>
-                            <button onClick={() => setActivePanel(null)} className="px-8 py-3 bg-slate-100 text-slate-600 font-bold text-xs uppercase tracking-widest rounded-2xl hover:bg-slate-200 transition-all">
-                                Tutup
-                            </button>
-                        </div>
-                    )}
-                </Modal>
             </div>
+
+            {/* Panels Modal - MOVED OUTSIDE ANIMATED CONTAINER FOR STACKING CONTEXT PURITY */}
+            <Modal
+                isOpen={activePanel !== null}
+                onClose={() => setActivePanel(null)}
+                title={(() => {
+                    const titles: Record<string, string> = {
+                        theme: 'Tema Undangan',
+                        music: 'Musik Latar',
+                        template: 'Koleksi Template',
+                        wishes: 'Ucapan & Doa',
+                        display: 'Display Desain',
+                        analytics: 'Statistik & Analitik',
+                        share: 'Bagikan Undangan',
+                        download: 'Download Assets',
+                        eventDate: 'Tanggal Acara',
+                        location: 'Lokasi Acara',
+                        gift: 'Kado Digital',
+                        seo: 'Sosmed Preview',
+                        gallery: 'Galeri Foto',
+                        livestream: 'Live Streaming',
+                        lovestory: 'Kisah Cinta',
+                        quotes: 'Quote Undangan',
+                        luckydraw: 'Lucky Draw',
+                        settings: 'Pengaturan Undangan',
+                        profile_photo: 'Foto Profil'
+                    };
+                    return titles[activePanel || ''] || (activePanel ? activePanel.charAt(0).toUpperCase() + activePanel.slice(1) : '');
+                })()}
+                size="lg"
+            >
+                {activePanel === 'music' && <MusicPanel />}
+
+                {activePanel === 'display' && <DisplayStorePanel invitationId={invitation?.id} />}
+                {activePanel === 'template' && <TemplateStorePanel invitationId={invitation?.id} />}
+                {activePanel === 'wishes' && <WishesPanel />}
+                {activePanel === 'analytics' && <AnalyticsPanel />}
+                {activePanel === 'share' && <SharePanel slug={invitation?.slug} />}
+                {activePanel === 'download' && <ExportPanel previewRef={previewRef as React.RefObject<HTMLElement>} />}
+                {activePanel === 'eventDate' && <EventDatePanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                {activePanel === 'location' && <LocationPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                {activePanel === 'gift' && <GiftPanel onClose={() => setActivePanel(null)} />}
+                {activePanel === 'seo' && <SEOPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                {activePanel === 'gallery' && <GalleryPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                {activePanel === 'livestream' && <LiveStreamPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                {activePanel === 'lovestory' && <LoveStoryPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                {activePanel === 'quotes' && <QuotesPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                {activePanel === 'luckydraw' && <LuckyDrawPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                {activePanel === 'profile_photo' && <ProfilePhotoPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                {activePanel === 'settings' && (
+                    <SettingsPanel
+                        invitationId={invitation?.id}
+                        invitation={invitation}
+                        onClose={() => setActivePanel(null)}
+                        onUpdated={(updates) => setInvitation((prev: any) => ({ ...prev, ...updates }))}
+                    />
+                )}
+                {!['music', 'theme', 'display', 'template', 'share', 'download', 'wishes', 'analytics', 'eventDate', 'location', 'gift', 'seo', 'gallery', 'livestream', 'lovestory', 'quotes', 'luckydraw', 'settings', 'guests', 'profile_photo'].includes(activePanel || '') && (
+                    <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
+                        <div className="w-20 h-20 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-slate-300">
+                            <Sparkles className="w-10 h-10" />
+                        </div>
+                        <div>
+                            <h4 className="font-black text-slate-800 tracking-tight text-xl uppercase tracking-widest">Segera Hadir</h4>
+                            <p className="text-sm text-slate-400 font-medium max-w-xs mx-auto">Fitur <span className="text-teal-600 font-bold">{activePanel?.toUpperCase()}</span> sedang dalam tahap pengembangan premium.</p>
+                        </div>
+                        <button onClick={() => setActivePanel(null)} className="px-8 py-3 bg-slate-100 text-slate-600 font-bold text-xs uppercase tracking-widest rounded-2xl hover:bg-slate-200 transition-all">
+                            Tutup
+                        </button>
+                    </div>
+                )}
+            </Modal>
 
             {/* HIDDEN EXPORT PREVIEW (Liquid Parity Engine) */}
             {exportFormat && (() => {

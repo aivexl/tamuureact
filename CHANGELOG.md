@@ -1,5 +1,13 @@
 # Tamuu Changelog
 
+## [0.5.4] - 2026-03-06
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### User Editor UI/UX & Modal Accessibility
+- **Fix: Modal Stacking Context**: Resolved a critical issue where the main configuration modal in the User Editor could not be closed or interacted with. Moved the `Modal` component outside of animated parent containers in `UserEditorPage.tsx` to prevent `transform`-induced stacking context restrictions.
+- **Unified Z-Index Elevation**: Standardized the `Modal` component's z-index to `z-[4000]` (backdrop) and `z-[4001]` (content). This ensures it sits perfectly above standard navigation and content layers (`z-[100-1001]`) while remaining below specialized sub-modals like `ConfirmationModal` and `ImageCropModal` (`z-[5000]`), maintaining a logical and predictable UI hierarchy.
+
 ## [0.5.3] - 2026-03-06
 **Status**: 🟢 Deployed
 **Environment**: Production

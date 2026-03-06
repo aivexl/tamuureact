@@ -34,11 +34,11 @@ export const Modal: React.FC<ModalProps> = ({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[1000]"
+                        className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[4000]"
                     />
 
                     {/* Content */}
-                    <div className="fixed inset-0 z-[1001] flex items-center justify-center p-4 pointer-events-none">
+                    <div className="fixed inset-0 z-[4001] flex items-center justify-center p-4 pointer-events-none">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
