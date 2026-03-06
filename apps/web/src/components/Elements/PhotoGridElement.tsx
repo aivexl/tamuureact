@@ -1,5 +1,6 @@
 import React from 'react';
 import { Layer } from '@/store/useStore';
+import { patchLegacyUrl } from '@/lib/utils';
 
 interface PhotoGridElementProps {
     element: Layer;
@@ -35,7 +36,7 @@ export const PhotoGridElement: React.FC<PhotoGridElementProps> = ({ element }) =
                     style={{ borderRadius: `${config.cornerRadius || 12}px` }}
                 >
                     <img 
-                        src={url} 
+                        src={patchLegacyUrl(url)} 
                         alt={`Grid ${i}`} 
                         className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                     />

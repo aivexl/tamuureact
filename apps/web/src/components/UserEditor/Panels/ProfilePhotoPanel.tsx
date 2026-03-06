@@ -30,7 +30,7 @@ export const ProfilePhotoPanel: React.FC<ProfilePhotoPanelProps> = ({ invitation
     // Crop modal state
     const [cropModalOpen, setCropModalOpen] = useState(false);
     const [imageToCrop, setImageToCrop] = useState<string | null>(null);
-    const [editTarget, setEditTarget] = useState<{ sectionId: string; elementId: string } | null>(null);
+    const [editTarget, setEditTarget] = useState<{ sectionId: string; elementId: string; element: any } | null>(null);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -54,8 +54,8 @@ export const ProfilePhotoPanel: React.FC<ProfilePhotoPanelProps> = ({ invitation
         return results;
     }, [sections]);
 
-    const handleFileSelect = (sectionId: string, elementId: string) => {
-        setEditTarget({ sectionId, elementId });
+    const handleFileSelect = (sectionId: string, elementId: string, element: any) => {
+        setEditTarget({ sectionId, elementId, element });
         fileInputRef.current?.click();
     };
 
@@ -86,9 +86,13 @@ export const ProfilePhotoPanel: React.FC<ProfilePhotoPanelProps> = ({ invitation
 
             if (uploadResult?.url) {
                 // Update the element in the canvas store
+                // Standardize on both imageUrl and content for maximum compatibility
                 updateElementInSection(editTarget.sectionId, editTarget.elementId, {
-                    src: uploadResult.url,
+                    imageUrl: uploadResult.url,
+                    content: uploadResult.url,
+                    src: uploadResult.url, // Legacy fallback
                     profilePhotoConfig: {
+                        ...editTarget.element.profilePhotoConfig,
                         url: uploadResult.url,
                     }
                 } as any);
@@ -187,7 +191,7 @@ export const ProfilePhotoPanel: React.FC<ProfilePhotoPanelProps> = ({ invitation
                                     </div>
 
                                     <button
-                                        onClick={() => handleFileSelect(sectionId, element.id)}
+                                        onClick={() => handleFileSelect(sectionId, element.id, element)}
                                         disabled={uploading}
                                         className="flex-1 py-4 border-2 border-dashed border-sky-200 rounded-2xl text-sky-600 font-bold text-xs uppercase tracking-widest hover:bg-sky-50 hover:border-sky-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >

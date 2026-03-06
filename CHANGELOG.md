@@ -1,5 +1,14 @@
 # Tamuu Changelog
 
+## [0.6.1] - 2026-03-06
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Real-time Asset Rendering & Sync
+- **Fix: Profile Photo Synchronization**: Resolved a critical property mismatch where uploaded profile photos were not appearing in the editor preview. Standardized `ProfilePhotoElement` to listen for `imageUrl`, `content`, and `src` changes simultaneously.
+- **Fix: Photo Grid Legacy Support**: Integrated `patchLegacyUrl` into the internal `PhotoGridElement` in `ElementRenderer.tsx`. This ensures all grid images are correctly resolved across different environments and update instantly upon upload.
+- **Improved State Management**: Enhanced `ProfilePhotoPanel` to pass full element context during updates, ensuring that related configurations (labels, roles) are preserved while the asset URL is swapped.
+
 ## [0.6.0] - 2026-03-06
 **Status**: 🟢 Deployed
 **Environment**: Production

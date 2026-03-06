@@ -842,7 +842,7 @@ const PhotoGridElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLo
             >
                 {url ? (
                     <img
-                        src={url}
+                        src={patchLegacyUrl(url)}
                         alt={`Photo ${index + 1}`}
                         className="w-full h-full object-cover"
                         onError={(e) => (e.currentTarget.src = 'https://images.unsplash.com/photo-1518133910546-b6c2fb7d79e3?q=80&w=400&auto=format&fit=crop')}

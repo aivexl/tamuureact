@@ -39,6 +39,7 @@ export const ImageCard: React.FC<ElementCardProps> = ({ element, handleUpdate, p
             // 2. Update the element with the optimized URL
             handleUpdate({
                 content: publicUrl,
+                imageUrl: publicUrl,
                 cropConfig: cropConfig as any
             });
             

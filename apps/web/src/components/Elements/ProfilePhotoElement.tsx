@@ -28,7 +28,8 @@ export const ProfilePhotoElement: React.FC<ProfilePhotoElementProps> = ({ layer,
         label: 'Mempelai Pria'
     };
 
-    const imageUrl = layer.imageUrl;
+    // CTO Resiliency: Support multiple image property candidates
+    const imageUrl = layer.imageUrl || layer.content || (layer as any).src;
 
     const handleUploadClick = (e: React.MouseEvent) => {
         if (!isEditor) return;
