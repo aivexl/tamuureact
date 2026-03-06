@@ -148,15 +148,18 @@ export const GalleryPanel: React.FC<GalleryPanelProps> = ({ invitationId, onClos
                     // Add new photo
                     setPhotos(prev => [...prev, newPhoto]);
                 }
+                
+                setImageToCrop(null);
+                setEditingPhotoId(null);
+                return true; // Signal success to modal
             }
+            return false;
         } catch (err) {
             console.error('[GalleryPanel] Upload error:', err);
             setError('Gagal upload foto');
+            return false; // Signal failure to modal
         } finally {
             setUploading(false);
-            setCropModalOpen(false);
-            setImageToCrop(null);
-            setEditingPhotoId(null);
         }
     };
 

@@ -75,7 +75,7 @@ export const ProfilePhotoPanel: React.FC<ProfilePhotoPanelProps> = ({ invitation
     };
 
     const handleCropComplete = async (croppedImageUrl: string) => {
-        if (!editTarget || !invitationId) return;
+        if (!editTarget || !invitationId) return false;
 
         setUploading(true);
         setError(null);
@@ -99,15 +99,18 @@ export const ProfilePhotoPanel: React.FC<ProfilePhotoPanelProps> = ({ invitation
 
                 setSuccess(true);
                 setTimeout(() => setSuccess(false), 2000);
+                
+                setImageToCrop(null);
+                setEditTarget(null);
+                return true; // Signal success to modal
             }
+            return false;
         } catch (err: any) {
             console.error('[ProfilePhotoPanel] Upload error:', err);
             setError('Gagal mengupload foto. Silakan coba lagi.');
+            return false;
         } finally {
             setUploading(false);
-            setCropModalOpen(false);
-            setImageToCrop(null);
-            setEditTarget(null);
         }
     };
 

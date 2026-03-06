@@ -23,13 +23,13 @@ export const ImageCard: React.FC<ElementCardProps> = ({ element, handleUpdate, p
         e.target.value = '';
     };
 
-    const handleCropComplete = (croppedImageUrl: string, cropConfig: CropConfig) => {
+    const handleCropComplete = async (croppedImageUrl: string, cropConfig: CropConfig) => {
         handleUpdate({
             content: croppedImageUrl,
             cropConfig: cropConfig as any
         });
-        setIsCropOpen(false);
         setSelectedImageSrc(null);
+        return true; // Signal success to modal
     };
 
     return (

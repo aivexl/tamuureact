@@ -1,5 +1,14 @@
 # Tamuu Changelog
 
+## [0.5.6] - 2026-03-06
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Image Processing & Upload Workflow
+- **Fix: Automatic Modal Closing**: Resolved an issue where the `ImageCropModal` would remain open after a successful image crop and upload. The modal now correctly awaits the completion of the upload process and closes automatically upon success.
+- **Enhanced Error Handling**: Added a real-time error message display within the `ImageCropModal` to inform users if an upload or processing task fails, preventing the UI from appearing hung.
+- **Unified Async Callback Engine**: Standardized the `onCropComplete` callback to be asynchronous across `EditorLayout`, `GalleryPanel`, `ProfilePhotoPanel`, and `ImageCard`, ensuring reliable state synchronization during media uploads.
+
 ## [0.5.5] - 2026-03-06
 **Status**: 🟢 Deployed
 **Environment**: Production

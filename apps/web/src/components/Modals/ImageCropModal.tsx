@@ -23,7 +23,7 @@ interface ImageCropModalProps {
     aspectRatio?: number;
     initialCropConfig?: CropConfig;
     onClose: () => void;
-    onCropComplete: (croppedImageUrl: string, config: CropConfig) => void;
+    onCropComplete: (croppedImageUrl: string, config: CropConfig) => Promise<boolean | void> | void;
 }
 
 /**
@@ -133,13 +133,17 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
     const [rotation, setRotation] = useState(0);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     // Initialize from props when modal opens
     React.useEffect(() => {
-        if (isOpen && initialCropConfig) {
-            setCrop(initialCropConfig.crop);
-            setZoom(initialCropConfig.zoom);
-            setRotation(initialCropConfig.rotation);
+        if (isOpen) {
+            setError(null);
+            if (initialCropConfig) {
+                setCrop(initialCropConfig.crop);
+                setZoom(initialCropConfig.zoom);
+                setRotation(initialCropConfig.rotation);
+            }
         }
     }, [isOpen, initialCropConfig]);
 
@@ -166,16 +170,27 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
         if (!imageSrc || !croppedAreaPixels) return;
 
         setIsSaving(true);
+        setError(null);
         try {
             const croppedImage = await getCroppedImage(
                 imageSrc,
                 croppedAreaPixels,
                 rotation
             );
-            onCropComplete(croppedImage, { crop, zoom, rotation });
-            onClose();
-        } catch (error) {
-            console.error('[ImageCropModal] Crop failed:', error);
+            
+            // Execute completion callback and check result
+            const result = await onCropComplete(croppedImage, { crop, zoom, rotation });
+            
+            // If result is explicitly false, it means upload failed internally
+            // Otherwise, we assume success and close
+            if (result !== false) {
+                onClose();
+            } else {
+                setError('Gagal mengunggah gambar. Silakan coba lagi.');
+            }
+        } catch (error: any) {
+            console.error('[ImageCropModal] Crop/Upload failed:', error);
+            setError(error?.message || 'Terjadi kesalahan saat memproses gambar.');
         } finally {
             setIsSaving(false);
         }
@@ -220,6 +235,21 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
+
+                        {/* Error Message */}
+                        <AnimatePresence>
+                            {error && (
+                                <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    className="bg-red-500/10 border-b border-red-500/20 px-4 py-3 flex items-center gap-3 text-red-400 text-xs font-medium"
+                                >
+                                    <RotateCcw className="w-4 h-4 shrink-0" />
+                                    <span>{error}</span>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
                         {/* Cropper Area */}
                         <div className="relative h-[400px] bg-black">

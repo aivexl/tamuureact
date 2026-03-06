@@ -494,6 +494,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                                     });
                                 }
                             }
+                            return true; // Signal success to close modal
                         } catch (error: any) {
                             console.error('[EditorLayout] Crop upload failed:', error);
                             showModal({
@@ -501,8 +502,10 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                                 message: 'Gagal mengunggah foto yang telah dipotong. Silakan coba beberapa saat lagi.',
                                 type: 'error'
                             });
+                            return false;
                         }
                     }
+                    return false;
                 }}
             />
 
