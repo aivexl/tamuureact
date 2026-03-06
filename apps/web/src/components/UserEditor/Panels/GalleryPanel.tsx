@@ -17,9 +17,8 @@ import {
     Camera
 } from 'lucide-react';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
-import { invitations as invitationsApi, assets as assetsApi } from '@/lib/api';
+import { invitations as invitationsApi, storage } from '@/lib/api';
 import { ImageCropModal } from '@/components/Modals/ImageCropModal';
-import { dataURLtoBlob } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
 
 interface GalleryPanelProps {
@@ -119,19 +118,14 @@ export const GalleryPanel: React.FC<GalleryPanelProps> = ({ invitationId, onClos
     };
 
     // Handle crop complete - upload to R2 and update state
-    const handleCropComplete = async (croppedImageUrl: string) => {
+    const handleCropComplete = async (croppedBlob: Blob) => {
         setUploading(true);
         try {
-            // Convert data URL to blob
-            const blob = dataURLtoBlob(croppedImageUrl);
+            // Convert Blob to File for the storage engine
+            const file = new File([croppedBlob], `gallery-${Date.now()}.png`, { type: 'image/png' });
 
-            // Upload to R2 via API
-            const formData = new FormData();
-            formData.append('file', blob, `gallery-${Date.now()}.png`);
-            formData.append('invitationId', invitationId);
-            formData.append('type', 'gallery');
-
-            const uploadResult = await assetsApi.upload(formData);
+            // 1. Upload to R2 with automatic optimization via storage engine
+            const uploadResult = await storage.upload(file, 'gallery');
 
             if (uploadResult?.url) {
                 const newPhoto: GalleryPhoto = {

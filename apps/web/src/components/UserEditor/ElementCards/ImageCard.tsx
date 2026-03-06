@@ -2,9 +2,12 @@ import React, { useState, useRef } from 'react';
 import { ImageIcon, Plus, Trash2, Crop as CropIcon, Lock, UploadCloud } from 'lucide-react';
 import { ElementCardProps } from './Registry';
 import { ImageCropModal, CropConfig } from '@/components/Modals/ImageCropModal';
+import { storage } from '@/lib/api';
+import { generateId } from '@/lib/utils';
 
 export const ImageCard: React.FC<ElementCardProps> = ({ element, handleUpdate, permissions }) => {
     const [isCropOpen, setIsCropOpen] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -23,13 +26,30 @@ export const ImageCard: React.FC<ElementCardProps> = ({ element, handleUpdate, p
         e.target.value = '';
     };
 
-    const handleCropComplete = async (croppedImageUrl: string, cropConfig: CropConfig) => {
-        handleUpdate({
-            content: croppedImageUrl,
-            cropConfig: cropConfig as any
-        });
-        setSelectedImageSrc(null);
-        return true; // Signal success to modal
+    const handleCropComplete = async (croppedBlob: Blob, cropConfig: CropConfig) => {
+        setIsUploading(true);
+        try {
+            const fileName = `crop_${generateId('img')}.png`;
+            const file = new File([croppedBlob], fileName, { type: 'image/png' });
+
+            // 1. Upload to Cloudflare R2 with automatic optimization
+            const result = await storage.upload(file, 'gallery');
+            const publicUrl = result.url;
+
+            // 2. Update the element with the optimized URL
+            handleUpdate({
+                content: publicUrl,
+                cropConfig: cropConfig as any
+            });
+            
+            setSelectedImageSrc(null);
+            return true; // Signal success to modal
+        } catch (error) {
+            console.error('[ImageCard] Upload failed:', error);
+            return false;
+        } finally {
+            setIsUploading(false);
+        }
     };
 
     return (
@@ -39,9 +59,11 @@ export const ImageCard: React.FC<ElementCardProps> = ({ element, handleUpdate, p
                 {canEdit && (
                     <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="text-teal-600 hover:text-teal-700 text-[10px] font-black uppercase tracking-widest transition-all"
+                        disabled={isUploading}
+                        className={`${isUploading ? 'text-slate-400' : 'text-teal-600 hover:text-teal-700'} text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2`}
                     >
-                        Ganti Gambar
+                        {isUploading && <div className="w-2 h-2 border border-slate-300 border-t-slate-600 rounded-full animate-spin" />}
+                        {isUploading ? 'Uploading...' : 'Ganti Gambar'}
                     </button>
                 )}
             </div>

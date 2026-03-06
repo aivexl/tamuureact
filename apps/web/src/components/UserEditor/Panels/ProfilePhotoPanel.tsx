@@ -10,10 +10,9 @@ import React, { useState, useRef, useMemo } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { Users, Camera, Check, AlertCircle, ImagePlus } from 'lucide-react';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
-import { assets as assetsApi } from '@/lib/api';
+import { storage } from '@/lib/api';
 import { useStore } from '@/store/useStore';
 import { ImageCropModal } from '@/components/Modals/ImageCropModal';
-import { dataURLtoBlob } from '@/lib/utils';
 
 interface ProfilePhotoPanelProps {
     invitationId?: string;
@@ -74,19 +73,16 @@ export const ProfilePhotoPanel: React.FC<ProfilePhotoPanelProps> = ({ invitation
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
-    const handleCropComplete = async (croppedImageUrl: string) => {
+    const handleCropComplete = async (croppedBlob: Blob) => {
         if (!editTarget || !invitationId) return false;
 
         setUploading(true);
         setError(null);
         try {
-            const blob = dataURLtoBlob(croppedImageUrl);
-            const formData = new FormData();
-            formData.append('file', blob, `profile-photo-${Date.now()}.png`);
-            formData.append('invitationId', invitationId);
-            formData.append('type', 'profile_photo');
+            const file = new File([croppedBlob], `profile-photo-${Date.now()}.png`, { type: 'image/png' });
 
-            const uploadResult = await assetsApi.upload(formData);
+            // Use context 'avatar' for profile photos (optimized size)
+            const uploadResult = await storage.upload(file, 'avatar');
 
             if (uploadResult?.url) {
                 // Update the element in the canvas store

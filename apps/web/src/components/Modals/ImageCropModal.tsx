@@ -23,7 +23,7 @@ interface ImageCropModalProps {
     aspectRatio?: number;
     initialCropConfig?: CropConfig;
     onClose: () => void;
-    onCropComplete: (croppedImageUrl: string, config: CropConfig) => Promise<boolean | void> | void;
+    onCropComplete: (croppedImage: Blob, config: CropConfig) => Promise<boolean | void> | void;
 }
 
 /**
@@ -65,7 +65,7 @@ async function getCroppedImage(
     imageSrc: string,
     pixelCrop: Area,
     rotation: number = 0
-): Promise<string> {
+): Promise<Blob> {
     const image = await createImage(imageSrc);
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -98,22 +98,11 @@ async function getCroppedImage(
     rotatedCtx.translate(-image.width / 2, -image.height / 2);
     rotatedCtx.drawImage(image, 0, 0);
 
-    // Limit maximum dimensions for better performance and storage efficiency
-    const MAX_SIZE = 1200;
-    let outputWidth = pixelCrop.width;
-    let outputHeight = pixelCrop.height;
-
-    if (outputWidth > MAX_SIZE || outputHeight > MAX_SIZE) {
-        const ratio = Math.min(MAX_SIZE / outputWidth, MAX_SIZE / outputHeight);
-        outputWidth = Math.round(outputWidth * ratio);
-        outputHeight = Math.round(outputHeight * ratio);
-    }
-
     // Now extract the cropped area from the rotated canvas
-    canvas.width = outputWidth;
-    canvas.height = outputHeight;
+    canvas.width = pixelCrop.width;
+    canvas.height = pixelCrop.height;
 
-    // Draw the cropped portion with scaling if needed
+    // Draw the cropped portion
     ctx.drawImage(
         rotatedCanvas,
         pixelCrop.x,
@@ -122,12 +111,17 @@ async function getCroppedImage(
         pixelCrop.height,
         0,
         0,
-        outputWidth,
-        outputHeight
+        pixelCrop.width,
+        pixelCrop.height
     );
 
-    // Return as JPEG with 0.8 quality for significant compression while maintaining visual integrity
-    return canvas.toDataURL('image/jpeg', 0.8);
+    // Return as high-quality PNG blob to preserve transparency for the optimizer
+    return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+            if (blob) resolve(blob);
+            else reject(new Error('Canvas to Blob failed'));
+        }, 'image/png', 1.0);
+    });
 }
 
 

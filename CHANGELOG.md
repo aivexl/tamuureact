@@ -1,5 +1,17 @@
 # Tamuu Changelog
 
+## [0.6.0] - 2026-03-06
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Standardized Media Optimization & Photo Frames
+- **Unified Image Optimization**: Migrated all cropping and upload workflows (`GalleryPanel`, `ProfilePhotoPanel`, `ImageCard`, `PhotoGridCard`) to the existing `image-manager.ts` enterprise optimization system.
+- **Enterprise Standards Integration**:
+    - **Smart Compression**: All uploaded images now utilize the established WebP/JPEG compression engine with context-aware quality settings (Hero, Gallery, Avatar).
+    - **Automatic BlurHash**: Enabled generation of BlurHash "Ghost Loading" states for all user-uploaded content.
+- **Fix: Photo Frame Real-time Rendering**: Corrected the `PhotoFrameElement` logic to properly render uploaded content from `layer.content`. All frame variants (Polaroid, Film Strip, etc.) now update instantly in the editor.
+- **Performance**: Standardizing on the existing library prevents redundant processing logic and ensures consistent visual quality across the entire platform.
+
 ## [0.5.9] - 2026-03-06
 **Status**: 🟢 Deployed
 **Environment**: Production

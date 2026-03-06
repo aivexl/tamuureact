@@ -460,18 +460,17 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({ templateId, isTempla
                 imageSrc={imageCropModal.imageSrc}
                 aspectRatio={imageCropModal.aspectRatio}
                 onClose={closeImageCropModal}
-                onCropComplete={async (croppedImageUrl: string) => {
+                onCropComplete={async (croppedBlob: Blob) => {
                     // CTO Refinement: Instead of persisting huge base64 data URLs,
                     // we upload the crop to Supabase and use the public URL.
                     // This prevents local storage overflow and broken images on reload.
                     if (imageCropModal.targetLayerId && imageCropModal.targetSlotIndex !== null) {
                         try {
-                            const blob = dataURLtoBlob(croppedImageUrl);
                             const fileName = `crop_${generateId('img')}.png`;
-                            const file = new File([blob], fileName, { type: 'image/png' });
+                            const file = new File([croppedBlob], fileName, { type: 'image/png' });
 
-                            // 1. Upload to Cloudflare R2
-                            const result = await storage.upload(file);
+                            // 1. Upload to Cloudflare R2 with standard optimization context
+                            const result = await storage.upload(file, 'gallery');
                             const publicUrl = result.url;
 
                             console.log('[DEBUG] Crop Upload Success. Public URL:', publicUrl);
