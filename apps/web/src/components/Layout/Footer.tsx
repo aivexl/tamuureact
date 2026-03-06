@@ -10,10 +10,7 @@ export const Footer: React.FC = () => {
                     {/* Brand */}
                     <div className="space-y-6">
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-[#FFBF00] rounded-2xl flex items-center justify-center shadow-lg shadow-[#FFBF00]/20">
-                                <Sparkles className="w-7 h-7 text-[#0A1128]" aria-hidden="true" />
-                            </div>
-                            <span className="text-3xl font-black text-white tracking-tighter">Tamuu</span>
+                            <img src="/images/logo-tamuu.webp" alt="Tamuu Logo" className="h-8 sm:h-10 w-auto brightness-0 invert" draggable="false" />
                         </div>
                         <p className="text-slate-300 text-sm leading-relaxed font-medium">
                             Platform undangan digital tercanggih di Indonesia. Menghadirkan kemewahan dan kemudahan dalam setiap momen berharga Anda.
