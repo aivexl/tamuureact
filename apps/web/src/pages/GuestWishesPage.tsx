@@ -13,7 +13,9 @@ import {
     ArrowLeft,
     CheckCircle2,
     AlertCircle,
-    Hash
+    Hash,
+    Phone,
+    Users
 } from 'lucide-react';
 import { rsvp as rsvpApi } from '@/lib/api';
 import { useSEO } from '@/hooks/useSEO';
@@ -30,6 +32,8 @@ interface WishData {
     submitted_at: string;
     invitation_name: string;
     invitation_slug: string;
+    phone?: string;
+    guest_count?: number;
 }
 
 export const GuestWishesPage: React.FC = () => {
@@ -101,7 +105,8 @@ export const GuestWishesPage: React.FC = () => {
     const filteredWishes = wishes.filter(w =>
         w.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         w.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        w.invitation_name.toLowerCase().includes(searchQuery.toLowerCase())
+        w.invitation_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (w.phone && w.phone.includes(searchQuery))
     );
 
     const stats = {
@@ -158,7 +163,7 @@ export const GuestWishesPage: React.FC = () => {
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                         <input
                             type="text"
-                            placeholder="Cari nama, pesan, atau undangan..."
+                            placeholder="Cari nama, nomor HP, pesan, atau undangan..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/20 outline-none font-medium text-slate-700 text-sm sm:text-base"
@@ -231,7 +236,7 @@ export const GuestWishesPage: React.FC = () => {
                                     {/* Invitation Info */}
                                     <div className="pt-5 border-t border-slate-50 flex flex-col gap-2">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Undangan:</span>
+                                            <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest min-w-[70px]">Undangan:</span>
                                             <Link
                                                 to={`/preview/${wish.invitation_slug}`}
                                                 target="_blank"
@@ -242,13 +247,36 @@ export const GuestWishesPage: React.FC = () => {
                                             </Link>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Kehadiran:</span>
+                                            <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest min-w-[70px]">Kehadiran:</span>
                                             <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${wish.attendance === 'attending' ? 'bg-emerald-50 text-emerald-600' :
                                                 wish.attendance === 'maybe' ? 'bg-amber-50 text-amber-600' : 'bg-slate-50 text-slate-400'
                                                 }`}>
                                                 {wish.attendance === 'attending' ? 'Hadir' : wish.attendance === 'maybe' ? 'Mungkin' : 'Tidak Hadir'}
                                             </span>
                                         </div>
+                                        {wish.guest_count !== undefined && (
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest min-w-[70px]">Tamu:</span>
+                                                <div className="inline-flex items-center gap-1 text-[10px] font-black text-slate-600 px-1">
+                                                    <Users className="w-3 h-3 text-slate-400" />
+                                                    {wish.guest_count} Orang
+                                                </div>
+                                            </div>
+                                        )}
+                                        {wish.phone && (
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest min-w-[70px]">WhatsApp:</span>
+                                                <a 
+                                                    href={`https://wa.me/${wish.phone.replace(/[^0-9]/g, '').replace(/^0/, '62')}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-1 text-[10px] font-black text-slate-600 hover:text-teal-600 transition-colors px-1"
+                                                >
+                                                    <Phone className="w-3 h-3" />
+                                                    {wish.phone}
+                                                </a>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
