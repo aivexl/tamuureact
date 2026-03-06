@@ -638,7 +638,11 @@ export const RSVPWishesElement: React.FC<RSVPWishesElementProps> = ({
 
                             {/* The stack area for wishes (Internal Scrollable) */}
                             <div className="flex-1 relative overflow-hidden">
-                                <div className="absolute inset-0 overflow-y-auto custom-scrollbar px-6 sm:px-8 pb-8">
+                                <div 
+                                    className="absolute inset-0 overflow-y-auto custom-scrollbar px-6 sm:px-8 pb-8 pointer-events-auto overscroll-contain touch-pan-y"
+                                    onWheelCapture={(e) => e.stopPropagation()}
+                                    onTouchMoveCapture={(e) => e.stopPropagation()}
+                                >
                                     <GuestWishesSection
                                         refreshKey={refreshKey}
                                         config={config}
