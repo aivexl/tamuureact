@@ -958,6 +958,15 @@ const PhotoFrameElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentL
     );
 
     const renderFrame = () => {
+        const userImage = layer.content ? (
+            <img 
+                src={layer.content} 
+                alt="Frame content" 
+                className="w-full h-full object-cover"
+                onLoad={() => onContentLoad?.()}
+            />
+        ) : null;
+
         switch (variant) {
             case 'polaroid':
                 return (
@@ -970,9 +979,13 @@ const PhotoFrameElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentL
                             borderRadius: config.borderRadius || 2
                         }}
                     >
-                        <div className="flex-1 bg-neutral-100 flex flex-col items-center justify-center border border-neutral-200/50 rounded-sm">
-                            <ImageIcon className="w-8 h-8 text-neutral-300" />
-                            <span className="text-[10px] text-neutral-400 mt-2 font-medium uppercase tracking-tighter">Upload Photo</span>
+                        <div className="flex-1 bg-neutral-100 flex flex-col items-center justify-center border border-neutral-200/50 rounded-sm overflow-hidden">
+                            {userImage || (
+                                <>
+                                    <ImageIcon className="w-8 h-8 text-neutral-300" />
+                                    <span className="text-[10px] text-neutral-400 mt-2 font-medium uppercase tracking-tighter">Upload Photo</span>
+                                </>
+                            )}
                         </div>
                         <div className="h-8 mt-2 flex items-center justify-center">
                             <div className="w-24 h-1 bg-neutral-100 rounded-full" />
@@ -989,8 +1002,8 @@ const PhotoFrameElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentL
                             padding: config.padding || 24
                         }}
                     >
-                        <div className="flex-1 bg-neutral-50 border border-neutral-200 flex items-center justify-center">
-                            <Placeholder icon={ImageIcon} text="Fine Art Print" />
+                        <div className="flex-1 bg-neutral-50 border border-neutral-200 flex items-center justify-center overflow-hidden">
+                            {userImage || <Placeholder icon={ImageIcon} text="Fine Art Print" />}
                         </div>
                     </div>
                 );
@@ -1007,8 +1020,8 @@ const PhotoFrameElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentL
                             {holes}
                         </div>
                         {/* Film Content */}
-                        <div className="flex-1 bg-neutral-900 border-y-2 border-neutral-800 flex items-center justify-center">
-                            <Placeholder icon={Film} text="Frame 01" />
+                        <div className="flex-1 bg-neutral-900 border-y-2 border-neutral-800 flex items-center justify-center overflow-hidden">
+                            {userImage || <Placeholder icon={Film} text="Frame 01" />}
                         </div>
                         {/* Bottom Holes */}
                         <div className="flex justify-around items-center h-4 px-2 opacity-40">
@@ -1029,8 +1042,8 @@ const PhotoFrameElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentL
                             className="w-full h-full bg-white shadow-lg flex flex-col p-3 border border-neutral-100"
                             style={{ borderRadius: config.borderRadius || 2 }}
                         >
-                            <div className="flex-1 bg-neutral-50 flex items-center justify-center rounded-sm">
-                                <Placeholder icon={ImageIcon} text="Memories" />
+                            <div className="flex-1 bg-neutral-50 flex items-center justify-center rounded-sm overflow-hidden">
+                                {userImage || <Placeholder icon={ImageIcon} text="Memories" />}
                             </div>
                         </div>
                     </div>
@@ -1043,10 +1056,10 @@ const PhotoFrameElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentL
                         style={{ borderTopLeftRadius: '50% 100%', borderTopRightRadius: '50% 100%' }}
                     >
                         <div 
-                            className="flex-1 bg-neutral-50 flex items-center justify-center border border-neutral-100"
+                            className="flex-1 bg-neutral-50 flex items-center justify-center border border-neutral-100 overflow-hidden"
                             style={{ borderTopLeftRadius: '50% 100%', borderTopRightRadius: '50% 100%' }}
                         >
-                            <Placeholder icon={ImageIcon} text="Elegance" />
+                            {userImage || <Placeholder icon={ImageIcon} text="Elegance" />}
                         </div>
                     </div>
                 );
@@ -1073,8 +1086,8 @@ const PhotoFrameElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentL
                         </div>
 
                         {/* Content */}
-                        <div className={`flex-1 ${isDark ? 'bg-white/5' : 'bg-neutral-50'} flex items-center justify-center`}>
-                            <Placeholder icon={ImageIcon} text="Post Image" />
+                        <div className={`flex-1 ${isDark ? 'bg-white/5' : 'bg-neutral-50'} flex items-center justify-center overflow-hidden`}>
+                            {userImage || <Placeholder icon={ImageIcon} text="Post Image" />}
                         </div>
 
                         {/* Footer */}

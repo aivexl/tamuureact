@@ -98,11 +98,22 @@ async function getCroppedImage(
     rotatedCtx.translate(-image.width / 2, -image.height / 2);
     rotatedCtx.drawImage(image, 0, 0);
 
-    // Now extract the cropped area from the rotated canvas
-    canvas.width = pixelCrop.width;
-    canvas.height = pixelCrop.height;
+    // Limit maximum dimensions for better performance and storage efficiency
+    const MAX_SIZE = 1200;
+    let outputWidth = pixelCrop.width;
+    let outputHeight = pixelCrop.height;
 
-    // Draw the cropped portion
+    if (outputWidth > MAX_SIZE || outputHeight > MAX_SIZE) {
+        const ratio = Math.min(MAX_SIZE / outputWidth, MAX_SIZE / outputHeight);
+        outputWidth = Math.round(outputWidth * ratio);
+        outputHeight = Math.round(outputHeight * ratio);
+    }
+
+    // Now extract the cropped area from the rotated canvas
+    canvas.width = outputWidth;
+    canvas.height = outputHeight;
+
+    // Draw the cropped portion with scaling if needed
     ctx.drawImage(
         rotatedCanvas,
         pixelCrop.x,
@@ -111,12 +122,12 @@ async function getCroppedImage(
         pixelCrop.height,
         0,
         0,
-        pixelCrop.width,
-        pixelCrop.height
+        outputWidth,
+        outputHeight
     );
 
-    // Return as PNG to preserve transparency
-    return canvas.toDataURL('image/png');
+    // Return as JPEG with 0.8 quality for significant compression while maintaining visual integrity
+    return canvas.toDataURL('image/jpeg', 0.8);
 }
 
 

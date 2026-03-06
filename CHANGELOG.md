@@ -1,5 +1,16 @@
 # Tamuu Changelog
 
+## [0.5.9] - 2026-03-06
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Photo Frames & Image Optimization
+- **Fix: Photo Frame Rendering**: Enabled real-time photo rendering for all `photo_frame` variants (Polaroid, Instagram, Gallery, etc.). Previously, these elements would stay as placeholders even after a successful image upload.
+- **Enhanced Image Compression**: Upgraded the `ImageCropModal` processing engine to optimize storage and performance:
+    - **Smart Scaling**: Automatically constrains images to a maximum of 1200px (width or height), preventing excessive data payloads.
+    - **Format Optimization**: Switched output format from PNG to JPEG with a calibrated 0.8 quality setting, significantly reducing file sizes while maintaining professional visual fidelity.
+- **Storage Efficiency**: These optimizations work in tandem with the previous localStorage fix to ensure the application remains fast and responsive even with high-resolution source photos.
+
 ## [0.5.8] - 2026-03-06
 **Status**: 🟢 Deployed
 **Environment**: Production
