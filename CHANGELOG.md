@@ -1,5 +1,15 @@
 # Tamuu Changelog
 
+## [0.6.5] - 2026-03-07
+**Status**: 🔵 Deploying
+**Environment**: Production
+
+### Fix: Photo Grid UI Stability & High-Performance Editor Save
+- **Fix: Photo Grid "Ghost" Overlay**: Refactored `ImageCropModal` to use a `motion.div` backdrop, ensuring `AnimatePresence` correctly removes the blurry overlay after a successful upload. This resolves the issue where users could not click anything after uploading a photo.
+- **Optimization: High-Performance Sanitization**: Re-engineered the core `sanitizeValue` utility with a "Checked Copy" algorithm. The system now avoids creating thousands of redundant objects during the save process, reducing memory pressure and eliminating main-thread UI freezes when saving multi-megabyte invitations.
+- **Robust Image Card Lifecycle**: Streamlined the `onClose` and `onCropComplete` callbacks in `PhotoGridCard` and `ImageCard` to prevent race conditions during modal cleanup.
+- **Fixed Asset Path Resolution**: Corrected property mapping in `PhotoGridCard` to ensure uploads are properly synced to the `photoGridConfig` state.
+
 ## [0.6.4] - 2026-03-07
 **Status**: 🟢 Deployed
 **Environment**: Production

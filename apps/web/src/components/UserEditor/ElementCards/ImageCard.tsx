@@ -1,10 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { ImageIcon, Plus, Trash2, Crop as CropIcon, Lock, UploadCloud } from 'lucide-react';
 import { ElementCardProps } from './Registry';
-import { ImageCropModal, CropConfig } from '@/components/Modals/ImageCropModal';
-import { storage } from '@/lib/api';
-import { useStore } from '@/store/useStore';
-import { generateId } from '@/lib/utils';
+import { ImageCropModal, CropConfig } from '../../Modals/ImageCropModal';
+import { storage } from '../../../lib/api';
+import { useStore } from '../../../store/useStore';
+import { generateId } from '../../../lib/utils';
 
 export const ImageCard: React.FC<ElementCardProps> = ({ element, handleUpdate, permissions }) => {
     const [isCropOpen, setIsCropOpen] = useState(false);
@@ -54,8 +54,6 @@ export const ImageCard: React.FC<ElementCardProps> = ({ element, handleUpdate, p
                 cropConfig: cropConfig as any
             });
 
-            
-            setSelectedImageSrc(null);
             return true; // Signal success to modal
         } catch (error) {
             console.error('[ImageCard] Upload failed:', error);

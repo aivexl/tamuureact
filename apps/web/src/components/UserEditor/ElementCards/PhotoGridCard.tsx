@@ -2,11 +2,11 @@ import React, { useState, useRef } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { Trash2, Plus, Image as ImageIcon, Crop as CropIcon, Lock, UploadCloud } from 'lucide-react';
 import { ElementCardProps } from './Registry';
-import { ImageCropModal, CropConfig } from '@/components/Modals/ImageCropModal';
-import { PhotoGridConfig } from '@/store/layersSlice';
-import { useStore } from '@/store/useStore';
-import { storage } from '@/lib/api';
-import { generateId } from '@/lib/utils';
+import { ImageCropModal, CropConfig } from '../../Modals/ImageCropModal';
+import { PhotoGridConfig } from '../../../store/layersSlice';
+import { useStore } from '../../../store/useStore';
+import { storage } from '../../../lib/api';
+import { generateId } from '../../../lib/utils';
 
 export const PhotoGridCard: React.FC<ElementCardProps> = ({ element, handleUpdate, permissions }) => {
     const [isCropOpen, setIsCropOpen] = useState(false);
@@ -73,8 +73,6 @@ export const PhotoGridCard: React.FC<ElementCardProps> = ({ element, handleUpdat
                 } as any
             });
 
-            setSelectedImageSrc(null);
-            setCroppingIndex(null);
             return true; // Signal success to modal
         } catch (error) {
             console.error('[PhotoGridCard] Upload failed:', error);
@@ -83,6 +81,7 @@ export const PhotoGridCard: React.FC<ElementCardProps> = ({ element, handleUpdat
             setIsUploading(false);
         }
     };
+
 
     const handleEditClick = (index: number) => {
         if (!canEdit) return;

@@ -1,4 +1,4 @@
-import { Layer } from '@/store/useStore';
+import { Layer } from '../../../store/useStore';
 
 export interface ElementCardProps {
     element: Layer;

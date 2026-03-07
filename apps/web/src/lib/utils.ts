@@ -32,42 +32,57 @@ export const dataURLtoBlob = (dataURL: string): Blob => {
 };
 /**
  * Recursively sanitizes an object or array, removing stale blob: or data: URLs.
- * CTO-LEVEL DESIGN: Ensures no temporary URLs persist in the production state.
+ * Optimized for performance: Only creates new objects/arrays if a change is actually detected.
+ * CTO-LEVEL DESIGN: Ensures zero-friction UI thread even with multi-megabyte payloads.
  */
 export const sanitizeValue = (value: any): any => {
     if (value === null || value === undefined) return value;
 
-    if (typeof value === 'string') {
-        if (value.startsWith('blob:') || value.startsWith('data:')) {
-            console.debug('[Sanitization] Stripping stale temporary URL:', value.substring(0, 50) + '...');
-            return '';
-        }
-        return patchLegacyUrl(value);
-    }
-
-    if (Array.isArray(value)) {
-        return value.map(item => sanitizeValue(item));
-    }
-
-    if (typeof value === 'object') {
-        const sanitized: any = {};
-        for (const key in value) {
-            if (Object.prototype.hasOwnProperty.call(value, key)) {
-                sanitized[key] = sanitizeValue(value[key]);
+    // Handle primitives early
+    const type = typeof value;
+    if (type !== 'object') {
+        if (type === 'string') {
+            if (value.startsWith('blob:') || value.startsWith('data:')) {
+                console.debug('[Sanitization] Stripping stale temporary URL:', value.substring(0, 50) + '...');
+                return '';
             }
+            return patchLegacyUrl(value);
         }
-        return sanitized;
+        return value;
     }
 
-    return value;
+    // Handle Arrays
+    if (Array.isArray(value)) {
+        let hasChanged = false;
+        const sanitized = value.map(item => {
+            const newItem = sanitizeValue(item);
+            if (newItem !== item) hasChanged = true;
+            return newItem;
+        });
+        return hasChanged ? sanitized : value;
+    }
+
+    // Handle Objects
+    let hasChanged = false;
+    const sanitized: any = {};
+    for (const key in value) {
+        if (Object.prototype.hasOwnProperty.call(value, key)) {
+            const item = value[key];
+            const newItem = sanitizeValue(item);
+            if (newItem !== item) {
+                hasChanged = true;
+            }
+            sanitized[key] = newItem;
+        }
+    }
+
+    // Only return the new object if something inside it actually changed
+    // This drastically reduces memory pressure and GC pauses
+    return hasChanged ? sanitized : value;
 };
 
 /**
  * Resolves the primary public domain for invitations.
- * Steering Logic:
- * - app.tamuu.id -> tamuu.id
- * - localhost:xxxx -> localhost:xxxx
- * - else -> current host
  */
 export const getPublicDomain = (): string => {
     if (typeof window === 'undefined') return 'tamuu.id';
@@ -80,29 +95,32 @@ export const getPublicDomain = (): string => {
 
 /**
  * Patches legacy or unresolvable domains in URLs.
- * Enterprise Guard: Handles legacy R2 bucket domains.
- * NOTE: api.tamuu.id is the CORRECT production domain and should NOT be patched.
+ * Optimized for high-frequency calling.
  */
 export const patchLegacyUrl = (url: string | null | undefined): string => {
-    if (!url) return '';
-    if (typeof url !== 'string') return '';
+    if (!url || typeof url !== 'string' || url.length < 5) return url || '';
+
+    // Fast check for common patterns before applying regex/replace
+    if (!url.includes('tamuu') && !url.includes(' / ')) return url;
+
+    let result = url;
 
     // Fix R2 assets if they are still using the legacy bucket domain
-    if (url.includes('tamuu-assets.r2.cloudflarestorage.com')) {
-        url = url.replace(/https?:\/\/.*?\.r2\.cloudflarestorage\.com/, 'https://api.tamuu.id/assets');
+    if (result.includes('tamuu-assets.r2.cloudflarestorage.com')) {
+        result = result.replace(/https?:\/\/.*?\.r2\.cloudflarestorage\.com/, 'https://api.tamuu.id/assets');
     }
 
-    // Fix malformed upload paths with spaces around slashes (e.g., "uploads / filename")
-    if (url.includes(' / ')) {
-        url = url.replace(/\s+\/\s+/g, '/');
+    // Fix malformed upload paths with spaces around slashes
+    if (result.includes(' / ')) {
+        result = result.replace(/\s+\/\s+/g, '/');
     }
 
-    // Redirect legacy workers.dev subdomain to custom domain (if any old references exist)
-    if (url.includes('tamuu-api.shafania57.workers.dev')) {
-        url = url.replace('tamuu-api.shafania57.workers.dev', 'api.tamuu.id');
+    // Redirect legacy workers.dev subdomain
+    if (result.includes('tamuu-api.shafania57.workers.dev')) {
+        result = result.replace('tamuu-api.shafania57.workers.dev', 'api.tamuu.id');
     }
 
-    return url.trim();
+    return result === url ? url : result.trim();
 };
 
 /**

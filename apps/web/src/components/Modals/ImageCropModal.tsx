@@ -220,11 +220,16 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
     return (
         <AnimatePresence>
             {isOpen && imageSrc && (
-                <div className="fixed inset-0 z-[5000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-[5000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+                >
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
                         className="bg-[#1a1a1a] rounded-2xl border border-white/10 w-full max-w-lg overflow-hidden flex flex-col shadow-2xl"
                     >
                         {/* Header */}
@@ -358,7 +363,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
                             </div>
                         </div>
                     </motion.div>
-                </div>
+                </motion.div>
             )}
         </AnimatePresence>
     );
