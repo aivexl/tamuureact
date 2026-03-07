@@ -1032,23 +1032,35 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                                                             return true;
                                                         })
                                                         .map((element: any) => {
-                                                            // LIQUID LAYOUT ENGINE (Legacy tamuu algorithm)
-                                                            // We adjust individual element Y positions to "compress" or "expand" 
-                                                            // the layout based on available viewport height (coverHeight).
+                                                            // CTO: LIQUID LAYOUT ENGINE V4 (Smart Zone Compression)
+                                                            // Safely compresses empty space between text and flowers without crushing elements
                                                             let adjustedY = element.y;
                                                             if (isPortrait) {
                                                                 const extraHeight = coverHeight - CANVAS_HEIGHT;
 
-                                                                // Robust height detection (matches renderer logic)
                                                                 const elementHeight = element.height || element.size?.height || (element.textStyle?.fontSize) || 0;
                                                                 const maxTop = CANVAS_HEIGHT - elementHeight;
 
-                                                                // Progress determines if the element is near the top (0) or bottom (1)
                                                                 let progress = maxTop > 0 ? element.y / maxTop : 0;
                                                                 progress = Math.max(0, Math.min(1, progress));
 
-                                                                // Apply linear interpolation
-                                                                adjustedY = element.y + (extraHeight * progress);
+                                                                let shiftFactor = progress;
+
+                                                                // If screen is shorter than design, apply Non-Linear Compression
+                                                                if (extraHeight < 0) {
+                                                                    // Top 20% stays near top. Bottom 20% stays near bottom.
+                                                                    // Middle 60% shifts uniformly by 0.5 to strictly preserve internal spacing and prevent collisions.
+                                                                    if (progress <= 0.2) {
+                                                                        shiftFactor = (progress / 0.2) * 0.5;
+                                                                    } else if (progress >= 0.8) {
+                                                                        shiftFactor = 0.5 + ((progress - 0.8) / 0.2) * 0.5;
+                                                                    } else {
+                                                                        shiftFactor = 0.5;
+                                                                    }
+                                                                }
+
+                                                                // Apply calculated interpolation
+                                                                adjustedY = element.y + (extraHeight * shiftFactor);
                                                             }
 
                                                             // Determine if this element should be force-triggered
