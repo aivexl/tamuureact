@@ -82,10 +82,11 @@ export const ProfilePhotoPanel: React.FC<ProfilePhotoPanelProps> = ({ invitation
             const file = new File([croppedBlob], `profile-photo-${Date.now()}.png`, { type: 'image/png' });
 
             // Use context 'avatar' for profile photos (optimized size) + forensic metadata
-            const { user } = useStore.getState();
+            const { user, id: contextId, isTemplate } = useStore.getState();
             const uploadResult = await storage.upload(file, 'avatar', { 
                 userId: user?.id, 
-                invitationId 
+                invitationId: !isTemplate ? contextId : undefined,
+                templateId: isTemplate ? contextId : undefined
             });
 
             if (uploadResult?.url) {

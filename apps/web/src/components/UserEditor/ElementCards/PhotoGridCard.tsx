@@ -16,7 +16,7 @@ export const PhotoGridCard: React.FC<ElementCardProps> = ({ element, handleUpdat
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // CTO: Context Acquisition
-    const { id: invitationId } = useStore();
+    const { id: contextId, isTemplate } = useStore();
     const user = useStore(s => s.user);
     const userId = user?.id;
 
@@ -53,7 +53,11 @@ export const PhotoGridCard: React.FC<ElementCardProps> = ({ element, handleUpdat
             const file = new File([croppedBlob], fileName, { type: 'image/png' });
 
             // 1. Upload to Cloudflare R2 with standard optimization + forensic metadata
-            const result = await storage.upload(file, 'gallery', { userId, invitationId });
+            const result = await storage.upload(file, 'gallery', { 
+                userId, 
+                invitationId: !isTemplate ? contextId : undefined,
+                templateId: isTemplate ? contextId : undefined
+            });
             const publicUrl = result.url;
 
             // 2. Update the images array

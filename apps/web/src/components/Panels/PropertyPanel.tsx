@@ -1267,13 +1267,18 @@ export const PropertyPanel: React.FC = () => {
                                                 const file = (e.target as HTMLInputElement).files?.[0];
                                                 if (!file) return;
                                                 try {
-                                                    const { user, id: invitationId } = useStore.getState();
-                                                    const result = await storage.upload(file, 'gallery', { userId: user?.id, invitationId });
+                                                    const { user, id: contextId, isTemplate } = useStore.getState();
+                                                    const result = await storage.upload(file, 'gallery', { 
+                                                        userId: user?.id, 
+                                                        invitationId: !isTemplate ? contextId : undefined,
+                                                        templateId: isTemplate ? contextId : undefined
+                                                    });
                                                     handleUpdate({ imageUrl: result.url });
                                                 } catch (error) {
                                                     console.error('Upload failed:', error);
                                                 }
                                             };
+
                                             input.click();
                                         }}
                                         className="p-2 bg-premium-accent/10 border border-premium-accent/20 rounded-lg text-premium-accent hover:bg-premium-accent/20 transition-colors"

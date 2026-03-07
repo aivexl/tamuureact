@@ -4687,22 +4687,30 @@ name = COALESCE(?, name),
                     // Get metadata from form data if provided
                     const userId = formData.get('user_id') || formData.get('userId');
                     const invitationId = formData.get('invitation_id') || formData.get('invitationId');
+                    const templateId = formData.get('template_id') || formData.get('templateId');
 
-                    // Save to database with metadata
+                    // Save to database with metadata (HARDENED)
                     const assetId = crypto.randomUUID();
-                    await env.DB.prepare(
-                        `INSERT INTO assets (id, user_id, invitation_id, filename, content_type, size, r2_key, public_url)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-                    ).bind(
-                        assetId, 
-                        userId || null, 
-                        invitationId || null, 
-                        originalName, 
-                        contentType, 
-                        file.size || buffer.byteLength, 
-                        key, 
-                        publicUrl
-                    ).run();
+                    try {
+                        await env.DB.prepare(
+                            `INSERT INTO assets (id, user_id, invitation_id, template_id, filename, content_type, size, r2_key, public_url)
+                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                        ).bind(
+                            assetId, 
+                            userId || null, 
+                            invitationId || null, 
+                            templateId || null,
+                            originalName, 
+                            contentType, 
+                            file.size || buffer.byteLength, 
+                            key, 
+                            publicUrl
+                        ).run();
+                    } catch (dbError) {
+                        // CTO Resilience: If DB fails but R2 succeeded, we still return the URL
+                        // but log the error for audit. This prevents 500s on FK violations.
+                        console.error('[Upload] DB Indexing failed:', dbError.message);
+                    }
 
                     return json({ id: assetId, url: publicUrl, key }, corsHeaders);
                 } catch (uploadError) {

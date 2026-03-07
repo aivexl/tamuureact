@@ -13,7 +13,8 @@ export const ImageCard: React.FC<ElementCardProps> = ({ element, handleUpdate, p
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // CTO: Context Acquisition
-    const { id: invitationId, user } = useStore();
+    const { id: contextId, isTemplate } = useStore();
+    const user = useStore(s => s.user);
     const userId = user?.id;
 
     const canEdit = permissions.canEditImage;
@@ -38,8 +39,13 @@ export const ImageCard: React.FC<ElementCardProps> = ({ element, handleUpdate, p
             const file = new File([croppedBlob], fileName, { type: 'image/png' });
 
             // 1. Upload to Cloudflare R2 with automatic optimization + forensic metadata
-            const result = await storage.upload(file, 'gallery', { userId, invitationId });
+            const result = await storage.upload(file, 'gallery', { 
+                userId, 
+                invitationId: !isTemplate ? contextId : undefined,
+                templateId: isTemplate ? contextId : undefined
+            });
             const publicUrl = result.url;
+
 
             // 2. Update the element with the optimized URL
             handleUpdate({
@@ -47,6 +53,7 @@ export const ImageCard: React.FC<ElementCardProps> = ({ element, handleUpdate, p
                 imageUrl: publicUrl,
                 cropConfig: cropConfig as any
             });
+
             
             setSelectedImageSrc(null);
             return true; // Signal success to modal

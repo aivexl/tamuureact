@@ -356,7 +356,7 @@ export const userDisplayDesigns = {
 import { processImage, type ImageContext } from './image-manager';
 
 export const storage = {
-    async upload(file: File, context: ImageContext = 'gallery', metadata?: { userId?: string; invitationId?: string }): Promise<{ id: string; url: string; key: string; blurHash?: string }> {
+    async upload(file: File, context: ImageContext = 'gallery', metadata?: { userId?: string; invitationId?: string; templateId?: string }): Promise<{ id: string; url: string; key: string; blurHash?: string }> {
 
         let fileToUpload = file;
         let blurHash = '';
@@ -379,6 +379,7 @@ export const storage = {
         // CTO Policy: Metadata enrichment for forensic traceability
         if (metadata?.userId) formData.append('user_id', metadata.userId);
         if (metadata?.invitationId) formData.append('invitation_id', metadata.invitationId);
+        if (metadata?.templateId) formData.append('template_id', metadata.templateId);
 
         const res = await safeFetch(`${API_BASE}/api/upload`, {
             method: 'POST',

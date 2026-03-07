@@ -127,8 +127,12 @@ export const SettingsSidebar: React.FC = () => {
 
         setUploading(true);
         try {
-            const { user, id: invitationId } = useStore.getState();
-            const result = await storage.upload(file, 'gallery', { userId: user?.id, invitationId });
+            const { user, id: contextId, isTemplate } = useStore.getState();
+            const result = await storage.upload(file, 'gallery', { 
+                userId: user?.id, 
+                invitationId: !isTemplate ? contextId : undefined,
+                templateId: isTemplate ? contextId : undefined
+            });
             updateSection(activeSectionId, { backgroundUrl: result.url });
         } catch (error: any) {
             console.error('BG Upload failed:', error);
@@ -536,8 +540,12 @@ function ThumbnailControl() {
             const safeName = (projectName || 'untitled').toLowerCase().replace(/[^a-z0-9]/g, '-');
             const file = new File([blob], `thumb_${safeName}_${timestamp}.jpg`, { type: 'image/jpeg' });
 
-            const { user, id: invitationId } = useStore.getState();
-            const result = await storage.upload(file, 'gallery', { userId: user?.id, invitationId });
+            const { user, id: contextId, isTemplate } = useStore.getState();
+            const result = await storage.upload(file, 'gallery', { 
+                userId: user?.id, 
+                invitationId: !isTemplate ? contextId : undefined,
+                templateId: isTemplate ? contextId : undefined
+            });
             setThumbnailUrl(result.url);
             console.log('[Thumbnail] Uploaded:', result.url);
 

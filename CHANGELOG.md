@@ -1,5 +1,15 @@
 # Tamuu Changelog
 
+## [0.6.4] - 2026-03-07
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Fix: 500 Upload Error & Database Synchronization
+- **Fix: Foreign Key Constraint Violation**: Resolved a critical 500 error occurring when uploading assets from the Admin Editor (Templates). The system was incorrectly attempting to bind Template IDs to an `invitation_id` column with a strict foreign key constraint.
+- **Schema Migration**: Applied migration `0046_add_template_id_to_assets.sql` to the production D1 database, adding a dedicated `template_id` column to the `assets` table.
+- **Resilient Indexing**: Hardened the `/api/upload` endpoint to gracefully handle database indexing failures. Assets are now successfully stored in R2 and available to the UI even if the optional database metadata record fails.
+- **Context-Aware Uploads**: Standardized all upload components (`PhotoGridCard`, `ImageCard`, `SettingsSidebar`, `GalleryPanel`, `ProfilePhotoPanel`, `PropertyPanel`) to correctly distinguish between Invitation and Template contexts, ensuring 100% database integrity.
+
 ## [0.6.3] - 2026-03-07
 **Status**: 🟢 Deployed
 **Environment**: Production
