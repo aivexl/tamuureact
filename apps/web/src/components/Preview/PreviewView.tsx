@@ -157,8 +157,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
     // Calculate cover height (fills viewport exactly at current scale)
     const coverHeight = useMemo(() => {
         if (!scaleFactor || scaleFactor === 0) return CANVAS_HEIGHT;
-        // Revert to pure viewport height computation for Section 0
-        return windowSize.height / scaleFactor;
+        // CTO FIX: Cap minimum height to 680px to prevent extreme crushing on tiny screens
+        return Math.max(windowSize.height / scaleFactor, 680);
     }, [windowSize.height, scaleFactor]);
 
     // Calculate total height for scroll container
@@ -1032,35 +1032,49 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                                                             return true;
                                                         })
                                                         .map((element: any) => {
-                                                            // CTO: LIQUID LAYOUT ENGINE V4 (Smart Zone Compression)
-                                                            // Safely compresses empty space between text and flowers without crushing elements
+                                                            // CTO: LIQUID LAYOUT ENGINE V5 (Piecewise Interpolation)
+                                                            // Prevents ANY text overlapping by guaranteeing 1:1 scale preservation in the middle zone.
                                                             let adjustedY = element.y;
                                                             if (isPortrait) {
                                                                 const extraHeight = coverHeight - CANVAS_HEIGHT;
 
-                                                                const elementHeight = element.height || element.size?.height || (element.textStyle?.fontSize) || 0;
-                                                                const maxTop = CANVAS_HEIGHT - elementHeight;
-
-                                                                let progress = maxTop > 0 ? element.y / maxTop : 0;
-                                                                progress = Math.max(0, Math.min(1, progress));
-
-                                                                let shiftFactor = progress;
-
-                                                                // If screen is shorter than design, apply Non-Linear Compression
                                                                 if (extraHeight < 0) {
-                                                                    // Top 20% stays near top. Bottom 20% stays near bottom.
-                                                                    // Middle 60% shifts uniformly by 0.5 to strictly preserve internal spacing and prevent collisions.
-                                                                    if (progress <= 0.2) {
-                                                                        shiftFactor = (progress / 0.2) * 0.5;
-                                                                    } else if (progress >= 0.8) {
-                                                                        shiftFactor = 0.5 + ((progress - 0.8) / 0.2) * 0.5;
-                                                                    } else {
-                                                                        shiftFactor = 0.5;
-                                                                    }
-                                                                }
+                                                                    // SQUISH MODE (Screen shorter than design)
+                                                                    const halfExtra = extraHeight / 2;
+                                                                    const y = element.y;
+                                                                    
+                                                                    // Define 3 strict zones
+                                                                    const TOP_BOUND = 250;
+                                                                    const BOTTOM_BOUND = 650;
+                                                                    const MAX_Y = CANVAS_HEIGHT;
 
-                                                                // Apply calculated interpolation
-                                                                adjustedY = element.y + (extraHeight * shiftFactor);
+                                                                    if (y <= 0) {
+                                                                        // Hard pin to very top
+                                                                        adjustedY = y;
+                                                                    } else if (y <= TOP_BOUND) {
+                                                                        // Top 250px absorbs half the squish linearly
+                                                                        const progress = y / TOP_BOUND;
+                                                                        adjustedY = y + (halfExtra * progress);
+                                                                    } else if (y < BOTTOM_BOUND) {
+                                                                        // MIDDLE 400px IS A SOLID BLOCK (Shifted up by halfExtra)
+                                                                        // Distance between any two elements here remains exactly the same
+                                                                        adjustedY = y + halfExtra;
+                                                                    } else if (y < MAX_Y) {
+                                                                        // Bottom 246px absorbs the other half
+                                                                        const progress = (y - BOTTOM_BOUND) / (MAX_Y - BOTTOM_BOUND);
+                                                                        adjustedY = y + halfExtra + (halfExtra * progress);
+                                                                    } else {
+                                                                        // Hard pin to very bottom
+                                                                        adjustedY = y + extraHeight;
+                                                                    }
+                                                                } else {
+                                                                    // EXPAND MODE (Standard linear spacing)
+                                                                    const elementHeight = element.height || element.size?.height || (element.textStyle?.fontSize) || 0;
+                                                                    const maxTop = CANVAS_HEIGHT - elementHeight;
+                                                                    let progress = maxTop > 0 ? element.y / maxTop : 0;
+                                                                    progress = Math.max(0, Math.min(1, progress));
+                                                                    adjustedY = element.y + (extraHeight * progress);
+                                                                }
                                                             }
 
                                                             // Determine if this element should be force-triggered
