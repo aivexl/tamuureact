@@ -16,9 +16,10 @@ export const PhotoGridCard: React.FC<ElementCardProps> = ({ element, handleUpdat
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // CTO: Context Acquisition & Authorization
-    const { id: invitationId, user } = useStore();
+    const { id: invitationId } = useStore();
+    const user = useStore(s => s.user);
     const userId = user?.id;
-    const isAdmin = (user as any)?.role === 'admin';
+    const isAdmin = user?.role === 'admin';
 
     const canEdit = permissions.canEditImage;
 

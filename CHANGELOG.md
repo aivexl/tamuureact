@@ -1,5 +1,14 @@
 # Tamuu Changelog
 
+## [0.6.3] - 2026-03-07
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Critical: Photo Grid Governance & Slot Management Fix
+- **Fix: Strict Role Enforcement**: Resolved an issue where regular users could still add or remove slots in the Photo Grid element. Re-engineered the `isAdmin` logic using atomic `useStore` selectors to ensure absolute governance.
+- **Governor Hardening**: Applied strict conditional rendering and function-level guards to `handleAddClick` and `handleRemoveImage`, ensuring that structural changes to the grid are physically impossible for non-administrative accounts.
+- **UI Consistency**: Verified that "Add Slot" and "Remove Slot" buttons are strictly hidden for end-users, while "Change Photo" remains accessible for active content management.
+
 ## [0.6.2] - 2026-03-07
 **Status**: 🟢 Deployed
 **Environment**: Production
