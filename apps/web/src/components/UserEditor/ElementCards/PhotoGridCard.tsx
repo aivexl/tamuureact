@@ -15,11 +15,10 @@ export const PhotoGridCard: React.FC<ElementCardProps> = ({ element, handleUpdat
     const [croppingIndex, setCroppingIndex] = useState<number | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // CTO: Context Acquisition & Authorization
+    // CTO: Context Acquisition
     const { id: invitationId } = useStore();
     const user = useStore(s => s.user);
     const userId = user?.id;
-    const isAdmin = user?.role === 'admin';
 
     const canEdit = permissions.canEditImage;
 
@@ -61,8 +60,6 @@ export const PhotoGridCard: React.FC<ElementCardProps> = ({ element, handleUpdat
             const newImages = [...images];
             if (croppingIndex !== null && croppingIndex < newImages.length) {
                 newImages[croppingIndex] = publicUrl;
-            } else {
-                newImages.push(publicUrl);
             }
 
             handleUpdate({
@@ -83,26 +80,6 @@ export const PhotoGridCard: React.FC<ElementCardProps> = ({ element, handleUpdat
         }
     };
 
-    const handleRemoveImage = (index: number) => {
-        // CTO Policy: Only Admin can modify structure
-        if (!isAdmin) return;
-        
-        const newImages = images.filter((_, i) => i !== index);
-        handleUpdate({
-            photoGridConfig: {
-                ...config,
-                images: newImages
-            } as any
-        });
-    };
-
-    const handleAddClick = () => {
-        // CTO Policy: Only Admin can increase count
-        if (!isAdmin) return;
-        setCroppingIndex(null);
-        fileInputRef.current?.click();
-    };
-
     const handleEditClick = (index: number) => {
         if (!canEdit) return;
         setCroppingIndex(index);
@@ -115,35 +92,15 @@ export const PhotoGridCard: React.FC<ElementCardProps> = ({ element, handleUpdat
             <div className="flex items-center justify-between px-1">
                 <div className="flex flex-col">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        Koleksi Foto Grid
+                        Manajemen Foto Grid
                     </label>
                     <span className="text-[9px] font-bold text-teal-600 uppercase tracking-tight">
                         {images.length} Slot Tersedia
                     </span>
                 </div>
-                
-                {/* CTO: Only Admin can add slots */}
-                {isAdmin && images.length < 10 && (
-                    <button
-                        onClick={handleAddClick}
-                        disabled={isUploading}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border ${
-                            isUploading 
-                            ? 'bg-slate-50 text-slate-400 border-slate-100' 
-                            : 'bg-teal-600 text-white border-teal-700 hover:bg-teal-700 shadow-sm'
-                        }`}
-                    >
-                        {isUploading ? (
-                            <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" />
-                        ) : (
-                            <Plus className="w-3.5 h-3.5" />
-                        )}
-                        Tambah Slot
-                    </button>
-                )}
             </div>
 
-            {/* Main Upload / Grid Area */}
+            {/* Main Grid Area - FIXED SLOTS (Structural Integrity) */}
             <div className="space-y-4">
                 {images.length === 0 ? (
                     <div className="w-full py-16 border-2 border-dashed rounded-[2.5rem] bg-slate-50 border-slate-200 flex flex-col items-center justify-center gap-4 text-slate-400">
@@ -161,7 +118,6 @@ export const PhotoGridCard: React.FC<ElementCardProps> = ({ element, handleUpdat
                                     layout
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.9 }}
                                     className="flex flex-col gap-3 group"
                                 >
                                     {/* Image Container */}
@@ -178,36 +134,23 @@ export const PhotoGridCard: React.FC<ElementCardProps> = ({ element, handleUpdat
                                         )}
                                     </div>
 
-                                    {/* Action Buttons - Always Visible (Ex Apple/Meta Standard) */}
-                                    <div className="flex flex-col gap-2">
-                                        <button
-                                            onClick={() => handleEditClick(index)}
-                                            disabled={isUploading || !canEdit}
-                                            className={`w-full py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all border ${
-                                                isUploading && croppingIndex === index
-                                                ? 'bg-slate-50 text-slate-400 border-slate-100'
-                                                : 'bg-white text-teal-600 border-teal-100 hover:bg-teal-50 hover:border-teal-200 active:scale-[0.98]'
-                                            } ${!canEdit ? 'opacity-50 cursor-not-allowed' : 'shadow-sm'}`}
-                                        >
-                                            {isUploading && croppingIndex === index ? (
-                                                <div className="w-3.5 h-3.5 border-2 border-teal-100 border-t-teal-500 rounded-full animate-spin" />
-                                            ) : (
-                                                <UploadCloud className="w-3.5 h-3.5" />
-                                            )}
-                                            {isUploading && croppingIndex === index ? 'Mungunggah...' : 'Ganti Foto'}
-                                        </button>
-
-                                        {/* Admin-only Delete Option */}
-                                        {isAdmin && (
-                                            <button
-                                                onClick={() => handleRemoveImage(index)}
-                                                className="w-full py-2 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-red-500 transition-colors flex items-center justify-center gap-1.5"
-                                            >
-                                                <Trash2 className="w-3 h-3" />
-                                                Hapus Slot
-                                            </button>
+                                    {/* Action Button - Replace Only (Permanent Display) */}
+                                    <button
+                                        onClick={() => handleEditClick(index)}
+                                        disabled={isUploading || !canEdit}
+                                        className={`w-full py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all border ${
+                                            isUploading && croppingIndex === index
+                                            ? 'bg-slate-50 text-slate-400 border-slate-100'
+                                            : 'bg-white text-teal-600 border-teal-100 hover:bg-teal-50 hover:border-teal-200 active:scale-[0.98]'
+                                        } ${!canEdit ? 'opacity-50 cursor-not-allowed' : 'shadow-sm'}`}
+                                    >
+                                        {isUploading && croppingIndex === index ? (
+                                            <div className="w-3.5 h-3.5 border-2 border-teal-100 border-t-teal-500 rounded-full animate-spin" />
+                                        ) : (
+                                            <UploadCloud className="w-3.5 h-3.5" />
                                         )}
-                                    </div>
+                                        {isUploading && croppingIndex === index ? 'Mungunggah...' : 'Ganti Foto'}
+                                    </button>
                                 </m.div>
                             ))}
                         </AnimatePresence>
