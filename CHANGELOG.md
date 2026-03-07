@@ -1,5 +1,16 @@
 # Tamuu Changelog
 
+## [0.6.21] - 2026-03-07
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Critical: Hybrid Smart-Fit Layout & Mobile Responsiveness
+- **Fix: Mobile Section Clipping**: Implemented a "Hybrid Smart-Fit" engine in `PreviewView.tsx`. Sections now automatically expand their height based on the lowest child element (`maxBottom + 40px`), ensuring that decorative flowers and bottom-aligned elements are never cut off by `overflow: hidden`.
+- **Fix: Perfect 1:1 Text Spacing**: Eliminated vertical text compression for Section 1+. By allowing sections to grow naturally, elements now maintain their exact design coordinates, mathematically guaranteeing zero text overlap.
+- **Enhanced Cover Page Piecewise Mapping**: Refined the Section 0 compression algorithm to use a strict monotonic function. Only the extreme top and bottom margins (100px) absorb viewport compression, keeping central text blocks perfectly spaced while pinning ornaments to corners.
+- **DOM-Measured Narrative Integrity**: Integrated `ResizeObserver` into `LoveStoryElement` and `RSVPWishesElement` to report real-time physical height. This allows the preview engine to dynamically push subsequent sections down, preventing layout collisions.
+- **TypeScript Stability**: Resolved a TS2345 error in the music controller by adding null-safety guards to the `play()` function.
+
 ## [0.6.5] - 2026-03-07
 **Status**: 🔵 Deploying
 **Environment**: Production
