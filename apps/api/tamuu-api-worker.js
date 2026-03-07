@@ -4434,8 +4434,18 @@ name = COALESCE(?, name),
                 const traceId = Math.random().toString(36).substring(7);
                 
                 try {
-                    const body = await request.json();
-                    console.log(`[PUT Invitations] [${traceId}] Updating: ${id}`);
+                    // CTO Resilience: Safe payload parsing
+                    const bodyText = await request.text();
+                    console.log(`[PUT Invitations] [${traceId}] Updating: ${id}, Payload Size: ${bodyText.length} bytes`);
+                    
+                    if (bodyText.length > 5000000) {
+                        return new Response(JSON.stringify({ error: 'Payload too large', code: 'PAYLOAD_TOO_LARGE' }), {
+                            status: 413,
+                            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                        });
+                    }
+
+                    const body = JSON.parse(bodyText);
 
                     // CTO Optimization: Precise Field Extraction with null-safety
                     const pan = body.pan !== undefined ? (typeof body.pan === 'string' ? body.pan : JSON.stringify(body.pan)) : undefined;
@@ -4515,12 +4525,12 @@ name = COALESCE(?, name),
                     return json({ id, updated: true, traceId }, corsHeaders);
                 } catch (dbError) {
                     console.error(`[DB Error] [${traceId}] Update failed:`, dbError.message);
-                    return json({
+                    return new Response(JSON.stringify({
                         error: 'Database update failed',
-                        details: dbError.message,
+                        details: dbError.message || String(dbError),
                         code: 'DB_ERROR',
                         traceId
-                    }, { headers: corsHeaders, status: 500 });
+                    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 });
                 }
             }
 
