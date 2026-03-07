@@ -157,18 +157,44 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
     // Calculate cover height (fills viewport exactly at current scale)
     const coverHeight = useMemo(() => {
         if (!scaleFactor || scaleFactor === 0) return CANVAS_HEIGHT;
-        // CTO FIX: Cap minimum height to 680px to prevent extreme crushing on tiny screens
-        return Math.max(windowSize.height / scaleFactor, 680);
+        return windowSize.height / scaleFactor;
     }, [windowSize.height, scaleFactor]);
+
+    // CTO FIX: Calculate true section height based on elements
+    const elementDimensions = useStore(state => state.elementDimensions);
+    const sectionHeights = useMemo(() => {
+        return sortedSections.map((section, index) => {
+            if (index === 0) return isPortrait ? coverHeight : CANVAS_HEIGHT;
+            
+            let maxBottom = 0;
+            if (section.elements) {
+                section.elements.forEach((el: any) => {
+                    const measuredH = elementDimensions[el.id]?.height;
+                    let h = measuredH || el.height || el.size?.height || 100;
+                    if (!measuredH && ['love_story', 'rsvp_wishes', 'guest_wishes', 'profile_card'].includes(el.type)) {
+                        h = Math.max(h, 800); // Safe fallback before measurement
+                    }
+                    const bottom = el.y + h;
+                    if (bottom > maxBottom) maxBottom = bottom;
+                });
+            }
+
+            const minAllowed = isPortrait ? Math.max(CANVAS_HEIGHT, coverHeight) : CANVAS_HEIGHT;
+            return Math.max(minAllowed, maxBottom + 60); // 60px safety padding
+        });
+    }, [sortedSections, coverHeight, CANVAS_HEIGHT, isPortrait, elementDimensions]);
 
     // Calculate total height for scroll container
     const totalHeight = useMemo(() => {
-        if (sortedSections.length === 0) return CANVAS_HEIGHT;
-        // In portrait, every section fits the screen height
-        if (isPortrait) return sortedSections.length * coverHeight;
-        // Desktop: First is coverHeight, others are CANVAS_HEIGHT
-        return coverHeight + (sortedSections.length - 1) * CANVAS_HEIGHT;
-    }, [sortedSections, coverHeight, isPortrait]);
+        if (sectionHeights.length === 0) return CANVAS_HEIGHT;
+        return sectionHeights.reduce((acc, h) => acc + h, 0);
+    }, [sectionHeights]);
+
+    const getSectionTop = useCallback((index: number) => {
+        let top = 0;
+        for (let i = 0; i < index; i++) top += sectionHeights[i];
+        return top;
+    }, [sectionHeights]);
 
     // Get transition config from first section
     const transitionConfig = useMemo(() => {
@@ -649,16 +675,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         const isDone = transitionStage === 'DONE';
         const flowMode = isDone;
 
-        // Calculate section height (matches viewport height exactly in portrait)
-        const sectionHeight = isPortrait ? coverHeight : CANVAS_HEIGHT;
-
-        // Calculate section position
-        let calculatedTop = 0;
-        if (index > 0) {
-            calculatedTop = isPortrait
-                ? index * coverHeight
-                : coverHeight + (index - 1) * CANVAS_HEIGHT;
-        }
+        const sectionHeight = sectionHeights[index] || CANVAS_HEIGHT;
+        let calculatedTop = getSectionTop(index);
 
         const base: React.CSSProperties = {
             position: 'absolute',
@@ -1032,43 +1050,30 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                                                             return true;
                                                         })
                                                         .map((element: any) => {
-                                                            // CTO: LIQUID LAYOUT ENGINE V5 (Piecewise Interpolation)
-                                                            // Prevents ANY text overlapping by guaranteeing 1:1 scale preservation in the middle zone.
                                                             let adjustedY = element.y;
                                                             if (isPortrait) {
-                                                                const extraHeight = coverHeight - CANVAS_HEIGHT;
-
-                                                                if (extraHeight < 0) {
-                                                                    // SQUISH MODE (Screen shorter than design)
-                                                                    const halfExtra = extraHeight / 2;
-                                                                    const y = element.y;
-                                                                    
-                                                                    // Define 3 strict zones
-                                                                    const TOP_BOUND = 250;
-                                                                    const BOTTOM_BOUND = 650;
-                                                                    const MAX_Y = CANVAS_HEIGHT;
-
-                                                                    if (y <= 0) {
-                                                                        // Hard pin to very top
-                                                                        adjustedY = y;
-                                                                    } else if (y <= TOP_BOUND) {
-                                                                        // Top 250px absorbs half the squish linearly
-                                                                        const progress = y / TOP_BOUND;
-                                                                        adjustedY = y + (halfExtra * progress);
-                                                                    } else if (y < BOTTOM_BOUND) {
-                                                                        // MIDDLE 400px IS A SOLID BLOCK (Shifted up by halfExtra)
-                                                                        // Distance between any two elements here remains exactly the same
-                                                                        adjustedY = y + halfExtra;
-                                                                    } else if (y < MAX_Y) {
-                                                                        // Bottom 246px absorbs the other half
-                                                                        const progress = (y - BOTTOM_BOUND) / (MAX_Y - BOTTOM_BOUND);
-                                                                        adjustedY = y + halfExtra + (halfExtra * progress);
+                                                                if (index === 0) {
+                                                                    // Section 0 (Cover): Must fit the screen. Use Piecewise to prevent text overlap.
+                                                                    const extraHeight = coverHeight - CANVAS_HEIGHT;
+                                                                    if (extraHeight < 0) {
+                                                                        const halfExtra = extraHeight / 2;
+                                                                        const y = element.y;
+                                                                        if (y <= 0) adjustedY = y;
+                                                                        else if (y <= 250) adjustedY = y + (halfExtra * (y / 250));
+                                                                        else if (y < 650) adjustedY = y + halfExtra; // Center text block shifts together, NO overlap
+                                                                        else if (y < CANVAS_HEIGHT) adjustedY = y + halfExtra + (halfExtra * ((y - 650) / (CANVAS_HEIGHT - 650)));
+                                                                        else adjustedY = y + extraHeight;
                                                                     } else {
-                                                                        // Hard pin to very bottom
-                                                                        adjustedY = y + extraHeight;
+                                                                        // Expand mode
+                                                                        const elementHeight = element.height || element.size?.height || (element.textStyle?.fontSize) || 0;
+                                                                        const maxTop = CANVAS_HEIGHT - elementHeight;
+                                                                        let progress = maxTop > 0 ? element.y / maxTop : 0;
+                                                                        progress = Math.max(0, Math.min(1, progress));
+                                                                        adjustedY = element.y + (extraHeight * progress);
                                                                     }
                                                                 } else {
-                                                                    // EXPAND MODE (Standard linear spacing)
+                                                                    // Section 1+: ZERO COMPRESSION. Prevents all text overlapping.
+                                                                    const extraHeight = Math.max(0, coverHeight - CANVAS_HEIGHT);
                                                                     const elementHeight = element.height || element.size?.height || (element.textStyle?.fontSize) || 0;
                                                                     const maxTop = CANVAS_HEIGHT - elementHeight;
                                                                     let progress = maxTop > 0 ? element.y / maxTop : 0;

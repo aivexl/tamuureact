@@ -9,12 +9,36 @@ const LOVE_STORY_LIMITS: Record<string, number> = {
     free: 1, pro: 3, vip: 3, ultimate: 5, platinum: 5, elite: 7, vvip: 10
 };
 
-export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
-    const { user } = useStore();
+export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void, onDimensionsDetected?: (w: number, h: number) => void }> = ({ layer, isEditor, onContentLoad, onDimensionsDetected }) => {
+    const { user, updateLayer } = useStore();
+    const rootRef = React.useRef<HTMLDivElement>(null);
+    const lastSyncRef = React.useRef<{ w: number, h: number }>({ w: 0, h: 0 });
 
     useEffect(() => {
         onContentLoad?.();
-    }, []);
+    }, [onContentLoad]);
+
+    React.useLayoutEffect(() => {
+        if (!rootRef.current) return;
+        const observer = new ResizeObserver((entries) => {
+            const entry = entries[0];
+            if (!entry) return;
+            const rect = entry.target.getBoundingClientRect();
+            const measuredW = Math.ceil(rect.width);
+            const measuredH = Math.ceil(rect.height);
+            const hasChangedLocally = measuredW !== lastSyncRef.current.w || measuredH !== lastSyncRef.current.h;
+
+            if (hasChangedLocally) {
+                lastSyncRef.current = { w: measuredW, h: measuredH };
+                if (onDimensionsDetected) onDimensionsDetected(measuredW, measuredH);
+                if (isEditor && (Math.abs(measuredW - layer.width) > 5 || Math.abs(measuredH - layer.height) > 5)) {
+                    updateLayer(layer.id, { height: measuredH });
+                }
+            }
+        });
+        observer.observe(rootRef.current);
+        return () => observer.disconnect();
+    }, [layer.id, layer.width, layer.height, isEditor, onDimensionsDetected, updateLayer]);
 
     const config = layer.loveStoryConfig || {
         variant: 'elegant',
@@ -302,7 +326,7 @@ export const LoveStoryElement: React.FC<{ layer: Layer, isEditor?: boolean, onCo
     const outerScale = count <= 3 ? 1 : count === 4 ? 0.9 : count === 5 ? 0.8 : 0.7;
 
     return (
-        <div className="w-full h-full bg-transparent select-none antialiased flex flex-col items-center justify-center overflow-hidden">
+        <div ref={rootRef} className="w-full h-fit bg-transparent select-none antialiased flex flex-col items-center justify-center">
             <div
                 className="w-full transition-all duration-1000 ease-out origin-center"
                 style={{ transform: `scale(${outerScale})` }}
