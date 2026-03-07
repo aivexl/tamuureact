@@ -686,8 +686,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
             left: 0,
             width: CANVAS_WIDTH,
             height: sectionHeight,
-            // CTO FIX: Allow overflow in flow mode so narrative elements like Love Story aren't cut off
-            overflow: flowMode ? 'visible' : 'hidden',
+            overflow: 'hidden',
         };
 
         if (!flowMode) {
@@ -1001,8 +1000,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                                             }}
                                             style={{
                                                 transformOrigin: '0 0',
-                                                // CTO FIX: Ensure zoom wrapper doesn't clip narrative elements
-                                                overflow: transitionStage === 'DONE' ? 'visible' : 'hidden',
+                                                overflow: 'hidden',
                                                 willChange: 'transform',
                                                 transformStyle: 'preserve-3d',
                                                 WebkitFontSmoothing: 'antialiased'
