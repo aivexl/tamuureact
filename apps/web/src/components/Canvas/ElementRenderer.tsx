@@ -48,7 +48,9 @@ interface ElementRendererProps {
 
 export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenInvitation, isEditor, invitationId, onContentLoad, onDimensionsDetected }) => {
     // SAFETY CHECK: If width or height is clearly corrupted (> 800px), we constrain the display container
-    const isExploded = layer.width > 800 || layer.height > 800;
+    // CTO FIX: Bypass narrative elements so they are not cut off on mobile devices
+    const isNarrative = ['love_story', 'rsvp_wishes', 'profile_card', 'guest_wishes'].includes(layer.type);
+    const isExploded = (layer.width > 800 || layer.height > 800) && !isNarrative;
 
     const renderContent = () => {
         switch (layer.type) {

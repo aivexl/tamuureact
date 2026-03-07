@@ -665,7 +665,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
             left: 0,
             width: CANVAS_WIDTH,
             height: sectionHeight,
-            overflow: 'hidden',
+            // CTO FIX: Allow overflow in flow mode so narrative elements like Love Story aren't cut off
+            overflow: flowMode ? 'visible' : 'hidden',
         };
 
         if (!flowMode) {
