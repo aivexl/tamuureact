@@ -157,13 +157,15 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
     // Calculate cover height (fills viewport exactly at current scale)
     const coverHeight = useMemo(() => {
         if (!scaleFactor || scaleFactor === 0) return CANVAS_HEIGHT;
-        return windowSize.height / scaleFactor;
+        // CTO FIX: Cap minimum height to 680px to prevent extreme crushing on tiny screens
+        return Math.max(windowSize.height / scaleFactor, 680);
     }, [windowSize.height, scaleFactor]);
 
     // CTO FIX: Calculate true section height based on elements
     const elementDimensions = useStore(state => state.elementDimensions);
     const sectionHeights = useMemo(() => {
         return sortedSections.map((section, index) => {
+            // Section 0 strictly fits the screen (or the 680px cap)
             if (index === 0) return isPortrait ? coverHeight : CANVAS_HEIGHT;
             
             let maxBottom = 0;
@@ -179,8 +181,9 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                 });
             }
 
-            const minAllowed = isPortrait ? Math.max(CANVAS_HEIGHT, coverHeight) : CANVAS_HEIGHT;
-            return Math.max(minAllowed, maxBottom + 60); // 60px safety padding
+            // CTO: For Section 1+, min height is ALWAYS the design height (896px).
+            // Do NOT use coverHeight here, otherwise tall screens will have massive empty gaps.
+            return Math.max(CANVAS_HEIGHT, maxBottom + 60);
         });
     }, [sortedSections, coverHeight, CANVAS_HEIGHT, isPortrait, elementDimensions]);
 
@@ -1053,32 +1056,39 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                                                             let adjustedY = element.y;
                                                             if (isPortrait) {
                                                                 if (index === 0) {
-                                                                    // Section 0 (Cover): Must fit the screen. Use Piecewise to prevent text overlap.
+                                                                    // CTO: Mathematical Monotonic Piecewise Interpolation
+                                                                    // Guarantees zero text overlap in the middle zone (y: 200 to 700) 
+                                                                    // by absorbing all compression in the outer edges.
                                                                     const extraHeight = coverHeight - CANVAS_HEIGHT;
+                                                                    
                                                                     if (extraHeight < 0) {
-                                                                        const halfExtra = extraHeight / 2;
                                                                         const y = element.y;
-                                                                        if (y <= 0) adjustedY = y;
-                                                                        else if (y <= 250) adjustedY = y + (halfExtra * (y / 250));
-                                                                        else if (y < 650) adjustedY = y + halfExtra; // Center text block shifts together, NO overlap
-                                                                        else if (y < CANVAS_HEIGHT) adjustedY = y + halfExtra + (halfExtra * ((y - 650) / (CANVAS_HEIGHT - 650)));
-                                                                        else adjustedY = y + extraHeight;
+                                                                        const T = 200; // Top compression zone
+                                                                        const B = 700; // Bottom compression zone
+                                                                        const TB_Length = T + (CANVAS_HEIGHT - B); // 200 + 196 = 396
+                                                                        
+                                                                        // Cap compression to prevent reversal (safe up to -350px extraHeight)
+                                                                        const safeExtra = Math.max(extraHeight, -350);
+                                                                        const slopeTB = (TB_Length + safeExtra) / TB_Length;
+
+                                                                        if (y <= T) {
+                                                                            adjustedY = y * slopeTB;
+                                                                        } else if (y <= B) {
+                                                                            adjustedY = (T * slopeTB) + (y - T); // Slope 1.0 (Zero Compression)
+                                                                        } else {
+                                                                            adjustedY = (T * slopeTB) + (B - T) + ((y - B) * slopeTB);
+                                                                        }
                                                                     } else {
-                                                                        // Expand mode
-                                                                        const elementHeight = element.height || element.size?.height || (element.textStyle?.fontSize) || 0;
-                                                                        const maxTop = CANVAS_HEIGHT - elementHeight;
+                                                                        // Expand mode (linear)
+                                                                        const maxTop = CANVAS_HEIGHT - (element.height || 50);
                                                                         let progress = maxTop > 0 ? element.y / maxTop : 0;
                                                                         progress = Math.max(0, Math.min(1, progress));
                                                                         adjustedY = element.y + (extraHeight * progress);
                                                                     }
                                                                 } else {
-                                                                    // Section 1+: ZERO COMPRESSION. Prevents all text overlapping.
-                                                                    const extraHeight = Math.max(0, coverHeight - CANVAS_HEIGHT);
-                                                                    const elementHeight = element.height || element.size?.height || (element.textStyle?.fontSize) || 0;
-                                                                    const maxTop = CANVAS_HEIGHT - elementHeight;
-                                                                    let progress = maxTop > 0 ? element.y / maxTop : 0;
-                                                                    progress = Math.max(0, Math.min(1, progress));
-                                                                    adjustedY = element.y + (extraHeight * progress);
+                                                                    // Section 1+: ZERO COMPRESSION & ZERO STRETCH.
+                                                                    // Elements remain exactly at their designed Y coordinates.
+                                                                    adjustedY = element.y;
                                                                 }
                                                             }
 
