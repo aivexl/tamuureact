@@ -157,48 +157,18 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
     // Calculate cover height (fills viewport exactly at current scale)
     const coverHeight = useMemo(() => {
         if (!scaleFactor || scaleFactor === 0) return CANVAS_HEIGHT;
-        // CTO FIX: Cap minimum height to 680px to prevent extreme crushing on tiny screens
-        return Math.max(windowSize.height / scaleFactor, 680);
+        // Revert to pure viewport height computation for Section 0
+        return windowSize.height / scaleFactor;
     }, [windowSize.height, scaleFactor]);
-
-    // CTO FIX: Calculate true section height based on elements
-    const elementDimensions = useStore(state => state.elementDimensions);
-    const sectionHeights = useMemo(() => {
-        return sortedSections.map((section, index) => {
-            // Section 0 strictly fits the screen (or the 680px cap)
-            if (index === 0) return isPortrait ? coverHeight : CANVAS_HEIGHT;
-            
-            let maxBottom = 0;
-            if (section.elements) {
-                section.elements.forEach((el: any) => {
-                    const measuredH = elementDimensions[el.id]?.height;
-                    let h = measuredH || el.height || el.size?.height || 100;
-                    if (!measuredH && ['love_story', 'rsvp_wishes', 'guest_wishes', 'profile_card'].includes(el.type)) {
-                        h = Math.max(h, 800); // Safe fallback before measurement
-                    }
-                    const bottom = el.y + h;
-                    if (bottom > maxBottom) maxBottom = bottom;
-                });
-            }
-
-            // CTO: For Section 1+, min height is the SCREEN height (coverHeight), not the design height.
-            // This prevents massive empty gaps if the design is short but the screen is standard.
-            // If the content is taller than the screen, it naturally expands.
-            return isPortrait ? Math.max(coverHeight, maxBottom + 40) : CANVAS_HEIGHT;
-        });
-    }, [sortedSections, coverHeight, CANVAS_HEIGHT, isPortrait, elementDimensions]);
 
     // Calculate total height for scroll container
     const totalHeight = useMemo(() => {
-        if (sectionHeights.length === 0) return CANVAS_HEIGHT;
-        return sectionHeights.reduce((acc, h) => acc + h, 0);
-    }, [sectionHeights]);
-
-    const getSectionTop = useCallback((index: number) => {
-        let top = 0;
-        for (let i = 0; i < index; i++) top += sectionHeights[i];
-        return top;
-    }, [sectionHeights]);
+        if (sortedSections.length === 0) return CANVAS_HEIGHT;
+        // In portrait, every section fits the screen height
+        if (isPortrait) return sortedSections.length * coverHeight;
+        // Desktop: First is coverHeight, others are CANVAS_HEIGHT
+        return coverHeight + (sortedSections.length - 1) * CANVAS_HEIGHT;
+    }, [sortedSections, coverHeight, isPortrait]);
 
     // Get transition config from first section
     const transitionConfig = useMemo(() => {
@@ -679,8 +649,16 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         const isDone = transitionStage === 'DONE';
         const flowMode = isDone;
 
-        const sectionHeight = sectionHeights[index] || CANVAS_HEIGHT;
-        let calculatedTop = getSectionTop(index);
+        // Calculate section height (matches viewport height exactly in portrait)
+        const sectionHeight = isPortrait ? coverHeight : CANVAS_HEIGHT;
+
+        // Calculate section position
+        let calculatedTop = 0;
+        if (index > 0) {
+            calculatedTop = isPortrait
+                ? index * coverHeight
+                : coverHeight + (index - 1) * CANVAS_HEIGHT;
+        }
 
         const base: React.CSSProperties = {
             position: 'absolute',
@@ -1053,43 +1031,23 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                                                             return true;
                                                         })
                                                         .map((element: any) => {
+                                                            // LIQUID LAYOUT ENGINE (Legacy tamuu algorithm)
+                                                            // We adjust individual element Y positions to "compress" or "expand" 
+                                                            // the layout based on available viewport height (coverHeight).
                                                             let adjustedY = element.y;
                                                             if (isPortrait) {
-                                                                if (index === 0) {
-                                                                    // CTO: Mathematical Monotonic Piecewise Interpolation
-                                                                    // Guarantees zero text overlap in the middle zone (y: 100 to 796) 
-                                                                    // by absorbing all compression in the extreme outer edges (decorations).
-                                                                    const extraHeight = coverHeight - CANVAS_HEIGHT;
-                                                                    
-                                                                    if (extraHeight < 0) {
-                                                                        const y = element.y;
-                                                                        const T = 100; // Extreme Top compression zone
-                                                                        const B = 796; // Extreme Bottom compression zone
-                                                                        const TB_Length = T + (CANVAS_HEIGHT - B); // 100 + 100 = 200
-                                                                        
-                                                                        // Cap compression to prevent reversal (safe up to -180px extraHeight)
-                                                                        const safeExtra = Math.max(extraHeight, -180);
-                                                                        const slopeTB = (TB_Length + safeExtra) / Math.max(1, TB_Length);
+                                                                const extraHeight = coverHeight - CANVAS_HEIGHT;
 
-                                                                        if (y <= T) {
-                                                                            adjustedY = y * slopeTB;
-                                                                        } else if (y <= B) {
-                                                                            adjustedY = (T * slopeTB) + (y - T); // Slope 1.0 (Zero Compression)
-                                                                        } else {
-                                                                            adjustedY = (T * slopeTB) + (B - T) + ((y - B) * slopeTB);
-                                                                        }
-                                                                    } else {
-                                                                        // Expand mode (linear)
-                                                                        const maxTop = CANVAS_HEIGHT - (element.height || 50);
-                                                                        let progress = maxTop > 0 ? element.y / maxTop : 0;
-                                                                        progress = Math.max(0, Math.min(1, progress));
-                                                                        adjustedY = element.y + (extraHeight * progress);
-                                                                    }
-                                                                } else {
-                                                                    // Section 1+: ZERO COMPRESSION & ZERO STRETCH.
-                                                                    // Elements remain exactly at their designed Y coordinates.
-                                                                    adjustedY = element.y;
-                                                                }
+                                                                // Robust height detection (matches renderer logic)
+                                                                const elementHeight = element.height || element.size?.height || (element.textStyle?.fontSize) || 0;
+                                                                const maxTop = CANVAS_HEIGHT - elementHeight;
+
+                                                                // Progress determines if the element is near the top (0) or bottom (1)
+                                                                let progress = maxTop > 0 ? element.y / maxTop : 0;
+                                                                progress = Math.max(0, Math.min(1, progress));
+
+                                                                // Apply linear interpolation
+                                                                adjustedY = element.y + (extraHeight * progress);
                                                             }
 
                                                             // Determine if this element should be force-triggered
