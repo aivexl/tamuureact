@@ -1001,7 +1001,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                                             }}
                                             style={{
                                                 transformOrigin: '0 0',
-                                                overflow: 'hidden',
+                                                // CTO FIX: Ensure zoom wrapper doesn't clip narrative elements
+                                                overflow: transitionStage === 'DONE' ? 'visible' : 'hidden',
                                                 willChange: 'transform',
                                                 transformStyle: 'preserve-3d',
                                                 WebkitFontSmoothing: 'antialiased'
@@ -1057,19 +1058,19 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                                                             if (isPortrait) {
                                                                 if (index === 0) {
                                                                     // CTO: Mathematical Monotonic Piecewise Interpolation
-                                                                    // Guarantees zero text overlap in the middle zone (y: 200 to 700) 
-                                                                    // by absorbing all compression in the outer edges.
+                                                                    // Guarantees zero text overlap in the middle zone (y: 100 to 796) 
+                                                                    // by absorbing all compression in the extreme outer edges (decorations).
                                                                     const extraHeight = coverHeight - CANVAS_HEIGHT;
                                                                     
                                                                     if (extraHeight < 0) {
                                                                         const y = element.y;
-                                                                        const T = 200; // Top compression zone
-                                                                        const B = 700; // Bottom compression zone
-                                                                        const TB_Length = T + (CANVAS_HEIGHT - B); // 200 + 196 = 396
+                                                                        const T = 100; // Extreme Top compression zone
+                                                                        const B = 796; // Extreme Bottom compression zone
+                                                                        const TB_Length = T + (CANVAS_HEIGHT - B); // 100 + 100 = 200
                                                                         
-                                                                        // Cap compression to prevent reversal (safe up to -350px extraHeight)
-                                                                        const safeExtra = Math.max(extraHeight, -350);
-                                                                        const slopeTB = (TB_Length + safeExtra) / TB_Length;
+                                                                        // Cap compression to prevent reversal (safe up to -180px extraHeight)
+                                                                        const safeExtra = Math.max(extraHeight, -180);
+                                                                        const slopeTB = (TB_Length + safeExtra) / Math.max(1, TB_Length);
 
                                                                         if (y <= T) {
                                                                             adjustedY = y * slopeTB;
