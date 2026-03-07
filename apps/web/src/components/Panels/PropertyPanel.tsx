@@ -1267,7 +1267,8 @@ export const PropertyPanel: React.FC = () => {
                                                 const file = (e.target as HTMLInputElement).files?.[0];
                                                 if (!file) return;
                                                 try {
-                                                    const result = await storage.upload(file);
+                                                    const { user, id: invitationId } = useStore.getState();
+                                                    const result = await storage.upload(file, 'gallery', { userId: user?.id, invitationId });
                                                     handleUpdate({ imageUrl: result.url });
                                                 } catch (error) {
                                                     console.error('Upload failed:', error);

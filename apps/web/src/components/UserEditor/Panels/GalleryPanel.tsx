@@ -124,8 +124,12 @@ export const GalleryPanel: React.FC<GalleryPanelProps> = ({ invitationId, onClos
             // Convert Blob to File for the storage engine
             const file = new File([croppedBlob], `gallery-${Date.now()}.png`, { type: 'image/png' });
 
-            // 1. Upload to R2 with automatic optimization via storage engine
-            const uploadResult = await storage.upload(file, 'gallery');
+            // 1. Upload to R2 with automatic optimization via storage engine + forensic metadata
+            const { user } = useStore.getState();
+            const uploadResult = await storage.upload(file, 'gallery', { 
+                userId: user?.id, 
+                invitationId 
+            });
 
             if (uploadResult?.url) {
                 const newPhoto: GalleryPhoto = {

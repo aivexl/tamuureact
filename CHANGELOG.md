@@ -1,5 +1,19 @@
 # Tamuu Changelog
 
+## [0.6.2] - 2026-03-07
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Critical: Upload Protocol Fix & Photo Grid UX Redesign
+- **Fix: HTTP/2 Protocol Error**: Resolved a critical `ERR_HTTP2_PROTOCOL_ERROR` during file uploads by implementing buffered R2 storage and stripping leaked `status` properties from API response headers.
+- **Robust R2 Uploads**: Migrated from `file.stream()` to `file.arrayBuffer()` in the backend for stable object storage in Cloudflare Workers.
+- **Forensic Metadata Enrichment**: Enhanced the upload pipeline to automatically link `userId` and `invitationId` to every asset in the D1 database, ensuring full traceability.
+- **Photo Grid UX Overhaul**:
+    - **Persistent Controls**: Removed hover-dependent buttons. "Change Photo" actions are now permanently visible below each image for a professional, accessible UI.
+    - **Role-Based Governance**: Restricted slot addition and removal to administrators only. End-users can now only replace content within predefined slots, preserving template integrity.
+    - **Apple-Tier Aesthetics**: Implemented a refined card-based layout with teal accents and spring animations for a superior editing experience.
+- **Security & Stability**: Hardened the `/api/upload` endpoint with local error handling and standardized the `storage.upload` signature across 7 core UI components.
+
 ## [0.6.1] - 2026-03-06
 **Status**: 🟢 Deployed
 **Environment**: Production

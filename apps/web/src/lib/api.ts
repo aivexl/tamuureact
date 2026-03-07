@@ -356,7 +356,7 @@ export const userDisplayDesigns = {
 import { processImage, type ImageContext } from './image-manager';
 
 export const storage = {
-    async upload(file: File, context: ImageContext = 'gallery'): Promise<{ id: string; url: string; key: string; blurHash?: string }> {
+    async upload(file: File, context: ImageContext = 'gallery', metadata?: { userId?: string; invitationId?: string }): Promise<{ id: string; url: string; key: string; blurHash?: string }> {
 
         let fileToUpload = file;
         let blurHash = '';
@@ -375,13 +375,20 @@ export const storage = {
 
         const formData = new FormData();
         formData.append('file', fileToUpload);
+        
+        // CTO Policy: Metadata enrichment for forensic traceability
+        if (metadata?.userId) formData.append('user_id', metadata.userId);
+        if (metadata?.invitationId) formData.append('invitation_id', metadata.invitationId);
 
         const res = await safeFetch(`${API_BASE}/api/upload`, {
             method: 'POST',
             body: formData
         });
 
-        if (!res.ok) throw new Error('Failed to upload file');
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Failed to upload file');
+        }
         const data = await res.json();
 
         // Attach generated blurHash to response so UI can use it

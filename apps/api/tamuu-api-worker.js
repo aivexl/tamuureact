@@ -4661,35 +4661,57 @@ name = COALESCE(?, name),
             // ASSET UPLOAD (R2)
             // ============================================
             if (path === '/api/upload' && method === 'POST') {
-                const formData = await request.formData();
-                const file = formData.get('file');
-                if (!file) {
-                    return new Response(JSON.stringify({ error: 'No file provided' }), {
-                        status: 400,
-                        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                try {
+                    const formData = await request.formData();
+                    const file = formData.get('file');
+                    
+                    if (!file) {
+                        return json({ error: 'No file provided' }, { ...corsHeaders, status: 400 });
+                    }
+
+                    // Extract safe filename and key
+                    const originalName = (file.name || 'uploaded_file').replace(/\s+/g, '_');
+                    const filename = `${Date.now()}-${originalName}`;
+                    const key = `uploads/${filename}`;
+                    const contentType = file.type || 'application/octet-stream';
+
+                    // Use arrayBuffer for better compatibility in R2 put
+                    const buffer = await file.arrayBuffer();
+                    
+                    await env.ASSETS.put(key, buffer, {
+                        httpMetadata: { contentType }
                     });
+
+                    const publicUrl = `https://api.tamuu.id/assets/${key}`;
+
+                    // Get metadata from form data if provided
+                    const userId = formData.get('user_id') || formData.get('userId');
+                    const invitationId = formData.get('invitation_id') || formData.get('invitationId');
+
+                    // Save to database with metadata
+                    const assetId = crypto.randomUUID();
+                    await env.DB.prepare(
+                        `INSERT INTO assets (id, user_id, invitation_id, filename, content_type, size, r2_key, public_url)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+                    ).bind(
+                        assetId, 
+                        userId || null, 
+                        invitationId || null, 
+                        originalName, 
+                        contentType, 
+                        file.size || buffer.byteLength, 
+                        key, 
+                        publicUrl
+                    ).run();
+
+                    return json({ id: assetId, url: publicUrl, key }, corsHeaders);
+                } catch (uploadError) {
+                    console.error('[Upload] Error:', uploadError);
+                    return json({ 
+                        error: 'Upload failed', 
+                        details: uploadError.message 
+                    }, { ...corsHeaders, status: 500 });
                 }
-
-                const filename = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
-                const key = `uploads/${filename}`;
-
-                await env.ASSETS.put(key, file.stream(), {
-                    httpMetadata: { contentType: file.type }
-                });
-
-                const publicUrl = `https://api.tamuu.id/assets/${key}`;
-
-                // Get user_id from form data if provided
-                const userId = formData.get('user_id');
-
-                // Save to database with user_id
-                const id = crypto.randomUUID();
-                await env.DB.prepare(
-                    `INSERT INTO assets (id, user_id, filename, content_type, size, r2_key, public_url)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`
-                ).bind(id, userId || null, file.name, file.type, file.size, key, publicUrl).run();
-
-                return json({ id, url: publicUrl, key }, corsHeaders);
             }
 
             // ============================================
@@ -4787,21 +4809,25 @@ function json(data, options = {}) {
 
     if (options['Access-Control-Allow-Origin']) {
         // corsHeaders was passed directly
-        headers = options;
+        headers = { ...options };
         status = options.status || 200;
     } else {
         // Options object was passed
-        headers = options.headers || {};
+        headers = { ...(options.headers || {}) };
         status = options.status || 200;
     }
+
+    // CTO Security & Protocol Enforcement: 
+    // Remove 'status' from headers if it accidentally leaked in from options spread
+    delete headers.status;
 
     return new Response(JSON.stringify(data), {
         status: status,
         headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
             ...headers
         }
     });
