@@ -1,16 +1,16 @@
 # Tamuu Changelog
 
-## [0.6.30] - 2026-03-08
+## [0.6.31] - 2026-03-08
 **Status**: 🟢 Deployed
 **Environment**: Production
 
-### Emergency: Mobile Visibility & Unified Layout Engine V9.1
-- **Restored Element Visibilitas**: Resolved a critical issue where elements were hidden on mobile due to container height collapse. Re-implemented explicit basis height calculations for both the primary canvas and its transformation wrapper.
-- **Stable Flow Architecture**: Maintained the gapless `position: relative` stacking for mobile sections while ensuring they are properly anchored within a correctly-sized viewport.
-- **Fixed API Import Path**: Corrected a broken module resolution for the safeFetch utility from `@/api` to `@/lib/api`.
-- **Preserved iPhone SE Optimization**: Continued the Zero-Compression policy for small screens while ensuring visibility is maintained across all device categories.
+### Critical: Atomic Relative Flow & Zero-Gap Mobile Layout (V10)
+- **Elimination of "Phantom Gaps"**: Re-engineered the mobile preview to use `position: relative` stacking within a `display: flex` container. This completely removes gaps between sections by following the browser's native document flow.
+- **Restored Mobile Visibilitas**: Fixed the "Blank Screen" issue by enforcing explicit basis heights (`totalHeight * scaleFactor`) on the primary canvas, preventing container collapse during flow-mode.
+- **iPhone SE Elastic Engine**: Refined the stacking engine for small devices (width < 400px) to use 1:1 design-space mapping. This prevents overlapping by allowing sections to grow vertically instead of being compressed.
+- **Piecewise Mapping Restoration**: Returned to stable piecewise mapping for standard mobile devices to maintain design consistency for buttons and title anchors.
 
-## [0.6.29] - 2026-03-08
+## [0.6.30] - 2026-03-08
 ... (rest of changelog)
 
 **Environment**: Production
