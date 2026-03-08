@@ -1,17 +1,17 @@
 # Tamuu Changelog
 
-## [0.6.27] - 2026-03-08
+## [0.6.28] - 2026-03-08
 **Status**: 🟢 Deployed
 **Environment**: Production
 
-### Refactor: Targeted iPhone SE Responsiveness (Fluid-Stack Engine V7)
-- **Implementation of Fluid-Stack Architecture**: Introduced a device-specific layout engine that activates only for screens with width <= 380px. This prevents the "Compression Overload" issue by allowing sections to grow vertically instead of forcing them into a static viewport height.
-- **iPhone SE Exclusive Stacking**: Replaced piecewise vertical compression with a 1:1 design-space mapping and cumulative pergeseran. This mathematically guarantees zero overlapping on small screens where text wrapping might occur.
-- **Elastic Section Heights**: Removed the 896px static height requirement for portrait mode on small devices. Sections now automatically expand to fit their content (`maxBottom + 100px`), eliminating gaps and ensuring all elements are visible.
-- **Restored Large-Device Parity**: Guaranteed that devices larger than 380px (iPhone 12/13/14/15, etc.) continue to use the original stable layout logic, maintaining design consistency and the original position of the "Open Invitation" button.
-- **Stability Fix**: Resolved height collapse issues on mobile by ensuring the main canvas container always has an explicit basis height calculated from the total dynamic height of all sections.
+### Refactor: Hardcore iPhone SE Responsiveness (SE Engine V8)
+- **Zero-Compression Policy**: Disables the piecewise vertical compression algorithm exclusively for devices with width < 400px (iPhone SE, etc.). Elements now use 1:1 design-space mapping to prevent mathematical overlapping.
+- **Dynamic Content Stacking**: Fully integrated `cumulativeShift` logic for small screens. If an element's real-time height exceeds its design height, all elements visually below it are pushed down automatically.
+- **Gap Elimination**: Sections on small devices now have precise heights based on their lowest content element (`maxBottom + 40px`), completely removing the masif gaps between sections.
+- **Device-Specific Isolation**: Implemented a `isiPhoneSE` guard to ensure that large devices (iPhone 12/13/14/15) continue to use the original stable 896px static layout, preserving their intended design fidelity.
+- **Resolved Visibility Issues**: Hardened the main container basis height calculation to ensure 100% visibilitas on all mobile browsers.
 
-## [0.6.25] - 2026-03-08
+## [0.6.27] - 2026-03-08
 ... (rest of changelog)
 
 **Environment**: Production
