@@ -213,28 +213,32 @@ const TextElement: React.FC<{
 
     // PERFECT-FIT ALGORITHM: Imperatively sync Konva box to real DOM text dimensions.
     useLayoutEffect(() => {
-        if (!isEditor || !textRef.current) return;
+        if (!textRef.current) return;
 
         // 1. Measure the physical footprint of the text.
         const rect = textRef.current.getBoundingClientRect();
         const measuredW = Math.ceil(rect.width);
         const measuredH = Math.ceil(rect.height);
 
-        // 2. STABILITY GUARD: Prevent Infinite Loops (Error #185)
-        // Check against store and local lock. Only update if change is significant (> 1px).
-        const diffW = Math.abs(measuredW - width);
-        const diffH = Math.abs(measuredH - height);
+        // 2. STABILITY GUARD: Prevent Infinite Loops
+        // Check against local lock to avoid re-triggering unless something actually changed.
         const hasChangedLocally = measuredW !== lastSyncRef.current.w || measuredH !== lastSyncRef.current.h;
 
-        if (hasChangedLocally && (diffW > 1 || diffH > 1)) {
+        if (hasChangedLocally) {
             // Update local lock immediately
             lastSyncRef.current = { w: measuredW, h: measuredH };
             
-            // Notify layout engine
+            // Notify layout engine (CRITICAL for mobile preview responsiveness)
             onDimensionsDetected?.(measuredW, measuredH);
             
-            // Sync to store
-            updateLayer(id, { width: measuredW, height: measuredH });
+            // 3. Sync to permanent store ONLY in Editor mode
+            if (isEditor) {
+                const diffW = Math.abs(measuredW - width);
+                const diffH = Math.abs(measuredH - height);
+                if (diffW > 1 || diffH > 1) {
+                    updateLayer(id, { width: measuredW, height: measuredH });
+                }
+            }
         }
 
     }, [content, textStyle, isEditor, id, onDimensionsDetected, updateLayer]); // REMOVED width/height from dependencies to stop the loop

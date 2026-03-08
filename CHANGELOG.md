@@ -1,5 +1,6 @@
 # Tamuu Changelog
 
+<<<<<<< HEAD
 ## [0.6.21] - 2026-03-07
 **Status**: 🟢 Deployed
 **Environment**: Production
@@ -10,9 +11,22 @@
 - **Enhanced Cover Page Piecewise Mapping**: Refined the Section 0 compression algorithm to use a strict monotonic function. Only the extreme top and bottom margins (100px) absorb viewport compression, keeping central text blocks perfectly spaced while pinning ornaments to corners.
 - **DOM-Measured Narrative Integrity**: Integrated `ResizeObserver` into `LoveStoryElement` and `RSVPWishesElement` to report real-time physical height. This allows the preview engine to dynamically push subsequent sections down, preventing layout collisions.
 - **TypeScript Stability**: Resolved a TS2345 error in the music controller by adding null-safety guards to the `play()` function.
+=======
+## [0.6.6] - 2026-03-08
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Refactor: Mobile Responsiveness & Liquid Layout Engine (Preview)
+- **Zero-Overlapping Guarantee**: Re-engineered the `PreviewView` layout engine to utilize real-time detected dimensions from `elementDimensions` store. This ensures that when text wraps on narrow mobile screens, elements below it shift dynamically, preventing visual stacking.
+- **Internal Bleeding, External Clipping Architecture**:
+    - **Zero-Cutoff Implementation**: Refactored section containers and zoom wrappers to use `overflow: visible` in portrait mode. This allows decorative elements and long text to flow naturally between sections without being cut.
+    - **Clean Masking**: Maintained `overflow: hidden` on the primary invitation container (414px) to ensure a polished look where internal elements never leak into the browser background.
+- **Smart Dimension Reporting**: Enabled `TextElement` and `RSVPWishesElement` to report physical footprint changes via `ResizeObserver` even in Preview mode. This feeds the Liquid Position Engine with accurate data for pixel-perfect vertical positioning.
+- **Enterprise UI Hardening**: Updated `ElementRenderer` to ensure that dimension reporting only triggers permanent store updates in Editor mode, preserving data integrity during guest previews.
+>>>>>>> 1e55c78 (feat: refactor /preview/* for mobile responsiveness with Zero-Overlapping Guarantee and Liquid Layout hardening)
 
 ## [0.6.5] - 2026-03-07
-**Status**: 🔵 Deploying
+**Status**: 🟢 Deployed
 **Environment**: Production
 
 ### Fix: Photo Grid UI Stability & High-Performance Editor Save

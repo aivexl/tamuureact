@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
-import { API_BASE, safeFetch } from '@/lib/api'; // Added API_BASE and safeFetch import
+import { API_BASE, safeFetch } from '@/lib/api';
 import { X, Maximize2, Minimize2, Play, Square } from 'lucide-react';
 import { ElementRenderer } from '../Canvas/ElementRenderer';
 import { AnimatedLayer, clearAnimationCache } from './AnimatedLayer';
@@ -16,19 +16,14 @@ import { GuestQRTrigger } from './GuestQRTrigger';
 import { GuestQRModal } from './GuestQRModal';
 import { SmartFontInjector } from '../ui/SmartFontInjector';
 
-// Canvas dimensions - now dynamic based on template type
+// Canvas dimensions
 const INVITATION_WIDTH = 414;
 const INVITATION_HEIGHT = 896;
 const DISPLAY_WIDTH = 1920;
 const DISPLAY_HEIGHT = 1080;
 
-// Transition effect types (from legacy)
 type TransitionEffect = 'none' | 'slide-up' | 'slide-down' | 'fade' | 'zoom-reveal' | 'stack-reveal' | 'parallax-reveal' | 'door-reveal' | 'carry-up' | 'pinch-close' | 'split-door';
 
-// ============================================
-// PREVIEW VIEW COMPONENT
-// Enterprise-grade invitation preview
-// ============================================
 interface PreviewViewProps {
     isOpen: boolean;
     onClose: () => void;
@@ -42,7 +37,6 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
     } = useStore();
     const lastTriggerRef = useRef<{ effect: string, timestamp: number } | null>(null);
 
-    // Dynamic canvas dimensions based on template type
     const CANVAS_WIDTH = templateType === 'display' ? DISPLAY_WIDTH : INVITATION_WIDTH;
     const CANVAS_HEIGHT = templateType === 'display' ? DISPLAY_HEIGHT : INVITATION_HEIGHT;
     const isDisplay = templateType === 'display';
@@ -110,7 +104,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         return windowSize.height / scaleFactor;
     }, [windowSize.height, scaleFactor]);
 
-    // CTO FIX: Calculate true section heights to eliminate gaps and clipping
+    // CTO FIX: Hybrid Smart-Fit Layout Engine
+    // Calculates true section heights to eliminate gaps and clipping
     const sectionHeights = useMemo(() => {
         return sortedSections.map((section, index) => {
             if (!isPortrait) return CANVAS_HEIGHT;
@@ -118,9 +113,16 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
             
             let maxBottom = 0;
             section.elements.forEach((el: any) => {
-                const measuredH = elementDimensions[el.id]?.height;
+                const detectedDim = elementDimensions?.[el.id];
+                const measuredH = detectedDim?.height;
+                // Priority: Detected > Explicit > Fallback
                 let h = measuredH || el.height || el.size?.height || (el.type === 'text' ? 50 : 100);
-                if (!measuredH && ['love_story', 'rsvp_wishes', 'guest_wishes', 'profile_card'].includes(el.type)) h = Math.max(h, 800);
+                
+                // Narrative elements need a healthy minimum if not yet measured
+                if (!measuredH && ['love_story', 'rsvp_wishes', 'guest_wishes', 'profile_card'].includes(el.type)) {
+                    h = Math.max(h, 800);
+                }
+                
                 const bottom = el.y + h;
                 if (bottom > maxBottom) maxBottom = bottom;
             });
@@ -313,10 +315,19 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
 
     const getSectionStyle = useCallback((index: number): React.CSSProperties => {
         const isRevealing = transitionStage === 'REVEALING';
-        const flowMode = transitionStage === 'DONE';
+        const isDone = transitionStage === 'DONE';
+        const flowMode = isDone;
+
         const sectionHeight = sectionHeights[index] || CANVAS_HEIGHT;
         const calculatedTop = getSectionTop(index);
-        const base: React.CSSProperties = { position: 'absolute', left: 0, width: CANVAS_WIDTH, height: sectionHeight, overflow: 'hidden' };
+
+        const base: React.CSSProperties = { 
+            position: 'absolute', 
+            left: 0, 
+            width: CANVAS_WIDTH, 
+            height: sectionHeight, 
+            overflow: isPortrait ? 'visible' : 'hidden' // FIXED: Zero-Cutoff Guarantee
+        };
 
         if (!flowMode) {
             if (index === 0) {
@@ -335,7 +346,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
             return { ...base, top: 0, zIndex: 1, display: 'none' };
         }
         return { ...base, top: calculatedTop, zIndex: 1, opacity: 1 };
-    }, [transitionStage, transitionEffect, transitionDuration, sectionHeights, getSectionTop, CANVAS_WIDTH, CANVAS_HEIGHT]);
+    }, [transitionStage, transitionEffect, transitionDuration, sectionHeights, getSectionTop, CANVAS_WIDTH, CANVAS_HEIGHT, isPortrait]);
 
     useEffect(() => {
         if (!isOpen || !scrollContainerRef.current || transitionStage !== 'DONE') return;
@@ -374,7 +385,15 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                                 const sectionHeight = sectionHeights[index] || CANVAS_HEIGHT;
                                 return (
                                     <div key={section.id} ref={el => { sectionRefs.current[index] = el; }} data-index={index} style={sectionStyle} onClick={() => { if (!clickedSections.includes(index)) setClickedSections(p => [...p, index]); if (section?.zoomConfig?.enabled && section.zoomConfig.trigger === 'click') startZoomAnimation(index, section); }}>
-                                        <m.div className="absolute inset-0 w-full h-full" animate={{ scale: zoomTransform.scale, x: zoomTransform.x, y: zoomTransform.y }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }} style={{ transformOrigin: '0 0', overflow: 'hidden' }}>
+                                        <m.div 
+                                            className="absolute inset-0 w-full h-full" 
+                                            animate={{ scale: zoomTransform.scale, x: zoomTransform.x, y: zoomTransform.y }} 
+                                            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }} 
+                                            style={{ 
+                                                transformOrigin: '0 0', 
+                                                overflow: isPortrait ? 'visible' : 'hidden' // FIXED: Internal Bleeding
+                                            }}
+                                        >
                                             <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundColor: section.backgroundColor || '#0a0a0a', backgroundImage: section.backgroundUrl ? `url(${section.backgroundUrl})` : undefined }} />
                                             {section.backgroundUrl && (section.overlayOpacity || 0) > 0 && <div className="absolute inset-0 bg-black pointer-events-none" style={{ opacity: section.overlayOpacity }} />}
                                             {section.particleType && section.particleType !== 'none' && <div className="absolute inset-0 pointer-events-none"><ParticleOverlay type={section.particleType} /></div>}
@@ -383,15 +402,17 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                                                     let adjustedY = element.y;
                                                     if (isPortrait) {
                                                         if (index === 0) {
-                                                            if (coverHeight < CANVAS_HEIGHT) {
-                                                                const y = element.y; const T = 200; const B = 696; const shift = (coverHeight - CANVAS_HEIGHT) / 2;
+                                                            if (coverHeight < INVITATION_HEIGHT) {
+                                                                const y = element.y; const T = 200; const B = 696; const shift = (coverHeight - INVITATION_HEIGHT) / 2;
                                                                 if (y <= T) adjustedY = y * ((T + shift) / T);
                                                                 else if (y <= B) adjustedY = y + shift;
-                                                                else adjustedY = (B + shift) + (y - B) * ((coverHeight - (B + shift)) / (CANVAS_HEIGHT - B));
+                                                                else adjustedY = (B + shift) + (y - B) * ((coverHeight - (B + shift)) / (INVITATION_HEIGHT - B));
                                                             } else {
-                                                                const maxTop = CANVAS_HEIGHT - (element.height || 50);
+                                                                const detectedDim = elementDimensions?.[element.id];
+                                                                const elementHeight = detectedDim?.height || element.height || 50;
+                                                                const maxTop = INVITATION_HEIGHT - elementHeight;
                                                                 const progress = maxTop > 0 ? Math.max(0, Math.min(1, element.y / maxTop)) : 0;
-                                                                adjustedY = element.y + (coverHeight - CANVAS_HEIGHT) * progress;
+                                                                adjustedY = element.y + (coverHeight - INVITATION_HEIGHT) * progress;
                                                             }
                                                         }
                                                     }
