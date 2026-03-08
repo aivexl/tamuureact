@@ -79,7 +79,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
 
     const isPortrait = templateType === 'display' ? false : (windowSize.height >= windowSize.width || windowSize.width < 1024);
     
-    // CTO DETECTOR: iPhone SE and Smaller Devices (Strict Isolation)
+    // CTO FIX: Intelligent Device Awareness (iPhone SE target)
     const isiPhoneSE = isPortrait && windowSize.width <= 385;
 
     const scaleFactor = useMemo(() => {
@@ -94,30 +94,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         return windowSize.height / scaleFactor;
     }, [windowSize.height, scaleFactor]);
 
-    // Transition Config
-    const transitionConfig = useMemo(() => {
-        const section0 = sortedSections[0];
-        return section0?.pageTransition || { enabled: false, effect: 'slide-up' as TransitionEffect, duration: 1500 };
-    }, [sortedSections]);
-
-    const transitionEffect = transitionConfig.enabled ? transitionConfig.effect as TransitionEffect : 'slide-up';
-    const transitionDuration = (transitionConfig.duration || 1500) / 1000;
-
-    // Viewport background
-    const viewportBackgroundStyle = useMemo(() => {
-        if (!isPortrait) return { backgroundColor: '#1a1a1a' };
-        const section0 = sortedSections[0];
-        if (!section0) return { backgroundColor: '#0a0a0a' };
-        return {
-            backgroundColor: section0.backgroundColor || '#0a0a0a',
-            backgroundImage: section0.backgroundUrl ? `url(${section0.backgroundUrl})` : undefined,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-        };
-    }, [isPortrait, sortedSections]);
-
     // ============================================
-    // CTO UNIFIED LAYOUT ENGINE V12.1 (TARGETED)
+    // CTO UNIFIED LAYOUT ENGINE V12 (ISOLATED FLOW)
     // ============================================
     const layoutData = useMemo(() => {
         return sortedSections.map((section, sectionIndex) => {
@@ -141,12 +119,12 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
 
                 let finalAdjustedY = el.y + stackShift;
 
-                if (isPortrait && isFirst && !isOpened) {
+                if (isPortrait && isFirst && transitionStage === 'IDLE') {
                     if (isiPhoneSE) {
-                        // iPhone SE EXCLUSIVE: No compression. 1:1 Design coordinates.
+                        // SE EXCLUSIVE: 1:1 design coordinates to allow scrolling
                         finalAdjustedY = el.y + stackShift;
                     } else if (coverHeight < INVITATION_HEIGHT) {
-                        // Standard Devices: Traditional piecewise mapping (Maintains cover aesthetic)
+                        // Normal Mobile Piecewise
                         const y = el.y; const T = 200; const B = 696;
                         const viewportShift = (coverHeight - INVITATION_HEIGHT) / 2;
                         if (y <= T) finalAdjustedY = (y + stackShift) * ((T + viewportShift) / T);
@@ -157,11 +135,10 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                 elementPlacements.push({ id: el.id, adjustedY: finalAdjustedY });
             });
 
-            // Calculate section height
+            // Section Height calculation
             let sectionHeight = CANVAS_HEIGHT;
             if (isPortrait) {
                 if (isiPhoneSE) {
-                    // SE NATURAL FLOW: Grows with content.
                     let maxBottom = 0;
                     elementPlacements.forEach(p => {
                         const el: any = section.elements.find(e => e.id === p.id);
@@ -169,24 +146,53 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                         const bottom = p.adjustedY + h;
                         if (bottom > maxBottom) maxBottom = bottom;
                     });
+                    // On SE, Section 0 is at least 896 to ensure elements don't crush.
                     sectionHeight = Math.max(isFirst ? INVITATION_HEIGHT : 100, maxBottom + 40);
-                } else if (isFirst && !isOpened) {
+                } else if (isFirst && transitionStage === 'IDLE') {
                     sectionHeight = coverHeight;
                 } else {
-                    sectionHeight = CANVAS_HEIGHT; // Original fixed height for larger mobile
+                    sectionHeight = CANVAS_HEIGHT; 
                 }
             }
             return { id: section.id, height: sectionHeight, elements: elementPlacements };
         });
-    }, [sortedSections, isPortrait, isiPhoneSE, coverHeight, elementDimensions, transitionStage, isOpened]);
+    }, [sortedSections, isPortrait, isiPhoneSE, coverHeight, elementDimensions, transitionStage]);
 
-    const totalHeight = useMemo(() => layoutData.reduce((acc, s) => acc + s.height, 0), [layoutData]);
+    // CTO FIX: Total Height strictly reflects visibility state
+    const currentTotalHeight = useMemo(() => {
+        if (isPortrait && transitionStage === 'IDLE' && !isDisplay) {
+            return layoutData[0]?.height || coverHeight;
+        }
+        return layoutData.reduce((acc, s) => acc + s.height, 0);
+    }, [layoutData, transitionStage, isPortrait, isDisplay, coverHeight]);
 
     const getSectionTop = useCallback((index: number) => {
         let top = 0;
         for (let i = 0; i < index; i++) top += layoutData[i].height;
         return top;
     }, [layoutData]);
+
+    // Transition Configuration
+    const transitionConfig = useMemo(() => {
+        const section0 = sortedSections[0];
+        return section0?.pageTransition || { enabled: false, effect: 'slide-up' as TransitionEffect, duration: 1500 };
+    }, [sortedSections]);
+
+    const transitionEffect = transitionConfig.enabled ? transitionConfig.effect as TransitionEffect : 'slide-up';
+    const transitionDuration = (transitionConfig.duration || 1500) / 1000;
+
+    // Viewport background
+    const viewportBackgroundStyle = useMemo(() => {
+        if (!isPortrait) return { backgroundColor: '#1a1a1a' };
+        const section0 = sortedSections[0];
+        if (!section0) return { backgroundColor: '#0a0a0a' };
+        return {
+            backgroundColor: section0.backgroundColor || '#0a0a0a',
+            backgroundImage: section0.backgroundUrl ? `url(${section0.backgroundUrl})` : undefined,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+        };
+    }, [isPortrait, sortedSections]);
 
     // UI Logic
     const toggleFullscreen = useCallback(() => {
@@ -200,6 +206,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
     }, []);
 
     const { play, pause, isPlaying: isGlobalPlaying, currentUrl } = useAudioController();
+
     const music = useStore(state => state.music);
 
     useEffect(() => {
@@ -264,22 +271,22 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
     const getSectionStyle = useCallback((index: number): React.CSSProperties => {
         const isRevealing = transitionStage === 'REVEALING';
         const isDone = transitionStage === 'DONE';
-        const flowMode = isDone;
+        const flowMode = isDone || isiPhoneSE; // iPhone SE is always in flow mode to support cover scroll
+
         const sectionHeight = layoutData[index].height;
         const calculatedTop = getSectionTop(index);
 
         return { 
-            // ISOLATION: iPhone SE is always relative to allow early scrolling
-            position: (isPortrait && (flowMode || isiPhoneSE)) ? 'relative' : 'absolute', 
+            position: (isPortrait && flowMode) ? 'relative' : 'absolute', 
             left: 0, width: CANVAS_WIDTH, height: sectionHeight, 
             overflow: isPortrait ? 'visible' : 'hidden',
-            top: (isPortrait && (flowMode || isiPhoneSE)) ? undefined : (flowMode ? calculatedTop : 0),
-            zIndex: (index === 0 && !flowMode) ? 20 : (index === 1 && !flowMode ? 10 : 1),
+            top: (isPortrait && flowMode) ? undefined : (isDone ? calculatedTop : 0),
+            zIndex: (index === 0 && transitionStage !== 'DONE') ? 20 : (index === 1 && transitionStage !== 'DONE' ? 10 : 1),
             opacity: 1,
-            display: (!flowMode && index > 1) ? 'none' : 'block',
+            display: (transitionStage === 'IDLE' && index > 0 && !isDisplay) ? 'none' : 'block',
             transition: isRevealing ? `transform ${transitionDuration}s cubic-bezier(0.22, 1, 0.36, 1), opacity ${transitionDuration}s ease-in-out` : undefined
         };
-    }, [transitionStage, layoutData, getSectionTop, CANVAS_WIDTH, isPortrait, isiPhoneSE, transitionDuration]);
+    }, [transitionStage, layoutData, getSectionTop, CANVAS_WIDTH, isPortrait, isiPhoneSE, transitionDuration, isDisplay]);
 
     useEffect(() => {
         if (isOpen) {
@@ -324,8 +331,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         const lenis = new Lenis({ wrapper: scrollContainerRef.current, content: scrollContainerRef.current.firstElementChild as HTMLElement, duration: 1.2 });
         function raf(time: number) { lenis.raf(time); requestAnimationFrame(raf); }
         const rafId = requestAnimationFrame(raf);
-        // ISOLATION: iPhone SE starts scrolling immediately (V12.1)
-        if (transitionStage !== 'DONE' && !isiPhoneSE) lenis.stop(); else lenis.start();
+        // CTO FIX: Allow scrolling cover on iPhone SE immediately
+        if (transitionStage === 'IDLE' && !isiPhoneSE) lenis.stop(); else lenis.start();
         return () => { lenis.destroy(); cancelAnimationFrame(rafId); };
     }, [isOpen, transitionStage, isiPhoneSE]);
 
@@ -344,9 +351,12 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                 <SmartFontInjector />
                 <div ref={scrollContainerRef} className={`w-full h-full ${transitionStage === 'DONE' || isiPhoneSE ? 'overflow-y-auto' : 'overflow-hidden'} premium-scroll no-scrollbar`} style={{ display: isPortrait ? 'flex' : 'grid', gridTemplateColumns: isPortrait ? undefined : `1fr ${CANVAS_WIDTH * scaleFactor}px 1fr`, flexDirection: isPortrait ? 'column' : undefined }}>
                     {!isPortrait && <div className="h-screen sticky top-0 pointer-events-none overflow-hidden" style={{ gridColumn: 1 }}><PreviewOrbitStage type="left" config={orbit.left} scaleFactor={scaleFactor} isOpened={isOpened} transitionStage={transitionStage} coverHeight={coverHeight} isPortrait={isPortrait} /></div>}
-                    <div className="relative overflow-hidden" style={{ gridColumn: isPortrait ? undefined : 2, width: CANVAS_WIDTH * scaleFactor, height: isPortrait ? 'auto' : totalHeight * scaleFactor, flexShrink: 0, overflow: 'visible' }}>
-                        <div style={{ width: CANVAS_WIDTH, height: isPortrait ? 'auto' : totalHeight, transform: `scale(${scaleFactor})`, transformOrigin: 'top left', position: isPortrait ? 'relative' : 'absolute', top: 0, left: 0, overflow: 'visible', display: isPortrait ? 'flex' : 'block', flexDirection: 'column' }}>
+                    <div className="relative overflow-hidden" style={{ gridColumn: isPortrait ? undefined : 2, width: CANVAS_WIDTH * scaleFactor, height: isPortrait ? 'auto' : currentTotalHeight * scaleFactor, flexShrink: 0, overflow: 'visible' }}>
+                        <div style={{ width: CANVAS_WIDTH, height: isPortrait ? 'auto' : currentTotalHeight, transform: `scale(${scaleFactor})`, transformOrigin: 'top left', position: isPortrait ? 'relative' : 'absolute', top: 0, left: 0, overflow: 'visible', display: isPortrait ? 'flex' : 'block', flexDirection: 'column' }}>
                             {sortedSections.map((section, index) => {
+                                // CTO FIX: Hide sections other than cover before open
+                                if (transitionStage === 'IDLE' && index > 0 && !isDisplay) return null;
+
                                 const zoomTransform = getZoomTransform(section, index);
                                 const sectionStyle = getSectionStyle(index);
                                 const sectionLayout = layoutData[index];
