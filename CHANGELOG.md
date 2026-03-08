@@ -1,5 +1,19 @@
 # Tamuu Changelog
 
+## [0.6.41] - 2026-03-08
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### UI/UX: Mobile-First Tutorial Refinement
+- **Direct Positioning**: Tutorial cards now appear directly at their target coordinates using scale and opacity transitions, eliminating the "fly-in" animation from the top.
+- **Dynamic Content Balancing**: Refactored card layout using a flexible flex-col design to ensure titles, descriptions, and buttons are proportionally spaced without overlapping.
+- **Mobile Responsive Logic**: Card width now automatically adapts to smaller viewports (`Math.min(window.innerWidth - 40, 280)`), ensuring accessibility on all devices.
+- **Zero-Stuck Intelligence**: Re-implemented `availableSteps` calculation to strictly include only elements currently rendered in the DOM, preventing tutorial stalls on missing features.
+- **Enterprise UI Refinement**: 
+  - Cleaned up the card header by removing the Sparkle icon.
+  - Added a "Kembali" (Back) button for better user control.
+  - Fixed viewport constraints logic to use `getBoundingClientRect` relative to the fixed overlay.
+
 ## [0.6.40] - 2026-03-08
 **Status**: 🟢 Deployed
 **Environment**: Production
@@ -39,59 +53,4 @@
 - **Streamlined Navigation**: Added Skip, Next, and Progress indicators for a modern onboarding experience.
 
 ## [0.6.37] - 2026-03-08
-... (rest of changelog)
-
-**Environment**: Production
-
-### UI: Grid Panel Cleanup & Navigation Streamlining
-- **Streamlined Editor Grid**: Removed five redundant or rarely used items from the Icon Grid Menu to improve focus and navigation speed:
-  1. **Kisah (Love Story)**
-  2. **Profil (Profile Card/Photo)**
-  3. **Quote (Quotes)**
-  4. **Tanggal (Countdown/Event Date)**
-  5. **Sosmed (Social Media/SEO)**
-- **UI Focus**: These elements are now managed exclusively through the section-based edit area, reducing clutter in the primary feature menu while maintaining full editing capability.
-
-## [0.6.36] - 2026-03-08
-... (rest of changelog)
-
-**Environment**: Production
-
-### Critical: Absolute Date/Time Enforcement & Smart Grid Architecture (V4)
-- **Zero-Bypass Format Enforcement**: Dismantled native browser date/time inputs which were hijacking UI locale. Replaced with controlled text inputs that force `DD/MM/YYYY` and **24-Hour** formats regardless of browser language settings.
-- **Smart Grid Menu (Dynamic Detection)**: Refactored the Editor Grid Menu to be reative. Specialized icons (Countdown, Story, Gift, etc.) now automatically appear or disappear based on real-time detection of elements within the template, supporting both modern `elements` and legacy `layers` arrays.
-- **Self-Healing User Auth Sync**: Implemented a "Silent Healing" mechanism in the API. If a user ID mismatch occurs between Supabase and D1 during wishlist/save operations, the system now automatically resolves the record via email to prevent 500 errors.
-- **Payload Overload Prevention (OOM Guard)**: Injected a recursive payload scrubber that nukes massive legacy base64 strings from localStorage before transmission, preventing Cloudflare Worker memory crashes (ERR_HTTP2_PROTOCOL_ERROR).
-- **Timezone Bleeding Fix**: Rewrote the date parser to use manual local time construction, ensuring "Days Remaining" calculations are pixel-perfect and not shifted by UTC offsets.
-
-## [0.6.35] - 2026-03-08
-**Status**: 🟢 Deployed
-**Environment**: Production
-
-### Critical: Zero-Gap Pro Engine & Parent Height Clamping (V15)
-- **Resolved "Ghost Gaps" on Mobile**: Implemented **Parent Height Clamping** on the main canvas. The container now forces its height to `Math.ceil(totalUnscaledHeight * scaleFactor)`, effectively cutting off the empty space previously left by CSS transforms on iPhone SE and other scaled devices.
-- **Tight-Fit Flow Engine**: Eliminated the 896px static height minimum for all sections in portrait mode. Section heights are now calculated with pixel precision based on the lowest child element (`maxBottom + 20px`), ensuring a dense, professional document flow.
-- **Natural Stacking Restoration**: Re-enabled `position: relative` and `display: flex` for all portrait sections to guarantee sections touch perfectly without manual top-coordinate math.
-- **Stabilized Mobile Visibility**: Reinforced the basis height logic to ensure elements never disappear due to container height collapse.
-
-## [0.6.34] - 2026-03-08
-... (rest of changelog)
-
-**Environment**: Production
-
-### Refactor: Isolated Scroll Engine & Early Cover Access (V12)
-- **Unlocked Early Scrolling (iPhone SE Exclusive)**: Enabled vertical scrolling for iPhone SE and smaller devices (width <= 385px) immediately upon initial load. Users can now scroll through long cover content before clicking the "Open Invitation" button.
-- **Strict Section Isolation**: Implemented a physical DOM gate that prevents rendering of internal sections (Section 1+) until the invitation is explicitly opened. This ensures zero content "leaking" or visual clutter during the cover phase.
-- **Natural Stacking for Small Viewports**: Migrated Section 0 to a relative-flow model exclusively for iPhone SE, maintaining original 1:1 design coordinates to guarantee zero element overlapping on short screens.
-- **Stability Lockdown**: Reinforced the `overflow-hidden` and fixed-height constraints for larger devices (iPhone 12/13/14+), preserving the intended premium "1 screen, 1 section" aesthetic for standard mobile viewports.
-
-## [0.6.32] - 2026-03-08
-**Status**: 🟢 Deployed
-**Environment**: Production
-
-### Critical: Natural Document Flow & iPhone SE Scrollable Architecture (V11)
-- **Elimination of Vertical Compression**: For iPhone SE and smaller devices (width <= 385px), the system now bypasses all piecewise vertical compression. Elements maintain their original 1:1 design-space coordinates, ensuring zero overlapping even at high density.
-- **Scrollable Cover Strategy**: Sections on small devices are no longer forced to fit a single viewport. Section 0 (Cover) now has a minimum height of 896px, allowing elements to overflow the 667px screen naturally.
-
-## [0.6.31] - 2026-03-08
 ... (rest of changelog)

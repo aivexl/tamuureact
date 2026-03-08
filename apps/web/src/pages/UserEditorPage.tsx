@@ -176,7 +176,7 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
             }
         };
 
-        const timer = setTimeout(updateCoords, 300);
+        const timer = setTimeout(updateCoords, 100);
         window.addEventListener('resize', updateCoords);
         window.addEventListener('scroll', updateCoords);
         return () => {
@@ -204,8 +204,8 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
 
     // CALCULATE BEST POSITION TO AVOID VIEWPORT CLIPPING
     const getCardStyle = () => {
-        const cardWidth = 280;
-        const cardHeight = 160;
+        const cardWidth = Math.min(window.innerWidth - 40, 280);
+        const cardHeight = 160; 
         const padding = 20;
         
         let top = 0;
@@ -233,7 +233,8 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
 
         return {
             top: Math.max(minTop, Math.min(maxTop, top)),
-            left: Math.max(minLeft, Math.min(maxLeft, left))
+            left: Math.max(minLeft, Math.min(maxLeft, left)),
+            width: cardWidth
         };
     };
 
@@ -242,17 +243,18 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
             <AnimatePresence mode="wait">
                 <m.div
                     key={stepIndex}
-                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                    initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ 
                         opacity: 1, 
                         scale: 1, 
-                        y: 0,
                         ...getCardStyle()
                     }}
-                    exit={{ opacity: 0, scale: 0.9, y: -10 }}
-                    className="absolute w-[280px] bg-slate-900 text-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] p-5 pointer-events-auto border border-white/10 z-[101]"
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute bg-slate-900 text-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-5 pointer-events-auto border border-white/10 z-[101] flex flex-col gap-1"
+                    style={{ position: 'absolute' }}
                 >
-                    <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center justify-between">
                         <h4 className="text-sm font-black tracking-tight uppercase tracking-widest text-indigo-400">
                             {currentStep.title}
                         </h4>
@@ -261,16 +263,16 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
                         </button>
                     </div>
 
-                    <p className="text-xs text-slate-300 leading-relaxed mb-5 font-medium">
+                    <p className="text-xs text-slate-300 leading-relaxed font-medium mb-4">
                         {currentStep.description}
                     </p>
 
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                    <div className="mt-auto pt-2 flex items-center justify-between border-t border-white/5">
+                        <div className="flex items-center gap-2">
                             {stepIndex > 0 && (
                                 <button 
                                     onClick={handlePrev}
-                                    className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-slate-300 transition-all flex items-center gap-1"
+                                    className="px-2 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-white transition-all flex items-center gap-1"
                                 >
                                     <ChevronLeft className="w-3 h-3" />
                                     Kembali
@@ -278,14 +280,14 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
                             )}
                             <button 
                                 onClick={onComplete}
-                                className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-slate-300 transition-colors"
+                                className="px-2 py-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-slate-300 transition-colors"
                             >
                                 Lewati
                             </button>
                         </div>
                         
                         <div className="flex items-center gap-3">
-                            <span className="text-[10px] font-bold text-slate-500">{stepIndex + 1} / {availableSteps.length}</span>
+                            <span className="text-[10px] font-bold text-slate-600">{stepIndex + 1}/{availableSteps.length}</span>
                             <button
                                 onClick={handleNext}
                                 className="px-4 py-2 bg-white text-slate-900 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-100 transition-all active:scale-95"
@@ -296,10 +298,10 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
                         </div>
                     </div>
 
+                    {/* Arrow Pointer */}
                     <m.div 
                         animate={{
                             rotate: 45,
-                            x: currentStep.position === 'bottom' ? 0 : (currentStep.position === 'right' ? -5 : 0)
                         }}
                         className={`absolute w-3 h-3 bg-slate-900 border-white/10 ${
                             currentStep.position === 'bottom' ? '-top-1.5 left-1/2 -translate-x-1/2 border-t border-l' :
