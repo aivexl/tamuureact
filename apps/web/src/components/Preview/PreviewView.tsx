@@ -51,7 +51,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
     const [currentZoomPointIndex, setCurrentZoomPointIndex] = useState<Record<string, number>>({});
     const [visibleSections, setVisibleSections] = useState<number[]>([0]);
     const [clickedSections, setClickedSections] = useState<number[]>([]);
-    const [windowSize, setWindowSize] = useState({ width: window.innerWidth || 800, height: window.innerHeight || 600 });
+    const [windowSize, setWindowSize] = useState({ width: 800, height: 600 });
 
     // Store State
     const elementDimensions = useStore(state => state.elementDimensions);
@@ -114,8 +114,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
     }, [isPortrait, sortedSections]);
 
     // ============================================
-    // CTO UNIFIED FLOW ENGINE V4 (ENTERPRISE)
-    // One engine to rule positioning and heights
+    // CTO VIRTUAL FLOW ENGINE (AUDITED)
     // ============================================
     const layoutData = useMemo(() => {
         return sortedSections.map((section, sectionIndex) => {
@@ -138,16 +137,14 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
 
                 let finalAdjustedY = el.y + stackShift;
 
-                if (isPortrait && isFirst) {
-                    if (!isOpened && coverHeight < INVITATION_HEIGHT) {
-                        const y = el.y; const T = 200; const B = 696;
-                        const viewportShift = (coverHeight - INVITATION_HEIGHT) / 2;
-                        if (y <= T) finalAdjustedY = (y + stackShift) * ((T + viewportShift) / T);
-                        else if (y <= B) finalAdjustedY = (y + stackShift) + viewportShift;
-                        else {
-                            const baseB = B + viewportShift;
-                            finalAdjustedY = (baseB + (stackShift * 0.15)) + (y - B) * ((coverHeight - (baseB + (stackShift * 0.15))) / (INVITATION_HEIGHT - B));
-                        }
+                if (isPortrait && isFirst && !isOpened && coverHeight < INVITATION_HEIGHT) {
+                    const y = el.y; const T = 200; const B = 696;
+                    const viewportShift = (coverHeight - INVITATION_HEIGHT) / 2;
+                    if (y <= T) finalAdjustedY = (y + stackShift) * ((T + viewportShift) / T);
+                    else if (y <= B) finalAdjustedY = (y + stackShift) + viewportShift;
+                    else {
+                        const baseB = B + viewportShift;
+                        finalAdjustedY = (baseB + (stackShift * 0.15)) + (y - B) * ((coverHeight - (baseB + (stackShift * 0.15))) / (INVITATION_HEIGHT - B));
                     }
                 }
                 elementPlacements.push({ id: el.id, adjustedY: finalAdjustedY });
@@ -224,6 +221,20 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         });
     }, []);
 
+    const handleOpenInvitation = useCallback(async () => {
+        if (isOpened) return;
+        setIsOpened(true); setTransitionStage('ZOOMING');
+        const s0 = sortedSections[0];
+        if (s0?.zoomConfig?.enabled && (s0.zoomConfig.trigger === 'open_btn' || s0.zoomConfig.trigger === 'load')) await startZoomAnimation(0, s0);
+        if ((sortedSections[0]?.pageTransition?.effect as string) === 'split-door') setShutterVisible(true);
+        setTransitionStage('REVEALING');
+        setVisibleSections(prev => [...prev, 1]);
+        const s1 = sortedSections[1];
+        if (s1?.zoomConfig?.enabled) startZoomAnimation(1, s1);
+        const duration = (sortedSections[0]?.pageTransition?.duration || 1500) / 1000;
+        setTimeout(() => { setTransitionStage('DONE'); setShutterVisible(false); setVisibleSections(sortedSections.map((_, i) => i)); }, duration * 1000 + 100);
+    }, [isOpened, sortedSections, startZoomAnimation]);
+
     const getZoomTransform = useCallback((section: any, sectionIndex: number) => {
         const zoomConfig = section.zoomConfig;
         if (!zoomConfig?.enabled) return { scale: 1, x: 0, y: 0 };
@@ -239,37 +250,25 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         return { scale, x: (CANVAS_WIDTH / 2) - (scale * centerX), y: (coverHeight / 2) - (scale * centerY) };
     }, [currentZoomPointIndex, coverHeight, isPortrait, CANVAS_WIDTH, CANVAS_HEIGHT]);
 
-    const handleOpenInvitation = useCallback(async () => {
-        if (isOpened) return;
-        setIsOpened(true); setTransitionStage('ZOOMING');
-        const s0 = sortedSections[0];
-        if (s0?.zoomConfig?.enabled && (s0.zoomConfig.trigger === 'open_btn' || s0.zoomConfig.trigger === 'load')) await startZoomAnimation(0, s0);
-        if (transitionEffect === 'split-door') setShutterVisible(true);
-        setTransitionStage('REVEALING');
-        setVisibleSections(prev => [...prev, 1]);
-        const s1 = sortedSections[1];
-        if (s1?.zoomConfig?.enabled) startZoomAnimation(1, s1);
-        setTimeout(() => { setTransitionStage('DONE'); setShutterVisible(false); setVisibleSections(sortedSections.map((_, i) => i)); }, transitionDuration * 1000 + 100);
-    }, [isOpened, sortedSections, startZoomAnimation, transitionDuration, transitionEffect]);
-
     const getSectionStyle = useCallback((index: number): React.CSSProperties => {
         const isRevealing = transitionStage === 'REVEALING';
         const isDone = transitionStage === 'DONE';
         const flowMode = isDone;
         const sectionHeight = layoutData[index].height;
         const calculatedTop = getSectionTop(index);
+        const duration = (sortedSections[0]?.pageTransition?.duration || 1500) / 1000;
 
         return { 
-            position: (isPortrait && flowMode) ? 'relative' : 'absolute', 
+            position: 'absolute', 
             left: 0, width: CANVAS_WIDTH, height: sectionHeight, 
             overflow: isPortrait ? 'visible' : 'hidden',
-            top: (isPortrait && flowMode) ? undefined : (flowMode ? calculatedTop : 0),
+            top: flowMode ? calculatedTop : 0,
             zIndex: (index === 0 && !flowMode) ? 20 : (index === 1 && !flowMode ? 10 : 1),
             opacity: 1,
             display: (!flowMode && index > 1) ? 'none' : 'block',
-            transition: isRevealing ? `transform ${transitionDuration}s cubic-bezier(0.22, 1, 0.36, 1), opacity ${transitionDuration}s ease-in-out` : undefined
+            transition: isRevealing ? `transform ${duration}s cubic-bezier(0.22, 1, 0.36, 1), opacity ${duration}s ease-in-out` : undefined
         };
-    }, [transitionStage, layoutData, getSectionTop, CANVAS_WIDTH, isPortrait, transitionDuration]);
+    }, [transitionStage, layoutData, getSectionTop, CANVAS_WIDTH, isPortrait, sortedSections]);
 
     useEffect(() => {
         if (isOpen) {
@@ -333,8 +332,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                 <SmartFontInjector />
                 <div ref={scrollContainerRef} className={`w-full h-full ${transitionStage === 'DONE' ? 'overflow-y-auto' : 'overflow-hidden'} premium-scroll no-scrollbar`} style={{ display: isPortrait ? 'flex' : 'grid', gridTemplateColumns: isPortrait ? undefined : `1fr ${CANVAS_WIDTH * scaleFactor}px 1fr`, flexDirection: isPortrait ? 'column' : undefined }}>
                     {!isPortrait && <div className="h-screen sticky top-0 pointer-events-none overflow-hidden" style={{ gridColumn: 1 }}><PreviewOrbitStage type="left" config={orbit.left} scaleFactor={scaleFactor} isOpened={isOpened} transitionStage={transitionStage} coverHeight={coverHeight} isPortrait={isPortrait} /></div>}
-                    <div className="relative overflow-hidden" style={{ gridColumn: isPortrait ? undefined : 2, width: CANVAS_WIDTH * scaleFactor, height: isPortrait ? 'auto' : totalHeight * scaleFactor, flexShrink: 0 }}>
-                        <div style={{ width: CANVAS_WIDTH, display: isPortrait ? 'flex' : 'block', flexDirection: 'column', height: isPortrait ? 'auto' : totalHeight, transform: `scale(${scaleFactor})`, transformOrigin: 'top left', position: 'absolute', top: 0, left: 0 }}>
+                    <div className="relative overflow-hidden" style={{ gridColumn: isPortrait ? undefined : 2, width: CANVAS_WIDTH * scaleFactor, height: totalHeight * scaleFactor, flexShrink: 0 }}>
+                        <div style={{ width: CANVAS_WIDTH, height: totalHeight, transform: `scale(${scaleFactor})`, transformOrigin: 'top left', position: 'absolute', top: 0, left: 0 }}>
                             {sortedSections.map((section, index) => {
                                 const zoomTransform = getZoomTransform(section, index);
                                 const sectionStyle = getSectionStyle(index);
