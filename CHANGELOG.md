@@ -1,17 +1,16 @@
 # Tamuu Changelog
 
-## [0.6.28] - 2026-03-08
+## [0.6.29] - 2026-03-08
 **Status**: 🟢 Deployed
 **Environment**: Production
 
-### Refactor: Hardcore iPhone SE Responsiveness (SE Engine V8)
-- **Zero-Compression Policy**: Disables the piecewise vertical compression algorithm exclusively for devices with width < 400px (iPhone SE, etc.). Elements now use 1:1 design-space mapping to prevent mathematical overlapping.
-- **Dynamic Content Stacking**: Fully integrated `cumulativeShift` logic for small screens. If an element's real-time height exceeds its design height, all elements visually below it are pushed down automatically.
-- **Gap Elimination**: Sections on small devices now have precise heights based on their lowest content element (`maxBottom + 40px`), completely removing the masif gaps between sections.
-- **Device-Specific Isolation**: Implemented a `isiPhoneSE` guard to ensure that large devices (iPhone 12/13/14/15) continue to use the original stable 896px static layout, preserving their intended design fidelity.
-- **Resolved Visibility Issues**: Hardened the main container basis height calculation to ensure 100% visibilitas on all mobile browsers.
+### Critical: Total Gap Elimination & Mobile Document Flow (V9)
+- **Elimination of Section Gaps**: Re-engineered the mobile layout to use `position: relative` stacking for sections in portrait mode. This utilizes the browser's native document flow to ensure sections touch perfectly with zero pixel gaps, regardless of device scaling or viewport size.
+- **Tight-Fit Height Strategy**: Removed the 896px static height minimum for all portrait devices. Section heights are now calculated dynamically based on their lowest child element (`maxBottom + 20px`), resulting in a compact, professional look without massive empty spaces.
+- **Restored Design Stability**: Returned to the robust piecewise mapping algorithm for Section 0 on standard mobile devices, ensuring the "Open Invitation" button and cover titles appear in their intended design positions.
+- **iPhone SE Protection**: Maintained the localized stacking engine for devices with width <= 380px, protecting them from overlapping while they benefit from the new gapless flow architecture.
 
-## [0.6.27] - 2026-03-08
+## [0.6.28] - 2026-03-08
 ... (rest of changelog)
 
 **Environment**: Production

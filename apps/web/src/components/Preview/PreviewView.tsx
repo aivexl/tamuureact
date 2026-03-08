@@ -79,8 +79,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
 
     const isPortrait = templateType === 'display' ? false : (windowSize.height >= windowSize.width || windowSize.width < 1024);
     
-    // CTO FIX: Targeted Device Calibration (iPhone SE, Pixel 5, etc)
-    const isiPhoneSE = isPortrait && windowSize.width < 400;
+    // CTO DETECTOR: iPhone SE and Smaller
+    const isiPhoneSE = isPortrait && windowSize.width <= 380;
 
     const scaleFactor = useMemo(() => {
         if (windowSize.width === 0 || windowSize.height === 0) return 1;
@@ -94,7 +94,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         return windowSize.height / scaleFactor;
     }, [windowSize.height, scaleFactor]);
 
-    // Transition Config
+    // Transition Configuration
     const transitionConfig = useMemo(() => {
         const section0 = sortedSections[0];
         return section0?.pageTransition || { enabled: false, effect: 'slide-up' as TransitionEffect, duration: 1500 };
@@ -117,7 +117,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
     }, [isPortrait, sortedSections]);
 
     // ============================================
-    // CTO UNIFIED LAYOUT ENGINE V8 (HARDCORE SE)
+    // CTO UNIFIED LAYOUT ENGINE V9 (ZERO GAP)
     // ============================================
     const layoutData = useMemo(() => {
         return sortedSections.map((section, sectionIndex) => {
@@ -135,40 +135,36 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                 const measuredHeight = detectedDim?.height || designHeight;
                 const growth = Math.max(0, measuredHeight - designHeight);
 
-                // SE Stacking Engine: Prevents overlap when text wraps
+                // SE Stacking Engine
                 const stackShift = isiPhoneSE ? cumulativeShift : 0;
                 if (isiPhoneSE && growth > 2) cumulativeShift += growth;
 
                 let finalAdjustedY = el.y + stackShift;
 
-                // Section 0 Piecewise vs 1:1 Centering
-                if (isPortrait && isFirst) {
-                    if (!isOpened && coverHeight < INVITATION_HEIGHT) {
-                        const y = el.y; const T = 200; const B = 696;
-                        const viewportShift = (coverHeight - INVITATION_HEIGHT) / 2;
-                        
-                        if (isiPhoneSE) {
-                            // iPhone SE: DISABLE COMPRESSION. Use 1:1 Centered Mapping.
-                            // This ensures elements maintain design-time distance.
-                            finalAdjustedY = (y + stackShift) + viewportShift;
-                        } else {
-                            // Normal Mobile: Restore standard stable piecewise mapping
-                            if (y <= T) finalAdjustedY = y * ((T + viewportShift) / T);
-                            else if (y <= B) finalAdjustedY = y + viewportShift;
-                            else finalAdjustedY = (B + viewportShift) + (y - B) * ((coverHeight - (B + viewportShift)) / (INVITATION_HEIGHT - B));
-                        }
+                if (isPortrait && isFirst && !isOpened && coverHeight < INVITATION_HEIGHT) {
+                    const y = el.y; const T = 200; const B = 696;
+                    const viewportShift = (coverHeight - INVITATION_HEIGHT) / 2;
+                    
+                    // Unified Piecewise Mapping (Restored for Stability)
+                    if (y <= T) finalAdjustedY = (y + stackShift) * ((T + viewportShift) / T);
+                    else if (y <= B) finalAdjustedY = (y + stackShift) + viewportShift;
+                    else {
+                        // SE Guard for Piecewise: Prevents button compression
+                        const baseB = B + viewportShift;
+                        const factor = isiPhoneSE ? 0.1 : 1.0;
+                        finalAdjustedY = (baseB + (stackShift * factor)) + (y - B) * ((coverHeight - (baseB + (stackShift * factor))) / (INVITATION_HEIGHT - B));
                     }
                 }
                 elementPlacements.push({ id: el.id, adjustedY: finalAdjustedY });
             });
 
-            // Final Section Height (Dynamic Stack)
+            // SECTION HEIGHT CALCULATION (GAP ELIMINATION)
             let sectionHeight = CANVAS_HEIGHT;
             if (isPortrait) {
                 if (isFirst && !isOpened) {
                     sectionHeight = coverHeight;
-                } else if (isiPhoneSE) {
-                    // SE HARDCORE: Height is strictly content-based. ELIMINATES GAPS.
+                } else {
+                    // For ALL portrait devices, eliminate gap by fitting height to content
                     let maxBottom = 0;
                     elementPlacements.forEach(p => {
                         const el: any = section.elements.find(e => e.id === p.id);
@@ -176,10 +172,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                         const bottom = p.adjustedY + h;
                         if (bottom > maxBottom) maxBottom = bottom;
                     });
-                    sectionHeight = Math.max(100, maxBottom + 40); // Minimalistic breathability
-                } else {
-                    // Larger Devices: Maintain 896px for design fidelity
-                    sectionHeight = CANVAS_HEIGHT;
+                    // Dynamic height based on content. No more CANVAS_HEIGHT fallback.
+                    sectionHeight = Math.max(isFirst ? coverHeight : 100, maxBottom + 20); 
                 }
             }
             return { id: section.id, height: sectionHeight, elements: elementPlacements };
@@ -194,7 +188,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         return top;
     }, [layoutData]);
 
-    // UI State & Transitions
+    // UI Logic
     const toggleFullscreen = useCallback(() => {
         if (!document.fullscreenElement) {
             containerRef.current?.requestFullscreen().catch(() => {});
@@ -275,10 +269,11 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         const calculatedTop = getSectionTop(index);
 
         return { 
-            position: 'absolute', 
+            // ELIMINATE GAP: Use relative positioning for mobile flow to let sections touch perfectly
+            position: (isPortrait && flowMode) ? 'relative' : 'absolute', 
             left: 0, width: CANVAS_WIDTH, height: sectionHeight, 
             overflow: isPortrait ? 'visible' : 'hidden',
-            top: flowMode ? calculatedTop : 0,
+            top: (isPortrait && flowMode) ? undefined : (flowMode ? calculatedTop : 0),
             zIndex: (index === 0 && !flowMode) ? 20 : (index === 1 && !flowMode ? 10 : 1),
             opacity: 1,
             display: (!flowMode && index > 1) ? 'none' : 'block',
@@ -348,8 +343,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                 <SmartFontInjector />
                 <div ref={scrollContainerRef} className={`w-full h-full ${transitionStage === 'DONE' ? 'overflow-y-auto' : 'overflow-hidden'} premium-scroll no-scrollbar`} style={{ display: isPortrait ? 'flex' : 'grid', gridTemplateColumns: isPortrait ? undefined : `1fr ${CANVAS_WIDTH * scaleFactor}px 1fr`, flexDirection: isPortrait ? 'column' : undefined }}>
                     {!isPortrait && <div className="h-screen sticky top-0 pointer-events-none overflow-hidden" style={{ gridColumn: 1 }}><PreviewOrbitStage type="left" config={orbit.left} scaleFactor={scaleFactor} isOpened={isOpened} transitionStage={transitionStage} coverHeight={coverHeight} isPortrait={isPortrait} /></div>}
-                    <div className="relative overflow-hidden" style={{ gridColumn: isPortrait ? undefined : 2, width: CANVAS_WIDTH * scaleFactor, height: totalHeight * scaleFactor, flexShrink: 0 }}>
-                        <div style={{ width: CANVAS_WIDTH, height: totalHeight, transform: `scale(${scaleFactor})`, transformOrigin: 'top left', position: 'absolute', top: 0, left: 0, overflow: 'visible' }}>
+                    <div className="relative overflow-hidden" style={{ gridColumn: isPortrait ? undefined : 2, width: CANVAS_WIDTH * scaleFactor, height: isPortrait ? 'auto' : totalHeight * scaleFactor, flexShrink: 0 }}>
+                        <div style={{ width: CANVAS_WIDTH, height: isPortrait ? 'auto' : totalHeight, display: isPortrait ? 'flex' : 'block', flexDirection: 'column', transform: `scale(${scaleFactor})`, transformOrigin: 'top left', position: 'absolute', top: 0, left: 0, overflow: 'visible' }}>
                             {sortedSections.map((section, index) => {
                                 const zoomTransform = getZoomTransform(section, index);
                                 const sectionStyle = getSectionStyle(index);
