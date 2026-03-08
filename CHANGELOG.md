@@ -1,7 +1,19 @@
 # Tamuu Changelog
 
-<<<<<<< HEAD
-## [0.6.21] - 2026-03-07
+## [0.6.23] - 2026-03-08
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Refactor: iPhone SE Responsiveness & Liquid Stacking Engine
+- **Implementation of Liquid Stacking Engine**: Overhauled the `PreviewView` layout logic to support dynamic vertical stacking. Elements now calculate a cumulative `stackShift` based on the real-time growth of all elements visually above them. This mathematically guarantees zero overlapping on narrow screens (375px) where text frequently wraps.
+- **iPhone SE Specific Calibration**: Refined the Section 0 piecewise mapping algorithm for screens with height < 700px. The new logic safely absorbs dynamic pergeseran within defined top/bottom buffer zones, preventing layout "crushing" on short devices.
+- **Order-Aware Layout Intelligence**: Elements are now sorted by their design-time Y-coordinates before calculating pergeseran, ensuring that the physical relationship between design elements is preserved regardless of content expansion.
+- **Internal Bleeding, External Clipping Architecture**:
+    - **Zero-Cutoff Implementation**: Refactored section containers and zoom wrappers to use `overflow: visible` in portrait mode. This allows decorative elements and long text to flow naturally between sections without being cut.
+    - **Clean Masking**: Maintained `overflow: hidden` on the primary invitation container (414px) to ensure a polished look where internal elements never leak into the browser background.
+- **Smart Dimension Reporting**: Enabled `TextElement` and `RSVPWishesElement` to report physical footprint changes via `ResizeObserver` even in Preview mode. This feeds the Liquid Position Engine with accurate data for pixel-perfect vertical positioning.
+
+## [0.6.22] - 2026-03-07
 **Status**: 🟢 Deployed
 **Environment**: Production
 
@@ -11,19 +23,6 @@
 - **Enhanced Cover Page Piecewise Mapping**: Refined the Section 0 compression algorithm to use a strict monotonic function. Only the extreme top and bottom margins (100px) absorb viewport compression, keeping central text blocks perfectly spaced while pinning ornaments to corners.
 - **DOM-Measured Narrative Integrity**: Integrated `ResizeObserver` into `LoveStoryElement` and `RSVPWishesElement` to report real-time physical height. This allows the preview engine to dynamically push subsequent sections down, preventing layout collisions.
 - **TypeScript Stability**: Resolved a TS2345 error in the music controller by adding null-safety guards to the `play()` function.
-=======
-## [0.6.6] - 2026-03-08
-**Status**: 🟢 Deployed
-**Environment**: Production
-
-### Refactor: Mobile Responsiveness & Liquid Layout Engine (Preview)
-- **Zero-Overlapping Guarantee**: Re-engineered the `PreviewView` layout engine to utilize real-time detected dimensions from `elementDimensions` store. This ensures that when text wraps on narrow mobile screens, elements below it shift dynamically, preventing visual stacking.
-- **Internal Bleeding, External Clipping Architecture**:
-    - **Zero-Cutoff Implementation**: Refactored section containers and zoom wrappers to use `overflow: visible` in portrait mode. This allows decorative elements and long text to flow naturally between sections without being cut.
-    - **Clean Masking**: Maintained `overflow: hidden` on the primary invitation container (414px) to ensure a polished look where internal elements never leak into the browser background.
-- **Smart Dimension Reporting**: Enabled `TextElement` and `RSVPWishesElement` to report physical footprint changes via `ResizeObserver` even in Preview mode. This feeds the Liquid Position Engine with accurate data for pixel-perfect vertical positioning.
-- **Enterprise UI Hardening**: Updated `ElementRenderer` to ensure that dimension reporting only triggers permanent store updates in Editor mode, preserving data integrity during guest previews.
->>>>>>> 1e55c78 (feat: refactor /preview/* for mobile responsiveness with Zero-Overlapping Guarantee and Liquid Layout hardening)
 
 ## [0.6.5] - 2026-03-07
 **Status**: 🟢 Deployed
@@ -168,8 +167,7 @@
 - **Safe Polling Architecture**: Hardened the `LiveTrigger` engine in `PreviewView` with `AbortController` timeouts and environment-aware fetch guards to prevent `ERR_HTTP2_PING_FAILED` network noise.
 
 ## [0.5.1] - 2026-03-06
-... (rest of changelog)
-
+**Status**: 🟢 Deployed
 **Environment**: Production
 
 ### Guest Management & System Stability
@@ -369,7 +367,6 @@
 ## [2026-03-02] Feature: Pro Designer View & Terminology Alignment
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
 **Environment**: Production
-...
 
 ### Admin & User Editor Alignment
 - **Terminology Sync**: Standardized the label "Permissions & Visibility" to **"Layer Configuration & Permissions"** across `PropertyPanel.tsx` and `PropertyInspector.tsx` to match the end-user's mental model.
@@ -397,7 +394,7 @@
 ## [2026-03-02] Fix: Gift Address Card Text Wrapping & UI Integrity
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
 **Environment**: Production
-...
+
 ### UI/UX Fixes
 - **Robust Text Wrapping**: Implemented dynamic text wrapping for `GiftAddressCard` using `flex-1`, `min-w-0`, and `break-words` to prevent text from overlapping with icons or the copy button.
 - **Visual Safety**: Added `gap-3` and `flex-shrink-0` to UI components (icons/buttons) to guarantee spacing even with long recipient names or complex addresses.
@@ -406,7 +403,7 @@
 ## [2026-03-02] UI: Gift Address Card Rollback & Aspect Ratio Integrity
 **Status**: 🟢 Deployed (Cloudflare Pages `tamuu-app`, `tamuu` & workers `tamuu-api`)
 **Environment**: Production
-...
+
 ### UI/UX Updates
 - **Rollback GiftAddressCard**: Reverted the aspect ratio of `GiftAddressCard` back to its original **1.15/1** format to maintain its unique visual identity.
 - **Visual Decoupling**: Separated `GiftAddressElement` from the container logic used by `BankCard`. This ensures that the Gift Address Card is rendered in its original standalone format without forced synchronization with other card elements.

@@ -398,32 +398,79 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                                             {section.backgroundUrl && (section.overlayOpacity || 0) > 0 && <div className="absolute inset-0 bg-black pointer-events-none" style={{ opacity: section.overlayOpacity }} />}
                                             {section.particleType && section.particleType !== 'none' && <div className="absolute inset-0 pointer-events-none"><ParticleOverlay type={section.particleType} /></div>}
                                             <div className="absolute left-0 overflow-visible" style={{ top: 0, height: sectionHeight, width: CANVAS_WIDTH }}>
-                                                {(section.elements || []).filter((el: any) => el && el.isVisible && !(index === 0 && transitionStage === 'DONE' && (el.type === 'button' || el.type === 'open_invitation_button'))).map((element: any) => {
-                                                    let adjustedY = element.y;
-                                                    if (isPortrait) {
-                                                        if (index === 0) {
+                                                {(() => {
+                                                    // CTO ENTERPRISE LIQUID STACKING ENGINE
+                                                    // Sort elements by design-time Y to calculate cumulative shift correctly
+                                                    const sectionElements = (section.elements || [])
+                                                        .filter((el: any) => el && el.isVisible && !(index === 0 && transitionStage === 'DONE' && (el.type === 'button' || el.type === 'open_invitation_button')))
+                                                        .sort((a, b) => a.y - b.y);
+
+                                                    const shifts: Record<string, number> = {};
+                                                    let currentCumulativeShift = 0;
+
+                                                    return sectionElements.map((element: any) => {
+                                                        const detectedDim = elementDimensions?.[element.id];
+                                                        const designHeight = element.height || 50;
+                                                        const measuredHeight = detectedDim?.height || designHeight;
+                                                        
+                                                        // Calculate how much this element has expanded beyond its design height
+                                                        const growth = Math.max(0, measuredHeight - designHeight);
+                                                        
+                                                        // This element's starting Y is shifted by the total growth of elements ABOVE it
+                                                        const stackShift = currentCumulativeShift;
+                                                        
+                                                        // Update the cumulative shift for the NEXT elements in the visual stack
+                                                        // We only add growth if it's significant (> 2px) to prevent layout jitter
+                                                        if (growth > 2) {
+                                                            currentCumulativeShift += growth;
+                                                        }
+
+                                                        let adjustedY = element.y + stackShift;
+
+                                                        // Section 0 Specific: Piecewise Mapping for Viewport Fitting
+                                                        if (isPortrait && index === 0) {
+                                                            // iPhone SE (667px) calibration: ensure shift doesn't crush elements
                                                             if (coverHeight < INVITATION_HEIGHT) {
-                                                                const y = element.y; const T = 200; const B = 696; const shift = (coverHeight - INVITATION_HEIGHT) / 2;
-                                                                if (y <= T) adjustedY = y * ((T + shift) / T);
-                                                                else if (y <= B) adjustedY = y + shift;
-                                                                else adjustedY = (B + shift) + (y - B) * ((coverHeight - (B + shift)) / (INVITATION_HEIGHT - B));
+                                                                const y = element.y; 
+                                                                const T = 200; // Top safe zone
+                                                                const B = 696; // Bottom safe zone
+                                                                const shift = (coverHeight - INVITATION_HEIGHT) / 2;
+                                                                
+                                                                if (y <= T) {
+                                                                    // Compress top zone gently
+                                                                    adjustedY = (y + stackShift) * ((T + shift) / T);
+                                                                } else if (y <= B) {
+                                                                    // Center zone just shifts
+                                                                    adjustedY = (y + stackShift) + shift;
+                                                                } else {
+                                                                    // Compress bottom zone gently
+                                                                    const baseB = B + shift;
+                                                                    adjustedY = (baseB + (stackShift * 0.5)) + (y - B) * ((coverHeight - baseB) / (INVITATION_HEIGHT - B));
+                                                                }
                                                             } else {
-                                                                const detectedDim = elementDimensions?.[element.id];
-                                                                const elementHeight = detectedDim?.height || element.height || 50;
-                                                                const maxTop = INVITATION_HEIGHT - elementHeight;
+                                                                // Expand logic for large screens
+                                                                const maxTop = INVITATION_HEIGHT - designHeight;
                                                                 const progress = maxTop > 0 ? Math.max(0, Math.min(1, element.y / maxTop)) : 0;
-                                                                adjustedY = element.y + (coverHeight - INVITATION_HEIGHT) * progress;
+                                                                adjustedY = (element.y + stackShift) + (coverHeight - INVITATION_HEIGHT) * progress;
                                                             }
                                                         }
-                                                    }
-                                                    const trigger = element.animation?.trigger || 'scroll';
-                                                    let force = false;
-                                                    if (trigger === 'load') force = true;
-                                                    else if (trigger === 'scroll') force = visibleSections.includes(index);
-                                                    else if (trigger === 'open_btn') force = isOpened;
-                                                    else if (trigger === 'click') force = clickedSections.includes(index);
-                                                    return <AnimatedLayer key={`${section.id}-${element.id}`} layer={element} adjustedY={adjustedY} isOpened={isOpened} isEditor={false} invitationId={propId} onOpenInvitation={handleOpenInvitation} scrollContainerRef={scrollContainerRef} forceTrigger={force} isSectionActive={index === 0 ? visibleSections.includes(index) : (visibleSections.includes(index) && transitionStage === 'DONE')} />;
-                                                })}
+
+                                                        return (
+                                                            <AnimatedLayer 
+                                                                key={`${section.id}-${element.id}`} 
+                                                                layer={element} 
+                                                                adjustedY={adjustedY} 
+                                                                isOpened={isOpened} 
+                                                                isEditor={false} 
+                                                                invitationId={propId} 
+                                                                onOpenInvitation={handleOpenInvitation} 
+                                                                scrollContainerRef={scrollContainerRef} 
+                                                                forceTrigger={false} 
+                                                                isSectionActive={index === 0 ? visibleSections.includes(index) : (visibleSections.includes(index) && transitionStage === 'DONE')} 
+                                                            />
+                                                        );
+                                                    });
+                                                })()}
                                             </div>
                                         </m.div>
                                     </div>
