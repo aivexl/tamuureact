@@ -1,5 +1,16 @@
 # Tamuu Changelog
 
+## [0.6.42] - 2026-03-08
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### UI/UX: Tutorial System Enterprise V2 (Reactive Paint Fix)
+- **Reactive DOM Scanning**: Resolved the race condition where tutorial cards wouldn't appear because DOM elements weren't fully painted. Added a smart 800ms buffer and reactive step filtering.
+- **Enterprise Card Layout**: Implemented a proportional `flex-col` layout for tutorial tooltips, ensuring zero overlap between title, description, and navigation buttons.
+- **Mobile-First Fixed Positioning**: Migrated from absolute to fixed positioning for the tutorial layer to guarantee pixel-perfect alignment across all device heights and scroll states.
+- **Scale-In Micro-interactions**: Replaced top-down slide animations with high-end scale and fade transitions (200ms) for a direct, responsive feel.
+- **Enhanced Reliability**: Implemented `availableSteps` auto-validation to dynamically bypass inactive feature buttons, ensuring the tutorial never gets "stuck" on hidden UI elements.
+
 ## [0.6.41] - 2026-03-08
 **Status**: 🟢 Deployed
 **Environment**: Production
@@ -53,4 +64,14 @@
 - **Streamlined Navigation**: Added Skip, Next, and Progress indicators for a modern onboarding experience.
 
 ## [0.6.37] - 2026-03-08
-... (rest of changelog)
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### UI: Grid Panel Cleanup & Navigation Streamlining
+- **Streamlined Editor Grid**: Removed five redundant or rarely used items from the Icon Grid Menu to improve focus and navigation speed:
+  1. **Kisah (Love Story)**
+  2. **Profil (Profile Card/Photo)**
+  3. **Quote (Quotes)**
+  4. **Tanggal (Countdown/Event Date)**
+  5. **Sosmed (Social Media/SEO)**
+- **UI Focus**: These elements are now managed exclusively through the section-based edit area, reducing clutter in the primary feature menu while maintaining full editing capability.

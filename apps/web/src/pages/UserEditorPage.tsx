@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { motion as m, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { UserEditorLayout } from '../components/Layout/UserEditorLayout';
@@ -33,14 +33,13 @@ import { AnimatedLayer } from '@/components/Preview/AnimatedLayer';
 import { useStore } from '@/store/useStore';
 import { invitations as invitationsApi } from '@/lib/api';
 import { Sparkles, AlertCircle, Clock, ChevronRight, ChevronLeft, X, Info, Layout as LayoutIcon, Eye } from 'lucide-react';
-import { useRef } from 'react';
 import { useSubscriptionTimer } from '../hooks/useSubscriptionTimer';
 
 
 import { SubscriptionStatusWidget } from '../components/ui/SubscriptionStatusWidget';
 
 // ============================================
-// TUTORIAL SYSTEM (INDONESIAN - REFACTORED)
+// TUTORIAL SYSTEM (INDONESIAN - ENTERPRISE V2)
 // ============================================
 
 const TUTORIAL_STEPS = [
@@ -50,7 +49,6 @@ const TUTORIAL_STEPS = [
         description: 'Kelola status publikasi dan bagikan link undangan Anda di sini.',
         position: 'bottom'
     },
-    // Grid Items
     {
         targetId: 'tutorial-grid-item-music',
         title: 'Musik Latar',
@@ -123,7 +121,6 @@ const TUTORIAL_STEPS = [
         description: 'Unduh aset undangan dalam format gambar atau PDF.',
         position: 'bottom'
     },
-    // Template Area
     {
         targetId: 'tutorial-template-area',
         title: 'Area Konten',
@@ -146,54 +143,57 @@ const TUTORIAL_STEPS = [
 
 const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
     const [stepIndex, setStepIndex] = useState(0);
+    const [availableSteps, setAvailableSteps] = useState<any[]>([]);
     const [coords, setCoords] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
-    const sections = useStore(s => s.sections);
-    
-    // Filter steps based on actual element existence in DOM
-    const availableSteps = useMemo(() => {
-        return TUTORIAL_STEPS.filter(s => document.getElementById(s.targetId) !== null);
-    }, [sections.length]); // Re-filter if sections change
+    const [isReady, setIsReady] = useState(false);
+
+    // Reactive filtering of steps - Run once on mount after a small delay
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const filtered = TUTORIAL_STEPS.filter(s => {
+                const el = document.getElementById(s.targetId);
+                return el && el.getBoundingClientRect().width > 0;
+            });
+            setAvailableSteps(filtered);
+            setIsReady(true);
+        }, 500); // 500ms enterprise buffer for paint
+        return () => clearTimeout(timer);
+    }, []);
 
     const currentStep = availableSteps[stepIndex];
 
     useEffect(() => {
-        if (!currentStep) return;
+        if (!isReady || !currentStep) return;
 
         const updateCoords = () => {
             const el = document.getElementById(currentStep.targetId);
             if (el) {
                 const rect = el.getBoundingClientRect();
-                if (rect.width > 0) {
-                    setCoords({
-                        top: rect.top,
-                        left: rect.left,
-                        width: rect.width,
-                        height: rect.height
-                    });
-                    
-                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            } else {
-                // If dynamic element not found, skip immediately to next
-                if (stepIndex < availableSteps.length - 1) setStepIndex(s => s + 1);
-                else onComplete();
+                setCoords({
+                    top: rect.top,
+                    left: rect.left,
+                    width: rect.width,
+                    height: rect.height
+                });
+                
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         };
 
-        const timer = setTimeout(updateCoords, 100);
+        // Initial update
+        updateCoords();
+        
         window.addEventListener('resize', updateCoords);
         window.addEventListener('scroll', updateCoords);
         return () => {
-            clearTimeout(timer);
             window.removeEventListener('resize', updateCoords);
             window.removeEventListener('scroll', updateCoords);
         };
-    }, [stepIndex, currentStep?.targetId, availableSteps.length, onComplete]);
+    }, [stepIndex, currentStep, isReady]);
 
     const handleNext = () => {
         if (stepIndex < availableSteps.length - 1) {
-            setCoords(null); // Clear coords to trigger entry animation at new position
-            setStepIndex(stepIndex + 1);
+            setStepIndex(s => s + 1);
         } else {
             onComplete();
         }
@@ -201,39 +201,35 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
 
     const handlePrev = () => {
         if (stepIndex > 0) {
-            setCoords(null);
-            setStepIndex(stepIndex - 1);
+            setStepIndex(s => s - 1);
         }
     };
 
-    if (!currentStep || availableSteps.length === 0) return null;
+    if (!isReady || !currentStep || !coords) return null;
 
-    // CALCULATE BEST POSITION TO AVOID VIEWPORT CLIPPING
     const getCardStyle = () => {
-        if (!coords) return { opacity: 0 };
-
-        const cardWidth = Math.min(window.innerWidth - 40, 280);
+        const cardWidth = Math.min(window.innerWidth - 32, 300);
         const cardHeight = 160; 
-        const padding = 20;
+        const padding = 16;
         
         let top = 0;
         let left = 0;
 
         if (currentStep.position === 'bottom') {
-            top = coords.top + coords.height + 15;
+            top = coords.top + coords.height + 12;
             left = coords.left + (coords.width / 2) - (cardWidth / 2);
         } else if (currentStep.position === 'top') {
-            top = coords.top - cardHeight - 15;
+            top = coords.top - cardHeight - 12;
             left = coords.left + (coords.width / 2) - (cardWidth / 2);
         } else if (currentStep.position === 'right') {
             top = coords.top + (coords.height / 2) - (cardHeight / 2);
-            left = coords.left + coords.width + 15;
+            left = coords.left + coords.width + 12;
         } else if (currentStep.position === 'left') {
             top = coords.top + (coords.height / 2) - (cardHeight / 2);
-            left = coords.left - cardWidth - 15;
+            left = coords.left - cardWidth - 12;
         }
 
-        // VIEWPORT CONSTRAINTS (Keep card inside screen)
+        // VIEWPORT CONSTRAINTS (Enterprise Level Protection)
         const minLeft = padding;
         const maxLeft = window.innerWidth - cardWidth - padding;
         const minTop = padding;
@@ -247,80 +243,78 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-[100] pointer-events-none">
+        <div className="fixed inset-0 z-[9999] pointer-events-none">
             <AnimatePresence mode="wait">
-                {coords && (
-                    <m.div
-                        key={currentStep.targetId}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ 
-                            opacity: 1, 
-                            scale: 1, 
-                            ...getCardStyle()
-                        }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="absolute bg-slate-900 text-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-5 pointer-events-auto border border-white/10 z-[101] flex flex-col gap-1"
-                        style={{ position: 'fixed' }}
-                    >
-                        <div className="flex items-center justify-between mb-1">
-                            <h4 className="text-[10px] font-black tracking-[0.2em] uppercase text-indigo-400">
-                                {currentStep.title}
-                            </h4>
-                            <button onClick={onComplete} className="p-1.5 hover:bg-white/10 rounded-full text-white/40 transition-colors">
-                                <X className="w-4 h-4" />
+                <m.div
+                    key={currentStep.targetId}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ 
+                        opacity: 1, 
+                        scale: 1, 
+                        ...getCardStyle()
+                    }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+                    className="absolute bg-slate-900 text-white rounded-[1.5rem] shadow-[0_25px_60px_rgba(0,0,0,0.6)] p-6 pointer-events-auto border border-white/10 z-[10000] flex flex-col"
+                    style={{ position: 'fixed' }}
+                >
+                    <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-[11px] font-black tracking-[0.2em] uppercase text-indigo-400">
+                            {currentStep.title}
+                        </h4>
+                        <button onClick={onComplete} className="p-1.5 hover:bg-white/10 rounded-full text-white/40 transition-colors">
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+
+                    <div className="mb-6">
+                        <p className="text-[13px] text-slate-300 leading-relaxed font-medium">
+                            {currentStep.description}
+                        </p>
+                    </div>
+
+                    <div className="mt-auto flex items-center justify-between pt-4 border-t border-white/5">
+                        <div className="flex items-center gap-1">
+                            {stepIndex > 0 && (
+                                <button 
+                                    onClick={handlePrev}
+                                    className="px-3 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-white transition-all flex items-center gap-1"
+                                >
+                                    <ChevronLeft className="w-3.5 h-3.5" />
+                                    Back
+                                </button>
+                            )}
+                            <button 
+                                onClick={onComplete}
+                                className="px-3 py-2 text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-slate-300 transition-colors"
+                            >
+                                Skip
                             </button>
                         </div>
-
-                        <div className="flex-1">
-                            <p className="text-[12px] text-slate-300 leading-relaxed font-medium">
-                                {currentStep.description}
-                            </p>
+                        
+                        <div className="flex items-center gap-4">
+                            <span className="text-[10px] font-bold text-slate-600 font-mono">{stepIndex + 1}/{availableSteps.length}</span>
+                            <button
+                                onClick={handleNext}
+                                className="px-5 py-2.5 bg-white text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-100 transition-all active:scale-95 shadow-lg shadow-white/10"
+                            >
+                                {stepIndex === availableSteps.length - 1 ? 'Finish' : 'Next'}
+                                <ChevronRight className="w-3.5 h-3.5" />
+                            </button>
                         </div>
+                    </div>
 
-                        <div className="mt-4 pt-3 flex items-center justify-between border-t border-white/5">
-                            <div className="flex items-center gap-2">
-                                {stepIndex > 0 && (
-                                    <button 
-                                        onClick={handlePrev}
-                                        className="px-2 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-white transition-all flex items-center gap-1"
-                                    >
-                                        <ChevronLeft className="w-3 h-3" />
-                                        Kembali
-                                    </button>
-                                )}
-                                <button 
-                                    onClick={onComplete}
-                                    className="px-2 py-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-slate-300 transition-colors"
-                                >
-                                    Lewati
-                                </button>
-                            </div>
-                            
-                            <div className="flex items-center gap-3">
-                                <span className="text-[10px] font-bold text-slate-600">{stepIndex + 1}/{availableSteps.length}</span>
-                                <button
-                                    onClick={handleNext}
-                                    className="px-4 py-2 bg-white text-slate-900 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-100 transition-all active:scale-95"
-                                >
-                                    {stepIndex === availableSteps.length - 1 ? 'Selesai' : 'Lanjut'}
-                                    <ChevronRight className="w-3 h-3" />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Arrow Pointer */}
-                        <m.div 
-                            animate={{ rotate: 45 }}
-                            className={`absolute w-3 h-3 bg-slate-900 border-white/10 ${
-                                currentStep.position === 'bottom' ? '-top-1.5 left-1/2 -translate-x-1/2 border-t border-l' :
-                                currentStep.position === 'top' ? '-bottom-1.5 left-1/2 -translate-x-1/2 border-b border-r' :
-                                currentStep.position === 'right' ? 'top-1/2 -left-1.5 -translate-y-1/2 border-b border-l' :
-                                'top-1/2 -right-1.5 -translate-y-1/2 border-t border-r'
-                            }`}
-                        />
-                    </m.div>
-                )}
+                    {/* Arrow Pointer */}
+                    <m.div 
+                        animate={{ rotate: 45 }}
+                        className={`absolute w-3.5 h-3.5 bg-slate-900 border-white/10 ${
+                            currentStep.position === 'bottom' ? '-top-1.5 left-1/2 -translate-x-1/2 border-t border-l' :
+                            currentStep.position === 'top' ? '-bottom-1.5 left-1/2 -translate-x-1/2 border-b border-r' :
+                            currentStep.position === 'right' ? 'top-1/2 -left-1.5 -translate-y-1/2 border-b border-l' :
+                            'top-1/2 -right-1.5 -translate-y-1/2 border-t border-r'
+                        }`}
+                    />
+                </m.div>
             </AnimatePresence>
         </div>
     );
@@ -333,11 +327,9 @@ interface UserEditorPageProps {
 export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitation' }) => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    // 1. PROJECT IDENTIFIERS
     const currentStoredId = useStore(s => s.id);
     const hasHydrated = useStore(s => s.hasHydrated);
 
-    // 2. ATOMIC SETTERS
     const resetStore = useStore(s => s.resetStore);
     const resetSections = useStore(s => s.resetSections);
     const clearLayers = useStore(s => s.clearLayers);
@@ -346,7 +338,6 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
     const setOrbitLayers = useStore(s => s.setOrbitLayers);
     const setActiveSection = useStore(s => s.setActiveSection);
 
-    // 3. UI STATE
     const activeSectionId = useStore(s => s.activeSectionId);
     const sections = useStore(s => s.sections);
     const orbit = useStore(s => s.orbit);
@@ -367,7 +358,6 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
     const [showTutorial, setShowTutorial] = useState(false);
 
     const user = useStore(s => s.user);
-    // CTO POLICY: Use invitation-level expiry for status if available, fallback to user
     const subStatus = useSubscriptionTimer(invitation?.expires_at || user?.expiresAt || null);
     const [activePanel, setActivePanel] = useState<string | null>(null);
     const previewRef = useRef<HTMLDivElement>(null);
@@ -378,14 +368,10 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
             if (!id || hasAttemptedRef.current === id) return;
             hasAttemptedRef.current = id;
 
-            console.log('[UserEditor] [v3.8-BILLIONAIRE] Starting atomic load for:', id);
-
             setLoading(true);
             setError(null);
 
-            // 1. ID GUARD: Atomic check before any state changes
             if (hasHydrated && currentStoredId !== id) {
-                console.log('[UserEditor] ID Sync: Wiping stale data (', currentStoredId, '->', id, ')');
                 resetStore();
                 resetSections();
                 clearLayers();
@@ -393,17 +379,10 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
 
             try {
                 const data = await invitationsApi.get(id);
-
-                // CTO: Smart Transactional Hydration
-                // We no longer force all permissions to true. 
-                // We respect the template's granular settings.
                 hydrateProject(data);
-
-                // Deep arrays still need individual syncs if they are handled by separate slices
                 setSections(data.sections || []);
                 if (data.orbit_layers) setOrbitLayers(data.orbit_layers);
 
-                // 3. UI Sync (Local Component State)
                 setInvitation({
                     id: data.id,
                     title: data.name,
@@ -418,18 +397,15 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                     setActiveSection(data.sections[0].id);
                 }
 
-                console.log('[UserEditor] Hydration Successful. Engine Online.');
-
-                // Check if tutorial should be shown
+                // Check tutorial visibility - Enterprise Grade: Wait for component to mount fully
                 const hasSeenTutorial = localStorage.getItem(`tutorial_seen_${id}`);
                 if (!hasSeenTutorial) {
-                    // Split second delay to ensure dynamic grid items are painted
-                    setTimeout(() => setShowTutorial(true), 300);
+                    // Direct set after minimal buffer
+                    setTimeout(() => setShowTutorial(true), 800);
                 }
             } catch (err) {
-                console.error('[UserEditor] Hydration Failed:', err);
-                setError('Undangan tidak ditemukan atau terjadi kesalahan.');
-                hasAttemptedRef.current = null; // Allow retry
+                setError('Undangan tidak ditemukan.');
+                hasAttemptedRef.current = null;
             } finally {
                 setLoading(false);
             }
@@ -438,7 +414,7 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
         if (hasHydrated) {
             loadInvitation();
         }
-    }, [id, hasHydrated]); // MINIMAL DEPS: Only ID and Hydration status matter. Setters are stable.
+    }, [id, hasHydrated]);
 
     const completeTutorial = () => {
         setShowTutorial(false);
@@ -456,7 +432,7 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                 <p className="text-slate-600 font-medium">{error || 'Undangan tidak ditemukan'}</p>
                 <button
                     onClick={() => navigate('/dashboard')}
-                    className="px-6 py-2 bg-slate-900 text-white rounded-xl text-sm font-medium hover:bg-slate-800 transition-colors"
+                    className="px-6 py-2 bg-slate-900 text-white rounded-xl text-sm font-medium"
                 >
                     Kembali ke Dashboard
                 </button>
@@ -464,75 +440,41 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
         );
     }
 
-
-
     return (
         <UserEditorLayout>
             <SmartFontInjector />
             <div className="max-w-4xl mx-auto p-4 sm:p-6 pb-24 space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-
-                {/* 1. Information Card */}
                 <InvitationInfoCard
-                    invitation={{
-                        ...invitation,
-                        is_published: isPublished,
-                        status: isPublished ? "Published" : "Draft"
-                    }}
+                    invitation={{ ...invitation, is_published: isPublished, status: isPublished ? "Published" : "Draft" }}
                     onShare={() => setActivePanel('share')}
                     onSettings={() => setActivePanel('settings')}
                 />
-
-                {/* 2. Feature Menu */}
                 <IconGridMenu onOpenPanel={(panelId: string) => {
-                    console.log('[UserEditor] Opening panel:', panelId);
-                    if (panelId === 'guests') {
-                        // Force a clean load for Guest Management to avoid editor state pollution
-                        window.location.href = `/guests/${id}`;
-                    } else {
-                        setActivePanel(panelId);
-                    }
+                    if (panelId === 'guests') window.location.href = `/guests/${id}`;
+                    else setActivePanel(panelId);
                 }} />
-
-
-                {/* 4. Main Edit Area */}
                 <TemplateEditArea />
             </div>
 
-            {/* Tutorial Overlay */}
             {showTutorial && <TutorialOverlay onComplete={completeTutorial} />}
 
-            {/* Panels Modal - MOVED OUTSIDE ANIMATED CONTAINER FOR STACKING CONTEXT PURITY */}
             <Modal
                 isOpen={activePanel !== null}
                 onClose={() => setActivePanel(null)}
                 title={(() => {
                     const titles: Record<string, string> = {
-                        theme: 'Tema Undangan',
-                        music: 'Musik Latar',
-                        template: 'Koleksi Template',
-                        wishes: 'Ucapan & Doa',
-                        display: 'Display Desain',
-                        analytics: 'Statistik & Analitik',
-                        share: 'Bagikan Undangan',
-                        download: 'Download Assets',
-                        eventDate: 'Tanggal Acara',
-                        location: 'Lokasi Acara',
-                        gift: 'Kado Digital',
-                        seo: 'Sosmed Preview',
-                        gallery: 'Galeri Foto',
-                        livestream: 'Live Streaming',
-                        lovestory: 'Kisah Cinta',
-                        quotes: 'Quote Undangan',
-                        luckydraw: 'Lucky Draw',
-                        settings: 'Pengaturan Undangan',
-                        profile_photo: 'Foto Profil'
+                        music: 'Musik Latar', template: 'Template', wishes: 'Ucapan',
+                        display: 'Display', analytics: 'Analitik', share: 'Bagikan',
+                        download: 'Download', eventDate: 'Tanggal', location: 'Lokasi',
+                        gift: 'Kado', seo: 'Sosmed', gallery: 'Galeri',
+                        livestream: 'Live', lovestory: 'Kisah', quotes: 'Quote',
+                        luckydraw: 'Undian', settings: 'Pengaturan', profile_photo: 'Profil'
                     };
-                    return titles[activePanel || ''] || (activePanel ? activePanel.charAt(0).toUpperCase() + activePanel.slice(1) : '');
+                    return titles[activePanel || ''] || '';
                 })()}
                 size="lg"
             >
                 {activePanel === 'music' && <MusicPanel />}
-
                 {activePanel === 'display' && <DisplayStorePanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
                 {activePanel === 'template' && <TemplateStorePanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
                 {activePanel === 'wishes' && <WishesPanel />}
@@ -557,148 +499,7 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                         onUpdated={(updates) => setInvitation((prev: any) => ({ ...prev, ...updates }))}
                     />
                 )}
-                {!['music', 'theme', 'display', 'template', 'share', 'download', 'wishes', 'analytics', 'seo', 'gallery', 'livestream', 'luckydraw', 'settings', 'guests', 'eventDate', 'location', 'gift', 'lovestory', 'quotes', 'profile_photo'].includes(activePanel || '') && (
-                    <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
-                        <div className="w-20 h-20 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-slate-300">
-                            <Sparkles className="w-10 h-10" />
-                        </div>
-                        <div>
-                            <h4 className="font-black text-slate-800 tracking-tight text-xl uppercase tracking-widest">Segera Hadir</h4>
-                            <p className="text-sm text-slate-400 font-medium max-w-xs mx-auto">Fitur <span className="text-teal-600 font-bold">{activePanel?.toUpperCase()}</span> sedang dalam tahap pengembangan premium.</p>
-                        </div>
-                        <button onClick={() => setActivePanel(null)} className="px-8 py-3 bg-slate-100 text-slate-600 font-bold text-xs uppercase tracking-widest rounded-2xl hover:bg-slate-200 transition-all">
-                            Tutup
-                        </button>
-                    </div>
-                )}
             </Modal>
-
-            {/* HIDDEN EXPORT PREVIEW (Liquid Parity Engine) */}
-            {exportFormat && (() => {
-
-                // DESIGN SETTINGS
-                const isDesktop = exportFormat === 'desktop';
-                const EXPORT_WIDTH = isDesktop ? 1080 : 414;
-                const DESIGN_HEIGHT = 896;
-                const DESIGN_WIDTH = 414;
-
-                // DYNAMIC COVER HEIGHT (Matches PreviewView logic)
-                // For Mobile export, we use a fixed 960 design units ratio (approx 9:21)
-                // to match modern "Tall" screens and avoid squishing.
-                let formatRatio = 2500 / 1080; // 9:20.8 (approx 960 design units)
-                if (exportFormat === 'desktop') formatRatio = 720 / 1280;
-                else if (exportFormat === 'print') formatRatio = 1123 / 794;
-
-                const exportCoverHeight = DESIGN_WIDTH * formatRatio;
-
-                let cumulativeTop = 0;
-
-                return (
-                    <div className="fixed -left-[20000px] top-0 pointer-events-none overflow-hidden bg-black flex justify-start items-start" style={{ width: EXPORT_WIDTH, textAlign: 'left' }}>
-                        <div
-                            ref={previewRef}
-                            className="relative bg-[#0a0a0a]"
-                            style={{
-                                width: EXPORT_WIDTH,
-                                height: 'auto',
-                                textAlign: 'left'
-                            }}
-                        >
-                            {sections.map((section, sectionIdx) => {
-                                const isPortrait = exportFormat === 'mobile' || exportFormat === 'print';
-                                const currentSectionHeight = isPortrait ? exportCoverHeight : DESIGN_HEIGHT;
-                                const sectionTop = cumulativeTop;
-                                cumulativeTop += currentSectionHeight;
-
-                                const extraHeight = currentSectionHeight - DESIGN_HEIGHT;
-
-                                return (
-                                    <div
-                                        key={`export-section-${section.id}`}
-                                        className="relative overflow-hidden"
-                                        style={{
-                                            width: EXPORT_WIDTH,
-                                            height: currentSectionHeight,
-                                            top: 0, // Natural stacking is fine as we use a wrapper, or we can use absolute
-                                            backgroundColor: section.backgroundColor || '#0a0a0a',
-                                            backgroundImage: section.backgroundUrl ? `url(${section.backgroundUrl})` : 'none',
-                                            backgroundSize: 'cover',
-                                            backgroundPosition: 'center',
-                                        }}
-                                    >
-                                        {/* ORBIT WINGS (Desktop Only) */}
-                                        {isDesktop && (
-                                            <>
-                                                {orbit?.left?.isVisible && orbit.left.elements?.map(element => (
-                                                    <AnimatedLayer
-                                                        key={`export-orbit-l-${element.id}-${sectionIdx}`}
-                                                        layer={element}
-                                                        adjustedY={element.y}
-                                                        isOpened={true}
-                                                        isExportMode={true}
-                                                        forceTrigger={true}
-                                                    />
-                                                ))}
-
-                                                {orbit?.right?.isVisible && orbit.right.elements?.map(element => (
-                                                    <div
-                                                        key={`export-orbit-r-wrap-${element.id}-${sectionIdx}`}
-                                                        className="absolute top-0 right-0 h-full"
-                                                        style={{ width: 800 }}
-                                                    >
-                                                        <AnimatedLayer
-                                                            layer={element}
-                                                            adjustedY={element.y}
-                                                            isOpened={true}
-                                                            isExportMode={true}
-                                                            forceTrigger={true}
-                                                        />
-                                                    </div>
-                                                ))}
-                                            </>
-                                        )}
-
-                                        {/* CORE INVITATION CONTENT (Centered in 1080px if Desktop, Full in 414px if Mobile) */}
-                                        <div
-                                            className="absolute"
-                                            style={{
-                                                left: isDesktop ? '50%' : 0,
-                                                marginLeft: isDesktop ? -207 : 0,
-                                                width: 414,
-                                                height: currentSectionHeight,
-                                                top: 0
-                                            }}
-                                        >
-                                            {section.elements?.map(element => {
-                                                // LIQUID STRETCH PARITY ENGINE
-                                                const elAny = element as any;
-                                                const elementHeight = element.height || elAny.size?.height || (elAny.textStyle?.fontSize) || 0;
-                                                const maxTop = DESIGN_HEIGHT - elementHeight;
-
-                                                let progress = maxTop > 0 ? element.y / maxTop : 0;
-                                                progress = Math.max(0, Math.min(1, progress));
-
-                                                const adjustedY = element.y + (extraHeight * progress);
-
-                                                return (
-                                                    <AnimatedLayer
-                                                        key={`export-el-${element.id}`}
-                                                        layer={element}
-                                                        adjustedY={adjustedY}
-                                                        isOpened={true}
-                                                        isExportMode={true}
-                                                        forceTrigger={true}
-                                                    />
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                );
-            })()}
         </UserEditorLayout>
     );
 };
