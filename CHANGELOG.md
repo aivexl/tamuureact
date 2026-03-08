@@ -1,5 +1,18 @@
 # Tamuu Changelog
 
+## [0.6.37] - 2026-03-08
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### UI: Grid Panel Cleanup & Navigation Streamlining
+- **Streamlined Editor Grid**: Removed five redundant or rarely used items from the Icon Grid Menu to improve focus and navigation speed:
+  1. **Kisah (Love Story)**
+  2. **Profil (Profile Card/Photo)**
+  3. **Quote (Quotes)**
+  4. **Tanggal (Countdown/Event Date)**
+  5. **Sosmed (Social Media/SEO)**
+- **UI Focus**: These elements are now managed exclusively through the section-based edit area, reducing clutter in the primary feature menu while maintaining full editing capability.
+
 ## [0.6.36] - 2026-03-08
 **Status**: 🟢 Deployed
 **Environment**: Production
