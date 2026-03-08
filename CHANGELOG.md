@@ -1,17 +1,19 @@
 # Tamuu Changelog
 
-## [0.6.25] - 2026-03-08
+## [0.6.27] - 2026-03-08
 **Status**: 🟢 Deployed
 **Environment**: Production
 
-### Critical: Unified Flow Engine V4 & Design-Space Precision
-- **Implementation of Unified Flow Engine V4**: Completely migrated the mobile preview layout from absolute-based positioning to a hybrid relative-flow architecture. By using `position: relative` and `display: flex` on mobile, the system now eliminates "Phantom Gaps" and guarantees 100% section-to-section continuity.
-- **Normalized Design-Space Measurement**: Upgraded `ElementRenderer` to use `scrollWidth/scrollHeight` instead of `getBoundingClientRect`. This ensures that element dimensions are reported in their raw "Design Space" units, unaffected by mobile browser scaling, resulting in perfectly accurate stacking shifts.
-- **Dynamic Adaptive Section 0**: Transformed the cover section into an elastic container. It now automatically expands vertically if content wraps on narrow screens (e.g., iPhone SE), preventing the "Open Invitation" button from colliding with text.
-- **Double-Shift Protection**: Explicitly disabled element anchoring during mobile flow-mode to prevent layout jitter and coordinate jumping caused by redundant positioning engines.
+### Refactor: Targeted iPhone SE Responsiveness (Fluid-Stack Engine V7)
+- **Implementation of Fluid-Stack Architecture**: Introduced a device-specific layout engine that activates only for screens with width <= 380px. This prevents the "Compression Overload" issue by allowing sections to grow vertically instead of forcing them into a static viewport height.
+- **iPhone SE Exclusive Stacking**: Replaced piecewise vertical compression with a 1:1 design-space mapping and cumulative pergeseran. This mathematically guarantees zero overlapping on small screens where text wrapping might occur.
+- **Elastic Section Heights**: Removed the 896px static height requirement for portrait mode on small devices. Sections now automatically expand to fit their content (`maxBottom + 100px`), eliminating gaps and ensuring all elements are visible.
+- **Restored Large-Device Parity**: Guaranteed that devices larger than 380px (iPhone 12/13/14/15, etc.) continue to use the original stable layout logic, maintaining design consistency and the original position of the "Open Invitation" button.
+- **Stability Fix**: Resolved height collapse issues on mobile by ensuring the main canvas container always has an explicit basis height calculated from the total dynamic height of all sections.
 
-## [0.6.24] - 2026-03-08
-**Status**: 🟢 Deployed
+## [0.6.25] - 2026-03-08
+... (rest of changelog)
+
 **Environment**: Production
 
 ### Refactor: Mobile UI/UX Standard & Breathability

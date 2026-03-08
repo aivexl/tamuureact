@@ -51,7 +51,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
     const [currentZoomPointIndex, setCurrentZoomPointIndex] = useState<Record<string, number>>({});
     const [visibleSections, setVisibleSections] = useState<number[]>([0]);
     const [clickedSections, setClickedSections] = useState<number[]>([]);
-    const [windowSize, setWindowSize] = useState({ width: 800, height: 600 });
+    const [windowSize, setWindowSize] = useState({ width: window.innerWidth || 800, height: window.innerHeight || 600 });
 
     // Store State
     const elementDimensions = useStore(state => state.elementDimensions);
@@ -79,6 +79,9 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
 
     const isPortrait = templateType === 'display' ? false : (windowSize.height >= windowSize.width || windowSize.width < 1024);
     
+    // CTO DETECTOR: iPhone SE and Smaller
+    const isiPhoneSE = isPortrait && windowSize.width <= 380;
+
     const scaleFactor = useMemo(() => {
         if (windowSize.width === 0 || windowSize.height === 0) return 1;
         const widthScale = windowSize.width / CANVAS_WIDTH;
@@ -91,30 +94,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         return windowSize.height / scaleFactor;
     }, [windowSize.height, scaleFactor]);
 
-    // Transition Configuration
-    const transitionConfig = useMemo(() => {
-        const section0 = sortedSections[0];
-        return section0?.pageTransition || { enabled: false, effect: 'slide-up' as TransitionEffect, duration: 1500 };
-    }, [sortedSections]);
-
-    const transitionEffect = transitionConfig.enabled ? transitionConfig.effect as TransitionEffect : 'slide-up';
-    const transitionDuration = (transitionConfig.duration || 1500) / 1000;
-
-    // Viewport background
-    const viewportBackgroundStyle = useMemo(() => {
-        if (!isPortrait) return { backgroundColor: '#1a1a1a' };
-        const section0 = sortedSections[0];
-        if (!section0) return { backgroundColor: '#0a0a0a' };
-        return {
-            backgroundColor: section0.backgroundColor || '#0a0a0a',
-            backgroundImage: section0.backgroundUrl ? `url(${section0.backgroundUrl})` : undefined,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-        };
-    }, [isPortrait, sortedSections]);
-
     // ============================================
-    // CTO VIRTUAL FLOW ENGINE (AUDITED)
+    // CTO FLUID-STACK ENGINE (Specialized for SE)
     // ============================================
     const layoutData = useMemo(() => {
         return sortedSections.map((section, sectionIndex) => {
@@ -132,28 +113,38 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                 const measuredHeight = detectedDim?.height || designHeight;
                 const growth = Math.max(0, measuredHeight - designHeight);
 
-                const stackShift = cumulativeShift;
-                if (growth > 2) cumulativeShift += growth;
+                // For SE, we apply stacking to prevent overlapping
+                const stackShift = isiPhoneSE ? cumulativeShift : 0;
+                if (isiPhoneSE && growth > 2) cumulativeShift += growth;
 
                 let finalAdjustedY = el.y + stackShift;
 
-                if (isPortrait && isFirst && !isOpened && coverHeight < INVITATION_HEIGHT) {
-                    const y = el.y; const T = 200; const B = 696;
-                    const viewportShift = (coverHeight - INVITATION_HEIGHT) / 2;
-                    if (y <= T) finalAdjustedY = (y + stackShift) * ((T + viewportShift) / T);
-                    else if (y <= B) finalAdjustedY = (y + stackShift) + viewportShift;
-                    else {
-                        const baseB = B + viewportShift;
-                        finalAdjustedY = (baseB + (stackShift * 0.15)) + (y - B) * ((coverHeight - (baseB + (stackShift * 0.15))) / (INVITATION_HEIGHT - B));
+                if (isPortrait && isFirst) {
+                    if (!isOpened && coverHeight < INVITATION_HEIGHT) {
+                        const y = el.y; const T = 200; const B = 696;
+                        const viewportShift = (coverHeight - INVITATION_HEIGHT) / 2;
+                        
+                        if (isiPhoneSE) {
+                            // iPhone SE EXCLUSIVE: No piecewise compression. Use 1:1 with stacking + center alignment.
+                            finalAdjustedY = (y + stackShift) + viewportShift;
+                        } else {
+                            // Normal Mobile: Original stable piecewise mapping
+                            if (y <= T) finalAdjustedY = y * ((T + viewportShift) / T);
+                            else if (y <= B) finalAdjustedY = y + viewportShift;
+                            else finalAdjustedY = (B + viewportShift) + (y - B) * ((coverHeight - (B + viewportShift)) / (INVITATION_HEIGHT - B));
+                        }
                     }
                 }
                 elementPlacements.push({ id: el.id, adjustedY: finalAdjustedY });
             });
 
+            // Section Height Calculation
             let sectionHeight = CANVAS_HEIGHT;
             if (isPortrait) {
-                if (isFirst && !isOpened) sectionHeight = coverHeight;
-                else {
+                if (isFirst && !isOpened) {
+                    sectionHeight = coverHeight;
+                } else if (isiPhoneSE) {
+                    // SE Section Expansion: Grows with content, NO GAPS.
                     let maxBottom = 0;
                     elementPlacements.forEach(p => {
                         const el: any = section.elements.find(e => e.id === p.id);
@@ -161,12 +152,15 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                         const bottom = p.adjustedY + h;
                         if (bottom > maxBottom) maxBottom = bottom;
                     });
-                    sectionHeight = Math.max(isFirst ? coverHeight : 100, maxBottom + 80);
+                    sectionHeight = Math.max(isiPhoneSE ? coverHeight : CANVAS_HEIGHT, maxBottom + 100);
+                } else {
+                    // Normal Devices: Use original height to maintain design parity
+                    sectionHeight = CANVAS_HEIGHT;
                 }
             }
             return { id: section.id, height: sectionHeight, elements: elementPlacements };
         });
-    }, [sortedSections, isPortrait, coverHeight, elementDimensions, transitionStage, isOpened]);
+    }, [sortedSections, isPortrait, isiPhoneSE, coverHeight, elementDimensions, transitionStage, isOpened]);
 
     const totalHeight = useMemo(() => layoutData.reduce((acc, s) => acc + s.height, 0), [layoutData]);
 
@@ -176,17 +170,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         return top;
     }, [layoutData]);
 
-    // UI Logic
-    const toggleFullscreen = useCallback(() => {
-        if (!document.fullscreenElement) {
-            containerRef.current?.requestFullscreen().catch(() => {});
-            setIsFullscreen(true);
-        } else {
-            document.exitFullscreen();
-            setIsFullscreen(false);
-        }
-    }, []);
-
+    // Audio & UI Controllers
     const { play, pause, isPlaying: isGlobalPlaying, currentUrl } = useAudioController();
     const music = useStore(state => state.music);
 
@@ -226,7 +210,6 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         setIsOpened(true); setTransitionStage('ZOOMING');
         const s0 = sortedSections[0];
         if (s0?.zoomConfig?.enabled && (s0.zoomConfig.trigger === 'open_btn' || s0.zoomConfig.trigger === 'load')) await startZoomAnimation(0, s0);
-        if ((sortedSections[0]?.pageTransition?.effect as string) === 'split-door') setShutterVisible(true);
         setTransitionStage('REVEALING');
         setVisibleSections(prev => [...prev, 1]);
         const s1 = sortedSections[1];
@@ -270,6 +253,16 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         };
     }, [transitionStage, layoutData, getSectionTop, CANVAS_WIDTH, isPortrait, sortedSections]);
 
+    const toggleFullscreen = useCallback(() => {
+        if (!document.fullscreenElement) {
+            containerRef.current?.requestFullscreen().catch(() => {});
+            setIsFullscreen(true);
+        } else {
+            document.exitFullscreen();
+            setIsFullscreen(false);
+        }
+    }, []);
+
     useEffect(() => {
         if (isOpen) {
             setWindowSize({ width: window.innerWidth, height: window.innerHeight });
@@ -307,7 +300,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         return () => observer.disconnect();
     }, [isOpen, sortedSections, startZoomAnimation, transitionStage]);
 
-    // Lenis Loop
+    // Lenis Smooth Scroll
     useEffect(() => {
         if (!isOpen || !scrollContainerRef.current) return;
         const lenis = new Lenis({ wrapper: scrollContainerRef.current, content: scrollContainerRef.current.firstElementChild as HTMLElement, duration: 1.2 });
@@ -326,9 +319,22 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
 
     if (!isOpen || windowSize.width === 0 || windowSize.height === 0) return null;
 
+    // Viewport background Adaptive
+    const viewportStyle = useMemo(() => {
+        if (!isPortrait) return { backgroundColor: '#1a1a1a' };
+        const section0 = sortedSections[0];
+        if (!section0) return { backgroundColor: '#0a0a0a' };
+        return {
+            backgroundColor: section0.backgroundColor || '#0a0a0a',
+            backgroundImage: section0.backgroundUrl ? `url(${section0.backgroundUrl})` : undefined,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+        };
+    }, [isPortrait, sortedSections]);
+
     return (
         <AnimatePresence>
-            <m.div ref={containerRef} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[9999] flex flex-col items-center overflow-hidden transition-colors duration-700" style={viewportBackgroundStyle}>
+            <m.div ref={containerRef} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[9999] flex flex-col items-center overflow-hidden transition-colors duration-700" style={viewportStyle}>
                 <SmartFontInjector />
                 <div ref={scrollContainerRef} className={`w-full h-full ${transitionStage === 'DONE' ? 'overflow-y-auto' : 'overflow-hidden'} premium-scroll no-scrollbar`} style={{ display: isPortrait ? 'flex' : 'grid', gridTemplateColumns: isPortrait ? undefined : `1fr ${CANVAS_WIDTH * scaleFactor}px 1fr`, flexDirection: isPortrait ? 'column' : undefined }}>
                     {!isPortrait && <div className="h-screen sticky top-0 pointer-events-none overflow-hidden" style={{ gridColumn: 1 }}><PreviewOrbitStage type="left" config={orbit.left} scaleFactor={scaleFactor} isOpened={isOpened} transitionStage={transitionStage} coverHeight={coverHeight} isPortrait={isPortrait} /></div>}
