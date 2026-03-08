@@ -1,5 +1,16 @@
 # Tamuu Changelog
 
+## [0.6.36] - 2026-03-08
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Critical: Absolute Date/Time Enforcement & Smart Grid Architecture (V4)
+- **Zero-Bypass Format Enforcement**: Dismantled native browser date/time inputs which were hijacking UI locale. Replaced with controlled text inputs that force `DD/MM/YYYY` and **24-Hour** formats regardless of browser language settings.
+- **Smart Grid Menu (Dynamic Detection)**: Refactored the Editor Grid Menu to be reative. Specialized icons (Countdown, Story, Gift, etc.) now automatically appear or disappear based on real-time detection of elements within the template, supporting both modern `elements` and legacy `layers` arrays.
+- **Self-Healing User Auth Sync**: Implemented a "Silent Healing" mechanism in the API. If a user ID mismatch occurs between Supabase and D1 during wishlist/save operations, the system now automatically resolves the record via email to prevent 500 errors.
+- **Payload Overload Prevention (OOM Guard)**: Injected a recursive payload scrubber that nukes massive legacy base64 strings from localStorage before transmission, preventing Cloudflare Worker memory crashes (ERR_HTTP2_PROTOCOL_ERROR).
+- **Timezone Bleeding Fix**: Rewrote the date parser to use manual local time construction, ensuring "Days Remaining" calculations are pixel-perfect and not shifted by UTC offsets.
+
 ## [0.6.35] - 2026-03-08
 **Status**: 🟢 Deployed
 **Environment**: Production
