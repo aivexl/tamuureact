@@ -39,7 +39,7 @@ import { useSubscriptionTimer } from '../hooks/useSubscriptionTimer';
 import { SubscriptionStatusWidget } from '../components/ui/SubscriptionStatusWidget';
 
 // ============================================
-// TUTORIAL SYSTEM (INDONESIAN - ENTERPRISE V2)
+// TUTORIAL SYSTEM (INDONESIAN - ENTERPRISE V3)
 // ============================================
 
 const TUTORIAL_STEPS = [
@@ -146,26 +146,38 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
     const [availableSteps, setAvailableSteps] = useState<any[]>([]);
     const [coords, setCoords] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
     const [isReady, setIsReady] = useState(false);
+    const retryCountRef = useRef(0);
 
-    // Reactive filtering of steps - Run once on mount after a small delay
+    // ROBUST DISCOVERY LOGIC: Scan DOM until elements are actually painted
     useEffect(() => {
-        const timer = setTimeout(() => {
+        const scan = () => {
             const filtered = TUTORIAL_STEPS.filter(s => {
                 const el = document.getElementById(s.targetId);
-                return el && el.getBoundingClientRect().width > 0;
+                // On Enterprise level, we check visibility and existence
+                return el !== null;
             });
-            setAvailableSteps(filtered);
-            setIsReady(true);
-        }, 500); // 500ms enterprise buffer for paint
-        return () => clearTimeout(timer);
-    }, []);
+
+            if (filtered.length > 0) {
+                setAvailableSteps(filtered);
+                setIsReady(true);
+            } else if (retryCountRef.current < 30) { // Retry for 3 seconds
+                retryCountRef.current++;
+                setTimeout(scan, 100);
+            } else {
+                onComplete();
+            }
+        };
+
+        scan();
+    }, [onComplete]);
 
     const currentStep = availableSteps[stepIndex];
 
+    // Reactive coordinate tracking
     useEffect(() => {
         if (!isReady || !currentStep) return;
 
-        const updateCoords = () => {
+        const update = () => {
             const el = document.getElementById(currentStep.targetId);
             if (el) {
                 const rect = el.getBoundingClientRect();
@@ -175,21 +187,25 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
                     width: rect.width,
                     height: rect.height
                 });
-                
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         };
 
-        // Initial update
-        updateCoords();
-        
-        window.addEventListener('resize', updateCoords);
-        window.addEventListener('scroll', updateCoords);
+        // Aggressive update for first few frames
+        update();
+        const timers = [
+            setTimeout(update, 50),
+            setTimeout(update, 200),
+            setTimeout(update, 500)
+        ];
+
+        window.addEventListener('resize', update);
+        window.addEventListener('scroll', update, true); // Capture scroll
         return () => {
-            window.removeEventListener('resize', updateCoords);
-            window.removeEventListener('scroll', updateCoords);
+            timers.forEach(t => clearTimeout(t));
+            window.removeEventListener('resize', update);
+            window.removeEventListener('scroll', update, true);
         };
-    }, [stepIndex, currentStep, isReady]);
+    }, [stepIndex, currentStep?.targetId, isReady]);
 
     const handleNext = () => {
         if (stepIndex < availableSteps.length - 1) {
@@ -205,11 +221,14 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
         }
     };
 
-    if (!isReady || !currentStep || !coords) return null;
+    if (!isReady || !currentStep) return null;
 
     const getCardStyle = () => {
+        // Fallback style if coords not yet ready to prevent blank screen
+        if (!coords) return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)', opacity: 0 };
+
         const cardWidth = Math.min(window.innerWidth - 32, 300);
-        const cardHeight = 160; 
+        const cardHeight = 180; 
         const padding = 16;
         
         let top = 0;
@@ -229,33 +248,27 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
             left = coords.left - cardWidth - 12;
         }
 
-        // VIEWPORT CONSTRAINTS (Enterprise Level Protection)
-        const minLeft = padding;
-        const maxLeft = window.innerWidth - cardWidth - padding;
-        const minTop = padding;
-        const maxTop = window.innerHeight - cardHeight - padding;
-
         return {
-            top: Math.max(minTop, Math.min(maxTop, top)),
-            left: Math.max(minLeft, Math.min(maxLeft, left)),
+            top: Math.max(padding, Math.min(window.innerHeight - cardHeight - padding, top)),
+            left: Math.max(padding, Math.min(window.innerWidth - cardWidth - padding, left)),
             width: cardWidth
         };
     };
 
     return (
-        <div className="fixed inset-0 z-[9999] pointer-events-none">
+        <div className="fixed inset-0 z-[99999] pointer-events-none overflow-hidden">
             <AnimatePresence mode="wait">
                 <m.div
                     key={currentStep.targetId}
-                    initial={{ opacity: 0, scale: 0.95 }}
+                    initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ 
-                        opacity: 1, 
-                        scale: 1, 
-                        ...getCardStyle()
+                        opacity: coords ? 1 : 0, 
+                        scale: coords ? 1 : 0.9, 
+                        ...getCardStyle() 
                     }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-                    className="absolute bg-slate-900 text-white rounded-[1.5rem] shadow-[0_25px_60px_rgba(0,0,0,0.6)] p-6 pointer-events-auto border border-white/10 z-[10000] flex flex-col"
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="absolute bg-slate-900 text-white rounded-[1.5rem] shadow-[0_30px_70px_rgba(0,0,0,0.8)] p-6 pointer-events-auto border border-white/10 flex flex-col"
                     style={{ position: 'fixed' }}
                 >
                     <div className="flex items-center justify-between mb-2">
@@ -267,13 +280,13 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
                         </button>
                     </div>
 
-                    <div className="mb-6">
+                    <div className="flex-1">
                         <p className="text-[13px] text-slate-300 leading-relaxed font-medium">
                             {currentStep.description}
                         </p>
                     </div>
 
-                    <div className="mt-auto flex items-center justify-between pt-4 border-t border-white/5">
+                    <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
                         <div className="flex items-center gap-1">
                             {stepIndex > 0 && (
                                 <button 
@@ -296,7 +309,7 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
                             <span className="text-[10px] font-bold text-slate-600 font-mono">{stepIndex + 1}/{availableSteps.length}</span>
                             <button
                                 onClick={handleNext}
-                                className="px-5 py-2.5 bg-white text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-100 transition-all active:scale-95 shadow-lg shadow-white/10"
+                                className="px-5 py-2.5 bg-white text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-100 transition-all active:scale-95 shadow-lg"
                             >
                                 {stepIndex === availableSteps.length - 1 ? 'Finish' : 'Next'}
                                 <ChevronRight className="w-3.5 h-3.5" />
@@ -304,16 +317,17 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
                         </div>
                     </div>
 
-                    {/* Arrow Pointer */}
-                    <m.div 
-                        animate={{ rotate: 45 }}
-                        className={`absolute w-3.5 h-3.5 bg-slate-900 border-white/10 ${
-                            currentStep.position === 'bottom' ? '-top-1.5 left-1/2 -translate-x-1/2 border-t border-l' :
-                            currentStep.position === 'top' ? '-bottom-1.5 left-1/2 -translate-x-1/2 border-b border-r' :
-                            currentStep.position === 'right' ? 'top-1/2 -left-1.5 -translate-y-1/2 border-b border-l' :
-                            'top-1/2 -right-1.5 -translate-y-1/2 border-t border-r'
-                        }`}
-                    />
+                    {coords && (
+                        <m.div 
+                            animate={{ rotate: 45 }}
+                            className={`absolute w-3.5 h-3.5 bg-slate-900 border-white/10 ${
+                                currentStep.position === 'bottom' ? '-top-1.5 left-1/2 -translate-x-1/2 border-t border-l' :
+                                currentStep.position === 'top' ? '-bottom-1.5 left-1/2 -translate-x-1/2 border-b border-r' :
+                                currentStep.position === 'right' ? 'top-1/2 -left-1.5 -translate-y-1/2 border-b border-l' :
+                                'top-1/2 -right-1.5 -translate-y-1/2 border-t border-r'
+                            }`}
+                        />
+                    )}
                 </m.div>
             </AnimatePresence>
         </div>
@@ -397,11 +411,10 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                     setActiveSection(data.sections[0].id);
                 }
 
-                // Check tutorial visibility - Enterprise Grade: Wait for component to mount fully
-                const hasSeenTutorial = localStorage.getItem(`tutorial_seen_${id}`);
+                // Check tutorial visibility - Force Enterprise Reset V3
+                const hasSeenTutorial = localStorage.getItem(`tutorial_seen_v3_${id}`);
                 if (!hasSeenTutorial) {
-                    // Direct set after minimal buffer
-                    setTimeout(() => setShowTutorial(true), 800);
+                    setShowTutorial(true); 
                 }
             } catch (err) {
                 setError('Undangan tidak ditemukan.');
@@ -418,7 +431,7 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
 
     const completeTutorial = () => {
         setShowTutorial(false);
-        localStorage.setItem(`tutorial_seen_${id}`, 'true');
+        localStorage.setItem(`tutorial_seen_v3_${id}`, 'true');
     };
 
     if (loading) {
