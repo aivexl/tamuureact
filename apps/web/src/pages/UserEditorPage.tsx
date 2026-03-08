@@ -146,33 +146,37 @@ const TUTORIAL_STEPS = [
 
 const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
     const [stepIndex, setStepIndex] = useState(0);
-    const [coords, setCoords] = useState({ top: 0, left: 0, width: 0, height: 0 });
+    const [coords, setCoords] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+    const sections = useStore(s => s.sections);
     
     // Filter steps based on actual element existence in DOM
     const availableSteps = useMemo(() => {
         return TUTORIAL_STEPS.filter(s => document.getElementById(s.targetId) !== null);
-    }, []);
+    }, [sections.length]); // Re-filter if sections change
 
     const currentStep = availableSteps[stepIndex];
 
     useEffect(() => {
-        if (!currentStep) {
-            onComplete();
-            return;
-        }
+        if (!currentStep) return;
 
         const updateCoords = () => {
             const el = document.getElementById(currentStep.targetId);
             if (el) {
                 const rect = el.getBoundingClientRect();
-                setCoords({
-                    top: rect.top,
-                    left: rect.left,
-                    width: rect.width,
-                    height: rect.height
-                });
-                
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if (rect.width > 0) {
+                    setCoords({
+                        top: rect.top,
+                        left: rect.left,
+                        width: rect.width,
+                        height: rect.height
+                    });
+                    
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            } else {
+                // If dynamic element not found, skip immediately to next
+                if (stepIndex < availableSteps.length - 1) setStepIndex(s => s + 1);
+                else onComplete();
             }
         };
 
@@ -184,10 +188,11 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
             window.removeEventListener('resize', updateCoords);
             window.removeEventListener('scroll', updateCoords);
         };
-    }, [stepIndex, currentStep, onComplete]);
+    }, [stepIndex, currentStep?.targetId, availableSteps.length, onComplete]);
 
     const handleNext = () => {
         if (stepIndex < availableSteps.length - 1) {
+            setCoords(null); // Clear coords to trigger entry animation at new position
             setStepIndex(stepIndex + 1);
         } else {
             onComplete();
@@ -196,14 +201,17 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
 
     const handlePrev = () => {
         if (stepIndex > 0) {
+            setCoords(null);
             setStepIndex(stepIndex - 1);
         }
     };
 
-    if (!currentStep) return null;
+    if (!currentStep || availableSteps.length === 0) return null;
 
     // CALCULATE BEST POSITION TO AVOID VIEWPORT CLIPPING
     const getCardStyle = () => {
+        if (!coords) return { opacity: 0 };
+
         const cardWidth = Math.min(window.innerWidth - 40, 280);
         const cardHeight = 160; 
         const padding = 20;
@@ -241,76 +249,78 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
     return (
         <div className="fixed inset-0 z-[100] pointer-events-none">
             <AnimatePresence mode="wait">
-                <m.div
-                    key={stepIndex}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ 
-                        opacity: 1, 
-                        scale: 1, 
-                        ...getCardStyle()
-                    }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute bg-slate-900 text-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.4)] p-5 pointer-events-auto border border-white/10 z-[101] flex flex-col gap-1"
-                    style={{ position: 'absolute' }}
-                >
-                    <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-black tracking-tight uppercase tracking-widest text-indigo-400">
-                            {currentStep.title}
-                        </h4>
-                        <button onClick={onComplete} className="p-1 hover:bg-white/10 rounded-lg text-white/40 transition-colors">
-                            <X className="w-4 h-4" />
-                        </button>
-                    </div>
-
-                    <p className="text-xs text-slate-300 leading-relaxed font-medium mb-4">
-                        {currentStep.description}
-                    </p>
-
-                    <div className="mt-auto pt-2 flex items-center justify-between border-t border-white/5">
-                        <div className="flex items-center gap-2">
-                            {stepIndex > 0 && (
-                                <button 
-                                    onClick={handlePrev}
-                                    className="px-2 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-white transition-all flex items-center gap-1"
-                                >
-                                    <ChevronLeft className="w-3 h-3" />
-                                    Kembali
-                                </button>
-                            )}
-                            <button 
-                                onClick={onComplete}
-                                className="px-2 py-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-slate-300 transition-colors"
-                            >
-                                Lewati
-                            </button>
-                        </div>
-                        
-                        <div className="flex items-center gap-3">
-                            <span className="text-[10px] font-bold text-slate-600">{stepIndex + 1}/{availableSteps.length}</span>
-                            <button
-                                onClick={handleNext}
-                                className="px-4 py-2 bg-white text-slate-900 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-100 transition-all active:scale-95"
-                            >
-                                {stepIndex === availableSteps.length - 1 ? 'Selesai' : 'Lanjut'}
-                                <ChevronRight className="w-3 h-3" />
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Arrow Pointer */}
-                    <m.div 
-                        animate={{
-                            rotate: 45,
+                {coords && (
+                    <m.div
+                        key={currentStep.targetId}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ 
+                            opacity: 1, 
+                            scale: 1, 
+                            ...getCardStyle()
                         }}
-                        className={`absolute w-3 h-3 bg-slate-900 border-white/10 ${
-                            currentStep.position === 'bottom' ? '-top-1.5 left-1/2 -translate-x-1/2 border-t border-l' :
-                            currentStep.position === 'top' ? '-bottom-1.5 left-1/2 -translate-x-1/2 border-b border-r' :
-                            currentStep.position === 'right' ? 'top-1/2 -left-1.5 -translate-y-1/2 border-b border-l' :
-                            'top-1/2 -right-1.5 -translate-y-1/2 border-t border-r'
-                        }`}
-                    />
-                </m.div>
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="absolute bg-slate-900 text-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-5 pointer-events-auto border border-white/10 z-[101] flex flex-col gap-1"
+                        style={{ position: 'fixed' }}
+                    >
+                        <div className="flex items-center justify-between mb-1">
+                            <h4 className="text-[10px] font-black tracking-[0.2em] uppercase text-indigo-400">
+                                {currentStep.title}
+                            </h4>
+                            <button onClick={onComplete} className="p-1.5 hover:bg-white/10 rounded-full text-white/40 transition-colors">
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        <div className="flex-1">
+                            <p className="text-[12px] text-slate-300 leading-relaxed font-medium">
+                                {currentStep.description}
+                            </p>
+                        </div>
+
+                        <div className="mt-4 pt-3 flex items-center justify-between border-t border-white/5">
+                            <div className="flex items-center gap-2">
+                                {stepIndex > 0 && (
+                                    <button 
+                                        onClick={handlePrev}
+                                        className="px-2 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-white transition-all flex items-center gap-1"
+                                    >
+                                        <ChevronLeft className="w-3 h-3" />
+                                        Kembali
+                                    </button>
+                                )}
+                                <button 
+                                    onClick={onComplete}
+                                    className="px-2 py-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-slate-300 transition-colors"
+                                >
+                                    Lewati
+                                </button>
+                            </div>
+                            
+                            <div className="flex items-center gap-3">
+                                <span className="text-[10px] font-bold text-slate-600">{stepIndex + 1}/{availableSteps.length}</span>
+                                <button
+                                    onClick={handleNext}
+                                    className="px-4 py-2 bg-white text-slate-900 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-100 transition-all active:scale-95"
+                                >
+                                    {stepIndex === availableSteps.length - 1 ? 'Selesai' : 'Lanjut'}
+                                    <ChevronRight className="w-3 h-3" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Arrow Pointer */}
+                        <m.div 
+                            animate={{ rotate: 45 }}
+                            className={`absolute w-3 h-3 bg-slate-900 border-white/10 ${
+                                currentStep.position === 'bottom' ? '-top-1.5 left-1/2 -translate-x-1/2 border-t border-l' :
+                                currentStep.position === 'top' ? '-bottom-1.5 left-1/2 -translate-x-1/2 border-b border-r' :
+                                currentStep.position === 'right' ? 'top-1/2 -left-1.5 -translate-y-1/2 border-b border-l' :
+                                'top-1/2 -right-1.5 -translate-y-1/2 border-t border-r'
+                            }`}
+                        />
+                    </m.div>
+                )}
             </AnimatePresence>
         </div>
     );
@@ -413,7 +423,8 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                 // Check if tutorial should be shown
                 const hasSeenTutorial = localStorage.getItem(`tutorial_seen_${id}`);
                 if (!hasSeenTutorial) {
-                    setTimeout(() => setShowTutorial(true), 1500);
+                    // Split second delay to ensure dynamic grid items are painted
+                    setTimeout(() => setShowTutorial(true), 300);
                 }
             } catch (err) {
                 console.error('[UserEditor] Hydration Failed:', err);
