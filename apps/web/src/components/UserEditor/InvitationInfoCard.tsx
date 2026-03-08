@@ -34,6 +34,7 @@ export const InvitationInfoCard: React.FC<InvitationInfoCardProps> = ({ invitati
 
     return (
         <m.div
+            id="tutorial-info-card"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 p-5 sm:p-6 md:p-8 overflow-hidden relative group/card"

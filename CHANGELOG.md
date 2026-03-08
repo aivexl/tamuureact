@@ -1,5 +1,19 @@
 # Tamuu Changelog
 
+## [0.6.38] - 2026-03-08
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### UI/UX: Interactive User Onboarding Tutorial
+- **Smart Tutorial System**: Implemented a step-by-step interactive onboarding guide for new users in the User Editor.
+- **Dynamic Feature Spotlight**: High-contrast overlay with "hole-punch" (clip-path) effect to focus user attention on specific UI elements (Information Card, Feature Grid, and Template Area).
+- **Indonesian Localization**: All tips and guidance written in clear, non-technical Indonesian for general accessibility.
+- **Smart Logic**: 
+  - Smooth auto-scroll to active elements.
+  - Position-aware tooltip cards (top/bottom/left/right) based on element location.
+  - One-time appearance logic using local storage per invitation.
+- **Streamlined Navigation**: Added Skip, Next, and Progress indicators for a modern onboarding experience.
+
 ## [0.6.37] - 2026-03-08
 **Status**: 🟢 Deployed
 **Environment**: Production
@@ -14,7 +28,8 @@
 - **UI Focus**: These elements are now managed exclusively through the section-based edit area, reducing clutter in the primary feature menu while maintaining full editing capability.
 
 ## [0.6.36] - 2026-03-08
-**Status**: 🟢 Deployed
+... (rest of changelog)
+
 **Environment**: Production
 
 ### Critical: Absolute Date/Time Enforcement & Smart Grid Architecture (V4)

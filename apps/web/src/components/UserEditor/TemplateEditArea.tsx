@@ -123,6 +123,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
                         {/* THE CITADEL: TRIGGER REDUCTION */}
                         {/* Thumbnail Icon Area - PRIMARY TRIGGER */}
                         <div
+                            id="tutorial-section-expand"
                             onClick={(e) => handleExpandToggle(e, section.id)}
                             className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-700 shadow-inner cursor-pointer pointer-events-auto z-20 hover:scale-110 active:scale-95 ${section.isVisible ? 'bg-slate-50 text-slate-600' : 'bg-slate-100 text-slate-400 grayscale'
                                 }`}
@@ -143,6 +144,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
                         <div className="flex items-center gap-3">
                             {/* Visibility Toggle */}
                             <button
+                                id="tutorial-section-visible"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     toggleVisibility(e, section.id);
@@ -560,24 +562,26 @@ export const TemplateEditArea: React.FC = () => {
                         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                         className="space-y-6"
                     >
-                        <Reorder.Group
-                            axis="y"
-                            values={localSections}
-                            onReorder={handleReorder}
-                            className="space-y-6"
-                        >
-                            {localSections.map((section) => (
-                                <SectionItem
-                                    key={section.id}
-                                    section={section}
-                                    expandedSection={expandedSection}
-                                    toggleExpand={toggleExpand}
-                                    toggleVisibility={toggleVisibility}
-                                    handleSave={handleSave}
-                                    saveStatus={saveStatus}
-                                />
-                            ))}
-                        </Reorder.Group>
+                        <div id="tutorial-template-area">
+                            <Reorder.Group
+                                axis="y"
+                                values={localSections}
+                                onReorder={handleReorder}
+                                className="space-y-6"
+                            >
+                                {localSections.map((section) => (
+                                    <SectionItem
+                                        key={section.id}
+                                        section={section}
+                                        expandedSection={expandedSection}
+                                        toggleExpand={toggleExpand}
+                                        toggleVisibility={toggleVisibility}
+                                        handleSave={handleSave}
+                                        saveStatus={saveStatus}
+                                    />
+                                ))}
+                            </Reorder.Group>
+                        </div>
                     </m.div >
                 ) : (
                     <m.div
@@ -651,7 +655,7 @@ export const TemplateEditArea: React.FC = () => {
                                     <div className="space-y-0 relative">
                                         <div className="absolute top-8 left-8 right-8 flex items-center justify-between z-30 pointer-events-none">
                                             <div className="flex items-center gap-4 pointer-events-auto bg-white/80 backdrop-blur-xl p-3 rounded-2xl shadow-xl border border-white">
-                                                <div className="w-12 h-12 bg-teal-50 text-teal-500 rounded-xl flex items-center justify-center transition-all duration-700 group-hover/orbit:rotate-[15deg] group-hover/orbit:scale-110 shadow-inner">
+                                                <div className="w-12 h-12 bg-indigo-50 text-indigo-500 rounded-xl flex items-center justify-center transition-all duration-700 group-hover/orbit:rotate-[15deg] group-hover/orbit:scale-110 shadow-inner">
                                                     <Layout className="w-6 h-6" />
                                                 </div>
                                                 <div>
@@ -662,7 +666,7 @@ export const TemplateEditArea: React.FC = () => {
                                             <button
                                                 onClick={() => toggleOrbitVisibility('right')}
                                                 className={`p-4 rounded-[2rem] border transition-all duration-700 pointer-events-auto ${orbit.right.isVisible
-                                                    ? 'bg-white text-slate-400 border-slate-100 hover:text-teal-500 shadow-xl'
+                                                    ? 'bg-white text-slate-400 border-slate-100 hover:text-indigo-500 shadow-xl'
                                                     : 'bg-slate-50 text-slate-300 shadow-inner'
                                                     }`}
                                             >
@@ -687,7 +691,7 @@ export const TemplateEditArea: React.FC = () => {
                                                         />
                                                     ))
                                             ) : (
-                                                <div className="p-20 text-center bg-slate-50/50 rounded-[3rem] border-2 border-dashed border-teal-100/50 shadow-inner">
+                                                <div className="p-20 text-center bg-slate-50/50 rounded-[3rem] border-2 border-dashed border-indigo-100/50 shadow-inner">
                                                     <Layout className="w-12 h-12 text-slate-200 mx-auto mb-4" />
                                                     <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] leading-relaxed">
                                                         Immutable Orbit Stage <br />

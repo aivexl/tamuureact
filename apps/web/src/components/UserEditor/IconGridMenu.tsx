@@ -75,7 +75,7 @@ export const IconGridMenu: React.FC<IconGridMenuProps> = ({ onOpenPanel }) => {
     }, [sections]);
 
     return (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
+        <div id="tutorial-grid-menu" className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
             {dynamicMenuItems.map((item, i) => (
                 <m.button
                     key={item.id}
