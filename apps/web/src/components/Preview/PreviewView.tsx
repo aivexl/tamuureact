@@ -79,7 +79,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
 
     const isPortrait = templateType === 'display' ? false : (windowSize.height >= windowSize.width || windowSize.width < 1024);
     
-    // CTO FIX: Intelligent Device Awareness (Target SE & Small Pixels)
+    // CTO DETECTOR: iPhone SE and Smaller Devices (Strict Isolation)
     const isiPhoneSE = isPortrait && windowSize.width <= 385;
 
     const scaleFactor = useMemo(() => {
@@ -117,7 +117,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
     }, [isPortrait, sortedSections]);
 
     // ============================================
-    // CTO UNIFIED LAYOUT ENGINE V11 (NATURAL FLOW)
+    // CTO UNIFIED LAYOUT ENGINE V12.1 (TARGETED)
     // ============================================
     const layoutData = useMemo(() => {
         return sortedSections.map((section, sectionIndex) => {
@@ -143,11 +143,10 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
 
                 if (isPortrait && isFirst && !isOpened) {
                     if (isiPhoneSE) {
-                        // iPhone SE EXCLUSIVE: No compression. Use pure 1:1 design coordinates.
-                        // This forces scrolling on Section 0 but guarantees no overlap.
+                        // iPhone SE EXCLUSIVE: No compression. 1:1 Design coordinates.
                         finalAdjustedY = el.y + stackShift;
                     } else if (coverHeight < INVITATION_HEIGHT) {
-                        // Standard Devices: Traditional piecewise mapping
+                        // Standard Devices: Traditional piecewise mapping (Maintains cover aesthetic)
                         const y = el.y; const T = 200; const B = 696;
                         const viewportShift = (coverHeight - INVITATION_HEIGHT) / 2;
                         if (y <= T) finalAdjustedY = (y + stackShift) * ((T + viewportShift) / T);
@@ -158,11 +157,11 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                 elementPlacements.push({ id: el.id, adjustedY: finalAdjustedY });
             });
 
-            // Calculate section height - ELIMINATE GAPS
+            // Calculate section height
             let sectionHeight = CANVAS_HEIGHT;
             if (isPortrait) {
                 if (isiPhoneSE) {
-                    // SE NATURAL FLOW: Section height follows content strictly.
+                    // SE NATURAL FLOW: Grows with content.
                     let maxBottom = 0;
                     elementPlacements.forEach(p => {
                         const el: any = section.elements.find(e => e.id === p.id);
@@ -170,12 +169,11 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                         const bottom = p.adjustedY + h;
                         if (bottom > maxBottom) maxBottom = bottom;
                     });
-                    // On SE, Section 0 is at least 896px to prevent compression.
                     sectionHeight = Math.max(isFirst ? INVITATION_HEIGHT : 100, maxBottom + 40);
                 } else if (isFirst && !isOpened) {
                     sectionHeight = coverHeight;
                 } else {
-                    sectionHeight = CANVAS_HEIGHT; // Restore 896px for larger devices
+                    sectionHeight = CANVAS_HEIGHT; // Original fixed height for larger mobile
                 }
             }
             return { id: section.id, height: sectionHeight, elements: elementPlacements };
@@ -271,17 +269,17 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         const calculatedTop = getSectionTop(index);
 
         return { 
-            // ELIMINATE GAP: Use relative for mobile flow to let sections touch perfectly
-            position: (isPortrait && flowMode) ? 'relative' : 'absolute', 
+            // ISOLATION: iPhone SE is always relative to allow early scrolling
+            position: (isPortrait && (flowMode || isiPhoneSE)) ? 'relative' : 'absolute', 
             left: 0, width: CANVAS_WIDTH, height: sectionHeight, 
             overflow: isPortrait ? 'visible' : 'hidden',
-            top: (isPortrait && flowMode) ? undefined : (flowMode ? calculatedTop : 0),
+            top: (isPortrait && (flowMode || isiPhoneSE)) ? undefined : (flowMode ? calculatedTop : 0),
             zIndex: (index === 0 && !flowMode) ? 20 : (index === 1 && !flowMode ? 10 : 1),
             opacity: 1,
             display: (!flowMode && index > 1) ? 'none' : 'block',
             transition: isRevealing ? `transform ${transitionDuration}s cubic-bezier(0.22, 1, 0.36, 1), opacity ${transitionDuration}s ease-in-out` : undefined
         };
-    }, [transitionStage, layoutData, getSectionTop, CANVAS_WIDTH, isPortrait, transitionDuration]);
+    }, [transitionStage, layoutData, getSectionTop, CANVAS_WIDTH, isPortrait, isiPhoneSE, transitionDuration]);
 
     useEffect(() => {
         if (isOpen) {
@@ -326,9 +324,10 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         const lenis = new Lenis({ wrapper: scrollContainerRef.current, content: scrollContainerRef.current.firstElementChild as HTMLElement, duration: 1.2 });
         function raf(time: number) { lenis.raf(time); requestAnimationFrame(raf); }
         const rafId = requestAnimationFrame(raf);
-        if (transitionStage !== 'DONE') lenis.stop(); else lenis.start();
+        // ISOLATION: iPhone SE starts scrolling immediately (V12.1)
+        if (transitionStage !== 'DONE' && !isiPhoneSE) lenis.stop(); else lenis.start();
         return () => { lenis.destroy(); cancelAnimationFrame(rafId); };
-    }, [isOpen, transitionStage]);
+    }, [isOpen, transitionStage, isiPhoneSE]);
 
     // Instant scroll sync
     React.useLayoutEffect(() => {
@@ -343,7 +342,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         <AnimatePresence>
             <m.div ref={containerRef} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[9999] flex flex-col items-center overflow-hidden transition-colors duration-700" style={viewportBackgroundStyle}>
                 <SmartFontInjector />
-                <div ref={scrollContainerRef} className={`w-full h-full ${transitionStage === 'DONE' ? 'overflow-y-auto' : 'overflow-hidden'} premium-scroll no-scrollbar`} style={{ display: isPortrait ? 'flex' : 'grid', gridTemplateColumns: isPortrait ? undefined : `1fr ${CANVAS_WIDTH * scaleFactor}px 1fr`, flexDirection: isPortrait ? 'column' : undefined }}>
+                <div ref={scrollContainerRef} className={`w-full h-full ${transitionStage === 'DONE' || isiPhoneSE ? 'overflow-y-auto' : 'overflow-hidden'} premium-scroll no-scrollbar`} style={{ display: isPortrait ? 'flex' : 'grid', gridTemplateColumns: isPortrait ? undefined : `1fr ${CANVAS_WIDTH * scaleFactor}px 1fr`, flexDirection: isPortrait ? 'column' : undefined }}>
                     {!isPortrait && <div className="h-screen sticky top-0 pointer-events-none overflow-hidden" style={{ gridColumn: 1 }}><PreviewOrbitStage type="left" config={orbit.left} scaleFactor={scaleFactor} isOpened={isOpened} transitionStage={transitionStage} coverHeight={coverHeight} isPortrait={isPortrait} /></div>}
                     <div className="relative overflow-hidden" style={{ gridColumn: isPortrait ? undefined : 2, width: CANVAS_WIDTH * scaleFactor, height: isPortrait ? 'auto' : totalHeight * scaleFactor, flexShrink: 0, overflow: 'visible' }}>
                         <div style={{ width: CANVAS_WIDTH, height: isPortrait ? 'auto' : totalHeight, transform: `scale(${scaleFactor})`, transformOrigin: 'top left', position: isPortrait ? 'relative' : 'absolute', top: 0, left: 0, overflow: 'visible', display: isPortrait ? 'flex' : 'block', flexDirection: 'column' }}>
