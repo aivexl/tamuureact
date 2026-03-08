@@ -79,6 +79,7 @@ export const IconGridMenu: React.FC<IconGridMenuProps> = ({ onOpenPanel }) => {
             {dynamicMenuItems.map((item, i) => (
                 <m.button
                     key={item.id}
+                    id={`tutorial-grid-item-${item.id}`}
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{

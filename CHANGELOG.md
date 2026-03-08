@@ -1,5 +1,17 @@
 # Tamuu Changelog
 
+## [0.6.39] - 2026-03-08
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### UI/UX: Refined Item-by-Item Grid Tutorial
+- **Granular Grid Guidance**: Refactored the tutorial to explain every single item in the feature grid one-by-one (Music, Lucky Draw, Template, Guests, Wishes, Display TV, Location, Gift, Gallery, Live Stream, Analytics, and Download).
+- **Clean UI (No Backdrop)**: Removed the dark blurry overlay for a cleaner, non-intrusive learning experience.
+- **Sticky Viewport-Aware Tooltips**: 
+  - Tooltips now use viewport-relative positioning to stick perfectly to their target elements.
+  - Implemented smart viewport constraints to prevent tutorial cards from being clipped by screen edges.
+- **Enhanced Navigation**: Added progress counters (e.g., 1/14) and smoother auto-scroll transitions between steps.
+
 ## [0.6.38] - 2026-03-08
 **Status**: 🟢 Deployed
 **Environment**: Production
@@ -15,7 +27,8 @@
 - **Streamlined Navigation**: Added Skip, Next, and Progress indicators for a modern onboarding experience.
 
 ## [0.6.37] - 2026-03-08
-**Status**: 🟢 Deployed
+... (rest of changelog)
+
 **Environment**: Production
 
 ### UI: Grid Panel Cleanup & Navigation Streamlining

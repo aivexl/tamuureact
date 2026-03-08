@@ -40,38 +40,106 @@ import { useSubscriptionTimer } from '../hooks/useSubscriptionTimer';
 import { SubscriptionStatusWidget } from '../components/ui/SubscriptionStatusWidget';
 
 // ============================================
-// TUTORIAL SYSTEM (INDONESIAN)
+// TUTORIAL SYSTEM (INDONESIAN - REFACTORED)
 // ============================================
 
 const TUTORIAL_STEPS = [
     {
         targetId: 'tutorial-info-card',
-        title: 'Selamat Datang!',
-        description: 'Ini adalah kartu informasi undangan Anda. Di sini Anda bisa melihat link undangan, mengubah status ke Publish/Draft, dan mengatur link sosmed.',
+        title: 'Info Undangan',
+        description: 'Kelola status publikasi dan bagikan link undangan Anda di sini.',
+        position: 'bottom'
+    },
+    // Grid Items
+    {
+        targetId: 'tutorial-grid-item-music',
+        title: 'Musik Latar',
+        description: 'Pilih lagu romantis untuk mengiringi tamu saat membuka undangan.',
         position: 'bottom'
     },
     {
-        targetId: 'tutorial-grid-menu',
-        title: 'Menu Fitur Cepat',
-        description: 'Gunakan tombol-tombol ini untuk mengatur fitur spesifik seperti Musik, Tamu, Ucapan, Galeri, dan lainnya dengan cepat.',
+        targetId: 'tutorial-grid-item-luckydraw',
+        title: 'Undian / Doorprize',
+        description: 'Buat acara makin seru dengan fitur undian berhadiah untuk tamu.',
         position: 'bottom'
     },
+    {
+        targetId: 'tutorial-grid-item-template',
+        title: 'Ganti Template',
+        description: 'Ingin suasana baru? Anda bisa mengganti desain seluruh undangan di sini.',
+        position: 'bottom'
+    },
+    {
+        targetId: 'tutorial-grid-item-guests',
+        title: 'Manajemen Tamu',
+        description: 'Kelola daftar nama tamu dan kirim link undangan personal via WhatsApp.',
+        position: 'bottom'
+    },
+    {
+        targetId: 'tutorial-grid-item-wishes',
+        title: 'Ucapan & Doa',
+        description: 'Lihat dan kelola semua ucapan manis dari keluarga dan teman.',
+        position: 'bottom'
+    },
+    {
+        targetId: 'tutorial-grid-item-display',
+        title: 'Display TV',
+        description: 'Atur tampilan layar besar/TV untuk di venue acara.',
+        position: 'bottom'
+    },
+    {
+        targetId: 'tutorial-grid-item-location',
+        title: 'Lokasi Acara',
+        description: 'Atur koordinat Google Maps agar tamu tidak tersesat.',
+        position: 'bottom'
+    },
+    {
+        targetId: 'tutorial-grid-item-gift',
+        title: 'Kado Digital',
+        description: 'Atur nomor rekening atau dompet digital untuk mempermudah tamu memberi kado.',
+        position: 'bottom'
+    },
+    {
+        targetId: 'tutorial-grid-item-gallery',
+        title: 'Galeri Foto',
+        description: 'Unggah foto-foto pre-wedding terbaik Anda di sini.',
+        position: 'bottom'
+    },
+    {
+        targetId: 'tutorial-grid-item-livestream',
+        title: 'Live Streaming',
+        description: 'Bagikan link siaran langsung acara Anda untuk tamu yang berhalangan hadir.',
+        position: 'bottom'
+    },
+    {
+        targetId: 'tutorial-grid-item-analytics',
+        title: 'Analitik Tamu',
+        description: 'Pantau berapa banyak orang yang sudah membuka undangan Anda.',
+        position: 'bottom'
+    },
+    {
+        targetId: 'tutorial-grid-item-download',
+        title: 'Download Aset',
+        description: 'Unduh aset undangan dalam format gambar atau PDF.',
+        position: 'bottom'
+    },
+    // Template Area
     {
         targetId: 'tutorial-template-area',
-        title: 'Area Edit Konten',
-        description: 'Di sini adalah tempat utama Anda mengelola isi undangan. Konten dibagi menjadi beberapa bagian (Section) yang bisa Anda atur.',
+        title: 'Area Konten',
+        description: 'Scroll ke bawah untuk mengedit teks dan gambar di setiap bagian undangan.',
         position: 'top'
     },
     {
         targetId: 'tutorial-section-expand',
-        title: 'Buka Bagian',
-        description: 'Klik ikon kotak ini untuk membuka isi dari bagian tersebut. Anda bisa mengubah teks, gambar, dan warna di dalamnya.',
+        title: 'Edit Detail',
+        description: 'Klik ikon ini untuk membuka formulir pengeditan bagian tersebut.',
         position: 'right'
     },
     {
         targetId: 'tutorial-section-visible',
-        title: 'Tampilkan/Sembunyikan',
-        description: 'Gunakan ikon mata ini jika Anda ingin menyembunyikan atau menampilkan bagian tertentu di undangan Anda.',
+        title: 'Atur Tampilan',
+        description: 'Sembunyikan bagian yang tidak ingin Anda tampilkan sementara waktu.',
         position: 'left'
     }
 ];
@@ -87,20 +155,22 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
             if (el) {
                 const rect = el.getBoundingClientRect();
                 setCoords({
-                    top: rect.top + window.scrollY,
-                    left: rect.left + window.scrollX,
+                    top: rect.top,
+                    left: rect.left,
                     width: rect.width,
                     height: rect.height
                 });
                 
-                // Smooth scroll to element
+                // Ensure element is visible
                 el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                // If dynamic element not found, skip to next
+                if (step < TUTORIAL_STEPS.length - 1) setStep(s => s + 1);
+                else onComplete();
             }
         };
 
-        // Delay initial coords to ensure layout has settled
-        const timer = setTimeout(updateCoords, 500);
-        
+        const timer = setTimeout(updateCoords, 300);
         window.addEventListener('resize', updateCoords);
         window.addEventListener('scroll', updateCoords);
         return () => {
@@ -118,78 +188,105 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
         }
     };
 
+    // CALCULATE BEST POSITION TO AVOID VIEWPORT CLIPPING
+    const getCardStyle = () => {
+        const cardWidth = 280;
+        const cardHeight = 180;
+        const padding = 20;
+        
+        let top = 0;
+        let left = 0;
+
+        if (currentStep.position === 'bottom') {
+            top = coords.top + coords.height + 15;
+            left = coords.left + (coords.width / 2) - (cardWidth / 2);
+        } else if (currentStep.position === 'top') {
+            top = coords.top - cardHeight - 15;
+            left = coords.left + (coords.width / 2) - (cardWidth / 2);
+        } else if (currentStep.position === 'right') {
+            top = coords.top + (coords.height / 2) - (cardHeight / 2);
+            left = coords.left + coords.width + 15;
+        } else if (currentStep.position === 'left') {
+            top = coords.top + (coords.height / 2) - (cardHeight / 2);
+            left = coords.left - cardWidth - 15;
+        }
+
+        // VIEWPORT CONSTRAINTS (Keep card inside screen)
+        const minLeft = padding;
+        const maxLeft = window.innerWidth - cardWidth - padding;
+        const minTop = padding;
+        const maxTop = window.innerHeight - cardHeight - padding;
+
+        return {
+            top: Math.max(minTop, Math.min(maxTop, top)),
+            left: Math.max(minLeft, Math.min(maxLeft, left))
+        };
+    };
+
     return (
         <div className="fixed inset-0 z-[100] pointer-events-none">
-            {/* Backdrop with Hole */}
-            <m.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="absolute inset-0 bg-slate-950/60 backdrop-blur-[2px] pointer-events-auto"
-                style={{
-                    clipPath: `polygon(0% 0%, 0% 100%, ${coords.left}px 100%, ${coords.left}px ${coords.top}px, ${coords.left + coords.width}px ${coords.top}px, ${coords.left + coords.width}px ${coords.top + coords.height}px, ${coords.left}px ${coords.top + coords.height}px, ${coords.left}px 100%, 100% 100%, 100% 0%)`
-                }}
-            />
+            {/* NO BACKDROP per user request */}
 
             {/* Tutorial Card */}
             <AnimatePresence mode="wait">
                 <m.div
                     key={step}
-                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
                     animate={{ 
                         opacity: 1, 
                         scale: 1, 
                         y: 0,
-                        top: currentStep.position === 'bottom' ? coords.top + coords.height + 20 : (currentStep.position === 'top' ? coords.top - 220 : coords.top + (coords.height / 2) - 100),
-                        left: currentStep.position === 'right' ? coords.left + coords.width + 20 : (currentStep.position === 'left' ? coords.left - 320 : coords.left + (coords.width/2) - 150)
+                        ...getCardStyle()
                     }}
-                    exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                    className="absolute w-[300px] bg-white rounded-3xl shadow-2xl p-6 pointer-events-auto border border-slate-100 z-[101]"
+                    exit={{ opacity: 0, scale: 0.9, y: -10 }}
+                    className="absolute w-[280px] bg-slate-900 text-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] p-5 pointer-events-auto border border-white/10 z-[101]"
+                    style={{ position: 'absolute' }}
                 >
-                    <div className="flex items-start justify-between mb-4">
-                        <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
-                            {step === 0 ? <Sparkles className="w-5 h-5" /> : step === 1 ? <Info className="w-5 h-5" /> : step === 2 ? <LayoutIcon className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    <div className="flex items-start justify-between mb-3">
+                        <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center text-white">
+                            <Sparkles className="w-4 h-4" />
                         </div>
-                        <button onClick={onComplete} className="p-2 hover:bg-slate-50 rounded-lg text-slate-400 transition-colors">
+                        <button onClick={onComplete} className="p-1.5 hover:bg-white/10 rounded-lg text-white/40 transition-colors">
                             <X className="w-4 h-4" />
                         </button>
                     </div>
 
-                    <h4 className="text-lg font-black text-slate-900 tracking-tight mb-2 uppercase tracking-widest">{currentStep.title}</h4>
-                    <p className="text-sm text-slate-500 leading-relaxed mb-6 font-medium">
+                    <h4 className="text-sm font-black tracking-tight mb-1 uppercase tracking-widest">{currentStep.title}</h4>
+                    <p className="text-xs text-slate-300 leading-relaxed mb-5 font-medium">
                         {currentStep.description}
                     </p>
 
-                    <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center justify-between">
                         <button 
                             onClick={onComplete}
-                            className="text-xs font-bold text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors"
+                            className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-slate-300 transition-colors"
                         >
-                            Skip
+                            Lewati
                         </button>
                         
-                        <div className="flex items-center gap-2">
-                            <div className="flex gap-1 mr-2">
-                                {TUTORIAL_STEPS.map((_, i) => (
-                                    <div key={i} className={`w-1.5 h-1.5 rounded-full transition-all ${i === step ? 'bg-indigo-600 w-4' : 'bg-slate-200'}`} />
-                                ))}
-                            </div>
+                        <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-bold text-slate-500">{step + 1} / {TUTORIAL_STEPS.length}</span>
                             <button
                                 onClick={handleNext}
-                                className="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-800 transition-all active:scale-95"
+                                className="px-4 py-2 bg-white text-slate-900 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-100 transition-all active:scale-95"
                             >
-                                {step === TUTORIAL_STEPS.length - 1 ? 'Selesai' : 'Next'}
+                                {step === TUTORIAL_STEPS.length - 1 ? 'Selesai' : 'Lanjut'}
                                 <ChevronRight className="w-3 h-3" />
                             </button>
                         </div>
                     </div>
 
                     {/* Arrow Pointer */}
-                    <div 
-                        className={`absolute w-4 h-4 bg-white rotate-45 border-slate-100 ${
-                            currentStep.position === 'bottom' ? '-top-2 left-1/2 -translate-x-1/2 border-t border-l' :
-                            currentStep.position === 'top' ? '-bottom-2 left-1/2 -translate-x-1/2 border-b border-r' :
-                            currentStep.position === 'right' ? 'top-1/2 -left-2 -translate-y-1/2 border-b border-l' :
-                            'top-1/2 -right-2 -translate-y-1/2 border-t border-r'
+                    <m.div 
+                        animate={{
+                            rotate: 45,
+                            x: currentStep.position === 'bottom' ? 0 : (currentStep.position === 'right' ? -5 : 0)
+                        }}
+                        className={`absolute w-3 h-3 bg-slate-900 border-white/10 ${
+                            currentStep.position === 'bottom' ? '-top-1.5 left-1/2 -translate-x-1/2 border-t border-l' :
+                            currentStep.position === 'top' ? '-bottom-1.5 left-1/2 -translate-x-1/2 border-b border-r' :
+                            currentStep.position === 'right' ? 'top-1/2 -left-1.5 -translate-y-1/2 border-b border-l' :
+                            'top-1/2 -right-1.5 -translate-y-1/2 border-t border-r'
                         }`}
                     />
                 </m.div>
