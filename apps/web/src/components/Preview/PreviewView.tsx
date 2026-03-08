@@ -79,7 +79,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
 
     const isPortrait = templateType === 'display' ? false : (windowSize.height >= windowSize.width || windowSize.width < 1024);
     
-    // CTO FIX: Special treatment for SE-class devices
+    // CTO FIX: Intelligent Device Awareness (Target SE & Small Pixels)
     const isiPhoneSE = isPortrait && windowSize.width <= 385;
 
     const scaleFactor = useMemo(() => {
@@ -95,7 +95,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
     }, [windowSize.height, scaleFactor]);
 
     // ============================================
-    // CTO UNIFIED LAYOUT ENGINE V13 (ZERO-GAP)
+    // CTO UNIFIED LAYOUT ENGINE V15 (ZERO-GAP PRO)
     // ============================================
     const layoutData = useMemo(() => {
         return sortedSections.map((section, sectionIndex) => {
@@ -113,55 +113,51 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                 const measuredHeight = detectedDim?.height || designHeight;
                 const growth = Math.max(0, measuredHeight - designHeight);
 
-                // Cumulative shift for all mobile portrait devices to prevent overlap
                 const stackShift = isPortrait ? cumulativeShift : 0;
                 if (isPortrait && growth > 2) cumulativeShift += growth;
 
                 let finalAdjustedY = el.y + stackShift;
 
-                // PORTRAIT FIX: No piecewise compression. 1:1 Mapping only.
-                // This guarantees no overlapping and no artificial gaps.
                 if (isPortrait && isFirst && transitionStage === 'IDLE') {
-                    // Center the cover content vertically in the dynamic viewport
                     const viewportShift = (coverHeight - INVITATION_HEIGHT) / 2;
-                    finalAdjustedY = (el.y + stackShift) + (viewportShift > 0 ? viewportShift : 0);
+                    if (viewportShift > 0 && !isiPhoneSE) {
+                        finalAdjustedY += viewportShift;
+                    }
                 }
                 
                 elementPlacements.push({ id: el.id, adjustedY: finalAdjustedY });
             });
 
-            // Section Height calculation - TIGHT FIT TO CONTENT
             let sectionHeight = CANVAS_HEIGHT;
             if (isPortrait) {
                 let maxBottom = 0;
                 elementPlacements.forEach(p => {
                     const el: any = section.elements.find(e => e.id === p.id);
                     const h = elementDimensions?.[p.id]?.height || el.height || 100;
-                    const bottom = p.adjustedY + h;
-                    if (bottom > maxBottom) maxBottom = bottom;
+                    if (el.height < 800 || el.type !== 'image') {
+                        const bottom = p.adjustedY + h;
+                        if (bottom > maxBottom) maxBottom = bottom;
+                    }
                 });
 
                 if (isFirst && transitionStage === 'IDLE') {
-                    // Cover fills at least the viewport
                     sectionHeight = Math.max(coverHeight, maxBottom + 20);
                 } else {
-                    // Subsequent sections follow content strictly
                     sectionHeight = maxBottom + 20; 
                 }
             }
             return { id: section.id, height: sectionHeight, elements: elementPlacements };
         });
-    }, [sortedSections, isPortrait, coverHeight, elementDimensions, transitionStage]);
+    }, [sortedSections, isPortrait, isiPhoneSE, coverHeight, elementDimensions, transitionStage]);
 
-    // Total unscaled height of the entire flow
     const totalUnscaledHeight = useMemo(() => {
-        if (isPortrait && transitionStage === 'IDLE' && !isDisplay) {
-            return layoutData[0]?.height || coverHeight;
-        }
-        return layoutData.reduce((acc, s) => acc + s.height, 0);
-    }, [layoutData, transitionStage, isPortrait, isDisplay, coverHeight]);
+        const activeLayout = (isPortrait && transitionStage === 'IDLE' && !isDisplay)
+            ? [layoutData[0]]
+            : layoutData;
+        return activeLayout.reduce((acc, s) => acc + (s?.height || 0), 0);
+    }, [layoutData, transitionStage, isPortrait, isDisplay]);
 
-    // UI State & Transitions
+    // Transition Config
     const transitionConfig = useMemo(() => {
         const section0 = sortedSections[0];
         return section0?.pageTransition || { enabled: false, effect: 'slide-up' as TransitionEffect, duration: 1500 };
@@ -170,6 +166,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
     const transitionEffect = transitionConfig.enabled ? transitionConfig.effect as TransitionEffect : 'slide-up';
     const transitionDuration = (transitionConfig.duration || 1500) / 1000;
 
+    // Viewport background
     const viewportBackgroundStyle = useMemo(() => {
         if (!isPortrait) return { backgroundColor: '#1a1a1a' };
         const section0 = sortedSections[0];
@@ -182,6 +179,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         };
     }, [isPortrait, sortedSections]);
 
+    // UI Logic
     const toggleFullscreen = useCallback(() => {
         if (!document.fullscreenElement) {
             containerRef.current?.requestFullscreen().catch(() => {});
@@ -248,20 +246,17 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         if (!point?.targetRegion) return { scale: zoomConfig.scale || 1.3, x: 0, y: 0 };
         const { x: boxX, y: boxY, width: boxWidth, height: boxHeight } = point.targetRegion;
         const scale = Math.min(Math.max(1, Math.min(CANVAS_WIDTH / boxWidth, coverHeight / boxHeight)), 100);
-        const contentOffset = isPortrait ? (coverHeight - INVITATION_HEIGHT) / 2 : 0;
+        const contentOffset = isPortrait ? (coverHeight - CANVAS_HEIGHT) / 2 : 0;
         const centerX = boxX + boxWidth / 2;
         const centerY = boxY + contentOffset + boxHeight / 2;
         return { scale, x: (CANVAS_WIDTH / 2) - (scale * centerX), y: (coverHeight / 2) - (scale * centerY) };
-    }, [currentZoomPointIndex, coverHeight, isPortrait, CANVAS_WIDTH]);
+    }, [currentZoomPointIndex, coverHeight, isPortrait, CANVAS_WIDTH, CANVAS_HEIGHT]);
 
     const getSectionStyle = useCallback((index: number): React.CSSProperties => {
         const isRevealing = transitionStage === 'REVEALING';
         const isDone = transitionStage === 'DONE';
         const isIdle = transitionStage === 'IDLE';
-        
-        // Portrait uses pure document flow to eliminate gaps
         const flowMode = isPortrait && (isDone || isiPhoneSE || isRevealing);
-
         const sectionHeight = layoutData[index].height;
 
         return { 
@@ -292,34 +287,12 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         }
     }, [isOpen, sortedSections, templateType, startZoomAnimation]);
 
-    // Intersection Observer
-    useEffect(() => {
-        if (!isOpen || !scrollContainerRef.current || transitionStage !== 'DONE') return;
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                const idx = parseInt(entry.target.getAttribute('data-index') || '-1');
-                if (idx === -1) return;
-                if (entry.isIntersecting) {
-                    setVisibleSections(prev => {
-                        if (prev.includes(idx)) return prev;
-                        const s = sortedSections[idx];
-                        if (s?.zoomConfig?.enabled && (s.zoomConfig.trigger === 'scroll' || s.zoomConfig.trigger === 'load')) startZoomAnimation(idx, s);
-                        return [...prev, idx];
-                    });
-                } else setVisibleSections(prev => prev.filter(i => i !== idx));
-            });
-        }, { threshold: 0.1, root: scrollContainerRef.current });
-        sectionRefs.current.forEach(r => { if (r) observer.observe(r); });
-        return () => observer.disconnect();
-    }, [isOpen, sortedSections, startZoomAnimation, transitionStage]);
-
     // Lenis Loop
     useEffect(() => {
         if (!isOpen || !scrollContainerRef.current) return;
         const lenis = new Lenis({ wrapper: scrollContainerRef.current, content: scrollContainerRef.current.firstElementChild as HTMLElement, duration: 1.2 });
         function raf(time: number) { lenis.raf(time); requestAnimationFrame(raf); }
         const rafId = requestAnimationFrame(raf);
-        // Enable scrolling cover on SE or small devices immediately
         if (transitionStage === 'IDLE' && !isiPhoneSE) lenis.stop(); else lenis.start();
         return () => { lenis.destroy(); cancelAnimationFrame(rafId); };
     }, [isOpen, transitionStage, isiPhoneSE]);
@@ -340,8 +313,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                 <div ref={scrollContainerRef} className={`w-full h-full ${transitionStage === 'DONE' || isiPhoneSE ? 'overflow-y-auto' : 'overflow-hidden'} premium-scroll no-scrollbar`} style={{ display: isPortrait ? 'flex' : 'grid', gridTemplateColumns: isPortrait ? undefined : `1fr ${CANVAS_WIDTH * scaleFactor}px 1fr`, flexDirection: isPortrait ? 'column' : undefined }}>
                     {!isPortrait && <div className="h-screen sticky top-0 pointer-events-none overflow-hidden" style={{ gridColumn: 1 }}><PreviewOrbitStage type="left" config={orbit.left} scaleFactor={scaleFactor} isOpened={isOpened} transitionStage={transitionStage} coverHeight={coverHeight} isPortrait={isPortrait} /></div>}
                     
-                    {/* CENTER CANVAS - Scale Compensation Applied */}
-                    <div className="relative overflow-hidden" style={{ gridColumn: isPortrait ? undefined : 2, width: CANVAS_WIDTH * scaleFactor, height: totalUnscaledHeight * scaleFactor, flexShrink: 0, overflow: 'visible' }}>
+                    <div className="relative" style={{ gridColumn: isPortrait ? undefined : 2, width: CANVAS_WIDTH * scaleFactor, height: Math.ceil(totalUnscaledHeight * scaleFactor), flexShrink: 0, overflow: isPortrait ? 'visible' : 'hidden' }}>
                         <div style={{ width: CANVAS_WIDTH, height: totalUnscaledHeight, transform: `scale(${scaleFactor})`, transformOrigin: 'top left', position: 'absolute', top: 0, left: 0, overflow: 'visible', display: isPortrait ? 'flex' : 'block', flexDirection: 'column' }}>
                             {sortedSections.map((section, index) => {
                                 if (transitionStage === 'IDLE' && index > 0 && !isDisplay) return null;
