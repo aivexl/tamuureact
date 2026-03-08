@@ -62,26 +62,13 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
     const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
     const zoomTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
-    // Interaction Poller
+    // Window resize handler
     useEffect(() => {
-        if (!isOpen) return;
-        resetInteractions();
-        const handleSync = (e: StorageEvent) => {
-            if (e.key === 'tamuu_interaction_event' && e.newValue) {
-                try {
-                    const event = JSON.parse(e.newValue);
-                    const lastTimestamp = lastTriggerRef.current?.timestamp || 0;
-                    if (Date.now() - event.timestamp < 5000 && event.timestamp > lastTimestamp) {
-                        lastTriggerRef.current = { effect: event.effect, timestamp: event.timestamp };
-                        if (event.interactions?.length > 0) triggerBatchInteractions(event.name, event.interactions);
-                        else if (event.effect) triggerBatchInteractions(event.name, [{ effect: event.effect, style: event.style, origin: event.origin }]);
-                    }
-                } catch (err) {}
-            }
-        };
-        window.addEventListener('storage', handleSync);
-        return () => window.removeEventListener('storage', handleSync);
-    }, [isOpen, resetInteractions, triggerBatchInteractions]);
+        const updateSize = () => { setWindowSize({ width: window.innerWidth, height: window.innerHeight }); };
+        updateSize();
+        window.addEventListener('resize', updateSize);
+        return () => window.removeEventListener('resize', updateSize);
+    }, []);
 
     const sortedSections = useMemo(() => {
         return [...sections]
@@ -104,45 +91,111 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         return windowSize.height / scaleFactor;
     }, [windowSize.height, scaleFactor]);
 
-    // CTO FIX: Hybrid Smart-Fit Layout Engine
-    // Calculates true section heights to eliminate gaps and clipping
-    const sectionHeights = useMemo(() => {
-        return sortedSections.map((section, index) => {
-            if (!isPortrait) return CANVAS_HEIGHT;
-            if (index === 0) return coverHeight;
+    // ============================================
+    // CTO UNIFIED LAYOUT ENGINE V3.1 (PRO UX)
+    // One engine to rule positioning and heights
+    // ============================================
+    const layoutData = useMemo(() => {
+        return sortedSections.map((section, sectionIndex) => {
+            const isFirst = sectionIndex === 0;
             
-            let maxBottom = 0;
-            section.elements.forEach((el: any) => {
-                const detectedDim = elementDimensions?.[el.id];
-                const measuredH = detectedDim?.height;
-                // Priority: Detected > Explicit > Fallback
-                let h = measuredH || el.height || el.size?.height || (el.type === 'text' ? 50 : 100);
-                
-                // Narrative elements need a healthy minimum if not yet measured
-                if (!measuredH && ['love_story', 'rsvp_wishes', 'guest_wishes', 'profile_card'].includes(el.type)) {
-                    h = Math.max(h, 800);
+            // 1. Sort elements by original Y to process stacking correctly
+            const elements = [...section.elements]
+                .filter((el: any) => el && el.isVisible)
+                .sort((a, b) => a.y - b.y);
+
+            let cumulativeShift = 0;
+            const elementPlacements: Array<{ id: string, adjustedY: number }> = [];
+
+            elements.forEach((el: any) => {
+                // Ignore "Open" buttons in Flow mode for Section 0
+                if (isFirst && transitionStage === 'DONE' && (el.type === 'button' || el.type === 'open_invitation_button')) {
+                    return;
                 }
+
+                const detectedDim = elementDimensions?.[el.id];
+                const designHeight = el.height || 50;
+                const measuredHeight = detectedDim?.height || designHeight;
+                const growth = Math.max(0, measuredHeight - designHeight);
+
+                // Current element is pushed by cumulative growth of elements above it
+                const stackShift = cumulativeShift;
                 
-                const bottom = el.y + h;
-                if (bottom > maxBottom) maxBottom = bottom;
+                // Add this element's growth to the pile for the NEXT elements
+                if (growth > 2) {
+                    cumulativeShift += growth;
+                }
+
+                let finalAdjustedY = el.y + stackShift;
+
+                // Section 0 Piecewise Mapping (Adaptive Viewport Fitting)
+                if (isPortrait && isFirst) {
+                    if (coverHeight < INVITATION_HEIGHT) {
+                        const y = el.y; 
+                        const T = 200; // Top anchor threshold
+                        const B = 696; // Bottom anchor threshold
+                        const viewportShift = (coverHeight - INVITATION_HEIGHT) / 2;
+                        
+                        if (y <= T) {
+                            // Elements in top zone compress minimally
+                            finalAdjustedY = (y + stackShift) * ((T + viewportShift) / T);
+                        } else if (y <= B) {
+                            // Elements in center zone follow viewport center shift
+                            finalAdjustedY = (y + stackShift) + viewportShift;
+                        } else {
+                            // Elements in bottom zone (Buttons etc) stick to the bottom properly
+                            const baseB = B + viewportShift;
+                            // PRO UX: Reduced stackShift for bottom zone to prevent buttons from being pushed out of screen
+                            finalAdjustedY = (baseB + (stackShift * 0.15)) + (y - B) * ((coverHeight - (baseB + (stackShift * 0.15))) / (INVITATION_HEIGHT - B));
+                        }
+                    } else {
+                        // Large screen expansion
+                        const maxTop = INVITATION_HEIGHT - designHeight;
+                        const progress = maxTop > 0 ? Math.max(0, Math.min(1, el.y / maxTop)) : 0;
+                        finalAdjustedY = (el.y + stackShift) + (coverHeight - INVITATION_HEIGHT) * progress;
+                    }
+                }
+
+                elementPlacements.push({ id: el.id, adjustedY: finalAdjustedY });
             });
 
-            // Section 1+: Tight Fit to content. MINIMUM CANVAS_HEIGHT if content is sparse.
-            return Math.max(CANVAS_HEIGHT, maxBottom + 40);
+            // Calculate final section height based on shifted elements
+            let sectionHeight = CANVAS_HEIGHT;
+            if (isPortrait) {
+                if (isFirst) {
+                    sectionHeight = coverHeight;
+                } else {
+                    let maxBottom = 0;
+                    elementPlacements.forEach(p => {
+                        const el: any = section.elements.find(e => e.id === p.id);
+                        const h = elementDimensions?.[p.id]?.height || el.height || 100;
+                        const bottom = p.adjustedY + h;
+                        if (bottom > maxBottom) maxBottom = bottom;
+                    });
+                    // Section height is tight to content. Added extra padding for breathability.
+                    sectionHeight = Math.max(100, maxBottom + 60); 
+                }
+            }
+
+            return {
+                id: section.id,
+                height: sectionHeight,
+                elements: elementPlacements
+            };
         });
-    }, [sortedSections, coverHeight, CANVAS_HEIGHT, isPortrait, elementDimensions]);
+    }, [sortedSections, isPortrait, coverHeight, elementDimensions, transitionStage]);
 
     const totalHeight = useMemo(() => {
-        if (sectionHeights.length === 0) return CANVAS_HEIGHT;
-        return sectionHeights.reduce((acc, h) => acc + h, 0);
-    }, [sectionHeights]);
+        return layoutData.reduce((acc, s) => acc + s.height, 0);
+    }, [layoutData]);
 
     const getSectionTop = useCallback((index: number) => {
         let top = 0;
-        for (let i = 0; i < index; i++) top += sectionHeights[i];
+        for (let i = 0; i < index; i++) top += layoutData[i].height;
         return top;
-    }, [sectionHeights]);
+    }, [layoutData]);
 
+    // Transition Duration
     const transitionConfig = useMemo(() => {
         const section0 = sortedSections[0];
         return section0?.pageTransition || { enabled: false, effect: 'slide-up' as TransitionEffect, duration: 1500 };
@@ -151,6 +204,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
     const transitionEffect = transitionConfig.enabled ? transitionConfig.effect as TransitionEffect : 'slide-up';
     const transitionDuration = (transitionConfig.duration || 1500) / 1000;
 
+    // Viewport background
     const viewportBackgroundStyle = useMemo(() => {
         if (!isPortrait) return { backgroundColor: '#1a1a1a' };
         const section0 = sortedSections[0];
@@ -163,62 +217,19 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         };
     }, [isPortrait, sortedSections]);
 
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [onClose]);
-
-    useEffect(() => {
-        const updateSize = () => { setWindowSize({ width: window.innerWidth, height: window.innerHeight }); };
-        updateSize();
-        window.addEventListener('resize', updateSize);
-        return () => window.removeEventListener('resize', updateSize);
-    }, []);
-
-    // Remote Control Poller
-    useEffect(() => {
-        if (!isOpen || !propId || propIsTemplate) return;
-        const pollTriggers = async () => {
-            if (!API_BASE) return;
-            try {
-                const endpoint = templateType === 'display' ? `/api/user-display-designs/${propId}` : `/api/invitations/${propId}`;
-                const response = await safeFetch(`${API_BASE}${endpoint}`);
-                if (!response.ok) return;
-                const data = await response.json();
-                const trigger = data.content?.activeTrigger || data.sections?.[0]?.activeTrigger;
-                if (trigger && trigger.timestamp !== lastTriggerRef.current?.timestamp) {
-                    if (lastTriggerRef.current !== null) triggerGlobalEffect(trigger.effect);
-                    lastTriggerRef.current = trigger;
-                }
-            } catch (err) {}
-        };
-        const interval = setInterval(pollTriggers, 3000);
-        pollTriggers();
-        return () => clearInterval(interval);
-    }, [isOpen, propId, propIsTemplate, templateType, triggerGlobalEffect]);
-
-    useEffect(() => {
-        if (isOpen) {
-            setWindowSize({ width: window.innerWidth, height: window.innerHeight });
-            if (templateType === 'display') {
-                setIsOpened(true); setTransitionStage('DONE'); setVisibleSections(sortedSections.map((_, i) => i));
-            } else {
-                setIsOpened(false); setTransitionStage('IDLE'); setVisibleSections([0]);
-            }
-            setCurrentZoomPointIndex({}); clearAnimationCache();
-            setTimeout(() => {
-                const s0 = sortedSections[0];
-                if (s0?.zoomConfig?.enabled && s0.zoomConfig.trigger === 'scroll') startZoomAnimation(0, s0);
-            }, 100);
-        }
-    }, [isOpen, sortedSections, templateType]);
-
     const toggleFullscreen = useCallback(() => {
-        if (!document.fullscreenElement) { containerRef.current?.requestFullscreen(); setIsFullscreen(true); }
-        else { document.exitFullscreen(); setIsFullscreen(false); }
+        if (!document.fullscreenElement) {
+            containerRef.current?.requestFullscreen().catch(err => {
+                console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+            });
+            setIsFullscreen(true);
+        } else {
+            document.exitFullscreen();
+            setIsFullscreen(false);
+        }
     }, []);
 
+    // Audio Handling
     const { play, pause, isPlaying: isGlobalPlaying, currentUrl } = useAudioController();
     const music = useStore(state => state.music);
 
@@ -230,31 +241,26 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         }
     }, [isOpen, music?.url, play]);
 
+    // Interaction Poller
     useEffect(() => {
-        if (!isOpen || !scrollContainerRef.current) return;
-        const lenis = new Lenis({ wrapper: scrollContainerRef.current, content: scrollContainerRef.current.firstElementChild as HTMLElement, duration: 1.2 });
-        function raf(time: number) { lenis.raf(time); requestAnimationFrame(raf); }
-        const rafId = requestAnimationFrame(raf);
-        if (transitionStage !== 'DONE') lenis.stop(); else lenis.start();
-        return () => { lenis.destroy(); cancelAnimationFrame(rafId); };
-    }, [isOpen, transitionStage]);
-
-    const handleClick = (e: React.MouseEvent) => {
-        if (!isDisplay) return;
-        const blastElements = sortedSections.flatMap(s => (s.elements || []).filter((el: any) => el.type === 'interaction'));
-        const winW = window.innerWidth;
-        const winH = window.innerHeight;
-        if (blastElements.length > 0) {
-            const interactions = blastElements.map((el: any) => {
-                const config = el.interactionConfig;
-                const origin = { x: (el.x + (el.width || 100) / 2) / CANVAS_WIDTH, y: (el.y + (el.height || 100) / 2) / CANVAS_HEIGHT };
-                return { effect: config?.effect || 'confetti', style: config?.greetingStyle || 'cinematic', origin };
-            });
-            triggerBatchInteractions('Guest Name', interactions);
-        } else {
-            triggerBatchInteractions('Guest Name', [{ effect: 'confetti', style: 'cinematic', origin: { x: e.clientX / winW, y: e.clientY / winH } }]);
-        }
-    };
+        if (!isOpen) return;
+        resetInteractions();
+        const handleSync = (e: StorageEvent) => {
+            if (e.key === 'tamuu_interaction_event' && e.newValue) {
+                try {
+                    const event = JSON.parse(e.newValue);
+                    const lastTimestamp = lastTriggerRef.current?.timestamp || 0;
+                    if (Date.now() - event.timestamp < 5000 && event.timestamp > lastTimestamp) {
+                        lastTriggerRef.current = { effect: event.effect, timestamp: event.timestamp };
+                        if (event.interactions?.length > 0) triggerBatchInteractions(event.name, event.interactions);
+                        else if (event.effect) triggerBatchInteractions(event.name, [{ effect: event.effect, style: event.style, origin: event.origin }]);
+                    }
+                } catch (err) {}
+            }
+        };
+        window.addEventListener('storage', handleSync);
+        return () => window.removeEventListener('storage', handleSync);
+    }, [isOpen, resetInteractions, triggerBatchInteractions]);
 
     const startZoomAnimation = useCallback((sectionIndex: number, section: any) => {
         const zoomConfig = section.zoomConfig;
@@ -292,12 +298,6 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         setTimeout(() => { setTransitionStage('DONE'); setShutterVisible(false); setVisibleSections(sortedSections.map((_, i) => i)); }, transitionDuration * 1000 + 100);
     }, [isOpened, sortedSections, startZoomAnimation, transitionDuration, transitionEffect]);
 
-    React.useLayoutEffect(() => {
-        if (transitionStage === 'DONE' && isOpened && scaleFactor > 0 && scrollContainerRef.current) {
-            scrollContainerRef.current.scrollTo({ top: coverHeight * scaleFactor, behavior: 'instant' });
-        }
-    }, [transitionStage, isOpened, scaleFactor, coverHeight]);
-
     const getZoomTransform = useCallback((section: any, sectionIndex: number) => {
         const zoomConfig = section.zoomConfig;
         if (!zoomConfig?.enabled) return { scale: 1, x: 0, y: 0 };
@@ -318,7 +318,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         const isDone = transitionStage === 'DONE';
         const flowMode = isDone;
 
-        const sectionHeight = sectionHeights[index] || CANVAS_HEIGHT;
+        const sectionHeight = layoutData[index].height;
         const calculatedTop = getSectionTop(index);
 
         const base: React.CSSProperties = { 
@@ -326,7 +326,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
             left: 0, 
             width: CANVAS_WIDTH, 
             height: sectionHeight, 
-            overflow: isPortrait ? 'visible' : 'hidden' // FIXED: Zero-Cutoff Guarantee
+            overflow: isPortrait ? 'visible' : 'hidden' 
         };
 
         if (!flowMode) {
@@ -346,27 +346,48 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
             return { ...base, top: 0, zIndex: 1, display: 'none' };
         }
         return { ...base, top: calculatedTop, zIndex: 1, opacity: 1 };
-    }, [transitionStage, transitionEffect, transitionDuration, sectionHeights, getSectionTop, CANVAS_WIDTH, CANVAS_HEIGHT, isPortrait]);
+    }, [transitionStage, transitionEffect, transitionDuration, layoutData, getSectionTop, CANVAS_WIDTH, isPortrait]);
 
+    // Initial setup
     useEffect(() => {
-        if (!isOpen || !scrollContainerRef.current || transitionStage !== 'DONE') return;
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                const idx = parseInt(entry.target.getAttribute('data-index') || '-1');
-                if (idx === -1) return;
-                if (entry.isIntersecting) {
-                    setVisibleSections(prev => {
-                        if (prev.includes(idx)) return prev;
-                        const s = sortedSections[idx];
-                        if (s?.zoomConfig?.enabled && (s.zoomConfig.trigger === 'scroll' || s.zoomConfig.trigger === 'load')) startZoomAnimation(idx, s);
-                        return [...prev, idx];
-                    });
-                } else setVisibleSections(prev => prev.filter(i => i !== idx));
-            });
-        }, { threshold: 0.1, root: scrollContainerRef.current });
-        sectionRefs.current.forEach(r => { if (r) observer.observe(r); });
-        return () => observer.disconnect();
-    }, [isOpen, sortedSections, startZoomAnimation, transitionStage]);
+        if (isOpen) {
+            setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+            if (templateType === 'display') {
+                setIsOpened(true); setTransitionStage('DONE'); setVisibleSections(sortedSections.map((_, i) => i));
+            } else {
+                setIsOpened(false); setTransitionStage('IDLE'); setVisibleSections([0]);
+            }
+            setCurrentZoomPointIndex({}); clearAnimationCache();
+            setTimeout(() => {
+                const s0 = sortedSections[0];
+                if (s0?.zoomConfig?.enabled && s0.zoomConfig.trigger === 'scroll') startZoomAnimation(0, s0);
+            }, 100);
+        }
+    }, [isOpen, sortedSections, templateType]);
+
+    // Fullscreen and Close
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [onClose]);
+
+    // Lenis Smooth Scroll
+    useEffect(() => {
+        if (!isOpen || !scrollContainerRef.current) return;
+        const lenis = new Lenis({ wrapper: scrollContainerRef.current, content: scrollContainerRef.current.firstElementChild as HTMLElement, duration: 1.2 });
+        function raf(time: number) { lenis.raf(time); requestAnimationFrame(raf); }
+        const rafId = requestAnimationFrame(raf);
+        if (transitionStage !== 'DONE') lenis.stop(); else lenis.start();
+        return () => { lenis.destroy(); cancelAnimationFrame(rafId); };
+    }, [isOpen, transitionStage]);
+
+    // Instant scroll to match Section 1
+    React.useLayoutEffect(() => {
+        if (transitionStage === 'DONE' && isOpened && scaleFactor > 0 && scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTo({ top: layoutData[0].height * scaleFactor, behavior: 'instant' });
+        }
+    }, [transitionStage, isOpened, scaleFactor, layoutData]);
 
     if (!isOpen || windowSize.width === 0 || windowSize.height === 0) return null;
 
@@ -374,7 +395,6 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         <AnimatePresence>
             <m.div ref={containerRef} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[9999] flex flex-col items-center overflow-hidden transition-colors duration-700" style={viewportBackgroundStyle}>
                 <SmartFontInjector />
-                {isDisplay && <div className="absolute inset-0 z-[50000] cursor-pointer" onClick={handleClick} />}
                 <div ref={scrollContainerRef} className={`w-full h-full ${transitionStage === 'DONE' ? 'overflow-y-auto' : 'overflow-hidden'} premium-scroll no-scrollbar`} style={{ display: isPortrait ? 'flex' : 'grid', gridTemplateColumns: isPortrait ? undefined : `1fr ${CANVAS_WIDTH * scaleFactor}px 1fr`, flexDirection: isPortrait ? 'column' : undefined }}>
                     {!isPortrait && <div className="h-screen sticky top-0 pointer-events-none overflow-hidden" style={{ gridColumn: 1 }}><PreviewOrbitStage type="left" config={orbit.left} scaleFactor={scaleFactor} isOpened={isOpened} transitionStage={transitionStage} coverHeight={coverHeight} isPortrait={isPortrait} /></div>}
                     <div className="relative overflow-hidden" style={{ gridColumn: isPortrait ? undefined : 2, width: CANVAS_WIDTH * scaleFactor, height: totalHeight * scaleFactor, flexShrink: 0 }}>
@@ -382,95 +402,32 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                             {sortedSections.map((section, index) => {
                                 const zoomTransform = getZoomTransform(section, index);
                                 const sectionStyle = getSectionStyle(index);
-                                const sectionHeight = sectionHeights[index] || CANVAS_HEIGHT;
+                                const sectionLayout = layoutData[index];
                                 return (
-                                    <div key={section.id} ref={el => { sectionRefs.current[index] = el; }} data-index={index} style={sectionStyle} onClick={() => { if (!clickedSections.includes(index)) setClickedSections(p => [...p, index]); if (section?.zoomConfig?.enabled && section.zoomConfig.trigger === 'click') startZoomAnimation(index, section); }}>
+                                    <div key={section.id} ref={el => { sectionRefs.current[index] = el; }} data-index={index} style={sectionStyle}>
                                         <m.div 
                                             className="absolute inset-0 w-full h-full" 
                                             animate={{ scale: zoomTransform.scale, x: zoomTransform.x, y: zoomTransform.y }} 
                                             transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }} 
                                             style={{ 
                                                 transformOrigin: '0 0', 
-                                                overflow: isPortrait ? 'visible' : 'hidden' // FIXED: Internal Bleeding
+                                                overflow: isPortrait ? 'visible' : 'hidden' 
                                             }}
                                         >
                                             <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundColor: section.backgroundColor || '#0a0a0a', backgroundImage: section.backgroundUrl ? `url(${section.backgroundUrl})` : undefined }} />
                                             {section.backgroundUrl && (section.overlayOpacity || 0) > 0 && <div className="absolute inset-0 bg-black pointer-events-none" style={{ opacity: section.overlayOpacity }} />}
                                             {section.particleType && section.particleType !== 'none' && <div className="absolute inset-0 pointer-events-none"><ParticleOverlay type={section.particleType} /></div>}
-                                            <div className="absolute left-0 overflow-visible" style={{ top: 0, height: sectionHeight, width: CANVAS_WIDTH }}>
-                                                {(() => {
-                                                    // CTO ENTERPRISE LIQUID STACKING ENGINE
-                                                    // Sort elements by design-time Y to calculate cumulative shift correctly
-                                                    const sectionElements = (section.elements || [])
-                                                        .filter((el: any) => el && el.isVisible && !(index === 0 && transitionStage === 'DONE' && (el.type === 'button' || el.type === 'open_invitation_button')))
-                                                        .sort((a, b) => a.y - b.y);
-
-                                                    const shifts: Record<string, number> = {};
-                                                    let currentCumulativeShift = 0;
-
-                                                    return sectionElements.map((element: any) => {
-                                                        const detectedDim = elementDimensions?.[element.id];
-                                                        const designHeight = element.height || 50;
-                                                        const measuredHeight = detectedDim?.height || designHeight;
-                                                        
-                                                        // Calculate how much this element has expanded beyond its design height
-                                                        const growth = Math.max(0, measuredHeight - designHeight);
-                                                        
-                                                        // This element's starting Y is shifted by the total growth of elements ABOVE it
-                                                        const stackShift = currentCumulativeShift;
-                                                        
-                                                        // Update the cumulative shift for the NEXT elements in the visual stack
-                                                        // We only add growth if it's significant (> 2px) to prevent layout jitter
-                                                        if (growth > 2) {
-                                                            currentCumulativeShift += growth;
-                                                        }
-
-                                                        let adjustedY = element.y + stackShift;
-
-                                                        // Section 0 Specific: Piecewise Mapping for Viewport Fitting
-                                                        if (isPortrait && index === 0) {
-                                                            // iPhone SE (667px) calibration: ensure shift doesn't crush elements
-                                                            if (coverHeight < INVITATION_HEIGHT) {
-                                                                const y = element.y; 
-                                                                const T = 200; // Top safe zone
-                                                                const B = 696; // Bottom safe zone
-                                                                const shift = (coverHeight - INVITATION_HEIGHT) / 2;
-                                                                
-                                                                if (y <= T) {
-                                                                    // Compress top zone gently
-                                                                    adjustedY = (y + stackShift) * ((T + shift) / T);
-                                                                } else if (y <= B) {
-                                                                    // Center zone just shifts
-                                                                    adjustedY = (y + stackShift) + shift;
-                                                                } else {
-                                                                    // Compress bottom zone gently
-                                                                    const baseB = B + shift;
-                                                                    adjustedY = (baseB + (stackShift * 0.5)) + (y - B) * ((coverHeight - baseB) / (INVITATION_HEIGHT - B));
-                                                                }
-                                                            } else {
-                                                                // Expand logic for large screens
-                                                                const maxTop = INVITATION_HEIGHT - designHeight;
-                                                                const progress = maxTop > 0 ? Math.max(0, Math.min(1, element.y / maxTop)) : 0;
-                                                                adjustedY = (element.y + stackShift) + (coverHeight - INVITATION_HEIGHT) * progress;
-                                                            }
-                                                        }
-
-                                                        return (
-                                                            <AnimatedLayer 
-                                                                key={`${section.id}-${element.id}`} 
-                                                                layer={element} 
-                                                                adjustedY={adjustedY} 
-                                                                isOpened={isOpened} 
-                                                                isEditor={false} 
-                                                                invitationId={propId} 
-                                                                onOpenInvitation={handleOpenInvitation} 
-                                                                scrollContainerRef={scrollContainerRef} 
-                                                                forceTrigger={false} 
-                                                                isSectionActive={index === 0 ? visibleSections.includes(index) : (visibleSections.includes(index) && transitionStage === 'DONE')} 
-                                                            />
-                                                        );
-                                                    });
-                                                })()}
+                                            <div className="absolute left-0 overflow-visible" style={{ top: 0, height: sectionLayout.height, width: CANVAS_WIDTH }}>
+                                                {sectionLayout.elements.map((placement) => {
+                                                    const element: any = section.elements.find(e => e.id === placement.id);
+                                                    const trigger = element.animation?.trigger || 'scroll';
+                                                    let force = false;
+                                                    if (trigger === 'load') force = true;
+                                                    else if (trigger === 'scroll') force = visibleSections.includes(index);
+                                                    else if (trigger === 'open_btn') force = isOpened;
+                                                    else if (trigger === 'click') force = clickedSections.includes(index);
+                                                    return <AnimatedLayer key={`${section.id}-${element.id}`} layer={element} adjustedY={placement.adjustedY} isOpened={isOpened} isEditor={false} invitationId={propId} onOpenInvitation={handleOpenInvitation} scrollContainerRef={scrollContainerRef} forceTrigger={force} isSectionActive={index === 0 ? visibleSections.includes(index) : (visibleSections.includes(index) && transitionStage === 'DONE')} />;
+                                                })}
                                             </div>
                                         </m.div>
                                     </div>
