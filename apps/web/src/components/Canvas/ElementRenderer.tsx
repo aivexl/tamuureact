@@ -215,13 +215,12 @@ const TextElement: React.FC<{
     useLayoutEffect(() => {
         if (!textRef.current) return;
 
-        // 1. Measure the physical footprint of the text.
-        const rect = textRef.current.getBoundingClientRect();
-        const measuredW = Math.ceil(rect.width);
-        const measuredH = Math.ceil(rect.height);
+        // 1. Measure the physical footprint of the text content (Design Space).
+        // Using scrollWidth/Height ensures we get the content size ignoring CSS transforms (scaling).
+        const measuredW = Math.ceil(textRef.current.scrollWidth);
+        const measuredH = Math.ceil(textRef.current.scrollHeight);
 
         // 2. STABILITY GUARD: Prevent Infinite Loops
-        // Check against local lock to avoid re-triggering unless something actually changed.
         const hasChangedLocally = measuredW !== lastSyncRef.current.w || measuredH !== lastSyncRef.current.h;
 
         if (hasChangedLocally) {
