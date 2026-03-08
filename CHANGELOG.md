@@ -1,16 +1,16 @@
 # Tamuu Changelog
 
-## [0.6.31] - 2026-03-08
+## [0.6.32] - 2026-03-08
 **Status**: 🟢 Deployed
 **Environment**: Production
 
-### Critical: Atomic Relative Flow & Zero-Gap Mobile Layout (V10)
-- **Elimination of "Phantom Gaps"**: Re-engineered the mobile preview to use `position: relative` stacking within a `display: flex` container. This completely removes gaps between sections by following the browser's native document flow.
-- **Restored Mobile Visibilitas**: Fixed the "Blank Screen" issue by enforcing explicit basis heights (`totalHeight * scaleFactor`) on the primary canvas, preventing container collapse during flow-mode.
-- **iPhone SE Elastic Engine**: Refined the stacking engine for small devices (width < 400px) to use 1:1 design-space mapping. This prevents overlapping by allowing sections to grow vertically instead of being compressed.
-- **Piecewise Mapping Restoration**: Returned to stable piecewise mapping for standard mobile devices to maintain design consistency for buttons and title anchors.
+### Critical: Natural Document Flow & iPhone SE Scrollable Architecture (V11)
+- **Elimination of Vertical Compression**: For iPhone SE and smaller devices (width <= 385px), the system now bypasses all piecewise vertical compression. Elements maintain their original 1:1 design-space coordinates, ensuring zero overlapping even at high density.
+- **Scrollable Cover Strategy**: Sections on small devices are no longer forced to fit a single viewport. Section 0 (Cover) now has a minimum height of 896px, allowing elements to overflow the 667px screen naturally. Users can scroll to reveal the "Open Invitation" button, providing a vastly improved UX.
+- **Precision Gap Elimination**: Unified the `position: relative` stacking logic with explicit container basis heights (`totalHeight * scaleFactor`), ensuring sections touch perfectly with zero pixel gaps while maintaining absolute visibilitas.
+- **Fixed API Interface**: Corrected an enterprise-level import mismatch for `API_BASE` and `safeFetch` to ensure consistent data hydration across all environments.
 
-## [0.6.30] - 2026-03-08
+## [0.6.31] - 2026-03-08
 ... (rest of changelog)
 
 **Environment**: Production
