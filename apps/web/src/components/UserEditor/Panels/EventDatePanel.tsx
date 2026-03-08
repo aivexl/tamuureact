@@ -117,14 +117,36 @@ export const EventDatePanel: React.FC<EventDatePanelProps> = ({ invitationId, on
 
                             {/* Time Input */}
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Waktu (Format 24 Jam)</label>
-                                <input
-                                    type="time"
-                                    value={eventTime}
-                                    onChange={(e) => setEventTime(e.target.value)}
-                                    className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-amber-500/10 outline-none font-bold text-slate-700"
-                                />
-                                <p className="text-[8px] text-slate-400 ml-4 italic font-medium">Contoh: 13:00 untuk jam 1 siang</p>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Waktu (24 JAM - ABSOLUTE)</label>
+                                <div className="flex items-center gap-3 px-2">
+                                    <div className="flex-1 relative group">
+                                        <select 
+                                            value={eventTime.split(':')[0] || '00'}
+                                            onChange={(e) => setEventTime(`${e.target.value}:${eventTime.split(':')[1] || '00'}`)}
+                                            className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-amber-500/10 outline-none font-bold text-slate-700 appearance-none transition-all"
+                                        >
+                                            {Array.from({ length: 24 }).map((_, i) => {
+                                                const h = String(i).padStart(2, '0');
+                                                return <option key={h} value={h}>{h}</option>;
+                                            })}
+                                        </select>
+                                        <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 group-hover:text-amber-500 pointer-events-none uppercase">Jam</span>
+                                    </div>
+                                    <span className="font-black text-slate-200">:</span>
+                                    <div className="flex-1 relative group">
+                                        <select 
+                                            value={eventTime.split(':')[1] || '00'}
+                                            onChange={(e) => setEventTime(`${eventTime.split(':')[0] || '00'}:${e.target.value}`)}
+                                            className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-amber-500/10 outline-none font-bold text-slate-700 appearance-none transition-all"
+                                        >
+                                            {Array.from({ length: 60 }).map((_, i) => {
+                                                const m = String(i).padStart(2, '0');
+                                                return <option key={m} value={m}>{m}</option>;
+                                            })}
+                                        </select>
+                                        <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 group-hover:text-amber-500 pointer-events-none uppercase">Min</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

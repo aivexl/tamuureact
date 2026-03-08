@@ -62,11 +62,6 @@ export const CountdownCard: React.FC<ElementCardProps> = ({ element, handleUpdat
 
     return (
         <div className="space-y-5 relative">
-            {/* DEPLOYMENT PROOF TAG */}
-            <div className="absolute -top-10 -right-2 px-2 py-0.5 bg-slate-900 text-[7px] text-white font-black rounded-full uppercase tracking-widest z-50 shadow-xl border border-white/10 animate-pulse">
-                CTO MEGA FIX V4 ACTIVE
-            </div>
-
             {canEdit ? (
                 <div className="space-y-4">
                     <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
@@ -113,16 +108,47 @@ export const CountdownCard: React.FC<ElementCardProps> = ({ element, handleUpdat
 
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                                        Waktu (Format 24 Jam)
+                                        Waktu (24 JAM - ABSOLUTE)
                                     </label>
-                                    <input
-                                        type="time"
-                                        step="60"
-                                        value={getTimeString(config.targetDate)}
-                                        onChange={(e) => handleDateTimeChange(getDateString(config.targetDate), e.target.value)}
-                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 transition-all"
-                                    />
-                                    <p className="text-[8px] text-slate-400 ml-1 italic font-medium">Format 24 Jam (Contoh: 13:00 untuk jam 1 siang)</p>
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex-1 relative group">
+                                            <select 
+                                                value={getTimeString(config.targetDate).split(':')[0]}
+                                                onChange={(e) => {
+                                                    const mins = getTimeString(config.targetDate).split(':')[1] || '00';
+                                                    handleDateTimeChange(getDateString(config.targetDate), `${e.target.value}:${mins}`);
+                                                }}
+                                                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 appearance-none transition-all"
+                                            >
+                                                {Array.from({ length: 24 }).map((_, i) => {
+                                                    const h = String(i).padStart(2, '0');
+                                                    return <option key={h} value={h}>{h}</option>;
+                                                })}
+                                            </select>
+                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-teal-500 transition-colors">
+                                                <span className="text-[10px] font-black">JAM</span>
+                                            </div>
+                                        </div>
+                                        <span className="font-black text-slate-300">:</span>
+                                        <div className="flex-1 relative group">
+                                            <select 
+                                                value={getTimeString(config.targetDate).split(':')[1]}
+                                                onChange={(e) => {
+                                                    const hrs = getTimeString(config.targetDate).split(':')[0] || '00';
+                                                    handleDateTimeChange(getDateString(config.targetDate), `${hrs}:${e.target.value}`);
+                                                }}
+                                                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 appearance-none transition-all"
+                                            >
+                                                {Array.from({ length: 60 }).map((_, i) => {
+                                                    const m = String(i).padStart(2, '0');
+                                                    return <option key={m} value={m}>{m}</option>;
+                                                })}
+                                            </select>
+                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-teal-500 transition-colors">
+                                                <span className="text-[10px] font-black">MIN</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 

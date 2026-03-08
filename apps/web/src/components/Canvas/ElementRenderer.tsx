@@ -48,9 +48,7 @@ interface ElementRendererProps {
 
 export const ElementRenderer: React.FC<ElementRendererProps> = ({ layer, onOpenInvitation, isEditor, invitationId, onContentLoad, onDimensionsDetected }) => {
     // SAFETY CHECK: If width or height is clearly corrupted (> 800px), we constrain the display container
-    // CTO FIX: Bypass narrative elements so they are not cut off on mobile devices
-    const isNarrative = ['love_story', 'rsvp_wishes', 'profile_card', 'guest_wishes'].includes(layer.type);
-    const isExploded = (layer.width > 800 || layer.height > 800) && !isNarrative;
+    const isExploded = layer.width > 800 || layer.height > 800;
 
     const renderContent = () => {
         switch (layer.type) {
@@ -213,31 +211,28 @@ const TextElement: React.FC<{
 
     // PERFECT-FIT ALGORITHM: Imperatively sync Konva box to real DOM text dimensions.
     useLayoutEffect(() => {
-        if (!textRef.current) return;
+        if (!isEditor || !textRef.current) return;
 
-        // 1. Measure the physical footprint of the text content (Design Space).
-        // Using scrollWidth/Height ensures we get the content size ignoring CSS transforms (scaling).
-        const measuredW = Math.ceil(textRef.current.scrollWidth);
-        const measuredH = Math.ceil(textRef.current.scrollHeight);
+        // 1. Measure the physical footprint of the text.
+        const rect = textRef.current.getBoundingClientRect();
+        const measuredW = Math.ceil(rect.width);
+        const measuredH = Math.ceil(rect.height);
 
-        // 2. STABILITY GUARD: Prevent Infinite Loops
+        // 2. STABILITY GUARD: Prevent Infinite Loops (Error #185)
+        // Check against store and local lock. Only update if change is significant (> 1px).
+        const diffW = Math.abs(measuredW - width);
+        const diffH = Math.abs(measuredH - height);
         const hasChangedLocally = measuredW !== lastSyncRef.current.w || measuredH !== lastSyncRef.current.h;
 
-        if (hasChangedLocally) {
+        if (hasChangedLocally && (diffW > 1 || diffH > 1)) {
             // Update local lock immediately
             lastSyncRef.current = { w: measuredW, h: measuredH };
             
-            // Notify layout engine (CRITICAL for mobile preview responsiveness)
+            // Notify layout engine
             onDimensionsDetected?.(measuredW, measuredH);
             
-            // 3. Sync to permanent store ONLY in Editor mode
-            if (isEditor) {
-                const diffW = Math.abs(measuredW - width);
-                const diffH = Math.abs(measuredH - height);
-                if (diffW > 1 || diffH > 1) {
-                    updateLayer(id, { width: measuredW, height: measuredH });
-                }
-            }
+            // Sync to store
+            updateLayer(id, { width: measuredW, height: measuredH });
         }
 
     }, [content, textStyle, isEditor, id, onDimensionsDetected, updateLayer]); // REMOVED width/height from dependencies to stop the loop

@@ -125,22 +125,7 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
 
     if (!isVisible) return null;
 
-    // CTO RESOLUTION: Smart Component Routing for Legacy Templates
-    // Even if type is 'text', if name is 'countdown', we MUST render the CountdownCard.
-    let resolvedType = element.type;
-    const nameStr = (element.name || '').toLowerCase();
-    
-    if (resolvedType !== 'countdown' && nameStr.includes('countdown')) resolvedType = 'countdown';
-    else if (resolvedType !== 'love_story' && (nameStr.includes('kisah') || nameStr.includes('story'))) resolvedType = 'love_story';
-    else if (resolvedType !== 'quote' && (nameStr.includes('quote') || nameStr.includes('kutipan'))) resolvedType = 'quote';
-    else if (resolvedType !== 'photo_grid' && (nameStr.includes('galeri') || nameStr.includes('gallery'))) resolvedType = 'photo_grid';
-    else if (resolvedType !== 'maps_point' && (nameStr.includes('lokasi') || nameStr.includes('map'))) resolvedType = 'maps_point';
-    else if (resolvedType !== 'live_streaming' && nameStr.includes('live')) resolvedType = 'live_streaming';
-    else if (resolvedType !== 'gift_address' && (nameStr.includes('kado') || nameStr.includes('gift') || nameStr.includes('rekening'))) resolvedType = 'gift_address';
-    else if (resolvedType !== 'profile_card' && nameStr.includes('profil')) resolvedType = 'profile_card';
-    else if (resolvedType !== 'rsvp_wishes' && (nameStr.includes('rsvp') || nameStr.includes('ucapan'))) resolvedType = 'rsvp_wishes';
-
-    const CardComponent = ElementRegistry[resolvedType] || ElementRegistry['text'];
+    const CardComponent = ElementRegistry[element.type] || ElementRegistry['text'];
     if (!CardComponent) return null;
 
     return (

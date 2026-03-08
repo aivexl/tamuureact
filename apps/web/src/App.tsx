@@ -82,7 +82,7 @@ const App: React.FC = () => {
     const isAppDomain = useMemo(() => getIsAppDomain(), []);
 
     useEffect(() => {
-        console.log("Tamuu v2.0.4 - MEGA FIX V4 ACTIVE");
+        console.log("Tamuu v2.0.4");
     }, []);
 
     // Optimization: Fonts are now handled via index.html with display=swap for best performance (PSI 100).

@@ -1721,10 +1721,6 @@ export const PropertyPanel: React.FC = () => {
                             <div className="space-y-4">
                                 {/* Target Date & Time */}
                                 <div className="grid grid-cols-2 gap-2 relative">
-                                    {/* DEPLOYMENT PROOF TAG */}
-                                    <div className="absolute -top-6 right-0 px-1.5 py-0.5 bg-premium-accent text-[6px] text-black font-black rounded-full uppercase tracking-widest z-50 animate-pulse">
-                                        MEGA FIX V4 ACTIVE
-                                    </div>
                                     <div className="space-y-1">
                                         <label className="text-[9px] text-white/30 uppercase font-bold block">Date (DD/MM/YYYY)</label>
                                         <div className="relative">

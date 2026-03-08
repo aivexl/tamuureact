@@ -138,7 +138,7 @@ export const QuoteCard: React.FC<ElementCardProps> = ({ element, handleUpdate, p
             {showLibrary && canEdit && (
                 <div className="mt-4 p-4 bg-slate-50 rounded-2xl space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block">Pilih Template Kutipan</label>
-                    <div className="grid grid-cols-1 gap-2 max-h-[250px] overflow-y-auto pr-1">
+                    <div className="grid grid-cols-1 gap-2 max-h-[250px] overflow-y-auto pr-1 text-left">
                         {QUOTES_LIBRARY.map((quote) => (
                             <button
                                 key={quote.id}
@@ -178,7 +178,7 @@ export const QuoteCard: React.FC<ElementCardProps> = ({ element, handleUpdate, p
 
             {showStyling && permissions.canEditStyle && (
                 <div className="mt-4 p-4 bg-slate-50 rounded-2xl space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <div className="space-y-2">
+                    <div className="space-y-2 text-left">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Warna Kutipan</label>
                         <div className="flex items-center gap-2 p-1 bg-white border border-slate-200 rounded-lg">
                             <input

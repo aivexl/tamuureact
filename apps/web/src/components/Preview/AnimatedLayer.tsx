@@ -588,34 +588,6 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         updateElementDimensions(layer.id, w, h);
     }, [layer.id, onDimensionsDetected, updateElementDimensions]);
 
-    // CTO FIX: Enterprise-Grade Real-time Dimension-Aware Layout Engine
-    // This observer directly monitors the real-time size of the rendered element.
-    // If the browser reflows and the element's height changes (e.g., text wrapping on mobile),
-    // this immediately fires, updating the global state. This, in turn, causes any
-    // elements anchored to this one to recalculate their `relativeShift` and move
-    // to the correct position, preventing any visual overlap.
-    useEffect(() => {
-        const node = ref.current;
-        if (!node || isEditor) return;
-
-        const observer = new ResizeObserver(entries => {
-            for (const entry of entries) {
-                const { width, height } = entry.contentRect;
-                // Only update if dimensions have actually changed to prevent render loops
-                const currentDim = elementDimensions[layer.id];
-                if (!currentDim || Math.round(currentDim.width) !== Math.round(width) || Math.round(currentDim.height) !== Math.round(height)) {
-                     updateElementDimensions(layer.id, width, height);
-                }
-            }
-        });
-
-        observer.observe(node);
-
-        return () => {
-            observer.disconnect();
-        };
-    }, [layer.id, updateElementDimensions, isEditor, elementDimensions]);
-
     // CTO FIX: Native Variants for Scroll/Click Entrances in Production Mode.
     // Mathematical tracking in `motionStyles` breaks in Preview because playhead doesn't run automatically;
     // it requires these Native Framer Motion variants to trigger transitions correctly.
@@ -802,8 +774,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
                 left: isEditor ? 0 : `${layer.x}px`,
                 top: isEditor ? `${relativeShift}px` : `${finalY}px`,
                 width: `${layer.width}px`,
-                height: isEditor ? `${layer.height}px` : 'auto',
-                minHeight: !isEditor ? '1px' : undefined,
+                height: `${layer.height}px`,
                 zIndex: layer.zIndex,
                 perspective: is3DLayer ? '1200px' : 'none',
                 transformStyle: is3DLayer ? 'preserve-3d' : 'flat',
