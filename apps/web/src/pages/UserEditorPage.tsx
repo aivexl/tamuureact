@@ -32,7 +32,7 @@ import { ProfilePhotoPanel } from '@/components/UserEditor/Panels/ProfilePhotoPa
 import { AnimatedLayer } from '@/components/Preview/AnimatedLayer';
 import { useStore } from '@/store/useStore';
 import { invitations as invitationsApi } from '@/lib/api';
-import { Sparkles, AlertCircle, Clock, ChevronRight, X, Info, Layout as LayoutIcon, Eye } from 'lucide-react';
+import { Sparkles, AlertCircle, Clock, ChevronRight, ChevronLeft, X, Info, Layout as LayoutIcon, Eye } from 'lucide-react';
 import { useRef } from 'react';
 import { useSubscriptionTimer } from '../hooks/useSubscriptionTimer';
 
@@ -145,11 +145,22 @@ const TUTORIAL_STEPS = [
 ];
 
 const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
-    const [step, setStep] = useState(0);
+    const [stepIndex, setStepIndex] = useState(0);
     const [coords, setCoords] = useState({ top: 0, left: 0, width: 0, height: 0 });
-    const currentStep = TUTORIAL_STEPS[step];
+    
+    // Filter steps based on actual element existence in DOM
+    const availableSteps = useMemo(() => {
+        return TUTORIAL_STEPS.filter(s => document.getElementById(s.targetId) !== null);
+    }, []);
+
+    const currentStep = availableSteps[stepIndex];
 
     useEffect(() => {
+        if (!currentStep) {
+            onComplete();
+            return;
+        }
+
         const updateCoords = () => {
             const el = document.getElementById(currentStep.targetId);
             if (el) {
@@ -161,12 +172,7 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
                     height: rect.height
                 });
                 
-                // Ensure element is visible
                 el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            } else {
-                // If dynamic element not found, skip to next
-                if (step < TUTORIAL_STEPS.length - 1) setStep(s => s + 1);
-                else onComplete();
             }
         };
 
@@ -178,20 +184,28 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
             window.removeEventListener('resize', updateCoords);
             window.removeEventListener('scroll', updateCoords);
         };
-    }, [step, currentStep.targetId]);
+    }, [stepIndex, currentStep, onComplete]);
 
     const handleNext = () => {
-        if (step < TUTORIAL_STEPS.length - 1) {
-            setStep(step + 1);
+        if (stepIndex < availableSteps.length - 1) {
+            setStepIndex(stepIndex + 1);
         } else {
             onComplete();
         }
     };
 
+    const handlePrev = () => {
+        if (stepIndex > 0) {
+            setStepIndex(stepIndex - 1);
+        }
+    };
+
+    if (!currentStep) return null;
+
     // CALCULATE BEST POSITION TO AVOID VIEWPORT CLIPPING
     const getCardStyle = () => {
         const cardWidth = 280;
-        const cardHeight = 180;
+        const cardHeight = 160;
         const padding = 20;
         
         let top = 0;
@@ -225,12 +239,9 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
 
     return (
         <div className="fixed inset-0 z-[100] pointer-events-none">
-            {/* NO BACKDROP per user request */}
-
-            {/* Tutorial Card */}
             <AnimatePresence mode="wait">
                 <m.div
-                    key={step}
+                    key={stepIndex}
                     initial={{ opacity: 0, scale: 0.9, y: 10 }}
                     animate={{ 
                         opacity: 1, 
@@ -240,43 +251,51 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
                     }}
                     exit={{ opacity: 0, scale: 0.9, y: -10 }}
                     className="absolute w-[280px] bg-slate-900 text-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] p-5 pointer-events-auto border border-white/10 z-[101]"
-                    style={{ position: 'absolute' }}
                 >
-                    <div className="flex items-start justify-between mb-3">
-                        <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center text-white">
-                            <Sparkles className="w-4 h-4" />
-                        </div>
-                        <button onClick={onComplete} className="p-1.5 hover:bg-white/10 rounded-lg text-white/40 transition-colors">
+                    <div className="flex items-start justify-between mb-2">
+                        <h4 className="text-sm font-black tracking-tight uppercase tracking-widest text-indigo-400">
+                            {currentStep.title}
+                        </h4>
+                        <button onClick={onComplete} className="p-1 hover:bg-white/10 rounded-lg text-white/40 transition-colors">
                             <X className="w-4 h-4" />
                         </button>
                     </div>
 
-                    <h4 className="text-sm font-black tracking-tight mb-1 uppercase tracking-widest">{currentStep.title}</h4>
                     <p className="text-xs text-slate-300 leading-relaxed mb-5 font-medium">
                         {currentStep.description}
                     </p>
 
                     <div className="flex items-center justify-between">
-                        <button 
-                            onClick={onComplete}
-                            className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-slate-300 transition-colors"
-                        >
-                            Lewati
-                        </button>
+                        <div className="flex items-center gap-3">
+                            {stepIndex > 0 && (
+                                <button 
+                                    onClick={handlePrev}
+                                    className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-slate-300 transition-all flex items-center gap-1"
+                                >
+                                    <ChevronLeft className="w-3 h-3" />
+                                    Kembali
+                                </button>
+                            )}
+                            <button 
+                                onClick={onComplete}
+                                className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-slate-300 transition-colors"
+                            >
+                                Lewati
+                            </button>
+                        </div>
                         
                         <div className="flex items-center gap-3">
-                            <span className="text-[10px] font-bold text-slate-500">{step + 1} / {TUTORIAL_STEPS.length}</span>
+                            <span className="text-[10px] font-bold text-slate-500">{stepIndex + 1} / {availableSteps.length}</span>
                             <button
                                 onClick={handleNext}
                                 className="px-4 py-2 bg-white text-slate-900 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-100 transition-all active:scale-95"
                             >
-                                {step === TUTORIAL_STEPS.length - 1 ? 'Selesai' : 'Lanjut'}
+                                {stepIndex === availableSteps.length - 1 ? 'Selesai' : 'Lanjut'}
                                 <ChevronRight className="w-3 h-3" />
                             </button>
                         </div>
                     </div>
 
-                    {/* Arrow Pointer */}
                     <m.div 
                         animate={{
                             rotate: 45,

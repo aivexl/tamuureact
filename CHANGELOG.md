@@ -1,5 +1,17 @@
 # Tamuu Changelog
 
+## [0.6.40] - 2026-03-08
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Bug Fix: Smart Tutorial Filtering & Navigation
+- **Dynamic Step Filtering**: Fixed a critical bug where the tutorial would get stuck on missing UI elements (e.g., Location, Gifts). The system now automatically detects element existence in the DOM and only shows relevant tips.
+- **Back Navigation**: Added a "Kembali" (Back) button to the tutorial cards, allowing users to revisit previous steps.
+- **UI Refinement**: 
+  - Removed the Sparkle icon from tutorial cards for a cleaner, more focused look.
+  - Improved color contrast for step titles (Indigo-400).
+- **Stability**: Refined auto-scroll and coordinate calculation to handle dynamic grid items more reliably.
+
 ## [0.6.39] - 2026-03-08
 **Status**: 🟢 Deployed
 **Environment**: Production
