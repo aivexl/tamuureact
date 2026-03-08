@@ -1,16 +1,16 @@
 # Tamuu Changelog
 
-## [0.6.29] - 2026-03-08
+## [0.6.30] - 2026-03-08
 **Status**: 🟢 Deployed
 **Environment**: Production
 
-### Critical: Total Gap Elimination & Mobile Document Flow (V9)
-- **Elimination of Section Gaps**: Re-engineered the mobile layout to use `position: relative` stacking for sections in portrait mode. This utilizes the browser's native document flow to ensure sections touch perfectly with zero pixel gaps, regardless of device scaling or viewport size.
-- **Tight-Fit Height Strategy**: Removed the 896px static height minimum for all portrait devices. Section heights are now calculated dynamically based on their lowest child element (`maxBottom + 20px`), resulting in a compact, professional look without massive empty spaces.
-- **Restored Design Stability**: Returned to the robust piecewise mapping algorithm for Section 0 on standard mobile devices, ensuring the "Open Invitation" button and cover titles appear in their intended design positions.
-- **iPhone SE Protection**: Maintained the localized stacking engine for devices with width <= 380px, protecting them from overlapping while they benefit from the new gapless flow architecture.
+### Emergency: Mobile Visibility & Unified Layout Engine V9.1
+- **Restored Element Visibilitas**: Resolved a critical issue where elements were hidden on mobile due to container height collapse. Re-implemented explicit basis height calculations for both the primary canvas and its transformation wrapper.
+- **Stable Flow Architecture**: Maintained the gapless `position: relative` stacking for mobile sections while ensuring they are properly anchored within a correctly-sized viewport.
+- **Fixed API Import Path**: Corrected a broken module resolution for the safeFetch utility from `@/api` to `@/lib/api`.
+- **Preserved iPhone SE Optimization**: Continued the Zero-Compression policy for small screens while ensuring visibility is maintained across all device categories.
 
-## [0.6.28] - 2026-03-08
+## [0.6.29] - 2026-03-08
 ... (rest of changelog)
 
 **Environment**: Production

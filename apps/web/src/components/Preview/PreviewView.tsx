@@ -117,7 +117,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
     }, [isPortrait, sortedSections]);
 
     // ============================================
-    // CTO UNIFIED LAYOUT ENGINE V9 (ZERO GAP)
+    // CTO UNIFIED LAYOUT ENGINE V9.1 (VISIBLE FLOW)
     // ============================================
     const layoutData = useMemo(() => {
         return sortedSections.map((section, sectionIndex) => {
@@ -145,11 +145,9 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                     const y = el.y; const T = 200; const B = 696;
                     const viewportShift = (coverHeight - INVITATION_HEIGHT) / 2;
                     
-                    // Unified Piecewise Mapping (Restored for Stability)
                     if (y <= T) finalAdjustedY = (y + stackShift) * ((T + viewportShift) / T);
                     else if (y <= B) finalAdjustedY = (y + stackShift) + viewportShift;
                     else {
-                        // SE Guard for Piecewise: Prevents button compression
                         const baseB = B + viewportShift;
                         const factor = isiPhoneSE ? 0.1 : 1.0;
                         finalAdjustedY = (baseB + (stackShift * factor)) + (y - B) * ((coverHeight - (baseB + (stackShift * factor))) / (INVITATION_HEIGHT - B));
@@ -158,13 +156,12 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                 elementPlacements.push({ id: el.id, adjustedY: finalAdjustedY });
             });
 
-            // SECTION HEIGHT CALCULATION (GAP ELIMINATION)
+            // Section Height calculation
             let sectionHeight = CANVAS_HEIGHT;
             if (isPortrait) {
                 if (isFirst && !isOpened) {
                     sectionHeight = coverHeight;
                 } else {
-                    // For ALL portrait devices, eliminate gap by fitting height to content
                     let maxBottom = 0;
                     elementPlacements.forEach(p => {
                         const el: any = section.elements.find(e => e.id === p.id);
@@ -172,8 +169,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                         const bottom = p.adjustedY + h;
                         if (bottom > maxBottom) maxBottom = bottom;
                     });
-                    // Dynamic height based on content. No more CANVAS_HEIGHT fallback.
-                    sectionHeight = Math.max(isFirst ? coverHeight : 100, maxBottom + 20); 
+                    sectionHeight = Math.max(isFirst ? coverHeight : 100, maxBottom + 40); 
                 }
             }
             return { id: section.id, height: sectionHeight, elements: elementPlacements };
@@ -269,11 +265,10 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
         const calculatedTop = getSectionTop(index);
 
         return { 
-            // ELIMINATE GAP: Use relative positioning for mobile flow to let sections touch perfectly
-            position: (isPortrait && flowMode) ? 'relative' : 'absolute', 
+            position: 'absolute', 
             left: 0, width: CANVAS_WIDTH, height: sectionHeight, 
             overflow: isPortrait ? 'visible' : 'hidden',
-            top: (isPortrait && flowMode) ? undefined : (flowMode ? calculatedTop : 0),
+            top: flowMode ? calculatedTop : 0,
             zIndex: (index === 0 && !flowMode) ? 20 : (index === 1 && !flowMode ? 10 : 1),
             opacity: 1,
             display: (!flowMode && index > 1) ? 'none' : 'block',
@@ -343,8 +338,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                 <SmartFontInjector />
                 <div ref={scrollContainerRef} className={`w-full h-full ${transitionStage === 'DONE' ? 'overflow-y-auto' : 'overflow-hidden'} premium-scroll no-scrollbar`} style={{ display: isPortrait ? 'flex' : 'grid', gridTemplateColumns: isPortrait ? undefined : `1fr ${CANVAS_WIDTH * scaleFactor}px 1fr`, flexDirection: isPortrait ? 'column' : undefined }}>
                     {!isPortrait && <div className="h-screen sticky top-0 pointer-events-none overflow-hidden" style={{ gridColumn: 1 }}><PreviewOrbitStage type="left" config={orbit.left} scaleFactor={scaleFactor} isOpened={isOpened} transitionStage={transitionStage} coverHeight={coverHeight} isPortrait={isPortrait} /></div>}
-                    <div className="relative overflow-hidden" style={{ gridColumn: isPortrait ? undefined : 2, width: CANVAS_WIDTH * scaleFactor, height: isPortrait ? 'auto' : totalHeight * scaleFactor, flexShrink: 0 }}>
-                        <div style={{ width: CANVAS_WIDTH, height: isPortrait ? 'auto' : totalHeight, display: isPortrait ? 'flex' : 'block', flexDirection: 'column', transform: `scale(${scaleFactor})`, transformOrigin: 'top left', position: 'absolute', top: 0, left: 0, overflow: 'visible' }}>
+                    <div className="relative overflow-hidden" style={{ gridColumn: isPortrait ? undefined : 2, width: CANVAS_WIDTH * scaleFactor, height: totalHeight * scaleFactor, flexShrink: 0 }}>
+                        <div style={{ width: CANVAS_WIDTH, height: totalHeight, transform: `scale(${scaleFactor})`, transformOrigin: 'top left', position: 'absolute', top: 0, left: 0, overflow: 'visible' }}>
                             {sortedSections.map((section, index) => {
                                 const zoomTransform = getZoomTransform(section, index);
                                 const sectionStyle = getSectionStyle(index);
