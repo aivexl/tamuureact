@@ -212,22 +212,37 @@ const SectionItem: React.FC<SectionItemProps> = ({
                                         </div>
                                         <div className="space-y-5 flex-1">
                                             {(() => {
-                                                const editableElements = (section.elements || []).filter((el: any) => {
+                                                const allElements = [...(section.elements || []), ...(section.layers || [])];
+                                                const editableElements = allElements.filter((el: any) => {
                                                     const p = el.permissions;
                                                     
                                                     // CTO: Core User-Data types that should be editable by default
+                                                    const type = el.type || '';
+                                                    const nameStr = (el.name || '').toLowerCase();
                                                     const isCriticalType = 
-                                                        el.type === 'profile_card' || 
-                                                        el.type === 'gift_address' || 
-                                                        el.type === 'digital_gift' ||
-                                                        el.type === 'rsvp_wishes' ||
-                                                        el.type === 'rsvp_form' ||
-                                                        el.type === 'guest_wishes';
+                                                        type === 'profile_card' || nameStr.includes('profil') ||
+                                                        type === 'gift_address' || nameStr.includes('kado') || nameStr.includes('gift') || nameStr.includes('rekening') ||
+                                                        type === 'digital_gift' ||
+                                                        type === 'rsvp_wishes' || nameStr.includes('rsvp') || nameStr.includes('ucapan') ||
+                                                        type === 'rsvp_form' ||
+                                                        type === 'guest_wishes' ||
+                                                        type === 'photo_frame' ||
+                                                        type === 'countdown' || nameStr.includes('countdown') ||
+                                                        type === 'love_story' || nameStr.includes('kisah') || nameStr.includes('story') ||
+                                                        type === 'quote' || nameStr.includes('quote') || nameStr.includes('kutipan') ||
+                                                        type === 'photo_grid' || nameStr.includes('galeri') || nameStr.includes('gallery') ||
+                                                        type === 'live_streaming' || nameStr.includes('live') ||
+                                                        type === 'maps_point' || nameStr.includes('lokasi') || nameStr.includes('map') ||
+                                                        type === 'social_mockup' ||
+                                                        type === 'video';
+
+                                                    // Critical types MUST ALWAYS be visible in User Editor regardless of legacy locks
+                                                    if (isCriticalType) return true;
 
                                                     // 1. If NO permissions object exists (Legacy/New), 
                                                     // we show critical types or legacy flags to ensure zero-friction UX.
                                                     if (!p) {
-                                                        return isCriticalType || el.canEditContent === true || el.isVisibleInUserEditor === true;
+                                                        return el.canEditContent === true || el.isVisibleInUserEditor === true;
                                                     }
 
                                                     // 2. If permissions object EXISTS, we strictly respect the Admin's toggles.

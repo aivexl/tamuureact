@@ -3725,11 +3725,20 @@ name = COALESCE(?, name),
             // Get user's wishlist
             if (path === '/api/wishlist' && method === 'GET') {
                 const userId = url.searchParams.get('user_id');
+                const email = url.searchParams.get('email'); // Optional for resolution
+                
                 if (!userId) return json({ error: 'User ID required' }, { ...corsHeaders, status: 400 });
+
+                let finalUserId = userId;
+                const user = await env.DB.prepare('SELECT id FROM users WHERE id = ?').bind(userId).first();
+                if (!user && email) {
+                    const userByEmail = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
+                    if (userByEmail) finalUserId = userByEmail.id;
+                }
 
                 const { results } = await env.DB.prepare(
                     'SELECT template_id FROM user_wishlist WHERE user_id = ? ORDER BY created_at DESC'
-                ).bind(userId).all();
+                ).bind(finalUserId).all();
 
                 return json(results.map(r => r.template_id), corsHeaders);
             }
@@ -3737,18 +3746,65 @@ name = COALESCE(?, name),
             // Add to wishlist
             if (path === '/api/wishlist' && method === 'POST') {
                 const body = await request.json();
-                const { user_id, template_id } = body;
+                const { user_id, template_id, email } = body;
 
                 if (!user_id || !template_id) {
                     return json({ error: 'user_id and template_id required' }, { ...corsHeaders, status: 400 });
                 }
 
                 try {
-                    await env.DB.prepare(
-                        'INSERT OR IGNORE INTO user_wishlist (user_id, template_id) VALUES (?, ?)'
-                    ).bind(user_id, template_id).run();
+                    // SILENT SELF-HEALING: Ensure user exists in D1 before insertion
+                    let user = await env.DB.prepare('SELECT id FROM users WHERE id = ?').bind(user_id).first();
+                    let finalUserId = user_id;
+                    
+                    if (!user && email) {
+                        // Fallback: Check if user exists by email (handles ID mismatches between Auth and D1)
+                        user = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
+                        if (user) {
+                            console.log(`[Wishlist/Heal] User found by email but ID mismatched. Using D1 ID: ${user.id}`);
+                            finalUserId = user.id;
+                        }
+                    }
+
+                    if (!user) {
+                        console.log(`[Wishlist/Heal] User ${user_id} not found in D1. Creating skeleton record...`);
+                        const tamuuId = `TAMUU-USER-${user_id.substring(0, 8).toUpperCase()}`;
+                        const trialEndDate = new Date();
+                        trialEndDate.setDate(trialEndDate.getDate() + 30); // 1 month trial default
+
+                        try {
+                            await env.DB.prepare(
+                                `INSERT INTO users (id, email, tamuu_id, tier, role, permissions, max_invitations, invitation_count, expires_at) 
+                                 VALUES (?, ?, ?, ?, ?, ?, 1, 0, ?)`
+                            ).bind(
+                                user_id, 
+                                email || `user-${user_id.substring(0, 8)}@tamuu.id`, 
+                                tamuuId, 
+                                'free', 
+                                'user', 
+                                '[]', 
+                                trialEndDate.toISOString()
+                            ).run();
+                        } catch (insertErr) {
+                            console.error('[Wishlist/Heal] Failed to create skeleton user:', insertErr.message);
+                            throw insertErr;
+                        }
+                    }
+
+                    // Proceed with Wishlist logic using the resolved ID
+                    const existing = await env.DB.prepare(
+                        'SELECT id FROM user_wishlist WHERE user_id = ? AND template_id = ?'
+                    ).bind(finalUserId, template_id).first();
+
+                    if (!existing) {
+                        await env.DB.prepare(
+                            'INSERT INTO user_wishlist (id, user_id, template_id, created_at) VALUES (?, ?, ?, datetime("now"))'
+                        ).bind(crypto.randomUUID(), finalUserId, template_id).run();
+                    }
+                    
                     return json({ success: true, added: true }, corsHeaders);
                 } catch (err) {
+                    console.error('[Wishlist] POST Error:', err);
                     return json({ success: false, error: err.message }, { ...corsHeaders, status: 500 });
                 }
             }
@@ -3756,15 +3812,22 @@ name = COALESCE(?, name),
             // Remove from wishlist
             if (path === '/api/wishlist' && method === 'DELETE') {
                 const body = await request.json();
-                const { user_id, template_id } = body;
+                const { user_id, template_id, email } = body;
 
                 if (!user_id || !template_id) {
                     return json({ error: 'user_id and template_id required' }, { ...corsHeaders, status: 400 });
                 }
 
+                let finalUserId = user_id;
+                const user = await env.DB.prepare('SELECT id FROM users WHERE id = ?').bind(user_id).first();
+                if (!user && email) {
+                    const userByEmail = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
+                    if (userByEmail) finalUserId = userByEmail.id;
+                }
+
                 await env.DB.prepare(
                     'DELETE FROM user_wishlist WHERE user_id = ? AND template_id = ?'
-                ).bind(user_id, template_id).run();
+                ).bind(finalUserId, template_id).run();
 
                 return json({ success: true, removed: true }, corsHeaders);
             }
@@ -4343,6 +4406,8 @@ name = COALESCE(?, name),
                         ).bind(userId).run();
                     }
 
+                    // CTO Optimization: Do not echo back massive arrays (sections, layers) to prevent memory crashes 
+                    // and ERR_HTTP2_PROTOCOL_ERROR from Cloudflare. The frontend redirects immediately anyway.
                     return json({
                         id,
                         name: body.name,
@@ -4350,9 +4415,6 @@ name = COALESCE(?, name),
                         category,
                         zoom,
                         pan,
-                        sections,
-                        layers,
-                        orbit_layers: orbit,
                         music,
                         thumbnail_url: thumbnailUrl,
                         template_id: body.template_id

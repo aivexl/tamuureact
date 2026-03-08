@@ -477,14 +477,67 @@ export const PropertyInspector: React.FC = () => {
                             <h4 className="text-[10px] font-bold uppercase tracking-widest">Countdown Config</h4>
                         </div>
                         <div className="space-y-4">
-                            <div className="space-y-2">
-                                <label className="text-[9px] text-white/30 uppercase font-bold">Target Date</label>
-                                <input
-                                    type="datetime-local"
-                                    value={layer.countdownConfig.targetDate ? new Date(layer.countdownConfig.targetDate).toISOString().slice(0, 16) : ''}
-                                    onChange={(e) => handleUpdate({ countdownConfig: { ...layer.countdownConfig, targetDate: new Date(e.target.value).toISOString() } })}
-                                    className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-premium-accent/50 focus:outline-none transition-colors"
-                                />
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                    <label className="text-[9px] text-white/30 uppercase font-bold">Date (DD/MM/YYYY)</label>
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            placeholder="DD/MM/YYYY"
+                                            value={(() => {
+                                                if (!layer.countdownConfig!.targetDate) return '';
+                                                const d = new Date(layer.countdownConfig!.targetDate);
+                                                const pad = (n: number) => String(n).padStart(2, '0');
+                                                return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+                                            })()}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                if (/^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
+                                                    const [d, m, y] = val.split('/').map(Number);
+                                                    const current = layer.countdownConfig?.targetDate ? new Date(layer.countdownConfig.targetDate) : new Date();
+                                                    const newDate = new Date(y, m - 1, d, current.getHours(), current.getMinutes());
+                                                    if (!isNaN(newDate.getTime())) {
+                                                        handleUpdate({ countdownConfig: { ...layer.countdownConfig!, targetDate: newDate.toISOString() } });
+                                                    }
+                                                }
+                                            }}
+                                            className="w-full bg-white/5 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-white focus:border-premium-accent/50 focus:outline-none transition-colors"
+                                        />
+                                        <input 
+                                            type="date" 
+                                            className="absolute inset-0 opacity-0 cursor-pointer"
+                                            onChange={(e) => {
+                                                const [y, m, d] = e.target.value.split('-').map(Number);
+                                                const current = layer.countdownConfig?.targetDate ? new Date(layer.countdownConfig.targetDate) : new Date();
+                                                const newDate = new Date(y, m - 1, d, current.getHours(), current.getMinutes());
+                                                if (!isNaN(newDate.getTime())) {
+                                                    handleUpdate({ countdownConfig: { ...layer.countdownConfig!, targetDate: newDate.toISOString() } });
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[9px] text-white/30 uppercase font-bold">Time (24h)</label>
+                                    <input
+                                        type="time"
+                                        step="60"
+                                        value={(() => {
+                                            if (!layer.countdownConfig!.targetDate) return '00:00';
+                                            const d = new Date(layer.countdownConfig!.targetDate);
+                                            return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                                        })()}
+                                        onChange={(e) => {
+                                            const current = layer.countdownConfig!.targetDate ? new Date(layer.countdownConfig!.targetDate) : new Date();
+                                            const [hours, minutes] = e.target.value.split(':').map(Number);
+                                            const newDate = new Date(current.getFullYear(), current.getMonth(), current.getDate(), hours, minutes);
+                                            if (!isNaN(newDate.getTime())) {
+                                                handleUpdate({ countdownConfig: { ...layer.countdownConfig!, targetDate: newDate.toISOString() } });
+                                            }
+                                        }}
+                                        className="w-full bg-white/5 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-white focus:border-premium-accent/50 focus:outline-none transition-colors"
+                                    />
+                                </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">

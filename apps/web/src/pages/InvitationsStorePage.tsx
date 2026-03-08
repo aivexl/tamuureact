@@ -25,6 +25,7 @@ interface Template {
     thumbnail_url?: string;
     category?: string;
     price?: number;
+    type?: 'invitation' | 'display';
 }
 
 const GridLoader = () => (
@@ -76,7 +77,7 @@ export const InvitationsStorePage: React.FC = () => {
 
     const { data: templates = [], isLoading: isLoadingTemplates } = useTemplates();
     const { data: categoryList = [] } = useCategories();
-    const { data: wishlistData = [] } = useWishlist(user?.id);
+    const { data: wishlistData = [] } = useWishlist(user?.id, user?.email);
     const toggleWishlistMutation = useToggleWishlist();
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -100,19 +101,23 @@ export const InvitationsStorePage: React.FC = () => {
         toggleWishlistMutation.mutate({
             userId: user.id,
             templateId,
-            isWishlisted
+            isWishlisted,
+            email: user.email
         });
-    }, [user?.id, navigate, toggleWishlistMutation]);
+    }, [user?.id, user?.email, navigate, toggleWishlistMutation]);
 
     const filteredTemplates = useMemo(() => {
         return templates.filter((t: Template) => {
+            // CTO FIX: Strictly isolate displays from the invitations store
+            if (t.type === 'display') return false;
+
             const matchesCategory = selectedCategory === 'All' || t.category === selectedCategory;
             const matchesSearch = t.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 t.category?.toLowerCase().includes(searchQuery.toLowerCase());
-            const matchesFavorites = !showFavoritesOnly || wishlist.includes(t.id);
+            const matchesFavorites = !showFavoritesOnly || wishlistData.includes(t.id);
             return matchesCategory && matchesSearch && matchesFavorites;
         });
-    }, [templates, selectedCategory, searchQuery, showFavoritesOnly, wishlist]);
+    }, [templates, selectedCategory, searchQuery, showFavoritesOnly, wishlistData]);
 
     const handleUseTemplate = async (templateId: string) => {
         if (!isAuthenticated) {
@@ -138,117 +143,22 @@ export const InvitationsStorePage: React.FC = () => {
         if (isOnboarding) {
             setIsCreating(true);
             try {
-                const templateData = await templatesApi.get(templateId);
                 const rawOnboardingData = localStorage.getItem('tamuu_onboarding_data');
                 const magic = rawOnboardingData ? JSON.parse(rawOnboardingData) : null;
 
-                let finalSections = deepClone(templateData.sections || []);
-
-                if (magic) {
-                    // SYNC: Update user profile first so GiftPanel has the latest data
-                    if (user?.id) {
-                         // We don't await this to keep UI snappy, or we can await if we want to be sure.
-                         // Given we are about to create an invitation, let's await to ensure consistency.
-                         try {
-                            await usersApi.updateProfile({
-                                id: user.id,
-                                bank1Name: magic.bank1Name,
-                                bank1Number: magic.bank1Number,
-                                bank1Holder: magic.bank1Holder,
-                                bank2Name: magic.bank2Name,
-                                bank2Number: magic.bank2Number,
-                                bank2Holder: magic.bank2Holder,
-                                emoneyType: magic.emoneyType,
-                                emoneyNumber: magic.emoneyNumber,
-                                giftRecipient: magic.giftRecipientName, // Map from onboarding key to DB key
-                                giftAddress: magic.giftAddress
-                            });
-                         } catch (err) {
-                             console.warn('Background profile sync failed:', err);
-                         }
-                    }
-
-                    const formattedDate = magic.eventDate ? formatIndonesianDate(magic.eventDate) : 'Tanggal Acara';
-                    const recipientName = magic.giftRecipientName || user?.giftRecipientName || 'JOHN';
-                    const recipientAddress = magic.giftAddress || user?.giftAddress || 'Alamat lengkap Anda di sini';
-
-                    const replacementMap = new Map([
-                        // Main Details
-                        [/Mempelai Pria/g, magic.groomName || 'Mempelai Pria'],
-                        [/Mempelai Wanita/g, magic.brideName || 'Mempelai Wanita'],
-                        [/Nama Mempelai/g, magic.celebrantName || magic.invitationName || 'Nama Mempelai'],
-                        [/Tanggal Acara/g, formattedDate],
-                        [/Lokasi Acara/g, magic.eventLocation || 'Lokasi Acara'],
-
-                        // Bank Account
-                        [/0000000000/g, magic.bank1Number || '0000000000'],
-                        [/Nama Bank/g, magic.bank1Name || 'Nama Bank'],
-                        [/Atas Nama/g, magic.bank1Holder || 'Atas Nama'],
-                        
-                        // [FIX] Address Card Placeholders
-                        [/JOHN/g, recipientName],
-                        [/Alamat lengkap Anda di sini/g, recipientAddress],
-                        [/Alamat Lengkap/g, recipientAddress], // Add variation
-                        [/NAMA PENERIMA/g, recipientName], // Add variation
-                    ]);
-
-                    const traverseAndReplace = (obj: any) => {
-                        for (const key in obj) {
-                            if (typeof obj[key] === 'string') {
-                                replacementMap.forEach((replacement, regex) => {
-                                    obj[key] = obj[key].replace(regex, replacement);
-                                });
-                            } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-                                traverseAndReplace(obj[key]);
-                            }
-                        }
-                    };
-
-                    traverseAndReplace(finalSections);
-
-                    // Surgical sync for complex components (Photos, Countdown, etc.)
-                    finalSections.forEach((section: any) => {
-                        if (section.layers) {
-                            section.layers.forEach((layer: any) => {
-                                // Photo & Countdown Sync
-                                if (magic.photoPreview && (layer.name?.toLowerCase().includes('foto utama') || layer.name?.toLowerCase().includes('hero'))) layer.url = magic.photoPreview;
-                                if (magic.groomPhoto && layer.name?.toLowerCase().includes('pria')) layer.url = magic.groomPhoto;
-                                if (magic.bridePhoto && layer.name?.toLowerCase().includes('wanita')) layer.url = magic.bridePhoto;
-                                if (layer.type === 'profile_photo') {
-                                    if (layer.profilePhotoConfig?.role === 'mempelai_pria' && magic.groomPhoto) layer.imageUrl = magic.groomPhoto;
-                                    else if (layer.profilePhotoConfig?.role === 'mempelai_wanita' && magic.bridePhoto) layer.imageUrl = magic.bridePhoto;
-                                }
-                                const targetDateTime = magic.eventDate && magic.eventTime ? new Date(`${magic.eventDate}T${magic.eventTime}`).toISOString() : magic.eventDate ? new Date(`${magic.eventDate}T09:00:00`).toISOString() : null;
-                                if (targetDateTime && (layer.type === 'countdown' || layer.name?.toLowerCase().includes('countdown'))) {
-                                    layer.countdownConfig = { ...(layer.countdownConfig || {}), targetDate: targetDateTime };
-                                }
-
-                                // Gallery Sync
-                                if (magic.galleryPhotos?.length > 0 && layer.name?.toLowerCase().includes('gallery')) {
-                                    const match = layer.name.match(/gallery\s*(\d+)/i);
-                                    if (match) {
-                                        const idx = parseInt(match[1]) - 1;
-                                        if (magic.galleryPhotos[idx]) layer.url = magic.galleryPhotos[idx];
-                                    }
-                                }
-                            });
-                        }
-                    });
-                }
-
                 const newInvitation = await invitationsApi.create({
-                    ...templateData,
                     user_id: user?.id,
-                    id: undefined,
                     template_id: templateId,
                     name: onboardingName || magic?.invitationName || `Undangan ${onboardingSlug}`,
                     slug: onboardingSlug,
-                    sections: finalSections,
                     is_published: false
                 });
 
                 localStorage.removeItem('tamuu_onboarding_data');
                 localStorage.removeItem('tamuu_onboarding_progress');
+                localStorage.removeItem('tamuu_onboarding_progress_v2');
+                localStorage.removeItem('tamuu_onboarding_progress_v3');
+                localStorage.removeItem('tamuu_onboarding_progress_v4');
 
                 const newUrl = `/user/editor/${newInvitation.id}`;
                 if (getIsAppDomain()) {
@@ -279,7 +189,7 @@ export const InvitationsStorePage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white text-slate-900 pt-14">
+        <div className="min-h-screen bg-white text-slate-900 pt-24">
             {isCreating && (
                 <div className="fixed inset-0 z-[100] bg-white/90 backdrop-blur-xl flex items-center justify-center">
                     <PremiumLoader
@@ -296,14 +206,14 @@ export const InvitationsStorePage: React.FC = () => {
                 <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-amber-500/10 rounded-full blur-[120px]" />
             </div>
 
-            <div className="relative z-10">
+            <div className={`relative z-10 transition-all duration-500 ${isOnboarding ? 'pt-24 sm:pt-28' : ''}`}>
                 <AnimatePresence>
                     {isOnboarding && (
                         <m.div
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: 'auto', opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
-                            className="bg-slate-900/95 backdrop-blur-md text-white py-3 px-4 overflow-hidden sticky top-14 z-40 border-b border-white/10 shadow-2xl shadow-black/20"
+                            className="bg-slate-900/95 backdrop-blur-md text-white py-4 px-4 overflow-hidden fixed top-[88px] sm:top-[96px] left-0 right-0 z-40 border-b border-white/10 shadow-2xl shadow-black/20"
                         >
                             <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
                                 <button

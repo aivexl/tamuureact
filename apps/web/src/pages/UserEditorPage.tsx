@@ -24,11 +24,11 @@ import { GiftPanel } from '@/components/UserEditor/Panels/GiftPanel';
 import { SEOPanel } from '@/components/UserEditor/Panels/SEOPanel';
 import { GalleryPanel } from '@/components/UserEditor/Panels/GalleryPanel';
 import { LiveStreamPanel } from '@/components/UserEditor/Panels/LiveStreamPanel';
+import { LuckyDrawPanel } from '@/components/UserEditor/Panels/LuckyDrawPanel';
+import { SettingsPanel } from '@/components/UserEditor/Panels/SettingsPanel';
 import { LoveStoryPanel } from '@/components/UserEditor/Panels/LoveStoryPanel';
 import { QuotesPanel } from '@/components/UserEditor/Panels/QuotesPanel';
-import { LuckyDrawPanel } from '@/components/UserEditor/Panels/LuckyDrawPanel';
 import { ProfilePhotoPanel } from '@/components/UserEditor/Panels/ProfilePhotoPanel';
-import { SettingsPanel } from '@/components/UserEditor/Panels/SettingsPanel';
 import { AnimatedLayer } from '@/components/Preview/AnimatedLayer';
 import { useStore } from '@/store/useStore';
 import { invitations as invitationsApi } from '@/lib/api';
@@ -232,21 +232,21 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
             >
                 {activePanel === 'music' && <MusicPanel />}
 
-                {activePanel === 'display' && <DisplayStorePanel invitationId={invitation?.id} />}
-                {activePanel === 'template' && <TemplateStorePanel invitationId={invitation?.id} />}
+                {activePanel === 'display' && <DisplayStorePanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                {activePanel === 'template' && <TemplateStorePanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
                 {activePanel === 'wishes' && <WishesPanel />}
                 {activePanel === 'analytics' && <AnalyticsPanel />}
                 {activePanel === 'share' && <SharePanel slug={invitation?.slug} />}
                 {activePanel === 'download' && <ExportPanel previewRef={previewRef as React.RefObject<HTMLElement>} />}
-                {activePanel === 'eventDate' && <EventDatePanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
-                {activePanel === 'location' && <LocationPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
-                {activePanel === 'gift' && <GiftPanel onClose={() => setActivePanel(null)} />}
                 {activePanel === 'seo' && <SEOPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
                 {activePanel === 'gallery' && <GalleryPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
                 {activePanel === 'livestream' && <LiveStreamPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                {activePanel === 'luckydraw' && <LuckyDrawPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                {activePanel === 'eventDate' && <EventDatePanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                {activePanel === 'location' && <LocationPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
+                {activePanel === 'gift' && <GiftPanel onClose={() => setActivePanel(null)} />}
                 {activePanel === 'lovestory' && <LoveStoryPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
                 {activePanel === 'quotes' && <QuotesPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
-                {activePanel === 'luckydraw' && <LuckyDrawPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
                 {activePanel === 'profile_photo' && <ProfilePhotoPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
                 {activePanel === 'settings' && (
                     <SettingsPanel
@@ -256,7 +256,7 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                         onUpdated={(updates) => setInvitation((prev: any) => ({ ...prev, ...updates }))}
                     />
                 )}
-                {!['music', 'theme', 'display', 'template', 'share', 'download', 'wishes', 'analytics', 'eventDate', 'location', 'gift', 'seo', 'gallery', 'livestream', 'lovestory', 'quotes', 'luckydraw', 'settings', 'guests', 'profile_photo'].includes(activePanel || '') && (
+                {!['music', 'theme', 'display', 'template', 'share', 'download', 'wishes', 'analytics', 'seo', 'gallery', 'livestream', 'luckydraw', 'settings', 'guests', 'eventDate', 'location', 'gift', 'lovestory', 'quotes', 'profile_photo'].includes(activePanel || '') && (
                     <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
                         <div className="w-20 h-20 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-slate-300">
                             <Sparkles className="w-10 h-10" />

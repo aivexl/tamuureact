@@ -150,10 +150,10 @@ export function useDeleteCategory() {
 /**
  * Fetch user's wishlist
  */
-export function useWishlist(userId: string | undefined) {
+export function useWishlist(userId: string | undefined, email?: string) {
     return useQuery({
         queryKey: queryKeys.wishlist.user(userId || ''),
-        queryFn: () => wishlist.list(userId!),
+        queryFn: () => wishlist.list(userId!, email),
         staleTime: STALE_TIMES.default,
         enabled: !!userId,
     });
@@ -166,8 +166,8 @@ export function useToggleWishlist() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ userId, templateId, isWishlisted }: { userId: string; templateId: string; isWishlisted: boolean }) =>
-            wishlist.toggle(userId, templateId, isWishlisted),
+        mutationFn: ({ userId, templateId, isWishlisted, email }: { userId: string; templateId: string; isWishlisted: boolean; email?: string }) =>
+            wishlist.toggle(userId, templateId, isWishlisted, email),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: queryKeys.wishlist.user(variables.userId) });
         },

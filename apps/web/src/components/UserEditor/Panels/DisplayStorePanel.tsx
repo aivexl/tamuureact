@@ -28,11 +28,13 @@ interface DisplayTemplate {
 interface DisplayStorePanelProps {
     invitationId?: string;
     onDisplayChanged?: () => void;
+    onClose?: () => void;
 }
 
 export const DisplayStorePanel: React.FC<DisplayStorePanelProps> = ({
     invitationId,
-    onDisplayChanged
+    onDisplayChanged,
+    onClose
 }) => {
     const navigate = useNavigate();
     const { id: storeId, user } = useStore();
@@ -152,6 +154,9 @@ export const DisplayStorePanel: React.FC<DisplayStorePanelProps> = ({
 
             if (onDisplayChanged) {
                 onDisplayChanged();
+            }
+            if (onClose) {
+                setTimeout(onClose, 500); // Give user a brief moment to see the success toast before closing
             }
         } catch (error) {
             console.error('[DisplayStore] Failed to apply display:', error);

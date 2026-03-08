@@ -1,6 +1,2 @@
-# Asset routing - hard 404 for missing assets to prevent MIME confusion
-/assets/*  /assets/:splat  404
-/images/*  /images/:splat  404
-
 # SPA Fallback - route all other requests to index.html
 /*  /index.html  200

@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { m } from 'framer-motion';
+import { useStore } from '@/store/useStore';
 import {
     Palette,
     Music,
@@ -20,30 +21,20 @@ import {
     Video,
     Heart,
     Quote,
-    Dice6
+    Dice6,
+    Clock
 } from 'lucide-react';
 
-const MENU_ITEMS = [
-
+const BASE_MENU_ITEMS = [
     { id: 'music', label: 'Musik', icon: Music, color: 'text-pink-600', bg: 'bg-pink-50', gradient: 'from-pink-500/20 to-rose-500/20' },
-    { id: 'gallery', label: 'Galeri', icon: Image, color: 'text-violet-600', bg: 'bg-violet-50', gradient: 'from-violet-500/20 to-purple-500/20' },
-    { id: 'livestream', label: 'Live', icon: Video, color: 'text-rose-600', bg: 'bg-rose-50', gradient: 'from-rose-500/20 to-red-500/20' },
-    { id: 'lovestory', label: 'Kisah', icon: Heart, color: 'text-pink-600', bg: 'bg-pink-50', gradient: 'from-pink-500/20 to-rose-500/20' },
-    { id: 'quotes', label: 'Quote', icon: Quote, color: 'text-amber-600', bg: 'bg-amber-50', gradient: 'from-amber-500/20 to-orange-500/20' },
     { id: 'luckydraw', label: 'Undian', icon: Dice6, color: 'text-purple-600', bg: 'bg-purple-50', gradient: 'from-purple-500/20 to-indigo-500/20' },
     { id: 'template', label: 'Template', icon: LayoutTemplate, color: 'text-blue-600', bg: 'bg-blue-50', gradient: 'from-blue-500/20 to-indigo-500/20' },
     { id: 'guests', label: 'Tamu', icon: Users, color: 'text-green-600', bg: 'bg-green-50', gradient: 'from-green-500/20 to-emerald-500/20' },
     { id: 'wishes', label: 'Ucapan', icon: MessageSquare, color: 'text-orange-600', bg: 'bg-orange-50', gradient: 'from-orange-500/20 to-amber-500/20' },
     { id: 'display', label: 'Display', icon: Monitor, color: 'text-cyan-600', bg: 'bg-cyan-50', gradient: 'from-cyan-500/20 to-teal-500/20' },
     { id: 'analytics', label: 'Analitik', icon: BarChart3, color: 'text-indigo-600', bg: 'bg-indigo-50', gradient: 'from-indigo-500/20 to-blue-500/20' },
-
-    { id: 'eventDate', label: 'Tanggal', icon: Calendar, color: 'text-amber-600', bg: 'bg-amber-50', gradient: 'from-amber-500/20 to-yellow-500/20' },
-    { id: 'location', label: 'Lokasi', icon: MapPin, color: 'text-red-600', bg: 'bg-red-50', gradient: 'from-red-500/20 to-rose-500/20' },
-    { id: 'gift', label: 'Kado', icon: Gift, color: 'text-emerald-600', bg: 'bg-emerald-50', gradient: 'from-emerald-500/20 to-teal-500/20' },
     { id: 'seo', label: 'Sosmed', icon: Search, color: 'text-indigo-600', bg: 'bg-indigo-50', gradient: 'from-indigo-500/20 to-blue-500/20' },
-    { id: 'profile_photo', label: 'Profil', icon: Users, color: 'text-sky-600', bg: 'bg-sky-50', gradient: 'from-sky-500/20 to-blue-500/20' },
     { id: 'download', label: 'Download', icon: Download, color: 'text-rose-600', bg: 'bg-rose-50', gradient: 'from-rose-500/20 to-pink-500/20' },
-
 ];
 
 interface IconGridMenuProps {
@@ -51,9 +42,54 @@ interface IconGridMenuProps {
 }
 
 export const IconGridMenu: React.FC<IconGridMenuProps> = ({ onOpenPanel }) => {
+    const sections = useStore(s => s.sections);
+
+    // Smart Detector: Only show dynamic panels if the corresponding element exists
+    const dynamicMenuItems = useMemo(() => {
+        const types = new Set<string>();
+        const names = new Set<string>();
+
+        sections.forEach((s: any) => {
+            const allElements = [...(s.elements || []), ...(s.layers || [])];
+            allElements.forEach((el: any) => {
+                if (el.type) types.add(el.type);
+                if (el.name) names.add(el.name.toLowerCase());
+            });
+        });
+
+        const items = [...BASE_MENU_ITEMS];
+
+        if (types.has('love_story')) {
+            items.splice(2, 0, { id: 'lovestory', label: 'Kisah', icon: Heart, color: 'text-pink-600', bg: 'bg-pink-50', gradient: 'from-pink-500/20 to-rose-500/20' });
+        }
+        if (types.has('quote')) {
+            items.splice(3, 0, { id: 'quotes', label: 'Quote', icon: Quote, color: 'text-amber-600', bg: 'bg-amber-50', gradient: 'from-amber-500/20 to-orange-500/20' });
+        }
+        if (types.has('countdown') || Array.from(names).some(n => n.includes('countdown'))) {
+            items.splice(4, 0, { id: 'eventDate', label: 'Tanggal', icon: Calendar, color: 'text-amber-600', bg: 'bg-amber-50', gradient: 'from-amber-500/20 to-yellow-500/20' });
+        }
+        if (types.has('maps_point') || Array.from(names).some(n => n.includes('lokasi') || n.includes('map'))) {
+            items.splice(5, 0, { id: 'location', label: 'Lokasi', icon: MapPin, color: 'text-red-600', bg: 'bg-red-50', gradient: 'from-red-500/20 to-rose-500/20' });
+        }
+        if (types.has('digital_gift') || types.has('gift_address') || Array.from(names).some(n => n.includes('kado') || n.includes('gift') || n.includes('rekening'))) {
+            items.splice(6, 0, { id: 'gift', label: 'Kado', icon: Gift, color: 'text-emerald-600', bg: 'bg-emerald-50', gradient: 'from-emerald-500/20 to-teal-500/20' });
+        }
+        if (types.has('profile_photo') || types.has('profile_card')) {
+            items.splice(7, 0, { id: 'profile_photo', label: 'Profil', icon: Users, color: 'text-sky-600', bg: 'bg-sky-50', gradient: 'from-sky-500/20 to-blue-500/20' });
+        }
+        if (types.has('photo_grid') || Array.from(names).some(n => n.includes('gallery') || n.includes('galeri'))) {
+            items.splice(8, 0, { id: 'gallery', label: 'Galeri', icon: Image, color: 'text-violet-600', bg: 'bg-violet-50', gradient: 'from-violet-500/20 to-purple-500/20' });
+        }
+        if (types.has('live_streaming') || Array.from(names).some(n => n.includes('live'))) {
+            items.splice(9, 0, { id: 'livestream', label: 'Live', icon: Video, color: 'text-rose-600', bg: 'bg-rose-50', gradient: 'from-rose-500/20 to-red-500/20' });
+        }
+
+        return items;
+    }, [sections]);
+
     return (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
-            {MENU_ITEMS.map((item, i) => (
+            {dynamicMenuItems.map((item, i) => (
                 <m.button
                     key={item.id}
                     initial={{ opacity: 0, y: 30 }}

@@ -15,6 +15,7 @@ interface Template {
     category?: string;
     tier?: SubscriptionTier;
     price?: number;
+    type?: 'invitation' | 'display';
 }
 
 

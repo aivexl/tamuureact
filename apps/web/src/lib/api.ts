@@ -12,12 +12,29 @@ export const API_BASE = import.meta.env.PROD
  * Enterprise Safe Fetch
  * Automatically intercepts and fixes legacy/unresolvable domains.
  */
-export const safeFetch = async (url: string, options?: RequestInit) => {
+export const safeFetch = async (url: string, options?: RequestInit, retries = 2) => {
     const patchedUrl = patchLegacyUrl(url);
     if (patchedUrl !== url) {
         console.warn(`[SafeFetch] Intercepted legacy domain: ${url} -> ${patchedUrl}`);
     }
-    return fetch(patchedUrl, options);
+
+    let attempt = 0;
+    while (attempt <= retries) {
+        try {
+            const response = await fetch(patchedUrl, options);
+            return response;
+        } catch (error) {
+            // TypeError usually indicates a network-level error (e.g. ERR_CONNECTION_CLOSED, ERR_HTTP2_PING_FAILED)
+            if (error instanceof TypeError && attempt < retries) {
+                console.warn(`[SafeFetch] Network error on ${patchedUrl}. Retrying (${attempt + 1}/${retries})...`, error);
+                await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt))); // 1s, 2s backoff
+                attempt++;
+            } else {
+                throw error;
+            }
+        }
+    }
+    throw new Error('safeFetch failed unexpectedly');
 };
 
 // ============================================
@@ -126,17 +143,18 @@ export const categories = {
 // WISHLIST API
 // ============================================
 export const wishlist = {
-    async list(userId: string): Promise<string[]> {
-        const res = await fetch(`${API_BASE}/api/wishlist?user_id=${userId}`);
+    async list(userId: string, email?: string): Promise<string[]> {
+        const query = email ? `?user_id=${userId}&email=${encodeURIComponent(email)}` : `?user_id=${userId}`;
+        const res = await fetch(`${API_BASE}/api/wishlist${query}`);
         if (!res.ok) throw new Error('Failed to fetch wishlist');
         return res.json();
     },
 
-    async add(userId: string, templateId: string) {
+    async add(userId: string, templateId: string, email?: string) {
         const res = await fetch(`${API_BASE}/api/wishlist`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: userId, template_id: templateId })
+            body: JSON.stringify({ user_id: userId, template_id: templateId, email })
         });
         if (!res.ok) throw new Error('Failed to add to wishlist');
         return res.json();
@@ -152,11 +170,11 @@ export const wishlist = {
         return res.json();
     },
 
-    async toggle(userId: string, templateId: string, isCurrentlyWishlisted: boolean) {
+    async toggle(userId: string, templateId: string, isCurrentlyWishlisted: boolean, email?: string) {
         if (isCurrentlyWishlisted) {
             return this.remove(userId, templateId);
         } else {
-            return this.add(userId, templateId);
+            return this.add(userId, templateId, email);
         }
     }
 };

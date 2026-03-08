@@ -16,11 +16,13 @@ import { ConfirmationModal } from '@/components/Modals/ConfirmationModal';
 interface TemplateStorePanelProps {
     invitationId?: string;
     onTemplateChanged?: () => void;
+    onClose?: () => void;
 }
 
 export const TemplateStorePanel: React.FC<TemplateStorePanelProps> = ({
     invitationId,
-    onTemplateChanged
+    onTemplateChanged,
+    onClose
 }) => {
     const { data: templates = [], isLoading } = useTemplates();
     const { id: storeId, setSections, updateLayersBatch, setOrbitLayers, setThumbnailUrl } = useStore();
@@ -87,6 +89,9 @@ export const TemplateStorePanel: React.FC<TemplateStorePanelProps> = ({
             // 4. Callback for parent to refresh
             if (onTemplateChanged) {
                 onTemplateChanged();
+            }
+            if (onClose) {
+                setTimeout(onClose, 500); // Give user a brief moment to see the success toast before closing
             }
         } catch (error) {
             console.error('[TemplateStore] Failed to apply template:', error);

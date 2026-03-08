@@ -16,7 +16,7 @@ import { Toaster } from 'react-hot-toast';
 // localhost is treated as app domain for development
 const getIsAppDomain = (): boolean => {
     const host = window.location.hostname;
-    return host.startsWith('app.') || host.includes('tamuu-app') || host === 'localhost' || host === '127.0.0.1';
+    return host.startsWith('app.') || host.includes('tamuu-app') || host.includes('pages.dev') || host === 'localhost' || host === '127.0.0.1';
 };
 
 // ============================================
@@ -82,7 +82,7 @@ const App: React.FC = () => {
     const isAppDomain = useMemo(() => getIsAppDomain(), []);
 
     useEffect(() => {
-        console.log("Tamuu v2.0.2 - Grid Sync & Love Story Fixed");
+        console.log("Tamuu v2.0.4 - MEGA FIX V4 ACTIVE");
     }, []);
 
     // Optimization: Fonts are now handled via index.html with display=swap for best performance (PSI 100).

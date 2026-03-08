@@ -103,10 +103,10 @@ export const EventDatePanel: React.FC<EventDatePanelProps> = ({ invitationId, on
                             <h4 className="font-black text-slate-800 uppercase tracking-widest text-xs">Waktu & Tanggal</h4>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="flex flex-col gap-6">
                             {/* Date Input */}
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Tanggal</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Tanggal (DD/MM/YYYY)</label>
                                 <input
                                     type="date"
                                     value={eventDate}
@@ -117,13 +117,14 @@ export const EventDatePanel: React.FC<EventDatePanelProps> = ({ invitationId, on
 
                             {/* Time Input */}
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Waktu (Pukul)</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Waktu (Format 24 Jam)</label>
                                 <input
                                     type="time"
                                     value={eventTime}
                                     onChange={(e) => setEventTime(e.target.value)}
                                     className="w-full px-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-amber-500/10 outline-none font-bold text-slate-700"
                                 />
+                                <p className="text-[8px] text-slate-400 ml-4 italic font-medium">Contoh: 13:00 untuk jam 1 siang</p>
                             </div>
                         </div>
 
