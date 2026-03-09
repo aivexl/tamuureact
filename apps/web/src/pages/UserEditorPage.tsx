@@ -40,7 +40,7 @@ import { useSubscriptionTimer } from '../hooks/useSubscriptionTimer';
 import { SubscriptionStatusWidget } from '../components/ui/SubscriptionStatusWidget';
 
 // ============================================
-// TUTORIAL SYSTEM (INDONESIAN - ENTERPRISE V8)
+// TUTORIAL SYSTEM (INDONESIAN - ENTERPRISE V9)
 // ============================================
 
 const TUTORIAL_STEPS = [
@@ -48,7 +48,7 @@ const TUTORIAL_STEPS = [
     { targetId: 'tutorial-info-card', title: 'Info Undangan', description: 'Kartu ini berisi ringkasan undangan Anda, termasuk link yang bisa disalin.', position: 'bottom' },
     { targetId: 'tutorial-publish-button', title: 'Tombol Publish', description: 'Klik ini jika Anda sudah siap untuk menampilkan undangan ke publik.', position: 'left' },
     { targetId: 'tutorial-draft-button', title: 'Mode Draft', description: 'Gunakan ini untuk menyembunyikan undangan sementara saat masih dalam proses edit.', position: 'left' },
-    { targetId: 'tutorial-grid-item-music', title: 'Musik Latar', description: 'Atur lagu romantis yang akan otomatis berputar saat undangan dibuka.', position: 'bottom' },
+    { targetId: 'tutorial-grid-item-music', title: 'Musik Latar', description: 'Pilih lagu romantis untuk mengiringi tamu saat membuka undangan.', position: 'bottom' },
     { targetId: 'tutorial-grid-item-luckydraw', title: 'Fitur Undian', description: 'Buat tamu makin antusias dengan fitur undian berhadiah di dalam undangan.', position: 'bottom' },
     { targetId: 'tutorial-grid-item-template', title: 'Ganti Desain', description: 'Bosan dengan desain ini? Anda bisa mengganti seluruh tema undangan di sini.', position: 'bottom' },
     { targetId: 'tutorial-grid-item-guests', title: 'Daftar Tamu', description: 'Kelola siapa saja yang diundang dan kirim pesan personal lewat WhatsApp.', position: 'bottom' },
@@ -56,7 +56,7 @@ const TUTORIAL_STEPS = [
     { targetId: 'tutorial-grid-item-display', title: 'Layar TV', description: 'Khusus untuk ditampilkan di layar besar/proyektor di gedung acara.', position: 'bottom' },
     { targetId: 'tutorial-grid-item-location', title: 'Peta Lokasi', description: 'Pastikan titik lokasi acara Anda akurat agar tamu mudah bernavigasi.', position: 'bottom' },
     { targetId: 'tutorial-grid-item-gift', title: 'Kado Digital', description: 'Masukan nomor rekening atau e-wallet untuk menerima kado secara digital.', position: 'bottom' },
-    { targetId: 'tutorial-grid-item-gallery', title: 'Galeri Foto', description: 'Unggah momen-momen indah Anda untuk ditampilkan kepada tamu.', position: 'bottom' },
+    { targetId: 'tutorial-grid-item-gallery', title: 'Galeri Foto', description: 'Unggah foto-foto pre-wedding terbaik Anda di sini.', position: 'bottom' },
     { targetId: 'tutorial-grid-item-analytics', title: 'Statistik', description: 'Pantau statistik jumlah pengunjung dan konfirmasi kehadiran tamu.', position: 'bottom' },
     { targetId: 'tutorial-tab-invitation', title: 'Mode Undangan', description: 'Edit konten utama undangan digital Anda di tab ini.', position: 'bottom' },
     { targetId: 'tutorial-tab-orbit', title: 'Mode Cinematic', description: 'Atur elemen cinematic atau "Orbit" untuk tampilan yang lebih mewah.', position: 'bottom' },
@@ -71,10 +71,10 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
     const [availableSteps, setAvailableSteps] = useState<any[]>([{ targetId: 'welcome', title: 'Halo, Selamat Datang!', description: 'Mari kami pandu sebentar untuk memahami cara mengedit undangan impian Anda dengan mudah.', position: 'center' }]);
     const [coords, setCoords] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
     const [isReady, setIsReady] = useState(false);
+    const requestRef = useRef<number>(undefined);
 
     // PERSISTENT DISCOVERY: Keep scanning for elements as they render
     useEffect(() => {
-        let attempts = 0;
         const interval = setInterval(() => {
             const filtered = TUTORIAL_STEPS.filter(s => {
                 if (s.targetId === 'welcome') return true;
@@ -82,106 +82,160 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
                 return el && el.offsetWidth > 0;
             });
 
-            if (filtered.length > availableSteps.length || (attempts === 0 && filtered.length > 0)) {
+            if (filtered.length > availableSteps.length || (filtered.length > 0 && !isReady)) {
                 setAvailableSteps(filtered);
                 setIsReady(true);
             }
-            if (attempts > 100) clearInterval(interval);
-            attempts++;
-        }, 200);
+        }, 300);
         return () => clearInterval(interval);
-    }, [availableSteps.length]);
+    }, [availableSteps.length, isReady]);
 
     const currentStep = availableSteps[stepIndex];
 
+    // LIVE COORDINATE TRACKING (rAF Loop for High-End Fluidity)
     useEffect(() => {
-        if (!currentStep || currentStep.targetId === 'welcome') {
-            setCoords(null);
-            return;
-        }
+        if (!isReady || !currentStep) return;
 
         const update = () => {
-            const el = document.getElementById(currentStep.targetId);
-            if (el) {
-                const rect = el.getBoundingClientRect();
-                if (rect.width > 0) {
+            if (currentStep.targetId === 'welcome') {
+                setCoords(null);
+            } else {
+                const el = document.getElementById(currentStep.targetId);
+                if (el) {
+                    const rect = el.getBoundingClientRect();
                     setCoords({ top: rect.top, left: rect.left, width: rect.width, height: rect.height });
                 }
             }
+            requestRef.current = requestAnimationFrame(update);
         };
 
-        const el = document.getElementById(currentStep.targetId);
-        if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            const timer = setTimeout(update, 600);
-            window.addEventListener('resize', update);
-            return () => { clearTimeout(timer); window.removeEventListener('resize', update); };
+        // Scroll to target smoothly
+        if (currentStep.targetId !== 'welcome') {
+            const el = document.getElementById(currentStep.targetId);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-    }, [stepIndex, currentStep]);
 
-    if (!currentStep) return null;
+        requestRef.current = requestAnimationFrame(update);
+        return () => { if (requestRef.current) cancelAnimationFrame(requestRef.current); };
+    }, [stepIndex, currentStep, isReady]);
+
+    if (!isReady || !currentStep) return null;
 
     const getCardStyle = () => {
-        const cardWidth = Math.min(window.innerWidth - 32, 280);
-        const cardHeight = 180;
+        const cardWidth = Math.min(window.innerWidth - 32, 300);
+        const cardHeight = 180; // Estimated
         const padding = 16;
 
         if (!coords || currentStep.targetId === 'welcome') {
-            return { top: (window.innerHeight / 2) - (cardHeight / 2), left: (window.innerWidth / 2) - (cardWidth / 2), width: cardWidth, opacity: 1, scale: 1 };
+            return {
+                top: '50%',
+                left: '50%',
+                x: '-50%',
+                y: '-50%',
+                width: cardWidth,
+                opacity: 1
+            };
         }
         
         let top = 0, left = 0;
-        if (currentStep.position === 'bottom') { top = coords.top + coords.height + 12; left = coords.left + (coords.width / 2) - (cardWidth / 2); }
-        else if (currentStep.position === 'top') { top = coords.top - cardHeight - 12; left = coords.left + (coords.width / 2) - (cardWidth / 2); }
-        else if (currentStep.position === 'right') { top = coords.top + (coords.height / 2) - (cardHeight / 2); left = coords.left + coords.width + 12; }
-        else if (currentStep.position === 'left') { top = coords.top + (coords.height / 2) - (cardHeight / 2); left = coords.left - cardWidth - 12; }
+        const spacing = 16;
 
-        return { top: Math.max(padding, Math.min(window.innerHeight - cardHeight - padding, top)), left: Math.max(padding, Math.min(window.innerWidth - cardWidth - padding, left)), width: cardWidth, opacity: 1, scale: 1 };
+        // Smart Positioning Logic
+        if (currentStep.position === 'bottom') {
+            top = coords.top + coords.height + spacing;
+            left = coords.left + (coords.width / 2) - (cardWidth / 2);
+        } else if (currentStep.position === 'top') {
+            top = coords.top - cardHeight - spacing;
+            left = coords.left + (coords.width / 2) - (cardWidth / 2);
+        } else if (currentStep.position === 'right') {
+            top = coords.top + (coords.height / 2) - (cardHeight / 2);
+            left = coords.left + coords.width + spacing;
+        } else if (currentStep.position === 'left') {
+            top = coords.top + (coords.height / 2) - (cardHeight / 2);
+            left = coords.left - cardWidth - spacing;
+        }
+
+        // Viewport Collision Detection (Anti-Clipping)
+        const safeTop = Math.max(padding, Math.min(window.innerHeight - cardHeight - padding, top));
+        const safeLeft = Math.max(padding, Math.min(window.innerWidth - cardWidth - padding, left));
+
+        return {
+            top: safeTop,
+            left: safeLeft,
+            width: cardWidth,
+            x: 0,
+            y: 0,
+            opacity: 1
+        };
     };
 
-    const card = (
+    const cardStyle: any = getCardStyle();
+
+    return createPortal(
         <div className="fixed inset-0 z-[1000000] pointer-events-none overflow-hidden">
             <AnimatePresence mode="wait">
                 <m.div
                     key={currentStep.targetId}
                     initial={{ opacity: 0, scale: 0.95 }}
-                    animate={getCardStyle()}
+                    animate={cardStyle}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-                    className="absolute bg-slate-900 text-white rounded-[1.5rem] shadow-[0_40px_100px_rgba(0,0,0,0.9)] p-6 pointer-events-auto border border-white/10 flex flex-col"
+                    transition={{ type: "spring", stiffness: 300, damping: 30, opacity: { duration: 0.2 } }}
+                    className="absolute bg-slate-900 text-white rounded-[2rem] shadow-[0_40px_100px_rgba(0,0,0,0.9)] p-6 pointer-events-auto border border-white/10 flex flex-col"
                     style={{ position: 'fixed' }}
                 >
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center justify-between mb-2">
                         <h4 className="text-[10px] font-black tracking-[0.2em] uppercase text-indigo-400">{currentStep.title}</h4>
-                        <button onClick={onComplete} className="p-1.5 hover:bg-white/10 rounded-full text-white/40"><X className="w-4 h-4" /></button>
+                        <button onClick={onComplete} className="p-1.5 hover:bg-white/10 rounded-full text-white/40 transition-colors"><X className="w-4 h-4" /></button>
                     </div>
-                    <div className="flex-1 overflow-y-auto min-h-[60px] max-h-[120px] mb-6">
+                    <div className="flex-1 min-h-[60px]">
                         <p className="text-[13px] text-slate-300 leading-relaxed font-medium">{currentStep.description}</p>
                     </div>
-                    <div className="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
+                    <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
                         <div className="flex gap-1">
                             {stepIndex > 0 && <button onClick={() => setStepIndex(s => s - 1)} className="px-2 py-1 text-[10px] font-bold text-slate-400 hover:text-white transition-all">Kembali</button>}
                             <button onClick={onComplete} className="px-2 py-1 text-[10px] font-bold text-slate-500">Skip</button>
                         </div>
                         <div className="flex items-center gap-3">
-                            <span className="text-[9px] font-mono text-slate-600">{stepIndex + 1}/{availableSteps.length}</span>
-                            <button onClick={() => stepIndex < availableSteps.length - 1 ? setStepIndex(s => s + 1) : onComplete()} className="px-5 py-2.5 bg-white text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest active:scale-95 shadow-lg">
+                            <span className="text-[9px] font-mono text-slate-600 font-bold">{stepIndex + 1}/{availableSteps.length}</span>
+                            <button onClick={() => stepIndex < availableSteps.length - 1 ? setStepIndex(s => s + 1) : onComplete()} className="px-5 py-2 bg-white text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest active:scale-95 shadow-lg shadow-white/5">
                                 {stepIndex === availableSteps.length - 1 ? 'Selesai' : 'Lanjut'}
                             </button>
                         </div>
                     </div>
+
+                    {/* DYNAMIC ARROW POINTING */}
                     {coords && currentStep.targetId !== 'welcome' && (
-                        <m.div animate={{ rotate: 45 }} className={`absolute w-3 h-3 bg-slate-900 border-white/10 ${currentStep.position === 'bottom' ? '-top-1.5 left-1/2 -translate-x-1/2 border-t border-l' : currentStep.position === 'top' ? '-bottom-1.5 left-1/2 -translate-x-1/2 border-b border-r' : currentStep.position === 'right' ? 'top-1/2 -left-1.5 -translate-y-1/2 border-b border-l' : 'top-1/2 -right-1.5 -translate-y-1/2 border-t border-r'}`} />
+                        <m.div 
+                            layout
+                            className={`absolute w-3.5 h-3.5 bg-slate-900 border-white/10 rotate-45 z-[-1] ${
+                                currentStep.position === 'bottom' ? '-top-1.5' :
+                                currentStep.position === 'top' ? '-bottom-1.5' :
+                                currentStep.position === 'right' ? '-left-1.5' :
+                                '-right-1.5'
+                            }`}
+                            style={{
+                                // Dynamic arrow centering based on target vs card position
+                                left: (currentStep.position === 'bottom' || currentStep.position === 'top') 
+                                    ? Math.max(20, Math.min((cardStyle.width as number) - 20, coords.left + (coords.width / 2) - (cardStyle.left as number))) 
+                                    : 'auto',
+                                top: (currentStep.position === 'left' || currentStep.position === 'right')
+                                    ? Math.max(20, Math.min(160, coords.top + (coords.height / 2) - (cardStyle.top as number)))
+                                    : 'auto'
+                            }}
+                        />
                     )}
                 </m.div>
             </AnimatePresence>
-        </div>
+        </div>,
+        document.body
     );
-
-    return createPortal(card, document.body);
 };
 
-export const UserEditorPage: React.FC<{ mode?: 'invitation' | 'welcome' }> = ({ mode = 'invitation' }) => {
+interface UserEditorPageProps {
+    mode?: 'invitation' | 'welcome';
+}
+
+export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitation' }) => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { id: currentStoredId, hasHydrated, resetStore, resetSections, clearLayers, hydrateProject, setSections, setOrbitLayers, setActiveSection, activeSectionId, sections, orbit, exportFormat, isPublished } = useStore();
@@ -209,8 +263,9 @@ export const UserEditorPage: React.FC<{ mode?: 'invitation' | 'welcome' }> = ({ 
                 setInvitation({ id: data.id, title: data.name, slug: data.slug, is_published: !!data.is_published, status: data.is_published ? "Published" : "Draft", thumbnailUrl: data.thumbnail_url, category: data.category });
                 if (data.sections?.length > 0 && !activeSectionId) setActiveSection(data.sections[0].id);
                 
-                // FORCE RESET V8 TO GUARANTEE APPEARANCE
-                if (!localStorage.getItem(`tutorial_seen_v8_${id}`)) {
+                // VERSION 9 RESET
+                const tutorialKey = `tutorial_seen_v9_${id}`;
+                if (!localStorage.getItem(tutorialKey)) {
                     setTimeout(() => setShowTutorial(true), 1500);
                 }
             } catch (err) { hasAttemptedRef.current = null; } finally { setLoading(false); }
@@ -220,7 +275,7 @@ export const UserEditorPage: React.FC<{ mode?: 'invitation' | 'welcome' }> = ({ 
 
     const completeTutorial = () => {
         setShowTutorial(false);
-        localStorage.setItem(`tutorial_seen_v8_${id}`, 'true');
+        localStorage.setItem(`tutorial_seen_v9_${id}`, 'true');
     };
 
     if (loading) return <PremiumLoader showLabel label="Menyiapkan Editor..." />;
