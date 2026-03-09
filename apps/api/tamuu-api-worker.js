@@ -58,7 +58,13 @@ export default {
             'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
             'Access-Control-Allow-Credentials': 'true',
-            'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
+            'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+            // CTO SECURITY: Enterprise Hardening Headers
+            'X-Frame-Options': 'DENY',
+            'X-Content-Type-Options': 'nosniff',
+            'Referrer-Policy': 'strict-origin-when-cross-origin',
+            'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; object-src 'none';",
+            'Permissions-Policy': 'camera=(), microphone=(), geolocation=()'
         };
 
         // CTO SECURITY ENFORCEMENT: Production Log Silencer

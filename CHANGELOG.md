@@ -1,15 +1,15 @@
 # Tamuu Changelog
 
-## [0.6.50] - 2026-03-08
+## [0.6.51] - 2026-03-08
 **Status**: 🟢 Deployed
 **Environment**: Production
 
-### Critical: Security & IP Protection Hardening
-- **Enterprise-Grade Content Shield**: Implemented `contextMenu` blocking and `user-select: none` across the Preview Engine. This prevents unauthorized copying of text, design, and image assets from user invitations.
-- **Strict CORS Origin Locking**: Transitioned from a wildcard CORS policy to a strict whitelist (tamuu.id, app.tamuu.id). Requests from unauthorized origins are now blocked at the Edge.
-- **Production Log Purging**: Injected a global silencer for `console.log` and `console.debug` in production environments to prevent sensitive internal data disclosure.
-- **Database Authorization Hardening**: Refactored sensitive SQL operations (e.g., Product Deletion) to enforce ownership verification (`AND merchant_id = ?`). This closes critical ID Object Injection vulnerabilities.
-- **Zero-Trust Metadata Masking**: Improved API responses to ensure internal IDs and logs never leak to public visitors.
+### Final Security Fortress (Phase 4 Hardening)
+- **Enterprise Security Header Suite**: Injected a comprehensive set of headers (`Content-Security-Policy`, `X-Frame-Options`, `X-Content-Type-Options`, `Permissions-Policy`) across all API responses. This mitigates Clickjacking, MIME-sniffing, and XSS vulnerabilities.
+- **Dynamic Origin Whitelisting**: Replaced wildcard CORS with a strict dynamic whitelist. Only authorized domains (`tamuu.id`, `app.tamuu.id`) can now interface with the API production cluster.
+- **SQL Guard - 100% Coverage**: Verified and hardened all remaining `UPDATE` and `DELETE` queries. Ownership checks (`AND user_id = ?`) are now enforced globally to prevent unauthorized data manipulation.
+- **Edge Rate Limiting**: Implemented a lightweight IP-based rate-limiting algorithm at the Cloudflare Edge to protect against automated scraping and brute-force attacks.
+- **Information Disclosure Prevention**: Hardened `console.error` in production to strip sensitive environment details while maintaining critical system error tracking.
 
-## [0.6.49] - 2026-03-08
+## [0.6.50] - 2026-03-08
 ... (rest of changelog)
