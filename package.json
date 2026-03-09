@@ -15,6 +15,7 @@
     "build:api": "turbo run build --filter=@tamuu/api",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
+    "test": "jest",
     "clean": "turbo run clean && rm -rf node_modules",
     "deploy": "turbo run deploy",
     "deploy:api": "turbo run deploy:api --filter=@tamuu/api",
@@ -22,6 +23,10 @@
     "deploy:web:app": "turbo run build --filter=@tamuu/web && npx wrangler pages deploy apps/web/dist --project-name tamuu-app"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/jest": "^30.0.0",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6",
     "turbo": "^2.0.0"
   },
   "dependencies": {
