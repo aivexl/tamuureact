@@ -19,7 +19,8 @@ import {
     Store,
     ShoppingBag,
     ShieldAlert,
-    MessageSquare
+    MessageSquare,
+    BellRing
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { AdminChatSidebarWrapper } from './AdminChatSidebarWrapper';
@@ -239,6 +240,13 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                         icon={MessageSquare}
                         label="User Feedback"
                         active={location.pathname.startsWith('/admin/feedback')}
+                        sidebarOpen={sidebarOpen}
+                    />
+                    <SidebarItem
+                        href="/admin/push-notifications"
+                        icon={BellRing}
+                        label="Push Notifications"
+                        active={location.pathname.startsWith('/admin/push-notifications')}
                         sidebarOpen={sidebarOpen}
                     />
                     <SidebarItem

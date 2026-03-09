@@ -1477,6 +1477,43 @@ export async function healthCheck() {
 }
 
 // ============================================
+// PUSH NOTIFICATION API
+// ============================================
+export const push = {
+    async subscribe(data: { userId: string; subscription: any; platform: string; userAgent: string }) {
+        const res = await safeFetch(`${API_BASE}/api/push/subscribe`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sanitizeValue(data))
+        });
+        if (!res.ok) throw new Error('Failed to subscribe to push notifications');
+        return res.json();
+    },
+
+    async unsubscribe(endpoint: string) {
+        const res = await safeFetch(`${API_BASE}/api/push/unsubscribe`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ endpoint })
+        });
+        if (!res.ok) throw new Error('Failed to unsubscribe');
+        return res.json();
+    },
+
+    async adminBroadcast(data: { title: string; message: string; url?: string; imageUrl?: string; audience?: string }) {
+        const res = await safeFetch(`${API_BASE}/api/admin/push/broadcast`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sanitizeValue(data))
+        });
+        if (!res.ok) throw new Error('Failed to broadcast push notification');
+        return res.json();
+    }
+};
+
+export const subscribePush = push.subscribe;
+export const unsubscribePush = push.unsubscribe;
+
 // FEEDBACK API
 // ============================================
 export const feedback = {

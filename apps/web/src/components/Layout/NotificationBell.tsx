@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Bell, Check, Clock, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
+import { Bell, Check, Clock, AlertCircle, CheckCircle2, XCircle, Smartphone, BellOff } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
 import { useNotifications, useMarkNotificationRead } from '../../hooks/queries/useNotifications';
+import { usePushNotifications } from '../../hooks/usePushNotifications';
 import { useStore } from '../../store/useStore';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
@@ -10,6 +11,7 @@ import { id } from 'date-fns/locale';
 export const NotificationBell: React.FC = () => {
     const user = useStore(s => s.user);
     const [isOpen, setIsOpen] = useState(false);
+    const { isSubscribed, subscribe, unsubscribe, isSubscribing } = usePushNotifications();
     
     const { data: notifications = [] } = useNotifications(user?.id);
     const markReadMutation = useMarkNotificationRead();
@@ -44,7 +46,7 @@ export const NotificationBell: React.FC = () => {
                 onClick={() => setIsOpen(!isOpen)}
                 className={`p-2.5 rounded-xl transition-all relative ${isOpen ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}
             >
-                <Bell className="w-5 h-5" />
+                <Bell className={`w-5 h-5 ${unreadCount > 0 ? 'animate-bell-ring' : ''}`} />
                 {unreadCount > 0 && (
                     <span className="absolute top-2 right-2 w-4 h-4 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-sm">
                         {unreadCount > 9 ? '9+' : unreadCount}
@@ -74,6 +76,34 @@ export const NotificationBell: React.FC = () => {
                                 )}
                             </div>
 
+                            {/* Push Notification Toggle */}
+                            <div className="p-4 bg-indigo-50/30 border-b border-slate-50">
+                                <button
+                                    onClick={isSubscribed ? unsubscribe : subscribe}
+                                    disabled={isSubscribing}
+                                    className={`w-full flex items-center justify-between p-3 rounded-2xl border transition-all duration-300 ${isSubscribed 
+                                        ? 'bg-white border-indigo-100 text-indigo-600 shadow-sm' 
+                                        : 'bg-white/50 border-slate-100 text-slate-400 hover:bg-white hover:text-slate-600'}`}
+                                >
+                                    <div className="flex items-center gap-3 text-left">
+                                        <div className={`p-2 rounded-xl ${isSubscribed ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                                            {isSubscribed ? <Smartphone className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black uppercase tracking-tight leading-none mb-1">
+                                                {isSubscribed ? 'Push Active' : 'Enable Push'}
+                                            </p>
+                                            <p className="text-[9px] font-bold text-slate-400 leading-tight">
+                                                {isSubscribed ? 'Notifications on your phone' : 'Get real-time promo alerts'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className={`w-7 h-4 rounded-full relative transition-colors duration-300 ${isSubscribed ? 'bg-indigo-600' : 'bg-slate-200'}`}>
+                                        <div className={`absolute top-1 w-2 h-2 rounded-full bg-white transition-all duration-300 ${isSubscribed ? 'right-1' : 'left-1'}`} />
+                                    </div>
+                                </button>
+                            </div>
+
                             <div className="max-h-[400px] overflow-y-auto no-scrollbar">
                                 {notifications.length === 0 ? (
                                     <div className="py-12 text-center">
@@ -86,7 +116,7 @@ export const NotificationBell: React.FC = () => {
                                             key={n.id}
                                             to={n.link || '#'}
                                             onClick={() => handleNotificationClick(n.id)}
-                                            className={`flex gap-4 p-5 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0 ${!n.is_read ? 'bg-indigo-50/30' : ''}`}
+                                            className={`flex gap-4 p-5 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0 ${!n.is_read ? 'bg-indigo-50/10' : ''}`}
                                         >
                                             <div className={`mt-1 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                                                 n.type === 'success' ? 'bg-teal-50' : 

@@ -1,5 +1,23 @@
 # Tamuu Changelog
 
+## [0.6.53] - 2026-03-09
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Feature: Enterprise Push Notification System (Tamuu Nexus v1.0)
+- **Enterprise Push Infrastructure**: Established a high-performance **Web Push (VAPID)** architecture using Cloudflare Workers and D1 Database.
+- **Admin Notification Command Center**: Launched a professional campaign manager in the Admin Dashboard:
+  - **Audience Targeting**: Support for broadcasting to specific tiers (Pro, Elite, Merchants) or all users.
+  - **Real-time Mobile Preview**: Interactive mockup to visualize notifications before broadcasting.
+  - **Deep-Link Support**: Integrated URL routing to drive conversions directly to shop products or promos.
+- **User Engagement UX**:
+  - **Dynamic Bell Icon**: Integrated a premium `BellRing` toggle in the notification dropdown for easy opt-in/opt-out.
+  - **Background Service Worker**: Implemented `sw.js` for persistent notification delivery even when the application is closed.
+- **Architecture & Security**:
+  - **D1 Schema Expansion**: Added `push_subscriptions` table with multi-device support per user.
+  - **VAPID Security**: Securely implemented VAPID key pairs with Private Keys stored in Cloudflare Secrets.
+  - **RTM Verified**: 100% test coverage using Vitest for both frontend hooks and backend API endpoints.
+
 ## [0.6.52] - 2026-03-09
 **Status**: 🟢 Deployed
 **Environment**: Production

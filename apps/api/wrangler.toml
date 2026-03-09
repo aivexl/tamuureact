@@ -78,13 +78,16 @@ binding = "AI"
 ENVIRONMENT = "production"
 DEBUG = "false"
 LOG_LEVEL = "info"
+VAPID_PUBLIC_KEY = "BEFQ-IB1eNJ7l6Qz5tK5zZ12ulaJWstJz5s8KXpJtQag1QxlSJ09OxXomGIjfuEfptDc-33YoF512VeFsrvY22s"
 
 [env.development.vars]
 ENVIRONMENT = "development"
 DEBUG = "true"
 LOG_LEVEL = "debug"
+VAPID_PUBLIC_KEY = "BEFQ-IB1eNJ7l6Qz5tK5zZ12ulaJWstJz5s8KXpJtQag1QxlSJ09OxXomGIjfuEfptDc-33YoF512VeFsrvY22s"
 
 [env.staging.vars]
 ENVIRONMENT = "staging"
 DEBUG = "false"
 LOG_LEVEL = "info"
+VAPID_PUBLIC_KEY = "BEFQ-IB1eNJ7l6Qz5tK5zZ12ulaJWstJz5s8KXpJtQag1QxlSJ09OxXomGIjfuEfptDc-33YoF512VeFsrvY22s"
