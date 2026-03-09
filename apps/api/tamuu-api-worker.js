@@ -366,6 +366,25 @@ export default {
                 return json({ success: true }, corsHeaders);
             }
 
+            if (path === '/api/admin/push/stats' && method === 'GET') {
+                try {
+                    const stats = await env.DB.prepare(`
+                        SELECT 
+                            (SELECT COUNT(*) FROM push_subscriptions WHERE is_active = 1) as all_users,
+                            (SELECT COUNT(*) FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.tier = 'pro') as pro,
+                            (SELECT COUNT(*) FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.tier = 'ultimate') as ultimate,
+                            (SELECT COUNT(*) FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.tier = 'elite') as elite,
+                            (SELECT COUNT(*) FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.role = 'merchant') as merchants,
+                            (SELECT COUNT(*) FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.role = 'reseller') as resellers,
+                            (SELECT COUNT(*) FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.role = 'admin') as admins
+                    `).first();
+
+                    return json({ success: true, stats }, corsHeaders);
+                } catch (error) {
+                    return json({ error: 'Failed to fetch push stats' }, { ...corsHeaders, status: 500 });
+                }
+            }
+
             if (path === '/api/admin/push/broadcast' && method === 'POST') {
                 const { title, message, url: targetUrl, imageUrl, audience, platform } = await request.json();
                 
@@ -384,6 +403,9 @@ export default {
                     } else if (audience === 'resellers') {
                         query += ' AND u.role = ?';
                         params.push('reseller');
+                    } else if (audience === 'admins') {
+                        query += ' AND u.role = ?';
+                        params.push('admin');
                     } else {
                         // Plan-based filtering
                         query += ' AND u.tier = ?';

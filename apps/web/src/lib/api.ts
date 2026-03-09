@@ -1500,7 +1500,13 @@ export const push = {
         return res.json();
     },
 
-    async adminBroadcast(data: { title: string; message: string; url?: string; imageUrl?: string; audience?: string }) {
+    async getStats() {
+        const res = await safeFetch(`${API_BASE}/api/admin/push/stats`);
+        if (!res.ok) throw new Error('Failed to fetch push stats');
+        return res.json();
+    },
+
+    async adminBroadcast(data: { title: string; message: string; url?: string; imageUrl?: string; audience?: string; platform?: string }) {
         const res = await safeFetch(`${API_BASE}/api/admin/push/broadcast`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

@@ -1,5 +1,20 @@
 # Tamuu Changelog
 
+## [0.6.55] - 2026-03-09
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Admin Push Notification Enhancement (Tamuu Nexus v1.1)
+- **Brand Consistency**: Migrated the notification preview logo to the official white Tamuu emblem (`logo-tamuu-vfinal-v1.webp`) for improved visibility on standard mobile notification backgrounds.
+- **Real-Time Reach Intelligence**:
+  - Implemented a backend-driven `Estimated Reach` engine using real device subscription counts from D1.
+  - Replaced dummy placeholders with actual metrics for Pro, Ultimate, Elite, Merchants, Resellers, and Admins.
+- **Expanded Audience Targeting**: Added a dedicated **"Admin Only"** broadcast channel for internal system announcements and critical maintenance alerts.
+- **Asset Optimization Guidelines**:
+  - Integrated explicit image size validation and helper tooltips.
+  - Standardized notification images to **1024x512 (2:1 ratio)** with a strictly enforced **1MB limit** to ensure lightning-fast delivery and browser rendering compatibility.
+- **Backend Infrastructure**: Added `GET /api/admin/push/stats` endpoint to the Tamuu API Worker for live subscription analytics.
+
 ## [0.6.54] - 2026-03-09
 **Status**: 🟢 Deployed
 **Environment**: Production
