@@ -163,6 +163,7 @@ export const InvitationInfoCard: React.FC<InvitationInfoCardProps> = ({ invitati
                     
                     {/* 1. PUBLISH BUTTON (Top) */}
                     <m.button
+                        id="tutorial-publish-button"
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => {
@@ -183,6 +184,7 @@ export const InvitationInfoCard: React.FC<InvitationInfoCardProps> = ({ invitati
 
                     {/* 2. DRAFT BUTTON (Second) */}
                     <m.button
+                        id="tutorial-draft-button"
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => {

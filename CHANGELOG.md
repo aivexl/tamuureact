@@ -1,5 +1,22 @@
 # Tamuu Changelog
 
+## [0.6.45] - 2026-03-08
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### UI/UX: Enterprise Tutorial V8 & Extreme Responsiveness
+- **Robust Tutorial Launch**: Implemented a "Welcome" step fallback that doesn't depend on the DOM, ensuring the tutorial card appears 100% of the time upon page load.
+- **Extended Guidance**: Added new tutorial steps for:
+  - **Publish/Draft Buttons**: Guided activation status.
+  - **Tab Switchers**: Explanation of "Undangan" vs "Orbit" modes.
+  - **Save Button**: Crucial reminder to persist changes.
+- **Dynamic Discovery Logic**: Improved the DOM scanner to retry for 5 seconds, allowing the tutorial to "attach" to elements as staggered animations complete.
+- **Mobile First Layout Refinement**:
+  - Re-engineered the Text Editor input area for better proportions on small screens.
+  - Removed helper text clutter in the content area.
+  - Lifted the tutorial card to `z-index: 1000000` via Portal to prevent mobile UI clipping.
+- **Enterprise UI Reset**: Forced a one-time tutorial reset (`v8`) for all users to showcase the fix.
+
 ## [0.6.44] - 2026-03-08
 **Status**: 🟢 Deployed
 **Environment**: Production
@@ -9,20 +26,4 @@
 - **UI Simplification**: Removed the helper footer text from the text editor to reduce visual clutter and provide a more focused editing experience.
 
 ## [0.6.43] - 2026-03-08
-**Status**: 🟢 Deployed
-**Environment**: Production
-
-### UI/UX: Enterprise Text Editor & Extreme Mobile Response
-- **Refined Text Input**: Re-engineered the "KONTEN TEKS" editor with a significantly larger, more proportional `textarea` (min-height 120px) and a higher-contrast text style (Slate-800, Bold) for better readability.
-- **Enterprise Styling Grid**: Refactored text styling controls (Fonts, Alignment, Metrics) into a clean, responsive grid that adapts perfectly between mobile and desktop viewports.
-- **Extreme Mobile Responsiveness**: 
-  - Reduced section padding from `p-10` to `p-2` on mobile to maximize workspace.
-  - Implemented auto-scaling for Konva previews to prevent horizontal overflow on small devices like iPhone SE.
-  - Slimmed down the section drag-handle strip for more content real-estate.
-- **Tutorial V7 (Robust Discovery)**:
-  - Added a "Welcome" step that appears instantly without DOM dependencies.
-  - Implemented a persistent 20-second discovery cycle to ensure tutorial tips "snap" to dynamic elements as they render.
-  - Lifted the tutorial overlay to `z-index: 1000000` via Portal for zero clipping.
-
-## [0.6.42] - 2026-03-08
 ... (rest of changelog)

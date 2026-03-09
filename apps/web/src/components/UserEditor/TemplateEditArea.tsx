@@ -176,6 +176,7 @@ const SectionItem: React.FC<SectionItemProps> = ({
 
                                         <div className="pt-4 mt-auto flex justify-end">
                                             <m.button
+                                                id="tutorial-save-button"
                                                 onClick={handleSave}
                                                 disabled={saveStatus === 'saving'}
                                                 whileTap={{ scale: 0.98 }}
@@ -255,11 +256,11 @@ export const TemplateEditArea: React.FC = () => {
             {/* TAB SWITCHER */}
             <div className="flex justify-center">
                 <div className="bg-white/80 backdrop-blur-xl p-1 sm:p-2 rounded-2xl sm:rounded-[3rem] border border-slate-200 shadow-lg flex items-center gap-1">
-                    <button onClick={() => setActiveTab('invitation')} className={`px-4 sm:px-10 py-2.5 sm:py-4 rounded-xl sm:rounded-[2.5rem] text-[9px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'invitation' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400'}`}>
-                        Konten
+                    <button id="tutorial-tab-invitation" onClick={() => setActiveTab('invitation')} className={`px-4 sm:px-10 py-2.5 sm:py-4 rounded-xl sm:rounded-[2.5rem] text-[9px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'invitation' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400'}`}>
+                        Undangan
                     </button>
-                    <button onClick={() => setActiveTab('orbit')} className={`px-4 sm:px-10 py-2.5 sm:py-4 rounded-xl sm:rounded-[2.5rem] text-[9px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'orbit' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400'}`}>
-                        Cinematic
+                    <button id="tutorial-tab-orbit" onClick={() => setActiveTab('orbit')} className={`px-4 sm:px-10 py-2.5 sm:py-4 rounded-xl sm:rounded-[2.5rem] text-[9px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'orbit' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400'}`}>
+                        Orbit
                     </button>
                 </div>
             </div>

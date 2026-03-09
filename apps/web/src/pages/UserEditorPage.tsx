@@ -40,12 +40,14 @@ import { useSubscriptionTimer } from '../hooks/useSubscriptionTimer';
 import { SubscriptionStatusWidget } from '../components/ui/SubscriptionStatusWidget';
 
 // ============================================
-// TUTORIAL SYSTEM (INDONESIAN - ENTERPRISE V7)
+// TUTORIAL SYSTEM (INDONESIAN - ENTERPRISE V8)
 // ============================================
 
 const TUTORIAL_STEPS = [
     { targetId: 'welcome', title: 'Halo, Selamat Datang!', description: 'Mari kami pandu sebentar untuk memahami cara mengedit undangan impian Anda dengan mudah.', position: 'center' },
-    { targetId: 'tutorial-info-card', title: 'Info Undangan', description: 'Di sini Anda bisa mematikan/menyalakan undangan (Publish/Draft) dan menyalin link untuk dibagikan.', position: 'bottom' },
+    { targetId: 'tutorial-info-card', title: 'Info Undangan', description: 'Kartu ini berisi ringkasan undangan Anda, termasuk link yang bisa disalin.', position: 'bottom' },
+    { targetId: 'tutorial-publish-button', title: 'Tombol Publish', description: 'Klik ini jika Anda sudah siap untuk menampilkan undangan ke publik.', position: 'left' },
+    { targetId: 'tutorial-draft-button', title: 'Mode Draft', description: 'Gunakan ini untuk menyembunyikan undangan sementara saat masih dalam proses edit.', position: 'left' },
     { targetId: 'tutorial-grid-item-music', title: 'Musik Latar', description: 'Atur lagu romantis yang akan otomatis berputar saat undangan dibuka.', position: 'bottom' },
     { targetId: 'tutorial-grid-item-luckydraw', title: 'Fitur Undian', description: 'Buat tamu makin antusias dengan fitur undian berhadiah di dalam undangan.', position: 'bottom' },
     { targetId: 'tutorial-grid-item-template', title: 'Ganti Desain', description: 'Bosan dengan desain ini? Anda bisa mengganti seluruh tema undangan di sini.', position: 'bottom' },
@@ -55,11 +57,13 @@ const TUTORIAL_STEPS = [
     { targetId: 'tutorial-grid-item-location', title: 'Peta Lokasi', description: 'Pastikan titik lokasi acara Anda akurat agar tamu mudah bernavigasi.', position: 'bottom' },
     { targetId: 'tutorial-grid-item-gift', title: 'Kado Digital', description: 'Masukan nomor rekening atau e-wallet untuk menerima kado secara digital.', position: 'bottom' },
     { targetId: 'tutorial-grid-item-gallery', title: 'Galeri Foto', description: 'Unggah momen-momen indah Anda untuk ditampilkan kepada tamu.', position: 'bottom' },
-    { targetId: 'tutorial-grid-item-analytics', title: 'Siapa yang Hadir?', description: 'Pantau statistik jumlah pengunjung dan konfirmasi kehadiran tamu.', position: 'bottom' },
-    { targetId: 'tutorial-grid-item-download', title: 'Download Aset', description: 'Unduh file undangan dalam format gambar atau PDF untuk keperluan lain.', position: 'bottom' },
-    { targetId: 'tutorial-template-area', title: 'Edit Konten', description: 'Scroll bagian ini ke bawah. Klik setiap bagian untuk mengedit teks, gambar, dan warna secara langsung.', position: 'top' },
-    { targetId: 'tutorial-section-expand', title: 'Buka Bagian', description: 'Gunakan tombol ini untuk membuka detail isi dari setiap bagian undangan.', position: 'right' },
-    { targetId: 'tutorial-section-visible', title: 'Sembunyikan', description: 'Gunakan ikon mata untuk menyembunyikan bagian yang belum ingin Anda tampilkan.', position: 'left' }
+    { targetId: 'tutorial-grid-item-analytics', title: 'Statistik', description: 'Pantau statistik jumlah pengunjung dan konfirmasi kehadiran tamu.', position: 'bottom' },
+    { targetId: 'tutorial-tab-invitation', title: 'Mode Undangan', description: 'Edit konten utama undangan digital Anda di tab ini.', position: 'bottom' },
+    { targetId: 'tutorial-tab-orbit', title: 'Mode Cinematic', description: 'Atur elemen cinematic atau "Orbit" untuk tampilan yang lebih mewah.', position: 'bottom' },
+    { targetId: 'tutorial-template-area', title: 'Area Edit Konten', description: 'Ini adalah tempat utama Anda mengelola isi undangan secara mendetail.', position: 'top' },
+    { targetId: 'tutorial-section-expand', title: 'Buka Bagian', description: 'Klik tombol ini untuk membuka formulir pengeditan isi (teks, gambar, dll).', position: 'right' },
+    { targetId: 'tutorial-section-visible', title: 'Tampilkan/Sembunyikan', description: 'Gunakan ikon mata untuk mengatur bagian mana saja yang tampil di undangan.', position: 'left' },
+    { targetId: 'tutorial-save-button', title: 'Simpan Perubahan', description: 'Jangan lupa klik tombol ini setelah selesai mengedit agar perubahan tersimpan.', position: 'top' }
 ];
 
 const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
@@ -78,7 +82,7 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
                 return el && el.offsetWidth > 0;
             });
 
-            if (filtered.length > availableSteps.length) {
+            if (filtered.length > availableSteps.length || (attempts === 0 && filtered.length > 0)) {
                 setAvailableSteps(filtered);
                 setIsReady(true);
             }
@@ -204,11 +208,20 @@ export const UserEditorPage: React.FC<{ mode?: 'invitation' | 'welcome' }> = ({ 
                 if (data.orbit_layers) setOrbitLayers(data.orbit_layers);
                 setInvitation({ id: data.id, title: data.name, slug: data.slug, is_published: !!data.is_published, status: data.is_published ? "Published" : "Draft", thumbnailUrl: data.thumbnail_url, category: data.category });
                 if (data.sections?.length > 0 && !activeSectionId) setActiveSection(data.sections[0].id);
-                if (!localStorage.getItem(`tutorial_seen_v7_${id}`)) setTimeout(() => setShowTutorial(true), 1500);
+                
+                // FORCE RESET V8 TO GUARANTEE APPEARANCE
+                if (!localStorage.getItem(`tutorial_seen_v8_${id}`)) {
+                    setTimeout(() => setShowTutorial(true), 1500);
+                }
             } catch (err) { hasAttemptedRef.current = null; } finally { setLoading(false); }
         };
         if (hasHydrated) loadInvitation();
     }, [id, hasHydrated]);
+
+    const completeTutorial = () => {
+        setShowTutorial(false);
+        localStorage.setItem(`tutorial_seen_v8_${id}`, 'true');
+    };
 
     if (loading) return <PremiumLoader showLabel label="Menyiapkan Editor..." />;
     if (!invitation) return <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4"><AlertCircle className="w-12 h-12 text-red-400" /><p className="text-slate-600 font-medium">Undangan tidak ditemukan</p><button onClick={() => navigate('/dashboard')} className="px-6 py-2 bg-slate-900 text-white rounded-xl text-sm font-medium">Kembali</button></div>;
@@ -221,7 +234,7 @@ export const UserEditorPage: React.FC<{ mode?: 'invitation' | 'welcome' }> = ({ 
                 <IconGridMenu onOpenPanel={(panelId: string) => { if (panelId === 'guests') window.location.href = `/guests/${id}`; else setActivePanel(panelId); }} />
                 <TemplateEditArea />
             </div>
-            {showTutorial && <TutorialOverlay onComplete={() => { setShowTutorial(false); localStorage.setItem(`tutorial_seen_v7_${id}`, 'true'); }} />}
+            {showTutorial && <TutorialOverlay onComplete={completeTutorial} />}
             <Modal isOpen={activePanel !== null} onClose={() => setActivePanel(null)} title={activePanel || ''} size="lg">
                 {activePanel === 'music' && <MusicPanel />}
                 {activePanel === 'display' && <DisplayStorePanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
