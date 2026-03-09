@@ -4456,6 +4456,19 @@ name = COALESCE(?, name),
                 return await smart_cache(request, 300, async () => {
                     const parts = path.split('/');
                     const id = parts[parts.length - 1];
+
+                    // Phase 4: Try R2 Static Offload First
+                    try {
+                        const r2Object = await env.ASSETS.get(`public/invitations/${id}.json`);
+                        if (r2Object) {
+                            console.log(`[R2] Serving static offload for: ${id}`);
+                            return await r2Object.json();
+                        }
+                    } catch (r2Err) {
+                        console.warn(`[R2] Offload fetch failed, falling back to D1:`, r2Err.message);
+                    }
+
+                    // Fallback to D1 Database
                     let { results } = await env.DB.prepare(
                         'SELECT * FROM invitations WHERE id = ? OR slug = ?'
                     ).bind(id, id).all();
@@ -4467,18 +4480,12 @@ name = COALESCE(?, name),
 
                     // CTO POLICY: Check for Invitation Expiry
                     if (expiresAt && now > expiresAt) {
-                        return {
-                            id: invitation.id,
-                            name: invitation.name,
-                            slug: invitation.slug,
-                            expired: true
-                        };
+                        return { id: invitation.id, name: invitation.name, slug: invitation.slug, expired: true };
                     }
 
                     const parsed = parseJsonFields(invitation);
                     
-                    // CTO Optimization: Payload Stripping (Bandwidth Rescue)
-                    // We remove heavy/internal fields not needed for the visitor view
+                    // CTO Optimization: Payload Stripping
                     return {
                         id: parsed.id,
                         name: parsed.name,
@@ -4616,7 +4623,54 @@ name = COALESCE(?, name),
                     ).run();
 
                     // CTO Optimization: Do not echo back full invitation object to save bandwidth
-                    return json({ id, updated: true, traceId, slug: body.slug || id }, corsHeaders);
+                    const slug = body.slug || id;
+
+                    // Phase 4: Static Offloading to R2 (Background Execution)
+                    // We generate a pruned public JSON and store it in R2
+                    ctx.waitUntil((async () => {
+                        try {
+                            const { results: [inv] } = await env.DB.prepare('SELECT * FROM invitations WHERE id = ? OR slug = ?').bind(id, id).all();
+                            if (inv && inv.is_published) {
+                                const parsed = parseJsonFields(inv);
+                                const publicData = {
+                                    id: parsed.id,
+                                    name: parsed.name,
+                                    slug: parsed.slug,
+                                    category: parsed.category,
+                                    zoom: parsed.zoom,
+                                    pan: parsed.pan,
+                                    sections: parsed.sections,
+                                    layers: parsed.layers,
+                                    orbit_layers: parsed.orbit_layers,
+                                    music: parsed.music,
+                                    is_published: true,
+                                    event_date: parsed.event_date,
+                                    event_location: parsed.event_location,
+                                    venue_name: parsed.venue_name,
+                                    address: parsed.address,
+                                    google_maps_url: parsed.google_maps_url,
+                                    seo_title: parsed.seo_title,
+                                    seo_description: parsed.seo_description,
+                                    og_image: parsed.og_image,
+                                    gallery_photos: parsed.gallery_photos,
+                                    livestream_url: parsed.livestream_url,
+                                    love_story: parsed.love_story,
+                                    quote_text: parsed.quote_text,
+                                    quote_author: parsed.quote_author,
+                                    lucky_draw_settings: parsed.lucky_draw_settings,
+                                    generated_at: new Date().toISOString()
+                                };
+                                await env.ASSETS.put(`public/invitations/${parsed.slug}.json`, JSON.stringify(publicData), {
+                                    customMetadata: { 'Content-Type': 'application/json' }
+                                });
+                                console.log(`[R2] Static export successful for slug: ${parsed.slug}`);
+                            }
+                        } catch (r2Error) {
+                            console.error(`[R2] Static export failed:`, r2Error.message);
+                        }
+                    })());
+
+                    return json({ id, updated: true, traceId, slug }, corsHeaders);
                 } catch (dbError) {
                     console.error(`[DB Error] [${traceId}] Update failed:`, dbError.message);
                     return new Response(JSON.stringify({
