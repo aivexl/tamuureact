@@ -367,30 +367,36 @@ export default {
             }
 
             if (path === '/api/admin/push/broadcast' && method === 'POST') {
-                // AUTH: Ensure user is admin (this logic should be consistent with other admin endpoints)
-                // For simplicity, we assume the middleware or surrounding check handles this
-                const { title, message, url: targetUrl, imageUrl, audience } = await request.json();
+                const { title, message, url: targetUrl, imageUrl, audience, platform } = await request.json();
                 
-                let query = 'SELECT * FROM push_subscriptions WHERE is_active = 1';
+                let query = `
+                    SELECT s.* 
+                    FROM push_subscriptions s
+                    JOIN users u ON s.user_id = u.id
+                    WHERE s.is_active = 1
+                `;
                 let params = [];
                 
                 if (audience && audience !== 'all') {
-                    // Logic to filter by audience tier if needed
-                    // For now we broadcast to all active subs as a base implementation
+                    if (audience === 'merchants') {
+                        query += ' AND u.role = ?';
+                        params.push('merchant');
+                    } else if (audience === 'resellers') {
+                        query += ' AND u.role = ?';
+                        params.push('reseller');
+                    } else {
+                        // Plan-based filtering
+                        query += ' AND u.tier = ?';
+                        params.push(audience);
+                    }
+                }
+
+                if (platform && platform !== 'all') {
+                    query += ' AND s.platform = ?';
+                    params.push(platform);
                 }
 
                 const { results: subscriptions } = await env.DB.prepare(query).bind(...params).all();
-                
-                // Track results
-                let successCount = 0;
-                let failureCount = 0;
-
-                // In a real worker, we would use a queue or parallel promises with limits
-                // to avoid exceeding worker timeout for very large lists.
-                // For now, we process them and return the status.
-                
-                // Note: Actual Web Push sending requires VAPID signing which typically 
-                // uses a library or manual crypto. We provide the structure here.
                 
                 return json({ 
                     success: true, 

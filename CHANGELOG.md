@@ -1,5 +1,19 @@
 # Tamuu Changelog
 
+## [0.6.54] - 2026-03-09
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### UI/UX Refinement: Admin Push Notification Center
+- **Enterprise Responsiveness**: Restructured the layout using a dynamic 12-column grid to ensure perfect scaling across mobile, tablet, and desktop viewports.
+- **Ergonomics & Navigation**:
+  - Implemented a dedicated "Back to Dashboard" button (`ArrowLeft`) with intuitive hover states.
+  - Corrected top padding (`pt-12`) to prevent UI elements from overlapping with browser chrome.
+- **High-Contrast Design**: Revamped the `Target Audience` dropdown with solid backgrounds and distinct text coloring, resolving visibility issues in dark mode.
+- **Functional Interactivity**: 
+  - The `Platform Delivery` toggle (Mobile, Desktop, All) is now fully wired to the backend broadcast API.
+  - Integrated manual **Cloudflare R2 Image Upload** (`storage.upload`) directly into the notification composer, complete with real-time loading states and preview thumbnails.
+
 ## [0.6.53] - 2026-03-09
 **Status**: 🟢 Deployed
 **Environment**: Production
