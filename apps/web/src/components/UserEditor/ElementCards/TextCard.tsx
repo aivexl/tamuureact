@@ -65,14 +65,11 @@ export const TextCard: React.FC<ElementCardProps> = ({ element, handleUpdate, pe
                             isTypingRef.current = false;
                             handleUpdate({ content: localContent });
                         }}
-                        className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-base sm:text-lg font-bold text-slate-800 placeholder:text-slate-300 focus:bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all outline-none resize-none shadow-inner"
+                        className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm font-medium text-slate-700 placeholder:text-slate-300 focus:bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all outline-none resize-none shadow-inner"
                         rows={Math.max(3, Math.min(10, (localContent.split('\n').length || 1)))}
                         placeholder="Tuliskan kata-kata Anda di sini..."
                         style={{ minHeight: '120px', lineHeight: '1.6' }}
                     />
-                    <p className="px-1 text-[9px] font-medium text-slate-400 italic">
-                        * Gunakan tombol Enter untuk membuat baris baru. Perubahan tersimpan otomatis.
-                    </p>
                 </div>
             )}
 

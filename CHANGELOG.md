@@ -1,5 +1,13 @@
 # Tamuu Changelog
 
+## [0.6.44] - 2026-03-08
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### UI/UX: Text Editor Polish & Clean Up
+- **Refined Input Typography**: Reverted the font size inside the text editor `textarea` to a standard readable size (`text-sm`) based on user feedback, maintaining a professional and non-intrusive look.
+- **UI Simplification**: Removed the helper footer text from the text editor to reduce visual clutter and provide a more focused editing experience.
+
 ## [0.6.43] - 2026-03-08
 **Status**: 🟢 Deployed
 **Environment**: Production
@@ -17,15 +25,4 @@
   - Lifted the tutorial overlay to `z-index: 1000000` via Portal for zero clipping.
 
 ## [0.6.42] - 2026-03-08
-**Status**: 🟢 Deployed
-**Environment**: Production
-
-### UI/UX: Tutorial System Enterprise V2 (Reactive Paint Fix)
-- **Reactive DOM Scanning**: Resolved the race condition where tutorial cards wouldn't appear because DOM elements weren't fully painted. Added a smart 800ms buffer and reactive step filtering.
-- **Enterprise Card Layout**: Implemented a proportional `flex-col` layout for tutorial tooltips, ensuring zero overlap between title, description, and navigation buttons.
-- **Mobile-First Fixed Positioning**: Migrated from absolute to fixed positioning for the tutorial layer to guarantee pixel-perfect alignment across all device heights and scroll states.
-- **Scale-In Micro-interactions**: Replaced top-down slide animations with high-end scale and fade transitions (200ms) for a direct, responsive feel.
-- **Enhanced Reliability**: Implemented `availableSteps` auto-validation to dynamically bypass inactive feature buttons, ensuring the tutorial never gets "stuck" on hidden UI elements.
-
-## [0.6.41] - 2026-03-08
 ... (rest of changelog)
