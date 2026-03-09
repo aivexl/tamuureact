@@ -40,14 +40,14 @@ import { useSubscriptionTimer } from '../hooks/useSubscriptionTimer';
 import { SubscriptionStatusWidget } from '../components/ui/SubscriptionStatusWidget';
 
 // ============================================
-// TUTORIAL SYSTEM (INDONESIAN - ENTERPRISE V9)
+// TUTORIAL SYSTEM (INDONESIAN - ENTERPRISE V10)
 // ============================================
 
 const TUTORIAL_STEPS = [
     { targetId: 'welcome', title: 'Halo, Selamat Datang!', description: 'Mari kami pandu sebentar untuk memahami cara mengedit undangan impian Anda dengan mudah.', position: 'center' },
     { targetId: 'tutorial-info-card', title: 'Info Undangan', description: 'Kartu ini berisi ringkasan undangan Anda, termasuk link yang bisa disalin.', position: 'bottom' },
-    { targetId: 'tutorial-publish-button', title: 'Tombol Publish', description: 'Klik ini jika Anda sudah siap untuk menampilkan undangan ke publik.', position: 'left' },
-    { targetId: 'tutorial-draft-button', title: 'Mode Draft', description: 'Gunakan ini untuk menyembunyikan undangan sementara saat masih dalam proses edit.', position: 'left' },
+    { targetId: 'tutorial-publish-button', title: 'Tombol Publish', description: 'Klik ini jika Anda sudah siap untuk menampilkan undangan ke publik.', position: 'bottom' },
+    { targetId: 'tutorial-draft-button', title: 'Mode Draft', description: 'Gunakan ini untuk menyembunyikan undangan sementara saat masih dalam proses edit.', position: 'bottom' },
     { targetId: 'tutorial-grid-item-music', title: 'Musik Latar', description: 'Pilih lagu romantis untuk mengiringi tamu saat membuka undangan.', position: 'bottom' },
     { targetId: 'tutorial-grid-item-luckydraw', title: 'Fitur Undian', description: 'Buat tamu makin antusias dengan fitur undian berhadiah di dalam undangan.', position: 'bottom' },
     { targetId: 'tutorial-grid-item-template', title: 'Ganti Desain', description: 'Bosan dengan desain ini? Anda bisa mengganti seluruh tema undangan di sini.', position: 'bottom' },
@@ -73,7 +73,6 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
     const [isReady, setIsReady] = useState(false);
     const requestRef = useRef<number>(undefined);
 
-    // PERSISTENT DISCOVERY: Keep scanning for elements as they render
     useEffect(() => {
         const interval = setInterval(() => {
             const filtered = TUTORIAL_STEPS.filter(s => {
@@ -92,7 +91,6 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
 
     const currentStep = availableSteps[stepIndex];
 
-    // LIVE COORDINATE TRACKING (rAF Loop for High-End Fluidity)
     useEffect(() => {
         if (!isReady || !currentStep) return;
 
@@ -109,7 +107,6 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
             requestRef.current = requestAnimationFrame(update);
         };
 
-        // Scroll to target smoothly
         if (currentStep.targetId !== 'welcome') {
             const el = document.getElementById(currentStep.targetId);
             if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -123,30 +120,27 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
 
     const getCardStyle = () => {
         const cardWidth = Math.min(window.innerWidth - 32, 300);
-        const cardHeight = 180; // Estimated
+        const cardHeight = 180;
         const padding = 16;
 
         if (!coords || currentStep.targetId === 'welcome') {
-            return {
-                top: '50%',
-                left: '50%',
-                x: '-50%',
-                y: '-50%',
-                width: cardWidth,
-                opacity: 1
-            };
+            return { top: '50%', left: '50%', x: '-50%', y: '-50%', width: cardWidth, opacity: 1 };
         }
         
         let top = 0, left = 0;
-        const spacing = 16;
+        const spacing = 24; // Increased spacing to prevent overlapping
 
-        // Smart Positioning Logic
         if (currentStep.position === 'bottom') {
             top = coords.top + coords.height + spacing;
             left = coords.left + (coords.width / 2) - (cardWidth / 2);
+            // Auto-flip if cut off at bottom
+            if (top + cardHeight > window.innerHeight - padding) {
+                top = coords.top - cardHeight - spacing;
+            }
         } else if (currentStep.position === 'top') {
             top = coords.top - cardHeight - spacing;
             left = coords.left + (coords.width / 2) - (cardWidth / 2);
+            if (top < padding) top = coords.top + coords.height + spacing;
         } else if (currentStep.position === 'right') {
             top = coords.top + (coords.height / 2) - (cardHeight / 2);
             left = coords.left + coords.width + spacing;
@@ -155,18 +149,10 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
             left = coords.left - cardWidth - spacing;
         }
 
-        // Viewport Collision Detection (Anti-Clipping)
         const safeTop = Math.max(padding, Math.min(window.innerHeight - cardHeight - padding, top));
         const safeLeft = Math.max(padding, Math.min(window.innerWidth - cardWidth - padding, left));
 
-        return {
-            top: safeTop,
-            left: safeLeft,
-            width: cardWidth,
-            x: 0,
-            y: 0,
-            opacity: 1
-        };
+        return { top: safeTop, left: safeLeft, width: cardWidth, x: 0, y: 0, opacity: 1 };
     };
 
     const cardStyle: any = getCardStyle();
@@ -179,8 +165,8 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={cardStyle}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30, opacity: { duration: 0.2 } }}
-                    className="absolute bg-slate-900 text-white rounded-[2rem] shadow-[0_40px_100px_rgba(0,0,0,0.9)] p-6 pointer-events-auto border border-white/10 flex flex-col"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    className="absolute bg-slate-900 text-white rounded-[2rem] shadow-[0_40px_100px_rgba(0,0,0,0.9)] p-6 pointer-events-auto border border-indigo-500/30 flex flex-col"
                     style={{ position: 'fixed' }}
                 >
                     <div className="flex items-center justify-between mb-2">
@@ -203,24 +189,26 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
                         </div>
                     </div>
 
-                    {/* DYNAMIC ARROW POINTING */}
+                    {/* DYNAMIC ARROW POINTING (HIGH VISIBILITY) */}
                     {coords && currentStep.targetId !== 'welcome' && (
                         <m.div 
                             layout
-                            className={`absolute w-3.5 h-3.5 bg-slate-900 border-white/10 rotate-45 z-[-1] ${
-                                currentStep.position === 'bottom' ? '-top-1.5' :
-                                currentStep.position === 'top' ? '-bottom-1.5' :
-                                currentStep.position === 'right' ? '-left-1.5' :
-                                '-right-1.5'
+                            className={`absolute w-4 h-4 bg-slate-900 border-white/20 rotate-45 z-[1000001] ${
+                                cardStyle.top > coords.top + coords.height ? '-top-2' : 
+                                cardStyle.top + 180 < coords.top ? '-bottom-2' : 
+                                cardStyle.left > coords.left + coords.width ? '-left-2' : '-right-2'
                             }`}
                             style={{
-                                // Dynamic arrow centering based on target vs card position
-                                left: (currentStep.position === 'bottom' || currentStep.position === 'top') 
-                                    ? Math.max(20, Math.min((cardStyle.width as number) - 20, coords.left + (coords.width / 2) - (cardStyle.left as number))) 
+                                left: (cardStyle.top > coords.top + coords.height || cardStyle.top + 180 < coords.top) 
+                                    ? Math.max(30, Math.min(cardStyle.width - 30, coords.left + (coords.width / 2) - cardStyle.left)) 
                                     : 'auto',
-                                top: (currentStep.position === 'left' || currentStep.position === 'right')
-                                    ? Math.max(20, Math.min(160, coords.top + (coords.height / 2) - (cardStyle.top as number)))
-                                    : 'auto'
+                                top: (cardStyle.left > coords.left + coords.width || cardStyle.left + cardStyle.width < coords.left)
+                                    ? Math.max(30, Math.min(150, coords.top + (coords.height / 2) - cardStyle.top))
+                                    : 'auto',
+                                borderTop: cardStyle.top > coords.top + coords.height ? '1px solid rgba(255,255,255,0.2)' : 'none',
+                                borderLeft: cardStyle.top > coords.top + coords.height ? '1px solid rgba(255,255,255,0.2)' : (cardStyle.left > coords.left + coords.width ? '1px solid rgba(255,255,255,0.2)' : 'none'),
+                                borderRight: cardStyle.top + 180 < coords.top ? '1px solid rgba(255,255,255,0.2)' : (cardStyle.left + cardStyle.width < coords.left ? '1px solid rgba(255,255,255,0.2)' : 'none'),
+                                borderBottom: cardStyle.top + 180 < coords.top ? '1px solid rgba(255,255,255,0.2)' : 'none'
                             }}
                         />
                     )}
@@ -263,8 +251,8 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                 setInvitation({ id: data.id, title: data.name, slug: data.slug, is_published: !!data.is_published, status: data.is_published ? "Published" : "Draft", thumbnailUrl: data.thumbnail_url, category: data.category });
                 if (data.sections?.length > 0 && !activeSectionId) setActiveSection(data.sections[0].id);
                 
-                // VERSION 9 RESET
-                const tutorialKey = `tutorial_seen_v9_${id}`;
+                // VERSION 10 RESET
+                const tutorialKey = `tutorial_seen_v10_${id}`;
                 if (!localStorage.getItem(tutorialKey)) {
                     setTimeout(() => setShowTutorial(true), 1500);
                 }
@@ -275,7 +263,7 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
 
     const completeTutorial = () => {
         setShowTutorial(false);
-        localStorage.setItem(`tutorial_seen_v9_${id}`, 'true');
+        localStorage.setItem(`tutorial_seen_v10_${id}`, 'true');
     };
 
     if (loading) return <PremiumLoader showLabel label="Menyiapkan Editor..." />;
