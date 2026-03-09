@@ -48,12 +48,25 @@ export default {
         };
 
 
-        // CORS headers
+        // CTO SECURITY ENFORCEMENT: Strict Origin Whitelisting
+        const origin = request.headers.get('Origin');
+        const allowedOrigins = ['https://tamuu.id', 'https://app.tamuu.id', 'http://localhost:3000', 'http://localhost:5173'];
+        const corsOrigin = allowedOrigins.includes(origin) ? origin : 'https://tamuu.id';
+
         const corsHeaders = {
-            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Origin': corsOrigin,
             'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+            'Access-Control-Allow-Credentials': 'true',
             'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
+        };
+
+        // CTO SECURITY ENFORCEMENT: Production Log Silencer
+        const isProd = env.ENVIRONMENT === 'production';
+        const logger = {
+            log: (...args) => { if (!isProd) console.log('[LOG]', ...args); },
+            error: (...args) => { if (isProd) console.error('[CRITICAL]', ...args); else console.error('[ERR]', ...args); },
+            warn: (...args) => { if (!isProd) console.warn('[WARN]', ...args); }
         };
 
         // Handle preflight
@@ -1336,9 +1349,19 @@ export default {
                 if (method === 'DELETE') {
                     try {
                         const productId = url.searchParams.get('id');
-                        if (!productId) return json({ error: 'Product ID required' }, { ...corsHeaders, status: 400 });
+                        const merchantId = url.searchParams.get('merchant_id'); // Enforcement
+                        
+                        if (!productId || !merchantId) {
+                            return json({ error: 'Product ID and Merchant ID required' }, { ...corsHeaders, status: 400 });
+                        }
 
-                        await env.DB.prepare('DELETE FROM shop_products WHERE id = ?').bind(productId).run();
+                        // CTO Hardening: Verify ownership before delete
+                        const result = await env.DB.prepare('DELETE FROM shop_products WHERE id = ? AND merchant_id = ?')
+                            .bind(productId, merchantId).run();
+
+                        if (result.meta?.changes === 0) {
+                            return json({ error: 'Deletion failed or unauthorized' }, { ...corsHeaders, status: 403 });
+                        }
 
                         return json({ success: true }, corsHeaders);
                     } catch (error) {

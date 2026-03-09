@@ -8,6 +8,19 @@ import { AuthProvider } from './providers/AuthProvider'
 import App from './App'
 import './index.css'
 
+// CTO SECURITY: Global Production Log Silencer
+if (import.meta.env.PROD) {
+    console.log = () => { };
+    console.debug = () => { };
+    console.info = () => { };
+    console.warn = () => { };
+    const originalError = console.error;
+    console.error = (...args) => {
+        if (args[0]?.includes?.('Hydration') || args[0]?.includes?.('React')) return;
+        originalError('[ERROR]', args[0]);
+    };
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
         <HelmetProvider>

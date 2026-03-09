@@ -844,8 +844,13 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[9999] flex flex-col items-center overflow-hidden transition-colors duration-700"
-                style={viewportBackgroundStyle}
+                onContextMenu={(e) => e.preventDefault()} // CTO: Content Shutter - Prevent Right Click
+                className="fixed inset-0 z-[9999] flex flex-col items-center overflow-hidden transition-colors duration-700 select-none" // CTO: Disable selection
+                style={{
+                    ...viewportBackgroundStyle,
+                    WebkitUserSelect: 'none',
+                    WebkitTouchCallout: 'none'
+                }}
             >
                 <SmartFontInjector />
                 {/* 
