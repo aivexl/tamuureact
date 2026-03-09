@@ -1,14 +1,14 @@
 # Tamuu Changelog
 
-## [0.6.48] - 2026-03-08
+## [0.6.49] - 2026-03-08
 **Status**: 🟢 Deployed
 **Environment**: Production
 
-### Critical: Enterprise Scalability V4 (Static Offloading)
-- **R2 Static Data Mirroring**: Implemented an automated background exporter that mirrors invitation data to Cloudflare R2 as minified JSON upon every successful save.
-- **D1 Database Bypass**: Re-engineered the public fetch route to prioritize R2 storage. Visitors now bypass the SQL database entirely, reducing D1 Read Units and Worker CPU time by ~90%.
-- **Hybrid Persistence HUD**: Integrated the Auto-Save status with the new scalability layer, providing users with instant feedback while the background system handles the complex multi-layer sync (Local -> D1 -> R2).
-- **Scalability Milestone**: The system is now technically capable of handling **300,000+ daily visitors** within the Free Tier limits.
+### UI/UX: Smart Manual Save & Clean HUD
+- **Zero-Indicator UI**: Removed all auto-save visual HUDs to provide a completely clean and focused editing interface as requested.
+- **Smart Fingerprint Deduplication**: The manual save button now calculates a data fingerprint before execution. If data is unchanged, it bypasses the API call, saving Cloudflare request units while providing instant "Success" feedback to the user.
+- **Professional Exit Guard**: Implemented standard `beforeunload` browser protection. Users are now warned if they attempt to leave the editor with unsaved changes in the cloud.
+- **Background Auto-Save Purge**: Permanently removed the 5-second background auto-save timer to ensure 100% of API requests are user-initiated and intentional.
 
-## [0.6.47] - 2026-03-08
+## [0.6.48] - 2026-03-08
 ... (rest of changelog)

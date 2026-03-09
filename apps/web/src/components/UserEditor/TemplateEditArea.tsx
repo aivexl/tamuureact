@@ -207,23 +207,57 @@ export const TemplateEditArea: React.FC = () => {
     const [localSections, setLocalSections] = useState(sections);
     const isInternalUpdate = useRef(false);
 
+    // CTO Phase 3: Fingerprint Tracking to avoid redundant saves
+    const lastSavedFingerprintRef = useRef<string>('');
+
     useEffect(() => {
         if (!isInternalUpdate.current) {
             const sorted = [...sections].sort((a, b) => a.order - b.order);
             setLocalSections(sorted);
             if (sorted.length > 0 && !expandedSection) setExpandedSection(sorted[0].id);
+            
+            // Capture initial fingerprint
+            if (!lastSavedFingerprintRef.current && sections.length > 0) {
+                lastSavedFingerprintRef.current = JSON.stringify({ sections, orbit, music: useStore.getState().music });
+            }
         }
     }, [sections]);
 
     const handleSave = async () => {
         if (!invitationId) return;
+
+        // 1. SMART CHECK: Compare current state with last saved state
+        const currentMusic = useStore.getState().music;
+        const currentFingerprint = JSON.stringify({ sections, orbit, music: currentMusic });
+        
+        if (currentFingerprint === lastSavedFingerprintRef.current) {
+            console.log('[Save] Data unchanged. Skipping API call (Optimized).');
+            setSaveStatus('saved');
+            useStore.getState().setIsDirty(false); // Force clean
+            setTimeout(() => setSaveStatus('idle'), 2000);
+            return;
+        }
+
         setSaveStatus('saving');
         try {
-            await invitationsApi.update(invitationId, { sections, orbit_layers: orbit, music: useStore.getState().music });
+            await invitationsApi.update(invitationId, { 
+                sections, 
+                orbit_layers: orbit, 
+                music: currentMusic 
+            });
+            
+            // Update fingerprint on success
+            lastSavedFingerprintRef.current = currentFingerprint;
             setSaveStatus('saved');
+            
+            // CTO Phase 3: Data is now clean (Server matches Client)
+            useStore.getState().setIsDirty(false);
+            
             queryClient.invalidateQueries({ queryKey: queryKeys.invitations.all });
             setTimeout(() => setSaveStatus('idle'), 3000);
-        } catch (error) { setSaveStatus('error'); }
+        } catch (error) { 
+            setSaveStatus('error'); 
+        }
     };
 
     const toggleExpand = (id: string) => setExpandedSection(expandedSection === id ? null : id);

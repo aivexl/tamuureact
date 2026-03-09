@@ -224,7 +224,7 @@ interface UserEditorPageProps {
 export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitation' }) => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { id: currentStoredId, hasHydrated, resetStore, resetSections, clearLayers, hydrateProject, setSections, setOrbitLayers, setActiveSection, activeSectionId, sections, orbit, music, exportFormat, isPublished, isDirty, setIsDirty } = useStore();
+    const { id: currentStoredId, hasHydrated, resetStore, resetSections, clearLayers, hydrateProject, setSections, setOrbitLayers, setActiveSection, activeSectionId, isPublished, isDirty } = useStore();
 
     if (mode === 'welcome') return <div className="w-full h-screen bg-[#050505] text-white selection:bg-premium-accent selection:text-premium-dark overflow-hidden font-outfit"><EditorLayout templateId={id} isTemplate={false} isDisplayDesign={true} /></div>;
 
@@ -240,7 +240,7 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
             if (isDirty) {
                 e.preventDefault();
-                e.returnValue = ''; // Trigger browser standard modal
+                e.returnValue = ''; // Standard browser prompt
                 return '';
             }
         };
@@ -262,9 +262,8 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                 setInvitation({ id: data.id, title: data.name, slug: data.slug, is_published: !!data.is_published, status: data.is_published ? "Published" : "Draft", thumbnailUrl: data.thumbnail_url, category: data.category });
                 if (data.sections?.length > 0 && !activeSectionId) setActiveSection(data.sections[0].id);
                 
-                // VERSION 10 RESET
-                const tutorialKey = `tutorial_seen_v10_${id}`;
-                if (!localStorage.getItem(tutorialKey)) {
+                // Show tutorial for first-time users
+                if (!localStorage.getItem(`tutorial_seen_v10_${id}`)) {
                     setTimeout(() => setShowTutorial(true), 1500);
                 }
             } catch (err) { hasAttemptedRef.current = null; } finally { setLoading(false); }
