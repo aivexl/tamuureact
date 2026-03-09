@@ -13,7 +13,10 @@ import { sanitizeValue } from '@/lib/utils';
 // ============================================
 // COMBINED STORE TYPE
 // ============================================
-type StoreState = CanvasState & LayersState & UIState & ModalState & SectionsState & AuthState & ClockState;
+type StoreState = CanvasState & LayersState & UIState & ModalState & SectionsState & AuthState & ClockState & {
+    isDirty: boolean;
+    setIsDirty: (val: boolean) => void;
+};
 
 // ============================================
 // MAIN STORE WITH UNDO/REDO
@@ -29,6 +32,8 @@ export const useStore = create<StoreState>()(
                 ...createSectionsSlice(...a),
                 ...createAuthSlice(...a),
                 ...createClockSlice(...a),
+                isDirty: false,
+                setIsDirty: (val) => a[0]({ isDirty: val }),
             }),
             {
                 limit: 50,

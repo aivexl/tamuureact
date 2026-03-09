@@ -4451,9 +4451,9 @@ name = COALESCE(?, name),
                 }, corsHeaders);
             }
 
-            // Public Invitation Fetch (Cached for 60s)
+            // Public Invitation Fetch (Cached for 300s)
             if (path.match(/^\/api\/invitations\/public\/[^/]+$/) && method === 'GET') {
-                return await smart_cache(request, 60, async () => {
+                return await smart_cache(request, 300, async () => {
                     const parts = path.split('/');
                     const id = parts[parts.length - 1];
                     let { results } = await env.DB.prepare(
@@ -4475,7 +4475,37 @@ name = COALESCE(?, name),
                         };
                     }
 
-                    return parseJsonFields(invitation);
+                    const parsed = parseJsonFields(invitation);
+                    
+                    // CTO Optimization: Payload Stripping (Bandwidth Rescue)
+                    // We remove heavy/internal fields not needed for the visitor view
+                    return {
+                        id: parsed.id,
+                        name: parsed.name,
+                        slug: parsed.slug,
+                        category: parsed.category,
+                        zoom: parsed.zoom,
+                        pan: parsed.pan,
+                        sections: parsed.sections,
+                        layers: parsed.layers,
+                        orbit_layers: parsed.orbit_layers,
+                        music: parsed.music,
+                        is_published: parsed.is_published,
+                        event_date: parsed.event_date,
+                        event_location: parsed.event_location,
+                        venue_name: parsed.venue_name,
+                        address: parsed.address,
+                        google_maps_url: parsed.google_maps_url,
+                        seo_title: parsed.seo_title,
+                        seo_description: parsed.seo_description,
+                        og_image: parsed.og_image,
+                        gallery_photos: parsed.gallery_photos,
+                        livestream_url: parsed.livestream_url,
+                        love_story: parsed.love_story,
+                        quote_text: parsed.quote_text,
+                        quote_author: parsed.quote_author,
+                        lucky_draw_settings: parsed.lucky_draw_settings
+                    };
                 });
             }
 
@@ -4584,7 +4614,9 @@ name = COALESCE(?, name),
                         id, // WHERE id = ?
                         id  // OR slug = ?
                     ).run();
-                    return json({ id, updated: true, traceId }, corsHeaders);
+
+                    // CTO Optimization: Do not echo back full invitation object to save bandwidth
+                    return json({ id, updated: true, traceId, slug: body.slug || id }, corsHeaders);
                 } catch (dbError) {
                     console.error(`[DB Error] [${traceId}] Update failed:`, dbError.message);
                     return new Response(JSON.stringify({

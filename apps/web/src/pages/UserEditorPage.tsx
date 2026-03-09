@@ -128,12 +128,11 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
         }
         
         let top = 0, left = 0;
-        const spacing = 24; // Increased spacing to prevent overlapping
+        const spacing = 24; 
 
         if (currentStep.position === 'bottom') {
             top = coords.top + coords.height + spacing;
             left = coords.left + (coords.width / 2) - (cardWidth / 2);
-            // Auto-flip if cut off at bottom
             if (top + cardHeight > window.innerHeight - padding) {
                 top = coords.top - cardHeight - spacing;
             }
@@ -189,7 +188,6 @@ const TutorialOverlay = ({ onComplete }: { onComplete: () => void }) => {
                         </div>
                     </div>
 
-                    {/* DYNAMIC ARROW POINTING (HIGH VISIBILITY) */}
                     {coords && currentStep.targetId !== 'welcome' && (
                         <m.div 
                             layout
@@ -226,7 +224,7 @@ interface UserEditorPageProps {
 export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitation' }) => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { id: currentStoredId, hasHydrated, resetStore, resetSections, clearLayers, hydrateProject, setSections, setOrbitLayers, setActiveSection, activeSectionId, sections, orbit, exportFormat, isPublished } = useStore();
+    const { id: currentStoredId, hasHydrated, resetStore, resetSections, clearLayers, hydrateProject, setSections, setOrbitLayers, setActiveSection, activeSectionId, sections, orbit, music, exportFormat, isPublished, isDirty, setIsDirty } = useStore();
 
     if (mode === 'welcome') return <div className="w-full h-screen bg-[#050505] text-white selection:bg-premium-accent selection:text-premium-dark overflow-hidden font-outfit"><EditorLayout templateId={id} isTemplate={false} isDisplayDesign={true} /></div>;
 
@@ -236,6 +234,19 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
     const [activePanel, setActivePanel] = useState<string | null>(null);
     const previewRef = useRef<HTMLDivElement>(null);
     const hasAttemptedRef = useRef<string | null>(null);
+
+    // CTO Phase 3: Professional Exit Guard (BeforeUnload)
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (isDirty) {
+                e.preventDefault();
+                e.returnValue = ''; // Trigger browser standard modal
+                return '';
+            }
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [isDirty]);
 
     useEffect(() => {
         const loadInvitation = async () => {
@@ -278,7 +289,8 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                 <TemplateEditArea />
             </div>
             {showTutorial && <TutorialOverlay onComplete={completeTutorial} />}
-            <Modal isOpen={activePanel !== null} onClose={() => setActivePanel(null)} title={activePanel || ''} size="lg">
+            
+            <Modal isOpen={activePanel !== null} onClose={() => setActivePanel(null)} title={activePanel ? activePanel.charAt(0).toUpperCase() + activePanel.slice(1) : ''} size="lg">
                 {activePanel === 'music' && <MusicPanel />}
                 {activePanel === 'display' && <DisplayStorePanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
                 {activePanel === 'template' && <TemplateStorePanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}

@@ -75,6 +75,9 @@ export const UserElementEditor: React.FC<UserElementEditorProps> = ({ element, s
     const handleUpdate = (updates: Partial<Layer>) => {
         if (!sectionId) return;
 
+        // CTO Phase 3: Mark as dirty for local-first sync
+        useStore.getState().setIsDirty(true);
+
         if (sectionId === 'global') {
             updateLayer(element.id, updates);
         } else {
