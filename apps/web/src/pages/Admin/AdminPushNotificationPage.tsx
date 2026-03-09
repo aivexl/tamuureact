@@ -15,8 +15,10 @@ import {
     Zap,
     Info,
     ChevronRight,
-    ShieldCheck
+    ShieldCheck,
+    ArrowLeft
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { push, storage } from '../../lib/api';
 import { toast } from 'react-hot-toast';
 
@@ -31,6 +33,7 @@ interface PushStats {
 }
 
 export const AdminPushNotificationPage: React.FC = () => {
+    const navigate = useNavigate();
     const [title, setTitle] = useState('');
     const [message, setMessage] = useState('');
     const [url, setUrl] = useState('');
@@ -104,9 +107,6 @@ export const AdminPushNotificationPage: React.FC = () => {
 
             if (res.success) {
                 toast.success(`Broadcast terkirim ke ${res.reach} perangkat!`);
-                // Reset form optionally
-                // setTitle('');
-                // setMessage('');
             }
         } catch (error) {
             toast.error('Gagal mengirim broadcast');
@@ -127,10 +127,8 @@ export const AdminPushNotificationPage: React.FC = () => {
         else if (audience === 'resellers') count = stats.resellers;
         else if (audience === 'admins') count = stats.admins;
 
-        // If platform is filtered, we apply a rough 50/50 split as estimate if we don't have per-platform tier data yet
-        // In a real scenario, the backend stats would be more granular.
         if (platform !== 'all') {
-            return Math.floor(count * 0.6); // Assume 60% mobile, 40% desktop for now
+            return Math.floor(count * 0.6); 
         }
         
         return count;
@@ -142,17 +140,27 @@ export const AdminPushNotificationPage: React.FC = () => {
             <div className="bg-white border-b border-slate-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div>
-                            <div className="flex items-center gap-2 mb-2">
-                                <div className="bg-black text-white p-1.5 rounded-lg">
-                                    <Bell size={20} />
+                        <div className="flex flex-col gap-4">
+                            <button 
+                                onClick={() => navigate('/admin')}
+                                className="flex items-center gap-2 text-slate-500 hover:text-black transition-colors font-bold text-sm w-fit group"
+                            >
+                                <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+                                Kembali ke Dashboard
+                            </button>
+                            
+                            <div>
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="bg-black text-white p-1.5 rounded-lg">
+                                        <Bell size={20} />
+                                    </div>
+                                    <span className="text-xs font-bold tracking-widest uppercase text-slate-500">Tamuu Nexus v1.1</span>
                                 </div>
-                                <span className="text-xs font-bold tracking-widest uppercase text-slate-500">Tamuu Nexus v1.0</span>
+                                <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Push Notifications</h1>
+                                <p className="mt-1 text-slate-500 max-w-2xl font-medium">
+                                    Kirimi notifikasi real-time ke ribuan perangkat user secara instan.
+                                </p>
                             </div>
-                            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Push Notifications</h1>
-                            <p className="mt-1 text-slate-500 max-w-2xl">
-                                Kirim notifikasi real-time ke ribuan perangkat user secara instan. Gunakan dengan bijak untuk menghindari unsubscribe.
-                            </p>
                         </div>
                         
                         <div className="flex items-center gap-3">
@@ -326,7 +334,7 @@ export const AdminPushNotificationPage: React.FC = () => {
                             <div>
                                 <h3 className="font-bold text-amber-900 mb-1">Panduan Enterprise Broadcast</h3>
                                 <p className="text-sm text-amber-800/80 leading-relaxed">
-                                    Hindari mengirim lebih dari 3 notifikasi per hari ke audiens yang sama. Gunakan gambar dengan rasio 2:1 untuk tampilan optimal di Android dan Chrome Desktop. Link wajib diawali dengan https://.
+                                    Hindari mengirim lebih dari 3 notifikasi per hari ke audiens yang sama. Gunakan gambar dengan rasio 2:1 untuk tampilan optimal.
                                 </p>
                             </div>
                         </div>

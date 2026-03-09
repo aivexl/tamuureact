@@ -368,20 +368,29 @@ export default {
 
             if (path === '/api/admin/push/stats' && method === 'GET') {
                 try {
-                    const stats = await env.DB.prepare(`
-                        SELECT 
-                            (SELECT COUNT(*) FROM push_subscriptions WHERE is_active = 1) as all_users,
-                            (SELECT COUNT(*) FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.tier = 'pro') as pro,
-                            (SELECT COUNT(*) FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.tier = 'ultimate') as ultimate,
-                            (SELECT COUNT(*) FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.tier = 'elite') as elite,
-                            (SELECT COUNT(*) FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.role = 'merchant') as merchants,
-                            (SELECT COUNT(*) FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.role = 'reseller') as resellers,
-                            (SELECT COUNT(*) FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.role = 'admin') as admins
-                    `).first();
+                    const allUsers = await env.DB.prepare('SELECT COUNT(*) as count FROM push_subscriptions WHERE is_active = 1').first('count');
+                    const pro = await env.DB.prepare('SELECT COUNT(*) as count FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.tier = "pro"').first('count');
+                    const ultimate = await env.DB.prepare('SELECT COUNT(*) as count FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.tier = "ultimate"').first('count');
+                    const elite = await env.DB.prepare('SELECT COUNT(*) as count FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.tier = "elite"').first('count');
+                    const merchants = await env.DB.prepare('SELECT COUNT(*) as count FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.role = "merchant"').first('count');
+                    const resellers = await env.DB.prepare('SELECT COUNT(*) as count FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.role = "reseller"').first('count');
+                    const admins = await env.DB.prepare('SELECT COUNT(*) as count FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.role = "admin"').first('count');
 
-                    return json({ success: true, stats }, corsHeaders);
+                    return json({ 
+                        success: true, 
+                        stats: {
+                            all_users: allUsers || 0,
+                            pro: pro || 0,
+                            ultimate: ultimate || 0,
+                            elite: elite || 0,
+                            merchants: merchants || 0,
+                            resellers: resellers || 0,
+                            admins: admins || 0
+                        } 
+                    }, corsHeaders);
                 } catch (error) {
-                    return json({ error: 'Failed to fetch push stats' }, { ...corsHeaders, status: 500 });
+                    console.error('[Push Stats Error]', error);
+                    return json({ error: 'Failed to fetch push stats', message: error.message }, { ...corsHeaders, status: 500 });
                 }
             }
 
