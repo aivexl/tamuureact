@@ -1,5 +1,17 @@
 # Tamuu Changelog
 
+## [0.6.57] - 2026-03-09
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### MultiCarousel Architecture (Enterprise Visuals v1.0)
+- **Unified Carousel Component**: Developed a highly reusable `MultiCarousel.tsx` to handle all slider interfaces across the platform (`/shop`, `/blog`, `/invitations`).
+- **Responsive Geometry**: Implemented automatic breakpoint calculation to display exactly 3 items simultaneously on desktop and seamlessly collapse to a 1-item view on mobile devices.
+- **The "Silent" Hover State**: Stripped out legacy zoom and scale animations on images to comply with minimalist, enterprise-grade design principles. Image interactions now exclusively trigger hover-pause functionality.
+- **Navigation & Ergonomics**: Injected dynamic side-chevrons that only appear on hover, paired with an elegant dot-pagination system (active dot expands to Navy `#0A1128`) beneath the track.
+- **Data Injection**: Sourced and injected 6 high-fidelity, text-free dummy images into the storefronts to provide a cleaner, photography-first user experience.
+- **RTM Tested**: Maintained 100% pass rate in React Testing Library via Vitest.
+
 ## [0.6.56] - 2026-03-09
 **Status**: 🟢 Deployed
 **Environment**: Production

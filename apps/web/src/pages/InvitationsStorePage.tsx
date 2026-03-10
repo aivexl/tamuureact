@@ -18,6 +18,7 @@ import { useSEO } from '../hooks/useSEO';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { assembleSEOTemplate } from '../lib/seo-permutation';
 import { Breadcrumbs } from '../components/Shop/Breadcrumbs';
+import { MultiCarousel } from '../components/ui/MultiCarousel';
 
 // Lazy load the grid to reduce initial payload and TBT
 const InvitationsGrid = lazy(() => import('../components/Store/InvitationsGrid'));
@@ -67,8 +68,6 @@ export const InvitationsStorePage: React.FC = () => {
 
     // Carousel State
     const [carouselSlides, setCarouselSlides] = useState<any[]>([]);
-    const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
-    const [isCarouselPaused, setIsCarouselPaused] = useState(false);
 
     useEffect(() => {
         const fetchCarousel = async () => {
@@ -80,8 +79,12 @@ export const InvitationsStorePage: React.FC = () => {
                         setCarouselSlides(data);
                     } else {
                         setCarouselSlides([
-                            { id: '1', image_url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=2000', link_url: '#' },
-                            { id: '2', image_url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2000', link_url: '#' }
+                            { id: '1', image_url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800', link_url: '#' },
+                            { id: '2', image_url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=800', link_url: '#' },
+                            { id: '3', image_url: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80&w=800', link_url: '#' },
+                            { id: '4', image_url: 'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&q=80&w=800', link_url: '#' },
+                            { id: '5', image_url: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=800', link_url: '#' },
+                            { id: '6', image_url: 'https://images.unsplash.com/photo-1505932794465-147d1f1b6c97?auto=format&fit=crop&q=80&w=800', link_url: '#' }
                         ]);
                     }
                 }
@@ -91,14 +94,6 @@ export const InvitationsStorePage: React.FC = () => {
         };
         fetchCarousel();
     }, []);
-
-    useEffect(() => {
-        if (isCarouselPaused || carouselSlides.length <= 1) return;
-        const timer = setInterval(() => {
-            setCurrentHeroIndex((prev) => (prev + 1) % carouselSlides.length);
-        }, 5000);
-        return () => clearInterval(timer);
-    }, [isCarouselPaused, carouselSlides.length]);
 
     // ============================================
     // THE CHRONOS SEO ENGINE (v19.0)
@@ -304,63 +299,8 @@ export const InvitationsStorePage: React.FC = () => {
 
                     {/* THE SILENT CAROUSEL */}
                     {carouselSlides.length > 0 && !isOnboarding && (
-                        <section className="mb-12 relative">
-                            <div 
-                                className="relative w-full aspect-[4/3] md:aspect-[21/9] rounded-[2rem] overflow-hidden bg-slate-50 group cursor-pointer shadow-xl border border-slate-100"
-                                onMouseEnter={() => setIsCarouselPaused(true)}
-                                onMouseLeave={() => setIsCarouselPaused(false)}
-                            >
-                                <AnimatePresence mode="wait">
-                                    <m.div
-                                        key={carouselSlides[currentHeroIndex].id}
-                                        initial={{ opacity: 0, scale: 1.02 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        transition={{ duration: 0.8, ease: "easeInOut" }}
-                                        className="absolute inset-0"
-                                        onClick={() => carouselSlides[currentHeroIndex].link_url && (window.location.href = carouselSlides[currentHeroIndex].link_url)}
-                                    >
-                                        <img
-                                            src={carouselSlides[currentHeroIndex].image_url}
-                                            alt={`Showcase ${currentHeroIndex + 1}`}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </m.div>
-                                </AnimatePresence>
-
-                                {/* Navigation Arrows */}
-                                {carouselSlides.length > 1 && (
-                                    <>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); setCurrentHeroIndex((prev) => (prev - 1 + carouselSlides.length) % carouselSlides.length); }}
-                                            className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/30 backdrop-blur-md border border-white/50 flex items-center justify-center text-[#0A1128] opacity-0 group-hover:opacity-100 transition-all hover:bg-white/80 z-10"
-                                        >
-                                            <ChevronLeft className="w-5 h-5" />
-                                        </button>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); setCurrentHeroIndex((prev) => (prev + 1) % carouselSlides.length); }}
-                                            className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/30 backdrop-blur-md border border-white/50 flex items-center justify-center text-[#0A1128] opacity-0 group-hover:opacity-100 transition-all hover:bg-white/80 z-10"
-                                        >
-                                            <ChevronRight className="w-5 h-5" />
-                                        </button>
-                                    </>
-                                )}
-
-                                {/* Indicators */}
-                                {carouselSlides.length > 1 && (
-                                    <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-10">
-                                        {carouselSlides.map((_: any, index: number) => (
-                                            <button
-                                                key={index}
-                                                onClick={(e) => { e.stopPropagation(); setCurrentHeroIndex(index); }}
-                                                className={`h-1.5 rounded-full transition-all duration-500 ${
-                                                    currentHeroIndex === index ? 'w-8 bg-white' : 'w-1.5 bg-white/50 hover:bg-white/80'
-                                                }`}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                        <section className="mb-12">
+                            <MultiCarousel items={carouselSlides} />
                         </section>
                     )}
 

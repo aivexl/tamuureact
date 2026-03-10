@@ -40,6 +40,7 @@ import { blog, shop } from '../../lib/api';
 import { Breadcrumbs } from '../../components/Shop/Breadcrumbs';
 import { SEOListingFooter } from '../../components/Shop/SEOListingFooter';
 import { assembleSEOTemplate } from '../../lib/seo-permutation';
+import { MultiCarousel } from '../../components/ui/MultiCarousel';
 
 export const ShopPage: React.FC = () => {
     const navigate = useNavigate();
@@ -150,11 +151,15 @@ export const ShopPage: React.FC = () => {
     const slides = useMemo(() => {
         if (remoteSlides && remoteSlides.length > 0) return remoteSlides;
         return [
-            { id: 'dummy-1', image_url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=2000', link_url: '#' }
+            { id: '1', image_url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800', link_url: '#' },
+            { id: '2', image_url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=800', link_url: '#' },
+            { id: '3', image_url: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80&w=800', link_url: '#' },
+            { id: '4', image_url: 'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&q=80&w=800', link_url: '#' },
+            { id: '5', image_url: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=800', link_url: '#' },
+            { id: '6', image_url: 'https://images.unsplash.com/photo-1505932794465-147d1f1b6c97?auto=format&fit=crop&q=80&w=800', link_url: '#' }
         ];
     }, [remoteSlides]);
 
-    const [currentSlide, setCurrentSlide] = useState(0);
     const { data: specialProducts = [] } = useSpecialProducts();
     const { data: featuredProducts = [] } = useFeaturedProducts();
     const { data: randomProducts = [] } = useRandomProducts();
@@ -208,23 +213,9 @@ export const ShopPage: React.FC = () => {
                     </div>
                 </section>
 
-                {/* Carousel Section */}
-                <section className="pb-12 relative">
-                    {slides.length > 0 ? (
-                        <div className="relative w-full aspect-[21/9] md:aspect-[24/7] rounded-[2.5rem] overflow-hidden bg-slate-50 border border-slate-100 group shadow-sm">
-                            <AnimatePresence mode="wait">
-                                <m.div
-                                    key={slides[currentSlide].id}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    className="absolute inset-0"
-                                >
-                                    <img src={slides[currentSlide].image_url} className="w-full h-full object-cover" />
-                                </m.div>
-                            </AnimatePresence>
-                        </div>
-                    ) : null}
+                {/* Multi Carousel Section */}
+                <section className="pb-12">
+                    {slides.length > 0 && <MultiCarousel items={slides} />}
                 </section>
 
                 {/* Search & Filter */}
