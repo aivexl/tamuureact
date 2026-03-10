@@ -24,7 +24,7 @@ const BlogLandingPage: React.FC = () => {
     // Fetch Custom API logic for Carousel directly if not in lib/api.ts yet
     const fetchCarousel = async () => {
         try {
-            const res = await fetch('https://tamuu.id/api/blog/carousel'); // Or use your internal fetcher
+            const res = await api.safeFetch(`${api.API_BASE}/api/blog/carousel`);
             if (res.ok) {
                 const data = await res.json();
                 return Array.isArray(data) ? data : [];

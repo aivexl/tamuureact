@@ -1,5 +1,14 @@
 # Tamuu Changelog
 
+## [0.6.64] - 2026-03-10
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Critical: API Domain Standardization & CORS
+- **Domain Fix**: Standardized all API calls across the admin dashboard to use `api.tamuu.id` instead of hardcoded `tamuu.id` to resolve `404` and CORS preflight errors.
+- **CORS Enhancement**: Updated API worker to explicitly support `tamuu-app` and `pages.dev` origins, ensuring seamless asset management from all deployment environments.
+- **Image Optimization**: Verified and enforced enterprise-grade client-side optimization (WebP + BlurHash) for all admin carousel and banner uploads via `image-manager`.
+
 ## [0.6.63] - 2026-03-10
 **Status**: 🟢 Deployed
 **Environment**: Production

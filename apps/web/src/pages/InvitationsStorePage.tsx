@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, Suspense, lazy, useCallback } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { templates as templatesApi, invitations as invitationsApi, users as usersApi, Category } from '@/lib/api';
+import { templates as templatesApi, invitations as invitationsApi, users as usersApi, Category, safeFetch, API_BASE } from '@/lib/api';
 import { useStore } from '@/store/useStore';
 import { useTemplates, useCategories, useWishlist, useToggleWishlist } from '@/hooks/queries';
 
@@ -81,7 +81,7 @@ export const InvitationsStorePage: React.FC = () => {
             ];
             
             try {
-                const res = await fetch('https://tamuu.id/api/invitations/carousel');
+                const res = await safeFetch(`${API_BASE}/api/invitations/carousel`);
                 if (res.ok) {
                     const data = await res.json();
                     if (Array.isArray(data) && data.length > 0) {

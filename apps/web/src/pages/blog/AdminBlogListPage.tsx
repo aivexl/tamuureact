@@ -109,7 +109,7 @@ export const AdminBlogListPage = () => {
     const fetchCarousel = async () => {
         try {
             setLoadingCarousel(true);
-            const res = await fetch('https://tamuu.id/api/blog/carousel');
+            const res = await api.safeFetch(`${api.API_BASE}/api/blog/carousel`);
             if (res.ok) {
                 const data = await res.json();
                 setCarouselSlides(Array.isArray(data) ? data : []);
@@ -167,7 +167,7 @@ export const AdminBlogListPage = () => {
     const handleAddCategory = async () => {
         if (!newCategory.name || !newCategory.slug) return toast.error('Nama dan Slug wajib diisi');
         try {
-            const res = await fetch('https://tamuu.id/api/admin/blog/categories', {
+            const res = await api.safeFetch(`${api.API_BASE}/api/admin/blog/categories`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newCategory)
@@ -187,7 +187,7 @@ export const AdminBlogListPage = () => {
     const handleDeleteCategory = async (id: string) => {
         if (!window.confirm('Hapus kategori ini? Artikel di dalamnya akan diset ke "Umum".')) return;
         try {
-            const res = await fetch('https://tamuu.id/api/admin/blog/categories', {
+            const res = await api.safeFetch(`${api.API_BASE}/api/admin/blog/categories`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id })
@@ -376,7 +376,7 @@ export const AdminBlogListPage = () => {
 
     const handleSaveCarousel = async (item: any, action: 'create' | 'update' | 'delete') => {
         try {
-            const res = await fetch('https://tamuu.id/api/admin/blog/carousel', {
+            const res = await api.safeFetch(`${api.API_BASE}/api/admin/blog/carousel`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action, item })

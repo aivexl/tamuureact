@@ -3,7 +3,7 @@ import { m, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, GripVertical, Save, Image, Link as LinkIcon, AlertCircle, Megaphone, Check, X, LayoutTemplate, UploadCloud } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { PremiumLoader } from '../ui/PremiumLoader';
-import { admin, shop, storage } from '../../lib/api';
+import { admin, shop, storage, safeFetch, API_BASE } from '../../lib/api';
 import { useStore } from '../../store/useStore';
 
 export const AdminShopSettings: React.FC = () => {
@@ -64,7 +64,7 @@ export const AdminShopSettings: React.FC = () => {
 
     const handleSaveCarouselAction = async (item: any, action: 'create' | 'update' | 'delete') => {
         try {
-            const res = await fetch('https://tamuu.id/api/admin/shop/carousel', {
+            const res = await safeFetch(`${API_BASE}/api/admin/shop/carousel`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',

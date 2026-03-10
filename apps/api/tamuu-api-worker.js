@@ -48,10 +48,17 @@ export default {
         };
 
 
-        // CTO SECURITY ENFORCEMENT: Strict Origin Whitelisting
+        // CTO SECURITY ENFORCEMENT: Enhanced Origin Whitelisting
         const origin = request.headers.get('Origin');
-        const allowedOrigins = ['https://tamuu.id', 'https://app.tamuu.id', 'http://localhost:3000', 'http://localhost:5173'];
-        const corsOrigin = allowedOrigins.includes(origin) ? origin : 'https://tamuu.id';
+        const isAllowedOrigin = (origin) => {
+            if (!origin) return false;
+            const allowedOrigins = ['https://tamuu.id', 'https://app.tamuu.id', 'http://localhost:3000', 'http://localhost:5173'];
+            if (allowedOrigins.includes(origin)) return true;
+            if (origin.endsWith('.pages.dev') || origin.includes('tamuu-app')) return true;
+            return false;
+        };
+        
+        const corsOrigin = isAllowedOrigin(origin) ? origin : 'https://tamuu.id';
 
         const corsHeaders = {
             'Access-Control-Allow-Origin': corsOrigin,

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { templates as templatesApi, storage } from '@/lib/api';
+import { templates as templatesApi, storage, safeFetch, API_BASE } from '@/lib/api';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
     Smartphone,
@@ -80,7 +80,7 @@ export const AdminTemplatesPage: React.FC = () => {
     const fetchCarousel = async () => {
         setLoadingCarousel(true);
         try {
-            const res = await fetch('https://tamuu.id/api/invitations/carousel');
+            const res = await safeFetch(`${API_BASE}/api/invitations/carousel`);
             if (res.ok) {
                 const data = await res.json();
                 setCarouselSlides(Array.isArray(data) ? data : []);
@@ -175,7 +175,7 @@ export const AdminTemplatesPage: React.FC = () => {
 
     const handleSaveCarousel = async (item: any, action: 'create' | 'update' | 'delete') => {
         try {
-            const res = await fetch('https://tamuu.id/api/admin/invitations/carousel', {
+            const res = await safeFetch(`${API_BASE}/api/admin/invitations/carousel`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action, item })
