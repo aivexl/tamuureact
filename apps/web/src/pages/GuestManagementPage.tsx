@@ -423,7 +423,7 @@ export const GuestManagementPage: React.FC = () => {
     const publicDomain = getPublicDomain();
 
     return (
-        <div className="min-h-screen bg-slate-50 pt-20">
+        <div className="min-h-screen bg-slate-50 pt-[110px]">
             {/* Page Header */}
             <div className="bg-white border-b border-slate-200 px-4 lg:px-8 pt-10 pb-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

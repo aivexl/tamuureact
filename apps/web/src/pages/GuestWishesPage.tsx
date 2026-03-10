@@ -122,7 +122,7 @@ export const GuestWishesPage: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 pt-28 pb-24 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-slate-50 pt-[130px] pb-24 px-4 sm:px-6 lg:px-8">
             <div className="max-w-6xl mx-auto space-y-8">
 
                 {/* Header */}

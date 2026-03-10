@@ -188,9 +188,9 @@ export const DashboardPage: React.FC = () => {
     const publicDomain = getPublicDomain();
 
     return (
-        <div className="min-h-screen bg-white md:bg-slate-50 flex flex-col md:flex-row pt-14 pb-24 md:pb-0">
+        <div className="min-h-screen bg-white md:bg-slate-50 flex flex-col md:flex-row pt-[110px] pb-24 md:pb-0">
             {/* Sidebar (Desktop Only) */}
-            <aside className={`hidden md:flex fixed md:sticky top-14 left-0 z-40 flex-col bg-white border-r border-slate-200 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'} h-[calc(100vh-3.5rem)] overflow-hidden`}>
+            <aside className={`hidden md:flex fixed md:sticky top-[110px] left-0 z-40 flex-col bg-white border-r border-slate-200 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'} h-[calc(100vh-110px)] overflow-hidden`}>
                 {/* User Profile Card */}
                 {sidebarOpen && (
                     <div className="pt-10 px-6 pb-6">

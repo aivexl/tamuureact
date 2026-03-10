@@ -194,7 +194,7 @@ export const ProfilePage: React.FC = () => {
     if (!profile) return null;
 
     return (
-        <div className="min-h-screen bg-slate-50 pt-20 pb-24 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-slate-50 pt-[130px] pb-24 px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto">
                 {/* Header */}
                 <m.div
