@@ -173,7 +173,7 @@ export const AdminShopSettings: React.FC = () => {
             </div>
 
             <AnimatePresence mode="wait">
-                {currentTab === 'carousel' ? (
+                {currentTab === 'carousel' && (
                     <m.div
                         key="carousel"
                         initial={{ opacity: 0, y: 10 }}
@@ -318,19 +318,78 @@ export const AdminShopSettings: React.FC = () => {
                                         ))
                                     )}
                                 </div>
-                                )}
+                            </div>
+                        </div>
+                    </m.div>
+                )}
+
+                {currentTab === 'ads' && (
+                    <m.div
+                        key="ads"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="bg-[#141414] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl"
+                    >
+                        <div className="p-8 border-b border-white/5 flex justify-between items-center bg-[#1A1A1A]">
+                            <div>
+                                <h2 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-3">
+                                    <Megaphone className="w-5 h-5 text-[#FFBF00]" />
+                                    Strategic Sponsor Banners
+                                </h2>
+                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 flex items-center gap-2">
+                                    <AlertCircle className="w-3.5 h-3.5 text-[#FFBF00]" />
+                                    Control Shop Special Banners and Product Detail Sidebars.
+                                </p>
+                            </div>
+                            <button
+                                onClick={handleAddAd}
+                                className="px-5 py-2.5 bg-[#FFBF00] text-[#0A1128] text-[10px] font-black uppercase tracking-widest rounded-xl transition-colors flex items-center gap-2 shadow-lg shadow-amber-500/10"
+                            >
+                                <Plus className="w-4 h-4" />
+                                Create Banner
+                            </button>
+                        </div>
+
+                        <div className="p-8 space-y-6">
+                            {isFetchingAds ? (
+                                <div className="py-20 flex flex-col items-center justify-center space-y-4">
+                                    <PremiumLoader className="w-10 h-10 text-[#FFBF00]" />
+                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Syncing Ads Database</p>
                                 </div>
-                                </m.div>
-                                ) : currentTab === 'placement' ? (
-                                <m.div
-                                key="placement"
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                className="bg-[#141414] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl"
-                                >
-                                <div className="p-8 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-[#1A1A1A]">
-                                <div>
+                            ) : ads.length === 0 ? (
+                                <div className="py-20 text-center border-2 border-dashed border-white/5 rounded-[2rem]">
+                                    <Megaphone className="w-12 h-12 text-slate-800 mx-auto mb-4" />
+                                    <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">No active sponsorship campaigns</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 gap-6">
+                                    {ads.map((ad) => (
+                                        <AdEditorRow 
+                                            key={ad.id} 
+                                            ad={ad} 
+                                            onSave={handleSaveAd} 
+                                            onDelete={handleRemoveAd} 
+                                            onFileUpload={handleFileChange}
+                                            isUploading={isUploading}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </m.div>
+                )}
+
+                {currentTab === 'placement' && (
+                    <m.div
+                        key="placement"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="bg-[#141414] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl"
+                    >
+                        <div className="p-8 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-[#1A1A1A]">
+                            <div>
                                 <h2 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-3">
                                     <Star className="w-5 h-5 text-[#FFBF00]" />
                                     Product Placement Manager
@@ -338,8 +397,8 @@ export const AdminShopSettings: React.FC = () => {
                                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
                                     Curate Special and Featured products for the Shop storefront.
                                 </p>
-                                </div>
-                                <div className="relative w-full md:w-80">
+                            </div>
+                            <div className="relative w-full md:w-80">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                                 <input 
                                     type="text"
@@ -348,13 +407,13 @@ export const AdminShopSettings: React.FC = () => {
                                     onChange={(e) => setProductSearch(e.target.value)}
                                     className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#FFBF00]/50"
                                 />
-                                </div>
-                                </div>
+                            </div>
+                        </div>
 
-                                <div className="p-8">
-                                {isLoadingProducts ? (
+                        <div className="p-8">
+                            {isLoadingProducts ? (
                                 <div className="py-20 flex justify-center"><PremiumLoader /></div>
-                                ) : (
+                            ) : (
                                 <div className="grid grid-cols-1 gap-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                                     {productsData?.products
                                         ?.filter((p: any) => 
@@ -419,62 +478,6 @@ export const AdminShopSettings: React.FC = () => {
                                     {productsData?.products?.filter((p: any) => p.is_admin_listing === 1).length === 0 && (
                                         <div className="py-20 text-center text-slate-500 font-bold uppercase tracking-widest text-xs">No admin products found in catalog</div>
                                     )}
-                                </div>
-                                )}
-                                </div>
-                                </m.div>
-                                ) : (
-                                <m.div
-                                key="ads"
-
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="bg-[#141414] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl"
-                    >
-                        <div className="p-8 border-b border-white/5 flex justify-between items-center bg-[#1A1A1A]">
-                            <div>
-                                <h2 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-3">
-                                    <Megaphone className="w-5 h-5 text-[#FFBF00]" />
-                                    Strategic Sponsor Banners
-                                </h2>
-                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 flex items-center gap-2">
-                                    <AlertCircle className="w-3.5 h-3.5 text-[#FFBF00]" />
-                                    Control Shop Special Banners and Product Detail Sidebars.
-                                </p>
-                            </div>
-                            <button
-                                onClick={handleAddAd}
-                                className="px-5 py-2.5 bg-[#FFBF00] text-[#0A1128] text-[10px] font-black uppercase tracking-widest rounded-xl transition-colors flex items-center gap-2 shadow-lg shadow-amber-500/10"
-                            >
-                                <Plus className="w-4 h-4" />
-                                Create Banner
-                            </button>
-                        </div>
-
-                        <div className="p-8 space-y-6">
-                            {isFetchingAds ? (
-                                <div className="py-20 flex flex-col items-center justify-center space-y-4">
-                                    <PremiumLoader className="w-10 h-10 text-[#FFBF00]" />
-                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Syncing Ads Database</p>
-                                </div>
-                            ) : ads.length === 0 ? (
-                                <div className="py-20 text-center border-2 border-dashed border-white/5 rounded-[2rem]">
-                                    <Megaphone className="w-12 h-12 text-slate-800 mx-auto mb-4" />
-                                    <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">No active sponsorship campaigns</p>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 gap-6">
-                                    {ads.map((ad) => (
-                                        <AdEditorRow 
-                                            key={ad.id} 
-                                            ad={ad} 
-                                            onSave={handleSaveAd} 
-                                            onDelete={handleRemoveAd} 
-                                            onFileUpload={handleFileChange}
-                                            isUploading={isUploading}
-                                        />
-                                    ))}
                                 </div>
                             )}
                         </div>
