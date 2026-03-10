@@ -125,7 +125,12 @@ const MessageCircleIcon = ({ className }: { className?: string }) => (
         <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-13.5 8.38 8.38 0 0 1 3.8.9L21 3z" />
     </svg>
 );
-
+const StoreIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="m2 7 4.04-4.04a2 2 0 0 1 1.41-.56h9.1a2 2 0 0 1 1.41.56L22 7c0 1.1-.9 2-2 2h-1c-.55 0-1-.45-1-1s-.45-1-1-1-1 .45-1 1-.45 1-1 1-1-.45-1-1-.45-1-1-1-1 .45-1 1-.45 1-1 1-1-.45-1-1-.45-1-1-1-1 .45-1 1-.9 2-2 2ZM2 7h20" />
+        <path d="M4 11v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+    </svg>
+);
 
 // Stat types handled by live data
 
@@ -166,6 +171,10 @@ export const DashboardPage: React.FC = () => {
 
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    
+    // Mobile Navigation States
+    const [isMobileCreateOpen, setIsMobileCreateOpen] = useState(false);
+    const [isMobileMoreOpen, setIsMobileMoreOpen] = useState(false);
 
     const { data: invitations = [] } = useInvitations(user?.id);
     const stats = {
@@ -188,9 +197,9 @@ export const DashboardPage: React.FC = () => {
     const publicDomain = getPublicDomain();
 
     return (
-        <div className="min-h-screen bg-white md:bg-slate-50 flex flex-col md:flex-row pt-[110px] pb-24 md:pb-0">
+        <div className="min-h-screen bg-white md:bg-slate-50 flex flex-col md:flex-row pt-[140px] md:pt-[130px] pb-24 md:pb-0">
             {/* Sidebar (Desktop Only) */}
-            <aside className={`hidden md:flex fixed md:sticky top-[110px] left-0 z-40 flex-col bg-white border-r border-slate-200 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'} h-[calc(100vh-110px)] overflow-hidden`}>
+            <aside className={`hidden md:flex fixed md:sticky top-[140px] md:top-[130px] left-0 z-40 flex-col bg-white border-r border-slate-200 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'} h-[calc(100vh-130px)] overflow-hidden`}>
                 {/* User Profile Card */}
                 {sidebarOpen && (
                     <div className="pt-10 px-6 pb-6">
@@ -251,21 +260,176 @@ export const DashboardPage: React.FC = () => {
             {/* Mobile Sidebar Overlay */}
             {sidebarOpen && <div className="fixed inset-0 bg-black/20 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} style={{ top: '3.5rem' }} />}
 
-            {/* Mobile Bottom Navigation (Floating Pill Design) */}
-            <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-sm bg-slate-900/95 backdrop-blur-2xl border border-white/10 z-50 flex items-center justify-around px-2 py-3 rounded-[2.5rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)]">
-                {menuItems.slice(0, 5).map(item => (
+            {/* Mobile Bottom Navigation (Floating Rectangular Design) */}
+            <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-sm bg-white/95 backdrop-blur-2xl border border-slate-100 z-50 flex items-center justify-around px-2 py-2 rounded-[1.5rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)]">
+                
+                {/* 1. Home */}
+                <button
+                    onClick={() => { handleTabChange('dashboard'); setIsMobileMoreOpen(false); setIsMobileCreateOpen(false); }}
+                    className={`flex flex-col items-center justify-center w-14 h-14 transition-all ${activeTab === 'dashboard' && !isMobileMoreOpen ? 'text-[#0A1128]' : 'text-slate-400 hover:text-slate-600'}`}
+                >
+                    <LayoutDashboardIcon className={`w-5 h-5 mb-1 ${activeTab === 'dashboard' && !isMobileMoreOpen ? 'text-[#0A1128]' : ''}`} />
+                    <span className="text-[8px] font-black uppercase tracking-widest">Home</span>
+                </button>
+
+                {/* 2. Undangan */}
+                <button
+                    onClick={() => { handleTabChange('invitations'); setIsMobileMoreOpen(false); setIsMobileCreateOpen(false); }}
+                    className={`flex flex-col items-center justify-center w-14 h-14 transition-all ${activeTab === 'invitations' && !isMobileMoreOpen ? 'text-[#0A1128]' : 'text-slate-400 hover:text-slate-600'}`}
+                >
+                    <MailIcon className={`w-5 h-5 mb-1 ${activeTab === 'invitations' && !isMobileMoreOpen ? 'text-[#0A1128]' : ''}`} />
+                    <span className="text-[8px] font-black uppercase tracking-widest">Undangan</span>
+                </button>
+
+                {/* 3. Action Plus Button (Floating Rectangular) */}
+                <div className="relative -top-5">
                     <button
-                        key={item.id}
-                        onClick={() => handleTabChange(item.id)}
-                        className={`flex flex-col items-center gap-1 transition-all ${activeTab === item.id ? 'text-teal-400' : 'text-slate-400'}`}
+                        onClick={() => { setIsMobileCreateOpen(!isMobileCreateOpen); setIsMobileMoreOpen(false); }}
+                        className={`w-14 h-14 bg-[#0A1128] text-white rounded-[1.25rem] shadow-[0_10px_25px_rgba(10,17,40,0.4)] flex items-center justify-center transition-transform active:scale-95 ${isMobileCreateOpen ? 'rotate-45' : ''}`}
                     >
-                        <div className={`w-11 h-11 rounded-[1.25rem] flex items-center justify-center transition-all ${activeTab === item.id ? 'bg-teal-400/20 shadow-[0_0_20px_rgba(45,212,191,0.2)]' : 'bg-transparent'}`}>
-                            <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-teal-400' : 'text-slate-400'}`} />
-                        </div>
-                        <span className="text-[9px] font-black uppercase tracking-widest">{item.label}</span>
+                        <PlusIcon className="w-6 h-6" />
                     </button>
-                ))}
+                </div>
+
+                {/* 4. Buku Tamu */}
+                <button
+                    onClick={() => { handleTabChange('guests'); setIsMobileMoreOpen(false); setIsMobileCreateOpen(false); }}
+                    className={`flex flex-col items-center justify-center w-14 h-14 transition-all ${activeTab === 'guests' && !isMobileMoreOpen ? 'text-[#0A1128]' : 'text-slate-400 hover:text-slate-600'}`}
+                >
+                    <UsersIcon className={`w-5 h-5 mb-1 ${activeTab === 'guests' && !isMobileMoreOpen ? 'text-[#0A1128]' : ''}`} />
+                    <span className="text-[8px] font-black uppercase tracking-widest">Tamu</span>
+                </button>
+
+                {/* 5. More Menu */}
+                <button
+                    onClick={() => { setIsMobileMoreOpen(!isMobileMoreOpen); setIsMobileCreateOpen(false); }}
+                    className={`flex flex-col items-center justify-center w-14 h-14 transition-all ${isMobileMoreOpen ? 'text-[#0A1128]' : 'text-slate-400 hover:text-slate-600'}`}
+                >
+                    <MenuIcon className={`w-5 h-5 mb-1 ${isMobileMoreOpen ? 'text-[#0A1128]' : ''}`} />
+                    <span className="text-[8px] font-black uppercase tracking-widest">Menu</span>
+                </button>
             </div>
+
+            {/* Mobile Create Action Slide Up */}
+            <AnimatePresence>
+                {isMobileCreateOpen && (
+                    <>
+                        <m.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsMobileCreateOpen(false)}
+                            className="md:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[45]"
+                        />
+                        <m.div
+                            initial={{ y: '100%' }}
+                            animate={{ y: 0 }}
+                            exit={{ y: '100%' }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                            className="md:hidden fixed bottom-24 left-1/2 -translate-x-1/2 w-[92%] max-w-sm bg-white rounded-3xl p-4 z-[48] shadow-2xl flex flex-col gap-2"
+                        >
+                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 px-2">Buat Baru</h3>
+                            <Link
+                                to="/onboarding"
+                                className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 text-[#0A1128] hover:bg-slate-100 transition-colors"
+                            >
+                                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                                    <MailIcon className="w-5 h-5 text-indigo-600" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-black tracking-tight">Undangan Digital</p>
+                                    <p className="text-[10px] text-slate-500 font-bold mt-0.5">Buat event dan undangan baru</p>
+                                </div>
+                            </Link>
+                            <Link
+                                to="/store/onboarding"
+                                className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 text-[#0A1128] hover:bg-slate-100 transition-colors"
+                            >
+                                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                                    <StoreIcon className="w-5 h-5 text-teal-600" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-black tracking-tight">Post Produk / Toko</p>
+                                    <p className="text-[10px] text-slate-500 font-bold mt-0.5">Mulai berjualan di Tamuu Shop</p>
+                                </div>
+                            </Link>
+                        </m.div>
+                    </>
+                )}
+            </AnimatePresence>
+
+            {/* Mobile More Menu Slide Up */}
+            <AnimatePresence>
+                {isMobileMoreOpen && (
+                    <>
+                        <m.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsMobileMoreOpen(false)}
+                            className="md:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[45]"
+                        />
+                        <m.div
+                            initial={{ y: '100%' }}
+                            animate={{ y: 0 }}
+                            exit={{ y: '100%' }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                            className="md:hidden fixed bottom-24 left-1/2 -translate-x-1/2 w-[92%] max-w-sm bg-white rounded-3xl p-4 z-[48] shadow-2xl flex flex-col gap-2 max-h-[60vh] overflow-y-auto custom-scrollbar"
+                        >
+                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 px-2">Menu Tambahan</h3>
+                            
+                            {/* Remaining Menu Items */}
+                            {menuItems.filter(item => !['dashboard', 'invitations', 'guests'].includes(item.id)).map(item => (
+                                <button
+                                    key={item.id}
+                                    onClick={() => {
+                                        if (item.id === 'wishes') {
+                                            navigate('/wishes');
+                                        } else {
+                                            handleTabChange(item.id);
+                                        }
+                                        setIsMobileMoreOpen(false);
+                                    }}
+                                    className={`flex items-center gap-4 p-3 rounded-2xl transition-colors ${activeTab === item.id ? 'bg-[#0A1128] text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}
+                                >
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm ${activeTab === item.id ? 'bg-white/10' : 'bg-white'}`}>
+                                        <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-white' : 'text-slate-600'}`} />
+                                    </div>
+                                    <span className="text-sm font-black tracking-tight">{item.label}</span>
+                                </button>
+                            ))}
+                            
+                            <div className="h-px bg-slate-100 my-2" />
+                            
+                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 px-2">Akun</h3>
+                            <Link
+                                to="/profile"
+                                onClick={() => setIsMobileMoreOpen(false)}
+                                className="flex items-center gap-4 p-3 rounded-2xl bg-slate-50 text-slate-700 hover:bg-slate-100 transition-colors"
+                            >
+                                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                                    <UserIcon className="w-5 h-5 text-slate-600" />
+                                </div>
+                                <span className="text-sm font-black tracking-tight">Edit Profil</span>
+                            </Link>
+                            <button
+                                onClick={() => {
+                                    setIsMobileMoreOpen(false);
+                                    logout();
+                                }}
+                                className="flex items-center gap-4 p-3 rounded-2xl bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors text-left"
+                            >
+                                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                                    <LogOutIcon className="w-5 h-5 text-rose-600" />
+                                </div>
+                                <span className="text-sm font-black tracking-tight">Log Out</span>
+                            </button>
+
+                        </m.div>
+                    </>
+                )}
+            </AnimatePresence>
+
 
             {/* Main Content */}
             <main className="flex-1 flex flex-col min-h-[calc(100vh-3.5rem)] w-full overflow-x-hidden">
