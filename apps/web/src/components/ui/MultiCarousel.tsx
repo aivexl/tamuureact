@@ -59,7 +59,7 @@ export const MultiCarousel: React.FC<MultiCarouselProps> = ({ items }) => {
                         className={`w-full md:w-1/3 flex-shrink-0 px-2`}
                     >
                         <div 
-                            className="w-full aspect-[4/3] rounded-[1.5rem] overflow-hidden bg-slate-100 cursor-pointer shadow-sm hover:shadow-md transition-shadow"
+                            className="w-full aspect-[16/9] rounded-[1.5rem] overflow-hidden bg-slate-100 cursor-pointer shadow-sm hover:shadow-md transition-shadow"
                             onClick={() => item.link_url && (window.location.href = item.link_url)}
                         >
                             {/* No zoom/scale effect as requested, strictly static image on hover */}
