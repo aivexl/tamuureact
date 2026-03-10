@@ -1831,7 +1831,8 @@ export default {
 
                 if (path.startsWith('/api/admin/shop/merchants/') && method === 'PATCH') {
                     try {
-                        const merchantIdFromPath = path.replace('/api/admin/shop/merchants/', '');
+                        const parts = path.split('/');
+                        const merchantIdFromPath = parts[parts.length - 1];
                         if (!merchantIdFromPath) return json({ error: 'Merchant ID required' }, { ...corsHeaders, status: 400 });
 
                         const body = await request.json();
