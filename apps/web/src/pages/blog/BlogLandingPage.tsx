@@ -6,6 +6,7 @@ import api from '../../lib/api';
 import { useSEO } from '../../hooks/useSEO';
 import { Breadcrumbs } from '../../components/Shop/Breadcrumbs';
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
+import { MultiCarousel } from '../../components/ui/MultiCarousel';
 
 const BlogLandingPage: React.FC = () => {
     const [carouselSlides, setCarouselSlides] = useState<any[]>([]);
@@ -52,7 +53,9 @@ const BlogLandingPage: React.FC = () => {
                 setCarouselSlides(carouselData);
             } else {
                 setCarouselSlides([
-                    { id: '1', image_url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=2000', title: 'The Architecture of Moments', category_label: 'Gallery' }
+                    { id: '1', image_url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=2000', title: 'The Architecture of Moments', category_label: 'Gallery', link_url: '#' },
+                    { id: '2', image_url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2000', title: 'Modern Elegance', category_label: 'Tips', link_url: '#' },
+                    { id: '3', image_url: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80&w=2000', title: 'The Minimalist Cut', category_label: 'Editorial', link_url: '#' }
                 ]);
             }
 
@@ -74,12 +77,6 @@ const BlogLandingPage: React.FC = () => {
     useEffect(() => { fetchInitialData(); }, []);
     useEffect(() => { if (!loading) { setOffset(0); fetchPosts(0); } }, [activeCategory]);
     
-    useEffect(() => {
-        if (carouselSlides.length <= 1) return;
-        const timer = setInterval(() => setCurrentHeroIndex(prev => (prev + 1) % carouselSlides.length), 6000);
-        return () => clearInterval(timer);
-    }, [carouselSlides]);
-
     const handleLoadMore = () => {
         const currentTotal = posts.length;
         setOffset(currentTotal);
@@ -140,56 +137,10 @@ const BlogLandingPage: React.FC = () => {
             
             <main className="max-w-7xl mx-auto px-4 sm:px-6 pb-32 pt-28 sm:pt-32">
                 
-                {/* Minimalist Carousel */}
+                {/* Enterprise MultiCarousel (Pipih & Sinematik) */}
                 {carouselSlides.length > 0 && activeCategory === 'All' && (
-                    <section className="mb-12 sm:mb-16">
-                        <div className="relative w-full aspect-[4/3] md:aspect-[21/9] rounded-[2rem] overflow-hidden bg-slate-50 group">
-                            <AnimatePresence mode="wait">
-                                <m.div 
-                                    key={carouselSlides[currentHeroIndex].id}
-                                    initial={{ opacity: 0, scale: 1.05 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                                    className="absolute inset-0 cursor-pointer"
-                                    onClick={() => carouselSlides[currentHeroIndex].link_url && (window.location.href = carouselSlides[currentHeroIndex].link_url)}
-                                >
-                                    <img 
-                                        src={carouselSlides[currentHeroIndex].image_url} 
-                                        className="w-full h-full object-cover" 
-                                        alt={carouselSlides[currentHeroIndex].title || 'Blog Feature'}
-                                    />
-                                    {/* Minimalist Gradient for text legibility */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-transparent" />
-                                    
-                                    {carouselSlides[currentHeroIndex].title && (
-                                        <div className="absolute bottom-8 left-8 sm:bottom-12 sm:left-12 right-8 text-white">
-                                            {carouselSlides[currentHeroIndex].category_label && (
-                                                <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[8px] font-black uppercase tracking-widest mb-3">
-                                                    {carouselSlides[currentHeroIndex].category_label}
-                                                </span>
-                                            )}
-                                            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight max-w-3xl">
-                                                {carouselSlides[currentHeroIndex].title}
-                                            </h2>
-                                        </div>
-                                    )}
-                                </m.div>
-                            </AnimatePresence>
-
-                            {/* Minimalist Indicators */}
-                            {carouselSlides.length > 1 && (
-                                <div className="absolute bottom-8 right-8 sm:bottom-12 sm:right-12 flex gap-2 z-10">
-                                    {carouselSlides.map((_, idx) => (
-                                        <button 
-                                            key={idx} 
-                                            onClick={(e) => { e.stopPropagation(); setCurrentHeroIndex(idx); }}
-                                            className={`h-1 rounded-full transition-all duration-500 ${idx === currentHeroIndex ? 'w-8 bg-white' : 'w-2 bg-white/30'}`} 
-                                        />
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                    <section className="mb-12 sm:mb-16 -mx-4 sm:mx-0">
+                        <MultiCarousel items={carouselSlides} />
                     </section>
                 )}
 
