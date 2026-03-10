@@ -1980,71 +1980,67 @@ export default {
                     }
                 }
 
-                if (path === '/api/admin/shop/products' && method === 'PUT') {
+                if (path === '/api/admin/shop/products' && (method === 'PUT' || method === 'PATCH')) {
                     try {
                         const productId = url.searchParams.get('id');
                         if (!productId) return json({ error: 'Product ID required' }, { ...corsHeaders, status: 400 });
 
                         const body = await request.json();
-                        const { 
-                            nama_produk, deskripsi, harga_estimasi, status, images, 
+                        const {
+                            nama_produk, deskripsi, harga_estimasi, status, images,
                             kategori_produk, kota, is_admin_listing, custom_store_name,
                             tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url,
                             alamat_lengkap, google_maps_url, is_special, is_featured, is_landing_featured
                         } = body;
 
-                        let newSlug = undefined;
-                        if (nama_produk) {
-                            newSlug = generateSlug(nama_produk);
-                            // Check uniqueness strictly
-                            const merchantId = body.merchant_id || 'admin-merchant';
-                            const existing = await env.DB.prepare('SELECT id FROM shop_products WHERE merchant_id = ? AND slug = ? AND id != ?').bind(merchantId, newSlug, productId).first();
-                            if (existing) {
-                                return json({ error: `Gagal update: Produk dengan nama serupa "${nama_produk}" sudah ada.` }, { ...corsHeaders, status: 400 });
+                        let updateFields = [];
+                        let params = [];
+
+                        const addField = (field, value) => {
+                            if (value !== undefined) {
+                                updateFields.push(`${field} = ?`);
+                                params.push(value);
                             }
+                        };
+
+                        addField('nama_produk', nama_produk);
+                        addField('deskripsi', deskripsi);
+                        addField('harga_estimasi', harga_estimasi);
+                        addField('status', status);
+                        addField('kategori_produk', kategori_produk);
+                        addField('kota', kota);
+                        if (is_admin_listing !== undefined) addField('is_admin_listing', is_admin_listing ? 1 : 0);
+                        addField('custom_store_name', custom_store_name);
+                        addField('tiktok_url', tiktok_url);
+                        addField('youtube_url', youtube_url);
+                        addField('x_url', x_url);
+                        addField('website_url', website_url);
+                        addField('tokopedia_url', tokopedia_url);
+                        addField('shopee_url', shopee_url);
+                        addField('alamat_lengkap', alamat_lengkap);
+                        addField('google_maps_url', google_maps_url);
+                        if (is_special !== undefined) addField('is_special', is_special ? 1 : 0);
+                        if (is_featured !== undefined) addField('is_featured', is_featured ? 1 : 0);
+                        if (is_landing_featured !== undefined) addField('is_landing_featured', is_landing_featured ? 1 : 0);
+
+                        if (nama_produk) {
+                            const newSlug = generateSlug(nama_produk);
+                            updateFields.push('slug = ?');
+                            params.push(newSlug);
                         }
 
-                        const statements = [
-                            env.DB.prepare(`
-                                UPDATE shop_products 
-                                SET nama_produk = COALESCE(?, nama_produk),
-                                    deskripsi = COALESCE(?, deskripsi),
-                                    harga_estimasi = COALESCE(?, harga_estimasi),
-                                    status = COALESCE(?, status),
-                                    kategori_produk = COALESCE(?, kategori_produk),
-                                    kota = COALESCE(?, kota),
-                                    is_admin_listing = COALESCE(?, is_admin_listing),
-                                    custom_store_name = COALESCE(?, custom_store_name),
-                                    tiktok_url = COALESCE(?, tiktok_url),
-                                    youtube_url = COALESCE(?, youtube_url),
-                                    x_url = COALESCE(?, x_url),
-                                    website_url = COALESCE(?, website_url),
-                                    tokopedia_url = COALESCE(?, tokopedia_url),
-                                    shopee_url = COALESCE(?, shopee_url),
-                                    slug = COALESCE(?, slug),
-                                    alamat_lengkap = COALESCE(?, alamat_lengkap),
-                                    google_maps_url = COALESCE(?, google_maps_url),
-                                    is_special = COALESCE(?, is_special),
-                                    is_featured = COALESCE(?, is_featured),
-                                    is_landing_featured = COALESCE(?, is_landing_featured),
-                                    updated_at = CURRENT_TIMESTAMP
-                                WHERE id = ?
-                            `).bind(
-                                nama_produk, deskripsi, harga_estimasi, status, 
-                                kategori_produk || null, kota || null, 
-                                is_admin_listing !== undefined ? (is_admin_listing ? 1 : 0) : null,
-                                custom_store_name || null,
-                                tiktok_url || null, youtube_url || null, x_url || null, 
-                                website_url || null, tokopedia_url || null, shopee_url || null,
-                                newSlug,
-                                alamat_lengkap || null,
-                                google_maps_url || null,
-                                is_special !== undefined ? (is_special ? 1 : 0) : null,
-                                is_featured !== undefined ? (is_featured ? 1 : 0) : null,
-                                is_landing_featured !== undefined ? (is_landing_featured ? 1 : 0) : null,
-                                productId
-                            )
-                        ];
+                        const statements = [];
+
+                        if (updateFields.length > 0) {
+                            params.push(productId);
+                            statements.push(
+                                env.DB.prepare(`
+                                    UPDATE shop_products
+                                    SET ${updateFields.join(', ')}, updated_at = CURRENT_TIMESTAMP
+                                    WHERE id = ?
+                                `).bind(...params)
+                            );
+                        }
 
                         if (Array.isArray(images)) {
                             statements.push(env.DB.prepare('DELETE FROM shop_product_images WHERE product_id = ?').bind(productId));
@@ -2058,13 +2054,15 @@ export default {
                             }
                         }
 
-                        await env.DB.batch(statements);
+                        if (statements.length > 0) {
+                            await env.DB.batch(statements);
+                        }
+
                         return json({ success: true }, corsHeaders);
                     } catch (error) {
                         return json({ error: 'Failed to update product', details: error.message }, { ...corsHeaders, status: 500 });
                     }
                 }
-
                 // Delete Any Product (Administrative Overrule)
                 if (path === '/api/admin/shop/products' && method === 'DELETE') {
                     const productId = url.searchParams.get('id');
