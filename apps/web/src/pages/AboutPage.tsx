@@ -6,7 +6,7 @@ export const AboutPage: React.FC = () => {
     return (
         <div className="min-h-screen bg-white">
             {/* Hero Section */}
-            <section className="pt-32 pb-20 px-6 sm:px-8 bg-slate-900 text-white overflow-hidden relative">
+            <section className="pt-[140px] md:pt-[130px] pb-20 px-6 sm:px-8 bg-slate-900 text-white overflow-hidden relative">
                 <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
                     <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500 rounded-full blur-[120px]" />
                     <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-amber-500 rounded-full blur-[120px]" />

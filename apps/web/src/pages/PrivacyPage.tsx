@@ -4,7 +4,7 @@ import { Shield, Lock, Eye, Database, Server, UserCheck, Smartphone, Globe } fro
 
 export const PrivacyPage: React.FC = () => {
     return (
-        <div className="min-h-screen bg-slate-50 pt-24 pb-20 px-6 sm:px-8">
+        <div className="min-h-screen bg-slate-50 pt-[140px] md:pt-[130px] pb-20 px-6 sm:px-8">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-12 sm:mb-16">

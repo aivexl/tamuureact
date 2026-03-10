@@ -4,7 +4,7 @@ import { Shield, FileText, Scale, Globe, CreditCard, Lock, UserCheck, AlertTrian
 
 export const TermsPage: React.FC = () => {
     return (
-        <div className="min-h-screen bg-white pt-24 pb-20 px-6 sm:px-8">
+        <div className="min-h-screen bg-white pt-[140px] md:pt-[130px] pb-20 px-6 sm:px-8">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-12 sm:mb-16">

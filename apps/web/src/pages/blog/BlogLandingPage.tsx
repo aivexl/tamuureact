@@ -145,7 +145,7 @@ const BlogLandingPage: React.FC = () => {
                 {JSON.stringify(seoData.schema)}
             </script>
             
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 pb-32 pt-28 sm:pt-32">
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 pb-32 pt-[140px] md:pt-[130px]">
                 
                 {/* Breadcrumbs Navigation */}
                 <div className="mb-8">
