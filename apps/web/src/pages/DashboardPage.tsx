@@ -328,8 +328,16 @@ export const DashboardPage: React.FC = () => {
                             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                             className="md:hidden fixed bottom-0 left-0 right-0 mx-auto w-full max-w-md bg-white rounded-t-3xl p-6 pb-12 z-[70] shadow-[0_-20px_50px_rgba(0,0,0,0.1)] flex flex-col gap-2"
                         >
-                            <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4" />
-                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 px-2">Buat Baru</h3>
+                            <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-100">
+                                <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight">Buat Baru</h3>
+                                <button 
+                                    onClick={() => setIsMobileCreateOpen(false)} 
+                                    className="p-2 bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-rose-500 rounded-full transition-colors"
+                                    aria-label="Tutup"
+                                >
+                                    <XIcon className="w-4 h-4" />
+                                </button>
+                            </div>
                             <Link
                                 to="/onboarding"
                                 className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 text-[#0A1128] hover:bg-slate-100 transition-colors"
@@ -377,8 +385,16 @@ export const DashboardPage: React.FC = () => {
                             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                             className="md:hidden fixed bottom-0 left-0 right-0 mx-auto w-full max-w-md bg-white rounded-t-3xl p-6 pb-12 z-[70] shadow-[0_-20px_50px_rgba(0,0,0,0.1)] flex flex-col gap-2 max-h-[85vh] overflow-y-auto custom-scrollbar"
                         >
-                            <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4" />
-                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 px-2">Menu Tambahan</h3>
+                            <div className="sticky -top-6 bg-white z-10 flex items-center justify-between mb-4 pb-4 pt-6 border-b border-slate-100">
+                                <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight">Menu Tambahan</h3>
+                                <button 
+                                    onClick={() => setIsMobileMoreOpen(false)} 
+                                    className="p-2 bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-rose-500 rounded-full transition-colors"
+                                    aria-label="Tutup"
+                                >
+                                    <XIcon className="w-4 h-4" />
+                                </button>
+                            </div>
                             
                             {/* Remaining Menu Items */}
                             {menuItems.filter(item => !['dashboard', 'invitations', 'guests'].includes(item.id)).map(item => (
