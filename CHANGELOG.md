@@ -1,5 +1,14 @@
 # Tamuu Changelog
 
+## [0.6.60] - 2026-03-10
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Manual Photo Upload Expansion (Blog & Invitations)
+- **Blog Editorial**: Added manual image upload functionality to the Blog Carousel Manager in `AdminBlogListPage.tsx`.
+- **Digital Invitations**: Integrated manual photo upload for the Invitation Store Carousel in `AdminTemplatesPage.tsx`.
+- **Consistency & UX**: Standardized the upload interface across all admin carousels (Shop, Blog, and Invitations) with integrated loading states.
+
 ## [0.6.59] - 2026-03-10
 **Status**: 🟢 Deployed
 **Environment**: Production
