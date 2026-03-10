@@ -118,7 +118,7 @@ export const OnboardingPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col pt-16 pb-10">
+        <div className="min-h-screen bg-slate-50 flex flex-col pt-[140px] md:pt-[130px] pb-10">
             <main className="flex-1 flex flex-col items-center justify-center py-12 px-4 overflow-hidden">
                 <AnimatePresence mode="wait">
                     <m.div 
