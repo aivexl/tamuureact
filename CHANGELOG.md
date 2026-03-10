@@ -1,5 +1,15 @@
 # Tamuu Changelog
 
+## [0.6.58] - 2026-03-10
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Dynamic Carousel Management (Enterprise Control Panel v2.0)
+- **Shop Governance System**: Implemented a fully functional Carousel Manager in `AdminShopSettings.tsx` to handle dynamic promo slides with integrated CRUD APIs.
+- **Blog Editorial Engine**: Upgraded the mock UI in `AdminBlogListPage.tsx` to a real-time D1-backed Carousel Editor for updating hero highlights dynamically.
+- **Invitations Showcase**: Replaced static placeholders in `AdminTemplatesPage.tsx` with a live interactive Carousel Manager for digital invitation storefronts.
+- **Unified Backend Handlers**: Refactored the `tamuu-api-worker.js` endpoints to support standardized `{action, item}` payloads for a more cohesive, declarative API surface across all three storefront carousels.
+
 ## [0.6.57] - 2026-03-09
 **Status**: 🟢 Deployed
 **Environment**: Production

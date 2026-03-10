@@ -352,14 +352,130 @@ export const AdminBlogListPage = () => {
         </div>
     );
 
+    const handleSaveCarousel = async (item: any, action: 'create' | 'update' | 'delete') => {
+        try {
+            const res = await fetch('https://tamuu.id/api/admin/blog/carousel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, item })
+            });
+            if (res.ok) {
+                toast.success(`Slide berhasil di${action === 'create' ? 'tambahkan' : action === 'update' ? 'perbarui' : 'hapus'}`);
+                fetchCarousel();
+            } else {
+                throw new Error('Failed to save carousel');
+            }
+        } catch (err) {
+            toast.error('Gagal menyimpan slide');
+        }
+    };
+
+    const [newSlide, setNewSlide] = useState({ image_url: '', link_url: '', title: '', category_label: '', is_active: 1, order_index: 0 });
+
     const renderCarouselTab = () => (
-        <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 text-center min-h-[400px] flex flex-col items-center justify-center">
-            <LayoutTemplate className="w-16 h-16 text-slate-600 mb-6" />
-            <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-widest">Blog Carousel Manager</h3>
-            <p className="text-slate-400 mb-8 max-w-md mx-auto">Sistem drag-and-drop untuk mengatur slide Hero Blog akan segera dirilis pada pembaruan arsitektur UI berikutnya.</p>
-            <button onClick={() => toast.success('Segera Hadir')} className="px-8 py-4 bg-teal-500 text-slate-900 rounded-full font-black uppercase tracking-widest text-[10px]">
-                Setup Data (Dev Mode)
-            </button>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-1 bg-white/[0.02] border border-white/5 rounded-3xl p-8 h-fit">
+                <h3 className="text-lg font-black text-white mb-6 uppercase tracking-widest">Tambah Slide</h3>
+                <div className="space-y-4">
+                    <div>
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Image URL (Wajib)</label>
+                        <input 
+                            type="text" 
+                            value={newSlide.image_url}
+                            onChange={e => setNewSlide({ ...newSlide, image_url: e.target.value })}
+                            className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white text-sm"
+                            placeholder="https://..."
+                        />
+                    </div>
+                    <div>
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Link URL</label>
+                        <input 
+                            type="text" 
+                            value={newSlide.link_url}
+                            onChange={e => setNewSlide({ ...newSlide, link_url: e.target.value })}
+                            className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-slate-400 text-sm"
+                            placeholder="/blog/judul-artikel"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Judul (Optional)</label>
+                        <input 
+                            type="text" 
+                            value={newSlide.title}
+                            onChange={e => setNewSlide({ ...newSlide, title: e.target.value })}
+                            className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white text-sm"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Label Kategori (Optional)</label>
+                        <input 
+                            type="text" 
+                            value={newSlide.category_label}
+                            onChange={e => setNewSlide({ ...newSlide, category_label: e.target.value })}
+                            className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-slate-400 text-sm"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Urutan</label>
+                        <input 
+                            type="number" 
+                            value={newSlide.order_index}
+                            onChange={e => setNewSlide({ ...newSlide, order_index: parseInt(e.target.value) || 0 })}
+                            className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white text-sm"
+                        />
+                    </div>
+                    <button 
+                        onClick={() => {
+                            if (!newSlide.image_url) return toast.error('Image URL wajib diisi');
+                            handleSaveCarousel(newSlide, 'create');
+                            setNewSlide({ image_url: '', link_url: '', title: '', category_label: '', is_active: 1, order_index: carouselSlides.length + 1 });
+                        }} 
+                        className="w-full py-4 bg-teal-500 text-slate-900 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-teal-400 transition-colors mt-4"
+                    >
+                        Tambah Slide
+                    </button>
+                </div>
+            </div>
+            
+            <div className="lg:col-span-2 space-y-4">
+                {carouselSlides.length === 0 && (
+                    <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 text-center min-h-[200px] flex flex-col items-center justify-center">
+                        <LayoutTemplate className="w-12 h-12 text-slate-600 mb-4" />
+                        <p className="text-slate-400">Belum ada slide di Carousel</p>
+                    </div>
+                )}
+                {carouselSlides.map((slide, idx) => (
+                    <div key={slide.id || idx} className="bg-[#111] border border-white/5 rounded-3xl p-4 flex flex-col sm:flex-row items-center gap-6">
+                        <div className="w-full sm:w-48 aspect-video rounded-2xl overflow-hidden bg-slate-800 shrink-0">
+                            <img src={slide.image_url} alt="Slide" className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1 w-full space-y-2">
+                            {slide.title && <h4 className="text-white font-bold">{slide.title}</h4>}
+                            <div className="flex flex-col gap-1 text-xs text-slate-500 font-mono">
+                                <span><strong className="text-slate-400">Link:</strong> {slide.link_url || '-'}</span>
+                                <span><strong className="text-slate-400">Urutan:</strong> {slide.order_index}</span>
+                                <span><strong className="text-slate-400">Status:</strong> {slide.is_active ? 'Aktif' : 'Nonaktif'}</span>
+                            </div>
+                        </div>
+                        <div className="flex sm:flex-col gap-2 shrink-0 w-full sm:w-auto mt-4 sm:mt-0">
+                            <button 
+                                onClick={() => handleSaveCarousel({ ...slide, is_active: slide.is_active ? 0 : 1 }, 'update')}
+                                className="flex-1 sm:flex-none px-4 py-2 bg-white/5 text-white hover:bg-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                            >
+                                {slide.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    if (window.confirm('Hapus slide ini?')) handleSaveCarousel(slide, 'delete');
+                                }}
+                                className="flex-1 sm:flex-none px-4 py-2 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                            >
+                                Hapus
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 

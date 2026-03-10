@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, GripVertical, Save, Image, Link as LinkIcon, AlertCircle, Megaphone, Check, X } from 'lucide-react';
+import { Plus, Trash2, GripVertical, Save, Image, Link as LinkIcon, AlertCircle, Megaphone, Check, X, LayoutTemplate } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { PremiumLoader } from '../ui/PremiumLoader';
-import { admin } from '../../lib/api';
+import { admin, shop } from '../../lib/api';
 import { useStore } from '../../store/useStore';
 
 export const AdminShopSettings: React.FC = () => {
@@ -12,33 +12,51 @@ export const AdminShopSettings: React.FC = () => {
     const token = useStore(state => state.token);
 
     // Carousel State
-    const [slides, setSlides] = useState([
-        {
-            id: 'slide-1',
-            image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&q=80',
-            link: '/shop?category=MUA'
-        },
-        {
-            id: 'slide-2',
-            image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80',
-            link: '/shop?category=Wedding%20Organizer'
-        },
-        {
-            id: 'slide-3',
-            image: 'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&q=80',
-            link: '/shop?category=Catering'
-        }
-    ]);
+    const [slides, setSlides] = useState<any[]>([]);
+    const [isFetchingCarousel, setIsFetchingCarousel] = useState(false);
+    const [newSlide, setNewSlide] = useState({ image_url: '', link_url: '', is_active: 1, order_index: 0 });
 
     // Ads State
     const [ads, setAds] = useState<any[]>([]);
     const [isFetchingAds, setIsFetchingAds] = useState(false);
 
     useEffect(() => {
-        if (currentTab === 'ads') {
-            fetchAds();
-        }
+        if (currentTab === 'carousel') fetchCarousel();
+        if (currentTab === 'ads') fetchAds();
     }, [currentTab]);
+
+    const fetchCarousel = async () => {
+        setIsFetchingCarousel(true);
+        try {
+            const data = await shop.adminGetCarousel(token || '');
+            setSlides(Array.isArray(data) ? data : []);
+        } catch (error) {
+            console.error('Failed to fetch carousel', error);
+        } finally {
+            setIsFetchingCarousel(false);
+        }
+    };
+
+    const handleSaveCarouselAction = async (item: any, action: 'create' | 'update' | 'delete') => {
+        try {
+            const res = await fetch('https://tamuu.id/api/admin/shop/carousel', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify({ action, item })
+            });
+            if (res.ok) {
+                toast.success(`Slide berhasil di${action === 'create' ? 'tambahkan' : action === 'update' ? 'perbarui' : 'hapus'}`);
+                fetchCarousel();
+            } else {
+                throw new Error('Failed to save carousel');
+            }
+        } catch (err) {
+            toast.error('Gagal menyimpan slide');
+        }
+    };
 
     const fetchAds = async () => {
         setIsFetchingAds(true);
@@ -50,29 +68,6 @@ export const AdminShopSettings: React.FC = () => {
         } finally {
             setIsFetchingAds(false);
         }
-    };
-
-    const handleAddSlide = () => {
-        const newSlide = {
-            id: `slide-${Date.now()}`,
-            image: '',
-            link: '/shop'
-        };
-        setSlides([...slides, newSlide]);
-    };
-
-    const handleRemoveSlide = (id: string) => {
-        if (slides.length <= 1) {
-            toast.error('The carousel must have at least one slide.');
-            return;
-        }
-        setSlides(slides.filter(slide => slide.id !== id));
-    };
-
-    const handleChange = (id: string, field: 'image' | 'link', value: string) => {
-        setSlides(slides.map(slide =>
-            slide.id === id ? { ...slide, [field]: value } : slide
-        ));
     };
 
     const handleAddAd = () => {
@@ -115,14 +110,6 @@ export const AdminShopSettings: React.FC = () => {
         }
     };
 
-    const handleSaveCarousel = async () => {
-        setIsLoading(true);
-        // Simulate API Saving for carousel (since we don't have real endpoint yet)
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setIsLoading(false);
-        toast.success('Carousel settings synchronized to CDN.');
-    };
-
     return (
         <div className="max-w-5xl mx-auto space-y-8 pb-32">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -130,17 +117,6 @@ export const AdminShopSettings: React.FC = () => {
                     <h1 className="text-3xl font-black text-white tracking-tight italic uppercase">Shop Governance</h1>
                     <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Manage the B2B2C Enterprise Directory</p>
                 </div>
-                
-                {currentTab === 'carousel' && (
-                    <button
-                        onClick={handleSaveCarousel}
-                        disabled={isLoading}
-                        className="px-6 py-3 bg-[#FFBF00] text-[#0A1128] font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-amber-400 transition-all flex items-center gap-2 disabled:opacity-50 shadow-lg shadow-amber-500/20"
-                    >
-                        {isLoading ? <PremiumLoader className="w-4 h-4 text-[#0A1128]" /> : <Save className="w-4 h-4" />}
-                        Save Carousel
-                    </button>
-                )}
             </div>
 
             {/* Tab Navigation */}
@@ -168,7 +144,7 @@ export const AdminShopSettings: React.FC = () => {
                         exit={{ opacity: 0, y: -10 }}
                         className="bg-[#141414] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl"
                     >
-                        <div className="p-8 border-b border-white/5 flex justify-between items-center bg-[#1A1A1A]">
+                        <div className="p-8 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#1A1A1A]">
                             <div>
                                 <h2 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-3">
                                     <Image className="w-5 h-5 text-[#FFBF00]" />
@@ -176,79 +152,108 @@ export const AdminShopSettings: React.FC = () => {
                                 </h2>
                                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 flex items-center gap-2">
                                     <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
-                                    Maintain 21:9 Aspect Ratio. High-Resolution Only.
+                                    Maintain Cinematic Aspect Ratio. High-Resolution Only.
                                 </p>
                             </div>
-                            <button
-                                onClick={handleAddSlide}
-                                className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-colors flex items-center gap-2 border border-white/10"
-                            >
-                                <Plus className="w-4 h-4" />
-                                Add Slide
-                            </button>
                         </div>
 
-                        <div className="p-8 space-y-4">
-                            {slides.map((slide, index) => (
-                                <m.div
-                                    key={slide.id}
-                                    layout
-                                    className="flex flex-col md:flex-row gap-6 p-6 bg-white/5 border border-white/10 rounded-3xl group relative"
-                                >
-                                    <div className="flex items-center justify-center px-2 cursor-grab text-slate-600 hover:text-[#FFBF00] transition-colors">
-                                        <GripVertical className="w-5 h-5" />
-                                    </div>
-
-                                    {/* Preview Tile */}
-                                    <div className="w-full md:w-64 aspect-[21/9] bg-black/50 rounded-2xl overflow-hidden border border-white/10 flex-shrink-0">
-                                        {slide.image ? (
-                                            <img src={slide.image} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-slate-600 text-[10px] font-black uppercase tracking-widest">No Image</div>
-                                        )}
-                                    </div>
-
-                                    {/* Inputs */}
-                                    <div className="flex-1 space-y-4">
+                        <div className="p-8">
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                {/* Create Form */}
+                                <div className="lg:col-span-1 bg-white/[0.02] border border-white/5 rounded-3xl p-6 h-fit">
+                                    <h3 className="text-sm font-black text-white mb-6 uppercase tracking-widest">Tambah Slide</h3>
+                                    <div className="space-y-4">
                                         <div>
-                                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 block">High-Fidelity Image URL</label>
-                                            <div className="relative">
-                                                <Image className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
-                                                <input
-                                                    type="text"
-                                                    value={slide.image}
-                                                    onChange={(e) => handleChange(slide.id, 'image', e.target.value)}
-                                                    placeholder="https://images.unsplash.com/..."
-                                                    className="w-full bg-[#0A0A0A] border border-white/5 rounded-xl pl-12 pr-4 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#FFBF00]/50 transition-all font-bold"
-                                                />
-                                            </div>
+                                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Image URL (Wajib)</label>
+                                            <input 
+                                                type="text" 
+                                                value={newSlide.image_url}
+                                                onChange={e => setNewSlide({ ...newSlide, image_url: e.target.value })}
+                                                className="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-white text-xs"
+                                                placeholder="https://..."
+                                            />
                                         </div>
                                         <div>
-                                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Click Hotspot Destination Route</label>
-                                            <div className="relative">
-                                                <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
-                                                <input
-                                                    type="text"
-                                                    value={slide.link}
-                                                    onChange={(e) => handleChange(slide.id, 'link', e.target.value)}
-                                                    placeholder="/shop?category=MUA"
-                                                    className="w-full bg-[#0A0A0A] border border-white/5 rounded-xl pl-12 pr-4 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#FFBF00]/50 transition-all font-bold"
-                                                />
-                                            </div>
+                                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Link URL</label>
+                                            <input 
+                                                type="text" 
+                                                value={newSlide.link_url}
+                                                onChange={e => setNewSlide({ ...newSlide, link_url: e.target.value })}
+                                                className="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-slate-400 text-xs"
+                                                placeholder="/shop/category"
+                                            />
                                         </div>
-                                    </div>
-
-                                    {/* Delete Action */}
-                                    <div className="flex items-center justify-center pl-6 border-l border-white/5">
-                                        <button
-                                            onClick={() => handleRemoveSlide(slide.id)}
-                                            className="p-4 text-slate-600 hover:bg-rose-500/10 hover:text-rose-500 rounded-2xl transition-all"
+                                        <div>
+                                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Urutan</label>
+                                            <input 
+                                                type="number" 
+                                                value={newSlide.order_index}
+                                                onChange={e => setNewSlide({ ...newSlide, order_index: parseInt(e.target.value) || 0 })}
+                                                className="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-white text-xs"
+                                            />
+                                        </div>
+                                        <button 
+                                            onClick={() => {
+                                                if (!newSlide.image_url) return toast.error('Image URL wajib diisi');
+                                                handleSaveCarouselAction(newSlide, 'create');
+                                                setNewSlide({ image_url: '', link_url: '', is_active: 1, order_index: slides.length + 1 });
+                                            }} 
+                                            className="w-full py-3.5 bg-[#FFBF00] text-[#0A1128] rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-amber-400 transition-colors mt-4"
                                         >
-                                            <Trash2 className="w-5 h-5" />
+                                            Tambah Slide
                                         </button>
                                     </div>
-                                </m.div>
-                            ))}
+                                </div>
+                                
+                                {/* List */}
+                                <div className="lg:col-span-2 space-y-4">
+                                    {isFetchingCarousel ? (
+                                        <div className="py-20 flex flex-col items-center justify-center space-y-4">
+                                            <PremiumLoader className="w-10 h-10 text-[#FFBF00]" />
+                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Memuat Carousel</p>
+                                        </div>
+                                    ) : slides.length === 0 ? (
+                                        <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 text-center min-h-[200px] flex flex-col items-center justify-center">
+                                            <LayoutTemplate className="w-12 h-12 text-slate-600 mb-4" />
+                                            <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">Belum ada slide di Shop Carousel</p>
+                                        </div>
+                                    ) : (
+                                        slides.map((slide, idx) => (
+                                            <div key={slide.id || idx} className="bg-white/5 border border-white/10 rounded-3xl p-4 flex flex-col sm:flex-row items-center gap-6 group">
+                                                <div className="w-full sm:w-48 aspect-video rounded-2xl overflow-hidden bg-black/50 shrink-0 border border-white/10 group-hover:border-[#FFBF00]/30 transition-colors">
+                                                    <img src={slide.image_url} alt="Slide" className="w-full h-full object-cover" />
+                                                </div>
+                                                <div className="flex-1 w-full space-y-2">
+                                                    <div className="flex flex-col gap-1.5 text-xs text-slate-400 font-mono">
+                                                        <span><strong className="text-slate-500 uppercase tracking-widest text-[9px] font-black mr-2">Link:</strong> {slide.link_url || '-'}</span>
+                                                        <span><strong className="text-slate-500 uppercase tracking-widest text-[9px] font-black mr-2">Urutan:</strong> {slide.order_index}</span>
+                                                        <span><strong className="text-slate-500 uppercase tracking-widest text-[9px] font-black mr-2">Status:</strong> 
+                                                            <span className={slide.is_active ? 'text-emerald-400' : 'text-rose-400'}>{slide.is_active ? ' Aktif' : ' Nonaktif'}</span>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex sm:flex-col gap-2 shrink-0 w-full sm:w-auto mt-4 sm:mt-0 border-t sm:border-t-0 sm:border-l border-white/5 pt-4 sm:pt-0 sm:pl-4">
+                                                    <button 
+                                                        onClick={() => handleSaveCarouselAction({ ...slide, is_active: slide.is_active ? 0 : 1 }, 'update')}
+                                                        className="flex-1 sm:flex-none px-4 py-2.5 bg-white/5 text-white hover:bg-white/10 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all"
+                                                    >
+                                                        {slide.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => {
+                                                            if (window.confirm('Hapus slide ini secara permanen?')) handleSaveCarouselAction(slide, 'delete');
+                                                        }}
+                                                        className="flex-1 sm:flex-none px-4 py-2.5 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex justify-center"
+                                                        title="Delete Slide"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </m.div>
                 ) : (

@@ -2041,11 +2041,35 @@ export default {
                 }
 
                 if (path === '/api/admin/shop/carousel' && method === 'POST') {
-                    const { image_url, link_url, order_index } = await request.json();
-                    const id = crypto.randomUUID();
-                    await env.DB.prepare('INSERT INTO shop_carousel (id, image_url, link_url, order_index) VALUES (?, ?, ?, ?)')
-                        .bind(id, image_url, link_url || null, order_index || 0).run();
-                    return json({ success: true, id }, corsHeaders);
+                    const payload = await request.json();
+                    
+                    // Support both legacy payload and new action-based payload
+                    if (payload.action) {
+                        const { action, item } = payload;
+                        if (action === 'create') {
+                            const newId = crypto.randomUUID();
+                            await env.DB.prepare(
+                                'INSERT INTO shop_carousel (id, image_url, link_url, order_index, is_active) VALUES (?, ?, ?, ?, ?)'
+                            ).bind(newId, item.image_url, item.link_url, item.order_index || 0, item.is_active !== undefined ? item.is_active : 1).run();
+                            return json({ success: true, id: newId }, corsHeaders);
+                        } else if (action === 'update') {
+                            await env.DB.prepare(
+                                'UPDATE shop_carousel SET image_url = ?, link_url = ?, order_index = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+                            ).bind(item.image_url, item.link_url, item.order_index, item.is_active, item.id).run();
+                            return json({ success: true }, corsHeaders);
+                        } else if (action === 'delete') {
+                            await env.DB.prepare('DELETE FROM shop_carousel WHERE id = ?').bind(item.id).run();
+                            return json({ success: true }, corsHeaders);
+                        }
+                        return error('Invalid action', 400);
+                    } else {
+                        // Legacy support
+                        const { image_url, link_url, order_index } = payload;
+                        const id = crypto.randomUUID();
+                        await env.DB.prepare('INSERT INTO shop_carousel (id, image_url, link_url, order_index) VALUES (?, ?, ?, ?)')
+                            .bind(id, image_url, link_url || null, order_index || 0).run();
+                        return json({ success: true, id }, corsHeaders);
+                    }
                 }
 
                 if (path.startsWith('/api/admin/shop/carousel/') && method === 'DELETE') {

@@ -10,11 +10,14 @@ import {
     Edit3,
     Trash2,
     X,
-    FolderOpen
+    FolderOpen,
+    Image as ImageIcon,
+    LayoutTemplate
 } from 'lucide-react';
 import { AdminLayout } from '../components/Layout/AdminLayout';
 import { PremiumLoader } from '../components/ui/PremiumLoader';
 import { useStore } from '@/store/useStore';
+import { toast } from 'react-hot-toast';
 
 interface Template {
     id: string;
@@ -40,9 +43,18 @@ export const AdminTemplatesPage: React.FC = () => {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
 
+    // Sub-tab state for Invitation Templates
+    const [subTab, setSubTab] = useState<'all' | 'carousel'>('all');
+
+    // Carousel State
+    const [carouselSlides, setCarouselSlides] = useState<any[]>([]);
+    const [loadingCarousel, setLoadingCarousel] = useState(false);
+    const [newSlide, setNewSlide] = useState({ image_url: '', link_url: '', is_active: 1, order_index: 0 });
+
     // Initial Fetch
     useEffect(() => {
         fetchTemplates();
+        fetchCarousel();
     }, []);
 
     const fetchTemplates = async () => {
@@ -59,6 +71,21 @@ export const AdminTemplatesPage: React.FC = () => {
             console.error('[Admin] Fetch error:', err);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const fetchCarousel = async () => {
+        setLoadingCarousel(true);
+        try {
+            const res = await fetch('https://tamuu.id/api/invitations/carousel');
+            if (res.ok) {
+                const data = await res.json();
+                setCarouselSlides(Array.isArray(data) ? data : []);
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoadingCarousel(false);
         }
     };
 
@@ -124,17 +151,123 @@ export const AdminTemplatesPage: React.FC = () => {
         });
     };
 
+    const handleSaveCarousel = async (item: any, action: 'create' | 'update' | 'delete') => {
+        try {
+            const res = await fetch('https://tamuu.id/api/admin/invitations/carousel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, item })
+            });
+            if (res.ok) {
+                toast.success(`Slide berhasil di${action === 'create' ? 'tambahkan' : action === 'update' ? 'perbarui' : 'hapus'}`);
+                fetchCarousel();
+            } else {
+                throw new Error('Failed to save carousel');
+            }
+        } catch (err) {
+            toast.error('Gagal menyimpan slide');
+        }
+    };
+
     // Filter Logic
     const filteredTemplates = templates.filter(t =>
         (t.type || 'invitation') === activeTab &&
         t.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const renderCarouselTab = () => (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-1 bg-white/[0.02] border border-white/5 rounded-3xl p-8 h-fit">
+                <h3 className="text-lg font-black text-white mb-6 uppercase tracking-widest">Tambah Slide</h3>
+                <div className="space-y-4">
+                    <div>
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Image URL (Wajib)</label>
+                        <input 
+                            type="text" 
+                            value={newSlide.image_url}
+                            onChange={e => setNewSlide({ ...newSlide, image_url: e.target.value })}
+                            className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white text-sm"
+                            placeholder="https://..."
+                        />
+                    </div>
+                    <div>
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Link URL</label>
+                        <input 
+                            type="text" 
+                            value={newSlide.link_url}
+                            onChange={e => setNewSlide({ ...newSlide, link_url: e.target.value })}
+                            className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-slate-400 text-sm"
+                            placeholder="/preview/judul-undangan"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Urutan</label>
+                        <input 
+                            type="number" 
+                            value={newSlide.order_index}
+                            onChange={e => setNewSlide({ ...newSlide, order_index: parseInt(e.target.value) || 0 })}
+                            className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white text-sm"
+                        />
+                    </div>
+                    <button 
+                        onClick={() => {
+                            if (!newSlide.image_url) return toast.error('Image URL wajib diisi');
+                            handleSaveCarousel(newSlide, 'create');
+                            setNewSlide({ image_url: '', link_url: '', is_active: 1, order_index: carouselSlides.length + 1 });
+                        }} 
+                        className="w-full py-4 bg-teal-500 text-slate-900 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-teal-400 transition-colors mt-4"
+                    >
+                        Tambah Slide
+                    </button>
+                </div>
+            </div>
+            
+            <div className="lg:col-span-2 space-y-4">
+                {carouselSlides.length === 0 && (
+                    <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 text-center min-h-[200px] flex flex-col items-center justify-center">
+                        <LayoutTemplate className="w-12 h-12 text-slate-600 mb-4" />
+                        <p className="text-slate-400">Belum ada slide di Carousel Invitations</p>
+                    </div>
+                )}
+                {carouselSlides.map((slide, idx) => (
+                    <div key={slide.id || idx} className="bg-[#111] border border-white/5 rounded-3xl p-4 flex flex-col sm:flex-row items-center gap-6">
+                        <div className="w-full sm:w-48 aspect-video rounded-2xl overflow-hidden bg-slate-800 shrink-0">
+                            <img src={slide.image_url} alt="Slide" className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1 w-full space-y-2">
+                            <div className="flex flex-col gap-1 text-xs text-slate-500 font-mono">
+                                <span><strong className="text-slate-400">Link:</strong> {slide.link_url || '-'}</span>
+                                <span><strong className="text-slate-400">Urutan:</strong> {slide.order_index}</span>
+                                <span><strong className="text-slate-400">Status:</strong> {slide.is_active ? 'Aktif' : 'Nonaktif'}</span>
+                            </div>
+                        </div>
+                        <div className="flex sm:flex-col gap-2 shrink-0 w-full sm:w-auto mt-4 sm:mt-0">
+                            <button 
+                                onClick={() => handleSaveCarousel({ ...slide, is_active: slide.is_active ? 0 : 1 }, 'update')}
+                                className="flex-1 sm:flex-none px-4 py-2 bg-white/5 text-white hover:bg-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                            >
+                                {slide.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    if (window.confirm('Hapus slide ini?')) handleSaveCarousel(slide, 'delete');
+                                }}
+                                className="flex-1 sm:flex-none px-4 py-2 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                            >
+                                Hapus
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+
     return (
         <AdminLayout>
             <div className="min-h-[calc(100vh-100px)]">
                 {/* Header Action Area */}
-                <div className="flex flex-col md:flex-row items-end md:items-center justify-between gap-6 mb-10">
+                <div className="flex flex-col md:flex-row items-end md:items-center justify-between gap-6 mb-8">
                     <div className="w-full md:w-auto text-center md:text-left">
                         <div className="flex flex-col md:flex-row items-center gap-3 mb-2">
                             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${activeTab === 'invitation' ? 'bg-teal-50 shadow-teal-500/20' : 'bg-purple-50 shadow-purple-500/20'}`}>
@@ -156,16 +289,18 @@ export const AdminTemplatesPage: React.FC = () => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                        <div className="relative flex-1 sm:flex-none">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={e => setSearchQuery(e.target.value)}
-                                placeholder="Cari template..."
-                                className="w-full sm:w-auto pl-12 pr-6 py-3.5 bg-[#111] border border-white/10 text-white rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 outline-none shadow-sm"
-                            />
-                        </div>
+                        {subTab === 'all' && (
+                            <div className="relative flex-1 sm:flex-none">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={e => setSearchQuery(e.target.value)}
+                                    placeholder="Cari template..."
+                                    className="w-full sm:w-auto pl-12 pr-6 py-3.5 bg-[#111] border border-white/10 text-white rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 outline-none shadow-sm"
+                                />
+                            </div>
+                        )}
                         <button
                             onClick={() => setIsCreateModalOpen(true)}
                             className="flex items-center justify-center gap-2 px-6 py-3.5 bg-teal-500 text-slate-900 font-bold rounded-2xl hover:shadow-xl hover:-translate-y-0.5 transition-all"
@@ -175,154 +310,156 @@ export const AdminTemplatesPage: React.FC = () => {
                     </div>
                 </div>
 
+                {activeTab === 'invitation' && (
+                    <div className="flex gap-2 border-b border-white/10 pb-1 mb-8 overflow-x-auto no-scrollbar">
+                        <button
+                            onClick={() => setSubTab('all')}
+                            className={`flex items-center gap-2 px-6 py-4 border-b-2 transition-all text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${
+                                subTab === 'all' ? 'border-white text-white' : 'border-transparent text-slate-500 hover:text-slate-300'
+                            }`}
+                        >
+                            <FolderOpen className="w-4 h-4" /> Semua Template
+                        </button>
+                        <button
+                            onClick={() => setSubTab('carousel')}
+                            className={`flex items-center gap-2 px-6 py-4 border-b-2 transition-all text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${
+                                subTab === 'carousel' ? 'border-white text-white' : 'border-transparent text-slate-500 hover:text-slate-300'
+                            }`}
+                        >
+                            <ImageIcon className="w-4 h-4" /> Carousel Store
+                        </button>
+                    </div>
+                )}
+
                 {/* Content Grid */}
-                {isLoading ? (
-                    <PremiumLoader showLabel label="Memuat Template..." />
-                ) : filteredTemplates.length === 0 ? (
-                    <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-3xl bg-white/5">
-                        <FolderOpen className="w-12 h-12 text-slate-500 mb-4" />
-                        <p className="text-slate-400 font-medium">No templates created yet.</p>
-                        <button onClick={() => setIsCreateModalOpen(true)} className="mt-4 text-teal-400 font-bold hover:underline">Create One</button>
-                    </div>
+                {subTab === 'carousel' && activeTab === 'invitation' ? (
+                    renderCarouselTab()
                 ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
-                        {filteredTemplates.map(template => (
-                            <motion.div
-                                layout
-                                initial={{ opacity: 0, scale: 0.98 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                key={template.id}
-                                className="group bg-[#0D0D0D] rounded-xl border border-white/5 overflow-hidden hover:border-teal-500/40 transition-all duration-300 flex flex-col"
-                            >
-                                {/* Compact Thumbnail */}
-                                <div className={`relative overflow-hidden bg-[#151515] ${template.type === 'display' ? 'aspect-video' : 'aspect-[9/16]'}`}>
-                                    {template.thumbnail_url ? (
-                                        <img src={template.thumbnail_url} alt={template.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center opacity-20">
-                                            {template.type === 'display' ? <Monitor className="w-8 h-8 text-white" /> : <Smartphone className="w-8 h-8 text-white" />}
-                                        </div>
-                                    )}
-                                    
-                                    {/* Type Badge (Floating Top Right) */}
-                                    <div className="absolute top-2 right-2">
-                                        <div className="bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest text-white/60 border border-white/10">
-                                            {template.type === 'display' ? 'TV' : 'MOB'}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Content Area */}
-                                <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between">
-                                    <div className="mb-3">
-                                        <h3 className="text-xs sm:text-sm font-bold text-white/90 truncate leading-tight mb-3" title={template.name}>
-                                            {template.name}
-                                        </h3>
+                    isLoading ? (
+                        <PremiumLoader showLabel label="Memuat Template..." />
+                    ) : filteredTemplates.length === 0 ? (
+                        <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-3xl bg-white/5">
+                            <FolderOpen className="w-12 h-12 text-slate-500 mb-4" />
+                            <p className="text-slate-400 font-medium">No templates created yet.</p>
+                            <button onClick={() => setIsCreateModalOpen(true)} className="mt-4 text-teal-400 font-bold hover:underline">Create One</button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
+                            {filteredTemplates.map(template => (
+                                <motion.div
+                                    layout
+                                    initial={{ opacity: 0, scale: 0.98 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    key={template.id}
+                                    className="group bg-[#0D0D0D] rounded-xl border border-white/5 overflow-hidden hover:border-teal-500/40 transition-all duration-300 flex flex-col"
+                                >
+                                    {/* Compact Thumbnail */}
+                                    <div className={`relative overflow-hidden bg-[#151515] ${template.type === 'display' ? 'aspect-video' : 'aspect-[9/16]'}`}>
+                                        {template.thumbnail_url ? (
+                                            <img src={template.thumbnail_url} alt={template.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center opacity-20">
+                                                {template.type === 'display' ? <Monitor className="w-8 h-8 text-white" /> : <Smartphone className="w-8 h-8 text-white" />}
+                                            </div>
+                                        )}
                                         
-                                        {/* Persistent Sharp Actions */}
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={() => {
-                                                    const editorPath = template.type === 'display'
-                                                        ? `/admin/display-editor/${template.slug || template.id}`
-                                                        : `/admin/editor/${template.slug || template.id}`;
-                                                    navigate(editorPath);
-                                                }}
-                                                className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-teal-500/10 hover:bg-teal-500 text-teal-500 hover:text-slate-900 transition-all duration-200 rounded-lg text-[10px] font-black uppercase tracking-wider"
-                                            >
-                                                <Edit3 className="w-3 h-3" /> Edit
-                                            </button>
-                                            <button
-                                                onClick={(e) => handleDelete(template.id, e)}
-                                                className="w-10 flex items-center justify-center py-2 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white transition-all duration-200 rounded-lg"
-                                                title="Hapus"
-                                            >
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                            </button>
+                                        {/* Type Badge (Floating Top Right) */}
+                                        <div className="absolute top-2 right-2">
+                                            <div className="bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest text-white/60 border border-white/10">
+                                                {template.type === 'display' ? 'TV' : 'MOB'}
+                                            </div>
                                         </div>
                                     </div>
 
-                                    {/* Ultra Muted Footer Info */}
-                                    <div className="pt-3 border-t border-white/5 flex items-center justify-between text-[8px] font-bold text-white/20 uppercase tracking-[0.1em]">
-                                        <span>ID: {template.id.substring(0, 6)}</span>
-                                        <span>{new Date(template.updated_at).toLocaleDateString('id-ID')}</span>
+                                    {/* Content Area */}
+                                    <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between">
+                                        <div className="mb-3">
+                                            <h3 className="text-xs sm:text-sm font-bold text-white/90 truncate leading-tight mb-3" title={template.name}>
+                                                {template.name}
+                                            </h3>
+                                            
+                                            {/* Persistent Sharp Actions */}
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => {
+                                                        const editorPath = template.type === 'display'
+                                                            ? `/admin/display-editor/${template.slug || template.id}`
+                                                            : `/admin/editor/${template.slug || template.id}`;
+                                                        navigate(editorPath);
+                                                    }}
+                                                    className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-teal-500/10 hover:bg-teal-500 text-teal-500 hover:text-slate-900 transition-all duration-200 rounded-lg text-[10px] font-black uppercase tracking-wider"
+                                                >
+                                                    <Edit3 className="w-3 h-3" /> Edit
+                                                </button>
+                                                <button
+                                                    onClick={(e) => handleDelete(template.id, e)}
+                                                    className="w-10 flex items-center justify-center py-2 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white transition-all duration-200 rounded-lg"
+                                                    title="Hapus"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Ultra Muted Footer Info */}
+                                        <div className="pt-3 border-t border-white/5 flex items-center justify-between text-[8px] font-bold text-white/20 uppercase tracking-[0.1em]">
+                                            <span>ID: {template.id.substring(0, 6)}</span>
+                                            <span>{new Date(template.updated_at).toLocaleDateString('id-ID')}</span>
+                                        </div>
                                     </div>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
-                )/* Content Grid */}
+                                </motion.div>
+                            ))}
+                        </div>
+                    )
+                )}
             </div>
 
-            {/* Creation Modal */}
+            {/* Create Modal */}
             <AnimatePresence>
                 {isCreateModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+                    >
                         <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setIsCreateModalOpen(false)}
-                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="relative bg-[#0F0F0F] border border-white/10 rounded-[2rem] p-6 sm:p-8 max-w-3xl w-full shadow-2xl overflow-hidden"
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            className="bg-[#111] rounded-3xl max-w-sm w-full overflow-hidden border border-white/10"
                         >
-                            <button
-                                onClick={() => setIsCreateModalOpen(false)}
-                                className="absolute top-6 right-6 p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors"
-                            >
-                                <X className="w-5 h-5 text-slate-500" />
-                            </button>
-
-                            <div className="text-center mb-8 sm:mb-10">
-                                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">Pilih Tipe Template</h2>
-                                <p className="text-slate-500 text-base sm:text-lg">Format apa yang ingin Anda buat hari ini?</p>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                                {/* Option 1: Mobile */}
-                                <button
-                                    onClick={() => handleCreateTemplate('invitation')}
-                                    disabled={isCreating}
-                                    className="group relative flex flex-col bg-white/5 rounded-3xl border-2 border-white/5 p-6 sm:p-8 hover:border-teal-500 hover:bg-teal-500/5 transition-all duration-300 text-left"
-                                >
-                                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/5 shadow-sm flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
-                                        <Smartphone className="w-7 h-7 sm:w-8 sm:h-8 text-teal-500" />
-                                    </div>
-                                    <h3 className="text-lg sm:text-xl font-bold text-white mb-2">Undangan Digital</h3>
-                                    <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                                        Standard mobile invitation (390x844). Cocok untuk disebar via WhatsApp ke tamu undangan.
-                                    </p>
-                                </button>
-
-                                {/* Option 2: Display */}
-                                <button
-                                    onClick={() => handleCreateTemplate('display')}
-                                    disabled={isCreating}
-                                    className="group relative flex flex-col bg-white/5 rounded-3xl border-2 border-white/5 p-6 sm:p-8 hover:border-purple-500 hover:bg-purple-500/5 transition-all duration-300 text-left"
-                                >
-                                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/5 shadow-sm flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
-                                        <Monitor className="w-7 h-7 sm:w-8 sm:h-8 text-purple-500" />
-                                    </div>
-                                    <h3 className="text-lg sm:text-xl font-bold text-white mb-2">Layar Sapaan (TV)</h3>
-                                    <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                                        Widescreen display (1920x1080). Cocok untuk layar Welcome Screen di pintu masuk venue.
-                                    </p>
-                                </button>
-                            </div>
-
-                            {isCreating && (
-                                <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-10">
-                                    <PremiumLoader showLabel label="Sedang Membuat Template..." color="#ffffff" />
+                            <div className="p-6">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-xl font-bold text-white">Buat Template Baru</h3>
+                                    <button
+                                        onClick={() => setIsCreateModalOpen(false)}
+                                        className="p-2 hover:bg-white/10 rounded-xl transition-colors text-slate-400"
+                                    >
+                                        <X className="w-5 h-5" />
+                                    </button>
                                 </div>
-                            )}
-
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button
+                                        onClick={() => handleCreateTemplate('invitation')}
+                                        disabled={isCreating}
+                                        className="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl bg-white/5 hover:bg-teal-500/10 hover:border-teal-500/50 border border-transparent transition-all group disabled:opacity-50"
+                                    >
+                                        <Smartphone className="w-8 h-8 text-slate-400 group-hover:text-teal-400" />
+                                        <span className="text-sm font-bold text-white">Undangan</span>
+                                    </button>
+                                    <button
+                                        onClick={() => handleCreateTemplate('display')}
+                                        disabled={isCreating}
+                                        className="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl bg-white/5 hover:bg-purple-500/10 hover:border-purple-500/50 border border-transparent transition-all group disabled:opacity-50"
+                                    >
+                                        <Monitor className="w-8 h-8 text-slate-400 group-hover:text-purple-400" />
+                                        <span className="text-sm font-bold text-white">Display</span>
+                                    </button>
+                                </div>
+                            </div>
                         </motion.div>
-                    </div>
+                    </motion.div>
                 )}
             </AnimatePresence>
         </AdminLayout>
