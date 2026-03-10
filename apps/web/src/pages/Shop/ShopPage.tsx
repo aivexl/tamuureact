@@ -432,6 +432,62 @@ export const ShopPage: React.FC = () => {
                     )}
                 </m.div>
 
+                {/* SECTION 4: Tamuu Blog */}
+                {latestBlogs.length > 0 && !searchQuery && selectedCategory === 'All' && selectedCity === 'All' && (
+                    <section className="mt-20 pt-20 border-t border-slate-100">
+                        <div className="flex items-center justify-between mb-8 px-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-1.5 h-6 bg-[#FFBF00] rounded-full" />
+                                <h2 className="text-lg md:text-2xl font-black text-[#0A1128] uppercase tracking-tight">Tamuu Blog</h2>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <button onClick={() => navigate('/blog')} className="hidden md:block text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-[#0A1128] transition-colors">Lihat Semua Blog</button>
+                                <div className="flex items-center gap-2">
+                                    <button 
+                                        onClick={() => {
+                                            const el = document.getElementById('blog-scroll');
+                                            if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
+                                        }}
+                                        className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] transition-all shadow-sm"
+                                    >
+                                        <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
+                                    </button>
+                                    <button 
+                                        onClick={() => {
+                                            const el = document.getElementById('blog-scroll');
+                                            if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
+                                        }}
+                                        className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] transition-all shadow-sm"
+                                    >
+                                        <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div 
+                            id="blog-scroll"
+                            className="flex md:grid md:grid-cols-4 gap-6 overflow-x-auto no-scrollbar pb-6 md:pb-0 snap-x"
+                        >
+                            {latestBlogs.map((post: any) => (
+                                <div key={post.id} onClick={() => navigate(`/blog/${post.slug}`)} className="group cursor-pointer min-w-[280px] md:min-w-0 snap-start">
+                                    <div className="aspect-[4/3] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden mb-4 bg-slate-50 border border-slate-100 relative">
+                                        <img src={post.cover_image || 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={post.title} />
+                                        <div className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-lg text-[8px] font-black text-[#0A1128] uppercase tracking-widest">
+                                            {post.category?.name || 'Inspirasi'}
+                                        </div>
+                                    </div>
+                                    <div className="px-2">
+                                        <h3 className="text-sm md:text-base font-black text-[#0A1128] line-clamp-2 leading-tight group-hover:text-[#FFBF00] transition-colors">{post.title}</h3>
+                                        <p className="text-[9px] md:text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">
+                                            {new Date(post.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
                 <SEOListingFooter />
             </main>
         </div>
