@@ -1,5 +1,14 @@
 # Tamuu Changelog
 
+## [0.6.61] - 2026-03-10
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Admin UX: Image Size Hints
+- **Shop Management**: Added ideal (1400x600px) and max (2MB) size hints for carousel slides and ads/banners.
+- **Blog Management**: Added ideal (1200x675px) and max (2MB) size hints for blog carousel slides.
+- **Digital Invitations**: Added ideal (1200x675px) and max (2MB) size hints for invitation store carousel slides.
+
 ## [0.6.60] - 2026-03-10
 **Status**: 🟢 Deployed
 **Environment**: Production
