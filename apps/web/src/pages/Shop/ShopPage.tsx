@@ -176,18 +176,6 @@ export const ShopPage: React.FC = () => {
                 {/* Breadcrumbs & Header */}
                 <section className="pt-32 md:pt-40">
                     <Breadcrumbs />
-                    <div className="mb-12">
-                        <m.h1 
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="text-4xl md:text-6xl font-black text-[#0A1128] uppercase tracking-tighter leading-none mb-4"
-                        >
-                            {seoContent.h1}
-                        </m.h1>
-                        <p className="text-slate-400 font-bold uppercase tracking-[0.3em] text-[10px] max-w-2xl leading-relaxed">
-                            {seoContent.description}
-                        </p>
-                    </div>
                 </section>
 
                 {/* Multi Carousel Section */}
