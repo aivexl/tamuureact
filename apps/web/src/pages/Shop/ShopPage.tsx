@@ -83,7 +83,7 @@ export const ShopPage: React.FC = () => {
             { id: '3', image_url: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80&w=800', link_url: '#' },
             { id: '4', image_url: 'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&q=80&w=800', link_url: '#' },
             { id: '5', image_url: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=800', link_url: '#' },
-            { id: '6', image_url: 'https://images.unsplash.com/photo-1515934751635-c81cbc9a2d8?auto=format&fit=crop&q=80&w=800', link_url: '#' }
+            { id: '6', image_url: 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&q=80&w=800', link_url: '#' }
         ];
 
         if (remoteSlides && remoteSlides.length > 0) {
@@ -303,104 +303,110 @@ export const ShopPage: React.FC = () => {
                     </div>
                 </section>
 
-                {/* SECTION 1: Spesial Untuk Kamu */}
-                {!searchQuery && selectedCategory === 'All' && selectedCity === 'All' && (
-                    <section className="mb-20">
-                        <div className="bg-[#0A1128] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-12 relative overflow-hidden">
-                            <div className="flex items-center justify-between mb-6 md:mb-8 relative z-10">
-                                <h2 className="text-lg md:text-2xl font-black text-white uppercase tracking-tight">Spesial Untuk Kamu</h2>
-                                <button className="text-[#FFBF00] text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">Lihat Semua</button>
-                            </div>
-                            <div className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar pb-4 relative z-10 snap-x">
-                                <div 
-                                    onClick={() => specialBanner?.link_url && (window.location.href = specialBanner.link_url)}
-                                    className="w-[160px] md:w-[195px] h-[300px] md:h-[380px] rounded-[1.5rem] md:rounded-[2rem] bg-slate-800 flex-shrink-0 relative overflow-hidden snap-start cursor-pointer group"
-                                >
-                                    {specialBanner?.image_url ? (
-                                        <img src={specialBanner.image_url} className="absolute inset-0 w-full h-full object-cover" alt="Promo Banner" />
-                                    ) : (
-                                        <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center p-4">
-                                            <p className="text-white/20 text-[8px] font-black uppercase tracking-widest text-center">Sponsorship Slot</p>
+                {/* PRODUCT-ONLY SECTIONS (Hide when Stores tab is active) */}
+                {activeTab === 'products' && !searchQuery && selectedCategory === 'All' && selectedCity === 'All' && (
+                    <>
+                        {/* SECTION 1: Spesial Untuk Kamu */}
+                        <section className="mb-20">
+                            <div className="bg-[#0A1128] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-12 relative overflow-hidden">
+                                <div className="flex items-center justify-between mb-6 md:mb-8 relative z-10">
+                                    <h2 className="text-lg md:text-2xl font-black text-white uppercase tracking-tight">Spesial Untuk Kamu</h2>
+                                    <button className="text-[#FFBF00] text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">Lihat Semua</button>
+                                </div>
+                                <div className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar pb-4 relative z-10 snap-x">
+                                    <div 
+                                        onClick={() => specialBanner?.link_url && (window.location.href = specialBanner.link_url)}
+                                        className="w-[160px] md:w-[195px] h-[300px] md:h-[380px] rounded-[1.5rem] md:rounded-[2rem] bg-slate-800 flex-shrink-0 relative overflow-hidden snap-start cursor-pointer group"
+                                    >
+                                        {specialBanner?.image_url ? (
+                                            <img src={specialBanner.image_url} className="absolute inset-0 w-full h-full object-cover" alt="Promo Banner" />
+                                        ) : (
+                                            <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center p-4">
+                                                <p className="text-white/20 text-[8px] font-black uppercase tracking-widest text-center">Sponsorship Slot</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {specialProducts.length > 0 ? specialProducts.slice(0, 10).map((product: any) => (
+                                        <div key={product.id} className="snap-start flex-shrink-0">
+                                            <ProductCard product={product} navigate={navigate} isSmall={true} />
+                                        </div>
+                                    )) : (
+                                        <div className="flex items-center justify-center w-[160px] md:w-[195px] h-[300px] md:h-[380px] border border-white/10 rounded-[1.5rem] md:rounded-[2rem] bg-white/5">
+                                            <p className="text-white/50 font-bold uppercase tracking-widest text-[8px] md:text-[10px] text-center px-4">Produk Segera Hadir</p>
                                         </div>
                                     )}
                                 </div>
-                                {specialProducts.length > 0 ? specialProducts.slice(0, 10).map((product: any) => (
-                                    <div key={product.id} className="snap-start flex-shrink-0">
-                                        <ProductCard product={product} navigate={navigate} isSmall={true} />
-                                    </div>
-                                )) : (
-                                    <div className="flex items-center justify-center w-[160px] md:w-[195px] h-[300px] md:h-[380px] border border-white/10 rounded-[1.5rem] md:rounded-[2rem] bg-white/5">
-                                        <p className="text-white/50 font-bold uppercase tracking-widest text-[8px] md:text-[10px] text-center px-4">Produk Segera Hadir</p>
-                                    </div>
-                                )}
                             </div>
-                        </div>
-                    </section>
-                )}
+                        </section>
 
-                {/* SECTION 2: Produk Featured */}
-                {featuredProducts.length > 0 && !searchQuery && selectedCategory === 'All' && selectedCity === 'All' && (
-                    <section className="mb-20">
-                        <div className="flex items-center justify-between mb-8 px-2">
-                            <h2 className="text-lg md:text-2xl font-black text-[#0A1128] uppercase tracking-tight">Produk Featured</h2>
-                        </div>
-                        <div className="bg-slate-50 border border-slate-100 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-12">
-                            <div className="flex flex-wrap justify-center gap-6">
-                                {featuredProducts.map((product: any) => (
-                                    <ProductCard key={product.id} product={product} navigate={navigate} isSmall={true} />
-                                ))}
-                            </div>
-                        </div>
-                    </section>
-                )}
-
-                {/* SECTION 3: Rekomendasi Untukmu */}
-                {randomProducts.length > 0 && !searchQuery && selectedCategory === 'All' && selectedCity === 'All' && (
-                    <section className="mb-20">
-                        <div className="flex items-center justify-between mb-8 px-2">
-                            <div className="flex items-center gap-3">
-                                <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-[#FFBF00]" />
-                                <h2 className="text-lg md:text-2xl font-black text-[#0A1128] uppercase tracking-tight">Rekomendasi Untukmu</h2>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button 
-                                    onClick={() => {
-                                        const el = document.getElementById('recommendations-scroll');
-                                        if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
-                                    }}
-                                    className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] transition-all shadow-sm"
-                                >
-                                    <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
-                                </button>
-                                <button 
-                                    onClick={() => {
-                                        const el = document.getElementById('recommendations-scroll');
-                                        if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
-                                    }}
-                                    className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] transition-all shadow-sm"
-                                >
-                                    <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
-                                </button>
-                            </div>
-                        </div>
-                        <div 
-                            id="recommendations-scroll"
-                            className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar pb-6 snap-x snap-mandatory scroll-smooth px-2"
-                        >
-                            {randomProducts.map((product: any) => (
-                                <div key={product.id} className="snap-start flex-shrink-0">
-                                    <ProductCard product={product} navigate={navigate} isSmall={true} />
+                        {/* SECTION 2: Produk Featured */}
+                        {featuredProducts.length > 0 && (
+                            <section className="mb-20">
+                                <div className="flex items-center justify-between mb-8 px-2">
+                                    <h2 className="text-lg md:text-2xl font-black text-[#0A1128] uppercase tracking-tight">Produk Featured</h2>
                                 </div>
-                            ))}
-                        </div>
-                    </section>
+                                <div className="bg-slate-50 border border-slate-100 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-12">
+                                    <div className="flex flex-wrap justify-center gap-6">
+                                        {featuredProducts.map((product: any) => (
+                                            <ProductCard key={product.id} product={product} navigate={navigate} isSmall={true} />
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
+                        )}
+
+                        {/* SECTION 3: Rekomendasi Untukmu */}
+                        {randomProducts.length > 0 && (
+                            <section className="mb-20">
+                                <div className="flex items-center justify-between mb-8 px-2">
+                                    <div className="flex items-center gap-3">
+                                        <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-[#FFBF00]" />
+                                        <h2 className="text-lg md:text-2xl font-black text-[#0A1128] uppercase tracking-tight">Rekomendasi Untukmu</h2>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button 
+                                            onClick={() => {
+                                                const el = document.getElementById('recommendations-scroll');
+                                                if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
+                                            }}
+                                            className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] transition-all shadow-sm"
+                                        >
+                                            <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
+                                        </button>
+                                        <button 
+                                            onClick={() => {
+                                                const el = document.getElementById('recommendations-scroll');
+                                                if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
+                                            }}
+                                            className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] transition-all shadow-sm"
+                                        >
+                                            <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+                                        </button>
+                                    </div>
+                                </div>
+                                <div 
+                                    id="recommendations-scroll"
+                                    className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar pb-6 snap-x snap-mandatory scroll-smooth px-2"
+                                >
+                                    {randomProducts.map((product: any) => (
+                                        <div key={product.id} className="snap-start flex-shrink-0">
+                                            <ProductCard product={product} navigate={navigate} isSmall={true} />
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+                    </>
                 )}
 
-                {/* Content Grid */}
+                {/* MAIN GRID CONTENT */}
                 <m.div layout className="w-full">
                     <div className="w-full flex items-center justify-between mb-6 px-4">
                         <h2 className="text-lg md:text-xl font-black text-[#0A1128] uppercase tracking-tight">
-                            {searchQuery || selectedCategory !== 'All' || selectedCity !== 'All' ? 'Hasil Pencarian' : 'Semua Produk'}
+                            {activeTab === 'products' 
+                                ? (searchQuery || selectedCategory !== 'All' || selectedCity !== 'All' ? 'Hasil Pencarian Produk' : 'Semua Produk')
+                                : (searchQuery || selectedCategory !== 'All' || selectedCity !== 'All' ? 'Hasil Pencarian Toko' : 'Semua Toko & Vendor')
+                            }
                         </h2>
                     </div>
 
