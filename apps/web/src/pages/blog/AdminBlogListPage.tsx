@@ -533,7 +533,7 @@ export const AdminBlogListPage = () => {
         <div className="pt-12 pb-24 px-4 sm:px-8 lg:px-12 space-y-10">
             <div className="flex items-center gap-4 mb-2">
                 <Link 
-                    to="/admin" 
+                    to="/admin/dashboard" 
                     className="p-3 bg-white/5 border border-white/10 rounded-2xl text-slate-400 hover:text-white hover:bg-white/10 transition-all group"
                     title="Back to Dashboard"
                 >
