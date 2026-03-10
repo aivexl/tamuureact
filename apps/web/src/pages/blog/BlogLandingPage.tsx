@@ -137,6 +137,11 @@ const BlogLandingPage: React.FC = () => {
             
             <main className="max-w-7xl mx-auto px-4 sm:px-6 pb-32 pt-28 sm:pt-32">
                 
+                {/* Breadcrumbs Navigation */}
+                <div className="mb-8">
+                    <Breadcrumbs />
+                </div>
+
                 {/* Enterprise MultiCarousel (Pipih & Sinematik) */}
                 {carouselSlides.length > 0 && activeCategory === 'All' && (
                     <section className="mb-12 sm:mb-16 -mx-4 sm:mx-0">
@@ -191,11 +196,6 @@ const BlogLandingPage: React.FC = () => {
                         )}
                     </m.div>
                 </AnimatePresence>
-
-                {/* Minimal SEO Footer (Internal Linking) */}
-                <div className="mt-32 pt-16 border-t border-slate-100 text-center">
-                    <Breadcrumbs />
-                </div>
             </main>
         </div>
     );
