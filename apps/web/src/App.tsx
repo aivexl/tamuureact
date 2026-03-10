@@ -131,8 +131,12 @@ const App: React.FC = () => {
 
                         {/* Public Shop */}
                         <Route path="/shop" element={<MainLayout><ShopPage /></MainLayout>} />
-                        <Route path="/shop/:slug" element={<StorefrontPage />} />
-                        <Route path="/shop/:slug/:productId" element={<ProductDetailPage />} />
+                        <Route path="/shop/:category" element={<MainLayout><ShopPage /></MainLayout>} />
+                        <Route path="/shop/location/:city" element={<MainLayout><ShopPage /></MainLayout>} />
+                        <Route path="/shop/:category/:city" element={<MainLayout><ShopPage /></MainLayout>} />
+                        <Route path="/shop/:category/:city/:intent" element={<MainLayout><ShopPage /></MainLayout>} />
+                        <Route path="/shop/s/:slug" element={<StorefrontPage />} />
+                        <Route path="/shop/s/:slug/:productId" element={<ProductDetailPage />} />
 
 
                         {/* Preview Routes - Public for sharing */}

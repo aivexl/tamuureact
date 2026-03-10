@@ -1,5 +1,17 @@
 # Tamuu Changelog
 
+## [0.6.56] - 2026-03-09
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Enterprise SEO Nexus & UI Redesign (Tamuu Super Plan v19.0)
+- **Programmatic SEO Engine**: Deployed dynamic "Chronos Engine" for automatic month/year metadata permutations across `/shop`, `/blog`, and `/invitations`.
+- **Intelligent Structured Data**: Injected `ItemList`, `FAQPage`, `BlogPosting`, and `ImageGallery` JSON-LD schemas to dominate AI search (SGE) and Google Rich Snippets.
+- **Omni-Platform Indexing**: Launched dynamic `/api/sitemap/shop` API and integrated Bing `IndexNow` protocol for instant search engine discovery. Updated `robots.txt` to prioritize major AI crawlers (GPTBot, Claude-Web).
+- **Blog UI Redesign (The Minimalist Cut)**: Overhauled `/blog` to an Apple-grade, brutalist-elegant aesthetic with "Silence & Spacing" methodology.
+- **Storefront Carousel (Invitations)**: Removed archaic marketing text in favor of a silent, high-fidelity `framer-motion` carousel for a premium storefront experience.
+- **Admin Control Center**: Upgraded `AdminBlogListPage` and `AdminTemplatesPage` with seamless tab systems for live carousel and safe-delete category management.
+
 ## [0.6.55] - 2026-03-09
 **Status**: 🟢 Deployed
 **Environment**: Production

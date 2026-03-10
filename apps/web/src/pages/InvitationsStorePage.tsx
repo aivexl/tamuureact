@@ -1,4 +1,4 @@
-import React, { useState, useMemo, Suspense, lazy, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, Suspense, lazy, useCallback } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { templates as templatesApi, invitations as invitationsApi, users as usersApi, Category } from '@/lib/api';
 import { useStore } from '@/store/useStore';
@@ -9,11 +9,15 @@ import {
     Sparkles,
     ArrowRight,
     ArrowLeft,
-    Heart
+    Heart,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSEO } from '../hooks/useSEO';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
+import { assembleSEOTemplate } from '../lib/seo-permutation';
+import { Breadcrumbs } from '../components/Shop/Breadcrumbs';
 
 // Lazy load the grid to reduce initial payload and TBT
 const InvitationsGrid = lazy(() => import('../components/Store/InvitationsGrid'));
@@ -39,33 +43,6 @@ const getIsAppDomain = (): boolean => {
     return host.startsWith('app.') || host === 'localhost' || host === '127.0.0.1';
 };
 
-
-const formatIndonesianDate = (dateStr: string) => {
-    if (!dateStr) return '';
-    try {
-        const date = new Date(dateStr);
-        return new Intl.DateTimeFormat('id-ID', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-        }).format(date);
-    } catch (e) {
-        return dateStr;
-    }
-};
-
-// More robust, deep clone function
-const deepClone = (obj: any) => {
-    if (obj === null || typeof obj !== 'object') {
-        return obj;
-    }
-    if (typeof structuredClone === 'function') {
-        return structuredClone(obj);
-    }
-    return JSON.parse(JSON.stringify(obj));
-};
-
 export const InvitationsStorePage: React.FC = () => {
     const { search } = useLocation();
     const { isAuthenticated, user, showModal } = useStore();
@@ -88,9 +65,95 @@ export const InvitationsStorePage: React.FC = () => {
 
     const wishlist = useMemo(() => wishlistData as string[], [wishlistData]);
 
+    // Carousel State
+    const [carouselSlides, setCarouselSlides] = useState<any[]>([]);
+    const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+    const [isCarouselPaused, setIsCarouselPaused] = useState(false);
+
+    useEffect(() => {
+        const fetchCarousel = async () => {
+            try {
+                const res = await fetch('https://tamuu.id/api/invitations/carousel');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (Array.isArray(data) && data.length > 0) {
+                        setCarouselSlides(data);
+                    } else {
+                        setCarouselSlides([
+                            { id: '1', image_url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=2000', link_url: '#' },
+                            { id: '2', image_url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2000', link_url: '#' }
+                        ]);
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to fetch carousel', e);
+            }
+        };
+        fetchCarousel();
+    }, []);
+
+    useEffect(() => {
+        if (isCarouselPaused || carouselSlides.length <= 1) return;
+        const timer = setInterval(() => {
+            setCurrentHeroIndex((prev) => (prev + 1) % carouselSlides.length);
+        }, 5000);
+        return () => clearInterval(timer);
+    }, [isCarouselPaused, carouselSlides.length]);
+
+    // ============================================
+    // THE CHRONOS SEO ENGINE (v19.0)
+    // ============================================
+    const seoContent = useMemo(() => {
+        const currentMonth = new Intl.DateTimeFormat('id-ID', { month: 'long' }).format(new Date());
+        const currentYear = new Date().getFullYear().toString();
+        const activeCat = selectedCategory !== 'All' ? selectedCategory : 'Pernikahan';
+        const displayCount = templates.filter((t: any) => t.type !== 'display' && (selectedCategory === 'All' || t.category === selectedCategory)).length;
+
+        const data = {
+            category: activeCat,
+            city: 'Indonesia',
+            count: displayCount > 0 ? displayCount : 50,
+        };
+
+        const titleTemplate = selectedCategory === 'All' 
+            ? 'Trend Undangan Digital {Category} Terbaru {Year} | Tamuu'
+            : 'Koleksi Undangan Online {Category} Paling Hits {Month} {Year}';
+
+        const descTemplate = selectedCategory === 'All'
+            ? 'Temukan ratusan desain undangan digital dengan tema pernikahan paling dicari di {Month} {Year}. Buat website pernikahan impian Anda sekarang.'
+            : `Hadirkan kesan berkelas untuk hari spesial Anda. Jelajahi template undangan {Category} premium kami yang dirancang khusus oleh desainer profesional di tahun {Year}.`;
+
+        const imageGallerySchema = {
+            "@context": "https://schema.org",
+            "@type": "ImageGallery",
+            "name": `Koleksi Desain Undangan ${activeCat}`,
+            "description": `Galeri inspirasi desain undangan digital tema ${activeCat} terbaru tahun ${currentYear}.`,
+            "url": window.location.href,
+        };
+
+        const itemListSchema = {
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            "name": `Daftar Template Undangan ${activeCat}`,
+            "numberOfItems": displayCount,
+            "itemListElement": templates.filter((t: any) => t.type !== 'display' && (selectedCategory === 'All' || t.category === selectedCategory)).slice(0, 10).map((t: any, i: number) => ({
+                "@type": "ListItem",
+                "position": i + 1,
+                "url": `https://tamuu.id/preview/${t.slug || t.id}`,
+                "name": t.name
+            }))
+        };
+
+        return {
+            title: assembleSEOTemplate(titleTemplate, data),
+            description: assembleSEOTemplate(descTemplate, data),
+            schemas: [imageGallerySchema, itemListSchema]
+        };
+    }, [selectedCategory, templates]);
+
     useSEO({
-        title: 'Koleksi Desain Undangan Digital Premium',
-        description: 'Jelajahi ratusan desain undangan digital premium dari Tamuu. Pilih tema terbaik untuk pernikahan, ulang tahun, dan acara spesial Anda.'
+        title: seoContent.title,
+        description: seoContent.description
     });
 
     const handleToggleWishlist = useCallback(async (templateId: string, isWishlisted: boolean) => {
@@ -189,7 +252,13 @@ export const InvitationsStorePage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white text-slate-900 pt-24">
+        <div className="min-h-screen bg-white text-slate-900 pt-24 sm:pt-28">
+            {seoContent.schemas.map((s, i) => (
+                <script key={i} type="application/ld+json">
+                    {JSON.stringify(s)}
+                </script>
+            ))}
+            
             {isCreating && (
                 <div className="fixed inset-0 z-[100] bg-white/90 backdrop-blur-xl flex items-center justify-center">
                     <PremiumLoader
@@ -201,12 +270,8 @@ export const InvitationsStorePage: React.FC = () => {
                     />
                 </div>
             )}
-            <div className="fixed inset-0 pointer-events-none opacity-40 overflow-hidden z-0">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-rose-500/10 rounded-full blur-[120px]" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-amber-500/10 rounded-full blur-[120px]" />
-            </div>
 
-            <div className={`relative z-10 transition-all duration-500 ${isOnboarding ? 'pt-24 sm:pt-28' : ''}`}>
+            <div className={`relative z-10 transition-all duration-500`}>
                 <AnimatePresence>
                     {isOnboarding && (
                         <m.div
@@ -232,85 +297,138 @@ export const InvitationsStorePage: React.FC = () => {
                     )}
                 </AnimatePresence>
 
-                <header className="pt-32 pb-16 px-6 text-center">
-                    <div className="max-w-4xl mx-auto">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/70 backdrop-blur-md border border-slate-200 rounded-full shadow-sm mb-8">
-                            <Sparkles className="w-4 h-4 text-[#FFBF00]" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Koleksi Desain Mahakarya</span>
-                        </div>
+                <main className="max-w-7xl mx-auto px-4 sm:px-6 pb-20">
+                    <div className="mb-8">
+                        <Breadcrumbs />
+                    </div>
 
-                        <h1 className="text-4xl md:text-6xl font-black tracking-tighter mb-10 text-slate-900">
-                            Pilih Desain <span className="text-amber-900">Terbaik</span> Untuk Momen Anda
-                        </h1>
+                    {/* THE SILENT CAROUSEL */}
+                    {carouselSlides.length > 0 && !isOnboarding && (
+                        <section className="mb-12 relative">
+                            <div 
+                                className="relative w-full aspect-[4/3] md:aspect-[21/9] rounded-[2rem] overflow-hidden bg-slate-50 group cursor-pointer shadow-xl border border-slate-100"
+                                onMouseEnter={() => setIsCarouselPaused(true)}
+                                onMouseLeave={() => setIsCarouselPaused(false)}
+                            >
+                                <AnimatePresence mode="wait">
+                                    <m.div
+                                        key={carouselSlides[currentHeroIndex].id}
+                                        initial={{ opacity: 0, scale: 1.02 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        transition={{ duration: 0.8, ease: "easeInOut" }}
+                                        className="absolute inset-0"
+                                        onClick={() => carouselSlides[currentHeroIndex].link_url && (window.location.href = carouselSlides[currentHeroIndex].link_url)}
+                                    >
+                                        <img
+                                            src={carouselSlides[currentHeroIndex].image_url}
+                                            alt={`Showcase ${currentHeroIndex + 1}`}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </m.div>
+                                </AnimatePresence>
 
-                        <div className="relative max-w-2xl mx-auto mb-12 group">
-                            <div className="absolute inset-0 bg-[#FFD700]/10 rounded-[2rem] blur-2xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-700" />
-                            <div className="relative bg-white border border-slate-200 rounded-[2rem] shadow-xl shadow-slate-100 overflow-hidden flex items-center p-2 focus-within:ring-4 focus-within:ring-[#FFBF00]/10 transition-all duration-500">
-                                <Search className="w-5 h-5 sm:w-6 sm:h-6 text-slate-400 ml-4 sm:ml-6 shrink-0" />
-                                <input
-                                    type="text"
-                                    placeholder="Cari tema atau kategori..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 px-3 sm:px-6 py-3 sm:py-4 text-base sm:text-lg font-medium text-slate-700 placeholder:text-slate-300"
-                                    aria-label="Cari undangan"
-                                />
-                                <button
-                                    className="bg-slate-900 text-white p-3 sm:p-4 rounded-[1.5rem] hover:bg-[#FFBF00] hover:text-slate-900 transition-all shadow-lg shrink-0"
-                                    aria-label="Submit pencarian"
-                                >
-                                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                                </button>
+                                {/* Navigation Arrows */}
+                                {carouselSlides.length > 1 && (
+                                    <>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setCurrentHeroIndex((prev) => (prev - 1 + carouselSlides.length) % carouselSlides.length); }}
+                                            className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/30 backdrop-blur-md border border-white/50 flex items-center justify-center text-[#0A1128] opacity-0 group-hover:opacity-100 transition-all hover:bg-white/80 z-10"
+                                        >
+                                            <ChevronLeft className="w-5 h-5" />
+                                        </button>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setCurrentHeroIndex((prev) => (prev + 1) % carouselSlides.length); }}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/30 backdrop-blur-md border border-white/50 flex items-center justify-center text-[#0A1128] opacity-0 group-hover:opacity-100 transition-all hover:bg-white/80 z-10"
+                                        >
+                                            <ChevronRight className="w-5 h-5" />
+                                        </button>
+                                    </>
+                                )}
+
+                                {/* Indicators */}
+                                {carouselSlides.length > 1 && (
+                                    <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-10">
+                                        {carouselSlides.map((_: any, index: number) => (
+                                            <button
+                                                key={index}
+                                                onClick={(e) => { e.stopPropagation(); setCurrentHeroIndex(index); }}
+                                                className={`h-1.5 rounded-full transition-all duration-500 ${
+                                                    currentHeroIndex === index ? 'w-8 bg-white' : 'w-1.5 bg-white/50 hover:bg-white/80'
+                                                }`}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
                             </div>
-                        </div>
+                        </section>
+                    )}
 
-                        <m.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.3 }}
-                            className="flex flex-wrap justify-center gap-3"
-                        >
+                    {/* Search & Filter */}
+                    <div className="relative max-w-2xl mx-auto mb-10 mt-8 group px-2 sm:px-0">
+                        <div className="relative bg-white border border-slate-200 rounded-[2rem] shadow-lg shadow-slate-100/50 overflow-hidden flex items-center p-1.5 focus-within:ring-4 focus-within:ring-[#FFBF00]/10 transition-all duration-500">
+                            <Search className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 ml-4 sm:ml-5 shrink-0" />
+                            <input
+                                type="text"
+                                placeholder="Cari tema desain..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 px-3 sm:px-4 py-3 sm:py-3.5 text-sm sm:text-base font-medium text-slate-700 placeholder:text-slate-300"
+                                aria-label="Cari undangan"
+                            />
                             <button
-                                onClick={() => { setSelectedCategory('All'); setShowFavoritesOnly(false); }}
-                                className={`px-6 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 border ${selectedCategory === 'All' && !showFavoritesOnly
+                                className="bg-[#0A1128] text-white p-3 sm:p-3.5 rounded-[1.5rem] hover:bg-[#FFBF00] hover:text-[#0A1128] transition-all shadow-md shrink-0"
+                                aria-label="Submit pencarian"
+                            >
+                                <ArrowRight className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+
+                    <m.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.3 }}
+                        className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-16 px-2 sm:px-0"
+                    >
+                        <button
+                            onClick={() => { setSelectedCategory('All'); setShowFavoritesOnly(false); }}
+                            className={`px-5 py-2.5 rounded-xl text-[10px] sm:text-[11px] font-black uppercase tracking-widest transition-all duration-300 border ${selectedCategory === 'All' && !showFavoritesOnly
+                                ? 'bg-[#0A1128] text-white border-[#0A1128] shadow-lg'
+                                : 'bg-white text-slate-400 border-slate-200 hover:bg-slate-50 hover:text-[#0A1128]'
+                                }`}
+                        >
+                            All
+                        </button>
+
+                        {categoryList.map((cat) => (
+                            <button
+                                key={cat.id}
+                                onClick={() => { setSelectedCategory(cat.name); setShowFavoritesOnly(false); }}
+                                className={`px-6 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 border ${selectedCategory === cat.name && !showFavoritesOnly
                                     ? 'bg-slate-900 text-white border-slate-900 shadow-xl shadow-slate-900/10'
                                     : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-900'
                                     }`}
+                                style={{ borderColor: selectedCategory === cat.name ? cat.color : undefined }}
                             >
-                                All
+                                {cat.icon} {cat.name}
                             </button>
+                        ))}
 
-                            {categoryList.map((cat) => (
-                                <button
-                                    key={cat.id}
-                                    onClick={() => { setSelectedCategory(cat.name); setShowFavoritesOnly(false); }}
-                                    className={`px-6 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 border ${selectedCategory === cat.name && !showFavoritesOnly
-                                        ? 'bg-slate-900 text-white border-slate-900 shadow-xl shadow-slate-900/10'
-                                        : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-900'
-                                        }`}
-                                    style={{ borderColor: selectedCategory === cat.name ? cat.color : undefined }}
-                                >
-                                    {cat.icon} {cat.name}
-                                </button>
-                            ))}
+                        {user && (
+                            <button
+                                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                                className={`px-6 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 border flex items-center gap-2 ${showFavoritesOnly
+                                    ? 'bg-rose-500 text-white border-rose-500 shadow-xl shadow-rose-500/20'
+                                    : 'bg-white text-slate-500 border-slate-200 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200'
+                                    }`}
+                            >
+                                <Heart className={`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`} />
+                                Favorit {wishlist.length > 0 && `(${wishlist.length})`}
+                            </button>
+                        )}
+                    </m.div>
 
-                            {user && (
-                                <button
-                                    onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                                    className={`px-6 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 border flex items-center gap-2 ${showFavoritesOnly
-                                        ? 'bg-rose-500 text-white border-rose-500 shadow-xl shadow-rose-500/20'
-                                        : 'bg-white text-slate-500 border-slate-200 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200'
-                                        }`}
-                                >
-                                    <Heart className={`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`} />
-                                    Favorit {wishlist.length > 0 && `(${wishlist.length})`}
-                                </button>
-                            )}
-                        </m.div>
-                    </div>
-                </header>
-
-                <main className="max-w-7xl mx-auto px-6 pb-32">
                     <Suspense fallback={<GridLoader />}>
                         <InvitationsGrid
                             isLoading={isLoadingTemplates || isCreating}
@@ -321,7 +439,6 @@ export const InvitationsStorePage: React.FC = () => {
                             wishlist={wishlist}
                             onToggleWishlist={handleToggleWishlist}
                         />
-
                     </Suspense>
                 </main>
             </div>

@@ -161,7 +161,225 @@ export default {
         };
 
         try {
+            // ============================================
+            // SEO NEXUS ENGINE - Discovery Routes (v13.0)
+            // ============================================
+
+            // 1. Dynamic XML Sitemap Generator
+            if (path === '/api/sitemap/shop' && method === 'GET') {
+                try {
+                    // Fetch all active categories
+                    const { results: categories } = await env.DB.prepare('SELECT slug_kategori FROM shop_category').all();
+                    
+                    // Fetch all cities that have at least one merchant
+                    const { results: cities } = await env.DB.prepare('SELECT DISTINCT kota FROM shop_contacts WHERE kota IS NOT NULL').all();
+                    
+                    // Base URL
+                    const BASE_URL = 'https://tamuu.id';
+                    const lastMod = new Date().toISOString().split('T')[0];
+
+                    let sitemap = '<?xml version="1.0" encoding="UTF-8"?>';
+                    sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+                    
+                    // Main Shop Page
+                    sitemap += `<url><loc>${BASE_URL}/shop</loc><lastmod>${lastMod}</lastmod><priority>1.0</priority></url>`;
+
+                    // Category Pages
+                    categories.forEach(cat => {
+                        sitemap += `<url><loc>${BASE_URL}/shop/${cat.slug_kategori}</loc><lastmod>${lastMod}</lastmod><priority>0.8</priority></url>`;
+                    });
+
+                    // Regional Pages (Location Hubs)
+                    cities.forEach(city => {
+                        const citySlug = city.kota.toLowerCase().replace(/\s+/g, '-');
+                        sitemap += `<url><loc>${BASE_URL}/shop/location/${citySlug}</loc><lastmod>${lastMod}</lastmod><priority>0.7</priority></url>`;
+                        
+                        // Category x City Permutations (The Money Pages)
+                        categories.forEach(cat => {
+                            sitemap += `<url><loc>${BASE_URL}/shop/${cat.slug_kategori}/${citySlug}</loc><lastmod>${lastMod}</lastmod><priority>0.9</priority></url>`;
+                        });
+                    });
+
+                    sitemap += '</urlset>';
+
+                    return new Response(sitemap, {
+                        headers: {
+                            'Content-Type': 'application/xml',
+                            ...corsHeaders,
+                            'Cache-Control': 'public, max-age=3600'
+                        }
+                    });
+                } catch (err) {
+                    return error('Sitemap Generation Failed', 500);
+                }
+            }
+
+            // 2. SEO Template & Metadata Resolver
+            if (path === '/api/seo/permutation' && method === 'GET') {
+                const intent = url.searchParams.get('intent') || 'DEFAULT';
+                const section = url.searchParams.get('section') || 'TITLE';
+                
+                // Fetch random template from D1 based on intent and section
+                const template = await env.DB.prepare(
+                    'SELECT content_template FROM seo_templates WHERE intent_type = ? AND section = ? ORDER BY RANDOM() LIMIT 1'
+                ).bind(intent.toUpperCase(), section.toUpperCase()).first('content_template');
+
+                return json({ template: template || null }, corsHeaders);
+            }
+
+            // 3. IndexNow Ping Utility (Target: Bing/Yahoo)
+            if (path === '/api/seo/index-now' && method === 'POST') {
+                try {
+                    const { urlList } = await request.json();
+                    if (!urlList || !Array.isArray(urlList)) return error('urlList required', 400);
+
+                    // IndexNow Protocol Requirements
+                    const host = 'tamuu.id';
+                    const key = env.INDEXNOW_KEY || 'tamuu_nexus_seo_key_2026';
+                    
+                    const payload = {
+                        host: host,
+                        key: key,
+                        keyLocation: `https://${host}/${key}.txt`,
+                        urlList: urlList
+                    };
+
+                    const bingResponse = await fetch('https://api.indexnow.org/IndexNow', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    return json({ success: bingResponse.ok, status: bingResponse.status }, corsHeaders);
+                } catch (err) {
+                    return error('IndexNow Ping Failed', 500);
+                }
+            }
+
+            // ============================================
+            // INVITATIONS CAROUSEL SYSTEM (v19.0)
+            // ============================================
+
+            // 1. Get Invitations Carousel (Public)
+            if (path === '/api/invitations/carousel' && method === 'GET') {
+                try {
+                    const { results } = await env.DB.prepare(
+                        'SELECT * FROM invitations_carousel WHERE is_active = 1 ORDER BY order_index ASC'
+                    ).all();
+                    return json(results, corsHeaders);
+                } catch (err) {
+                    return error('Failed to fetch invitations carousel', 500);
+                }
+            }
+
+            // 2. Admin: Manage Invitations Carousel
+            if (path === '/api/admin/invitations/carousel' && method === 'POST') {
+                try {
+                    const payload = await request.json();
+                    const { action, item } = payload;
+                    
+                    if (action === 'create') {
+                        const newId = crypto.randomUUID();
+                        await env.DB.prepare(
+                            'INSERT INTO invitations_carousel (id, image_url, link_url, order_index, is_active) VALUES (?, ?, ?, ?, ?)'
+                        ).bind(newId, item.image_url, item.link_url, item.order_index || 0, item.is_active !== undefined ? item.is_active : 1).run();
+                        return json({ success: true, id: newId }, corsHeaders);
+                    } else if (action === 'update') {
+                        await env.DB.prepare(
+                            'UPDATE invitations_carousel SET image_url = ?, link_url = ?, order_index = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+                        ).bind(item.image_url, item.link_url, item.order_index, item.is_active, item.id).run();
+                        return json({ success: true }, corsHeaders);
+                    } else if (action === 'delete') {
+                        await env.DB.prepare('DELETE FROM invitations_carousel WHERE id = ?').bind(item.id).run();
+                        return json({ success: true }, corsHeaders);
+                    }
+                    
+                    return error('Invalid action', 400);
+                } catch (err) {
+                    return error('Invitations carousel operation failed', 500);
+                }
+            }
+
+            // ============================================
+            // BLOG CAROUSEL & CATEGORY SYSTEM (v17.0)
+            // ============================================
+
+
+            // 1. Get Blog Carousel
+            if (path === '/api/blog/carousel' && method === 'GET') {
+                try {
+                    const { results } = await env.DB.prepare(
+                        'SELECT * FROM blog_carousel WHERE is_active = 1 ORDER BY order_index ASC'
+                    ).all();
+                    return json(results, corsHeaders);
+                } catch (err) {
+                    return error('Failed to fetch carousel', 500);
+                }
+            }
+
+            // 2. Admin: Manage Blog Carousel
+            if (path === '/api/admin/blog/carousel' && method === 'POST') {
+                try {
+                    const payload = await request.json();
+                    const { action, item } = payload;
+                    
+                    if (action === 'create') {
+                        const newId = crypto.randomUUID();
+                        await env.DB.prepare(
+                            'INSERT INTO blog_carousel (id, image_url, link_url, title, category_label, order_index, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)'
+                        ).bind(newId, item.image_url, item.link_url, item.title, item.category_label, item.order_index || 0, item.is_active !== undefined ? item.is_active : 1).run();
+                        return json({ success: true, id: newId }, corsHeaders);
+                    } else if (action === 'update') {
+                        await env.DB.prepare(
+                            'UPDATE blog_carousel SET image_url = ?, link_url = ?, title = ?, category_label = ?, order_index = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+                        ).bind(item.image_url, item.link_url, item.title, item.category_label, item.order_index, item.is_active, item.id).run();
+                        return json({ success: true }, corsHeaders);
+                    } else if (action === 'delete') {
+                        await env.DB.prepare('DELETE FROM blog_carousel WHERE id = ?').bind(item.id).run();
+                        return json({ success: true }, corsHeaders);
+                    }
+                    
+                    return error('Invalid action', 400);
+                } catch (err) {
+                    return error('Carousel operation failed', 500);
+                }
+            }
+
+            // 3. Admin: Add Category
+            if (path === '/api/admin/blog/categories' && method === 'POST') {
+                try {
+                    const { name, slug } = await request.json();
+                    if (!name || !slug) return error('Name and slug required', 400);
+                    const newId = crypto.randomUUID();
+                    await env.DB.prepare(
+                        'INSERT INTO blog_categories (id, name, slug) VALUES (?, ?, ?)'
+                    ).bind(newId, name, slug).run();
+                    return json({ success: true, id: newId }, corsHeaders);
+                } catch (err) {
+                    return error('Failed to create category', 500);
+                }
+            }
+
+            // 4. Admin: Delete Category with Safety (ON DELETE SET NULL equivalent)
+            if (path === '/api/admin/blog/categories' && method === 'DELETE') {
+                try {
+                    const { id } = await request.json();
+                    if (!id) return error('Category ID required', 400);
+                    
+                    // Step 1: Set category_id to NULL for all posts using this category
+                    await env.DB.prepare('UPDATE blog_posts SET category_id = NULL WHERE category_id = ?').bind(id).run();
+                    
+                    // Step 2: Delete the category
+                    await env.DB.prepare('DELETE FROM blog_categories WHERE id = ?').bind(id).run();
+                    
+                    return json({ success: true }, corsHeaders);
+                } catch (err) {
+                    return error('Failed to delete category safely', 500);
+                }
+            }
+
             // ENHANCED: AI Chat Support v8.0 - Enterprise Grade
+
             // Matches apps/web/src/lib/api.ts which calls /api/enhanced-chat
             if ((path === '/api/chat' || path === '/api/enhanced-chat') && method === 'POST') {
                 return await handleEnhancedChat(request, env, ctx, corsHeaders);
