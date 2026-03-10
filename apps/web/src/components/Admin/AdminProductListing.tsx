@@ -805,48 +805,6 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                         </div>
                     </div>
 
-                    {/* Visibility Flags */}
-                    <div className="bg-white/5 backdrop-blur-xl rounded-[2.5rem] border border-white/10 p-10 shadow-2xl space-y-6">
-                        <div className="flex flex-col mb-4">
-                            <h3 className="text-lg font-black text-white uppercase tracking-tight italic">Status Visibilitas Khusus</h3>
-                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2">Tampilkan produk ini di section eksklusif</p>
-                        </div>
-
-                        <div className="space-y-4">
-                            <label className="flex items-center gap-4 cursor-pointer group">
-                                <div className={`w-12 h-6 rounded-full transition-colors relative flex items-center ${formData.is_special ? 'bg-[#FFBF00]' : 'bg-white/10'}`}>
-                                    <div className={`w-4 h-4 rounded-full bg-white shadow-sm absolute transition-transform ${formData.is_special ? 'translate-x-7' : 'translate-x-1'}`} />
-                                    <input 
-                                        type="checkbox" 
-                                        className="hidden" 
-                                        checked={!!formData.is_special} 
-                                        onChange={e => setFormData({ ...formData, is_special: e.target.checked ? 1 : 0 })} 
-                                    />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-black text-white group-hover:text-[#FFBF00] transition-colors">Spesial Untuk Kamu</p>
-                                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Tampil di banner eksklusif berlatar Navy</p>
-                                </div>
-                            </label>
-
-                            <label className="flex items-center gap-4 cursor-pointer group">
-                                <div className={`w-12 h-6 rounded-full transition-colors relative flex items-center ${formData.is_featured ? 'bg-[#FFBF00]' : 'bg-white/10'}`}>
-                                    <div className={`w-4 h-4 rounded-full bg-white shadow-sm absolute transition-transform ${formData.is_featured ? 'translate-x-7' : 'translate-x-1'}`} />
-                                    <input 
-                                        type="checkbox" 
-                                        className="hidden" 
-                                        checked={!!formData.is_featured} 
-                                        onChange={e => setFormData({ ...formData, is_featured: e.target.checked ? 1 : 0 })} 
-                                    />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-black text-white group-hover:text-[#FFBF00] transition-colors">Produk Featured</p>
-                                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Tampil di grid utama pilihan editor</p>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
                     {/* Governance Policy */}
                     <div className="bg-[#0A1128] rounded-[2.5rem] p-10 text-white space-y-8 shadow-2xl shadow-black/40 relative overflow-hidden border border-white/5">
                         <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full -mr-24 -mt-24 blur-3xl" />

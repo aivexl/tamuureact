@@ -1,15 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, GripVertical, Save, Image, Link as LinkIcon, AlertCircle, Megaphone, Check, X, LayoutTemplate, UploadCloud } from 'lucide-react';
+import { Plus, Trash2, GripVertical, Save, Image, Link as LinkIcon, AlertCircle, Megaphone, Check, X, LayoutTemplate, UploadCloud, Search, Star, Sparkles } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { PremiumLoader } from '../ui/PremiumLoader';
 import { admin, shop, storage, safeFetch, API_BASE } from '../../lib/api';
 import { useStore } from '../../store/useStore';
+import { useAdminProducts, useAdminUpdateProduct } from '../../hooks/queries/useShop';
 
 export const AdminShopSettings: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
-    const [currentTab, setCurrentTab] = useState<'carousel' | 'ads'>('carousel');
+    const [currentTab, setCurrentTab] = useState<'carousel' | 'ads' | 'placement'>('carousel');
     const token = useStore(state => state.token);
+
+    // Product Placement State
+    const [productSearch, setProductSearch] = useState('');
+    const { data: productsData, isLoading: isLoadingProducts } = useAdminProducts();
+    const updateProductMutation = useAdminUpdateProduct();
 
     // Carousel State
     const [slides, setSlides] = useState<any[]>([]);
@@ -157,6 +163,12 @@ export const AdminShopSettings: React.FC = () => {
                     className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${currentTab === 'ads' ? 'bg-[#FFBF00] text-[#0A1128]' : 'text-slate-400 hover:text-white'}`}
                 >
                     Ads & Banners
+                </button>
+                <button 
+                    onClick={() => setCurrentTab('placement')}
+                    className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${currentTab === 'placement' ? 'bg-[#FFBF00] text-[#0A1128]' : 'text-slate-400 hover:text-white'}`}
+                >
+                    Product Placement
                 </button>
             </div>
 
@@ -306,12 +318,115 @@ export const AdminShopSettings: React.FC = () => {
                                         ))
                                     )}
                                 </div>
-                            </div>
-                        </div>
-                    </m.div>
-                ) : (
-                    <m.div
-                        key="ads"
+                                )}
+                                </div>
+                                </m.div>
+                                ) : currentTab === 'placement' ? (
+                                <m.div
+                                key="placement"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="bg-[#141414] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl"
+                                >
+                                <div className="p-8 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-[#1A1A1A]">
+                                <div>
+                                <h2 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-3">
+                                    <Star className="w-5 h-5 text-[#FFBF00]" />
+                                    Product Placement Manager
+                                </h2>
+                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
+                                    Curate Special and Featured products for the Shop storefront.
+                                </p>
+                                </div>
+                                <div className="relative w-full md:w-80">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                                <input 
+                                    type="text"
+                                    placeholder="Search products..."
+                                    value={productSearch}
+                                    onChange={(e) => setProductSearch(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#FFBF00]/50"
+                                />
+                                </div>
+                                </div>
+
+                                <div className="p-8">
+                                {isLoadingProducts ? (
+                                <div className="py-20 flex justify-center"><PremiumLoader /></div>
+                                ) : (
+                                <div className="grid grid-cols-1 gap-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                                    {productsData?.products
+                                        ?.filter((p: any) => 
+                                            p.is_admin_listing === 1 && 
+                                            p.nama_produk.toLowerCase().includes(productSearch.toLowerCase())
+                                        )
+                                        .map((product: any) => (
+                                            <div key={product.product_id} className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-6">
+                                                <div className="w-16 h-16 rounded-xl overflow-hidden bg-black/50 border border-white/10 shrink-0">
+                                                    <img src={product.images?.[0]?.image_url} alt="" className="w-full h-full object-cover" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className="text-xs font-black text-white truncate uppercase tracking-tight">{product.nama_produk}</h4>
+                                                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">{product.kategori_produk || 'General'}</p>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <button 
+                                                        onClick={async () => {
+                                                            try {
+                                                                await updateProductMutation.mutateAsync({ 
+                                                                    id: product.product_id, 
+                                                                    data: { is_special: product.is_special ? 0 : 1 } 
+                                                                });
+                                                                toast.success('Special status updated');
+                                                            } catch (err) {
+                                                                toast.error('Failed to update status');
+                                                            }
+                                                        }}
+                                                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border ${
+                                                            product.is_special 
+                                                            ? 'bg-indigo-500/20 border-indigo-500/30 text-indigo-400' 
+                                                            : 'bg-white/5 border-white/10 text-slate-500 hover:text-white'
+                                                        }`}
+                                                    >
+                                                        <Sparkles className={`w-3 h-3 ${product.is_special ? 'fill-current' : ''}`} />
+                                                        Special
+                                                    </button>
+                                                    <button 
+                                                        onClick={async () => {
+                                                            try {
+                                                                await updateProductMutation.mutateAsync({ 
+                                                                    id: product.product_id, 
+                                                                    data: { is_featured: product.is_featured ? 0 : 1 } 
+                                                                });
+                                                                toast.success('Featured status updated');
+                                                            } catch (err) {
+                                                                toast.error('Failed to update status');
+                                                            }
+                                                        }}
+                                                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border ${
+                                                            product.is_featured 
+                                                            ? 'bg-amber-500/20 border-amber-500/30 text-[#FFBF00]' 
+                                                            : 'bg-white/5 border-white/10 text-slate-500 hover:text-white'
+                                                        }`}
+                                                    >
+                                                        <Star className={`w-3 h-3 ${product.is_featured ? 'fill-current' : ''}`} />
+                                                        Featured
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    {productsData?.products?.filter((p: any) => p.is_admin_listing === 1).length === 0 && (
+                                        <div className="py-20 text-center text-slate-500 font-bold uppercase tracking-widest text-xs">No admin products found in catalog</div>
+                                    )}
+                                </div>
+                                )}
+                                </div>
+                                </m.div>
+                                ) : (
+                                <m.div
+                                key="ads"
+
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}

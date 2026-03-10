@@ -1,5 +1,14 @@
 # Tamuu Changelog
 
+## [0.6.65] - 2026-03-10
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Admin: Centralized Product Placement
+- **New Feature**: Added a dedicated "Product Placement" tab in the Shop Management dashboard.
+- **Improved UX**: Admins can now search all products and toggle "Special" or "Featured" status from a centralized list, rather than editing individual products.
+- **Workflow**: Removed placement toggles from the Product Listing form to streamline the individual product management workflow.
+
 ## [0.6.64] - 2026-03-10
 **Status**: 🟢 Deployed
 **Environment**: Production
