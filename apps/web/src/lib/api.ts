@@ -938,6 +938,15 @@ export const admin = {
         return await res.json();
     },
 
+    async adminListMerchants(token?: string) {
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/merchants`, { headers });
+        if (!res.ok) throw new Error('Failed to fetch merchants');
+        const data = await res.json();
+        return sanitizeValue(data.merchants || []);
+    },
+
     async updateMerchant(id: string, data: any, token?: string) {
         const headers: Record<string, string> = { 'Content-Type': 'application/json' };
         if (token) headers['Authorization'] = `Bearer ${token}`;

@@ -296,7 +296,16 @@ export const useAdminUpdateMerchant = () => {
         mutationFn: ({ id, data }: { id: string, data: any }) => admin.updateMerchant(id, data, token || undefined),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['shop_directory'] });
+            queryClient.invalidateQueries({ queryKey: ['admin_all_merchants'] });
         }
+    });
+};
+
+export const useAdminMerchants = () => {
+    const { token } = useStore();
+    return useQuery({
+        queryKey: ['admin_all_merchants'],
+        queryFn: () => admin.adminListMerchants(token || undefined)
     });
 };
 

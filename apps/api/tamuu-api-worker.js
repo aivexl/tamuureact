@@ -1829,6 +1829,21 @@ export default {
                     }
                 }
 
+                // List All Merchants (Admin Control)
+                if (path === '/api/admin/shop/merchants' && method === 'GET') {
+                    try {
+                        const merchants = await env.DB.prepare(`
+                            SELECT m.*, c.nama_kategori
+                            FROM shop_merchants m
+                            LEFT JOIN shop_category c ON m.category_id = c.id
+                            ORDER BY m.created_at DESC
+                        `).all();
+                        return json({ success: true, merchants: merchants.results }, corsHeaders);
+                    } catch (error) {
+                        return json({ error: 'Failed to fetch merchants', details: error.message }, { ...corsHeaders, status: 500 });
+                    }
+                }
+
                 if (path.startsWith('/api/admin/shop/merchants/') && method === 'PATCH') {
                     try {
                         const parts = path.split('/');

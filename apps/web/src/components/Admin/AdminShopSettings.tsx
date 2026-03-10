@@ -10,7 +10,7 @@ import { toast } from 'react-hot-toast';
 import { PremiumLoader } from '../ui/PremiumLoader';
 import { admin, shop, storage, safeFetch, API_BASE } from '../../lib/api';
 import { useStore } from '../../store/useStore';
-import { useAdminProducts, useAdminUpdateProduct, useAdminUpdateMerchant, useShopDirectory } from '../../hooks/queries/useShop';
+import { useAdminProducts, useAdminUpdateProduct, useAdminUpdateMerchant, useAdminMerchants } from '../../hooks/queries/useShop';
 
 export const AdminShopSettings: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -20,7 +20,7 @@ export const AdminShopSettings: React.FC = () => {
     // Global Registry State
     const [globalSearch, setGlobalSearch] = useState('');
     const { data: productsData, isLoading: isLoadingProducts } = useAdminProducts();
-    const { data: merchantsData, isLoading: isLoadingMerchantsPlacement } = useShopDirectory();
+    const { data: merchantsData, isLoading: isLoadingMerchantsPlacement } = useAdminMerchants();
     
     const updateProductMutation = useAdminUpdateProduct();
     const updateMerchantMutation = useAdminUpdateMerchant();
