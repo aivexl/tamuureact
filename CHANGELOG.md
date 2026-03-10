@@ -1,5 +1,14 @@
 # Tamuu Changelog
 
+## [0.6.59] - 2026-03-10
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Manual Photo Upload in Shop Admin (Carousel & Ads)
+- **AdminStoreManagement**: Added direct photo upload capability for carousel slides using the `storage.upload` API.
+- **AdminShopSettings**: Integrated manual image upload for both Promo Carousel slides and Strategic Sponsor Banners.
+- **Improved UX**: Added loading states and automatic state updates after successful uploads to streamline asset management in the admin dashboard.
+
 ## [0.6.58] - 2026-03-10
 **Status**: 🟢 Deployed
 **Environment**: Production
