@@ -230,6 +230,7 @@ export const AdminTemplatesPage: React.FC = () => {
                                 onChange={handleFileChange}
                             />
                         </div>
+                        <p className="text-[8px] text-slate-600 font-bold uppercase tracking-tighter mb-2 ml-1">Ideal: 1200x675px (16:9) | Max: 2MB</p>
                         <input 
                             type="text" 
                             value={newSlide.image_url}

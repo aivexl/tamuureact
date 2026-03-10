@@ -216,6 +216,7 @@ export const AdminShopSettings: React.FC = () => {
                                                     onChange={(e) => handleFileChange(e, 'carousel')}
                                                 />
                                             </div>
+                                            <p className="text-[8px] text-slate-600 font-bold uppercase tracking-tighter mb-2 ml-1">Ideal: 1400x600px | Max: 2MB</p>
                                             <input 
                                                 type="text" 
                                                 value={newSlide.image_url}
@@ -439,6 +440,7 @@ const AdEditorRow: React.FC<{
                                 onChange={(e) => onFileUpload(e, 'ad', (url) => updateField('image_url', url))}
                             />
                         </div>
+                        <p className="text-[8px] text-slate-600 font-bold uppercase tracking-tighter mb-2 ml-1">Ideal: 800x1000px | Max: 2MB</p>
                         <input
                             type="text"
                             value={localAd.image_url}

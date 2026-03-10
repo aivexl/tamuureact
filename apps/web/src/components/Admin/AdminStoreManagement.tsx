@@ -255,6 +255,7 @@ export const AdminStoreManagement: React.FC = () => {
                                                 onChange={handleFileChange}
                                             />
                                         </div>
+                                        <p className="text-[8px] text-slate-600 font-bold uppercase tracking-tighter mb-1 ml-1">Ideal: 1400x600px (21:9) | Max: 2MB</p>
                                         <div className="relative">
                                             <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
                                             <input 
