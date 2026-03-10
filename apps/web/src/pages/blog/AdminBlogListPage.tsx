@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -14,7 +14,8 @@ import {
     ArrowLeft,
     Star,
     Layers,
-    LayoutTemplate
+    LayoutTemplate,
+    UploadCloud
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { toast } from 'react-hot-toast';
@@ -54,6 +55,27 @@ export const AdminBlogListPage = () => {
     // Carousel State
     const [carouselSlides, setCarouselSlides] = useState<any[]>([]);
     const [loadingCarousel, setLoadingCarousel] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            const result = await api.storage.upload(file, 'gallery');
+            if (result.url) {
+                setNewSlide(prev => ({ ...prev, image_url: result.url }));
+                toast.success('Image uploaded successfully');
+            }
+        } catch (error: any) {
+            console.error('Upload failed:', error);
+            toast.error(error.message || 'Failed to upload image');
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const { user } = useStore();
     const navigate = useNavigate();
@@ -378,7 +400,33 @@ export const AdminBlogListPage = () => {
                 <h3 className="text-lg font-black text-white mb-6 uppercase tracking-widest">Tambah Slide</h3>
                 <div className="space-y-4">
                     <div>
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Image URL (Wajib)</label>
+                        <div className="flex justify-between items-center mb-2">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Image URL (Wajib)</label>
+                            <button 
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isUploading}
+                                className="text-[10px] font-black text-teal-500 hover:text-teal-400 uppercase tracking-widest flex items-center gap-1 transition-colors"
+                            >
+                                {isUploading ? (
+                                    <span className="flex items-center gap-1">
+                                        <div className="w-2 h-2 border border-teal-500 border-t-transparent rounded-full animate-spin" />
+                                        Uploading...
+                                    </span>
+                                ) : (
+                                    <span className="flex items-center gap-1">
+                                        <UploadCloud className="w-3 h-3" />
+                                        Upload
+                                    </span>
+                                )}
+                            </button>
+                            <input 
+                                type="file" 
+                                ref={fileInputRef} 
+                                className="hidden" 
+                                accept="image/*"
+                                onChange={handleFileChange}
+                            />
+                        </div>
                         <input 
                             type="text" 
                             value={newSlide.image_url}
@@ -425,14 +473,15 @@ export const AdminBlogListPage = () => {
                         />
                     </div>
                     <button 
+                        disabled={isUploading}
                         onClick={() => {
                             if (!newSlide.image_url) return toast.error('Image URL wajib diisi');
                             handleSaveCarousel(newSlide, 'create');
                             setNewSlide({ image_url: '', link_url: '', title: '', category_label: '', is_active: 1, order_index: carouselSlides.length + 1 });
                         }} 
-                        className="w-full py-4 bg-teal-500 text-slate-900 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-teal-400 transition-colors mt-4"
+                        className="w-full py-4 bg-teal-500 text-slate-900 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-teal-400 transition-colors mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Tambah Slide
+                        {isUploading ? 'Menunggu Upload...' : 'Tambah Slide'}
                     </button>
                 </div>
             </div>
