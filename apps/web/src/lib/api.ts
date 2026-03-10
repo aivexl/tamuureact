@@ -938,6 +938,18 @@ export const admin = {
         return await res.json();
     },
 
+    async updateMerchant(id: string, data: any, token?: string) {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/merchants/${id}`, {
+            method: 'PATCH',
+            headers,
+            body: JSON.stringify(sanitizeValue(data))
+        });
+        if (!res.ok) throw new Error('Failed to update merchant');
+        return await res.json();
+    },
+
     async deleteAd(id: string, token?: string) {
         const headers: Record<string, string> = {};
         if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -1558,6 +1570,8 @@ export default {
     blog,
     shop,
     healthCheck,
-    feedback
+    feedback,
+    safeFetch,
+    API_BASE
 };
 

@@ -1,5 +1,15 @@
 # Tamuu Changelog
 
+## [0.6.66] - 2026-03-10
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Admin: Landing Page Curation
+- **Merchant Placement**: Added ability to curate "Tamuu Vendor" section on the landing page via a new "Landing" toggle in Shop Settings.
+- **Product Placement Expansion**: Added "Landing" toggle for products to curate the "Tamuu Shop" section on the landing page.
+- **Unified Manager**: Centralized all storefront and landing page placement logic (Special, Featured, Landing, Verified) into the "Product Placement" tab.
+- **API**: Implemented new admin merchant management endpoints to support verification and placement updates.
+
 ## [0.6.65] - 2026-03-10
 **Status**: 🟢 Deployed
 **Environment**: Production

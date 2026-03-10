@@ -289,6 +289,17 @@ export const useAdminUpdateProduct = () => {
     });
 };
 
+export const useAdminUpdateMerchant = () => {
+    const { token } = useStore();
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, data }: { id: string, data: any }) => admin.updateMerchant(id, data, token || undefined),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['shop_directory'] });
+        }
+    });
+};
+
 export const useAdminApproveProduct = () => {
     const { user, token } = useStore();
     const queryClient = useQueryClient();

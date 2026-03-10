@@ -1829,6 +1829,43 @@ export default {
                     }
                 }
 
+                if (path.startsWith('/api/admin/shop/merchants/') && method === 'PATCH') {
+                    try {
+                        const id = path.split('/').pop();
+                        const body = await request.json();
+                        const { is_verified, is_sponsored, is_landing_featured } = body;
+
+                        let updateFields = [];
+                        let params = [];
+
+                        if (is_verified !== undefined) {
+                            updateFields.push('is_verified = ?');
+                            params.push(is_verified);
+                        }
+                        if (is_sponsored !== undefined) {
+                            updateFields.push('is_sponsored = ?');
+                            params.push(is_sponsored);
+                        }
+                        if (is_landing_featured !== undefined) {
+                            updateFields.push('is_landing_featured = ?');
+                            params.push(is_landing_featured);
+                        }
+
+                        if (updateFields.length === 0) return json({ error: 'No fields to update' }, { ...corsHeaders, status:400 });
+
+                        params.push(id);
+                        await env.DB.prepare(`
+                            UPDATE shop_merchants
+                            SET ${updateFields.join(', ')}, updated_at = CURRENT_TIMESTAMP
+                            WHERE id = ?
+                        `).bind(...params).run();
+
+                        return json({ success: true }, corsHeaders);
+                    } catch (error) {
+                        return json({ error: 'Failed to update merchant', details: error.message }, { ...corsHeaders, status: 500 });
+                    }
+                }
+
                 if (path === '/api/admin/shop/products/approve' && method === 'PATCH') {
                     try {
                         const { id, is_approved, rejection_reason } = await request.json();

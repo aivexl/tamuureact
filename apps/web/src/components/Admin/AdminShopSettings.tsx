@@ -5,7 +5,7 @@ import { toast } from 'react-hot-toast';
 import { PremiumLoader } from '../ui/PremiumLoader';
 import { admin, shop, storage, safeFetch, API_BASE } from '../../lib/api';
 import { useStore } from '../../store/useStore';
-import { useAdminProducts, useAdminUpdateProduct } from '../../hooks/queries/useShop';
+import { useAdminProducts, useAdminUpdateProduct, useAdminUpdateMerchant } from '../../hooks/queries/useShop';
 
 export const AdminShopSettings: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -14,8 +14,11 @@ export const AdminShopSettings: React.FC = () => {
 
     // Product Placement State
     const [productSearch, setProductSearch] = useState('');
+    const [merchantSearch, setMerchantSearch] = useState('');
     const { data: productsData, isLoading: isLoadingProducts } = useAdminProducts();
+    const { data: merchantsData, isLoading: isLoadingMerchantsPlacement } = useShopDirectory();
     const updateProductMutation = useAdminUpdateProduct();
+    const updateMerchantMutation = useAdminUpdateMerchant();
 
     // Carousel State
     const [slides, setSlides] = useState<any[]>([]);
@@ -388,98 +391,215 @@ export const AdminShopSettings: React.FC = () => {
                         exit={{ opacity: 0, y: -10 }}
                         className="bg-[#141414] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl"
                     >
-                        <div className="p-8 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-[#1A1A1A]">
-                            <div>
-                                <h2 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-3">
-                                    <Star className="w-5 h-5 text-[#FFBF00]" />
-                                    Product Placement Manager
-                                </h2>
-                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
-                                    Curate Special and Featured products for the Shop storefront.
-                                </p>
-                            </div>
-                            <div className="relative w-full md:w-80">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                                <input 
-                                    type="text"
-                                    placeholder="Search products..."
-                                    value={productSearch}
-                                    onChange={(e) => setProductSearch(e.target.value)}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#FFBF00]/50"
-                                />
-                            </div>
+                        <div className="p-8 border-b border-white/5 bg-[#1A1A1A]">
+                            <h2 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-3">
+                                <Star className="w-5 h-5 text-[#FFBF00]" />
+                                Storefront Placement Manager
+                            </h2>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
+                                Curate products and vendors for the Shop storefront and Landing Page.
+                            </p>
                         </div>
 
-                        <div className="p-8">
-                            {isLoadingProducts ? (
-                                <div className="py-20 flex justify-center"><PremiumLoader /></div>
-                            ) : (
-                                <div className="grid grid-cols-1 gap-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                                    {productsData?.products
-                                        ?.filter((p: any) => 
-                                            p.is_admin_listing === 1 && 
-                                            p.nama_produk.toLowerCase().includes(productSearch.toLowerCase())
-                                        )
-                                        .map((product: any) => (
-                                            <div key={product.product_id} className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-6">
-                                                <div className="w-16 h-16 rounded-xl overflow-hidden bg-black/50 border border-white/10 shrink-0">
-                                                    <img src={product.images?.[0]?.image_url} alt="" className="w-full h-full object-cover" />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h4 className="text-xs font-black text-white truncate uppercase tracking-tight">{product.nama_produk}</h4>
-                                                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">{product.kategori_produk || 'General'}</p>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    <button 
-                                                        onClick={async () => {
-                                                            try {
-                                                                await updateProductMutation.mutateAsync({ 
-                                                                    id: product.product_id, 
-                                                                    data: { is_special: product.is_special ? 0 : 1 } 
-                                                                });
-                                                                toast.success('Special status updated');
-                                                            } catch (err) {
-                                                                toast.error('Failed to update status');
-                                                            }
-                                                        }}
-                                                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border ${
-                                                            product.is_special 
-                                                            ? 'bg-indigo-500/20 border-indigo-500/30 text-indigo-400' 
-                                                            : 'bg-white/5 border-white/10 text-slate-500 hover:text-white'
-                                                        }`}
-                                                    >
-                                                        <Sparkles className={`w-3 h-3 ${product.is_special ? 'fill-current' : ''}`} />
-                                                        Special
-                                                    </button>
-                                                    <button 
-                                                        onClick={async () => {
-                                                            try {
-                                                                await updateProductMutation.mutateAsync({ 
-                                                                    id: product.product_id, 
-                                                                    data: { is_featured: product.is_featured ? 0 : 1 } 
-                                                                });
-                                                                toast.success('Featured status updated');
-                                                            } catch (err) {
-                                                                toast.error('Failed to update status');
-                                                            }
-                                                        }}
-                                                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border ${
-                                                            product.is_featured 
-                                                            ? 'bg-amber-500/20 border-amber-500/30 text-[#FFBF00]' 
-                                                            : 'bg-white/5 border-white/10 text-slate-500 hover:text-white'
-                                                        }`}
-                                                    >
-                                                        <Star className={`w-3 h-3 ${product.is_featured ? 'fill-current' : ''}`} />
-                                                        Featured
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    {productsData?.products?.filter((p: any) => p.is_admin_listing === 1).length === 0 && (
-                                        <div className="py-20 text-center text-slate-500 font-bold uppercase tracking-widest text-xs">No admin products found in catalog</div>
-                                    )}
+                        <div className="p-8 space-y-12">
+                            {/* Product Placement */}
+                            <section className="space-y-6">
+                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                    <h3 className="text-sm font-black text-[#FFBF00] uppercase tracking-widest flex items-center gap-2">
+                                        <ShoppingBag className="w-4 h-4" />
+                                        Product Placement
+                                    </h3>
+                                    <div className="relative w-full md:w-80">
+                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                                        <input 
+                                            type="text"
+                                            placeholder="Search products..."
+                                            value={productSearch}
+                                            onChange={(e) => setProductSearch(e.target.value)}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#FFBF00]/50"
+                                        />
+                                    </div>
                                 </div>
-                            )}
+
+                                {isLoadingProducts ? (
+                                    <div className="py-10 flex justify-center"><PremiumLoader /></div>
+                                ) : (
+                                    <div className="grid grid-cols-1 gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                                        {productsData?.products
+                                            ?.filter((p: any) => 
+                                                p.is_admin_listing === 1 && 
+                                                p.nama_produk.toLowerCase().includes(productSearch.toLowerCase())
+                                            )
+                                            .map((product: any) => (
+                                                <div key={product.product_id} className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-6">
+                                                    <div className="w-12 h-12 rounded-xl overflow-hidden bg-black/50 border border-white/10 shrink-0">
+                                                        <img src={product.images?.[0]?.image_url} alt="" className="w-full h-full object-cover" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="text-xs font-black text-white truncate uppercase tracking-tight">{product.nama_produk}</h4>
+                                                        <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">{product.kategori_produk || 'General'}</p>
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <button 
+                                                            onClick={async () => {
+                                                                try {
+                                                                    await updateProductMutation.mutateAsync({ 
+                                                                        id: product.product_id, 
+                                                                        data: { is_special: product.is_special ? 0 : 1 } 
+                                                                    });
+                                                                    toast.success('Special status updated');
+                                                                } catch (err) {
+                                                                    toast.error('Failed to update status');
+                                                                }
+                                                            }}
+                                                            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all border ${
+                                                                product.is_special 
+                                                                ? 'bg-indigo-500/20 border-indigo-500/30 text-indigo-400' 
+                                                                : 'bg-white/5 border-white/10 text-slate-500 hover:text-white'
+                                                            }`}
+                                                            title="Toggle Special Section"
+                                                        >
+                                                            <Sparkles className={`w-3 h-3 ${product.is_special ? 'fill-current' : ''}`} />
+                                                            Special
+                                                        </button>
+                                                        <button 
+                                                            onClick={async () => {
+                                                                try {
+                                                                    await updateProductMutation.mutateAsync({ 
+                                                                        id: product.product_id, 
+                                                                        data: { is_featured: product.is_featured ? 0 : 1 } 
+                                                                    });
+                                                                    toast.success('Featured status updated');
+                                                                } catch (err) {
+                                                                    toast.error('Failed to update status');
+                                                                }
+                                                            }}
+                                                            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all border ${
+                                                                product.is_featured 
+                                                                ? 'bg-amber-500/20 border-amber-500/30 text-[#FFBF00]' 
+                                                                : 'bg-white/5 border-white/10 text-slate-500 hover:text-white'
+                                                            }`}
+                                                            title="Toggle Featured Section"
+                                                        >
+                                                            <Star className={`w-3 h-3 ${product.is_featured ? 'fill-current' : ''}`} />
+                                                            Featured
+                                                        </button>
+                                                        <button 
+                                                            onClick={async () => {
+                                                                try {
+                                                                    await updateProductMutation.mutateAsync({ 
+                                                                        id: product.product_id, 
+                                                                        data: { is_landing_featured: product.is_landing_featured ? 0 : 1 } 
+                                                                    });
+                                                                    toast.success('Landing status updated');
+                                                                } catch (err) {
+                                                                    toast.error('Failed to update status');
+                                                                }
+                                                            }}
+                                                            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all border ${
+                                                                product.is_landing_featured 
+                                                                ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400' 
+                                                                : 'bg-white/5 border-white/10 text-slate-500 hover:text-white'
+                                                            }`}
+                                                            title="Toggle Landing Page (Tamuu Shop)"
+                                                        >
+                                                            <LayoutTemplate className="w-3 h-3" />
+                                                            Landing
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                    </div>
+                                )}
+                            </section>
+
+                            {/* Merchant Placement */}
+                            <section className="space-y-6">
+                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-t border-white/5 pt-12">
+                                    <h3 className="text-sm font-black text-[#FFBF00] uppercase tracking-widest flex items-center gap-2">
+                                        <Store className="w-4 h-4" />
+                                        Merchant Placement
+                                    </h3>
+                                    <div className="relative w-full md:w-80">
+                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                                        <input 
+                                            type="text"
+                                            placeholder="Search vendors..."
+                                            value={merchantSearch}
+                                            onChange={(e) => setMerchantSearch(e.target.value)}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#FFBF00]/50"
+                                        />
+                                    </div>
+                                </div>
+
+                                {isLoadingMerchantsPlacement ? (
+                                    <div className="py-10 flex justify-center"><PremiumLoader /></div>
+                                ) : (
+                                    <div className="grid grid-cols-1 gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                                        {(merchantsData as any)
+                                            ?.filter((m: any) => 
+                                                m.nama_toko.toLowerCase().includes(merchantSearch.toLowerCase())
+                                            )
+                                            .map((merchant: any) => (
+                                                <div key={merchant.id} className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-6">
+                                                    <div className="w-12 h-12 rounded-full overflow-hidden bg-black/50 border border-white/10 shrink-0">
+                                                        <img src={merchant.logo_url} alt="" className="w-full h-full object-cover" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="text-xs font-black text-white truncate uppercase tracking-tight">{merchant.nama_toko}</h4>
+                                                        <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">{merchant.nama_kategori || 'Vendor'}</p>
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <button 
+                                                            onClick={async () => {
+                                                                try {
+                                                                    await updateMerchantMutation.mutateAsync({ 
+                                                                        id: merchant.id, 
+                                                                        data: { is_landing_featured: merchant.is_landing_featured ? 0 : 1 } 
+                                                                    });
+                                                                    toast.success('Landing status updated');
+                                                                } catch (err) {
+                                                                    toast.error('Failed to update status');
+                                                                }
+                                                            }}
+                                                            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all border ${
+                                                                merchant.is_landing_featured 
+                                                                ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400' 
+                                                                : 'bg-white/5 border-white/10 text-slate-500 hover:text-white'
+                                                            }`}
+                                                            title="Toggle Landing Page (Tamuu Vendor)"
+                                                        >
+                                                            <LayoutTemplate className="w-3 h-3" />
+                                                            Landing
+                                                        </button>
+                                                        <button 
+                                                            onClick={async () => {
+                                                                try {
+                                                                    await updateMerchantMutation.mutateAsync({ 
+                                                                        id: merchant.id, 
+                                                                        data: { is_verified: merchant.is_verified ? 0 : 1 } 
+                                                                    });
+                                                                    toast.success('Verification status updated');
+                                                                } catch (err) {
+                                                                    toast.error('Failed to update status');
+                                                                }
+                                                            }}
+                                                            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all border ${
+                                                                merchant.is_verified 
+                                                                ? 'bg-[#FFBF00]/20 border-[#FFBF00]/30 text-[#FFBF00]' 
+                                                                : 'bg-white/5 border-white/10 text-slate-500 hover:text-white'
+                                                            }`}
+                                                            title="Toggle Verified Status"
+                                                        >
+                                                            <Check className="w-3 h-3" />
+                                                            Verified
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                    </div>
+                                )}
+                            </section>
                         </div>
                     </m.div>
                 )}

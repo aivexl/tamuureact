@@ -31,25 +31,14 @@ const ShopSection: React.FC = () => {
         fetchAds();
     }, []);
 
-    // Take top 6 merchants for the landing page
-    const displayedMerchants = merchants?.slice(0, 6) || [];
+    // Take curated merchants for the landing page
+    const curatedMerchants = merchants?.filter((m: any) => m.is_landing_featured === 1) || [];
+    const displayedMerchants = curatedMerchants.length > 0 ? curatedMerchants.slice(0, 6) : (merchants?.slice(0, 6) || []);
     
-    // Determine displayed products (Ads or Random)
-    const displayedProducts = featuredAds.length > 0 
-        ? featuredAds.slice(0, 10).map(ad => ({
-            id: ad.id,
-            nama_produk: ad.title,
-            images: [{ image_url: ad.image_url }],
-            harga_estimasi: 'Sponsor',
-            nama_toko: 'Promoted',
-            merchant_slug: 'admin',
-            slug: '',
-            url: ad.link_url || '#',
-            isAd: true,
-            is_admin_listing: true,
-            kategori_produk: 'Iklan',
-            kota: 'Nasional'
-        }))
+    // Determine displayed products (Curated or Random)
+    const curatedProducts = randomProducts?.filter((p: any) => p.is_landing_featured === 1) || [];
+    const displayedProducts = curatedProducts.length > 0 
+        ? curatedProducts.slice(0, 10)
         : (randomProducts?.slice(0, 10) || []);
 
     const scroll = (ref: React.RefObject<HTMLDivElement | null>, direction: 'left' | 'right') => {
