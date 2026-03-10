@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, GripVertical, Save, Image, Link as LinkIcon, AlertCircle, Megaphone, Check, X, LayoutTemplate } from 'lucide-react';
+import { Plus, Trash2, GripVertical, Save, Image, Link as LinkIcon, AlertCircle, Megaphone, Check, X, LayoutTemplate, UploadCloud } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { PremiumLoader } from '../ui/PremiumLoader';
-import { admin, shop } from '../../lib/api';
+import { admin, shop, storage } from '../../lib/api';
 import { useStore } from '../../store/useStore';
 
 export const AdminShopSettings: React.FC = () => {
@@ -14,7 +14,32 @@ export const AdminShopSettings: React.FC = () => {
     // Carousel State
     const [slides, setSlides] = useState<any[]>([]);
     const [isFetchingCarousel, setIsFetchingCarousel] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const carouselFileInputRef = useRef<HTMLInputElement>(null);
     const [newSlide, setNewSlide] = useState({ image_url: '', link_url: '', is_active: 1, order_index: 0 });
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'carousel' | 'ad', onAdUpdate?: (url: string) => void) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            const result = await storage.upload(file, 'gallery');
+            if (result.url) {
+                if (type === 'carousel') {
+                    setNewSlide(prev => ({ ...prev, image_url: result.url }));
+                } else if (onAdUpdate) {
+                    onAdUpdate(result.url);
+                }
+                toast.success('Image uploaded successfully');
+            }
+        } catch (error: any) {
+            console.error('Upload failed:', error);
+            toast.error(error.message || 'Failed to upload image');
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     // Ads State
     const [ads, setAds] = useState<any[]>([]);
@@ -164,7 +189,33 @@ export const AdminShopSettings: React.FC = () => {
                                     <h3 className="text-sm font-black text-white mb-6 uppercase tracking-widest">Tambah Slide</h3>
                                     <div className="space-y-4">
                                         <div>
-                                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Image URL (Wajib)</label>
+                                            <div className="flex justify-between items-center mb-2">
+                                                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">Image URL (Wajib)</label>
+                                                <button 
+                                                    onClick={() => carouselFileInputRef.current?.click()}
+                                                    disabled={isUploading}
+                                                    className="text-[9px] font-black text-teal-500 hover:text-teal-400 uppercase tracking-widest flex items-center gap-1 transition-colors"
+                                                >
+                                                    {isUploading ? (
+                                                        <span className="flex items-center gap-1">
+                                                            <div className="w-2 h-2 border border-teal-500 border-t-transparent rounded-full animate-spin" />
+                                                            Uploading...
+                                                        </span>
+                                                    ) : (
+                                                        <span className="flex items-center gap-1">
+                                                            <UploadCloud className="w-3 h-3" />
+                                                            Upload
+                                                        </span>
+                                                    )}
+                                                </button>
+                                                <input 
+                                                    type="file" 
+                                                    ref={carouselFileInputRef} 
+                                                    className="hidden" 
+                                                    accept="image/*"
+                                                    onChange={(e) => handleFileChange(e, 'carousel')}
+                                                />
+                                            </div>
                                             <input 
                                                 type="text" 
                                                 value={newSlide.image_url}
@@ -193,14 +244,15 @@ export const AdminShopSettings: React.FC = () => {
                                             />
                                         </div>
                                         <button 
+                                            disabled={isUploading}
                                             onClick={() => {
                                                 if (!newSlide.image_url) return toast.error('Image URL wajib diisi');
                                                 handleSaveCarouselAction(newSlide, 'create');
                                                 setNewSlide({ image_url: '', link_url: '', is_active: 1, order_index: slides.length + 1 });
                                             }} 
-                                            className="w-full py-3.5 bg-[#FFBF00] text-[#0A1128] rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-amber-400 transition-colors mt-4"
+                                            className="w-full py-3.5 bg-[#FFBF00] text-[#0A1128] rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-amber-400 transition-colors mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            Tambah Slide
+                                            {isUploading ? 'Menunggu Upload...' : 'Tambah Slide'}
                                         </button>
                                     </div>
                                 </div>
@@ -303,6 +355,8 @@ export const AdminShopSettings: React.FC = () => {
                                             ad={ad} 
                                             onSave={handleSaveAd} 
                                             onDelete={handleRemoveAd} 
+                                            onFileUpload={handleFileChange}
+                                            isUploading={isUploading}
                                         />
                                     ))}
                                 </div>
@@ -315,9 +369,16 @@ export const AdminShopSettings: React.FC = () => {
     );
 };
 
-const AdEditorRow: React.FC<{ ad: any, onSave: (ad: any) => void, onDelete: (id: string) => void }> = ({ ad, onSave, onDelete }) => {
+const AdEditorRow: React.FC<{ 
+    ad: any, 
+    onSave: (ad: any) => void, 
+    onDelete: (id: string) => void,
+    onFileUpload: (e: React.ChangeEvent<HTMLInputElement>, type: 'carousel' | 'ad', onAdUpdate?: (url: string) => void) => void,
+    isUploading: boolean
+}> = ({ ad, onSave, onDelete, onFileUpload, isUploading }) => {
     const [localAd, setLocalAd] = useState(ad);
     const [hasChanges, setLocalHasChanges] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const updateField = (field: string, value: any) => {
         setLocalAd({ ...localAd, [field]: value });
@@ -351,7 +412,33 @@ const AdEditorRow: React.FC<{ ad: any, onSave: (ad: any) => void, onDelete: (id:
                         />
                     </div>
                     <div>
-                        <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Creative Asset URL</label>
+                        <div className="flex justify-between items-center mb-2">
+                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">Creative Asset URL</label>
+                            <button 
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isUploading}
+                                className="text-[9px] font-black text-teal-500 hover:text-teal-400 uppercase tracking-widest flex items-center gap-1 transition-colors"
+                            >
+                                {isUploading ? (
+                                    <span className="flex items-center gap-1">
+                                        <div className="w-2 h-2 border border-teal-500 border-t-transparent rounded-full animate-spin" />
+                                        Uploading...
+                                    </span>
+                                ) : (
+                                    <span className="flex items-center gap-1">
+                                        <UploadCloud className="w-3 h-3" />
+                                        Upload
+                                    </span>
+                                )}
+                            </button>
+                            <input 
+                                type="file" 
+                                ref={fileInputRef} 
+                                className="hidden" 
+                                accept="image/*"
+                                onChange={(e) => onFileUpload(e, 'ad', (url) => updateField('image_url', url))}
+                            />
+                        </div>
                         <input
                             type="text"
                             value={localAd.image_url}

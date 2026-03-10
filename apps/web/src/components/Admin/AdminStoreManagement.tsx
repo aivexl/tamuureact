@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { Search, Filter, MoreVertical, ShieldAlert, Store, UserX, UserCheck, ShieldOff, Image as ImageIcon, Plus, Trash2, Link as LinkIcon, ChevronRight } from 'lucide-react';
+import { Search, Filter, MoreVertical, ShieldAlert, Store, UserX, UserCheck, ShieldOff, Image as ImageIcon, Plus, Trash2, Link as LinkIcon, ChevronRight, UploadCloud } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { PremiumLoader } from '../ui/PremiumLoader';
 import { useAdminShopCarousel, useAdminAddCarousel, useAdminDeleteCarousel } from '../../hooks/queries/useShop';
 import { useStore } from '../../store/useStore';
+import { storage } from '../../lib/api';
 
 // Mock Data for Merchants
 const MOCK_MERCHANTS = [
@@ -33,7 +34,28 @@ export const AdminStoreManagement: React.FC = () => {
     const addCarouselMutation = useAdminAddCarousel();
     const deleteCarouselMutation = useAdminDeleteCarousel();
     const [isAddingSlide, setIsAddingSlide] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [newSlide, setNewSlide] = useState({ image_url: '', link_url: '', order_index: 0 });
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            const result = await storage.upload(file, 'gallery');
+            if (result.url) {
+                setNewSlide(prev => ({ ...prev, image_url: result.url }));
+                toast.success('Image uploaded successfully');
+            }
+        } catch (error: any) {
+            console.error('Upload failed:', error);
+            toast.error(error.message || 'Failed to upload image');
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const filteredMerchants = merchants.filter(merchant =>
         merchant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -206,7 +228,33 @@ export const AdminStoreManagement: React.FC = () => {
                             >
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Image URL</label>
+                                        <div className="flex justify-between items-center ml-1">
+                                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Image URL</label>
+                                            <button 
+                                                onClick={() => fileInputRef.current?.click()}
+                                                disabled={isUploading}
+                                                className="text-[9px] font-black text-teal-500 hover:text-teal-400 uppercase tracking-widest flex items-center gap-1 transition-colors"
+                                            >
+                                                {isUploading ? (
+                                                    <span className="flex items-center gap-1">
+                                                        <div className="w-2 h-2 border border-teal-500 border-t-transparent rounded-full animate-spin" />
+                                                        Uploading...
+                                                    </span>
+                                                ) : (
+                                                    <span className="flex items-center gap-1">
+                                                        <UploadCloud className="w-3 h-3" />
+                                                        Upload Manual
+                                                    </span>
+                                                )}
+                                            </button>
+                                            <input 
+                                                type="file" 
+                                                ref={fileInputRef} 
+                                                className="hidden" 
+                                                accept="image/*"
+                                                onChange={handleFileChange}
+                                            />
+                                        </div>
                                         <div className="relative">
                                             <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
                                             <input 
@@ -233,8 +281,14 @@ export const AdminStoreManagement: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="flex justify-end gap-4">
-                                    <button onClick={() => setIsAddingSlide(false)} className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white">Cancel</button>
-                                    <button onClick={handleAddSlide} className="px-10 py-4 bg-teal-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-teal-500/20">Save Slide</button>
+                                    <button onClick={() => setIsAddingSlide(false)} className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white" disabled={isUploading}>Cancel</button>
+                                    <button 
+                                        onClick={handleAddSlide} 
+                                        disabled={isUploading}
+                                        className="px-10 py-4 bg-teal-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-teal-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isUploading ? 'Uploading Image...' : 'Save Slide'}
+                                    </button>
                                 </div>
                             </m.div>
                         )}
