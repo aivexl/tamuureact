@@ -258,7 +258,7 @@ export const DashboardPage: React.FC = () => {
             </aside>
 
             {/* Mobile Sidebar Overlay */}
-            {sidebarOpen && <div className="fixed inset-0 bg-black/20 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} style={{ top: '3.5rem' }} />}
+            {/* Removed to prevent initial black shadow on mobile */}
 
             {/* Mobile Bottom Navigation (Floating Rectangular Design) */}
             <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-sm bg-white/95 backdrop-blur-2xl border border-slate-100 z-50 flex items-center justify-around px-2 py-2 rounded-[1.5rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)]">
@@ -319,14 +319,14 @@ export const DashboardPage: React.FC = () => {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsMobileCreateOpen(false)}
-                            className="md:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60]"
+                            className="md:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[110]"
                         />
                         <m.div
                             initial={{ y: '100%' }}
                             animate={{ y: 0 }}
                             exit={{ y: '100%' }}
                             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                            className="md:hidden fixed bottom-0 left-0 right-0 mx-auto w-full max-w-md bg-white rounded-t-3xl p-6 pb-12 z-[70] shadow-[0_-20px_50px_rgba(0,0,0,0.1)] flex flex-col gap-2"
+                            className="md:hidden fixed bottom-0 left-0 right-0 mx-auto w-full max-w-md bg-white rounded-t-3xl p-6 pb-12 z-[120] shadow-[0_-20px_50px_rgba(0,0,0,0.1)] flex flex-col gap-2"
                         >
                             <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-100">
                                 <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight">Buat Baru</h3>
@@ -376,17 +376,16 @@ export const DashboardPage: React.FC = () => {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsMobileMoreOpen(false)}
-                            className="md:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60]"
+                            className="md:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[110]"
                         />
                         <m.div
                             initial={{ y: '100%' }}
                             animate={{ y: 0 }}
                             exit={{ y: '100%' }}
                             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                            className="md:hidden fixed bottom-0 left-0 right-0 mx-auto w-full max-w-md bg-white rounded-t-3xl p-6 pb-12 z-[70] shadow-[0_-20px_50px_rgba(0,0,0,0.1)] flex flex-col gap-2 max-h-[85vh] overflow-y-auto custom-scrollbar"
+                            className="md:hidden fixed bottom-0 left-0 right-0 mx-auto w-full max-w-md bg-white rounded-t-3xl p-6 pb-12 z-[120] shadow-[0_-20px_50px_rgba(0,0,0,0.1)] flex flex-col gap-2 max-h-[85vh] overflow-y-auto custom-scrollbar"
                         >
-                            <div className="sticky -top-6 bg-white z-10 flex items-center justify-between mb-4 pb-4 pt-6 border-b border-slate-100">
-                                <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight">Menu Tambahan</h3>
+                            <div className="sticky -top-6 bg-white z-10 flex items-center justify-end mb-4 pb-4 pt-6 border-b border-slate-100">
                                 <button 
                                     onClick={() => setIsMobileMoreOpen(false)} 
                                     className="p-2 bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-rose-500 rounded-full transition-colors"
