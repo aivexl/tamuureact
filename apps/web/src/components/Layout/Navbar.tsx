@@ -162,77 +162,75 @@ export const Navbar: React.FC = () => {
                                 )}
                             </div>
 
-                            {/* Search Bar (Hidden on Mobile, shown on App Route if needed, but primarily for Public) */}
-                            {!isAppRoute && (
-                                <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-2xl mx-auto items-center bg-slate-100/80 border border-slate-200 rounded-full px-2 py-1.5 focus-within:bg-white focus-within:ring-2 focus-within:ring-[#FFBF00]/20 focus-within:border-[#FFBF00]/30 transition-all">
-                                    {/* Location Selector */}
-                                    <div className="relative location-dropdown-container">
-                                        <div 
-                                            onClick={() => setIsLocationOpen(!isLocationOpen)}
-                                            className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-200/50 rounded-full cursor-pointer transition-all"
-                                        >
-                                            <MapPin className="w-3.5 h-3.5 text-[#FFBF00]" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-[#0A1128] whitespace-nowrap max-w-[100px] truncate">
-                                                {selectedCity === 'All' ? 'Indonesia' : selectedCity}
-                                            </span>
-                                            <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${isLocationOpen ? 'rotate-180' : ''}`} />
-                                        </div>
-
-                                        <AnimatePresence>
-                                            {isLocationOpen && (
-                                                <m.div
-                                                    initial={{ opacity: 0, y: 10 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    exit={{ opacity: 0, y: 10 }}
-                                                    className="absolute top-full left-0 mt-3 w-64 bg-white border border-slate-100 shadow-2xl rounded-2xl z-[120] overflow-hidden flex flex-col max-h-[350px]"
-                                                >
-                                                    <div className="p-3 border-b border-slate-50">
-                                                        <input 
-                                                            type="text"
-                                                            placeholder="Cari wilayah..."
-                                                            value={citySearchQuery}
-                                                            onChange={(e) => setCitySearchQuery(e.target.value)}
-                                                            className="w-full bg-slate-50 border-none rounded-lg px-3 py-2 text-xs font-bold focus:ring-0"
-                                                        />
-                                                    </div>
-                                                    <div className="flex-1 overflow-y-auto p-1 custom-scrollbar">
-                                                        {filteredCities.map((city) => (
-                                                            <button
-                                                                key={city}
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    setSelectedCity(city);
-                                                                    setIsLocationOpen(false);
-                                                                }}
-                                                                className="w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:text-[#0A1128]"
-                                                            >
-                                                                {city === 'All' ? 'Seluruh Indonesia' : city}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </m.div>
-                                            )}
-                                        </AnimatePresence>
+                            {/* Search Bar (Hidden on Mobile) */}
+                            <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-2xl mx-auto items-center bg-slate-100/80 border border-slate-200 rounded-full px-2 py-1.5 focus-within:bg-white focus-within:ring-2 focus-within:ring-[#FFBF00]/20 focus-within:border-[#FFBF00]/30 transition-all">
+                                {/* Location Selector */}
+                                <div className="relative location-dropdown-container">
+                                    <div 
+                                        onClick={() => setIsLocationOpen(!isLocationOpen)}
+                                        className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-200/50 rounded-full cursor-pointer transition-all"
+                                    >
+                                        <MapPin className="w-3.5 h-3.5 text-[#FFBF00]" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-[#0A1128] whitespace-nowrap max-w-[100px] truncate">
+                                            {selectedCity === 'All' ? 'Indonesia' : selectedCity}
+                                        </span>
+                                        <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${isLocationOpen ? 'rotate-180' : ''}`} />
                                     </div>
 
-                                    <div className="w-px h-5 bg-slate-300 mx-1" />
+                                    <AnimatePresence>
+                                        {isLocationOpen && (
+                                            <m.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: 10 }}
+                                                className="absolute top-full left-0 mt-3 w-64 bg-white border border-slate-100 shadow-2xl rounded-2xl z-[120] overflow-hidden flex flex-col max-h-[350px]"
+                                            >
+                                                <div className="p-3 border-b border-slate-50">
+                                                    <input 
+                                                        type="text"
+                                                        placeholder="Cari wilayah..."
+                                                        value={citySearchQuery}
+                                                        onChange={(e) => setCitySearchQuery(e.target.value)}
+                                                        className="w-full bg-slate-50 border-none rounded-lg px-3 py-2 text-xs font-bold focus:ring-0"
+                                                    />
+                                                </div>
+                                                <div className="flex-1 overflow-y-auto p-1 custom-scrollbar">
+                                                    {filteredCities.map((city) => (
+                                                        <button
+                                                            key={city}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setSelectedCity(city);
+                                                                setIsLocationOpen(false);
+                                                            }}
+                                                            className="w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:text-[#0A1128]"
+                                                        >
+                                                            {city === 'All' ? 'Seluruh Indonesia' : city}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </m.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
 
-                                    {/* Search Input */}
-                                    <div className="flex-1 flex items-center px-2">
-                                        <input 
-                                            type="text"
-                                            value={searchQuery}
-                                            onChange={e => setSearchQuery(e.target.value)}
-                                            placeholder="Cari vendor, catering, atau paket..."
-                                            className="w-full bg-transparent border-none focus:ring-0 text-xs font-bold text-[#0A1128] py-1 px-2 placeholder:text-slate-400"
-                                        />
-                                    </div>
-                                    
-                                    <button type="submit" className="w-8 h-8 rounded-full bg-[#FFBF00] flex items-center justify-center text-[#0A1128] hover:bg-[#e5ac00] transition-colors shrink-0">
-                                        <Search className="w-3.5 h-3.5" />
-                                    </button>
-                                </form>
-                            )}
+                                <div className="w-px h-5 bg-slate-300 mx-1" />
+
+                                {/* Search Input */}
+                                <div className="flex-1 flex items-center px-2">
+                                    <input 
+                                        type="text"
+                                        value={searchQuery}
+                                        onChange={e => setSearchQuery(e.target.value)}
+                                        placeholder="Cari vendor, catering, atau paket..."
+                                        className="w-full bg-transparent border-none focus:ring-0 text-xs font-bold text-[#0A1128] py-1 px-2 placeholder:text-slate-400"
+                                    />
+                                </div>
+                                
+                                <button type="submit" className="w-8 h-8 rounded-full bg-[#FFBF00] flex items-center justify-center text-[#0A1128] hover:bg-[#e5ac00] transition-colors shrink-0">
+                                    <Search className="w-3.5 h-3.5" />
+                                </button>
+                            </form>
 
                             {/* Right Actions */}
                             <div className="flex items-center gap-3 shrink-0 ml-auto md:ml-0">
@@ -351,36 +349,34 @@ export const Navbar: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* LEVEL 2: Navigation Links (Hidden on App Route or Mobile) */}
-                        {!isAppRoute && (
-                            <div className="hidden md:flex items-center justify-center gap-6 py-2 border-t border-slate-100">
-                                {navLinks.map((link) => (
-                                    link.path.startsWith('/#') ? (
-                                        <a
-                                            key={link.name}
-                                            href={link.path}
-                                            onClick={(e) => handleNavClick(e, link.path)}
-                                            className="text-[11px] font-black uppercase tracking-widest text-slate-500 hover:text-[#0A1128] transition-colors"
-                                        >
-                                            {link.name}
-                                        </a>
-                                    ) : (
-                                        <Link
-                                            key={link.name}
-                                            to={link.path}
-                                            className="text-[11px] font-black uppercase tracking-widest text-slate-500 hover:text-[#0A1128] transition-colors"
-                                        >
-                                            {link.name}
-                                        </Link>
-                                    )
-                                ))}
-                            </div>
-                        )}
+                        {/* LEVEL 2: Navigation Links (Hidden on Mobile) */}
+                        <div className="hidden md:flex items-center justify-center gap-6 py-2 border-t border-slate-100">
+                            {navLinks.map((link) => (
+                                link.path.startsWith('/#') ? (
+                                    <a
+                                        key={link.name}
+                                        href={link.path}
+                                        onClick={(e) => handleNavClick(e, link.path)}
+                                        className="text-[11px] font-black uppercase tracking-widest text-slate-500 hover:text-[#0A1128] transition-colors"
+                                    >
+                                        {link.name}
+                                    </a>
+                                ) : (
+                                    <Link
+                                        key={link.name}
+                                        to={link.path}
+                                        className="text-[11px] font-black uppercase tracking-widest text-slate-500 hover:text-[#0A1128] transition-colors"
+                                    >
+                                        {link.name}
+                                    </Link>
+                                )
+                            ))}
+                        </div>
                     </div>
                 </div>
 
                 {/* Mobile Search Bar (Only visible when mobile menu is NOT open, for quick access) */}
-                {!isAppRoute && !isMobileMenuOpen && (
+                {!isMobileMenuOpen && (
                     <div className="md:hidden bg-white/95 backdrop-blur-xl border-b border-slate-200/50 p-3 shadow-sm">
                         <form onSubmit={handleSearchSubmit} className="flex w-full items-center bg-slate-100 border border-slate-200 rounded-full px-4 py-2 focus-within:bg-white focus-within:ring-2 focus-within:ring-[#FFBF00]/20 transition-all">
                             <Search className="w-4 h-4 text-slate-400 shrink-0" />
@@ -406,18 +402,16 @@ export const Navbar: React.FC = () => {
                         transition={{ duration: 0.2 }}
                         className="fixed inset-0 z-[90] bg-white/95 backdrop-blur-2xl pt-[140px] px-6 pb-6 overflow-y-auto"
                     >
-                        {!isAppRoute && (
-                            <form onSubmit={handleSearchSubmit} className="flex w-full items-center bg-slate-100 border border-slate-200 rounded-2xl px-4 py-3 mb-8">
-                                <Search className="w-4 h-4 text-slate-400 shrink-0" />
-                                <input 
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={e => setSearchQuery(e.target.value)}
-                                    placeholder="Cari vendor, catering..."
-                                    className="w-full bg-transparent border-none focus:ring-0 text-sm font-bold text-[#0A1128] py-1 px-3"
-                                />
-                            </form>
-                        )}
+                        <form onSubmit={handleSearchSubmit} className="flex w-full items-center bg-slate-100 border border-slate-200 rounded-2xl px-4 py-3 mb-8">
+                            <Search className="w-4 h-4 text-slate-400 shrink-0" />
+                            <input 
+                                type="text"
+                                value={searchQuery}
+                                onChange={e => setSearchQuery(e.target.value)}
+                                placeholder="Cari vendor, catering..."
+                                className="w-full bg-transparent border-none focus:ring-0 text-sm font-bold text-[#0A1128] py-1 px-3"
+                            />
+                        </form>
 
                         <div className="flex flex-col gap-6">
                             {navLinks.map((link) => (
