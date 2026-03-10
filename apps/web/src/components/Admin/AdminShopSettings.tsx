@@ -157,11 +157,19 @@ export const AdminShopSettings: React.FC = () => {
     const landingMerchants = (merchantsData as any)?.filter((m: any) => m.is_landing_featured === 1) || [];
 
     const searchResults = globalSearch.length > 1 
-        ? adminProducts.filter((p: any) => p.nama_produk.toLowerCase().includes(globalSearch.toLowerCase()))
+        ? adminProducts.filter((p: any) => 
+            p.nama_produk.toLowerCase().includes(globalSearch.toLowerCase()) ||
+            p.product_id.toLowerCase() === globalSearch.toLowerCase() ||
+            p.product_id.toLowerCase().includes(globalSearch.toLowerCase())
+        )
         : [];
 
     const merchantSearchResults = globalSearch.length > 1
-        ? (merchantsData as any)?.filter((m: any) => m.nama_toko.toLowerCase().includes(globalSearch.toLowerCase()))
+        ? (merchantsData as any)?.filter((m: any) => 
+            m.nama_toko.toLowerCase().includes(globalSearch.toLowerCase()) ||
+            m.id.toLowerCase() === globalSearch.toLowerCase() ||
+            m.id.toLowerCase().includes(globalSearch.toLowerCase())
+        )
         : [];
 
     return (
@@ -453,7 +461,10 @@ export const AdminShopSettings: React.FC = () => {
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <h4 className="text-[10px] font-black text-white uppercase tracking-tight truncate">{m.nama_toko}</h4>
-                                                        <p className="text-[8px] font-bold text-[#FFBF00] uppercase tracking-widest">Merchant</p>
+                                                        <div className="flex items-center gap-2 mt-0.5">
+                                                            <p className="text-[8px] font-bold text-[#FFBF00] uppercase tracking-widest">Merchant</p>
+                                                            <span className="text-[7px] font-mono text-slate-600 truncate">ID: {m.id}</span>
+                                                        </div>
                                                     </div>
                                                     <div className="flex gap-2">
                                                         <button 
@@ -474,7 +485,10 @@ export const AdminShopSettings: React.FC = () => {
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <h4 className="text-[10px] font-black text-white uppercase tracking-tight truncate">{p.nama_produk}</h4>
-                                                        <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">{p.nama_toko}</p>
+                                                        <div className="flex items-center gap-2 mt-0.5">
+                                                            <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">{p.nama_toko}</p>
+                                                            <span className="text-[7px] font-mono text-slate-600 truncate">ID: {p.product_id}</span>
+                                                        </div>
                                                     </div>
                                                     <div className="flex gap-1.5">
                                                         <button 
