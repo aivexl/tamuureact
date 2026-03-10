@@ -258,7 +258,7 @@ export const InvitationsStorePage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white text-slate-900 pt-24 sm:pt-28">
+        <div className="min-h-screen bg-white text-slate-900 pt-[140px] md:pt-[130px]">
             {seoContent.schemas.map((s, i) => (
                 <script key={i} type="application/ld+json">
                     {JSON.stringify(s)}

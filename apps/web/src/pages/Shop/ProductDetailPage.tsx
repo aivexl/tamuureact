@@ -309,7 +309,7 @@ export const ProductDetailPage: React.FC = () => {
                 </div>
             </header>
 
-            <main className="pt-32 pb-40">
+            <main className="pt-[140px] md:pt-[130px] pb-40">
                 <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16">
                     {/* LEFT: Image Gallery */}
                     <div className="space-y-6">
