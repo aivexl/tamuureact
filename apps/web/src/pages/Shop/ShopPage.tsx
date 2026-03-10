@@ -471,9 +471,9 @@ export const ShopPage: React.FC = () => {
                             {latestBlogs.map((post: any) => (
                                 <div key={post.id} onClick={() => navigate(`/blog/${post.slug}`)} className="group cursor-pointer min-w-[280px] md:min-w-0 snap-start">
                                     <div className="aspect-[4/3] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden mb-4 bg-slate-50 border border-slate-100 relative">
-                                        <img src={post.cover_image || 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={post.title} />
+                                        <img src={post.featured_image || 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={post.title} />
                                         <div className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-lg text-[8px] font-black text-[#0A1128] uppercase tracking-widest">
-                                            {post.category?.name || 'Inspirasi'}
+                                            {post.category || post.category?.name || 'Inspirasi'}
                                         </div>
                                     </div>
                                     <div className="px-2">
