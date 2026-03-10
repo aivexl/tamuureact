@@ -55,7 +55,6 @@ export const MultiCarousel: React.FC<MultiCarouselProps> = ({ items }) => {
 
     // True Peeking Film-Strip Architecture:
     // Center item is 75% width (desktop) or 85% width (mobile).
-    // The rest is precisely calculated to bleed off the edges of the device screen.
     const itemWidthPercent = isMobile ? 85 : 75; 
     const itemWidthPx = containerWidth > 0 
         ? (containerWidth * itemWidthPercent) / 100 
@@ -87,8 +86,9 @@ export const MultiCarousel: React.FC<MultiCarouselProps> = ({ items }) => {
                             className="flex-shrink-0 opacity-100 transition-all duration-1000"
                         >
                             <div 
-                                // Cinematic ratio
-                                className="w-full aspect-[16/9] md:aspect-[21/9] rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden bg-slate-100 cursor-pointer shadow-2xl border border-slate-100/10"
+                                // Extreme Cinematic Ratio to reduce height by ~30%
+                                // Desktop: roughly 24:7 (super wide), Mobile: 21:9 (wider than standard 16:9)
+                                className="w-full aspect-[21/9] lg:aspect-[24/7] xl:aspect-[28/8] rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden bg-slate-100 cursor-pointer shadow-2xl border border-slate-100/10"
                                 onClick={() => item.link_url && (window.location.href = item.link_url)}
                             >
                                 {/* Static image, no zoom effects to maintain silent elegance */}
@@ -102,23 +102,23 @@ export const MultiCarousel: React.FC<MultiCarouselProps> = ({ items }) => {
             {/* Chevrons - Muncul saat hover */}
             {items.length > 1 && (
                 <>
-                    <button onClick={prev} className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-12 h-12 md:w-16 md:h-16 rounded-full bg-white/90 backdrop-blur-md border border-slate-200 flex items-center justify-center text-[#0A1128] opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white z-10 shadow-2xl hover:scale-105">
-                        <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" />
+                    <button onClick={prev} className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-10 h-10 md:w-14 md:h-14 rounded-full bg-white/90 backdrop-blur-md border border-slate-200 flex items-center justify-center text-[#0A1128] opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white z-10 shadow-2xl hover:scale-105">
+                        <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
                     </button>
-                    <button onClick={next} className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-12 h-12 md:w-16 md:h-16 rounded-full bg-white/90 backdrop-blur-md border border-slate-200 flex items-center justify-center text-[#0A1128] opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white z-10 shadow-2xl hover:scale-105">
-                        <ChevronRight className="w-6 h-6 md:w-8 md:h-8" />
+                    <button onClick={next} className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-10 h-10 md:w-14 md:h-14 rounded-full bg-white/90 backdrop-blur-md border border-slate-200 flex items-center justify-center text-[#0A1128] opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white z-10 shadow-2xl hover:scale-105">
+                        <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
                     </button>
                 </>
             )}
 
             {/* Dots - Berubah warna Navy (#0A1128) saat aktif */}
             {items.length > 1 && (
-                <div className="absolute bottom-2 md:bottom-4 left-0 right-0 flex justify-center gap-2 md:gap-3 z-10">
+                <div className="absolute bottom-1 md:bottom-2 left-0 right-0 flex justify-center gap-2 z-10">
                     {items.map((_, i) => (
                         <button
                             key={i}
                             onClick={(e) => { e.stopPropagation(); setCurrentIndex(i); }}
-                            className={`h-2 md:h-2.5 rounded-full transition-all duration-500 shadow-sm ${i === currentIndex ? 'w-8 md:w-12 bg-[#0A1128]' : 'w-2 md:w-2.5 bg-slate-300 hover:bg-slate-400'}`}
+                            className={`h-1.5 md:h-2 rounded-full transition-all duration-500 shadow-sm ${i === currentIndex ? 'w-6 md:w-8 bg-[#0A1128]' : 'w-1.5 md:w-2 bg-slate-300 hover:bg-slate-400'}`}
                         />
                     ))}
                 </div>
