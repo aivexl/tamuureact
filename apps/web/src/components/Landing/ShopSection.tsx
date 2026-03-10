@@ -1,10 +1,11 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { m } from 'framer-motion';
-import { ArrowRight, Store, MapPin, ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
+import { ArrowRight, Store, MapPin, ChevronLeft, ChevronRight, ShoppingBag, Heart } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useShopDirectory, useRandomProducts } from '../../hooks/queries/useShop';
 import { shop } from '../../lib/api';
-import { formatCurrency } from '../../lib/utils';
+import { formatCurrency, formatAbbreviatedNumber } from '../../lib/utils';
+import { ProductCard } from '../Shop/ProductCard';
 
 const ShopSection: React.FC = () => {
     const navigate = useNavigate();
@@ -158,46 +159,60 @@ const ShopSection: React.FC = () => {
     );
 };
 
-// RESTORED PRODUCT CARD FROM b3edcb0
-const ProductCard: React.FC<{ product: any, navigate: any }> = ({ product, navigate }) => (
-    <div 
-        onClick={() => {
-            const mSlug = product.merchant_slug === 'admin' ? 'umum' : (product.merchant_slug || (product.is_admin_listing ? 'umum' : 'unknown'));
-            const pSlug = product.slug || product.id;
-            navigate(`/shop/s/${mSlug}/${pSlug}`);
-        }}
-        className="group bg-white border border-slate-50 rounded-3xl overflow-hidden cursor-pointer hover:shadow-2xl transition-all w-full md:w-[195px] flex flex-col"
-    >
-        <div className="aspect-square bg-slate-100 overflow-hidden">
-            <img 
-                src={product.images?.[0]?.image_url || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80'} 
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                alt={product.nama_produk} 
-            />
-        </div>
-        <div className="p-4 flex flex-col flex-1">
-            <h4 className="text-[10px] font-black text-[#0A1128] uppercase line-clamp-2 mb-2 leading-tight flex-1">{product.nama_produk}</h4>
-            <p className="text-[11px] font-black text-[#FFBF00]">{formatCurrency(product.harga_estimasi)}</p>
-        </div>
-    </div>
-);
+// FULLY RESTORED MERCHANT CARD FROM b3edcb0
+const MerchantCard: React.FC<{ merchant: any, navigate: any }> = ({ merchant, navigate }) => {
+    return (
+        <m.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            onClick={() => {
+                const targetSlug = merchant.slug === 'admin' ? 'official' : merchant.slug;
+                navigate(`/shop/s/${targetSlug}`);
+            }}
+            className="group bg-white border border-slate-50 rounded-[2rem] overflow-hidden flex flex-col hover:shadow-2xl transition-all cursor-pointer hover:border-[#0A1128]/20 relative w-full min-w-[280px]"
+        >
+            <div className="h-32 md:h-36 bg-slate-100 relative overflow-hidden">
+                {merchant.banner_url ? (
+                    <img src={merchant.banner_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Banner" />
+                ) : (
+                    <div className="w-full h-full bg-gradient-to-tr from-slate-200 to-slate-100" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A1128]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            </div>
+            
+            {/* Merchant Logo */}
+            <div className="absolute top-20 md:top-24 left-6 md:left-8 w-16 h-16 md:w-20 md:h-20 rounded-full border-4 border-white overflow-hidden bg-white shadow-lg z-10 transition-transform duration-500 group-hover:scale-105">
+                <img 
+                    src={merchant.logo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${merchant.nama_toko}`} 
+                    className="w-full h-full object-cover" 
+                    alt="Logo"
+                />
+            </div>
 
-// RESTORED MERCHANT CARD FROM b3edcb0
-const MerchantCard: React.FC<{ merchant: any, navigate: any }> = ({ merchant, navigate }) => (
-    <div 
-        onClick={() => navigate(`/shop/s/${merchant.slug}`)}
-        className="bg-white border border-slate-50 rounded-[2rem] p-6 hover:shadow-xl transition-all cursor-pointer min-w-[240px]"
-    >
-        <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-100 border border-slate-100">
-                <img src={merchant.logo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${merchant.nama_toko}`} className="w-full h-full object-cover" alt={merchant.nama_toko} />
+            <div className="px-6 md:px-8 pt-12 md:pt-14 pb-6 md:pb-8 flex flex-col flex-1 bg-white">
+                <div className="flex items-start justify-between gap-3 mb-2">
+                    <h3 className="text-base md:text-xl font-black text-[#0A1128] truncate flex-1 min-w-0 tracking-tight leading-none">{merchant.nama_toko}</h3>
+                    {merchant.wishlist_count > 0 && (
+                        <div className="flex items-center gap-1 text-[#FFBF00] flex-shrink-0 bg-[#FFBF00]/10 px-2.5 py-1 rounded-lg border border-[#FFBF00]/20">
+                            <Heart className="w-3 h-3 fill-current" />
+                            <span className="text-[9px] md:text-[10px] font-black">{formatAbbreviatedNumber(merchant.wishlist_count)}</span>
+                        </div>
+                    )}
+                </div>
+                <div className="flex flex-col gap-3">
+                    <p className="text-[10px] md:text-[11px] font-bold text-[#FFBF00] uppercase tracking-[0.2em]">{merchant.nama_kategori || 'Professional Vendor'}</p>
+                    <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-slate-50 flex items-center justify-center shrink-0">
+                            <MapPin className="w-2.5 h-2.5 md:w-3 md:h-3 text-slate-400" />
+                        </div>
+                        <p className="text-[10px] md:text-[11px] font-bold text-slate-500 uppercase tracking-widest truncate">
+                            {merchant.kota ? merchant.kota.replace(/^(kota|kab\.)\s+/gi, '') : 'Nasional'}
+                        </p>
+                    </div>
+                </div>
             </div>
-            <div className="min-w-0">
-                <h4 className="text-sm font-black text-[#0A1128] uppercase tracking-tight truncate">{merchant.nama_toko}</h4>
-                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest truncate">{merchant.nama_kategori || 'Vendor'}</p>
-            </div>
-        </div>
-    </div>
-);
+        </m.div>
+    );
+};
 
 export default ShopSection;
