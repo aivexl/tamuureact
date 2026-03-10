@@ -355,18 +355,33 @@ export const ShopPage: React.FC = () => {
                                 ) : (
                                     <div className="py-32 text-center text-slate-300 font-bold uppercase tracking-widest w-full">No products found</div>
                                 )}
+                                <div className="w-full flex justify-center mt-12 mb-4">
+                                    <button
+                                        onClick={() => setVisibleCount(prev => prev + 10)}
+                                        disabled={products.length === 0 || visibleCount >= products.length}
+                                        className={`px-8 md:px-12 py-3.5 md:py-4 rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${
+                                            products.length === 0 || visibleCount >= products.length
+                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                            : 'bg-[#0A1128] text-white shadow-xl hover:bg-indigo-900 hover:-translate-y-1'
+                                        }`}
+                                    >
+                                        {products.length === 0 ? 'Load More' : (visibleCount >= products.length ? 'Semua Produk Ditampilkan' : 'Tampilkan Lebih Banyak')}
+                                    </button>
+                                </div>
                             </div>
                         )
                     ) : (
                         <div className="px-2">
                             {isLoadingMerchants ? (
                                 <div className="py-20 text-center w-full"><PremiumLoader variant="inline" /></div>
-                            ) : (
+                            ) : merchants.length > 0 ? (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                                     {merchants.map((merchant: any) => (
                                         <MerchantCard key={merchant.id} merchant={merchant} navigate={navigate} />
                                     ))}
                                 </div>
+                            ) : (
+                                <div className="py-32 text-center text-slate-300 font-bold uppercase tracking-widest w-full">No stores found</div>
                             )}
                         </div>
                     )}
@@ -379,8 +394,8 @@ export const ShopPage: React.FC = () => {
     );
 };
 
-// Simplified Cards for clarity
-const ProductCard: React.FC<{ product: any, navigate: any }> = ({ product, navigate }) => (
+// Reverted ProductCard Component to b3edcb0
+const ProductCard: React.FC<{ product: any, navigate: any, isSmall?: boolean }> = ({ product, navigate }) => (
     <div 
         onClick={() => navigate(`/shop/s/${product.merchant_slug}/${product.slug || product.id}`)}
         className="group bg-white border border-slate-50 rounded-3xl overflow-hidden cursor-pointer hover:shadow-2xl transition-all w-full md:w-[195px]"
@@ -395,6 +410,7 @@ const ProductCard: React.FC<{ product: any, navigate: any }> = ({ product, navig
     </div>
 );
 
+// Reverted MerchantCard Component to b3edcb0
 const MerchantCard: React.FC<{ merchant: any, navigate: any }> = ({ merchant, navigate }) => (
     <div 
         onClick={() => navigate(`/shop/s/${merchant.slug}`)}
