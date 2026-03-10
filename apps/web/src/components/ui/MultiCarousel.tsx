@@ -53,45 +53,46 @@ export const MultiCarousel: React.FC<MultiCarouselProps> = ({ items }) => {
 
     if (!items || items.length === 0) return null;
 
-    // Peeking effect: Center image is 80% width on Desktop, 90% on Mobile.
-    // This makes the rectangle large enough while allowing the sides to peek (10% or 5% each side).
-    const itemWidthPercent = isMobile ? 90 : 80; 
+    // True Peeking Film-Strip Architecture:
+    // Center item is 75% width (desktop) or 85% width (mobile).
+    // The rest is precisely calculated to bleed off the edges of the device screen.
+    const itemWidthPercent = isMobile ? 85 : 75; 
     const itemWidthPx = containerWidth > 0 
         ? (containerWidth * itemWidthPercent) / 100 
-        : (typeof window !== 'undefined' ? window.innerWidth * (itemWidthPercent / 100) : 1200);
+        : (typeof window !== 'undefined' ? window.innerWidth * (itemWidthPercent / 100) : 1000);
     
-    const centerOffsetPx = containerWidth > 0 
-        ? (containerWidth - itemWidthPx) / 2 
-        : (typeof window !== 'undefined' ? (window.innerWidth - itemWidthPx) / 2 : 0);
+    const gapPx = isMobile ? 12 : 24; 
+    const slideDistance = itemWidthPx + gapPx;
 
-    const translateX = centerOffsetPx - (currentIndex * itemWidthPx);
+    const baseOffset = containerWidth > 0 ? (containerWidth - itemWidthPx) / 2 : 0;
+    const translateX = baseOffset - (currentIndex * slideDistance);
 
     return (
         <div 
             ref={containerRef}
-            // Murni mengikuti lebar parent (pastikan dipanggil di luar div max-w)
-            className="relative w-full overflow-hidden group py-4 md:py-8"
+            // Full bleed 100vw breaks out of any max-w container
+            className="relative w-[100vw] ml-[calc(50%-50vw)] overflow-hidden group py-6 md:py-10"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
         >
             <div 
                 className="flex transition-transform duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)]"
-                style={{ transform: `translateX(${translateX}px)` }}
+                style={{ transform: `translateX(${translateX}px)`, gap: `${gapPx}px` }}
             >
                 {items.map((item, idx) => {
-                    const isActive = idx === currentIndex;
                     return (
                         <div 
                             key={`${item.id}-${idx}`} 
                             style={{ width: `${itemWidthPx}px` }}
-                            className={`flex-shrink-0 px-2 sm:px-4 transition-all duration-1000 ${isActive ? 'opacity-100 scale-100' : 'opacity-40 scale-[0.92]'}`}
+                            className="flex-shrink-0 opacity-100 transition-all duration-1000"
                         >
                             <div 
-                                // Aspect ratio 16:9 Desktop (Cinematic Lebar) & 4:3 Mobile
-                                className="w-full aspect-[4/3] md:aspect-[16/9] lg:aspect-[21/9] rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden bg-slate-100 cursor-pointer shadow-2xl border border-slate-100/50"
+                                // Cinematic ratio
+                                className="w-full aspect-[16/9] md:aspect-[21/9] rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden bg-slate-100 cursor-pointer shadow-2xl border border-slate-100/10"
                                 onClick={() => item.link_url && (window.location.href = item.link_url)}
                             >
-                                <img src={item.image_url} alt="Carousel Banner" className="w-full h-full object-cover" />
+                                {/* Static image, no zoom effects to maintain silent elegance */}
+                                <img src={item.image_url} alt={`Carousel ${idx}`} className="w-full h-full object-cover" />
                             </div>
                         </div>
                     );
@@ -101,10 +102,10 @@ export const MultiCarousel: React.FC<MultiCarouselProps> = ({ items }) => {
             {/* Chevrons - Muncul saat hover */}
             {items.length > 1 && (
                 <>
-                    <button onClick={prev} className="absolute left-6 md:left-12 top-1/2 -translate-y-1/2 w-12 h-12 md:w-16 md:h-16 rounded-full bg-white/90 backdrop-blur-md border border-slate-200 flex items-center justify-center text-[#0A1128] opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white z-10 shadow-2xl hover:scale-105">
+                    <button onClick={prev} className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-12 h-12 md:w-16 md:h-16 rounded-full bg-white/90 backdrop-blur-md border border-slate-200 flex items-center justify-center text-[#0A1128] opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white z-10 shadow-2xl hover:scale-105">
                         <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" />
                     </button>
-                    <button onClick={next} className="absolute right-6 md:right-12 top-1/2 -translate-y-1/2 w-12 h-12 md:w-16 md:h-16 rounded-full bg-white/90 backdrop-blur-md border border-slate-200 flex items-center justify-center text-[#0A1128] opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white z-10 shadow-2xl hover:scale-105">
+                    <button onClick={next} className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-12 h-12 md:w-16 md:h-16 rounded-full bg-white/90 backdrop-blur-md border border-slate-200 flex items-center justify-center text-[#0A1128] opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white z-10 shadow-2xl hover:scale-105">
                         <ChevronRight className="w-6 h-6 md:w-8 md:h-8" />
                     </button>
                 </>
