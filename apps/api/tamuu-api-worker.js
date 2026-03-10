@@ -1831,7 +1831,9 @@ export default {
 
                 if (path.startsWith('/api/admin/shop/merchants/') && method === 'PATCH') {
                     try {
-                        const id = path.split('/').pop();
+                        const merchantIdFromPath = path.replace('/api/admin/shop/merchants/', '');
+                        if (!merchantIdFromPath) return json({ error: 'Merchant ID required' }, { ...corsHeaders, status: 400 });
+
                         const body = await request.json();
                         const { is_verified, is_sponsored, is_landing_featured } = body;
 
@@ -1851,9 +1853,9 @@ export default {
                             params.push(is_landing_featured);
                         }
 
-                        if (updateFields.length === 0) return json({ error: 'No fields to update' }, { ...corsHeaders, status:400 });
+                        if (updateFields.length === 0) return json({ error: 'No fields to update' }, { ...corsHeaders, status: 400 });
 
-                        params.push(id);
+                        params.push(merchantIdFromPath);
                         await env.DB.prepare(`
                             UPDATE shop_merchants
                             SET ${updateFields.join(', ')}, updated_at = CURRENT_TIMESTAMP
