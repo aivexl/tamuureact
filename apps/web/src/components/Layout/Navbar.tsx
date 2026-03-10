@@ -135,9 +135,6 @@ export const Navbar: React.FC = () => {
 
     return (
         <>
-            {/* Pad the body so the fixed 2-level navbar doesn't overlap content */}
-            <div className={`w-full ${isAppRoute ? 'h-[72px]' : 'h-[120px] md:h-[132px]'}`} />
-            
             <header className={`fixed top-0 left-0 right-0 z-[100] w-full transition-all duration-500`}>
                 <div className={`w-full bg-white/95 backdrop-blur-xl border-b border-slate-200/50 shadow-sm ${isAppRoute ? 'py-2' : ''}`}>
                     <div className="max-w-7xl mx-auto px-4 sm:px-6">
