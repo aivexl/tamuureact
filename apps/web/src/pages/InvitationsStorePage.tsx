@@ -77,7 +77,7 @@ export const InvitationsStorePage: React.FC = () => {
                 { id: '3', image_url: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80&w=800', link_url: '#' },
                 { id: '4', image_url: 'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&q=80&w=800', link_url: '#' },
                 { id: '5', image_url: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=800', link_url: '#' },
-                { id: '6', image_url: 'https://images.unsplash.com/photo-1505932794465-147d1f1b6c97?auto=format&fit=crop&q=80&w=800', link_url: '#' }
+                { id: '6', image_url: 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&q=80&w=800', link_url: '#' }
             ];
             
             try {
@@ -85,7 +85,13 @@ export const InvitationsStorePage: React.FC = () => {
                 if (res.ok) {
                     const data = await res.json();
                     if (Array.isArray(data) && data.length > 0) {
-                        setCarouselSlides(data);
+                        // Ensure we always have at least 6 slides
+                        let finalSlides = [...data];
+                        if (finalSlides.length < 6) {
+                            const padding = fallbackSlides.slice(0, 6 - finalSlides.length);
+                            finalSlides = [...finalSlides, ...padding];
+                        }
+                        setCarouselSlides(finalSlides.slice(0, 6)); // Strictly 6
                     } else {
                         setCarouselSlides(fallbackSlides);
                     }

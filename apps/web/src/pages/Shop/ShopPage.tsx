@@ -149,15 +149,24 @@ export const ShopPage: React.FC = () => {
 
     const { data: remoteSlides = [] } = useShopCarousel();
     const slides = useMemo(() => {
-        if (remoteSlides && remoteSlides.length > 0) return remoteSlides;
-        return [
+        const fallbackSlides = [
             { id: '1', image_url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800', link_url: '#' },
             { id: '2', image_url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=800', link_url: '#' },
             { id: '3', image_url: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80&w=800', link_url: '#' },
             { id: '4', image_url: 'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&q=80&w=800', link_url: '#' },
             { id: '5', image_url: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=800', link_url: '#' },
-            { id: '6', image_url: 'https://images.unsplash.com/photo-1505932794465-147d1f1b6c97?auto=format&fit=crop&q=80&w=800', link_url: '#' }
+            { id: '6', image_url: 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&q=80&w=800', link_url: '#' }
         ];
+
+        if (remoteSlides && remoteSlides.length > 0) {
+            let finalSlides = [...remoteSlides];
+            if (finalSlides.length < 6) {
+                const padding = fallbackSlides.slice(0, 6 - finalSlides.length);
+                finalSlides = [...finalSlides, ...padding];
+            }
+            return finalSlides.slice(0, 6);
+        }
+        return fallbackSlides;
     }, [remoteSlides]);
 
     const { data: specialProducts = [] } = useSpecialProducts();

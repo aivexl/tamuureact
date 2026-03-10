@@ -48,15 +48,25 @@ const BlogLandingPage: React.FC = () => {
             setPosts(blogData);
             setHasMore(blogData.length === initialLimit);
 
-            // Fallback for carousel if empty
+            const fallbackSlides = [
+                { id: '1', image_url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=2000', title: 'The Architecture of Moments', category_label: 'Gallery', link_url: '#' },
+                { id: '2', image_url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2000', title: 'Modern Elegance', category_label: 'Tips', link_url: '#' },
+                { id: '3', image_url: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80&w=2000', title: 'The Minimalist Cut', category_label: 'Editorial', link_url: '#' },
+                { id: '4', image_url: 'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&q=80&w=2000', title: 'Timeless Traditions', category_label: 'Culture', link_url: '#' },
+                { id: '5', image_url: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=2000', title: 'Sustainable Weddings', category_label: 'Eco', link_url: '#' },
+                { id: '6', image_url: 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&q=80&w=2000', title: 'Grand Celebrations', category_label: 'Venue', link_url: '#' }
+            ];
+
+            // Fallback logic with padding
             if (carouselData.length > 0) {
-                setCarouselSlides(carouselData);
+                let finalSlides = [...carouselData];
+                if (finalSlides.length < 6) {
+                    const padding = fallbackSlides.slice(0, 6 - finalSlides.length);
+                    finalSlides = [...finalSlides, ...padding];
+                }
+                setCarouselSlides(finalSlides.slice(0, 6));
             } else {
-                setCarouselSlides([
-                    { id: '1', image_url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=2000', title: 'The Architecture of Moments', category_label: 'Gallery', link_url: '#' },
-                    { id: '2', image_url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2000', title: 'Modern Elegance', category_label: 'Tips', link_url: '#' },
-                    { id: '3', image_url: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80&w=2000', title: 'The Minimalist Cut', category_label: 'Editorial', link_url: '#' }
-                ]);
+                setCarouselSlides(fallbackSlides);
             }
 
         } catch (err) { console.error(err); } finally { setLoading(false); }
