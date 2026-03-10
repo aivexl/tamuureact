@@ -207,68 +207,6 @@ export const ShopPage: React.FC = () => {
                             </button>
                         </div>
 
-                        <div className="relative group">
-                            <div className="flex flex-col md:flex-row items-center w-full bg-white border border-slate-100 rounded-[2.5rem] p-2.5 shadow-xl transition-all duration-700 gap-2">
-                                <div className="relative w-full md:w-[35%]">
-                                    <div 
-                                        onClick={() => setIsLocationOpen(!isLocationOpen)}
-                                        className="flex items-center w-full bg-slate-50/50 hover:bg-slate-100/80 rounded-[1.8rem] px-6 py-4 cursor-pointer transition-all"
-                                    >
-                                        <MapPin className="w-4 h-4 text-[#FFBF00] shrink-0" />
-                                        <span className="flex-1 ml-3 text-[#0A1128] font-bold text-sm truncate uppercase tracking-tight">
-                                            {selectedCity === 'All' ? 'Seluruh Indonesia' : selectedCity}
-                                        </span>
-                                        <ChevronDown className={`w-3.5 h-3.5 text-slate-300 transition-transform ${isLocationOpen ? 'rotate-180' : ''}`} />
-                                    </div>
-                                    <AnimatePresence>
-                                        {isLocationOpen && (
-                                            <m.div
-                                                initial={{ opacity: 0, y: 15 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, y: 10 }}
-                                                className="absolute top-full left-0 right-0 mt-4 bg-white border border-slate-100 shadow-2xl rounded-[2.5rem] z-[70] overflow-hidden flex flex-col max-h-[400px]"
-                                            >
-                                                <div className="p-4 border-b border-slate-50">
-                                                    <input 
-                                                        type="text"
-                                                        placeholder="Cari wilayah..."
-                                                        value={citySearchQuery}
-                                                        onChange={(e) => setCitySearchQuery(e.target.value)}
-                                                        className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 text-sm font-semibold"
-                                                    />
-                                                </div>
-                                                <div className="flex-1 overflow-y-auto p-2 no-scrollbar">
-                                                    {filteredCities.map((city) => (
-                                                        <button
-                                                            key={city}
-                                                            onClick={() => {
-                                                                setSelectedCity(city);
-                                                                setIsLocationOpen(false);
-                                                            }}
-                                                            className="w-full text-left px-5 py-3.5 rounded-xl hover:bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:text-[#0A1128]"
-                                                        >
-                                                            {city === 'All' ? 'Seluruh Indonesia' : city}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </m.div>
-                                        )}
-                                    </AnimatePresence>
-                                </div>
-                                <div className="hidden md:block w-px h-8 bg-slate-100 mx-2" />
-                                <div className="flex items-center flex-1 w-full px-4">
-                                    <Search className="w-4 h-4 text-slate-300 shrink-0" />
-                                    <input
-                                        type="text"
-                                        placeholder="Cari produk, jasa, catering..."
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full bg-transparent border-none focus:ring-0 text-[#0A1128] py-4 px-3 font-semibold"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
                         <div className="flex overflow-x-auto gap-3 pb-2 no-scrollbar">
                             {categoryConfig.map((cat) => {
                                 const Icon = cat.icon;
