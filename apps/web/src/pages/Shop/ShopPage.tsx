@@ -144,18 +144,24 @@ export const ShopPage: React.FC = () => {
             minPrice: products.length > 0 ? formatCurrency(Math.min(...products.map((p: any) => Number(p.harga_estimasi) || 99999999))) : 'Terjangkau'
         };
 
-        const titleTemplate = intent?.toUpperCase() === 'CHEAP' 
-            ? 'Paket {Category} Murah di {City} Mulai {MinPrice} | Tamuu'
-            : '{Category} {City} Terbaik {Year} - Rating Bintang 5 | Tamuu';
+        const isHomePage = location.pathname === '/';
 
-        const descTemplate = 'Daftar vendor {Category} profesional di {City}. Temukan {Count} pilihan terbaik dengan harga mulai {MinPrice}. Update {Month} {Year}.';
+        const titleTemplate = isHomePage
+            ? 'Tamuu - Platform Undangan Digital & Vendor Pernikahan Premium'
+            : (intent?.toUpperCase() === 'CHEAP' 
+                ? 'Paket {Category} Murah di {City} Mulai {MinPrice} | Tamuu'
+                : '{Category} {City} Terbaik {Year} - Rating Bintang 5 | Tamuu');
+
+        const descTemplate = isHomePage
+            ? 'Temukan vendor pernikahan, katering, dan MUA terbaik, serta buat undangan digital premium eksklusif hanya di Tamuu.'
+            : 'Daftar vendor {Category} profesional di {City}. Temukan {Count} pilihan terbaik dengan harga mulai {MinPrice}. Update {Month} {Year}.';
 
         return {
             title: assembleSEOTemplate(titleTemplate, data),
             description: assembleSEOTemplate(descTemplate, data),
             h1: assembleSEOTemplate('{Category} di {City}', data),
         };
-    }, [selectedCategory, selectedCity, products, intent]);
+    }, [selectedCategory, selectedCity, products, intent, location.pathname]);
 
     useSEO({
         title: seoContent.title,

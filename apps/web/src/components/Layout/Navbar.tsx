@@ -91,23 +91,23 @@ export const Navbar: React.FC = () => {
 
     const navLinks = isLoggedIn ? [
         { name: 'Home', path: '/' },
+        { name: 'Undangan Digital', path: '/undangan-digital' },
         { name: 'Invitations', path: '/invitations' },
-        { name: 'Shop', path: '/shop' },
         { name: 'Blog', path: '/blog' },
         { name: 'Dashboard', path: '/dashboard' },
         { name: 'Event Saya', path: '/dashboard' },
         { name: 'Bantuan', path: '/support' },
     ] : [
         { name: 'Home', path: '/' },
+        { name: 'Undangan Digital', path: '/undangan-digital' },
         { name: 'Invitations', path: '/invitations' },
-        { name: 'Shop', path: '/shop' },
         { name: 'Blog', path: '/blog' },
-        { name: 'Fitur', path: '/#features' },
-        { name: 'Harga', path: '/#pricing' },
+        { name: 'Fitur', path: '/undangan-digital#features' },
+        { name: 'Harga', path: '/undangan-digital#pricing' },
     ];
 
     const handleNavClick = (e: React.MouseEvent, path: string) => {
-        if (path.startsWith('/#')) {
+        if (path.includes('#')) {
             const id = path.split('#')[1];
             const element = document.getElementById(id);
             if (element) {

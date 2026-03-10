@@ -115,13 +115,16 @@ const App: React.FC = () => {
                             // App domain: Root redirects to dashboard
                             <Route path="/" element={<Navigate to="/dashboard" replace />} />
                         ) : (
-                            // Public domain: Show landing page
-                            <Route path="/" element={<MainLayout><LandingPage /></MainLayout>} />
+                            // Public domain: Show ShopPage as the new landing page
+                            <Route path="/" element={<MainLayout><ShopPage /></MainLayout>} />
                         )}
 
                         {/* ============================================ */}
                         {/* PUBLIC ROUTES - Available on both domains */}
                         {/* ============================================ */}
+
+                        {/* Undangan Digital (Old Home Page) */}
+                        <Route path="/undangan-digital" element={<MainLayout><LandingPage /></MainLayout>} />
 
                         {/* Public Store */}
                         <Route path="/invitations" element={<MainLayout><InvitationsStorePage /></MainLayout>} />
