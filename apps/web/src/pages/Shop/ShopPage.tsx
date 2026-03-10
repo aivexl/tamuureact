@@ -173,6 +173,20 @@ export const ShopPage: React.FC = () => {
     const { data: featuredProducts = [] } = useFeaturedProducts();
     const { data: randomProducts = [] } = useRandomProducts();
     
+    // Fetch Special Banner Ad
+    const [specialBanner, setSpecialBanner] = useState<any>(null);
+    useEffect(() => {
+        const fetchAd = async () => {
+            try {
+                const ads = await shop.getAds('SHOP_SPECIAL_FOR_YOU');
+                if (ads && ads.length > 0) setSpecialBanner(ads[0]);
+            } catch (err) {
+                console.error('Failed to fetch special banner:', err);
+            }
+        };
+        fetchAd();
+    }, []);
+
     const { data: blogData } = useQuery({
         queryKey: ['latest_blog_posts'],
         queryFn: () => blog.list({ limit: 4 })
@@ -339,8 +353,117 @@ export const ShopPage: React.FC = () => {
                     </div>
                 </section>
 
+                {/* SECTION 1: Spesial Untuk Kamu */}
+                {!searchQuery && selectedCategory === 'All' && selectedCity === 'All' && (
+                    <section className="mb-20">
+                        <div className="bg-[#0A1128] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-12 relative overflow-hidden">
+                            <div className="flex items-center justify-between mb-6 md:mb-8 relative z-10">
+                                <h2 className="text-lg md:text-2xl font-black text-white uppercase tracking-tight">Spesial Untuk Kamu</h2>
+                                <button className="text-[#FFBF00] text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">Lihat Semua</button>
+                            </div>
+                            <div className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar pb-4 relative z-10 snap-x">
+                                {/* Banner Item */}
+                                <div 
+                                    onClick={() => specialBanner?.link_url && (window.location.href = specialBanner.link_url)}
+                                    className="w-[160px] md:w-[195px] h-[300px] md:h-[380px] rounded-[1.5rem] md:rounded-[2rem] bg-slate-800 flex-shrink-0 relative overflow-hidden snap-start cursor-pointer group"
+                                >
+                                    {specialBanner?.image_url ? (
+                                        <img 
+                                            src={specialBanner.image_url} 
+                                            className="absolute inset-0 w-full h-full object-cover" 
+                                            alt="Promo Banner" 
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center p-4">
+                                            <p className="text-white/20 text-[8px] font-black uppercase tracking-widest text-center">Sponsorship Slot</p>
+                                        </div>
+                                    )}
+                                </div>
+                                {/* Products */}
+                                {specialProducts.length > 0 ? specialProducts.slice(0, 10).map((product: any) => (
+                                    <div key={product.id} className="snap-start">
+                                        <ProductCard product={product} navigate={navigate} isSmall={true} />
+                                    </div>
+                                )) : (
+                                    <div className="flex items-center justify-center w-[160px] md:w-[195px] h-[300px] md:h-[380px] border border-white/10 rounded-[1.5rem] md:rounded-[2rem] bg-white/5">
+                                        <p className="text-white/50 font-bold uppercase tracking-widest text-[8px] md:text-[10px] text-center px-4">Produk Segera Hadir</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </section>
+                )}
+
+                {/* SECTION 2: Produk Featured */}
+                {featuredProducts.length > 0 && !searchQuery && selectedCategory === 'All' && selectedCity === 'All' && (
+                    <section className="mb-20">
+                        <div className="flex items-center justify-between mb-8 px-2">
+                            <h2 className="text-lg md:text-2xl font-black text-[#0A1128] uppercase tracking-tight">Produk Featured</h2>
+                        </div>
+                        <div className="bg-slate-50 border border-slate-100 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-12">
+                            <div className="flex flex-wrap justify-center gap-6">
+                                {featuredProducts.map((product: any) => (
+                                    <ProductCard key={product.id} product={product} navigate={navigate} isSmall={true} />
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                )}
+
+                {/* SECTION 3: Rekomendasi Untukmu */}
+                {randomProducts.length > 0 && !searchQuery && selectedCategory === 'All' && selectedCity === 'All' && (
+                    <section className="mb-20">
+                        <div className="flex items-center justify-between mb-8 px-2">
+                            <div className="flex items-center gap-3">
+                                <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-[#FFBF00]" />
+                                <h2 className="text-lg md:text-2xl font-black text-[#0A1128] uppercase tracking-tight">Rekomendasi Untukmu</h2>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button 
+                                    onClick={() => {
+                                        const el = document.getElementById('recommendations-scroll');
+                                        if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
+                                    }}
+                                    className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] hover:border-[#FFBF00] transition-all shadow-sm"
+                                >
+                                    <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
+                                </button>
+                                <button 
+                                    onClick={() => {
+                                        const el = document.getElementById('recommendations-scroll');
+                                        if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
+                                    }}
+                                    className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] hover:border-[#FFBF00] transition-all shadow-sm"
+                                >
+                                    <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+                                </button>
+                            </div>
+                        </div>
+                        <div 
+                            id="recommendations-scroll"
+                            className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar pb-6 snap-x snap-mandatory scroll-smooth px-2"
+                        >
+                            {randomProducts.map((product: any) => (
+                                <div key={product.id} className="snap-start">
+                                    <ProductCard product={product} navigate={navigate} isSmall={true} />
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
                 {/* Content Grid */}
                 <m.div layout className="w-full">
+                    {!searchQuery && selectedCategory === 'All' && selectedCity === 'All' ? (
+                        <div className="w-full flex items-center justify-between mb-6 px-4">
+                            <h2 className="text-lg md:text-xl font-black text-[#0A1128] uppercase tracking-tight">Semua Produk</h2>
+                        </div>
+                    ) : (
+                        <div className="w-full flex items-center justify-between mb-6 px-4">
+                            <h2 className="text-lg md:text-xl font-black text-[#0A1128] uppercase tracking-tight">Hasil Pencarian</h2>
+                        </div>
+                    )}
+
                     {activeTab === 'products' ? (
                         isLoadingProducts ? (
                             <div className="py-20 text-center w-full"><PremiumLoader variant="inline" /></div>
@@ -395,20 +518,28 @@ export const ShopPage: React.FC = () => {
 };
 
 // Reverted ProductCard Component to b3edcb0
-const ProductCard: React.FC<{ product: any, navigate: any, isSmall?: boolean }> = ({ product, navigate }) => (
-    <div 
-        onClick={() => navigate(`/shop/s/${product.merchant_slug}/${product.slug || product.id}`)}
-        className="group bg-white border border-slate-50 rounded-3xl overflow-hidden cursor-pointer hover:shadow-2xl transition-all w-full md:w-[195px]"
-    >
-        <div className="aspect-square bg-slate-100">
-            <img src={product.images?.[0]?.image_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={product.nama_produk} />
+const ProductCard: React.FC<{ product: any, navigate: any, isSmall?: boolean }> = ({ product, navigate, isSmall = false }) => {
+    return (
+        <div 
+            onClick={() => navigate(`/shop/s/${product.merchant_slug}/${product.slug || product.id}`)}
+            className={`group bg-white border border-slate-50 rounded-3xl overflow-hidden cursor-pointer hover:shadow-2xl transition-all flex-shrink-0 ${
+                isSmall ? 'w-[160px] md:w-[195px] h-[300px] md:h-[380px]' : 'w-full md:w-[195px]'
+            }`}
+        >
+            <div className={`aspect-square bg-slate-100 overflow-hidden ${isSmall ? 'h-[140px] md:h-[180px]' : ''}`}>
+                <img 
+                    src={product.images?.[0]?.image_url} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                    alt={product.nama_produk} 
+                />
+            </div>
+            <div className="p-4">
+                <h4 className="text-[10px] font-black text-[#0A1128] uppercase line-clamp-2 mb-2 leading-tight">{product.nama_produk}</h4>
+                <p className="text-[11px] font-black text-[#FFBF00]">{formatCurrency(product.harga_estimasi)}</p>
+            </div>
         </div>
-        <div className="p-4">
-            <h4 className="text-[10px] font-black text-[#0A1128] uppercase line-clamp-2 mb-2 leading-tight">{product.nama_produk}</h4>
-            <p className="text-[11px] font-black text-[#FFBF00]">{formatCurrency(product.harga_estimasi)}</p>
-        </div>
-    </div>
-);
+    );
+};
 
 // Reverted MerchantCard Component to b3edcb0
 const MerchantCard: React.FC<{ merchant: any, navigate: any }> = ({ merchant, navigate }) => (
