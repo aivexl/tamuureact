@@ -77,14 +77,8 @@ export const SEOListingFooter: React.FC = () => {
                             ))}
                         </div>
                     </div>
-                </div>
-            </div>
-            
-            <div className="mt-20 text-center">
-                <p className="text-[8px] font-bold text-slate-300 uppercase tracking-[0.3em]">
-                    &copy; {new Date().getFullYear()} Tamuu Nexus SEO Engine v13.0 - Managed by Cloudflare Edge
-                </p>
-            </div>
-        </section>
-    );
-};
+                    </div>
+                    </div>
+                    </section>
+                    );
+                    };
