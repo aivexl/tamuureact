@@ -1,5 +1,12 @@
 # Tamuu Changelog
 
+## [0.6.62] - 2026-03-10
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Admin Navigation Improvements
+- **Blog Engine**: Added a "Back to Dashboard" button in `AdminBlogListPage.tsx` to ensure consistent navigation back to the main admin control center.
+
 ## [0.6.61] - 2026-03-10
 **Status**: 🟢 Deployed
 **Environment**: Production
