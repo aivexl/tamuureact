@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import {
     Search,
     Filter,
@@ -45,6 +45,7 @@ import { ProductCard } from '../../components/Shop/ProductCard';
 
 export const ShopPage: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { category, city, intent } = useParams<{ category?: string; city?: string; intent?: string }>();
     
     const [searchQuery, setSearchQuery] = useState('');
@@ -61,7 +62,15 @@ export const ShopPage: React.FC = () => {
     useEffect(() => {
         if (category) setSelectedCategory(category);
         if (city) setSelectedCity(city);
-    }, [category, city]);
+        
+        const params = new URLSearchParams(location.search);
+        const q = params.get('q');
+        if (q !== null) {
+            setSearchQuery(q);
+        } else {
+            setSearchQuery('');
+        }
+    }, [category, city, location.search]);
 
     // Queries
     const { data: products = [], isLoading: isLoadingProducts } = useProductDiscovery({
@@ -174,7 +183,7 @@ export const ShopPage: React.FC = () => {
         <div className="min-h-screen bg-white text-[#0A1128] font-sans selection:bg-[#FFBF00] selection:text-[#0A1128]">
             <main className="max-w-7xl mx-auto px-6 pb-32">
                 {/* Breadcrumbs & Header */}
-                <section className="pt-32 md:pt-40">
+                <section className="pt-[140px] md:pt-40">
                     <Breadcrumbs />
                 </section>
 
@@ -327,58 +336,99 @@ export const ShopPage: React.FC = () => {
 
                 {/* MAIN GRID CONTENT */}
                 <m.div layout className="w-full">
-                    <div className="w-full flex items-center justify-between mb-6 px-4">
-                        <h2 className="text-lg md:text-xl font-black text-[#0A1128] uppercase tracking-tight">
-                            {activeTab === 'products' 
-                                ? (searchQuery || selectedCategory !== 'All' || selectedCity !== 'All' ? 'Hasil Pencarian Produk' : 'Semua Produk')
-                                : (searchQuery || selectedCategory !== 'All' || selectedCity !== 'All' ? 'Hasil Pencarian Toko' : 'Semua Toko & Vendor')
-                            }
-                        </h2>
-                    </div>
-
                     {activeTab === 'products' ? (
-                        isLoadingProducts ? (
-                            <div className="py-20 text-center w-full"><PremiumLoader variant="inline" /></div>
-                        ) : (
+                        <>
+                            <div className="w-full flex items-center justify-between mb-6 px-4">
+                                <h2 className="text-lg md:text-xl font-black text-[#0A1128] uppercase tracking-tight">
+                                    {searchQuery ? 'Hasil Pencarian' : (selectedCategory !== 'All' || selectedCity !== 'All' ? 'Hasil Filter Produk' : 'Semua Produk')}
+                                </h2>
+                            </div>
+                            
+                            {/* SEARCH RESULTS: Toko Identik Section */}
+                            {searchQuery && !isLoadingMerchants && merchants.length > 0 && (
+                                <div className="mb-12 border-b border-slate-100 pb-12 px-2">
+                                    <div className="flex items-center justify-between mb-6 px-2">
+                                        <h3 className="text-sm md:text-base font-black text-[#0A1128] uppercase tracking-widest flex items-center gap-2">
+                                            <Store className="w-4 h-4 text-[#FFBF00]" />
+                                            Toko yang Paling Identik
+                                        </h3>
+                                        {merchants.length > 2 && (
+                                            <button 
+                                                onClick={() => setActiveTab('stores')}
+                                                className="text-[10px] font-black uppercase tracking-widest text-[#FFBF00] hover:text-[#0A1128] transition-colors flex items-center gap-1"
+                                            >
+                                                Lihat Semua Toko <ArrowRight className="w-3 h-3" />
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {merchants.slice(0, 2).map((merchant: any) => (
+                                            <MerchantCard key={merchant.id} merchant={merchant} navigate={navigate} />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* SEARCH RESULTS: Produk Identik Section */}
+                            {searchQuery && (
+                                <div className="w-full flex items-center justify-between mb-6 px-4 mt-4">
+                                    <h3 className="text-sm md:text-base font-black text-[#0A1128] uppercase tracking-widest flex items-center gap-2">
+                                        <ShoppingBag className="w-4 h-4 text-[#FFBF00]" />
+                                        Produk yang Paling Identik
+                                    </h3>
+                                </div>
+                            )}
+
+                            {isLoadingProducts ? (
+                                <div className="py-20 text-center w-full"><PremiumLoader variant="inline" /></div>
+                            ) : (
+                                <div className="px-2">
+                                    {products.length > 0 ? (
+                                        <div className="grid grid-cols-2 md:flex md:flex-wrap md:justify-center gap-4 md:gap-8">
+                                            {products.slice(0, visibleCount).map((product: any) => (
+                                                <ProductCard key={product.id} product={product} navigate={navigate} />
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="py-32 text-center text-slate-300 font-bold uppercase tracking-widest w-full">No products found</div>
+                                    )}
+                                    <div className="w-full flex justify-center mt-12 mb-4">
+                                        <button
+                                            onClick={() => setVisibleCount(prev => prev + 10)}
+                                            disabled={products.length === 0 || visibleCount >= products.length}
+                                            className={`px-8 md:px-12 py-3.5 md:py-4 rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${
+                                                products.length === 0 || visibleCount >= products.length
+                                                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                                : 'bg-[#0A1128] text-white shadow-xl hover:bg-indigo-900 hover:-translate-y-1'
+                                            }`}
+                                        >
+                                            {products.length === 0 ? 'Load More' : (visibleCount >= products.length ? 'Semua Produk Ditampilkan' : 'Tampilkan Lebih Banyak')}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <>
+                            <div className="w-full flex items-center justify-between mb-6 px-4">
+                                <h2 className="text-lg md:text-xl font-black text-[#0A1128] uppercase tracking-tight">
+                                    {searchQuery ? 'Hasil Pencarian Toko' : (selectedCategory !== 'All' || selectedCity !== 'All' ? 'Hasil Filter Toko' : 'Semua Toko & Vendor')}
+                                </h2>
+                            </div>
                             <div className="px-2">
-                                {products.length > 0 ? (
-                                    <div className="grid grid-cols-2 md:flex md:flex-wrap md:justify-center gap-4 md:gap-8">
-                                        {products.slice(0, visibleCount).map((product: any) => (
-                                            <ProductCard key={product.id} product={product} navigate={navigate} />
+                                {isLoadingMerchants ? (
+                                    <div className="py-20 text-center w-full"><PremiumLoader variant="inline" /></div>
+                                ) : merchants.length > 0 ? (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+                                        {merchants.map((merchant: any) => (
+                                            <MerchantCard key={merchant.id} merchant={merchant} navigate={navigate} />
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="py-32 text-center text-slate-300 font-bold uppercase tracking-widest w-full">No products found</div>
+                                    <div className="py-32 text-center text-slate-300 font-bold uppercase tracking-widest w-full">No stores found</div>
                                 )}
-                                <div className="w-full flex justify-center mt-12 mb-4">
-                                    <button
-                                        onClick={() => setVisibleCount(prev => prev + 10)}
-                                        disabled={products.length === 0 || visibleCount >= products.length}
-                                        className={`px-8 md:px-12 py-3.5 md:py-4 rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${
-                                            products.length === 0 || visibleCount >= products.length
-                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                            : 'bg-[#0A1128] text-white shadow-xl hover:bg-indigo-900 hover:-translate-y-1'
-                                        }`}
-                                    >
-                                        {products.length === 0 ? 'Load More' : (visibleCount >= products.length ? 'Semua Produk Ditampilkan' : 'Tampilkan Lebih Banyak')}
-                                    </button>
-                                </div>
                             </div>
-                        )
-                    ) : (
-                        <div className="px-2">
-                            {isLoadingMerchants ? (
-                                <div className="py-20 text-center w-full"><PremiumLoader variant="inline" /></div>
-                            ) : merchants.length > 0 ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-                                    {merchants.map((merchant: any) => (
-                                        <MerchantCard key={merchant.id} merchant={merchant} navigate={navigate} />
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="py-32 text-center text-slate-300 font-bold uppercase tracking-widest w-full">No stores found</div>
-                            )}
-                        </div>
+                        </>
                     )}
                 </m.div>
 
