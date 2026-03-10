@@ -1,5 +1,12 @@
 # Tamuu Changelog
 
+## [0.6.63] - 2026-03-10
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Bug Fixes & Navigation
+- **Admin Navigation**: Corrected the back button in the Blog Admin page to point to `/admin/dashboard` instead of `/admin`. This prevents incorrect redirection to the user dashboard and resolves `404` errors caused by the preview engine misinterpreting the `/admin` path as a blog slug.
+
 ## [0.6.62] - 2026-03-10
 **Status**: 🟢 Deployed
 **Environment**: Production
