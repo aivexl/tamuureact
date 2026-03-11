@@ -50,7 +50,7 @@ export const ProductDetailPage: React.FC = () => {
     const navigate = useNavigate();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-    const { user, isAuthenticated, logout } = useStore();
+    const { user, isAuthenticated, logout, token } = useStore();
 
     // Search & Location States for Navbar
     const [searchQuery, setSearchQuery] = useState('');
