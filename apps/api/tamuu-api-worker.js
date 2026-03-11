@@ -1482,19 +1482,73 @@ export default {
                 }
             }
 
-            // 5. PUBLIC DISCOVERY: Shop Directory (with Sponsored Ads)
+            // 5. REVIEWS API
+            if (path.startsWith('/api/shop/products/') && path.endsWith('/reviews')) {
+                const parts = path.split('/');
+                const productId = parts[4];
+
+                // GET Reviews
+                if (method === 'GET') {
+                    try {
+                        const reviews = await env.DB.prepare(`
+                            SELECT r.*, u.name as user_name
+                            FROM shop_product_reviews r
+                            LEFT JOIN users u ON r.user_id = u.id
+                            WHERE r.product_id = ?
+                            ORDER BY r.created_at DESC
+                        `).bind(productId).all();
+                        return json({ success: true, reviews: reviews.results }, corsHeaders);
+                    } catch (error) {
+                        return json({ error: 'Failed to fetch reviews' }, { ...corsHeaders, status: 500 });
+                    }
+                }
+
+                // POST Review (Submit)
+                if (method === 'POST') {
+                    try {
+                        const authHeader = request.headers.get('Authorization');
+                        if (!authHeader) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
+                        const user = await verifyToken(authHeader.replace('Bearer ', '').trim(), env);
+                        if (!user) return json({ error: 'Invalid token' }, { ...corsHeaders, status: 401 });
+
+                        const { rating, comment } = await request.json();
+                        if (!rating || rating < 1 || rating > 5) {
+                            return json({ error: 'Rating must be between 1 and 5' }, { ...corsHeaders, status: 400 });
+                        }
+
+                        const reviewId = crypto.randomUUID();
+                        await env.DB.prepare(`
+                            INSERT INTO shop_product_reviews (id, product_id, user_id, rating, comment)
+                            VALUES (?, ?, ?, ?, ?)
+                            ON CONFLICT(product_id, user_id) DO UPDATE SET
+                                rating = excluded.rating,
+                                comment = excluded.comment,
+                                updated_at = CURRENT_TIMESTAMP
+                        `).bind(reviewId, productId, user.id, rating, comment).run();
+
+                        return json({ success: true }, corsHeaders);
+                    } catch (error) {
+                        return json({ error: 'Failed to submit review', details: error.message }, { ...corsHeaders, status: 500 });
+                    }
+                }
+            }
+
+            // 6. PUBLIC DISCOVERY: Shop Directory (with Sponsored Ads)
             if (path === '/api/shop/directory' && method === 'GET') {
                 try {
                     const category = url.searchParams.get('category');
                     const search = url.searchParams.get('q');
 
                     let query = `
-                        SELECT m.id, m.nama_toko, m.slug, m.logo_url, m.banner_url, m.is_sponsored, m.kota, c.nama_kategori,
-                        (SELECT COUNT(*) FROM shop_wishlist sw JOIN shop_products sp ON sw.product_id = sp.id WHERE sp.merchant_id = m.id) as wishlist_count
-                        FROM shop_merchants m 
+                        SELECT m.id, m.nama_toko, m.slug, m.logo_url, m.banner_url, m.is_sponsored, m.kota, m.is_landing_featured, c.nama_kategori,
+                        (SELECT COUNT(*) FROM shop_wishlist sw JOIN shop_products sp ON sw.product_id = sp.id WHERE sp.merchant_id = m.id) as wishlist_count,
+                        (SELECT AVG(rating) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = m.id) as avg_rating,
+                        (SELECT COUNT(*) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = m.id) as review_count
+                        FROM shop_merchants m
                         LEFT JOIN shop_category c ON m.category_id = c.id
                         WHERE m.is_verified = 1 AND m.id != 'admin-merchant'
                     `;
+
                     let params = [];
 
                     if (category && category !== 'All' && category !== 'Semua') {
