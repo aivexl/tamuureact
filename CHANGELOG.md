@@ -6,6 +6,7 @@
 
 ### Shop: Product Detail Page Redesign & UX Refinement
 - **UI/UX Overhaul**: Redesigned the "Ulasan & Penilaian" (Reviews & Ratings) section with a high-end, Apple-inspired minimalist aesthetic.
+- **Seamless Review Form**: Refined the "Submit Review" card to be more integrated and seamless, removing heavy nested borders and reducing bulk for a lighter visual profile.
 - **Mobile-First Summary**: Implemented a modern rating summary card for mobile devices, featuring large numerical averages and clean statistical breakdowns.
 - **Review Card Geometry**: Rebuilt individual review components with `rounded-[2rem]` corners, soft shadow-depths, and improved typographic hierarchy.
 - **Interactive Review Form**: Enhanced the authenticated review submission interface with a polished, interactive star-rating selector and modern text area.

@@ -697,48 +697,50 @@ export const ProductDetailPage: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Review Form (Collapsible/Modern) */}
+                        {/* Review Form (Seamless & Integrated) */}
                         {isAuthenticated && !hasUserReviewed && (
                             <m.div 
-                                initial={false}
-                                className="mb-16 border-b border-slate-50 pb-16"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="mb-20"
                             >
-                                <div className="bg-[#FBFBFB] rounded-[2.5rem] border border-slate-100 p-8 md:p-10 space-y-8">
+                                <div className="bg-white rounded-[2rem] border border-slate-100 p-6 md:p-8 space-y-8 relative overflow-hidden">
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                        <div className="space-y-2">
-                                            <h3 className="text-xl font-black text-[#0A1128]">Tulis Ulasan</h3>
-                                            <p className="text-sm text-slate-500 font-medium">Bagikan pengalaman Anda untuk membantu orang lain.</p>
+                                        <div className="space-y-1">
+                                            <h3 className="text-lg font-black text-[#0A1128]">Tulis Ulasan</h3>
+                                            <p className="text-xs text-slate-400 font-medium tracking-tight">Bagikan pengalaman autentik Anda.</p>
                                         </div>
-                                        <div className="flex gap-2 bg-white p-3 rounded-2xl shadow-sm border border-slate-50 self-start md:self-auto">
+                                        <div className="flex gap-1.5 bg-slate-50/50 p-2 rounded-2xl border border-slate-100/50 self-start md:self-auto">
                                             {[1, 2, 3, 4, 5].map((s) => (
                                                 <button 
                                                     key={s} 
                                                     onClick={() => setUserRating(s)}
-                                                    className="transition-all hover:scale-110 active:scale-95"
+                                                    className="transition-all hover:scale-110 active:scale-90"
                                                 >
                                                     <Star 
-                                                        className={`w-7 h-7 ${s <= userRating ? 'fill-[#FFBF00] text-[#FFBF00]' : 'text-slate-200'}`} 
+                                                        size={22}
+                                                        className={`transition-colors ${s <= userRating ? 'fill-[#FFBF00] text-[#FFBF00]' : 'text-slate-200'}`} 
                                                     />
                                                 </button>
                                             ))}
                                         </div>
                                     </div>
                                     
-                                    <form onSubmit={handleReviewSubmit} className="space-y-6">
+                                    <form onSubmit={handleReviewSubmit} className="space-y-5">
                                         <textarea
                                             value={userComment}
                                             onChange={(e) => setUserComment(e.target.value)}
-                                            placeholder="Ceritakan detail pengalaman Anda..."
-                                            className="w-full h-32 p-6 bg-white border border-slate-100 rounded-3xl text-base font-medium focus:ring-4 focus:ring-[#FFBF00]/10 focus:border-[#FFBF00]/30 outline-none transition-all placeholder:text-slate-300 resize-none shadow-inner"
+                                            placeholder="Bagaimana pelayanan vendor ini?"
+                                            className="w-full h-28 p-5 bg-slate-50/30 border border-slate-100 rounded-2xl text-sm font-medium focus:ring-0 focus:border-[#FFBF00]/40 outline-none transition-all placeholder:text-slate-300 resize-none"
                                             required
                                         />
                                         <div className="flex justify-end">
                                             <button
                                                 type="submit"
                                                 disabled={isSubmittingReview}
-                                                className="px-10 py-4 bg-[#0A1128] text-white rounded-2xl text-sm font-black uppercase tracking-widest flex items-center gap-3 hover:bg-black hover:shadow-xl transition-all disabled:opacity-50"
+                                                className="px-8 py-3.5 bg-[#0A1128] text-white rounded-xl text-[11px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-black transition-all disabled:opacity-50 shadow-lg shadow-black/5"
                                             >
-                                                {isSubmittingReview ? <PremiumLoader size="sm" color="white" /> : <Send className="w-4 h-4 text-[#FFBF00]" />}
+                                                {isSubmittingReview ? <PremiumLoader size="sm" color="white" /> : <Send className="w-3.5 h-3.5 text-[#FFBF00]" />}
                                                 Kirim Ulasan
                                             </button>
                                         </div>
