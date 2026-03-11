@@ -670,150 +670,143 @@ export const ProductDetailPage: React.FC = () => {
                 </div>
 
                 {/* REVIEWS SECTION */}
-                <div className="max-w-7xl mx-auto px-6 mt-20">
-                    <div className="p-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm space-y-10">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
-                                <h2 className="text-xl font-black uppercase tracking-tighter italic">Ulasan Produk</h2>
+                <section className="max-w-7xl mx-auto px-6 mt-32">
+                    <div className="bg-white rounded-[3rem] border border-slate-100/80 shadow-2xl shadow-slate-200/50 p-8 md:p-12 overflow-hidden relative">
+                        {/* Decorative background element */}
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-50/50 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
+                        
+                        <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-6 w-1.5 bg-[#FFBF00] rounded-full" />
+                                    <h2 className="text-3xl md:text-4xl font-black tracking-tight text-[#0A1128]">Ulasan & Penilaian</h2>
+                                </div>
+                                <p className="text-slate-500 font-medium max-w-md">Apa kata mereka yang telah merasakan pengalaman terbaik dengan produk ini.</p>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <StarRating rating={product.avg_rating || 0} count={product.review_count || 0} size={20} />
+                            
+                            <div className="flex items-center gap-6 bg-slate-50/80 p-6 rounded-3xl border border-slate-100 self-start md:self-auto">
+                                <div className="text-center">
+                                    <p className="text-4xl font-black text-[#0A1128] leading-none mb-1">{product.avg_rating?.toFixed(1) || '0.0'}</p>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Average</p>
+                                </div>
+                                <div className="h-10 w-px bg-slate-200" />
+                                <div className="flex flex-col items-center">
+                                    <StarRating rating={product.avg_rating || 0} count={product.review_count || 0} size={18} showCount={false} />
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{product.review_count || 0} Reviews</p>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Review Form */}
+                        {/* Review Form (Collapsible/Modern) */}
                         {isAuthenticated && !hasUserReviewed && (
                             <m.div 
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="p-8 bg-slate-50 rounded-3xl border border-slate-100 space-y-6"
+                                initial={false}
+                                className="mb-16 border-b border-slate-50 pb-16"
                             >
-                                <div className="space-y-4">
-                                    <p className="text-xs font-black uppercase tracking-widest text-[#0A1128]">Berikan Penilaian Anda</p>
-                                    <div className="flex gap-2">
-                                        {[1, 2, 3, 4, 5].map((s) => (
-                                            <button 
-                                                key={s} 
-                                                onClick={() => setUserRating(s)}
-                                                className="transition-transform active:scale-90"
+                                <div className="bg-[#FBFBFB] rounded-[2.5rem] border border-slate-100 p-8 md:p-10 space-y-8">
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                        <div className="space-y-2">
+                                            <h3 className="text-xl font-black text-[#0A1128]">Tulis Ulasan</h3>
+                                            <p className="text-sm text-slate-500 font-medium">Bagikan pengalaman Anda untuk membantu orang lain.</p>
+                                        </div>
+                                        <div className="flex gap-2 bg-white p-3 rounded-2xl shadow-sm border border-slate-50 self-start md:self-auto">
+                                            {[1, 2, 3, 4, 5].map((s) => (
+                                                <button 
+                                                    key={s} 
+                                                    onClick={() => setUserRating(s)}
+                                                    className="transition-all hover:scale-110 active:scale-95"
+                                                >
+                                                    <Star 
+                                                        className={`w-7 h-7 ${s <= userRating ? 'fill-[#FFBF00] text-[#FFBF00]' : 'text-slate-200'}`} 
+                                                    />
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    
+                                    <form onSubmit={handleReviewSubmit} className="space-y-6">
+                                        <textarea
+                                            value={userComment}
+                                            onChange={(e) => setUserComment(e.target.value)}
+                                            placeholder="Ceritakan detail pengalaman Anda..."
+                                            className="w-full h-32 p-6 bg-white border border-slate-100 rounded-3xl text-base font-medium focus:ring-4 focus:ring-[#FFBF00]/10 focus:border-[#FFBF00]/30 outline-none transition-all placeholder:text-slate-300 resize-none shadow-inner"
+                                            required
+                                        />
+                                        <div className="flex justify-end">
+                                            <button
+                                                type="submit"
+                                                disabled={isSubmittingReview}
+                                                className="px-10 py-4 bg-[#0A1128] text-white rounded-2xl text-sm font-black uppercase tracking-widest flex items-center gap-3 hover:bg-black hover:shadow-xl transition-all disabled:opacity-50"
                                             >
-                                                <Star 
-                                                    className={`w-8 h-8 ${s <= userRating ? 'fill-yellow-400 text-yellow-400' : 'text-slate-300'}`} 
-                                                />
+                                                {isSubmittingReview ? <PremiumLoader size="sm" color="white" /> : <Send className="w-4 h-4 text-[#FFBF00]" />}
+                                                Kirim Ulasan
                                             </button>
-                                        ))}
-                                    </div>
+                                        </div>
+                                    </form>
                                 </div>
-                                <form onSubmit={handleReviewSubmit} className="space-y-4">
-                                    <textarea
-                                        value={userComment}
-                                        onChange={(e) => setUserComment(e.target.value)}
-                                        placeholder="Tulis ulasan Anda di sini... (Contoh: Pelayanan ramah dan hasil memuaskan!)"
-                                        className="w-full h-32 p-5 bg-white border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-[#FFBF00]/20 focus:border-[#FFBF00]/30 outline-none transition-all placeholder:text-slate-300 resize-none"
-                                        required
-                                    />
-                                    <div className="flex justify-end">
-                                        <button
-                                            type="submit"
-                                            disabled={isSubmittingReview}
-                                            className="px-8 py-4 bg-[#0A1128] text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-indigo-900 transition-all shadow-lg shadow-black/10 disabled:opacity-50"
-                                        >
-                                            {isSubmittingReview ? <PremiumLoader size="sm" color="white" /> : <Send className="w-4 h-4 text-[#FFBF00]" />}
-                                            Kirim Ulasan
-                                        </button>
-                                    </div>
-                                </form>
                             </m.div>
                         )}
 
                         {/* Reviews List */}
-                        <div className="space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {isLoadingReviews ? (
-                                <div className="py-10 flex justify-center">
+                                <div className="col-span-full py-20 flex justify-center">
                                     <PremiumLoader size="md" />
                                 </div>
                             ) : reviews.length > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {reviews.map((review) => (
-                                        <div key={review.id} className="p-6 bg-white border border-slate-100 rounded-3xl space-y-4 shadow-sm hover:shadow-md transition-all">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-[#0A1128] text-xs font-black uppercase tracking-widest border border-slate-200">
-                                                        {review.user_name?.charAt(0) || 'U'}
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-[10px] font-black uppercase tracking-widest text-[#0A1128] truncate max-w-[120px]">
-                                                            {review.user_name || 'User Tamuu'}
-                                                        </p>
-                                                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
-                                                            {new Date(review.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                                        </p>
-                                                    </div>
+                                reviews.map((review) => (
+                                    <m.div 
+                                        key={review.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        className="p-8 bg-white border border-slate-50 rounded-[2rem] space-y-6 hover:shadow-xl hover:shadow-slate-100 transition-all group"
+                                    >
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-[#0A1128] text-sm font-black uppercase tracking-widest border border-slate-100 group-hover:scale-110 transition-transform">
+                                                    {review.user_name?.charAt(0) || 'U'}
                                                 </div>
-                                                <div className="flex gap-0.5">
-                                                    {[1, 2, 3, 4, 5].map((s) => (
-                                                        <Star 
-                                                            key={s}
-                                                            size={12} 
-                                                            className={`${s <= review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-slate-200'}`} 
-                                                        />
-                                                    ))}
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-black text-[#0A1128] truncate">{review.user_name || 'User Tamuu'}</p>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                        {new Date(review.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                                    </p>
                                                 </div>
                                             </div>
-                                            <p className="text-slate-600 text-sm font-medium leading-relaxed italic border-l-2 border-[#FFBF00]/30 pl-4 py-1">
+                                            <div className="flex gap-0.5 bg-slate-50/50 px-3 py-1.5 rounded-full border border-slate-100 shrink-0">
+                                                {[1, 2, 3, 4, 5].map((s) => (
+                                                    <Star 
+                                                        key={s}
+                                                        size={10} 
+                                                        className={`${s <= review.rating ? 'fill-[#FFBF00] text-[#FFBF00]' : 'text-slate-200'}`} 
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="relative">
+                                            <p className="text-slate-600 text-base font-medium leading-relaxed italic pr-4">
                                                 "{review.comment}"
                                             </p>
                                         </div>
-                                    ))}
-                                </div>
+                                    </m.div>
+                                ))
                             ) : (
-                                <div className="text-center py-20 bg-slate-50 rounded-[2rem] border border-dashed border-slate-200 space-y-4">
-                                    <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto border border-slate-100 shadow-sm">
-                                        <Star className="w-8 h-8 text-slate-200" />
+                                <div className="col-span-full text-center py-32 bg-slate-50/50 rounded-[3rem] border-2 border-dashed border-slate-100 space-y-6">
+                                    <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto border border-slate-100 shadow-sm">
+                                        <Star className="w-10 h-10 text-slate-200" />
                                     </div>
-                                    <div className="space-y-1">
-                                        <p className="text-xs font-black uppercase tracking-widest text-[#0A1128]">Belum Ada Ulasan</p>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Jadilah yang pertama memberikan penilaian untuk produk ini.</p>
+                                    <div className="space-y-2">
+                                        <p className="text-xl font-black text-[#0A1128]">Belum Ada Ulasan</p>
+                                        <p className="text-sm text-slate-400 font-medium max-w-xs mx-auto">Jadilah yang pertama memberikan penilaian untuk produk ini.</p>
                                     </div>
                                 </div>
                             )}
                         </div>
                     </div>
-                </div>
+                </section>
 
                 <div className="max-w-7xl mx-auto px-6 mt-24 space-y-24">
-
-                    {/* Features Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-sm flex items-center gap-6">
-                            <div className="w-14 h-14 rounded-2xl bg-teal-50 text-teal-500 flex items-center justify-center">
-                                <ShieldCheck className="w-8 h-8" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kualitas</p>
-                                <p className="text-sm font-bold text-[#0A1128]">Terverifikasi Tamuu</p>
-                            </div>
-                        </div>
-                        <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-sm flex items-center gap-6">
-                            <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center">
-                                <Truck className="w-8 h-8" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Respon</p>
-                                <p className="text-sm font-bold text-[#0A1128]">Vendor Responsif</p>
-                            </div>
-                        </div>
-                        <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-sm flex items-center gap-6">
-                            <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center">
-                                <Star className="w-8 h-8" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Rating</p>
-                                <p className="text-sm font-bold text-[#0A1128]">Pilihan Terpercaya</p>
-                            </div>
-                        </div>
-                    </div>
 
                     {/* SMART RECOMMENDATIONS SECTION */}
                     <div className="space-y-10">
