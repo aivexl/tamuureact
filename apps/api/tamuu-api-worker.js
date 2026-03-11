@@ -2441,7 +2441,9 @@ export default {
                         product = await env.DB.prepare(`
                             SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url,
                             p.is_admin_listing, p.custom_store_name,
-                            (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count
+                            (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count,
+                            (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,
+                            (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
                             FROM shop_products p 
                             LEFT JOIN shop_merchants m ON p.merchant_id = m.id 
                             WHERE p.id = ?
@@ -2451,7 +2453,9 @@ export default {
                         product = await env.DB.prepare(`
                             SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url,
                             p.is_admin_listing, p.custom_store_name,
-                            (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count
+                            (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count,
+                            (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,
+                            (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
                             FROM shop_products p 
                             LEFT JOIN shop_merchants m ON p.merchant_id = m.id 
                             WHERE p.slug = ?
