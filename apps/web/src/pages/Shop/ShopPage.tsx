@@ -53,9 +53,6 @@ export const ShopPage: React.FC = () => {
     const [selectedCity, setSelectedCity] = useState(city || 'All');
     const [activeTab, setActiveTab] = useState<'products' | 'stores'>('products');
     
-    // Location Search State
-    const [isLocationOpen, setIsLocationOpen] = useState(false);
-    const [citySearchQuery, setCitySearchQuery] = useState('');
     const [visibleCount, setVisibleCount] = useState(10);
 
     // Sync state when URL params change
@@ -178,13 +175,6 @@ export const ShopPage: React.FC = () => {
         { name: 'Venue', icon: Building2, slug: 'venue' },
     ], []);
 
-    const filteredCities = useMemo(() => {
-        const cleanQuery = citySearchQuery.trim().toLowerCase();
-        const baseCities = ['All', ...INDONESIA_REGIONS];
-        if (!cleanQuery) return baseCities;
-        return baseCities.filter(city => city.toLowerCase().includes(cleanQuery));
-    }, [citySearchQuery]);
-
     return (
         <div className="min-h-screen bg-white text-[#0A1128] font-sans selection:bg-[#FFBF00] selection:text-[#0A1128]">
             <main className="max-w-7xl mx-auto px-6 pb-32">
@@ -229,7 +219,10 @@ export const ShopPage: React.FC = () => {
                                 return (
                                     <button
                                         key={cat.name}
-                                        onClick={() => setSelectedCategory(cat.name)}
+                                        onClick={() => {
+                                            const citySlug = selectedCity === 'All' ? '' : `/${selectedCity.toLowerCase().replace(/\s+/g, '-')}`;
+                                            navigate(`/c/${cat.slug}${citySlug}`);
+                                        }}
                                         className={`flex items-center gap-2.5 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border ${isActive
                                             ? 'bg-[#0A1128] text-white border-[#0A1128] shadow-lg'
                                             : 'bg-white text-slate-400 border-slate-100 hover:border-[#FFBF00] hover:text-[#0A1128]'
@@ -244,7 +237,7 @@ export const ShopPage: React.FC = () => {
                     </div>
                 </section>
 
-                {/* PRODUCT-ONLY SECTIONS (Hide when Stores tab is active) */}
+                {/* PRODUCT-ONLY SECTIONS (Hide when Stores tab is active or searching) */}
                 {activeTab === 'products' && !searchQuery && selectedCategory === 'All' && selectedCity === 'All' && (
                     <>
                         {/* SECTION 1: Spesial Untuk Kamu */}
@@ -508,7 +501,7 @@ const MerchantCard: React.FC<{ merchant: any, navigate: any }> = ({ merchant, na
             animate={{ opacity: 1, y: 0 }}
             onClick={() => {
                 const targetSlug = merchant.slug === 'admin' ? 'official' : merchant.slug;
-                navigate(`/shop/s/${targetSlug}`);
+                navigate(`/shop/${targetSlug}`);
             }}
             className="group bg-white border border-slate-50 rounded-[2rem] overflow-hidden flex flex-col hover:shadow-2xl transition-all cursor-pointer hover:border-[#0A1128]/20 relative w-full"
         >

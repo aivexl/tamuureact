@@ -24,7 +24,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, navigate, isS
                 } else {
                     const mSlug = product.merchant_slug === 'admin' ? 'umum' : (product.merchant_slug || (product.is_admin_listing ? 'umum' : 'unknown'));
                     const pSlug = product.slug || product.id;
-                    navigate(`/shop/s/${mSlug}/${pSlug}`);
+                    navigate(`/shop/${mSlug}/${pSlug}`);
                 }
             }}
             className={`group bg-white border border-[#F1F5F9] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden flex flex-col hover:shadow-2xl hover:border-[#FFBF00]/30 transition-all duration-500 cursor-pointer flex-shrink-0 relative ${

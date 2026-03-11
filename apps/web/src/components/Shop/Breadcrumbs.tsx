@@ -11,19 +11,26 @@ export const Breadcrumbs: React.FC = () => {
     const location = useLocation();
     const pathnames = location.pathname.split('/').filter((x) => x);
 
-    // Jangan tampilkan di home
-    if (pathnames.length === 0) return null;
-
     const breadcrumbs: BreadcrumbItem[] = [
-        { label: 'Shop', path: '/shop' }
+        { label: 'Shop', path: '/' }
     ];
 
-    let currentPath = '/shop';
+    let currentPath = '';
 
     pathnames.forEach((value, index) => {
-        // Skip 'shop' karena sudah ada di awal
-        if (value === 'shop') return;
-        if (value === 'location') return;
+        // Skip prefixes that shouldn't be labels
+        if (value === 'c') {
+            currentPath += '/c';
+            return;
+        }
+        if (value === 'location') {
+            currentPath += '/location';
+            return;
+        }
+        if (value === 'shop') {
+            currentPath += '/shop';
+            return;
+        }
 
         currentPath += `/${value}`;
         

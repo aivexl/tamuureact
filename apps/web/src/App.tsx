@@ -132,14 +132,19 @@ const App: React.FC = () => {
                         {/* Public Blog */}
                         <Route path="/blog/*" element={<MainLayout><BlogRouter /></MainLayout>} />
 
-                        {/* Public Shop */}
-                        <Route path="/shop" element={<MainLayout><ShopPage /></MainLayout>} />
-                        <Route path="/shop/:category" element={<MainLayout><ShopPage /></MainLayout>} />
-                        <Route path="/shop/location/:city" element={<MainLayout><ShopPage /></MainLayout>} />
-                        <Route path="/shop/:category/:city" element={<MainLayout><ShopPage /></MainLayout>} />
-                        <Route path="/shop/:category/:city/:intent" element={<MainLayout><ShopPage /></MainLayout>} />
-                        <Route path="/shop/s/:slug" element={<StorefrontPage />} />
-                        <Route path="/shop/s/:slug/:productId" element={<ProductDetailPage />} />
+                        {/* New Clean Shop Routes */}
+                        {/* 1. SEO Filters (using /c/ prefix) */}
+                        <Route path="/c/:category" element={<MainLayout><ShopPage /></MainLayout>} />
+                        <Route path="/c/:category/:city" element={<MainLayout><ShopPage /></MainLayout>} />
+                        <Route path="/c/:category/:city/:intent" element={<MainLayout><ShopPage /></MainLayout>} />
+                        <Route path="/location/:city" element={<MainLayout><ShopPage /></MainLayout>} />
+
+                        {/* 2. Merchant & Product (using /shop/ prefix for clean isolation) */}
+                        <Route path="/shop/:slug" element={<StorefrontPage />} />
+                        <Route path="/shop/:slug/:productId" element={<ProductDetailPage />} />
+                        
+                        {/* Legacy Redirect for /shop root */}
+                        <Route path="/shop" element={<Navigate to="/" replace />} />
 
 
                         {/* Preview Routes - Public for sharing */}

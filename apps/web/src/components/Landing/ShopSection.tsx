@@ -167,7 +167,7 @@ const MerchantCard: React.FC<{ merchant: any, navigate: any }> = ({ merchant, na
             animate={{ opacity: 1, y: 0 }}
             onClick={() => {
                 const targetSlug = merchant.slug === 'admin' ? 'official' : merchant.slug;
-                navigate(`/shop/s/${targetSlug}`);
+                navigate(`/shop/${targetSlug}`);
             }}
             className="group bg-white border border-slate-50 rounded-[2rem] overflow-hidden flex flex-col hover:shadow-2xl transition-all cursor-pointer hover:border-[#0A1128]/20 relative w-full min-w-[280px]"
         >

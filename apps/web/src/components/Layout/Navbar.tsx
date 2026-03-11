@@ -123,7 +123,7 @@ export const Navbar: React.FC = () => {
         const params = new URLSearchParams();
         if (searchQuery) params.append('q', searchQuery);
         if (selectedCity !== 'All') params.append('city', selectedCity);
-        navigate(`/shop?${params.toString()}`);
+        navigate(`/?${params.toString()}`);
     };
 
     const filteredCities = useMemo(() => {

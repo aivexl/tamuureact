@@ -29,7 +29,7 @@ export const SEOListingFooter: React.FC = () => {
                         {MAJOR_CITIES.map(city => (
                             <li key={city}>
                                 <Link 
-                                    to={`/shop/location/${city.toLowerCase()}`}
+                                    to={`/location/${city.toLowerCase()}`}
                                     className="text-[9px] font-bold text-slate-400 hover:text-[#0A1128] transition-colors uppercase tracking-tight"
                                 >
                                     Vendor {city}
@@ -49,7 +49,7 @@ export const SEOListingFooter: React.FC = () => {
                         {TOP_CATEGORIES.map(cat => (
                             <li key={cat.slug}>
                                 <Link 
-                                    to={`/shop/${cat.slug}`}
+                                    to={`/c/${cat.slug}`}
                                     className="text-[9px] font-bold text-slate-400 hover:text-[#0A1128] transition-colors uppercase tracking-tight"
                                 >
                                     {cat.label} Terbaik
@@ -68,7 +68,7 @@ export const SEOListingFooter: React.FC = () => {
                                 MAJOR_CITIES.slice(0, 5).map(city => (
                                     <Link 
                                         key={`${intent}-${city}`}
-                                        to={`/shop/wedding-organizer/${city.toLowerCase()}/${intent.toLowerCase()}`}
+                                        to={`/c/wedding-organizer/${city.toLowerCase()}/${intent.toLowerCase()}`}
                                         className="px-4 py-2 bg-white border border-slate-100 rounded-xl text-[8px] font-black text-slate-400 hover:text-[#0A1128] hover:border-[#FFBF00] transition-all uppercase tracking-widest"
                                     >
                                         WO {city} {intent}
