@@ -1,5 +1,17 @@
 # Tamuu Changelog
 
+## [0.6.70] - 2026-03-11
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Shop: Storefront Profile Redesign (Apple Standard)
+- **UI/UX Overhaul**: Redesigned the store profile page with a professional, Apple-inspired minimalist aesthetic.
+- **Premium Banner Protocol**: Optimized hero banners with a capped width (`max-w-7xl`) and removed legacy gradient overlays for a cleaner, high-fidelity look.
+- **Mobile-First Geometry**: Implemented a centered profile layout for mobile devices, ensuring optimal brand visibility on smaller screens.
+- **Unified Catalog Integration**: Replaced custom product cards with the standardized `ProductCard` component, ensuring platform-wide design consistency.
+- **Enterprise Navigation**: Integrated the standard high-fidelity navbar with user profile states and dashboard access.
+- **Seamless Contact Hub**: Redesigned the secure contact card with glassmorphism effects and polished interaction states.
+
 ## [0.6.69] - 2026-03-11
 **Status**: 🟢 Deployed
 **Environment**: Production
