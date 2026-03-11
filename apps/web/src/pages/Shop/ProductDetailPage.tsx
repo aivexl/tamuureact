@@ -127,7 +127,7 @@ export const ProductDetailPage: React.FC = () => {
 
     const handleReviewSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!isAuthenticated) {
+        if (!isAuthenticated || !token) {
             toast.error('Silakan login untuk memberikan ulasan');
             return;
         }
@@ -135,7 +135,6 @@ export const ProductDetailPage: React.FC = () => {
 
         setIsSubmittingReview(true);
         try {
-            const token = localStorage.getItem('tamuu_token') || '';
             await shop.submitReview(productId, { rating: userRating, comment: userComment }, token);
             toast.success('Ulasan berhasil dikirim!');
             setUserComment('');
