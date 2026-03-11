@@ -2,6 +2,7 @@ import React from 'react';
 import { m } from 'framer-motion';
 import { MapPin, Tag, Heart } from 'lucide-react';
 import { formatCurrency, formatAbbreviatedNumber } from '../../lib/utils';
+import { StarRating } from './StarRating';
 
 interface ProductCardProps {
     product: any;
@@ -49,6 +50,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, navigate, isS
                 <h4 className="text-[10px] md:text-xs font-black text-[#0A1128] mb-1 md:mb-2 line-clamp-3 uppercase group-hover:text-[#FFBF00] transition-colors leading-tight min-h-[2.2rem] md:min-h-[2.8rem] pb-1">
                     {product.nama_produk}
                 </h4>
+                
+                <StarRating 
+                    rating={product.avg_rating || 0} 
+                    count={product.review_count || 0} 
+                    size={10} 
+                    className="mb-2"
+                />
                 
                 <div className="mt-auto space-y-1.5 md:space-y-3">
                     <div className="pt-1.5 md:pt-3 border-t border-slate-50">

@@ -1580,7 +1580,9 @@ export default {
                     let query = `
                         SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url,
                         p.is_admin_listing, p.custom_store_name,
-                        (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count
+                        (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count,
+                        (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,
+                        (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
                         FROM shop_products p 
                         LEFT JOIN shop_merchants m ON p.merchant_id = m.id
                         WHERE p.status = 'PUBLISHED' AND p.is_approved = 1 AND (m.is_verified = 1 OR p.is_admin_listing = 1)
@@ -1654,7 +1656,9 @@ export default {
                     const query = `
                         SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url,
                         p.is_admin_listing, p.custom_store_name,
-                        (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count
+                        (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count,
+                        (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,
+                        (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
                         FROM shop_products p 
                         LEFT JOIN shop_merchants m ON p.merchant_id = m.id 
                         WHERE p.status = 'PUBLISHED' AND p.is_approved = 1 AND (m.is_verified = 1 OR p.is_admin_listing = 1)
@@ -1670,7 +1674,9 @@ export default {
                         const fallbackQuery = `
                             SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url,
                             p.is_admin_listing, p.custom_store_name,
-                            (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count
+                            (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count,
+                            (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,
+                            (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
                             FROM shop_products p 
                             LEFT JOIN shop_merchants m ON p.merchant_id = m.id 
                             WHERE p.status = 'PUBLISHED' AND p.is_approved = 1 AND (m.is_verified = 1 OR p.is_admin_listing = 1)
@@ -1726,7 +1732,9 @@ export default {
 
                     // Step 1: Try Same Category (Excluding current product)
                     let products = await env.DB.prepare(`
-                        SELECT p.*, m.nama_toko, m.slug as merchant_slug, p.is_admin_listing, p.custom_store_name 
+                        SELECT p.*, m.nama_toko, m.slug as merchant_slug, p.is_admin_listing, p.custom_store_name,
+                        (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,
+                        (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
                         FROM shop_products p
                         LEFT JOIN shop_merchants m ON p.merchant_id = m.id
                         WHERE p.kategori_produk = ? AND p.id != ? AND p.status = 'PUBLISHED' AND p.is_approved = 1 AND (m.is_verified = 1 OR p.is_admin_listing = 1)
@@ -1737,7 +1745,9 @@ export default {
                     if (products.results.length < 4) {
                         const remaining = limit - products.results.length;
                         const fallback = await env.DB.prepare(`
-                            SELECT p.*, m.nama_toko, m.slug as merchant_slug, p.is_admin_listing, p.custom_store_name 
+                            SELECT p.*, m.nama_toko, m.slug as merchant_slug, p.is_admin_listing, p.custom_store_name,
+                            (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,
+                            (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
                             FROM shop_products p
                             LEFT JOIN shop_merchants m ON p.merchant_id = m.id
                             WHERE p.id != ? AND p.kategori_produk != ? AND p.status = 'PUBLISHED' AND p.is_approved = 1 AND (m.is_verified = 1 OR p.is_admin_listing = 1)
@@ -2318,16 +2328,26 @@ export default {
                 if (!slug) return json({ error: 'Slug required' }, { ...corsHeaders, status: 400 });
 
                 try {
-                    const merchant = await env.DB.prepare(
-                        'SELECT m.*, c.nama_kategori FROM shop_merchants m LEFT JOIN shop_category c ON m.category_id = c.id WHERE m.slug = ?'
-                    ).bind(slug).first();
+                    const merchant = await env.DB.prepare(`
+                        SELECT m.*, c.nama_kategori,
+                        (SELECT AVG(rating) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = m.id) as avg_rating,
+                        (SELECT COUNT(*) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = m.id) as review_count
+                        FROM shop_merchants m 
+                        LEFT JOIN shop_category c ON m.category_id = c.id 
+                        WHERE m.slug = ?
+                    `).bind(slug).first();
 
                     if (!merchant) return json({ error: 'Store not found' }, { ...corsHeaders, status: 404 });
 
                     // Fetch published products
-                    const productsRows = await env.DB.prepare(
-                        'SELECT * FROM shop_products WHERE merchant_id = ? AND status = "PUBLISHED" AND is_approved = 1 ORDER BY created_at DESC'
-                    ).bind(merchant.id).all();
+                    const productsRows = await env.DB.prepare(`
+                        SELECT p.*,
+                        (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,
+                        (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
+                        FROM shop_products p
+                        WHERE p.merchant_id = ? AND p.status = "PUBLISHED" AND p.is_approved = 1 
+                        ORDER BY p.created_at DESC
+                    `).bind(merchant.id).all();
 
                     const products = productsRows.results;
 

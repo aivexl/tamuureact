@@ -1123,6 +1123,58 @@ export const blog = {
 // ============================================
 // SHOP API (TAMUU NEXUS)
 // ============================================
+export interface Product {
+    id: string;
+    merchant_id: string;
+    nama_produk: string;
+    deskripsi: string;
+    harga_estimasi: number;
+    status: string;
+    kategori_produk: string;
+    kota: string;
+    slug: string;
+    images?: { image_url: string }[];
+    nama_toko?: string;
+    merchant_slug?: string;
+    logo_url?: string;
+    wishlist_count?: number;
+    avg_rating?: number;
+    review_count?: number;
+    is_special?: number;
+    is_featured?: number;
+    is_landing_featured?: number;
+    is_admin_listing?: number;
+    custom_store_name?: string;
+}
+
+export interface Merchant {
+    id: string;
+    user_id: string;
+    slug: string;
+    nama_toko: string;
+    deskripsi: string;
+    logo_url: string;
+    banner_url: string;
+    is_verified: number;
+    is_sponsored: number;
+    is_landing_featured?: number;
+    kota: string;
+    nama_kategori?: string;
+    wishlist_count?: number;
+    avg_rating?: number;
+    review_count?: number;
+}
+
+export interface Review {
+    id: string;
+    product_id: string;
+    user_id: string;
+    user_name?: string;
+    rating: number;
+    comment: string;
+    created_at: string;
+}
+
 export const shop = {
     async getMerchantMe(userId: string) {
         // Append a cache buster to strictly avoid browser disk cache returning stale 'isMerchant: false'
@@ -1209,6 +1261,30 @@ export const shop = {
         if (!res.ok) {
             const errorData = await res.json().catch(() => ({}));
             throw new Error(errorData.error || 'Failed to delete product');
+        }
+        return res.json();
+    },
+
+    // REVIEWS
+    async getProductReviews(productId: string): Promise<Review[]> {
+        const res = await safeFetch(`${API_BASE}/api/shop/products/${productId}/reviews`);
+        if (!res.ok) throw new Error('Failed to fetch product reviews');
+        const data = await res.json();
+        return sanitizeValue(data.reviews || []);
+    },
+
+    async submitReview(productId: string, data: { rating: number; comment: string }, token: string) {
+        const res = await safeFetch(`${API_BASE}/api/shop/products/${productId}/reviews`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(sanitizeValue(data))
+        });
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Failed to submit review');
         }
         return res.json();
     },

@@ -2,13 +2,11 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { m, AnimatePresence } from 'framer-motion';
 import {
-    ArrowLeft,
     Share2,
     Heart,
     MessageCircle,
     ChevronLeft,
     ChevronRight,
-    Sparkles,
     ShieldCheck,
     Truck,
     MapPin,
@@ -23,7 +21,8 @@ import {
     CreditCard,
     LogOut,
     Map,
-    Megaphone
+    Megaphone,
+    Send
 } from 'lucide-react';
 import {
     useProductDetails,
@@ -34,7 +33,7 @@ import {
     useMerchantStats,
     useSmartRecommendations
 } from '../../hooks/queries/useShop';
-import { shop } from '../../lib/api';
+import { shop, type Review } from '../../lib/api';
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
 import { Footer } from '../../components/Layout/Footer';
 import { useStore } from '../../store/useStore';
@@ -44,6 +43,7 @@ import { toast } from 'react-hot-toast';
 import { ReportProductModal } from '../../components/Modals/ReportProductModal';
 import { INDONESIA_REGIONS } from '../../constants/regions';
 import { AnimatedCopyIcon } from '../../components/ui/AnimatedCopyIcon';
+import { StarRating } from '../../components/Shop/StarRating';
 
 export const ProductDetailPage: React.FC = () => {
     const { slug, productId } = useParams<{ slug: string, productId: string }>();
@@ -58,6 +58,13 @@ export const ProductDetailPage: React.FC = () => {
     const [isLocationOpen, setIsLocationOpen] = useState(false);
     const [citySearchQuery, setCitySearchQuery] = useState('');
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+    // Reviews State
+    const [reviews, setReviews] = useState<Review[]>([]);
+    const [isLoadingReviews, setIsLoadingReviews] = useState(true);
+    const [userRating, setUserRating] = useState(5);
+    const [userComment, setUserComment] = useState('');
+    const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
     // Sync search query from URL on mount
     useEffect(() => {
@@ -84,7 +91,7 @@ export const ProductDetailPage: React.FC = () => {
     }, [citySearchQuery]);
 
     // Data Fetching
-    const { data: product, isLoading: isLoadingProduct } = useProductDetails(productId || '');
+    const { data: product, isLoading: isLoadingProduct, refetch: refetchProduct } = useProductDetails(productId || '');
     const { data: wishlist = [] } = useWishlist(user?.id);
     const { data: merchantProducts = [] } = useMerchantProducts(product?.merchant_id);
     const { data: merchantStats } = useMerchantStats(product?.merchant_id);
@@ -95,6 +102,51 @@ export const ProductDetailPage: React.FC = () => {
     const track = useTrackInteraction();
 
     const isWishlisted = wishlist.some((item: any) => item.id === product?.id);
+
+    // Fetch Reviews
+    const fetchReviews = async () => {
+        if (!productId) return;
+        setIsLoadingReviews(true);
+        try {
+            const data = await shop.getProductReviews(productId);
+            setReviews(data);
+        } catch (err) {
+            console.error('Failed to fetch reviews:', err);
+        } finally {
+            setIsLoadingReviews(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchReviews();
+    }, [productId]);
+
+    const hasUserReviewed = useMemo(() => {
+        return reviews.some(r => r.user_id === user?.id);
+    }, [reviews, user?.id]);
+
+    const handleReviewSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!isAuthenticated) {
+            toast.error('Silakan login untuk memberikan ulasan');
+            return;
+        }
+        if (!productId) return;
+
+        setIsSubmittingReview(true);
+        try {
+            const token = localStorage.getItem('tamuu_token') || '';
+            await shop.submitReview(productId, { rating: userRating, comment: userComment }, token);
+            toast.success('Ulasan berhasil dikirim!');
+            setUserComment('');
+            fetchReviews();
+            refetchProduct(); // Refresh product avg rating
+        } catch (err: any) {
+            toast.error(err.message || 'Gagal mengirim ulasan');
+        } finally {
+            setIsSubmittingReview(false);
+        }
+    };
 
     // Fetch Ads
     const [sidebarAds, setSidebarAds] = useState<any[]>([]);
@@ -391,7 +443,15 @@ export const ProductDetailPage: React.FC = () => {
                                 </div>
                             </div>
 
-                            <h1 className="text-4xl font-black text-[#0A1128] uppercase tracking-tight italic leading-none">{product.nama_produk}</h1>
+                            <div className="space-y-2">
+                                <h1 className="text-4xl font-black text-[#0A1128] uppercase tracking-tight italic leading-none">{product.nama_produk}</h1>
+                                <StarRating 
+                                    rating={product.avg_rating || 0} 
+                                    count={product.review_count || 0} 
+                                    size={18} 
+                                    className="pt-1"
+                                />
+                            </div>
                             
                             <div className="py-6 border-y border-slate-50">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Estimasi Harga</p>
@@ -517,7 +577,7 @@ export const ProductDetailPage: React.FC = () => {
                             {/* Alamat Lengkap Card */}
                             <m.div 
                                 initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
+                                animate={{ opacity: 1, y: 0 }}
                                 className="p-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6 flex flex-col"
                             >
                                 <div className="flex items-center justify-between">
@@ -610,6 +670,119 @@ export const ProductDetailPage: React.FC = () => {
                     </div>
                 </div>
 
+                {/* REVIEWS SECTION */}
+                <div className="max-w-7xl mx-auto px-6 mt-20">
+                    <div className="p-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm space-y-10">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
+                                <h2 className="text-xl font-black uppercase tracking-tighter italic">Ulasan Produk</h2>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <StarRating rating={product.avg_rating || 0} count={product.review_count || 0} size={20} />
+                            </div>
+                        </div>
+
+                        {/* Review Form */}
+                        {isAuthenticated && !hasUserReviewed && (
+                            <m.div 
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="p-8 bg-slate-50 rounded-3xl border border-slate-100 space-y-6"
+                            >
+                                <div className="space-y-4">
+                                    <p className="text-xs font-black uppercase tracking-widest text-[#0A1128]">Berikan Penilaian Anda</p>
+                                    <div className="flex gap-2">
+                                        {[1, 2, 3, 4, 5].map((s) => (
+                                            <button 
+                                                key={s} 
+                                                onClick={() => setUserRating(s)}
+                                                className="transition-transform active:scale-90"
+                                            >
+                                                <Star 
+                                                    className={`w-8 h-8 ${s <= userRating ? 'fill-yellow-400 text-yellow-400' : 'text-slate-300'}`} 
+                                                />
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <form onSubmit={handleReviewSubmit} className="space-y-4">
+                                    <textarea
+                                        value={userComment}
+                                        onChange={(e) => setUserComment(e.target.value)}
+                                        placeholder="Tulis ulasan Anda di sini... (Contoh: Pelayanan ramah dan hasil memuaskan!)"
+                                        className="w-full h-32 p-5 bg-white border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-[#FFBF00]/20 focus:border-[#FFBF00]/30 outline-none transition-all placeholder:text-slate-300 resize-none"
+                                        required
+                                    />
+                                    <div className="flex justify-end">
+                                        <button
+                                            type="submit"
+                                            disabled={isSubmittingReview}
+                                            className="px-8 py-4 bg-[#0A1128] text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-indigo-900 transition-all shadow-lg shadow-black/10 disabled:opacity-50"
+                                        >
+                                            {isSubmittingReview ? <PremiumLoader size="sm" color="white" /> : <Send className="w-4 h-4 text-[#FFBF00]" />}
+                                            Kirim Ulasan
+                                        </button>
+                                    </div>
+                                </form>
+                            </m.div>
+                        )}
+
+                        {/* Reviews List */}
+                        <div className="space-y-8">
+                            {isLoadingReviews ? (
+                                <div className="py-10 flex justify-center">
+                                    <PremiumLoader size="md" />
+                                </div>
+                            ) : reviews.length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {reviews.map((review) => (
+                                        <div key={review.id} className="p-6 bg-white border border-slate-100 rounded-3xl space-y-4 shadow-sm hover:shadow-md transition-all">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-[#0A1128] text-xs font-black uppercase tracking-widest border border-slate-200">
+                                                        {review.user_name?.charAt(0) || 'U'}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-black uppercase tracking-widest text-[#0A1128] truncate max-w-[120px]">
+                                                            {review.user_name || 'User Tamuu'}
+                                                        </p>
+                                                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+                                                            {new Date(review.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-0.5">
+                                                    {[1, 2, 3, 4, 5].map((s) => (
+                                                        <Star 
+                                                            key={s}
+                                                            size={12} 
+                                                            className={`${s <= review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-slate-200'}`} 
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <p className="text-slate-600 text-sm font-medium leading-relaxed italic border-l-2 border-[#FFBF00]/30 pl-4 py-1">
+                                                "{review.comment}"
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-20 bg-slate-50 rounded-[2rem] border border-dashed border-slate-200 space-y-4">
+                                    <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto border border-slate-100 shadow-sm">
+                                        <Star className="w-8 h-8 text-slate-200" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-xs font-black uppercase tracking-widest text-[#0A1128]">Belum Ada Ulasan</p>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Jadilah yang pertama memberikan penilaian untuk produk ini.</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
                 <div className="max-w-7xl mx-auto px-6 mt-24 space-y-24">
 
                     {/* Features Grid */}
@@ -666,6 +839,7 @@ export const ProductDetailPage: React.FC = () => {
                                         <h4 className="text-[10px] md:text-xs font-black text-[#0A1128] uppercase line-clamp-3 group-hover:text-[#FFBF00] transition-colors leading-tight min-h-[2.2rem] md:min-h-[2.8rem] mb-1.5 md:mb-2 pb-1">
                                             {p.nama_produk}
                                         </h4>
+                                        <StarRating rating={p.avg_rating || 0} count={p.review_count || 0} size={10} className="mb-2" />
                                         <div className="mt-auto space-y-2">
                                             <div className="pt-2 border-t border-slate-50">
                                                 <p className="text-[11px] md:text-sm font-black text-[#0A1128] tracking-tight truncate">

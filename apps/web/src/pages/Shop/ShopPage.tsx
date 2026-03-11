@@ -42,6 +42,7 @@ import { SEOListingFooter } from '../../components/Shop/SEOListingFooter';
 import { assembleSEOTemplate } from '../../lib/seo-permutation';
 import { MultiCarousel } from '../../components/ui/MultiCarousel';
 import { ProductCard } from '../../components/Shop/ProductCard';
+import { StarRating } from '../../components/Shop/StarRating';
 
 export const ShopPage: React.FC = () => {
     const navigate = useNavigate();
@@ -524,7 +525,7 @@ const MerchantCard: React.FC<{ merchant: any, navigate: any }> = ({ merchant, na
             </div>
 
             <div className="px-6 md:px-8 pt-12 md:pt-14 pb-6 md:pb-8 flex flex-col flex-1 bg-white">
-                <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="flex items-start justify-between gap-3 mb-1">
                     <h3 className="text-base md:text-xl font-black text-[#0A1128] truncate flex-1 min-w-0 tracking-tight leading-none">{merchant.nama_toko}</h3>
                     {merchant.wishlist_count > 0 && (
                         <div className="flex items-center gap-1 text-[#FFBF00] flex-shrink-0 bg-[#FFBF00]/10 px-2.5 py-1 rounded-lg border border-[#FFBF00]/20">
@@ -533,6 +534,14 @@ const MerchantCard: React.FC<{ merchant: any, navigate: any }> = ({ merchant, na
                         </div>
                     )}
                 </div>
+                
+                <StarRating 
+                    rating={merchant.avg_rating || 0} 
+                    count={merchant.review_count || 0} 
+                    size={12} 
+                    className="mb-3"
+                />
+
                 <div className="flex flex-col gap-3">
                     <p className="text-[10px] md:text-[11px] font-bold text-[#FFBF00] uppercase tracking-[0.2em]">{merchant.nama_kategori || 'Professional Vendor'}</p>
                     <div className="flex items-center gap-2">

@@ -21,6 +21,7 @@ import { PremiumLoader } from '../../components/ui/PremiumLoader';
 import { useStore } from '../../store/useStore';
 import { useSEO } from '../../hooks/useSEO';
 import { formatCurrency } from '../../lib/utils';
+import { StarRating } from '../../components/Shop/StarRating';
 
 export const StorefrontPage: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
@@ -53,7 +54,7 @@ export const StorefrontPage: React.FC = () => {
 
     const handleProductClick = (product: any) => {
         track.mutate({ merchantId: merchant.id, actionType: 'CLICK_PRODUCT', productId: product.id });
-        const mSlug = slug === 'admin' ? 'umum' : (slug || merchant.slug || 'umum');
+        const mSlug = slug === 'admin' ? 'official' : (slug || merchant.slug || 'umum');
         const pSlug = product.slug || product.id;
         navigate(`/shop/${mSlug}/${pSlug}`);
     };
@@ -112,6 +113,12 @@ export const StorefrontPage: React.FC = () => {
                                     Verified Vendor
                                 </span>
                             </div>
+                            <StarRating 
+                                rating={merchant.avg_rating || 0} 
+                                count={merchant.review_count || 0} 
+                                size={20} 
+                                className="mb-2"
+                            />
                             <p className="text-slate-500 text-sm leading-relaxed max-w-lg font-medium">
                                 {merchant.deskripsi}
                             </p>
@@ -205,6 +212,11 @@ export const StorefrontPage: React.FC = () => {
                                             <h4 className="font-black text-[#0A1128] line-clamp-2 leading-tight group-hover:text-[#FFBF00] transition-colors uppercase tracking-tight">
                                                 {product.nama_produk}
                                             </h4>
+                                            <StarRating 
+                                                rating={product.avg_rating || 0} 
+                                                count={product.review_count || 0} 
+                                                size={12} 
+                                            />
                                         </div>
 
                                         <div className="mt-auto space-y-4">
