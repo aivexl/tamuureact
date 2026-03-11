@@ -1,5 +1,5 @@
 /**
- * Tamuu API Worker
+ * Tamuu API Worker v0.6.68
  * Handles all database (D1) and storage (R2) operations
  * Enhanced with AI System v8.0 - Enterprise Grade
  */
@@ -1485,7 +1485,21 @@ export default {
             // 5. REVIEWS API
             if (path.startsWith('/api/shop/products/') && path.endsWith('/reviews')) {
                 const parts = path.split('/');
-                const productId = parts[4];
+                const idOrSlug = parts[4];
+
+                // Resolve actual product ID (Slug or UUID)
+                const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
+                let actualProductId = idOrSlug;
+                
+                if (!isUUID) {
+                    try {
+                        const product = await env.DB.prepare('SELECT id FROM shop_products WHERE slug = ?').bind(idOrSlug).first();
+                        if (!product) return json({ error: 'Product not found' }, { ...corsHeaders, status: 404 });
+                        actualProductId = product.id;
+                    } catch (err) {
+                        return json({ error: 'Failed to resolve product identifier' }, { ...corsHeaders, status: 500 });
+                    }
+                }
 
                 // GET Reviews
                 if (method === 'GET') {
@@ -1496,7 +1510,7 @@ export default {
                             LEFT JOIN users u ON r.user_id = u.id
                             WHERE r.product_id = ?
                             ORDER BY r.created_at DESC
-                        `).bind(productId).all();
+                        `).bind(actualProductId).all();
                         return json({ success: true, reviews: reviews.results }, corsHeaders);
                     } catch (error) {
                         return json({ error: 'Failed to fetch reviews' }, { ...corsHeaders, status: 500 });
@@ -1524,7 +1538,7 @@ export default {
                                 rating = excluded.rating,
                                 comment = excluded.comment,
                                 updated_at = CURRENT_TIMESTAMP
-                        `).bind(reviewId, productId, user.id, rating, comment).run();
+                        `).bind(reviewId, actualProductId, user.id, rating, comment).run();
 
                         return json({ success: true }, corsHeaders);
                     } catch (error) {
@@ -5239,7 +5253,7 @@ name = COALESCE(?, name),
             // HEALTH CHECK
             // ============================================
             if (path === '/api/health') {
-                return json({ status: 'ok', timestamp: new Date().toISOString() }, corsHeaders);
+                return json({ status: 'ok', version: '0.6.68', timestamp: new Date().toISOString() }, corsHeaders);
             }
 
             return notFound(corsHeaders);
@@ -5396,5 +5410,44 @@ async function verifyAdmin(request, env) {
     } catch (e) {
         console.error('[Auth] Internal Security Error:', e.message);
         return { isAdmin: false, reason: 'Internal Authorization Failure' };
+    }
+}
+
+/**
+ * Enterprise Token Verification
+ * Supports both Raw UUIDs and standard JWTs
+ */
+async function verifyToken(token, env) {
+    if (!token) return null;
+
+    try {
+        let userId = token;
+        let email = null;
+
+        // 1. JWT Detection & Extraction
+        if (token.split('.').length === 3) {
+            try {
+                const payloadPart = token.split('.')[1];
+                let base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+                while (base64.length % 4) base64 += '=';
+                const payload = JSON.parse(atob(base64));
+                if (payload.sub) {
+                    userId = payload.sub;
+                    email = payload.email;
+                }
+            } catch (jwtError) {
+                console.warn('[verifyToken] JWT Parse Failed:', jwtError.message);
+            }
+        }
+
+        // 2. Resolve User from D1
+        const user = await env.DB.prepare('SELECT id, email, name FROM users WHERE id = ? OR email = ?')
+            .bind(userId, email || userId)
+            .first();
+
+        return user;
+    } catch (error) {
+        console.error('[verifyToken] Critical Failure:', error.message);
+        return null;
     }
 }
