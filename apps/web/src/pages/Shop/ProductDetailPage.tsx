@@ -488,6 +488,12 @@ export const ProductDetailPage: React.FC = () => {
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
+                                                    <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">
+                                                        {merchantStats?.avg_rating ? Number(merchantStats.avg_rating).toFixed(1) : "0.0"} ({merchantStats?.review_count || 0})
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-1">
                                                     <Heart className="w-3 h-3 text-rose-400 fill-rose-400" />
                                                     <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">
                                                         {merchantStats?.total_wishlist || 0} Love

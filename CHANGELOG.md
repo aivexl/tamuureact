@@ -1,5 +1,14 @@
 # Tamuu Changelog
 
+## [0.6.69] - 2026-03-11
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Shop: Merchant Rating Integration
+- **Merchant Stats Enhancement**: Updated API to include `avg_rating` and `review_count` in merchant statistics for better transparency.
+- **Product Detail Page Integration**: Added star ratings to the merchant card on the Product Detail Page, providing users with immediate vendor credibility.
+- **UI Refinement**: Positioned the new rating element strategically between the product count and wishlist count for optimal visual balance.
+
 ## [0.6.68] - 2026-03-11
 **Status**: 🟢 Deployed
 **Environment**: Production
