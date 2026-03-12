@@ -1,5 +1,16 @@
 # Tamuu Changelog
 
+## [0.6.72] - 2026-03-12
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Dashboard: Wishlist Architecture & Navigation Hub
+- **Unified Wishlist Nexus**: Implemented a comprehensive "Wishlist" tab in the User Dashboard, serving as a centralized hub for all saved items.
+- **Dual-Stream Content**: Developed two specialized sub-tabs within the Wishlist: "Produk & Jasa" (utilizing `ProductCard`) and "Undangan" (utilizing `InvitationsGrid`) for structured categorization.
+- **Direct Navigation Protocol**: Integrated a Heart icon in the global `Navbar` for authenticated users, providing one-click access to their personalized wishlist.
+- **High-Fidelity Empty States**: Designed elegant, actionable empty states for both wishlist categories to encourage user engagement and store exploration.
+- **Real-Time Synchronization**: Integrated `useWishlist` and `useToggleWishlist` hooks for both templates and shop products, ensuring instant UI updates across the platform.
+
 ## [0.6.71] - 2026-03-12
 **Status**: 🟢 Deployed
 **Environment**: Production

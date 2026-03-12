@@ -13,11 +13,17 @@ import { SubscriptionStatusWidget } from '../components/ui/SubscriptionStatusWid
 import { SmartMerchantCard } from '../components/Shop/SmartMerchantCard';
 import { DashboardQuotaWidget } from '../components/Dashboard/DashboardQuotaWidget';
 import { FeedbackTab } from '../components/Dashboard/FeedbackTab';
+import { WishlistTab } from '../components/Dashboard/WishlistTab';
 import { AnimatedCopyIcon } from '../components/ui/AnimatedCopyIcon';
 
 // ============================================
 // INLINE SVG ICONS (Zero external dependency)
 // ============================================
+const HeartIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+    </svg>
+);
 const LayoutDashboardIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect width="7" height="9" x="3" y="3" rx="1" /><rect width="7" height="5" x="14" y="3" rx="1" /><rect width="7" height="9" x="14" y="12" rx="1" /><rect width="7" height="5" x="3" y="16" rx="1" />
@@ -137,11 +143,12 @@ const StoreIcon = ({ className }: { className?: string }) => (
 // ============================================
 // MENU ITEMS
 // ============================================
-type TabId = 'dashboard' | 'invitations' | 'displays' | 'guests' | 'scan' | 'wishes' | 'invoice' | 'tutorial' | 'feedback';
+type TabId = 'dashboard' | 'invitations' | 'wishlist' | 'displays' | 'guests' | 'scan' | 'wishes' | 'invoice' | 'tutorial' | 'feedback';
 
 const menuItems: { id: TabId; label: string; icon: React.FC<{ className?: string }> }[] = [
     { id: 'dashboard', label: 'Home', icon: LayoutDashboardIcon },
     { id: 'invitations', label: 'Undangan', icon: MailIcon },
+    { id: 'wishlist', label: 'Wishlist', icon: HeartIcon },
     { id: 'displays', label: 'Display', icon: MonitorIcon },
     { id: 'guests', label: 'Buku Tamu', icon: UsersIcon },
     { id: 'scan', label: 'Scan', icon: ScanIcon },
@@ -668,6 +675,13 @@ export const DashboardPage: React.FC = () => {
                                         </div>
                                     ))}
                                 </div>
+                            </m.div>
+                        )}
+
+                        {/* Wishlist Tab */}
+                        {activeTab === 'wishlist' && (
+                            <m.div key="wishlist" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                                <WishlistTab />
                             </m.div>
                         )}
 

@@ -11,7 +11,8 @@ import {
     CreditCard,
     ShieldAlert,
     Search,
-    MapPin
+    MapPin,
+    Heart
 } from 'lucide-react';
 
 import { useStore } from '../../store/useStore';
@@ -266,6 +267,13 @@ export const Navbar: React.FC = () => {
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-2">
+                                        <Link
+                                            to="/dashboard?tab=wishlist"
+                                            className="p-2.5 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-rose-500 transition-all"
+                                            aria-label="Wishlist Saya"
+                                        >
+                                            <Heart className="w-5 h-5" />
+                                        </Link>
                                         <NotificationBell />
                                         
                                         <div className="relative profile-dropdown-container">
