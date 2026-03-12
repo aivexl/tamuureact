@@ -1,5 +1,16 @@
 # Tamuu Changelog
 
+## [0.6.73] - 2026-03-12
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Dashboard & Store: Invitation Card UI Standardization
+- **Visual Consistency**: Standardized the Invitation Card dimensions and geometry to match the `ProductCard` aesthetic (`rounded-[2rem]`, compact sizing).
+- **Persistent Interaction Hub**: Replaced the hover-only overlay with a persistent actions area below the title, ensuring critical tools (Preview, Edit, Copy Link, Guests) are always accessible.
+- **Grid Optimization**: Upgraded the `InvitationsGrid` to a high-density layout (`grid-cols-2` to `grid-cols-5`), aligning with the Tamuu Shop visual standard.
+- **Improved Hierarchy**: Refined typographic scales and spacing within the cards to maintain readability in smaller form factors.
+- **Operational Refinement**: Increased the Home Dashboard's "Undangan Terbaru" visibility to 5 items to better utilize the optimized grid density.
+
 ## [0.6.72] - 2026-03-12
 **Status**: 🟢 Deployed
 **Environment**: Production

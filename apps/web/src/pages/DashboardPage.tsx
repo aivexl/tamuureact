@@ -520,35 +520,53 @@ export const DashboardPage: React.FC = () => {
                                             <button onClick={() => handleTabChange('invitations')} className="text-xs font-black text-teal-600 hover:text-teal-700 transition-colors uppercase tracking-widest">Lihat Semua</button>
                                         </div>
 
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                                            {invitations.slice(0, 3).map((inv: Invitation) => (
-                                                <div key={inv.id} className="group bg-white rounded-2xl border border-slate-200/60 overflow-hidden hover:shadow-xl hover:border-teal-400/30 transition-all duration-500">
-                                                    <div className="aspect-video relative overflow-hidden">
+                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+                                            {invitations.slice(0, 5).map((inv: Invitation) => (
+                                                <div key={inv.id} className="group bg-white border border-[#F1F5F9] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden flex flex-col hover:shadow-2xl hover:border-[#FFBF00]/30 transition-all duration-500 relative w-full md:w-[195px] h-[320px] md:h-[400px]">
+                                                    <div className="h-[140px] md:h-[180px] relative overflow-hidden flex-shrink-0">
                                                         <img src={inv.thumbnail || inv.thumbnail_url || ''} alt={inv.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4">
-                                                            <div className="flex gap-2">
-                                                                <button className="p-2 bg-white/90 backdrop-blur-md rounded-xl hover:bg-white text-slate-900 transition-all">
-                                                                    <EyeIcon className="w-5 h-5" />
-                                                                </button>
-                                                                <Link to={`/user/editor/${inv.id}`} className="p-2 bg-white/90 backdrop-blur-md rounded-xl hover:bg-white text-slate-900 transition-all">
-                                                                    <Edit3Icon className="w-5 h-5" />
-                                                                </Link>
-                                                            </div>
+                                                        <div className="absolute top-3 right-3 flex gap-1.5">
+                                                            <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-full backdrop-blur-md ${inv.is_published ? 'bg-emerald-500/80 text-white' : 'bg-amber-500/80 text-white'}`}>
+                                                                {inv.is_published ? 'Live' : 'Draft'}
+                                                            </span>
                                                         </div>
                                                     </div>
-                                                    <div className="p-4 md:p-5">
-                                                        <h5 className="font-bold text-slate-900 truncate mb-1 text-xs md:text-sm">{inv.name}</h5>
-                                                        <p className="text-[10px] text-slate-400 truncate mb-3 lowercase">{publicDomain}/{inv.slug}</p>
-                                                        <div className="flex items-center justify-between mt-auto">
-                                                            <div className="flex gap-1.5">
-                                                                <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${inv.is_published ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>{inv.is_published ? 'published' : 'draft'}</span>
-                                                                {inv.expires_at && new Date(inv.expires_at) < new Date() && (
-                                                                    <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 border border-rose-100">Expired</span>
-                                                                )}
+                                                    <div className="p-3 md:p-4 flex flex-col flex-1 min-w-0">
+                                                        <h5 className="text-[10px] md:text-xs font-black text-[#0A1128] mb-1 line-clamp-2 uppercase group-hover:text-[#FFBF00] transition-colors leading-tight min-h-[2.2rem]">
+                                                            {inv.name}
+                                                        </h5>
+                                                        <p className="text-[8px] text-slate-400 truncate mb-3 lowercase font-bold">{publicDomain}/{inv.slug}</p>
+                                                        
+                                                        {/* Actions Area */}
+                                                        <div className="mt-auto space-y-2">
+                                                            <div className="grid grid-cols-2 gap-2">
+                                                                <button 
+                                                                    onClick={() => window.open(`https://${publicDomain}/${inv.slug}`, '_blank')}
+                                                                    className="flex items-center justify-center p-2 bg-slate-50 text-slate-600 rounded-xl hover:bg-[#FFBF00] hover:text-white transition-all group/btn"
+                                                                    title="Preview"
+                                                                >
+                                                                    <EyeIcon className="w-4 h-4" />
+                                                                </button>
+                                                                <Link 
+                                                                    to={`/user/editor/${inv.id}`}
+                                                                    className="flex items-center justify-center p-2 bg-slate-50 text-slate-600 rounded-xl hover:bg-slate-900 hover:text-white transition-all"
+                                                                    title="Edit"
+                                                                >
+                                                                    <Edit3Icon className="w-4 h-4" />
+                                                                </Link>
                                                             </div>
-                                                            <button className="text-[10px] font-black text-slate-900 hover:text-teal-600 transition-colors flex items-center gap-1.5">
-                                                                <UsersIcon className="w-3.5 h-3.5" /> Tamu
-                                                            </button>
+                                                            <div className="grid grid-cols-2 gap-2">
+                                                                <div className="flex items-center justify-center bg-slate-50 text-slate-600 rounded-xl hover:bg-slate-900 hover:text-white transition-all cursor-pointer">
+                                                                    <AnimatedCopyIcon text={`https://${publicDomain}/${inv.slug}`} size={16} className="p-2" successMessage="Disalin!" />
+                                                                </div>
+                                                                <button 
+                                                                    onClick={() => navigate(`/guests/${inv.id}`)}
+                                                                    className="flex items-center justify-center p-2 bg-slate-50 text-slate-600 rounded-xl hover:bg-teal-500 hover:text-white transition-all"
+                                                                    title="Buku Tamu"
+                                                                >
+                                                                    <UsersIcon className="w-4 h-4" />
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -627,49 +645,62 @@ export const DashboardPage: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* Grid */}
-                                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                                 {/* Grid */}
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                                     {filteredInvitations.map((inv: Invitation) => (
-                                        <div key={inv.id} className="group bg-white rounded-2xl border border-slate-200/60 overflow-hidden hover:shadow-2xl hover:border-teal-400/30 transition-all duration-700">
-                                            <div className="aspect-[4/3] relative overflow-hidden">
-                                                <img src={inv.thumbnail || inv.thumbnail_url || ''} alt={inv.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
-                                                <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-center gap-4">
-                                                    <div className="flex gap-4">
-                                                        <button className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center hover:scale-110 transition-transform active:scale-90" title="Preview">
-                                                            <EyeIcon className="w-6 h-6 text-slate-900" />
-                                                        </button>
-                                                        <Link to={`/user/editor/${inv.id}`} className="w-14 h-14 bg-teal-500 rounded-2xl flex items-center justify-center hover:scale-110 transition-transform active:scale-90" title="Edit">
-                                                            <Edit3Icon className="w-6 h-6 text-slate-900" />
-                                                        </Link>
-                                                    </div>
-                                                    <div className="flex gap-4">
-                                                        <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center hover:scale-110 transition-transform active:scale-90" title="Salin Link">
-                                                            <AnimatedCopyIcon text={`https://${publicDomain}/${inv.slug}`} size={24} className="text-slate-900" successMessage="Link disalin!" />
-                                                        </div>
-                                                        <button className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center hover:scale-110 transition-transform active:scale-90" title="Buku Tamu">
-                                                            <UsersIcon className="w-6 h-6 text-slate-900" />
-                                                        </button>
-                                                    </div>
+                                        <div key={inv.id} className="group bg-white border border-[#F1F5F9] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden flex flex-col hover:shadow-2xl hover:border-[#FFBF00]/30 transition-all duration-500 relative w-full md:w-[195px] h-[320px] md:h-[400px]">
+                                            <div className="h-[140px] md:h-[180px] relative overflow-hidden flex-shrink-0">
+                                                <img src={inv.thumbnail || inv.thumbnail_url || ''} alt={inv.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                                <div className="absolute top-3 right-3 flex gap-1.5">
+                                                    <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-full backdrop-blur-md ${inv.is_published ? 'bg-emerald-500/80 text-white' : 'bg-amber-500/80 text-white'}`}>
+                                                        {inv.is_published ? 'Live' : 'Draft'}
+                                                    </span>
                                                 </div>
                                             </div>
-                                            <div className="p-5">
-                                                <div className="flex items-start justify-between gap-4 mb-2">
-                                                    <h3 className="text-base font-bold text-slate-900 truncate tracking-tight">{inv.name}</h3>
-                                                    <button className="p-1.5 text-slate-300 hover:text-rose-500 transition-colors">
+                                            <div className="p-3 md:p-4 flex flex-col flex-1 min-w-0">
+                                                <div className="flex items-start justify-between gap-2 mb-1">
+                                                    <h5 className="text-[10px] md:text-xs font-black text-[#0A1128] line-clamp-2 uppercase group-hover:text-[#FFBF00] transition-colors leading-tight min-h-[2.2rem]">
+                                                        {inv.name}
+                                                    </h5>
+                                                    <button 
+                                                        onClick={() => {/* handle delete */}}
+                                                        className="p-1 text-slate-300 hover:text-rose-500 transition-colors shrink-0"
+                                                    >
                                                         <Trash2Icon className="w-3.5 h-3.5" />
                                                     </button>
                                                 </div>
-                                                <p className="text-slate-400 text-[10px] font-medium mb-4 uppercase tracking-[0.1em] truncate">{publicDomain}/{inv.slug}</p>
-                                                <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                                                    <div className="flex gap-1.5">
-                                                        <span className={`text-[9px] font-black uppercase tracking-[0.1em] px-2 py-1 rounded-md ${inv.is_published ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>{inv.is_published ? 'published' : 'draft'}</span>
-                                                        {inv.expires_at && new Date(inv.expires_at) < new Date() && (
-                                                            <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-md bg-rose-50 text-rose-600 border border-rose-100">Expired</span>
-                                                        )}
+                                                <p className="text-[8px] text-slate-400 truncate mb-3 lowercase font-bold">{publicDomain}/{inv.slug}</p>
+                                                
+                                                {/* Actions Area - Always Visible */}
+                                                <div className="mt-auto space-y-2">
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        <button 
+                                                            onClick={() => window.open(`https://${publicDomain}/${inv.slug}`, '_blank')}
+                                                            className="flex items-center justify-center p-2 bg-slate-50 text-slate-600 rounded-xl hover:bg-[#FFBF00] hover:text-white transition-all group/btn"
+                                                            title="Preview"
+                                                        >
+                                                            <EyeIcon className="w-4 h-4" />
+                                                        </button>
+                                                        <Link 
+                                                            to={`/user/editor/${inv.id}`}
+                                                            className="flex items-center justify-center p-2 bg-slate-50 text-slate-600 rounded-xl hover:bg-slate-900 hover:text-white transition-all"
+                                                            title="Edit"
+                                                        >
+                                                            <Edit3Icon className="w-4 h-4" />
+                                                        </Link>
                                                     </div>
-                                                    <button className="text-[10px] font-black text-slate-400 hover:text-teal-600 flex items-center gap-1.5 transition-colors">
-                                                        <UsersIcon className="w-3.5 h-3.5" /> Tamu
-                                                    </button>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        <div className="flex items-center justify-center bg-slate-50 text-slate-600 rounded-xl hover:bg-slate-900 hover:text-white transition-all cursor-pointer">
+                                                            <AnimatedCopyIcon text={`https://${publicDomain}/${inv.slug}`} size={16} className="p-2" successMessage="Disalin!" />
+                                                        </div>
+                                                        <button 
+                                                            onClick={() => navigate(`/guests/${inv.id}`)}
+                                                            className="flex items-center justify-center p-2 bg-slate-50 text-slate-600 rounded-xl hover:bg-teal-500 hover:text-white transition-all"
+                                                            title="Buku Tamu"
+                                                        >
+                                                            <UsersIcon className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
