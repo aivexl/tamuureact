@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { m, AnimatePresence } from 'framer-motion';
 import { getPublicDomain } from '../lib/utils';
@@ -626,13 +626,13 @@ export const DashboardPage: React.FC = () => {
                                 {/* Search & Actions */}
                                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                                     <div className="relative flex-1 w-full order-2 md:order-1">
-                                        <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-slate-500" />
+                                        <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-slate-400" />
                                         <input
                                             type="text"
                                             value={searchQuery}
                                             onChange={e => setSearchQuery(e.target.value)}
                                             placeholder="Cari undangan..."
-                                            className="w-full pl-11 md:pl-12 pr-6 py-3.5 md:py-4 bg-slate-100 border border-slate-300 rounded-2xl focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-slate-900 transition-all shadow-sm text-sm font-bold text-slate-900 placeholder:text-slate-500"
+                                            className="w-full pl-11 md:pl-12 pr-6 py-3.5 md:py-4 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all shadow-sm text-sm font-bold text-slate-900 placeholder:text-slate-400"
                                         />
                                     </div>
                                     <div className="flex gap-3 w-full md:w-auto order-1 md:order-2">

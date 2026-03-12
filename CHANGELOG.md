@@ -1,5 +1,13 @@
 # Tamuu Changelog
 
+## [0.6.75] - 2026-03-12
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Dashboard: State Synchronization & UI Polish
+- **State Synchronization**: Added `useEffect` in the User Dashboard to instantly synchronize the `activeTab` state with URL parameters, fixing an issue where clicking the navbar Wishlist icon updated the URL without rendering the tab content.
+- **Search UI Refinement**: Adjusted the `text-slate-900` color on the search input in the Invitations tab for better readability against the `bg-slate-100` background.
+
 ## [0.6.74] - 2026-03-12
 **Status**: 🟢 Deployed
 **Environment**: Production
