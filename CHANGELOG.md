@@ -1,5 +1,13 @@
 # Tamuu Changelog
 
+## [0.6.77] - 2026-03-12
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Bug Fix: Dashboard ActiveTab Synchronization
+- **Logic Simplification**: Refactored the `useEffect` hook in `DashboardPage.tsx` to unconditionally synchronize the `activeTab` state with the `tab` URL parameter. This eliminates navigation dead-locks where the UI failed to re-render when switching dashboard tabs via global navigation elements like the Navbar heart icon.
+- **Reliability Boost**: Removed redundant state checks within the sync effect to ensure immediate response to `searchParams` updates.
+
 ## [0.6.76] - 2026-03-12
 **Status**: 🟢 Deployed
 **Environment**: Production
