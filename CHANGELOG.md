@@ -1,5 +1,15 @@
 # Tamuu Changelog
 
+## [0.6.74] - 2026-03-12
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Dashboard: Invitations Tab UI Refinement
+- **Grid Optimization**: Reduced card gap in the Invitations Tab to `gap-3` (mobile) and `gap-4` (desktop) for a more cohesive and compact layout.
+- **Search Accessibility**: Enhanced search input visibility with a high-contrast theme, utilizing `bg-slate-100`, `border-slate-300`, and bolder typography.
+- **Workflow Streamlining**: Removed the redundant "Filter" button to simplify the management interface.
+- **Visual Polish**: Improved search icon contrast and refined placeholder text states for better user guidance.
+
 ## [0.6.73] - 2026-03-12
 **Status**: 🟢 Deployed
 **Environment**: Production

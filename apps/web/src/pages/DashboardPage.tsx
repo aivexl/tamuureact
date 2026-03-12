@@ -624,29 +624,26 @@ export const DashboardPage: React.FC = () => {
                         {activeTab === 'invitations' && (
                             <m.div key="invitations" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-8">
                                 {/* Search & Actions */}
-                                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                                     <div className="relative flex-1 w-full order-2 md:order-1">
-                                        <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-slate-400" />
+                                        <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-slate-500" />
                                         <input
                                             type="text"
                                             value={searchQuery}
                                             onChange={e => setSearchQuery(e.target.value)}
                                             placeholder="Cari undangan..."
-                                            className="w-full pl-11 md:pl-12 pr-6 py-3.5 md:py-4 bg-white/70 backdrop-blur-sm border border-slate-200/60 rounded-2xl focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all shadow-sm text-sm"
+                                            className="w-full pl-11 md:pl-12 pr-6 py-3.5 md:py-4 bg-slate-100 border border-slate-300 rounded-2xl focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-slate-900 transition-all shadow-sm text-sm font-bold text-slate-900 placeholder:text-slate-500"
                                         />
                                     </div>
-                                    <div className="flex gap-3 w-full md:w-auto">
-                                        <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 bg-white border border-slate-200 font-semibold rounded-2xl hover:bg-slate-50 transition-all text-sm">
-                                            <MenuIcon className="w-4 h-4" /> Filter
-                                        </button>
-                                        <Link to="/onboarding" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 bg-slate-900 text-white font-semibold rounded-2xl hover:shadow-xl transition-all text-sm">
+                                    <div className="flex gap-3 w-full md:w-auto order-1 md:order-2">
+                                        <Link to="/onboarding" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-4 bg-slate-900 text-white font-black rounded-2xl hover:shadow-xl hover:bg-[#FFBF00] hover:text-slate-900 transition-all text-sm uppercase tracking-widest">
                                             <PlusIcon className="w-4 h-4" /> Baru
                                         </Link>
                                     </div>
                                 </div>
 
                                  {/* Grid */}
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
                                     {filteredInvitations.map((inv: Invitation) => (
                                         <div key={inv.id} className="group bg-white border border-[#F1F5F9] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden flex flex-col hover:shadow-2xl hover:border-[#FFBF00]/30 transition-all duration-500 relative w-full md:w-[195px] h-[320px] md:h-[400px]">
                                             <div className="h-[140px] md:h-[180px] relative overflow-hidden flex-shrink-0">
