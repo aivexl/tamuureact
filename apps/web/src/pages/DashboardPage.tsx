@@ -171,6 +171,13 @@ export const DashboardPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<TabId>(initialTab);
 
     // Sync tab with URL
+    useEffect(() => {
+        const tabFromUrl = (searchParams.get('tab') as TabId) || 'dashboard';
+        if (tabFromUrl !== activeTab) {
+            setActiveTab(tabFromUrl);
+        }
+    }, [searchParams, activeTab]);
+
     const handleTabChange = (tabId: TabId) => {
         setActiveTab(tabId);
         setSearchParams({ tab: tabId });

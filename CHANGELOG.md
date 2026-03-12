@@ -1,11 +1,19 @@
 # Tamuu Changelog
 
+## [0.6.76] - 2026-03-12
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Bug Fix: Dashboard Wishlist Navigation
+- **Navigation Nexus Fix**: Successfully implemented the missing `useEffect` hook in `DashboardPage.tsx` to react to URL search parameter changes. This ensures that clicking the Heart icon in the global navbar correctly triggers the rendering of the Wishlist tab, even when the user is already on the dashboard.
+- **State Reliability**: Reinforced tab synchronization logic to prevent UI stale-states during cross-page and intra-page navigation.
+
 ## [0.6.75] - 2026-03-12
 **Status**: 🟢 Deployed
 **Environment**: Production
 
 ### Dashboard: State Synchronization & UI Polish
-- **State Synchronization**: Added `useEffect` in the User Dashboard to instantly synchronize the `activeTab` state with URL parameters, fixing an issue where clicking the navbar Wishlist icon updated the URL without rendering the tab content.
+- **UI Optimization**: Standardized the invitation card grid to a high-density, fluid layout (`xl:grid-cols-6`), eliminating excessive dead space.
 - **Search UI Refinement**: Adjusted the `text-slate-900` color on the search input in the Invitations tab for better readability against the `bg-slate-100` background.
 
 ## [0.6.74] - 2026-03-12
