@@ -225,25 +225,17 @@ export const DashboardPage: React.FC = () => {
                 <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
                     {sidebarOpen && <p className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Menu Utama</p>}
                     {menuItems.map(item => (
-                        <button
+                        <Link
                             key={item.id}
-                            onClick={() => {
-                                if (item.id === 'wishes') {
-                                    navigate('/wishes');
-                                } else {
-                                    handleTabChange(item.id);
-                                }
-                            }}
+                            to={item.id === 'wishes' ? '/wishes' : `/dashboard?tab=${item.id}`}
                             className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${activeTab === item.id ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
                         >
                             <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${activeTab === item.id ? 'bg-teal-50 text-slate-900' : 'bg-slate-100 text-slate-400'}`}>
                                 <item.icon className="w-4 h-4" />
                             </div>
                             {sidebarOpen && <span className="text-sm font-bold tracking-tight">{item.label}</span>}
-                        </button>
+                        </Link>
                     ))}
-
-
                 </nav>
 
 
@@ -270,22 +262,24 @@ export const DashboardPage: React.FC = () => {
             <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-sm bg-white/95 backdrop-blur-2xl border border-slate-100 z-50 flex items-center justify-around px-2 py-2 rounded-[1.5rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)]">
                 
                 {/* 1. Home */}
-                <button
-                    onClick={() => { handleTabChange('dashboard'); setIsMobileMoreOpen(false); setIsMobileCreateOpen(false); }}
+                <Link
+                    to="/dashboard?tab=dashboard"
+                    onClick={() => { setIsMobileMoreOpen(false); setIsMobileCreateOpen(false); }}
                     className={`flex flex-col items-center justify-center w-14 h-14 transition-all ${activeTab === 'dashboard' && !isMobileMoreOpen ? 'text-[#0A1128]' : 'text-slate-400 hover:text-slate-600'}`}
                 >
                     <LayoutDashboardIcon className={`w-5 h-5 mb-1 ${activeTab === 'dashboard' && !isMobileMoreOpen ? 'text-[#0A1128]' : ''}`} />
                     <span className="text-[8px] font-black uppercase tracking-widest">Home</span>
-                </button>
+                </Link>
 
                 {/* 2. Undangan */}
-                <button
-                    onClick={() => { handleTabChange('invitations'); setIsMobileMoreOpen(false); setIsMobileCreateOpen(false); }}
+                <Link
+                    to="/dashboard?tab=invitations"
+                    onClick={() => { setIsMobileMoreOpen(false); setIsMobileCreateOpen(false); }}
                     className={`flex flex-col items-center justify-center w-14 h-14 transition-all ${activeTab === 'invitations' && !isMobileMoreOpen ? 'text-[#0A1128]' : 'text-slate-400 hover:text-slate-600'}`}
                 >
                     <MailIcon className={`w-5 h-5 mb-1 ${activeTab === 'invitations' && !isMobileMoreOpen ? 'text-[#0A1128]' : ''}`} />
                     <span className="text-[8px] font-black uppercase tracking-widest">Undangan</span>
-                </button>
+                </Link>
 
                 {/* 3. Action Plus Button (Floating Rectangular) */}
                 <div className="relative -top-5">
@@ -298,13 +292,14 @@ export const DashboardPage: React.FC = () => {
                 </div>
 
                 {/* 4. Buku Tamu */}
-                <button
-                    onClick={() => { handleTabChange('guests'); setIsMobileMoreOpen(false); setIsMobileCreateOpen(false); }}
+                <Link
+                    to="/dashboard?tab=guests"
+                    onClick={() => { setIsMobileMoreOpen(false); setIsMobileCreateOpen(false); }}
                     className={`flex flex-col items-center justify-center w-14 h-14 transition-all ${activeTab === 'guests' && !isMobileMoreOpen ? 'text-[#0A1128]' : 'text-slate-400 hover:text-slate-600'}`}
                 >
                     <UsersIcon className={`w-5 h-5 mb-1 ${activeTab === 'guests' && !isMobileMoreOpen ? 'text-[#0A1128]' : ''}`} />
                     <span className="text-[8px] font-black uppercase tracking-widest">Tamu</span>
-                </button>
+                </Link>
 
                 {/* 5. More Menu */}
                 <button
@@ -403,23 +398,17 @@ export const DashboardPage: React.FC = () => {
                             
                             {/* Remaining Menu Items */}
                             {menuItems.filter(item => !['dashboard', 'invitations', 'guests'].includes(item.id)).map(item => (
-                                <button
+                                <Link
                                     key={item.id}
-                                    onClick={() => {
-                                        if (item.id === 'wishes') {
-                                            navigate('/wishes');
-                                        } else {
-                                            handleTabChange(item.id);
-                                        }
-                                        setIsMobileMoreOpen(false);
-                                    }}
+                                    to={item.id === 'wishes' ? '/wishes' : `/dashboard?tab=${item.id}`}
+                                    onClick={() => setIsMobileMoreOpen(false)}
                                     className={`flex items-center gap-4 p-3 rounded-2xl transition-colors ${activeTab === item.id ? 'bg-[#0A1128] text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}
                                 >
                                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm ${activeTab === item.id ? 'bg-white/10' : 'bg-white'}`}>
                                         <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-white' : 'text-slate-600'}`} />
                                     </div>
                                     <span className="text-sm font-black tracking-tight">{item.label}</span>
-                                </button>
+                                </Link>
                             ))}
                             
                             <div className="h-px bg-slate-100 my-2" />

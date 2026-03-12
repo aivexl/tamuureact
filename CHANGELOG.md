@@ -1,5 +1,14 @@
 # Tamuu Changelog
 
+## [0.6.79] - 2026-03-12
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Dashboard: URL-Driven Navigation Architecture
+- **Complete Refactor**: Transitioned all dashboard tab navigation from state-based buttons to standard `Link` components. This architecture ensures that all navigation (Navbar, Sidebar, Mobile Menu) is driven exclusively by URL parameters, eliminating race conditions and ensuring deterministic UI rendering.
+- **Param Synchronization**:deriving `activeTab` directly from `useSearchParams` to ensure the UI is always in sync with the browser's address bar.
+- **State Hygiene**: Added a lifecycle cleanup effect to remove dashboard-specific URL parameters when the user navigates to other parts of the platform.
+
 ## [0.6.78] - 2026-03-12
 **Status**: 🟢 Deployed
 **Environment**: Production
