@@ -1,5 +1,14 @@
 # Tamuu Changelog
 
+## [0.6.71] - 2026-03-12
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Shop: Storefront UI & Branding Refinement
+- **Branding Cleanup**: Removed "Verified Premium Vendor" badges and verified icons from the store profile photo and merchant sidebar to simplify vendor branding.
+- **Navigation Standardization**: Replaced the custom storefront header with the global `Navbar` component, ensuring a unified navigation experience across the entire platform.
+- **UI Consistency**: Eliminated redundant profile state management in `StorefrontPage` by leveraging the centralized `Navbar` logic.
+
 ## [0.6.70] - 2026-03-11
 **Status**: 🟢 Deployed
 **Environment**: Production

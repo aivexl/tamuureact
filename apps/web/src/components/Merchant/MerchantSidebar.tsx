@@ -66,10 +66,6 @@ export const MerchantSidebar: React.FC<MerchantSidebarProps> = ({ isMobileMenuOp
                     </div>
                     <div>
                         <h2 className="text-base font-black text-[#0A1128] leading-tight break-words truncate max-w-[140px] tracking-tight">{merchant?.nama_toko || 'Merchant Portal'}</h2>
-                        <div className="flex items-center gap-1.5 mt-1">
-                            <span className="w-2 h-2 rounded-full bg-[#FFBF00] shadow-[0_0_8px_rgba(255,191,0,0.5)]"></span>
-                            <span className="text-[10px] uppercase font-black tracking-widest text-[#FFBF00]">Verified Seller</span>
-                        </div>
                     </div>
                 </div>
             </div>
