@@ -520,9 +520,9 @@ export const DashboardPage: React.FC = () => {
                                             <button onClick={() => handleTabChange('invitations')} className="text-xs font-black text-teal-600 hover:text-teal-700 transition-colors uppercase tracking-widest">Lihat Semua</button>
                                         </div>
 
-                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                                            {invitations.slice(0, 5).map((inv: Invitation) => (
-                                                <div key={inv.id} className="group bg-white border border-[#F1F5F9] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden flex flex-col hover:shadow-2xl hover:border-[#FFBF00]/30 transition-all duration-500 relative w-full md:w-[195px] h-[320px] md:h-[400px]">
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
+                                            {invitations.slice(0, 6).map((inv: Invitation) => (
+                                                <div key={inv.id} className="group bg-white border border-[#F1F5F9] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden flex flex-col hover:shadow-2xl hover:border-[#FFBF00]/30 transition-all duration-500 relative w-full h-[320px] md:h-[400px]">
                                                     <div className="h-[140px] md:h-[180px] relative overflow-hidden flex-shrink-0">
                                                         <img src={inv.thumbnail || inv.thumbnail_url || ''} alt={inv.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                                                         <div className="absolute top-3 right-3 flex gap-1.5">
@@ -643,9 +643,9 @@ export const DashboardPage: React.FC = () => {
                                 </div>
 
                                  {/* Grid */}
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
                                     {filteredInvitations.map((inv: Invitation) => (
-                                        <div key={inv.id} className="group bg-white border border-[#F1F5F9] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden flex flex-col hover:shadow-2xl hover:border-[#FFBF00]/30 transition-all duration-500 relative w-full md:w-[195px] h-[320px] md:h-[400px]">
+                                        <div key={inv.id} className="group bg-white border border-[#F1F5F9] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden flex flex-col hover:shadow-2xl hover:border-[#FFBF00]/30 transition-all duration-500 relative w-full h-[320px] md:h-[400px]">
                                             <div className="h-[140px] md:h-[180px] relative overflow-hidden flex-shrink-0">
                                                 <img src={inv.thumbnail || inv.thumbnail_url || ''} alt={inv.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                                                 <div className="absolute top-3 right-3 flex gap-1.5">

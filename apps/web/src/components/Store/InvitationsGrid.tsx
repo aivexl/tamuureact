@@ -68,7 +68,7 @@ export const InvitationsGrid: React.FC<InvitationsGridProps> = ({
     }
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
             <AnimatePresence mode="popLayout">
                 {filteredTemplates.map((template) => (
                     <m.div
@@ -77,7 +77,7 @@ export const InvitationsGrid: React.FC<InvitationsGridProps> = ({
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className={`group bg-white border rounded-[1.5rem] md:rounded-[2rem] overflow-hidden flex flex-col hover:shadow-2xl transition-all duration-500 relative w-full md:w-[195px] h-[320px] md:h-[400px] ${template.id === selectedId
+                        className={`group bg-white border rounded-[1.5rem] md:rounded-[2rem] overflow-hidden flex flex-col hover:shadow-2xl transition-all duration-500 relative w-full h-[320px] md:h-[400px] ${template.id === selectedId
                             ? 'border-teal-500 ring-4 ring-teal-500/10 shadow-xl shadow-teal-500/10 scale-[1.02] z-10'
                             : 'border-slate-200/60 hover:border-[#FFBF00]/30'
                             }`}
