@@ -1,5 +1,13 @@
 # Tamuu Changelog
 
+## [0.6.78] - 2026-03-12
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Bug Fix: Robust Dashboard Tab Navigation
+- **Deterministic State Management**: Eliminated the `useState` for `activeTab` in `DashboardPage.tsx`, opting instead to derive the active tab directly from URL search parameters (`useSearchParams`). This architectural change ensures that global navigation elements (like the Navbar Heart icon) trigger deterministic UI updates without the risk of local state desynchronization or conflicting `useEffect` cycles.
+- **Reliable Redirection**: Guaranteed that `/dashboard?tab=wishlist` correctly renders the Wishlist tab regardless of the previous dashboard state.
+
 ## [0.6.77] - 2026-03-12
 **Status**: 🟢 Deployed
 **Environment**: Production

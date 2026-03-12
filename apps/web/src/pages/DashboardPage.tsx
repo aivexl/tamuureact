@@ -167,17 +167,11 @@ export const DashboardPage: React.FC = () => {
     const user = useStore(s => s.user);
     const logout = useStore(s => s.logout);
     const [searchParams, setSearchParams] = useSearchParams();
-    const initialTab = (searchParams.get('tab') as TabId) || 'dashboard';
-    const [activeTab, setActiveTab] = useState<TabId>(initialTab);
-
-    // Sync tab with URL
-    useEffect(() => {
-        const tabFromUrl = (searchParams.get('tab') as TabId) || 'dashboard';
-        setActiveTab(tabFromUrl);
-    }, [searchParams]);
+    
+    // Deriving activeTab directly from URL to ensure immediate reaction to global navigation
+    const activeTab = (searchParams.get('tab') as TabId) || 'dashboard';
 
     const handleTabChange = (tabId: TabId) => {
-        setActiveTab(tabId);
         setSearchParams({ tab: tabId });
     };
 
