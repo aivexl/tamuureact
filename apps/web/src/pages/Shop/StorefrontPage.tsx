@@ -68,7 +68,7 @@ export const StorefrontPage: React.FC = () => {
         <div className="min-h-screen bg-white text-[#0A1128] font-sans selection:bg-[#FFBF00] selection:text-[#0A1128]">
             <Navbar />
 
-            <main className="pt-[64px] pb-40">
+            <main className="pt-[140px] md:pt-40 pb-40">
                 {/* COMPACT PREMIUM BANNER (Apple Inspired) */}
                 <div className="max-w-7xl mx-auto px-0 sm:px-6 pt-6">
                     <div className="relative h-48 md:h-72 w-full overflow-hidden sm:rounded-[2.5rem] bg-slate-100 border border-slate-100/50 group shadow-sm">

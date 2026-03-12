@@ -44,6 +44,7 @@ import { ReportProductModal } from '../../components/Modals/ReportProductModal';
 import { INDONESIA_REGIONS } from '../../constants/regions';
 import { AnimatedCopyIcon } from '../../components/ui/AnimatedCopyIcon';
 import { StarRating } from '../../components/Shop/StarRating';
+import { Navbar } from '../../components/Layout/Navbar';
 
 export const ProductDetailPage: React.FC = () => {
     const { slug, productId } = useParams<{ slug: string, productId: string }>();
@@ -52,43 +53,12 @@ export const ProductDetailPage: React.FC = () => {
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const { user, isAuthenticated, logout, token } = useStore();
 
-    // Search & Location States for Navbar
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedCity, setSelectedCity] = useState('All');
-    const [isLocationOpen, setIsLocationOpen] = useState(false);
-    const [citySearchQuery, setCitySearchQuery] = useState('');
-    const [isProfileOpen, setIsProfileOpen] = useState(false);
-
     // Reviews State
     const [reviews, setReviews] = useState<Review[]>([]);
     const [isLoadingReviews, setIsLoadingReviews] = useState(true);
     const [userRating, setUserRating] = useState(5);
     const [userComment, setUserComment] = useState('');
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
-
-    // Sync search query from URL on mount
-    useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        const q = params.get('q');
-        const city = params.get('city');
-        if (q) setSearchQuery(q);
-        if (city) setSelectedCity(city);
-    }, []);
-
-    const handleSearchSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        const params = new URLSearchParams();
-        if (searchQuery) params.append('q', searchQuery);
-        if (selectedCity !== 'All') params.append('city', selectedCity);
-        navigate(`/shop?${params.toString()}`);
-    };
-
-    const filteredCities = useMemo(() => {
-        const cleanQuery = citySearchQuery.trim().toLowerCase();
-        const baseCities = ['All', ...INDONESIA_REGIONS];
-        if (!cleanQuery) return baseCities;
-        return baseCities.filter(city => city.toLowerCase().includes(cleanQuery));
-    }, [citySearchQuery]);
 
     // Data Fetching
     const { data: product, isLoading: isLoadingProduct, refetch: refetchProduct } = useProductDetails(productId || '');
@@ -218,149 +188,9 @@ export const ProductDetailPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-white text-[#0A1128] font-sans selection:bg-[#FFBF00] selection:text-[#0A1128]">
-            {/* COMPREHENSIVE NAVBAR (Public & Search Focused) */}
-            <header className="fixed top-0 left-0 right-0 z-[100] bg-white/80 backdrop-blur-xl border-b border-slate-100 px-6 py-3">
-                <div className="max-w-7xl mx-auto flex items-center justify-between gap-6">
-                    {/* Logo Section */}
-                    <Link to="/" className="flex items-center gap-3 shrink-0 group">
-                        <img src="/images/logo-tamuu-vfinal-v1.webp" alt="Tamuu" className="h-8 w-auto object-contain transition-transform group-hover:scale-105" />
-                    </Link>
+            <Navbar />
 
-                    {/* Integrated Search & Location Bar */}
-                    <form onSubmit={handleSearchSubmit} className="hidden lg:flex flex-1 max-w-2xl items-center bg-slate-50 border border-slate-100 rounded-2xl p-1 gap-2 transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-[#FFBF00]/20 focus-within:border-[#FFBF00]/30">
-                        {/* Location Selector */}
-                        <div className="relative">
-                            <div 
-                                onClick={() => setIsLocationOpen(!isLocationOpen)}
-                                className="flex items-center gap-2 px-4 py-2 hover:bg-white rounded-xl cursor-pointer transition-all min-w-[160px]"
-                            >
-                                <MapPin className="w-3.5 h-3.5 text-[#FFBF00]" />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-[#0A1128] whitespace-nowrap">
-                                    {selectedCity === 'All' ? 'Seluruh Indonesia' : selectedCity}
-                                </span>
-                                <ChevronDown className={`w-3 h-3 text-slate-300 transition-transform ${isLocationOpen ? 'rotate-180' : ''}`} />
-                            </div>
-
-                            <AnimatePresence>
-                                {isLocationOpen && (
-                                    <>
-                                        <div className="fixed inset-0 z-[110]" onClick={() => setIsLocationOpen(false)} />
-                                        <m.div
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: 10 }}
-                                            className="absolute top-full left-0 mt-3 w-64 bg-white border border-slate-100 shadow-2xl rounded-2xl z-[120] overflow-hidden flex flex-col max-h-[350px]"
-                                        >
-                                            <div className="p-3 border-b border-slate-50">
-                                                <input 
-                                                    type="text"
-                                                    placeholder="Cari wilayah..."
-                                                    value={citySearchQuery}
-                                                    onChange={(e) => setCitySearchQuery(e.target.value)}
-                                                    className="w-full bg-slate-50 border-none rounded-lg px-3 py-2 text-xs font-bold"
-                                                />
-                                            </div>
-                                            <div className="flex-1 overflow-y-auto p-1 custom-scrollbar">
-                                                {filteredCities.map((city) => (
-                                                    <button
-                                                        key={city}
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setSelectedCity(city);
-                                                            setIsLocationOpen(false);
-                                                        }}
-                                                        className="w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:text-[#0A1128]"
-                                                    >
-                                                        {city === 'All' ? 'Seluruh Indonesia' : city}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </m.div>
-                                    </>
-                                )}
-                            </AnimatePresence>
-                        </div>
-
-                        <div className="w-px h-6 bg-slate-200" />
-
-                        {/* Search Input */}
-                        <div className="flex-1 flex items-center px-2">
-                            <Search className="w-4 h-4 text-slate-300" />
-                            <input 
-                                type="text"
-                                value={searchQuery}
-                                onChange={e => setSearchQuery(e.target.value)}
-                                placeholder="Cari vendor, catering, atau paket..."
-                                className="w-full bg-transparent border-none focus:ring-0 text-sm font-bold text-[#0A1128] py-2 px-3 placeholder:text-slate-300"
-                            />
-                        </div>
-                    </form>
-
-                    {/* Right Actions: Auth or Profile */}
-                    <div className="flex items-center gap-4">
-                        {!isAuthenticated ? (
-                            <div className="flex items-center gap-2">
-                                <Link to="/login" className="px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:text-[#0A1128] transition-colors">Masuk</Link>
-                                <Link to="/signup" className="px-6 py-2.5 bg-[#0A1128] text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-black/10">Daftar</Link>
-                            </div>
-                        ) : (
-                            <div className="relative">
-                                <button 
-                                    onClick={() => setIsProfileOpen(!isProfileOpen)}
-                                    className="flex items-center gap-3 p-1 rounded-full border border-slate-100 hover:bg-slate-50 transition-all group"
-                                >
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#FFBF00] to-orange-500 flex items-center justify-center text-white text-xs font-black shadow-sm group-hover:scale-105 transition-transform">
-                                        {user?.name?.charAt(0) || 'U'}
-                                    </div>
-                                    <span className="hidden sm:block text-[10px] font-black uppercase tracking-widest text-[#0A1128] mr-2">{user?.name?.split(' ')[0]}</span>
-                                </button>
-
-                                <AnimatePresence>
-                                    {isProfileOpen && (
-                                        <>
-                                            <div className="fixed inset-0 z-[110]" onClick={() => setIsProfileOpen(false)} />
-                                            <m.div
-                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                className="absolute right-0 mt-3 w-64 rounded-2xl bg-white border border-slate-100 shadow-2xl overflow-hidden z-[120]"
-                                            >
-                                                <div className="p-4 border-b border-slate-50 bg-slate-50/50">
-                                                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Signed in as</p>
-                                                    <p className="text-xs font-black text-[#0A1128] truncate">{user?.email}</p>
-                                                </div>
-                                                <div className="p-2 space-y-1">
-                                                    <Link to="/dashboard" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:text-[#0A1128] transition-all">
-                                                        <LayoutDashboard className="w-4 h-4" /> Dashboard
-                                                    </Link>
-                                                    {user?.role === 'admin' && (
-                                                        <Link to="/admin/dashboard" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 hover:text-indigo-900 transition-all">
-                                                            <ShieldAlert className="w-4 h-4" /> Admin Dashboard
-                                                        </Link>
-                                                    )}
-                                                    <Link to="/profile" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:text-[#0A1128] transition-all">
-                                                        <UserIcon className="w-4 h-4" /> Profile
-                                                    </Link>
-                                                    <Link to="/billing" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:text-[#0A1128] transition-all">
-                                                        <CreditCard className="w-4 h-4" /> Billing
-                                                    </Link>
-                                                </div>
-                                                <div className="p-2 border-t border-slate-50">
-                                                    <button onClick={() => { logout(); navigate('/'); }} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-rose-500 hover:bg-rose-50 transition-all text-left">
-                                                        <LogOut className="w-4 h-4" /> Sign Out
-                                                    </button>
-                                                </div>
-                                            </m.div>
-                                        </>
-                                    )}
-                                </AnimatePresence>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </header>
-
-            <main className="pt-[140px] md:pt-[130px] pb-40">
+            <main className="pt-[140px] md:pt-40 pb-40">
                 <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16">
                     {/* LEFT: Image Gallery */}
                     <div className="space-y-6">
@@ -420,7 +250,7 @@ export const ProductDetailPage: React.FC = () => {
                                         {product.kategori_produk}
                                     </span>
                                     <span className="px-3 py-1 rounded-lg bg-slate-50 text-slate-400 text-[9px] font-black uppercase tracking-widest border border-slate-100 flex items-center gap-1 truncate">
-                                        <MapPin className="w-3 h-3 flex-shrink-0" /> {product.kota}
+                                        <MapPin className="w-3.5 h-3.5 flex-shrink-0" /> {product.kota}
                                     </span>
                                 </div>
                                 
@@ -539,7 +369,6 @@ export const ProductDetailPage: React.FC = () => {
                 </div>
 
                 {/* BOTTOM CONTENT SECTION */}
-                {/* REDESIGNED PRODUCT DETAILS SECTION */}
                 <div className="max-w-7xl mx-auto px-6 mt-20">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
                         {/* Deskripsi Card (Left Column - Spans 7/12) */}
