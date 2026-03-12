@@ -21,7 +21,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
 
     if (!isAuthenticated) {
-        return <Navigate to={`${redirectTo}?redirect=${location.pathname}`} replace />;
+        // Build the full path including search params and hash to preserve state after login
+        const fullPath = location.pathname + location.search + location.hash;
+        return <Navigate to={`${redirectTo}?redirect=${encodeURIComponent(fullPath)}`} replace />;
     }
 
     if (requiredRole && user?.role !== requiredRole) {

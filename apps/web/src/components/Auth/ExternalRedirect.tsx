@@ -12,9 +12,12 @@ interface ExternalRedirectProps {
  */
 export const ExternalRedirect: React.FC<ExternalRedirectProps> = ({ to }) => {
     useEffect(() => {
+        // Build the target URL preserving current query params and hash
+        const targetUrl = to + window.location.search + window.location.hash;
+        
         // Use replace() instead of href to prevent back button issues
         // This replaces the current history entry instead of adding a new one
-        window.location.replace(to);
+        window.location.replace(targetUrl);
     }, [to]);
 
     // Return null for instant redirect - no visible loading state

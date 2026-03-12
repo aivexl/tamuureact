@@ -112,8 +112,8 @@ const App: React.FC = () => {
                         {/* DOMAIN-AWARE ROOT PATH */}
                         {/* ============================================ */}
                         {isAppDomain ? (
-                            // App domain: Root redirects to dashboard
-                            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                            // App domain: Root redirects to dashboard with query params preserved
+                            <Route path="/" element={<Navigate to={`/dashboard${window.location.search}`} replace />} />
                         ) : (
                             // Public domain: Show ShopPage as the new landing page
                             <Route path="/" element={<MainLayout><ShopPage /></MainLayout>} />

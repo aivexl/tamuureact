@@ -1,5 +1,14 @@
 # Tamuu Changelog
 
+## [0.6.80] - 2026-03-12
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Critical: End-to-End Search Parameter Preservation
+- **Redirection Integrity**: Patched `ExternalRedirect`, `ProtectedRoute`, and the `App.tsx` root redirect to explicitly preserve and forward all URL search parameters and hashes. This ensures that parameters like `?tab=wishlist` are never stripped during domain transitions (tamuu.id → app.tamuu.id), authentication redirects, or root-path normalization.
+- **Deterministic Routing**: Reinforced the dashboard's URL-driven architecture to eliminate momentary "flash" states or resets back to the home tab.
+- **Security & UX**: Used `encodeURIComponent` for safe redirect handling and maintained history stack integrity with `location.replace()`.
+
 ## [0.6.79] - 2026-03-12
 **Status**: 🟢 Deployed
 **Environment**: Production
