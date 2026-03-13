@@ -2551,7 +2551,7 @@ export default {
 
                     // Individual product impressions
                     const productImpressionsQuery = await env.DB.prepare(
-                        'SELECT product_id, COUNT(*) as views FROM shop_analytics WHERE merchant_id = ? AND action_type = "VIEW_PRODUCT" AND product_id IS NOT NULL GROUP BY product_id'
+                        'SELECT json_extract(metadata, \'$.product_id\') as product_id, COUNT(*) as views FROM shop_analytics WHERE merchant_id = ? AND action_type = "VIEW_PRODUCT" AND json_extract(metadata, \'$.product_id\') IS NOT NULL GROUP BY json_extract(metadata, \'$.product_id\')'
                     ).bind(merchantId).all();
                     const productImpressions = productImpressionsQuery.results;
 
