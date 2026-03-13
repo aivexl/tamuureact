@@ -28,6 +28,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { admin } from '@/lib/api';
 import { TIER_LABELS } from '../store/authSlice';
 import { toast } from 'react-hot-toast';
+import { parseUTCDate } from '@/lib/utils';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -370,7 +371,7 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
                                         {user.expires_at ? (
                                             <div className={`flex items-center gap-1.5 text-[10px] font-bold ${isExpired(user.expires_at) ? 'text-rose-400' : 'text-slate-500'}`}>
                                                 <Calendar className="w-3 h-3" />
-                                                {new Date(user.expires_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                {parseUTCDate(user.expires_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                                                 {isExpired(user.expires_at) && <span className="ml-1 uppercase font-black">[Expired]</span>}
                                             </div>
                                         ) : (
@@ -396,7 +397,7 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
                                     </div>
                                 </td>
                                 <td className="px-8 py-6">
-                                    <p className="text-xs text-white font-medium">{new Date(user.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                                    <p className="text-xs text-white font-medium">{parseUTCDate(user.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                                     <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mt-1 opacity-50">Joined</p>
                                 </td>
                                 <td className="px-8 py-6">

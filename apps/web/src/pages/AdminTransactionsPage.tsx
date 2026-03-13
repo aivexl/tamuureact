@@ -16,6 +16,7 @@ import { admin } from '@/lib/api';
 import { toast } from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 import { AnimatedCopyIcon } from '@/components/ui/AnimatedCopyIcon';
+import { parseUTCDate } from '@/lib/utils';
 
 interface Transaction {
     id: string;
@@ -42,17 +43,8 @@ export const AdminTransactionsPage: React.FC = () => {
     const [customStartDate, setCustomStartDate] = useState('');
     const [customEndDate, setCustomEndDate] = useState('');
 
-    const parseDate = (dateStr: string) => {
-        if (!dateStr) return new Date();
-        // If string doesn't have a timezone indicator, treat as UTC
-        const normalized = (dateStr.includes('Z') || dateStr.includes('+'))
-            ? dateStr
-            : dateStr.replace(' ', 'T') + 'Z';
-        return new Date(normalized);
-    };
-
     const formatDate = (dateStr: string) => {
-        return parseDate(dateStr).toLocaleString('id-ID', {
+        return parseUTCDate(dateStr).toLocaleString('id-ID', {
             day: 'numeric',
             month: 'short',
             year: 'numeric',
@@ -105,7 +97,7 @@ export const AdminTransactionsPage: React.FC = () => {
             'Currency': t.currency,
             'Status': t.status,
             // Automatic local time (Deep Fix: Force UTC parsing before local conversion)
-            'Date': parseDate(t.created_at).toLocaleString('id-ID', {
+            'Date': parseUTCDate(t.created_at).toLocaleString('id-ID', {
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric',

@@ -21,6 +21,7 @@ import { rsvp as rsvpApi } from '@/lib/api';
 import { useSEO } from '@/hooks/useSEO';
 import { useStore } from '@/store/useStore';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
+import { parseUTCDate } from '@/lib/utils';
 
 interface WishData {
     id: string;
@@ -220,7 +221,7 @@ export const GuestWishesPage: React.FC = () => {
                                             <h4 className="font-black text-slate-800 truncate leading-tight text-base">{wish.name}</h4>
                                             <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-bold uppercase tracking-wider mt-1">
                                                 <Calendar className="w-3 h-3" />
-                                                {new Date(wish.submitted_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                {parseUTCDate(wish.submitted_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                                             </div>
                                         </div>
                                     </div>

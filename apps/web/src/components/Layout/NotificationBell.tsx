@@ -7,6 +7,7 @@ import { useStore } from '../../store/useStore';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { id } from 'date-fns/locale';
+import { parseUTCDate } from '../../lib/utils';
 
 export const NotificationBell: React.FC = () => {
     const user = useStore(s => s.user);
@@ -135,7 +136,7 @@ export const NotificationBell: React.FC = () => {
                                                 <div className="flex items-center gap-2 mt-2">
                                                     <Clock className="w-3 h-3 text-slate-300" />
                                                     <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
-                                                        {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: id })}
+                                                        {formatDistanceToNow(parseUTCDate(n.created_at), { addSuffix: true, locale: id })}
                                                     </span>
                                                 </div>
                                             </div>

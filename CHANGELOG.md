@@ -1,5 +1,19 @@
 # Tamuu Changelog
 
+## [0.6.96] - 2026-03-13
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Shop & Admin: Global Timezone Synchronization
+- **Fix (Real-time Notifications)**: Resolved a critical timezone mismatch where new notifications showed as "7 hours ago" for users in WIB (UTC+7). Implemented a robust `parseUTCDate` standard that correctly handles SQLite timestamps as UTC before localizing them in the browser.
+- **Unified Date Parsing**: Applied the new UTC synchronization standard across all critical components:
+    - **Notification Bell**: Fixed relative time ("time ago") accuracy.
+    - **Admin Activity Hub**: Corrected event timestamps.
+    - **Admin Transactions**: Fixed transaction dates in UI and Excel exports.
+    - **Guest Wishes**: Standardized submission times.
+    - **User Management**: Fixed registration and subscription expiry dates.
+    - **Product Reviews**: Corrected review timestamps.
+
 ## [0.6.95] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production

@@ -34,7 +34,7 @@ import {
 } from '../../hooks/queries/useShop';
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
 import { useSEO } from '../../hooks/useSEO';
-import { formatCurrency, formatAbbreviatedNumber } from '../../lib/utils';
+import { formatCurrency, formatAbbreviatedNumber, parseUTCDate } from '../../lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { blog, shop } from '../../lib/api';
 import { Breadcrumbs } from '../../components/Shop/Breadcrumbs';
@@ -479,7 +479,7 @@ export const ShopPage: React.FC = () => {
                                     <div className="px-2">
                                         <h3 className="text-sm md:text-base font-black text-[#0A1128] line-clamp-2 leading-tight group-hover:text-[#FFBF00] transition-colors">{post.title}</h3>
                                         <p className="text-[9px] md:text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">
-                                            {new Date(post.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                            {parseUTCDate(post.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                                         </p>
                                     </div>
                                 </div>

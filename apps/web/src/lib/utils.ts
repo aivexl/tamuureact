@@ -124,17 +124,31 @@ export const patchLegacyUrl = (url: string | null | undefined): string => {
 };
 
 /**
+ * Robust UTC date parser for database timestamps.
+ * Standardizes SQLite timestamps (YYYY-MM-DD HH:MM:SS) to ISO-8601 UTC.
+ */
+export const parseUTCDate = (dateStr: string | null | undefined): Date => {
+    if (!dateStr) return new Date();
+    
+    // If string already has timezone info, parse as is
+    if (dateStr.includes('Z') || dateStr.includes('+')) {
+        return new Date(dateStr);
+    }
+    
+    // Handle SQLite format: "2026-03-13 10:00:00" -> "2026-03-13T10:00:00Z"
+    const isoStr = dateStr.replace(' ', 'T') + 'Z';
+    const date = new Date(isoStr);
+    
+    // Fallback if parsing fails
+    return isNaN(date.getTime()) ? new Date(dateStr) : date;
+};
+
+/**
  * Helper for date formatting - converts UTC to local timezone (WIB)
  */
 export const formatDateFull = (dateStr: string) => {
     try {
-        // Database stores UTC time, ensure we parse it correctly
-        let d = new Date(dateStr);
-
-        // If the date string doesn't have timezone info, treat it as UTC
-        if (!dateStr.includes('Z') && !dateStr.includes('+') && !dateStr.includes('-', 10)) {
-            d = new Date(dateStr + 'Z'); // Append Z to indicate UTC
-        }
+        const d = parseUTCDate(dateStr);
 
         return d
             .toLocaleString("id-ID", {

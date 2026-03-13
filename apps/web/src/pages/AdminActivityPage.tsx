@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { admin } from '@/lib/api';
+import { parseUTCDate } from '@/lib/utils';
 
 export const AdminActivityPage: React.FC = () => {
     const navigate = useNavigate();
@@ -57,7 +58,7 @@ export const AdminActivityPage: React.FC = () => {
     }, [fetchActivity]);
 
     const formatTime = (dateStr: string) => {
-        const date = new Date(dateStr);
+        const date = parseUTCDate(dateStr);
         return date.toLocaleString('id-ID', {
             day: 'numeric',
             month: 'short',

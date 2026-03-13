@@ -47,7 +47,7 @@ import { PremiumLoader } from '../../components/ui/PremiumLoader';
 import { Footer } from '../../components/Layout/Footer';
 import { useStore } from '../../store/useStore';
 import { useSEO } from '../../hooks/useSEO';
-import { formatCurrency, formatAbbreviatedNumber } from '../../lib/utils';
+import { formatCurrency, formatAbbreviatedNumber, parseUTCDate } from '../../lib/utils';
 import { toast } from 'react-hot-toast';
 import { ReportProductModal } from '../../components/Modals/ReportProductModal';
 import { ShareModal } from '../../components/Modals/ShareModal';
@@ -713,7 +713,7 @@ export const ProductDetailPage: React.FC = () => {
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-black text-[#0A1128] truncate">{review.user_name || 'User Tamuu'}</p>
                                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                                        {new Date(review.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                                        {parseUTCDate(review.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                                                     </p>
                                                 </div>
                                             </div>
