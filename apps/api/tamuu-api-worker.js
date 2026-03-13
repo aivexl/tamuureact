@@ -1097,13 +1097,16 @@ export default {
 
                     const merchantId = crypto.randomUUID();
 
-                    // CTO POLICY: Auto-verify if onboarding is done by admin
-                    const authHeader = request.headers.get('Authorization') || '';
-                    const isAdmin = authHeader.includes('admin@tamuu.id');
-                    const verificationStatus = isAdmin ? 1 : 0;
+                    // CTO POLICY: Auto-verify if onboarding is done by Super Administrator
+                    const authHeader = request.headers.get('Authorization');
+                    const token = authHeader ? authHeader.replace('Bearer ', '').trim() : null;
+                    const user = await verifyToken(token, env);
 
-                    // Insert Merchant Profile
-                    const insertResult = await env.DB.prepare(
+                    // Only Super Admins get instant verification bypass
+                    const isSuperAdmin = user && (user.email === 'admin@tamuu.id' || user.role === 'admin');
+                    const verificationStatus = isSuperAdmin ? 1 : 0;
+
+                    // Insert Merchant Profile                    const insertResult = await env.DB.prepare(
                         `INSERT INTO shop_merchants (id, user_id, slug, nama_toko, deskripsi, category_id, is_verified) 
                          VALUES (?, ?, ?, ?, ?, ?, ?)`
                     ).bind(merchantId, user_id, slug, nama_toko, deskripsi || null, category_id, verificationStatus).run();

@@ -1,5 +1,14 @@
 # Tamuu Changelog
 
+## [0.7.2] - 2026-03-13
+**Status**: 🔵 In Development
+**Environment**: Staging/Production
+
+### Shop: Super Admin Trust & Store Recovery
+- **Instant Merchant Verification**: Re-engineered onboarding API to automatically verify (`is_verified = 1`) new stores created by Super Administrators, ensuring immediate product visibility in discovery.
+- **Manual Store Recovery**: Performed database-level recovery for merchant `test3` (toko), correcting its verification status and ownership to the Super Admin account.
+- **Product Visibility Resolution**: Fixed the issue where product `aa31bcf0` (sewa mobil) was hidden due to its parent merchant being in an unverified state.
+
 ## [0.7.1] - 2026-03-13
 **Status**: 🔵 In Development
 **Environment**: Staging/Production
