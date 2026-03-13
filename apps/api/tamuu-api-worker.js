@@ -2441,6 +2441,9 @@ export default {
                     if (isUUID) {
                         product = await env.DB.prepare(`
                             SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url,
+                            m.whatsapp as m_whatsapp, m.phone as m_phone, m.instagram as m_instagram,
+                            m.facebook as m_facebook, m.x_url as m_x_url, m.website as m_website,
+                            m.shopee_url as m_shopee_url, m.tokopedia_url as m_tokopedia_url,
                             p.is_admin_listing, p.custom_store_name,
                             (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count,
                             (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,
@@ -2453,6 +2456,9 @@ export default {
                         // Try by slug
                         product = await env.DB.prepare(`
                             SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url,
+                            m.whatsapp as m_whatsapp, m.phone as m_phone, m.instagram as m_instagram,
+                            m.facebook as m_facebook, m.x_url as m_x_url, m.website as m_website,
+                            m.shopee_url as m_shopee_url, m.tokopedia_url as m_tokopedia_url,
                             p.is_admin_listing, p.custom_store_name,
                             (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count,
                             (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,

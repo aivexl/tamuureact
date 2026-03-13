@@ -1153,6 +1153,15 @@ export interface Product {
     website?: string;
     alamat_lengkap?: string;
     google_maps_url?: string;
+    // Merchant Join Fields
+    m_whatsapp?: string;
+    m_phone?: string;
+    m_instagram?: string;
+    m_facebook?: string;
+    m_x_url?: string;
+    m_website?: string;
+    m_shopee_url?: string;
+    m_tokopedia_url?: string;
 }
 
 export interface Merchant {
