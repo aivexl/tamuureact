@@ -110,13 +110,23 @@ export const ProductDetailPage: React.FC = () => {
         return (
             <div 
                 onClick={() => {
-                    if (isAuthenticated && !isRevealed) toggleReveal(id);
+                    if (!isRevealed) {
+                        toggleReveal(id);
+                        if (product?.id && product?.merchant_id) {
+                            track.mutate({ merchantId: product.merchant_id, actionType: 'CLICK_CONTACT', productId: product.id });
+                        }
+                    }
                     else if (isRevealed && isLink) {
-                        const url = value.startsWith('http') ? value : `https://${value}`;
+                        let url = value.startsWith('http') ? value : `https://${value}`;
+                        if (id === 'wa') {
+                            url = `https://wa.me/${value.replace(/\D/g, '')}`;
+                        } else if (id === 'ig' && !value.includes('instagram.com')) {
+                            url = `https://instagram.com/${value.replace('@', '')}`;
+                        }
                         window.open(url, '_blank');
                     }
                 }}
-                className={`p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group transition-all duration-300 ${isAuthenticated ? 'cursor-pointer hover:bg-white hover:shadow-md hover:border-[#FFBF00]/20' : ''}`}
+                className={`p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group transition-all duration-300 cursor-pointer hover:bg-white hover:shadow-md hover:border-[#FFBF00]/20`}
             >
                 <div className="flex items-center gap-4 flex-1 min-w-0">
                     <div className={`w-10 h-10 rounded-xl bg-white flex items-center justify-center ${iconColor} shadow-sm border border-slate-100 flex-shrink-0 group-hover:scale-110 transition-transform`}>
@@ -125,11 +135,15 @@ export const ProductDetailPage: React.FC = () => {
                     <div className="min-w-0 flex-1">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</p>
                         <div className="relative">
-                            {!isAuthenticated ? (
-                                <Link to="/login" className="text-[11px] font-black text-indigo-600 uppercase tracking-tighter hover:underline">Login Untuk Melihat</Link>
-                            ) : !isRevealed ? (
+                            {!isRevealed ? (
                                 <button 
-                                    onClick={(e) => { e.stopPropagation(); toggleReveal(id); }}
+                                    onClick={(e) => { 
+                                        e.stopPropagation(); 
+                                        toggleReveal(id); 
+                                        if (product?.id && product?.merchant_id) {
+                                            track.mutate({ merchantId: product.merchant_id, actionType: 'CLICK_CONTACT', productId: product.id });
+                                        }
+                                    }}
                                     className="flex items-center gap-2 text-slate-400 hover:text-[#0A1128] transition-colors group/btn"
                                 >
                                     <Eye className="w-3.5 h-3.5" />
@@ -143,7 +157,7 @@ export const ProductDetailPage: React.FC = () => {
                         </div>
                     </div>
                 </div>
-                {isAuthenticated && isRevealed && isLink && (
+                {isRevealed && isLink && (
                     <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-[#FFBF00] group-hover:translate-x-1 transition-all" />
                 )}
             </div>
@@ -461,29 +475,29 @@ export const ProductDetailPage: React.FC = () => {
 
                                 <div className="space-y-8">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <ContactItem id="wa" label="WhatsApp" value={product.m_whatsapp || merchantStats?.whatsapp} icon={MessageCircle} iconColor="text-[#25D366]" isLink />
-                                        <ContactItem id="phone" label="No Telpon" value={product.m_phone || merchantStats?.phone} icon={Phone} />
+                                        <ContactItem id="wa" label="WhatsApp" value={product.whatsapp || product.m_whatsapp || merchantStats?.whatsapp} icon={MessageCircle} iconColor="text-[#25D366]" isLink />
+                                        <ContactItem id="phone" label="No Telpon" value={product.phone || product.m_phone || merchantStats?.phone} icon={Phone} />
                                     </div>
 
                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                        <ContactItem id="ig" label="Instagram" value={product.m_instagram || merchantStats?.instagram} icon={Instagram} iconColor="text-[#E4405F]" />
-                                        <ContactItem id="fb" label="Facebook" value={product.m_facebook || merchantStats?.facebook} icon={Facebook} iconColor="text-[#1877F2]" />
-                                        <ContactItem id="x" label="X Platform" value={product.m_x_url || merchantStats?.x_url} customIcon={<XLogoIcon className="w-4 h-4" />} />
-                                        <ContactItem id="web" label="Website" value={product.m_website || merchantStats?.website} icon={Globe} iconColor="text-indigo-600" isLink />
+                                        <ContactItem id="ig" label="Instagram" value={product.instagram || product.m_instagram || merchantStats?.instagram} icon={Instagram} iconColor="text-[#E4405F]" />
+                                        <ContactItem id="fb" label="Facebook" value={product.facebook || product.m_facebook || merchantStats?.facebook} icon={Facebook} iconColor="text-[#1877F2]" />
+                                        <ContactItem id="x" label="X Platform" value={product.x_url || product.m_x_url || merchantStats?.x_url} customIcon={<XLogoIcon className="w-4 h-4" />} />
+                                        <ContactItem id="web" label="Website" value={product.website_url || product.m_website || merchantStats?.website} icon={Globe} iconColor="text-indigo-600" isLink />
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 border-t border-slate-50">
                                         <ContactItem 
                                             id="tokopedia" 
                                             label="Tokopedia" 
-                                            value={product.m_tokopedia_url || merchantStats?.tokopedia_url} 
+                                            value={product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url} 
                                             customIcon={<img src="/images/logos/marketplace/logo_tokopedia.png" className="w-6 h-6 object-contain" alt="TK" />} 
                                             isLink
                                         />
                                         <ContactItem 
                                             id="shopee" 
                                             label="Shopee" 
-                                            value={product.m_shopee_url || merchantStats?.shopee_url} 
+                                            value={product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url} 
                                             customIcon={<img src="/images/logos/marketplace/logo_shopee.png" className="w-6 h-6 object-contain" alt="SP" />} 
                                             isLink
                                         />
