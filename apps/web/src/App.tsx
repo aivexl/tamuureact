@@ -78,13 +78,25 @@ const ProductDetailPage = lazy(() => import('./pages/Shop/ProductDetailPage'));
 
 
 
+import { usePushNotifications } from './hooks/usePushNotifications';
+
 const App: React.FC = () => {
     // Memoize domain check to avoid recalculation
     const isAppDomain = useMemo(() => getIsAppDomain(), []);
+    const { subscribe, permission } = usePushNotifications();
 
     useEffect(() => {
         console.log("Tamuu v2.0.4");
-    }, []);
+        
+        // Automatically request push notification permission on load
+        if (permission === 'default') {
+            // Small delay to ensure browser is ready and doesn't block UI
+            const timer = setTimeout(() => {
+                subscribe();
+            }, 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [permission, subscribe]);
 
     // Optimization: Fonts are now handled via index.html with display=swap for best performance (PSI 100).
     // The previous dynamic injection logic was redundant as index.html already includes CORE_FONTS.

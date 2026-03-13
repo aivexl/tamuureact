@@ -14,18 +14,6 @@ export const usePushNotifications = () => {
     const [isSubscribing, setIsSubscribing] = useState(false);
     const { user } = useStore();
 
-    // Check existing subscription on mount
-    useEffect(() => {
-        const checkSubscription = async () => {
-            if ('serviceWorker' in navigator && user) {
-                const registration = await navigator.serviceWorker.ready;
-                const subscription = await registration.pushManager.getSubscription();
-                setIsSubscribed(!!subscription);
-            }
-        };
-        checkSubscription();
-    }, [user]);
-
     const urlBase64ToUint8Array = (base64String: string) => {
         const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
         const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -37,10 +25,16 @@ export const usePushNotifications = () => {
         return outputArray;
     };
 
-    const subscribe = useCallback(async () => {
-        if (!user) return;
+    const requestPermission = useCallback(async () => {
+        if (!('Notification' in window)) return 'default' as NotificationPermission;
+        const perm = await Notification.requestPermission();
+        setPermission(perm);
+        return perm;
+    }, []);
+
+    const subscribe = useCallback(async (silent = false) => {
         if (!('serviceWorker' in navigator)) {
-            toast.error('Browser does not support push notifications');
+            if (!silent) toast.error('Browser does not support push notifications');
             return;
         }
 
@@ -48,22 +42,29 @@ export const usePushNotifications = () => {
         try {
             const registration = await navigator.serviceWorker.ready;
             
-            // 1. Request Permission
-            const perm = await Notification.requestPermission();
-            setPermission(perm);
+            // 1. Request/Check Permission
+            const perm = await requestPermission();
             
             if (perm !== 'granted') {
-                toast.error('Permission for notifications was denied');
+                if (perm === 'denied' && !silent) {
+                    toast.error('Permission for notifications was denied');
+                }
                 return;
             }
 
-            // 2. Subscribe to Push Manager
+            // 2. Check for user before sending to backend
+            if (!user) {
+                console.log('[Push] Permission granted, but waiting for user to subscribe to backend');
+                return;
+            }
+
+            // 3. Subscribe to Push Manager
             const subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
             });
 
-            // 3. Send to Backend
+            // 4. Send to Backend
             const keys = subscription.toJSON().keys;
             if (keys?.p256dh && keys?.auth) {
                 await subscribePush({
@@ -80,15 +81,34 @@ export const usePushNotifications = () => {
                 });
                 
                 setIsSubscribed(true);
-                toast.success('You are now subscribed to push notifications!');
+                if (!silent) toast.success('You are now subscribed to push notifications!');
             }
         } catch (error) {
             console.error('Push Subscription Error:', error);
-            toast.error('Failed to subscribe to push notifications');
+            if (!silent) toast.error('Failed to subscribe to push notifications');
         } finally {
             setIsSubscribing(false);
         }
-    }, [user]);
+    }, [user, requestPermission]);
+
+    // Check existing subscription on mount or when user changes
+    useEffect(() => {
+        const checkAndAutoSubscribe = async () => {
+            if ('serviceWorker' in navigator && user) {
+                const registration = await navigator.serviceWorker.ready;
+                const subscription = await registration.pushManager.getSubscription();
+                
+                if (subscription) {
+                    setIsSubscribed(true);
+                } else if (Notification.permission === 'granted') {
+                    // If permission is already granted but no subscription found, auto-subscribe silently
+                    console.log('[Push] Permission granted but no subscription, auto-subscribing...');
+                    subscribe(true);
+                }
+            }
+        };
+        checkAndAutoSubscribe();
+    }, [user, subscribe]);
 
     const unsubscribe = useCallback(async () => {
         try {
@@ -112,6 +132,7 @@ export const usePushNotifications = () => {
         isSubscribed,
         isSubscribing,
         subscribe,
-        unsubscribe
+        unsubscribe,
+        requestPermission
     };
 };

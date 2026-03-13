@@ -79,7 +79,7 @@ export const NotificationBell: React.FC = () => {
                             {/* Push Notification Toggle */}
                             <div className="p-4 bg-indigo-50/30 border-b border-slate-50">
                                 <button
-                                    onClick={isSubscribed ? unsubscribe : subscribe}
+                                    onClick={() => isSubscribed ? unsubscribe() : subscribe()}
                                     disabled={isSubscribing}
                                     className={`w-full flex items-center justify-between p-3 rounded-2xl border transition-all duration-300 ${isSubscribed 
                                         ? 'bg-white border-indigo-100 text-indigo-600 shadow-sm' 

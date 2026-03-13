@@ -1,5 +1,15 @@
 # Tamuu Changelog
 
+## [0.6.81] - 2026-03-13
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Push Notifications: Automatic Permission & Auto-Subscription
+- **Proactive Engagement**: Implemented automatic push notification permission requests on application load. A strategic 2-second delay was added to ensure a smooth initial UI experience before triggering the browser prompt.
+- **Hook Architecture Evolution**: Refactored `usePushNotifications` to decouple permission requests from the full subscription flow. This allows the app to prompt for permissions even for unauthenticated visitors.
+- **Silent Auto-Subscription**: Enhanced the hook to automatically and silently synchronize push subscriptions with the backend as soon as a user logs in, provided they have already granted browser permissions.
+- **TypeScript Integrity**: Patched a type mismatch in `NotificationBell.tsx` to accommodate the updated `subscribe` function signature, ensuring 100% build success.
+
 ## [0.6.80] - 2026-03-12
 **Status**: 🟢 Deployed
 **Environment**: Production
