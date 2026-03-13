@@ -1,5 +1,12 @@
 # Tamuu Changelog
 
+## [0.6.99] - 2026-03-13
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Shop: Strict Approval Enforcement
+- **Approval Logic Hardening**: Enforced a strict `is_approved = 0` default for all products created via the merchant interface (`/store/*/products`), including those in `DRAFT` status. This ensures that no administrative bypasses are possible and every product, regardless of the uploader's role, must be manually vetted and approved through the Admin Product Registry before it can satisfy discovery criteria.
+
 ## [0.6.98] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production

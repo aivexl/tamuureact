@@ -1335,7 +1335,7 @@ export default {
                                 harga_estimasi || null, finalStatus, kategori_produk || null, 
                                 kota || null, tiktok_url || null, youtube_url || null, 
                                 x_url || null, website_url || null, tokopedia_url || null, shopee_url || null,
-                                finalStatus === 'PUBLISHED' ? 0 : 1,
+                                0,
                                 productSlug,
                                 alamat_lengkap || null,
                                 google_maps_url || null,
