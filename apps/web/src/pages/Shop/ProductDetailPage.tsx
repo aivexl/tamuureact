@@ -29,6 +29,7 @@ import {
     Globe, 
     Instagram, 
     Facebook, 
+    Youtube,
     Eye, 
     EyeOff
 } from 'lucide-react';
@@ -466,6 +467,8 @@ export const ProductDetailPage: React.FC = () => {
                                         <div><SecureContactItem id="web" label="" value={product.website_url || product.m_website || merchantStats?.website} icon={Globe} iconColor="text-indigo-600" isLink /></div>
                                         <div><SecureContactItem id="tiktok" label="" value={product.tiktok_url || product.m_tiktok_url || merchantStats?.tiktok} customIcon={<TikTokIcon className="w-3.5 h-3.5" />} iconColor="text-black" isLink /></div>
                                         <div><SecureContactItem id="fb" label="" value={product.facebook || product.m_facebook || merchantStats?.facebook} icon={Facebook} iconColor="text-[#1877F2]" isLink /></div>
+                                        <div><SecureContactItem id="x" label="" value={product.x_url || product.m_x_url} customIcon={<XLogoIcon className="w-3.5 h-3.5" />} iconColor="text-black" isLink /></div>
+                                        <div><SecureContactItem id="yt" label="" value={product.youtube_url || product.m_youtube} icon={Youtube} iconColor="text-[#FF0000]" isLink /></div>
                                     </div>
 
                                     {/* Baris 3: Marketplace (Icons Only) */}

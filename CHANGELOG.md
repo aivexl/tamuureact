@@ -1,5 +1,14 @@
 # Tamuu Changelog
 
+## [0.6.91] - 2026-03-13
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Shop: Social Media Contact Expansion
+- **X (Twitter) Support**: Fixed missing X social media link in the vendor contact section of the Product Detail Page.
+- **YouTube Support**: Added YouTube channel link support to the vendor contact grid.
+- **Backend Single Product API**: Updated the `/api/shop/product` endpoint to include `youtube` and `x_url` fields from both product and merchant contact sources.
+
 ## [0.6.90] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production
