@@ -1,16 +1,16 @@
 # Tamuu Changelog
 
-## [0.6.83] - 2026-03-13
+## [0.6.84] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production
 
-### Shop: Share Modal Content Refinement
-- **Minimalist Content Strategy**: Refined the share text to exclude descriptions and addresses, focusing strictly on the **Title** and **Call to Action** (CTA) for maximum clarity and engagement.
-- **Enhanced Copy Logic**: Upgraded the "Salin" button to copy the complete formatted message (Title + CTA + URL) instead of just the URL.
-- **UI Simplification**: Streamlined the copy button label to "Salin" and maintained the integrated copy icon for a cleaner, more intuitive interface.
-- **Platform Parity**: Synchronized sharing logic across all social platforms (WhatsApp, X, Facebook, and Instagram) to ensure a consistent message format.
+### Shop: Privacy-First Contact Card
+- **Secure Interaction**: Implemented a new "Kontak Vendor" card in the Product Detail Page. To protect vendor privacy, all contact details (WhatsApp, Phone, Social Media, Website) are obfuscated by default.
+- **Access Control Protocol**: Integrated a mandatory login requirement to view contact information. Authenticated users must further perform a manual "Tampilkan" (Show) interaction to reveal specific data points, preventing automated scraping and ensuring intentional engagement.
+- **Enhanced Merchant Profiles**: Added a dedicated "No Telpon" field in the Store Settings, allowing vendors to distinguish between their official WhatsApp line and a direct voice call number.
+- **UI Architecture**: Standardized the contact display with high-fidelity icons and glassmorphism-inspired "eye" toggles for reveal/hide functionality.
 
-## [0.6.82] - 2026-03-13
+## [0.6.83] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production
 ...

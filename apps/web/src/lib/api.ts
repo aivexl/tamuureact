@@ -1145,6 +1145,14 @@ export interface Product {
     is_landing_featured?: number;
     is_admin_listing?: number;
     custom_store_name?: string;
+    whatsapp?: string;
+    phone?: string;
+    instagram?: string;
+    facebook?: string;
+    x_url?: string;
+    website?: string;
+    alamat_lengkap?: string;
+    google_maps_url?: string;
 }
 
 export interface Merchant {

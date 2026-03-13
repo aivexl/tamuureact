@@ -36,6 +36,7 @@ export const MerchantSettings: React.FC = () => {
     const [logoUrl, setLogoUrl] = useState('');
     const [bannerUrl, setBannerUrl] = useState('');
     const [whatsapp, setWhatsapp] = useState('');
+    const [phone, setPhone] = useState('');
     const [instagram, setInstagram] = useState('');
     const [facebook, setFacebook] = useState('');
     const [tiktok, setTiktok] = useState('');
@@ -65,6 +66,7 @@ export const MerchantSettings: React.FC = () => {
             setLogoUrl(m.logo_url || '');
             setBannerUrl(m.banner_url || '');
             setWhatsapp(c.whatsapp || '');
+            setPhone(c.phone || '');
             setInstagram(c.instagram || '');
             setFacebook(c.facebook || '');
             setTiktok(c.tiktok || '');
@@ -124,6 +126,7 @@ export const MerchantSettings: React.FC = () => {
                     logo_url: logoUrl,
                     banner_url: bannerUrl,
                     whatsapp: whatsapp,
+                    phone: phone,
                     instagram: instagram,
                     facebook: facebook,
                     tiktok: tiktok,
@@ -247,6 +250,10 @@ export const MerchantSettings: React.FC = () => {
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">WhatsApp</label>
                                 <div className="relative"><Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" /><input value={whatsapp} onChange={e => { setWhatsapp(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128]" placeholder="08xxxxxxxx" /></div>
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">No Telpon</label>
+                                <div className="relative"><Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" /><input value={phone} onChange={e => { setPhone(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128]" placeholder="08xxxxxxxx" /></div>
                             </div>
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Instagram</label>

@@ -22,7 +22,13 @@ import {
     LogOut,
     Map,
     Megaphone,
-    Send
+    Send,
+    Phone, 
+    Globe, 
+    Instagram, 
+    Facebook, 
+    Eye, 
+    EyeOff
 } from 'lucide-react';
 import {
     useProductDetails,
@@ -47,12 +53,23 @@ import { AnimatedCopyIcon } from '../../components/ui/AnimatedCopyIcon';
 import { StarRating } from '../../components/Shop/StarRating';
 import { Navbar } from '../../components/Layout/Navbar';
 
+const XLogoIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 22.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+    </svg>
+);
+
 export const ProductDetailPage: React.FC = () => {
     const { slug, productId } = useParams<{ slug: string, productId: string }>();
     const navigate = useNavigate();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [revealedContacts, setRevealedContacts] = useState<Record<string, boolean>>({});
+
+    const toggleReveal = (key: string) => {
+        setRevealedContacts(prev => ({ ...prev, [key]: !prev[key] }));
+    };
     const { user, isAuthenticated, logout, token } = useStore();
 
     // Reviews State
@@ -151,7 +168,8 @@ export const ProductDetailPage: React.FC = () => {
 
     const handleWhatsApp = () => {
         const text = `Halo, saya tertarik dengan produk ${product?.nama_produk} di Tamuu Shop. Apakah masih tersedia?`;
-        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        const waNumber = product?.whatsapp || '';
+        window.open(`https://wa.me/${waNumber.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`, '_blank');
     };
 
     const toggleWishlist = () => {
@@ -364,40 +382,175 @@ export const ProductDetailPage: React.FC = () => {
                 {/* BOTTOM CONTENT SECTION */}
                 <div className="max-w-7xl mx-auto px-6 mt-20">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-                        {/* Deskripsi Card (Left Column - Spans 7/12) */}
-                        <m.div 
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="lg:col-span-7 p-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm space-y-8 flex flex-col h-full"
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
-                                <h2 className="text-xl font-black uppercase tracking-tighter italic">Deskripsi Produk</h2>
-                            </div>
-                            <div className="text-slate-600 text-lg leading-relaxed font-medium whitespace-pre-wrap flex-1">
-                                {product.deskripsi || "Vendor belum memberikan deskripsi lengkap untuk produk ini."}
-                            </div>
-                            
-                            <div className="pt-8 border-t border-slate-50 flex flex-col sm:flex-row items-center justify-between mt-auto gap-4">
-                                <div 
-                                    className="group flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 transition-all w-full sm:w-auto justify-center"
-                                >
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                        No. Produk: <span className="text-slate-600 font-black">tamuu-shop-{product.id.substring(0, 8).toUpperCase()}</span>
-                                    </span>
-                                    <div className="w-10 h-10 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-[#FFBF00] transition-all">
-                                        <AnimatedCopyIcon text={`tamuu-shop-${product.id.substring(0, 8).toUpperCase()}`} size={16} successMessage="ID Produk disalin!" />
+                        <div className="lg:col-span-7 flex flex-col gap-8">
+                            {/* Kontak Vendor Card (NEW) */}
+                            <m.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="p-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm space-y-8"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
+                                    <h2 className="text-xl font-black uppercase tracking-tighter italic">Kontak Vendor</h2>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {/* WhatsApp */}
+                                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#25D366] shadow-sm">
+                                                <MessageCircle className="w-5 h-5 fill-current" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">WhatsApp</p>
+                                                <p className="text-xs font-bold text-[#0A1128] truncate">
+                                                    {!isAuthenticated ? '••••••••' : (revealedContacts['wa'] ? product.whatsapp : '••••••••')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {isAuthenticated && product.whatsapp && (
+                                            <button onClick={() => toggleReveal('wa')} className="p-2 text-slate-400 hover:text-indigo-600 transition-colors flex items-center gap-1">
+                                                {revealedContacts['wa'] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                <span className="text-[9px] font-black uppercase tracking-tighter">{revealedContacts['wa'] ? 'Sembunyikan' : 'Tampilkan'}</span>
+                                            </button>
+                                        )}
+                                        {!isAuthenticated && (
+                                            <Link to="/login" className="text-[9px] font-black text-indigo-600 uppercase tracking-tighter hover:underline">Login</Link>
+                                        )}
+                                    </div>
+
+                                    {/* Phone */}
+                                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#0A1128] shadow-sm">
+                                                <Phone className="w-5 h-5 fill-current" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No Telpon</p>
+                                                <p className="text-xs font-bold text-[#0A1128] truncate">
+                                                    {!isAuthenticated ? '••••••••' : (revealedContacts['phone'] ? product.phone : '••••••••')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {isAuthenticated && product.phone && (
+                                            <button onClick={() => toggleReveal('phone')} className="p-2 text-slate-400 hover:text-indigo-600 transition-colors flex items-center gap-1">
+                                                {revealedContacts['phone'] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                <span className="text-[9px] font-black uppercase tracking-tighter">{revealedContacts['phone'] ? 'Sembunyikan' : 'Tampilkan'}</span>
+                                            </button>
+                                        )}
+                                        {!isAuthenticated && (
+                                            <Link to="/login" className="text-[9px] font-black text-indigo-600 uppercase tracking-tighter hover:underline">Login</Link>
+                                        )}
+                                    </div>
+
+                                    {/* Social Media & Website (Icon Only Row) */}
+                                    <div className="sm:col-span-2 flex flex-wrap items-center gap-4 pt-4 border-t border-slate-100">
+                                        {/* Instagram */}
+                                        <div className="flex items-center gap-3 bg-slate-50 p-2 pr-4 rounded-xl border border-slate-100">
+                                            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#E4405F] shadow-sm">
+                                                <Instagram className="w-5 h-5" />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <p className="text-xs font-bold text-[#0A1128]">
+                                                    {!isAuthenticated ? '••••••••' : (revealedContacts['ig'] ? product.instagram : '••••••••')}
+                                                </p>
+                                                {isAuthenticated && product.instagram && (
+                                                    <button onClick={() => toggleReveal('ig')} className="text-[9px] font-black text-slate-400 uppercase tracking-tighter flex items-center gap-1">
+                                                        {revealedContacts['ig'] ? 'Hide' : 'Show'}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Facebook */}
+                                        <div className="flex items-center gap-3 bg-slate-50 p-2 pr-4 rounded-xl border border-slate-100">
+                                            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1877F2] shadow-sm">
+                                                <Facebook className="w-5 h-5 fill-current" />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <p className="text-xs font-bold text-[#0A1128]">
+                                                    {!isAuthenticated ? '••••••••' : (revealedContacts['fb'] ? product.facebook : '••••••••')}
+                                                </p>
+                                                {isAuthenticated && product.facebook && (
+                                                    <button onClick={() => toggleReveal('fb')} className="text-[9px] font-black text-slate-400 uppercase tracking-tighter flex items-center gap-1">
+                                                        {revealedContacts['fb'] ? 'Hide' : 'Show'}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* X (Twitter) */}
+                                        <div className="flex items-center gap-3 bg-slate-50 p-2 pr-4 rounded-xl border border-slate-100">
+                                            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-black shadow-sm">
+                                                <XLogoIcon className="w-4 h-4" />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <p className="text-xs font-bold text-[#0A1128]">
+                                                    {!isAuthenticated ? '••••••••' : (revealedContacts['x'] ? product.x_url : '••••••••')}
+                                                </p>
+                                                {isAuthenticated && product.x_url && (
+                                                    <button onClick={() => toggleReveal('x')} className="text-[9px] font-black text-slate-400 uppercase tracking-tighter flex items-center gap-1">
+                                                        {revealedContacts['x'] ? 'Hide' : 'Show'}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Website */}
+                                        <div className="flex items-center gap-3 bg-slate-50 p-2 pr-4 rounded-xl border border-slate-100">
+                                            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-600 shadow-sm">
+                                                <Globe className="w-5 h-5" />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <p className="text-xs font-bold text-[#0A1128]">
+                                                    {!isAuthenticated ? '••••••••' : (revealedContacts['web'] ? product.website : '••••••••')}
+                                                </p>
+                                                {isAuthenticated && product.website && (
+                                                    <button onClick={() => toggleReveal('web')} className="text-[9px] font-black text-slate-400 uppercase tracking-tighter flex items-center gap-1">
+                                                        {revealedContacts['web'] ? 'Hide' : 'Show'}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <button 
-                                    onClick={() => setIsReportModalOpen(true)}
-                                    className="flex items-center justify-center gap-2 px-6 py-2 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-100 text-rose-500 transition-all w-full sm:w-auto"
-                                >
-                                    <ShieldAlert className="w-4 h-4" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Lapor</span>
-                                </button>
-                            </div>
-                        </m.div>
+                            </m.div>
+
+                            {/* Deskripsi Card */}
+                            <m.div 
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="p-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm space-y-8 flex flex-col h-full"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
+                                    <h2 className="text-xl font-black uppercase tracking-tighter italic">Deskripsi Produk</h2>
+                                </div>
+                                <div className="text-slate-600 text-lg leading-relaxed font-medium whitespace-pre-wrap flex-1">
+                                    {product.deskripsi || "Vendor belum memberikan deskripsi lengkap untuk produk ini."}
+                                </div>
+                                
+                                <div className="pt-8 border-t border-slate-50 flex flex-col sm:flex-row items-center justify-between mt-auto gap-4">
+                                    <div 
+                                        className="group flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 transition-all w-full sm:w-auto justify-center"
+                                    >
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                            No. Produk: <span className="text-slate-600 font-black">tamuu-shop-{product.id.substring(0, 8).toUpperCase()}</span>
+                                        </span>
+                                        <div className="w-10 h-10 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-[#FFBF00] transition-all">
+                                            <AnimatedCopyIcon text={`tamuu-shop-${product.id.substring(0, 8).toUpperCase()}`} size={16} successMessage="ID Produk disalin!" />
+                                        </div>
+                                    </div>
+                                    <button 
+                                        onClick={() => setIsReportModalOpen(true)}
+                                        className="flex items-center justify-center gap-2 px-6 py-2 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-100 text-rose-500 transition-all w-full sm:w-auto"
+                                    >
+                                        <ShieldAlert className="w-4 h-4" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest">Lapor</span>
+                                    </button>
+                                </div>
+                            </m.div>
+                        </div>
 
                         {/* Right Column (Spans 5/12) - Alamat + Maps Stacked */}
                         <div className="lg:col-span-5 flex flex-col gap-8 h-full">
@@ -473,7 +626,6 @@ export const ProductDetailPage: React.FC = () => {
                                             alt="Sponsor" 
                                             className="w-full h-full object-cover" 
                                         />
-                                        {/* Minimal Ads Tag */}
                                         <div className="absolute top-6 right-6 px-2.5 py-1 bg-black/20 backdrop-blur-md rounded-lg border border-white/20">
                                             <p className="text-white text-[7px] font-black uppercase tracking-widest opacity-80">Ads</p>
                                         </div>
@@ -500,7 +652,6 @@ export const ProductDetailPage: React.FC = () => {
                 {/* REVIEWS SECTION */}
                 <section className="max-w-7xl mx-auto px-6 mt-32">
                     <div className="bg-white rounded-[3rem] border border-slate-100/80 shadow-2xl shadow-slate-200/50 p-8 md:p-12 overflow-hidden relative">
-                        {/* Decorative background element */}
                         <div className="absolute top-0 right-0 w-64 h-64 bg-amber-50/50 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
                         
                         <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
@@ -525,7 +676,6 @@ export const ProductDetailPage: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Review Form (Seamless & Integrated) */}
                         {isAuthenticated && !hasUserReviewed && (
                             <m.div 
                                 initial={{ opacity: 0 }}
@@ -577,7 +727,6 @@ export const ProductDetailPage: React.FC = () => {
                             </m.div>
                         )}
 
-                        {/* Reviews List */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {isLoadingReviews ? (
                                 <div className="col-span-full py-20 flex justify-center">
@@ -637,8 +786,6 @@ export const ProductDetailPage: React.FC = () => {
                 </section>
 
                 <div className="max-w-7xl mx-auto px-6 mt-24 space-y-24">
-
-                    {/* SMART RECOMMENDATIONS SECTION */}
                     <div className="space-y-10">
                         <div className="flex items-center gap-3">
                             <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
@@ -703,7 +850,6 @@ export const ProductDetailPage: React.FC = () => {
 
             <Footer />
 
-            {/* Bottom Sticky Action Bar */}
             <div className="fixed bottom-0 left-0 right-0 z-50 px-6 pb-10 pt-8 pointer-events-none">
                 <div className="max-w-3xl mx-auto flex gap-4 pointer-events-auto">
                     <button
