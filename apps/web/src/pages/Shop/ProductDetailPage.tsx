@@ -153,7 +153,6 @@ export const ProductDetailPage: React.FC = () => {
                     {customIcon || (Icon && <Icon size={14} />)}
                 </div>
                 <div className="flex-1 min-w-0">
-                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</p>
                     <div className="relative">
                         {!isRevealed ? (
                             <div className="flex items-center gap-1 text-indigo-600 font-black uppercase tracking-tighter italic text-[9px]">
@@ -381,12 +380,19 @@ export const ProductDetailPage: React.FC = () => {
 
                             <div className="space-y-2">
                                 <h1 className="text-4xl font-black text-[#0A1128] uppercase tracking-tight italic leading-none">{product.nama_produk}</h1>
-                                <StarRating 
-                                    rating={product.avg_rating || 0} 
-                                    count={product.review_count || 0} 
-                                    size={18} 
-                                    className="pt-1"
-                                />
+                                <div className="flex flex-col gap-3 pt-1">
+                                    <StarRating 
+                                        rating={product.avg_rating || 0} 
+                                        count={product.review_count || 0} 
+                                        size={18} 
+                                    />
+                                    {(product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url || product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url) && (
+                                        <div className="flex items-center gap-4">
+                                            <MarketplaceIcon url={product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url} src="/images/logos/marketplace/logo_shopee.png" alt="Shopee" />
+                                            <MarketplaceIcon url={product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url} src="/images/logos/marketplace/logo_tokopedia.png" alt="Tokopedia" />
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                             
                             <div className="py-6 border-y border-slate-50">
@@ -448,19 +454,29 @@ export const ProductDetailPage: React.FC = () => {
 
                                 {/* Compact Contact Grid (Seamless) */}
                                 <div className="space-y-4">
+                                    {/* Baris 1: WhatsApp & No Telepon */}
                                     <div className="grid grid-cols-2 gap-3">
-                                        <SecureContactItem id="wa" label="WhatsApp" value={product.whatsapp || product.m_whatsapp || merchantStats?.whatsapp} icon={MessageCircle} iconColor="text-[#25D366]" isLink />
-                                        <SecureContactItem id="phone" label="No Telepon" value={product.phone || product.m_phone || merchantStats?.phone} icon={Phone} iconColor="text-slate-600" isLink />
-                                        <SecureContactItem id="ig" label="Instagram" value={product.instagram || product.m_instagram || merchantStats?.instagram} icon={Instagram} iconColor="text-[#E4405F]" isLink />
-                                        <SecureContactItem id="tiktok" label="TikTok" value={product.tiktok_url || product.m_tiktok_url || merchantStats?.tiktok} customIcon={<TikTokIcon className="w-3.5 h-3.5" />} iconColor="text-black" isLink />
-                                        <SecureContactItem id="fb" label="Facebook" value={product.facebook || product.m_facebook || merchantStats?.facebook} icon={Facebook} iconColor="text-[#1877F2]" isLink />
-                                        <SecureContactItem id="web" label="Website" value={product.website_url || product.m_website || merchantStats?.website} icon={Globe} iconColor="text-indigo-600" isLink />
+                                        <div><SecureContactItem id="wa" label="" value={product.whatsapp || product.m_whatsapp || merchantStats?.whatsapp} icon={MessageCircle} iconColor="text-[#25D366]" isLink /></div>
+                                        <div><SecureContactItem id="phone" label="" value={product.phone || product.m_phone || merchantStats?.phone} icon={Phone} iconColor="text-slate-600" isLink /></div>
                                     </div>
 
+                                    {/* Baris 2: Sosial Media & Website */}
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div><SecureContactItem id="ig" label="" value={product.instagram || product.m_instagram || merchantStats?.instagram} icon={Instagram} iconColor="text-[#E4405F]" isLink /></div>
+                                        <div><SecureContactItem id="web" label="" value={product.website_url || product.m_website || merchantStats?.website} icon={Globe} iconColor="text-indigo-600" isLink /></div>
+                                        <div><SecureContactItem id="tiktok" label="" value={product.tiktok_url || product.m_tiktok_url || merchantStats?.tiktok} customIcon={<TikTokIcon className="w-3.5 h-3.5" />} iconColor="text-black" isLink /></div>
+                                        <div><SecureContactItem id="fb" label="" value={product.facebook || product.m_facebook || merchantStats?.facebook} icon={Facebook} iconColor="text-[#1877F2]" isLink /></div>
+                                    </div>
+
+                                    {/* Baris 3: Marketplace (Icons Only) */}
                                     {(product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url || product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url) && (
                                         <div className="flex items-center gap-6 px-3 pt-2">
-                                            <MarketplaceIcon url={product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url} src="/images/logos/marketplace/logo_shopee.png" alt="Shopee" />
-                                            <MarketplaceIcon url={product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url} src="/images/logos/marketplace/logo_tokopedia.png" alt="Tokopedia" />
+                                            <div className="w-10 h-10 flex items-center justify-center">
+                                                <MarketplaceIcon url={product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url} src="/images/logos/marketplace/logo_shopee.png" alt="Shopee" />
+                                            </div>
+                                            <div className="w-10 h-10 flex items-center justify-center">
+                                                <MarketplaceIcon url={product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url} src="/images/logos/marketplace/logo_tokopedia.png" alt="Tokopedia" />
+                                            </div>
                                         </div>
                                     )}
                                 </div>

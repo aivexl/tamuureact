@@ -1,5 +1,19 @@
 # Tamuu Changelog
 
+## [0.6.88] - 2026-03-13
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Shop: Vendor Contact & Marketplace UI Refinement
+- **Fixed 3-Row Contact Layout**: Reorganized vendor contact information into a strictly maintained 3-row structure:
+  1. **Row 1**: WhatsApp and Phone number.
+  2. **Row 2**: Social Media (Instagram, TikTok, Facebook) and Website.
+  3. **Row 3**: Dedicated section for Marketplace icons.
+- **Top-Tier Marketplace Integration**: Moved Shopee and Tokopedia icons to a prominent position right below the product star rating for immediate accessibility.
+- **Fixed Slot Architecture**: Implemented a "Fixed Slot" system for contact items, ensuring each icon maintains its specific horizontal position even if other data points in the same row are missing.
+- **Minimalist UI**: Removed all text labels (e.g., "WhatsApp", "Instagram") from the contact section to achieve a clean, icon-first aesthetic.
+- **Admin & User Consistency**: Applied these layout refinements across all product views, ensuring a unified experience for both admin-listed and user-posted products.
+
 ## [0.6.87] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production
