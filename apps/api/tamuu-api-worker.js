@@ -1097,11 +1097,16 @@ export default {
 
                     const merchantId = crypto.randomUUID();
 
+                    // CTO POLICY: Auto-verify if onboarding is done by admin
+                    const authHeader = request.headers.get('Authorization') || '';
+                    const isAdmin = authHeader.includes('admin@tamuu.id');
+                    const verificationStatus = isAdmin ? 1 : 0;
+
                     // Insert Merchant Profile
                     const insertResult = await env.DB.prepare(
                         `INSERT INTO shop_merchants (id, user_id, slug, nama_toko, deskripsi, category_id, is_verified) 
-                         VALUES (?, ?, ?, ?, ?, ?, 0)`
-                    ).bind(merchantId, user_id, slug, nama_toko, deskripsi || null, category_id).run();
+                         VALUES (?, ?, ?, ?, ?, ?, ?)`
+                    ).bind(merchantId, user_id, slug, nama_toko, deskripsi || null, category_id, verificationStatus).run();
 
                     // CRITICAL: D1 silent failure prevention
                     // If foreign constraints fail, insertResult.changes will be 0 but won't throw exception

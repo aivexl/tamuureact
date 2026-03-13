@@ -249,7 +249,13 @@ export const ProductDetailPage: React.FC = () => {
     };
 
     const otherProducts = useMemo(() => 
-        (merchantProducts || []).filter((p: any) => p.id !== productId).slice(0, 10),
+        (merchantProducts || [])
+            .filter((p: any) => 
+                p.id !== productId && 
+                p.status === 'PUBLISHED' && 
+                p.is_approved === 1
+            )
+            .slice(0, 10),
     [merchantProducts, productId]);
 
     useSEO({

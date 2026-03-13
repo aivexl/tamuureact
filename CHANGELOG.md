@@ -1,5 +1,18 @@
 # Tamuu Changelog
 
+## [0.7.0] - 2026-03-13
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Shop: Milestone - Unified Discovery & Privacy Standards
+- **Draft Privacy Hardening**: Fixed a bug where `DRAFT` products were appearing in the "Other Products from Store" section on the Product Detail Page. Added strict frontend filtering for `status === 'PUBLISHED'` and `is_approved === 1`.
+- **Admin Store Simulation**: Implemented auto-verification for administrators during merchant onboarding. This ensures that stores created by admins are immediately eligible for home page discovery (`is_verified = 1`) while still following the standard merchant workflow.
+- **Product Card UI Refactor**: Redesigned the product list in the merchant dashboard for better accessibility:
+    - Moved all action buttons (Edit, View, Delete) to a dedicated row below the title.
+    - Removed hover-dependency; controls are now persistently visible.
+    - Added a "View" button with an `ArrowUpRight` icon for seamless live previews.
+- **Backend Optimization**: Refined SQL queries across discovery, recommendations, and special products to ensure consistent enforcement of status and approval gates.
+
 ## [0.6.99] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production
