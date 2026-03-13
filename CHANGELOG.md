@@ -1,16 +1,16 @@
 # Tamuu Changelog
 
-## [0.6.84] - 2026-03-13
+## [0.6.85] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production
 
-### Shop: Privacy-First Contact Card
-- **Secure Interaction**: Implemented a new "Kontak Vendor" card in the Product Detail Page. To protect vendor privacy, all contact details (WhatsApp, Phone, Social Media, Website) are obfuscated by default.
-- **Access Control Protocol**: Integrated a mandatory login requirement to view contact information. Authenticated users must further perform a manual "Tampilkan" (Show) interaction to reveal specific data points, preventing automated scraping and ensuring intentional engagement.
-- **Enhanced Merchant Profiles**: Added a dedicated "No Telpon" field in the Store Settings, allowing vendors to distinguish between their official WhatsApp line and a direct voice call number.
-- **UI Architecture**: Standardized the contact display with high-fidelity icons and glassmorphism-inspired "eye" toggles for reveal/hide functionality.
+### Shop: Merchant Card Restoration & Marketplace Integration
+- **Fix & Restoration**: Restored the Merchant Card (Store Card) design on the Product Detail Page to its original high-fidelity state, ensuring statistics (Products, Rating, Love) are visible and accurate.
+- **Marketplace Row**: Integrated a third row in the "Kontak Vendor" card for **Shopee** and **Tokopedia** with official logos.
+- **Robust Data Mapping**: Implemented a fallback mechanism for merchant statistics. If `merchantStats` is unavailable, the UI now seamlessly falls back to product-level aggregated data.
+- **Structural Optimization**: Cleaned up duplicated code blocks in `ProductDetailPage.tsx` that caused rendering inconsistencies.
 
-## [0.6.83] - 2026-03-13
+## [0.6.84] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production
 ...

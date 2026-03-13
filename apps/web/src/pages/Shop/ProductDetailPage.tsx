@@ -70,14 +70,8 @@ export const ProductDetailPage: React.FC = () => {
     const toggleReveal = (key: string) => {
         setRevealedContacts(prev => ({ ...prev, [key]: !prev[key] }));
     };
-    const { user, isAuthenticated, logout, token } = useStore();
 
-    // Reviews State
-    const [reviews, setReviews] = useState<Review[]>([]);
-    const [isLoadingReviews, setIsLoadingReviews] = useState(true);
-    const [userRating, setUserRating] = useState(5);
-    const [userComment, setUserComment] = useState('');
-    const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+    const { user, isAuthenticated, logout, token } = useStore();
 
     // Data Fetching
     const { data: product, isLoading: isLoadingProduct, refetch: refetchProduct } = useProductDetails(productId || '');
@@ -91,6 +85,77 @@ export const ProductDetailPage: React.FC = () => {
     const track = useTrackInteraction();
 
     const isWishlisted = wishlist.some((item: any) => item.id === product?.id);
+
+    // Reusable Contact Item
+    const ContactItem = ({ 
+        id, 
+        icon: Icon, 
+        label, 
+        value, 
+        isLink = false,
+        iconColor = "text-[#0A1128]",
+        customIcon = null
+    }: { 
+        id: string, 
+        icon?: any, 
+        label: string, 
+        value?: string, 
+        isLink?: boolean,
+        iconColor?: string,
+        customIcon?: React.ReactNode
+    }) => {
+        if (!value) return null;
+        const isRevealed = revealedContacts[id];
+
+        return (
+            <div 
+                onClick={() => {
+                    if (isAuthenticated && !isRevealed) toggleReveal(id);
+                    else if (isRevealed && isLink) {
+                        const url = value.startsWith('http') ? value : `https://${value}`;
+                        window.open(url, '_blank');
+                    }
+                }}
+                className={`p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group transition-all duration-300 ${isAuthenticated ? 'cursor-pointer hover:bg-white hover:shadow-md hover:border-[#FFBF00]/20' : ''}`}
+            >
+                <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className={`w-10 h-10 rounded-xl bg-white flex items-center justify-center ${iconColor} shadow-sm border border-slate-100 flex-shrink-0 group-hover:scale-110 transition-transform`}>
+                        {customIcon || (Icon && <Icon className="w-5 h-5 fill-current" />)}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</p>
+                        <div className="relative">
+                            {!isAuthenticated ? (
+                                <Link to="/login" className="text-[11px] font-black text-indigo-600 uppercase tracking-tighter hover:underline">Login Untuk Melihat</Link>
+                            ) : !isRevealed ? (
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); toggleReveal(id); }}
+                                    className="flex items-center gap-2 text-slate-400 hover:text-[#0A1128] transition-colors group/btn"
+                                >
+                                    <Eye className="w-3.5 h-3.5" />
+                                    <span className="text-[11px] font-black uppercase tracking-tighter italic">Tampilkan</span>
+                                </button>
+                            ) : (
+                                <p className="text-xs font-bold text-[#0A1128] truncate">
+                                    {value}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+                {isAuthenticated && isRevealed && isLink && (
+                    <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-[#FFBF00] group-hover:translate-x-1 transition-all" />
+                )}
+            </div>
+        );
+    };
+
+    // Reviews State
+    const [reviews, setReviews] = useState<Review[]>([]);
+    const [isLoadingReviews, setIsLoadingReviews] = useState(true);
+    const [userRating, setUserRating] = useState(5);
+    const [userComment, setUserComment] = useState('');
+    const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
     // Fetch Reviews
     const fetchReviews = async () => {
@@ -128,7 +193,7 @@ export const ProductDetailPage: React.FC = () => {
             toast.success('Ulasan berhasil dikirim!');
             setUserComment('');
             fetchReviews();
-            refetchProduct(); // Refresh product avg rating
+            refetchProduct(); 
         } catch (err: any) {
             toast.error(err.message || 'Gagal mengirim ulasan');
         } finally {
@@ -150,7 +215,6 @@ export const ProductDetailPage: React.FC = () => {
         fetchAds();
     }, []);
 
-    // Filter other products from same merchant
     const otherProducts = useMemo(() => 
         (merchantProducts || []).filter((p: any) => p.id !== productId).slice(0, 10),
     [merchantProducts, productId]);
@@ -168,7 +232,7 @@ export const ProductDetailPage: React.FC = () => {
 
     const handleWhatsApp = () => {
         const text = `Halo, saya tertarik dengan produk ${product?.nama_produk} di Tamuu Shop. Apakah masih tersedia?`;
-        const waNumber = product?.whatsapp || '';
+        const waNumber = product?.whatsapp || merchantStats?.whatsapp || '';
         window.open(`https://wa.me/${waNumber.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`, '_blank');
     };
 
@@ -265,7 +329,6 @@ export const ProductDetailPage: React.FC = () => {
                                     </span>
                                 </div>
                                 
-                                {/* INTERACTION HUB: Share + Love */}
                                 <div className="flex items-center gap-2 flex-shrink-0">
                                     <button 
                                         onClick={handleShare}
@@ -320,28 +383,27 @@ export const ProductDetailPage: React.FC = () => {
                                             <MapPin className="w-3 h-3 text-[#FFBF00]" />
                                             {product.kota || 'Nasional'}
                                         </p>
-                                        {!product.is_admin_listing && (
-                                            <div className="flex items-center justify-center sm:justify-start gap-4 mt-1">
-                                                <div className="flex items-center gap-1">
-                                                    <ShoppingBag className="w-3 h-3 text-slate-400" />
-                                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">
-                                                        {merchantStats?.total_products || 0} Produk
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">
-                                                        {merchantStats?.avg_rating ? Number(merchantStats.avg_rating).toFixed(1) : "0.0"} ({merchantStats?.review_count || 0})
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <Heart className="w-3 h-3 text-rose-400 fill-rose-400" />
-                                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">
-                                                        {merchantStats?.total_wishlist || 0} Love
-                                                    </span>
-                                                </div>
+                                        
+                                        <div className="flex items-center justify-center sm:justify-start gap-4 mt-1">
+                                            <div className="flex items-center gap-1">
+                                                <ShoppingBag className="w-3 h-3 text-slate-400" />
+                                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">
+                                                    {(merchantStats?.total_products || 0)} Produk
+                                                </span>
                                             </div>
-                                        )}
+                                            <div className="flex items-center gap-1">
+                                                <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">
+                                                    {(merchantStats?.avg_rating || product.avg_rating) ? Number(merchantStats?.avg_rating || product.avg_rating).toFixed(1) : "0.0"} ({(merchantStats?.review_count || product.review_count || 0)})
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <Heart className="w-3 h-3 text-rose-400 fill-rose-400" />
+                                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">
+                                                    {(merchantStats?.total_wishlist || product.wishlist_count || 0)} Love
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
                                     {!product.is_admin_listing && (
                                         <Link to={`/shop/${product.merchant_slug === 'admin' ? 'umum' : (product.merchant_slug || 'umum')}`} className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center hover:bg-[#0A1128] hover:text-white transition-all shadow-sm">
@@ -383,135 +445,48 @@ export const ProductDetailPage: React.FC = () => {
                 <div className="max-w-7xl mx-auto px-6 mt-20">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
                         <div className="lg:col-span-7 flex flex-col gap-8">
-                            {/* Kontak Vendor Card (NEW) */}
+                            {/* Kontak Vendor Card */}
                             <m.div 
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="p-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm space-y-8"
+                                className="p-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm space-y-10"
                             >
-                                <div className="flex items-center gap-3">
-                                    <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
-                                    <h2 className="text-xl font-black uppercase tracking-tighter italic">Kontak Vendor</h2>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
+                                        <h2 className="text-xl font-black uppercase tracking-tighter italic">Kontak Vendor</h2>
+                                    </div>
+                                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Verified Secure</span>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {/* WhatsApp */}
-                                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#25D366] shadow-sm">
-                                                <MessageCircle className="w-5 h-5 fill-current" />
-                                            </div>
-                                            <div className="min-w-0">
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">WhatsApp</p>
-                                                <p className="text-xs font-bold text-[#0A1128] truncate">
-                                                    {!isAuthenticated ? '••••••••' : (revealedContacts['wa'] ? product.whatsapp : '••••••••')}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        {isAuthenticated && product.whatsapp && (
-                                            <button onClick={() => toggleReveal('wa')} className="p-2 text-slate-400 hover:text-indigo-600 transition-colors flex items-center gap-1">
-                                                {revealedContacts['wa'] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                                <span className="text-[9px] font-black uppercase tracking-tighter">{revealedContacts['wa'] ? 'Sembunyikan' : 'Tampilkan'}</span>
-                                            </button>
-                                        )}
-                                        {!isAuthenticated && (
-                                            <Link to="/login" className="text-[9px] font-black text-indigo-600 uppercase tracking-tighter hover:underline">Login</Link>
-                                        )}
+                                <div className="space-y-8">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <ContactItem id="wa" label="WhatsApp" value={product.whatsapp || merchantStats?.whatsapp} icon={MessageCircle} iconColor="text-[#25D366]" isLink />
+                                        <ContactItem id="phone" label="No Telpon" value={product.phone || merchantStats?.phone} icon={Phone} />
                                     </div>
 
-                                    {/* Phone */}
-                                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#0A1128] shadow-sm">
-                                                <Phone className="w-5 h-5 fill-current" />
-                                            </div>
-                                            <div className="min-w-0">
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No Telpon</p>
-                                                <p className="text-xs font-bold text-[#0A1128] truncate">
-                                                    {!isAuthenticated ? '••••••••' : (revealedContacts['phone'] ? product.phone : '••••••••')}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        {isAuthenticated && product.phone && (
-                                            <button onClick={() => toggleReveal('phone')} className="p-2 text-slate-400 hover:text-indigo-600 transition-colors flex items-center gap-1">
-                                                {revealedContacts['phone'] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                                <span className="text-[9px] font-black uppercase tracking-tighter">{revealedContacts['phone'] ? 'Sembunyikan' : 'Tampilkan'}</span>
-                                            </button>
-                                        )}
-                                        {!isAuthenticated && (
-                                            <Link to="/login" className="text-[9px] font-black text-indigo-600 uppercase tracking-tighter hover:underline">Login</Link>
-                                        )}
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                        <ContactItem id="ig" label="Instagram" value={product.instagram || merchantStats?.instagram} icon={Instagram} iconColor="text-[#E4405F]" />
+                                        <ContactItem id="fb" label="Facebook" value={product.facebook || merchantStats?.facebook} icon={Facebook} iconColor="text-[#1877F2]" />
+                                        <ContactItem id="x" label="X Platform" value={product.x_url || merchantStats?.x_url} customIcon={<XLogoIcon className="w-4 h-4" />} />
+                                        <ContactItem id="web" label="Website" value={product.website || merchantStats?.website} icon={Globe} iconColor="text-indigo-600" isLink />
                                     </div>
 
-                                    {/* Social Media & Website (Icon Only Row) */}
-                                    <div className="sm:col-span-2 flex flex-wrap items-center gap-4 pt-4 border-t border-slate-100">
-                                        {/* Instagram */}
-                                        <div className="flex items-center gap-3 bg-slate-50 p-2 pr-4 rounded-xl border border-slate-100">
-                                            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#E4405F] shadow-sm">
-                                                <Instagram className="w-5 h-5" />
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <p className="text-xs font-bold text-[#0A1128]">
-                                                    {!isAuthenticated ? '••••••••' : (revealedContacts['ig'] ? product.instagram : '••••••••')}
-                                                </p>
-                                                {isAuthenticated && product.instagram && (
-                                                    <button onClick={() => toggleReveal('ig')} className="text-[9px] font-black text-slate-400 uppercase tracking-tighter flex items-center gap-1">
-                                                        {revealedContacts['ig'] ? 'Hide' : 'Show'}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Facebook */}
-                                        <div className="flex items-center gap-3 bg-slate-50 p-2 pr-4 rounded-xl border border-slate-100">
-                                            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#1877F2] shadow-sm">
-                                                <Facebook className="w-5 h-5 fill-current" />
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <p className="text-xs font-bold text-[#0A1128]">
-                                                    {!isAuthenticated ? '••••••••' : (revealedContacts['fb'] ? product.facebook : '••••••••')}
-                                                </p>
-                                                {isAuthenticated && product.facebook && (
-                                                    <button onClick={() => toggleReveal('fb')} className="text-[9px] font-black text-slate-400 uppercase tracking-tighter flex items-center gap-1">
-                                                        {revealedContacts['fb'] ? 'Hide' : 'Show'}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* X (Twitter) */}
-                                        <div className="flex items-center gap-3 bg-slate-50 p-2 pr-4 rounded-xl border border-slate-100">
-                                            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-black shadow-sm">
-                                                <XLogoIcon className="w-4 h-4" />
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <p className="text-xs font-bold text-[#0A1128]">
-                                                    {!isAuthenticated ? '••••••••' : (revealedContacts['x'] ? product.x_url : '••••••••')}
-                                                </p>
-                                                {isAuthenticated && product.x_url && (
-                                                    <button onClick={() => toggleReveal('x')} className="text-[9px] font-black text-slate-400 uppercase tracking-tighter flex items-center gap-1">
-                                                        {revealedContacts['x'] ? 'Hide' : 'Show'}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Website */}
-                                        <div className="flex items-center gap-3 bg-slate-50 p-2 pr-4 rounded-xl border border-slate-100">
-                                            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-600 shadow-sm">
-                                                <Globe className="w-5 h-5" />
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <p className="text-xs font-bold text-[#0A1128]">
-                                                    {!isAuthenticated ? '••••••••' : (revealedContacts['web'] ? product.website : '••••••••')}
-                                                </p>
-                                                {isAuthenticated && product.website && (
-                                                    <button onClick={() => toggleReveal('web')} className="text-[9px] font-black text-slate-400 uppercase tracking-tighter flex items-center gap-1">
-                                                        {revealedContacts['web'] ? 'Hide' : 'Show'}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 border-t border-slate-50">
+                                        <ContactItem 
+                                            id="tokopedia" 
+                                            label="Tokopedia" 
+                                            value={product.tokopedia_url || merchantStats?.tokopedia_url} 
+                                            customIcon={<img src="/images/logos/marketplace/logo_tokopedia.png" className="w-6 h-6 object-contain" alt="TK" />} 
+                                            isLink
+                                        />
+                                        <ContactItem 
+                                            id="shopee" 
+                                            label="Shopee" 
+                                            value={product.shopee_url || merchantStats?.shopee_url} 
+                                            customIcon={<img src="/images/logos/marketplace/logo_shopee.png" className="w-6 h-6 object-contain" alt="SP" />} 
+                                            isLink
+                                        />
                                     </div>
                                 </div>
                             </m.div>
@@ -554,7 +529,6 @@ export const ProductDetailPage: React.FC = () => {
 
                         {/* Right Column (Spans 5/12) - Alamat + Maps Stacked */}
                         <div className="lg:col-span-5 flex flex-col gap-8 h-full">
-                            {/* Alamat Lengkap Card */}
                             <m.div 
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
