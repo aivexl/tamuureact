@@ -31,8 +31,8 @@ import {
     Facebook, 
     Eye, 
     EyeOff
-    } from 'lucide-react';
-    import {
+} from 'lucide-react';
+import {
     useProductDetails,
     useTrackInteraction,
     useToggleWishlist,
@@ -40,40 +40,41 @@ import {
     useMerchantProducts,
     useMerchantStats,
     useSmartRecommendations
-    } from '../../hooks/queries/useShop';
-    import { shop, type Review } from '../../lib/api';
-    import { PremiumLoader } from '../../components/ui/PremiumLoader';
-    import { Footer } from '../../components/Layout/Footer';
-    import { useStore } from '../../store/useStore';
-    import { useSEO } from '../../hooks/useSEO';
-    import { formatCurrency, formatAbbreviatedNumber } from '../../lib/utils';
-    import { toast } from 'react-hot-toast';
-    import { ReportProductModal } from '../../components/Modals/ReportProductModal';
-    import { ShareModal } from '../../components/Modals/ShareModal';
-    import { INDONESIA_REGIONS } from '../../constants/regions';
-    import { AnimatedCopyIcon } from '../../components/ui/AnimatedCopyIcon';
-    import { StarRating } from '../../components/Shop/StarRating';
-    import { Navbar } from '../../components/Layout/Navbar';
+} from '../../hooks/queries/useShop';
+import { shop, type Review } from '../../lib/api';
+import { PremiumLoader } from '../../components/ui/PremiumLoader';
+import { Footer } from '../../components/Layout/Footer';
+import { useStore } from '../../store/useStore';
+import { useSEO } from '../../hooks/useSEO';
+import { formatCurrency, formatAbbreviatedNumber } from '../../lib/utils';
+import { toast } from 'react-hot-toast';
+import { ReportProductModal } from '../../components/Modals/ReportProductModal';
+import { ShareModal } from '../../components/Modals/ShareModal';
+import { INDONESIA_REGIONS } from '../../constants/regions';
+import { AnimatedCopyIcon } from '../../components/ui/AnimatedCopyIcon';
+import { StarRating } from '../../components/Shop/StarRating';
+import { Navbar } from '../../components/Layout/Navbar';
 
-    const XLogoIcon = ({ className }: { className?: string }) => (
+const XLogoIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
         <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 22.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
     </svg>
-    );
+);
 
-    const TikTokIcon = ({ className }: { className?: string }) => (
+const TikTokIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
         <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
     </svg>
-    );
+);
 
-    export const ProductDetailPage: React.FC = () => {
+export const ProductDetailPage: React.FC = () => {
     const { slug, productId } = useParams<{ slug: string, productId: string }>();
     const navigate = useNavigate();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [revealedContacts, setRevealedContacts] = useState<Record<string, boolean>>({});
+    const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
     const toggleReveal = (key: string) => {
         setRevealedContacts(prev => ({ ...prev, [key]: !prev[key] }));
@@ -94,7 +95,7 @@ import {
 
     const isWishlisted = wishlist.some((item: any) => item.id === product?.id);
 
-    // Modern Secure Contact Component (Rows 1 & 2) - Truly Seamless List Design
+    // Minimalist Secure Contact Component
     const SecureContactItem = ({ 
         id, 
         icon: Icon, 
@@ -146,21 +147,21 @@ import {
                         }
                     }
                 }}
-                className={`flex items-center gap-4 py-4 group transition-all duration-300 ${!isRevealed ? 'cursor-pointer hover:bg-slate-50/80 rounded-2xl px-4 -mx-4' : 'px-0'}`}
+                className={`flex items-center gap-2.5 py-3 px-3 transition-all duration-300 border border-slate-50 rounded-xl hover:bg-slate-50/50 ${!isRevealed ? 'cursor-pointer' : ''}`}
             >
-                <div className={`w-11 h-11 rounded-2xl bg-white flex items-center justify-center shadow-sm border border-slate-100 flex-shrink-0 group-hover:scale-110 transition-transform ${iconColor}`}>
-                    {customIcon || (Icon && <Icon size={20} />)}
+                <div className={`w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm border border-slate-100 flex-shrink-0 group-hover:scale-110 transition-transform ${iconColor}`}>
+                    {customIcon || (Icon && <Icon size={14} />)}
                 </div>
                 <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] leading-none mb-1.5">{label}</p>
+                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</p>
                     <div className="relative">
                         {!isRevealed ? (
-                            <div className="flex items-center gap-1.5 text-indigo-600 font-black uppercase tracking-tighter italic text-[11px]">
-                                <Eye className="w-3.5 h-3.5" />
+                            <div className="flex items-center gap-1 text-indigo-600 font-black uppercase tracking-tighter italic text-[9px]">
+                                <Eye className="w-2.5 h-2.5" />
                                 <span>Tampilkan</span>
                             </div>
                         ) : (
-                            <p className="text-sm font-bold text-[#0A1128] truncate">
+                            <p className="text-[10px] font-bold text-[#0A1128] truncate">
                                 {value}
                             </p>
                         )}
@@ -169,17 +170,16 @@ import {
                 {isRevealed && isLink && (
                     <button 
                         onClick={handleOpenLink}
-                        className="w-9 h-9 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-[#FFBF00] hover:text-[#0A1128] hover:shadow-lg hover:shadow-[#FFBF00]/20 transition-all border border-slate-100"
+                        className="w-6 h-6 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-[#FFBF00] hover:text-[#0A1128] transition-all border border-slate-100"
                         title="Buka Tautan"
                     >
-                        <ArrowUpRight className="w-4 h-4" />
+                        <ArrowUpRight className="w-3 h-3" />
                     </button>
                 )}
             </div>
         );
     };
 
-    // Modern Marketplace Icon Component (Row 3) - Truly Seamless
     const MarketplaceIcon = ({ url, src, alt }: { url?: string, src: string, alt: string }) => {
         if (!url) return null;
         return (
@@ -187,16 +187,17 @@ import {
                 href={url.startsWith('http') ? url : `https://${url}`} 
                 target="_blank" 
                 rel="noreferrer"
-                className="w-14 h-14 flex items-center justify-center hover:scale-110 transition-all duration-300 group"
+                className="w-10 h-10 flex items-center justify-center hover:scale-110 transition-all duration-300 group"
                 onClick={() => {
                     if (product?.id) track.mutate({ merchantId: product.merchant_id, actionType: 'CLICK_CONTACT', metadata: JSON.stringify({ contact_type: alt.toLowerCase(), product_id: product.id }) } as any);
                 }}
                 title={`Kunjungi ${alt}`}
             >
-                <img src={src} alt={alt} className="w-10 h-10 object-contain filter grayscale group-hover:grayscale-0 transition-all" />
+                <img src={src} alt={alt} className="w-7 h-7 object-contain filter grayscale group-hover:grayscale-0 transition-all" />
             </a>
         );
     };
+
     // Reviews State
     const [reviews, setReviews] = useState<Review[]>([]);
     const [isLoadingReviews, setIsLoadingReviews] = useState(true);
@@ -204,7 +205,6 @@ import {
     const [userComment, setUserComment] = useState('');
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
-    // Fetch Reviews
     const fetchReviews = async () => {
         if (!productId) return;
         setIsLoadingReviews(true);
@@ -247,20 +247,6 @@ import {
             setIsSubmittingReview(false);
         }
     };
-
-    // Fetch Ads
-    const [sidebarAds, setSidebarAds] = useState<any[]>([]);
-    useEffect(() => {
-        const fetchAds = async () => {
-            try {
-                const ads = await shop.getAds('PRODUCT_DETAIL_SIDEBAR');
-                setSidebarAds(ads);
-            } catch (err) {
-                console.error('Failed to fetch ads:', err);
-            }
-        };
-        fetchAds();
-    }, []);
 
     const otherProducts = useMemo(() => 
         (merchantProducts || []).filter((p: any) => p.id !== productId).slice(0, 10),
@@ -412,9 +398,10 @@ import {
                                 </p>
                             </div>
 
-                            {/* Merchant Card */}
+                            {/* Merchant & Contact Section (Repositioned & Compact) */}
                             <div className="p-6 md:p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-6">
-                                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+                                {/* Store Card */}
+                                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 pb-6 border-b border-slate-100/50">
                                     <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white border-4 border-white shadow-lg flex-shrink-0">
                                         <img 
                                             src={product.is_admin_listing ? `https://api.dicebear.com/7.x/initials/svg?seed=${product.custom_store_name || 'Admin'}` : (product.logo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${product.nama_toko}`)} 
@@ -453,9 +440,28 @@ import {
                                         </div>
                                     </div>
                                     {!product.is_admin_listing && (
-                                        <Link to={`/shop/${product.merchant_slug === 'admin' ? 'umum' : (product.merchant_slug || 'umum')}`} className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center hover:bg-[#0A1128] hover:text-white transition-all shadow-sm">
+                                        <Link to={`/shop/${product.merchant_slug === 'admin' ? 'umum' : (slug || 'umum')}`} className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center hover:bg-[#0A1128] hover:text-white transition-all shadow-sm">
                                             <ChevronRight className="w-5 h-5" />
                                         </Link>
+                                    )}
+                                </div>
+
+                                {/* Compact Contact Grid (Seamless) */}
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <SecureContactItem id="wa" label="WhatsApp" value={product.whatsapp || product.m_whatsapp || merchantStats?.whatsapp} icon={MessageCircle} iconColor="text-[#25D366]" isLink />
+                                        <SecureContactItem id="phone" label="No Telepon" value={product.phone || product.m_phone || merchantStats?.phone} icon={Phone} iconColor="text-slate-600" isLink />
+                                        <SecureContactItem id="ig" label="Instagram" value={product.instagram || product.m_instagram || merchantStats?.instagram} icon={Instagram} iconColor="text-[#E4405F]" isLink />
+                                        <SecureContactItem id="tiktok" label="TikTok" value={product.tiktok_url || product.m_tiktok_url || merchantStats?.tiktok} customIcon={<TikTokIcon className="w-3.5 h-3.5" />} iconColor="text-black" isLink />
+                                        <SecureContactItem id="fb" label="Facebook" value={product.facebook || product.m_facebook || merchantStats?.facebook} icon={Facebook} iconColor="text-[#1877F2]" isLink />
+                                        <SecureContactItem id="web" label="Website" value={product.website_url || product.m_website || merchantStats?.website} icon={Globe} iconColor="text-indigo-600" isLink />
+                                    </div>
+
+                                    {(product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url || product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url) && (
+                                        <div className="flex items-center gap-6 px-3 pt-2">
+                                            <MarketplaceIcon url={product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url} src="/images/logos/marketplace/logo_shopee.png" alt="Shopee" />
+                                            <MarketplaceIcon url={product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url} src="/images/logos/marketplace/logo_tokopedia.png" alt="Tokopedia" />
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -490,72 +496,47 @@ import {
 
                 {/* BOTTOM CONTENT SECTION */}
                 <div className="max-w-7xl mx-auto px-6 mt-20">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                         <div className="lg:col-span-7 flex flex-col gap-8">
-                            {/* Kontak Vendor Card */}
+                            {/* Deskripsi Card - Main Position */}
                             <m.div 
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="p-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm space-y-10"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
-                                        <h2 className="text-xl font-black uppercase tracking-tighter italic">Kontak Vendor</h2>
-                                    </div>
-                                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Verified Secure</span>
-                                </div>
-
-                                <div className="space-y-6">
-                                    <div className="space-y-2">
-                                        <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] ml-1 flex items-center gap-2 mb-4">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-slate-300" /> Kontak Langsung
-                                        </h3>
-                                        <div className="flex flex-col">
-                                            <SecureContactItem id="wa" label="WhatsApp" value={product.whatsapp || product.m_whatsapp || merchantStats?.whatsapp} icon={MessageCircle} iconColor="text-[#25D366]" isLink />
-                                            <SecureContactItem id="phone" label="No Telepon" value={product.phone || product.m_phone || merchantStats?.phone} icon={Phone} iconColor="text-slate-600" isLink />
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-2 pt-6 border-t border-slate-50">
-                                        <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] ml-1 flex items-center gap-2 mb-4">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-slate-300" /> Sosial Media & Web
-                                        </h3>
-                                        <div className="flex flex-col">
-                                            <SecureContactItem id="ig" label="Instagram" value={product.instagram || product.m_instagram || merchantStats?.instagram} icon={Instagram} iconColor="text-[#E4405F]" isLink />
-                                            <SecureContactItem id="tiktok" label="TikTok" value={product.tiktok_url || product.m_tiktok_url || merchantStats?.tiktok} customIcon={<TikTokIcon className="w-5 h-5" />} iconColor="text-black" isLink />
-                                            <SecureContactItem id="fb" label="Facebook" value={product.facebook || product.m_facebook || merchantStats?.facebook} icon={Facebook} iconColor="text-[#1877F2]" isLink />
-                                            <SecureContactItem id="x" label="X (Twitter)" value={product.x_url || product.m_x_url || merchantStats?.x_url} customIcon={<XLogoIcon className="w-4 h-4" />} iconColor="text-black" isLink />
-                                            <SecureContactItem id="web" label="Website" value={product.website_url || product.m_website || merchantStats?.website} icon={Globe} iconColor="text-indigo-600" isLink />
-                                        </div>
-                                    </div>
-
-                                    {(product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url || product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url) && (
-                                        <div className="space-y-2 pt-6 border-t border-slate-50">
-                                            <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] ml-1 flex items-center gap-2 mb-4">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-slate-300" /> Marketplace Official
-                                            </h3>
-                                            <div className="flex items-center gap-8 pl-1">
-                                                <MarketplaceIcon url={product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url} src="/images/logos/marketplace/logo_shopee.png" alt="Shopee" />
-                                                <MarketplaceIcon url={product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url} src="/images/logos/marketplace/logo_tokopedia.png" alt="Tokopedia" />
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </m.div>
-
-                            {/* Deskripsi Card */}
-                            <m.div 
+                                layout
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className="p-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm space-y-8 flex flex-col h-full"
+                                className="p-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm space-y-8 flex flex-col"
                             >
                                 <div className="flex items-center gap-3">
                                     <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
                                     <h2 className="text-xl font-black uppercase tracking-tighter italic">Deskripsi Produk</h2>
                                 </div>
-                                <div className="text-slate-600 text-lg leading-relaxed font-medium whitespace-pre-wrap flex-1">
-                                    {product.deskripsi || "Vendor belum memberikan deskripsi lengkap untuk produk ini."}
+                                
+                                <div className="relative">
+                                    <m.div 
+                                        animate={{ height: isDescriptionExpanded ? 'auto' : '200px' }}
+                                        transition={{ duration: 0.5, ease: [0.04, 0.62, 0.23, 0.98] }}
+                                        className="overflow-hidden relative"
+                                    >
+                                        <div className="text-slate-600 text-lg leading-relaxed font-medium whitespace-pre-wrap">
+                                            {product.deskripsi || "Vendor belum memberikan deskripsi lengkap untuk produk ini."}
+                                        </div>
+                                        
+                                        {!isDescriptionExpanded && product.deskripsi && product.deskripsi.length > 300 && (
+                                            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+                                        )}
+                                    </m.div>
+
+                                    {product.deskripsi && product.deskripsi.length > 300 && (
+                                        <button 
+                                            onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                                            className="mt-4 flex items-center gap-2 text-[#FFBF00] font-black uppercase tracking-widest text-[10px] hover:text-[#0A1128] transition-colors group"
+                                        >
+                                            {isDescriptionExpanded ? (
+                                                <>Tampilkan Lebih Sedikit <ChevronDown className="w-3 h-3 rotate-180 transition-transform" /></>
+                                            ) : (
+                                                <>Baca Selengkapnya <ChevronDown className="w-3 h-3 group-hover:translate-y-0.5 transition-transform" /></>
+                                            )}
+                                        </button>
+                                    )}
                                 </div>
                                 
                                 <div className="pt-8 border-t border-slate-50 flex flex-col sm:flex-row items-center justify-between mt-auto gap-4">
@@ -580,8 +561,8 @@ import {
                             </m.div>
                         </div>
 
-                        {/* Right Column (Spans 5/12) - Alamat + Maps Stacked */}
-                        <div className="lg:col-span-5 flex flex-col gap-8 h-full">
+                        {/* Right Column (Spans 5/12) - Alamat Stacked */}
+                        <div className="lg:col-span-5 flex flex-col gap-8">
                             <m.div 
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -632,44 +613,6 @@ import {
                                         <Map className="w-4 h-4 text-[#FFBF00]" />
                                         Buka Di Google Maps
                                     </a>
-                                )}
-                            </m.div>
-
-                            {/* Sponsor Banner Card */}
-                            <m.div 
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="p-1 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm flex-1 flex flex-col min-h-[400px] overflow-hidden group"
-                            >
-                                {sidebarAds.length > 0 ? (
-                                    <a 
-                                        href={sidebarAds[0].link_url || '#'} 
-                                        target="_blank" 
-                                        rel="noreferrer"
-                                        className="relative w-full h-full flex-1 rounded-[2.2rem] overflow-hidden block"
-                                    >
-                                        <img 
-                                            src={sidebarAds[0].image_url} 
-                                            alt="Sponsor" 
-                                            className="w-full h-full object-cover" 
-                                        />
-                                        <div className="absolute top-6 right-6 px-2.5 py-1 bg-black/20 backdrop-blur-md rounded-lg border border-white/20">
-                                            <p className="text-white text-[7px] font-black uppercase tracking-widest opacity-80">Ads</p>
-                                        </div>
-                                    </a>
-                                ) : (
-                                    <div className="flex-1 flex flex-col items-center justify-center p-10 text-center space-y-6">
-                                        <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center border border-slate-100">
-                                            <Megaphone className="w-8 h-8 text-slate-200" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Sponsorship Space</h3>
-                                            <p className="text-[9px] text-slate-300 font-bold uppercase tracking-tighter">Promosikan brand Anda di sini</p>
-                                        </div>
-                                        <button className="px-6 py-3 bg-slate-50 text-slate-400 border border-slate-100 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-[#0A1128] hover:text-white transition-all">
-                                            Kontak Admin
-                                        </button>
-                                    </div>
                                 )}
                             </m.div>
                         </div>
