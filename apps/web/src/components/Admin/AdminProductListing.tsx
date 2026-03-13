@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { 
     Search, 
@@ -22,7 +22,11 @@ import {
     UploadCloud,
     AlertCircle,
     ArrowLeft,
-    ShieldCheck
+    ShieldCheck,
+    MessageCircle,
+    Phone,
+    Instagram,
+    Facebook
 } from 'lucide-react';
 import { useAdminProducts, useAdminDeleteProduct, useAdminAddProduct, useAdminUpdateProduct } from '../../hooks/queries/useShop';
 import { formatCurrency } from '../../lib/utils';
@@ -348,6 +352,10 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                 tiktok_url: product?.tiktok_url || '',
                 youtube_url: product?.youtube_url || '',
                 x_url: product?.x_url || '',
+                whatsapp: product?.whatsapp || '',
+                phone: product?.phone || '',
+                instagram: product?.instagram || '',
+                facebook: product?.facebook || '',
                 alamat_lengkap: product?.alamat_lengkap || '',
                 google_maps_url: product?.google_maps_url || '',
                 is_special: product?.is_special || 0,
@@ -519,17 +527,45 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nama Toko / Brand</label>
                                         <span className="text-[8px] font-bold text-rose-400/60 uppercase tracking-widest mt-0.5">(Wajib Diisi)</span>
                                     </div>
-                                    <div className="relative">
-                                        <Store className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                                        <input
-                                            type="text"
-                                            required
-                                            value={formData.custom_store_name}
-                                            onChange={e => setFormData({...formData, custom_store_name: e.target.value})}
-                                            placeholder="Contoh: Tamuu Official"
-                                            className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-8 py-5 text-sm font-bold text-white placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-500/50 focus:bg-white/10 transition-all backdrop-blur-md"
-                                        />
-                                    </div>
+                                    <StoreNameCombobox 
+                                        value={formData.custom_store_name}
+                                        allProducts={allProducts}
+                                        onChange={(storeName, details) => {
+                                            if (details) {
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    custom_store_name: storeName,
+                                                    whatsapp: details.whatsapp || prev.whatsapp,
+                                                    phone: details.phone || prev.phone,
+                                                    instagram: details.instagram || prev.instagram,
+                                                    facebook: details.facebook || prev.facebook,
+                                                    alamat_lengkap: details.alamat_lengkap || prev.alamat_lengkap,
+                                                    google_maps_url: details.google_maps_url || prev.google_maps_url,
+                                                    tokopedia_url: details.tokopedia_url || prev.tokopedia_url,
+                                                    shopee_url: details.shopee_url || prev.shopee_url,
+                                                    website_url: details.website_url || prev.website_url,
+                                                    tiktok_url: details.tiktok_url || prev.tiktok_url,
+                                                    youtube_url: details.youtube_url || prev.youtube_url,
+                                                    x_url: details.x_url || prev.x_url,
+                                                    kategori_produk: details.kategori_produk || prev.kategori_produk,
+                                                    kota: details.kota || prev.kota
+                                                }));
+                                                
+                                                // Sync UI category
+                                                if (details.kategori_produk) {
+                                                    if (SHOP_CATEGORIES.includes(details.kategori_produk)) {
+                                                        setSelectedCategory(details.kategori_produk);
+                                                        setCustomCategory('');
+                                                    } else {
+                                                        setSelectedCategory('Lainnya');
+                                                        setCustomCategory(details.kategori_produk);
+                                                    }
+                                                }
+                                            } else {
+                                                setFormData(prev => ({ ...prev, custom_store_name: storeName }));
+                                            }
+                                        }}
+                                    />
                                 </div>
                                 <div className="space-y-3">
                                     <div className="flex flex-col ml-1">
@@ -712,13 +748,17 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center border border-amber-500/20"><LinkIcon className="w-5 h-5" /></div>
                             <div>
-                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white">Link Eksternal</h3>
-                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Marketplace & Sosial Media</p>
+                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white">Kontak & Link Eksternal</h3>
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Vendor Contact & Marketplace</p>
                             </div>
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {[
+                                { label: 'WhatsApp', icon: MessageCircle, key: 'whatsapp', placeholder: '08...' },
+                                { label: 'No Telepon', icon: Phone, key: 'phone', placeholder: '08...' },
+                                { label: 'Instagram', icon: Instagram, key: 'instagram', placeholder: '@username' },
+                                { label: 'Facebook', icon: Facebook, key: 'facebook', placeholder: 'https://facebook.com/...' },
                                 { label: 'TikTok URL', icon: TiktokIcon, key: 'tiktok_url', placeholder: 'https://tiktok.com/@...' },
                                 { label: 'YouTube URL', icon: Youtube, key: 'youtube_url', placeholder: 'https://youtube.com/...' },
                                 { label: 'X (Twitter)', icon: XLogoIcon, key: 'x_url', placeholder: 'https://x.com/...' },
@@ -827,6 +867,126 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                     </div>
                 </div>
             </div>
+        </div>
+    );
+};
+
+// Searchable Combobox for Store Names
+const StoreNameCombobox: React.FC<{ value: string, allProducts: any[], onChange: (val: string, details?: any) => void }> = ({ value, allProducts, onChange }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [search, setSearch] = useState('');
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    // Extract unique stores from all listings
+    const stores = useMemo(() => {
+        const storeMap = new Map();
+        allProducts.forEach(p => {
+            if (p.custom_store_name && !storeMap.has(p.custom_store_name.toLowerCase())) {
+                storeMap.set(p.custom_store_name.toLowerCase(), p);
+            }
+        });
+        return Array.from(storeMap.values());
+    }, [allProducts]);
+
+    const filteredStores = useMemo(() => {
+        if (!search) return stores;
+        return stores.filter(s => s.custom_store_name.toLowerCase().includes(search.toLowerCase()));
+    }, [stores, search]);
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    return (
+        <div className="relative" ref={containerRef}>
+            <div className="relative">
+                <Store className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <input
+                    type="text"
+                    required
+                    value={value}
+                    onFocus={() => setIsOpen(true)}
+                    onChange={e => {
+                        const val = e.target.value;
+                        setSearch(val);
+                        onChange(val);
+                    }}
+                    placeholder="Contoh: Tamuu Official"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-12 py-5 text-sm font-bold text-white placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-500/50 focus:bg-white/10 transition-all backdrop-blur-md"
+                />
+                <button 
+                    type="button"
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+                >
+                    <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                </button>
+            </div>
+
+            <AnimatePresence>
+                {isOpen && (
+                    <m.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="absolute left-0 right-0 mt-4 bg-[#0F0F0F] border border-white/10 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] overflow-hidden backdrop-blur-2xl"
+                    >
+                        <div className="p-4 border-b border-white/5">
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">Pilih Store Terdaftar</p>
+                        </div>
+                        <div className="max-h-[250px] overflow-y-auto custom-scrollbar p-2">
+                            {filteredStores.length > 0 ? (
+                                filteredStores.map((s, idx) => (
+                                    <button
+                                        key={idx}
+                                        type="button"
+                                        onClick={() => {
+                                            onChange(s.custom_store_name, s);
+                                            setIsOpen(false);
+                                            setSearch('');
+                                        }}
+                                        className="w-full flex items-center gap-4 px-5 py-4 rounded-xl text-left transition-all hover:bg-white/5 group"
+                                    >
+                                        <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center border border-white/5 group-hover:border-[#FFBF00]/30 group-hover:text-[#FFBF00] transition-all">
+                                            <Store className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-bold text-white group-hover:text-[#FFBF00] transition-colors italic uppercase">{s.custom_store_name}</p>
+                                            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-tight truncate max-w-[180px]">
+                                                {s.kota || 'Wilayah Umum'}
+                                            </p>
+                                        </div>
+                                        {value === s.custom_store_name && <Check className="ml-auto w-4 h-4 text-[#FFBF00]" />}
+                                    </button>
+                                ))
+                            ) : (
+                                <div className="py-8 text-center">
+                                    <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">Store tidak ditemukan</p>
+                                    <p className="text-[9px] text-slate-700 mt-1 italic">Ketik untuk menambahkan store custom baru</p>
+                                </div>
+                            )}
+                        </div>
+                        {search && !stores.some(s => s.custom_store_name.toLowerCase() === search.toLowerCase()) && (
+                            <div className="p-2 border-t border-white/5 bg-[#FFBF00]/5">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsOpen(false)}
+                                    className="w-full flex items-center gap-4 px-5 py-4 rounded-xl text-left transition-all"
+                                >
+                                    <Plus className="w-4 h-4 text-[#FFBF00]" />
+                                    <p className="text-[10px] font-black text-[#FFBF00] uppercase tracking-widest">Gunakan "{search}" Sebagai Store Baru</p>
+                                </button>
+                            </div>
+                        )}
+                    </m.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

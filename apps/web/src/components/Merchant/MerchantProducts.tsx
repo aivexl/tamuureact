@@ -81,6 +81,10 @@ export const MerchantProducts: React.FC = () => {
     const [kota, setKota] = useState('Kota Jakarta Selatan');
     
     // Social & Marketplace State
+    const [whatsapp, setWhatsapp] = useState('');
+    const [phone, setPhone] = useState('');
+    const [instagram, setInstagram] = useState('');
+    const [facebook, setFacebook] = useState('');
     const [tiktokUrl, setTiktokUrl] = useState('');
     const [youtubeUrl, setYoutubeUrl] = useState('');
     const [xUrl, setXUrl] = useState('');
@@ -120,6 +124,10 @@ export const MerchantProducts: React.FC = () => {
         setImages([]);
         setKota('Kota Jakarta Selatan');
         setKotaSearchQuery('');
+        setWhatsapp('');
+        setPhone('');
+        setInstagram('');
+        setFacebook('');
         setTiktokUrl('');
         setYoutubeUrl('');
         setXUrl('');
@@ -152,6 +160,10 @@ export const MerchantProducts: React.FC = () => {
         setDeskripsi(prod.deskripsi || '');
         setImages(prod.images ? prod.images.map((i: any) => i.image_url) : []);
         setKota(prod.kota || 'Kota Jakarta Selatan');
+        setWhatsapp(prod.whatsapp || '');
+        setPhone(prod.phone || '');
+        setInstagram(prod.instagram || '');
+        setFacebook(prod.facebook || '');
         setTiktokUrl(prod.tiktok_url || '');
         setYoutubeUrl(prod.youtube_url || '');
         setXUrl(prod.x_url || '');

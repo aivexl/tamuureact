@@ -1298,7 +1298,8 @@ export default {
                         const { 
                             merchant_id, nama_produk, deskripsi, harga_estimasi, status, images, 
                             kategori_produk, kota, tiktok_url, youtube_url, x_url, website_url, 
-                            tokopedia_url, shopee_url, alamat_lengkap, google_maps_url 
+                            tokopedia_url, shopee_url, alamat_lengkap, google_maps_url,
+                            whatsapp, phone, instagram, facebook
                         } = body;
 
                         if (!merchant_id || !nama_produk) {
@@ -1325,9 +1326,10 @@ export default {
                                 INSERT INTO shop_products (
                                     id, merchant_id, nama_produk, deskripsi, harga_estimasi, status, 
                                     kategori_produk, kota, tiktok_url, youtube_url, x_url, website_url, 
-                                    tokopedia_url, shopee_url, is_approved, slug, alamat_lengkap, google_maps_url
+                                    tokopedia_url, shopee_url, is_approved, slug, alamat_lengkap, google_maps_url,
+                                    whatsapp, phone, instagram, facebook
                                 )
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                             `).bind(
                                 productId, merchant_id, nama_produk, deskripsi || '-', 
                                 harga_estimasi || null, finalStatus, kategori_produk || null, 
@@ -1336,7 +1338,8 @@ export default {
                                 finalStatus === 'PUBLISHED' ? 0 : 1,
                                 productSlug,
                                 alamat_lengkap || null,
-                                google_maps_url || null
+                                google_maps_url || null,
+                                whatsapp || null, phone || null, instagram || null, facebook || null
                             )
                         ];
 
@@ -1381,7 +1384,8 @@ export default {
                         const { 
                             nama_produk, deskripsi, harga_estimasi, status, images, 
                             kategori_produk, kota, tiktok_url, youtube_url, x_url, website_url, 
-                            tokopedia_url, shopee_url, alamat_lengkap, google_maps_url 
+                            tokopedia_url, shopee_url, alamat_lengkap, google_maps_url,
+                            whatsapp, phone, instagram, facebook
                         } = body;
 
                         const finalStatus = (status === 'PUBLISHED' || status === 'DRAFT') ? status : undefined;
@@ -1420,6 +1424,10 @@ export default {
                                     slug = COALESCE(?, slug),
                                     alamat_lengkap = COALESCE(?, alamat_lengkap),
                                     google_maps_url = COALESCE(?, google_maps_url),
+                                    whatsapp = COALESCE(?, whatsapp),
+                                    phone = COALESCE(?, phone),
+                                    instagram = COALESCE(?, instagram),
+                                    facebook = COALESCE(?, facebook),
                                     updated_at = CURRENT_TIMESTAMP
                                 WHERE id = ?
                             `).bind(
@@ -1430,6 +1438,7 @@ export default {
                                 newSlug,
                                 alamat_lengkap || null,
                                 google_maps_url || null,
+                                whatsapp || null, phone || null, instagram || null, facebook || null,
                                 productId
                             )
                         ];
@@ -2009,7 +2018,8 @@ export default {
                             nama_produk, deskripsi, harga_estimasi, status, images, 
                             kategori_produk, kota, is_admin_listing, custom_store_name,
                             tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url,
-                            alamat_lengkap, google_maps_url, is_special, is_featured, is_landing_featured
+                            alamat_lengkap, google_maps_url, is_special, is_featured, is_landing_featured,
+                            whatsapp, phone, instagram, facebook
                         } = body;
 
                         const finalStatus = status || 'PUBLISHED';
@@ -2038,9 +2048,10 @@ export default {
                                     id, merchant_id, nama_produk, deskripsi, harga_estimasi, status, 
                                     kategori_produk, kota, is_admin_listing, custom_store_name,
                                     tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url,
-                                    is_approved, slug, alamat_lengkap, google_maps_url, is_special, is_featured, is_landing_featured
+                                    is_approved, slug, alamat_lengkap, google_maps_url, is_special, is_featured, is_landing_featured,
+                                    whatsapp, phone, instagram, facebook
                                 )
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                             `).bind(
                                 productId, merchantId, finalNama || '(Tanpa Nama)', deskripsi || '-', 
                                 harga_estimasi || null, finalStatus, kategori_produk || null, 
@@ -2053,7 +2064,8 @@ export default {
                                 google_maps_url || null,
                                 is_special ? 1 : 0,
                                 is_featured ? 1 : 0,
-                                is_landing_featured ? 1 : 0
+                                is_landing_featured ? 1 : 0,
+                                whatsapp || null, phone || null, instagram || null, facebook || null
                             )
                         ];
 
@@ -2085,7 +2097,8 @@ export default {
                             nama_produk, deskripsi, harga_estimasi, status, images,
                             kategori_produk, kota, is_admin_listing, custom_store_name,
                             tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url,
-                            alamat_lengkap, google_maps_url, is_special, is_featured, is_landing_featured
+                            alamat_lengkap, google_maps_url, is_special, is_featured, is_landing_featured,
+                            whatsapp, phone, instagram, facebook
                         } = body;
 
                         let updateFields = [];
@@ -2117,6 +2130,10 @@ export default {
                         if (is_special !== undefined) addField('is_special', is_special ? 1 : 0);
                         if (is_featured !== undefined) addField('is_featured', is_featured ? 1 : 0);
                         if (is_landing_featured !== undefined) addField('is_landing_featured', is_landing_featured ? 1 : 0);
+                        addField('whatsapp', whatsapp);
+                        addField('phone', phone);
+                        addField('instagram', instagram);
+                        addField('facebook', facebook);
 
                         if (nama_produk) {
                             const newSlug = generateSlug(nama_produk);

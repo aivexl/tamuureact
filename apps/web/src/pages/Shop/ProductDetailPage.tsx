@@ -86,8 +86,8 @@ export const ProductDetailPage: React.FC = () => {
 
     const isWishlisted = wishlist.some((item: any) => item.id === product?.id);
 
-    // Reusable Contact Item
-    const ContactItem = ({ 
+    // Modern Secure Contact Component (Rows 1 & 2)
+    const SecureContactItem = ({ 
         id, 
         icon: Icon, 
         label, 
@@ -110,57 +110,87 @@ export const ProductDetailPage: React.FC = () => {
         return (
             <div 
                 onClick={() => {
+                    if (!isAuthenticated) {
+                        toast.error('Silakan login untuk melihat detail kontak vendor.');
+                        navigate('/login');
+                        return;
+                    }
                     if (!isRevealed) {
                         toggleReveal(id);
-                        if (product?.id && product?.merchant_id) {
-                            track.mutate({ merchantId: product.merchant_id, actionType: 'CLICK_CONTACT', productId: product.id });
+                        if (product?.id) {
+                            track.mutate({ merchantId: product.merchant_id, actionType: 'CLICK_CONTACT', metadata: JSON.stringify({ contact_type: id, product_id: product.id }) } as any);
                         }
                     }
                     else if (isRevealed && isLink) {
                         let url = value.startsWith('http') ? value : `https://${value}`;
-                        if (id === 'wa') {
-                            url = `https://wa.me/${value.replace(/\D/g, '')}`;
+                        if (id === 'wa' || id === 'phone') {
+                            const cleanNumber = value.replace(/\D/g, '');
+                            url = `https://wa.me/${cleanNumber}`;
                         } else if (id === 'ig' && !value.includes('instagram.com')) {
                             url = `https://instagram.com/${value.replace('@', '')}`;
+                        } else if (id === 'tiktok' && !value.includes('tiktok.com')) {
+                            url = `https://tiktok.com/@${value.replace('@', '')}`;
                         }
                         window.open(url, '_blank');
                     }
                 }}
-                className={`p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group transition-all duration-300 cursor-pointer hover:bg-white hover:shadow-md hover:border-[#FFBF00]/20`}
+                className={`flex items-center gap-3 p-3 sm:p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-md hover:border-[#FFBF00]/30 transition-all duration-300 cursor-pointer group`}
             >
-                <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <div className={`w-10 h-10 rounded-xl bg-white flex items-center justify-center ${iconColor} shadow-sm border border-slate-100 flex-shrink-0 group-hover:scale-110 transition-transform`}>
-                        {customIcon || (Icon && <Icon className="w-5 h-5 fill-current" />)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</p>
-                        <div className="relative">
-                            {!isRevealed ? (
-                                <button 
-                                    onClick={(e) => { 
-                                        e.stopPropagation(); 
-                                        toggleReveal(id); 
-                                        if (product?.id && product?.merchant_id) {
-                                            track.mutate({ merchantId: product.merchant_id, actionType: 'CLICK_CONTACT', productId: product.id });
-                                        }
-                                    }}
-                                    className="flex items-center gap-2 text-slate-400 hover:text-[#0A1128] transition-colors group/btn"
-                                >
-                                    <Eye className="w-3.5 h-3.5" />
-                                    <span className="text-[11px] font-black uppercase tracking-tighter italic">Tampilkan</span>
-                                </button>
-                            ) : (
-                                <p className="text-xs font-bold text-[#0A1128] truncate">
-                                    {value}
-                                </p>
-                            )}
-                        </div>
+                <div className={`w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm border border-slate-100 flex-shrink-0 group-hover:scale-110 transition-transform ${iconColor}`}>
+                    {customIcon || (Icon && <Icon className="w-5 h-5 fill-current" />)}
+                </div>
+                <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">{label}</p>
+                    <div className="relative">
+                        {!isRevealed ? (
+                            <button 
+                                onClick={(e) => { 
+                                    e.stopPropagation(); 
+                                    if (!isAuthenticated) {
+                                        toast.error('Silakan login terlebih dahulu.');
+                                        navigate('/login');
+                                        return;
+                                    }
+                                    toggleReveal(id); 
+                                    if (product?.id) {
+                                        track.mutate({ merchantId: product.merchant_id, actionType: 'CLICK_CONTACT', metadata: JSON.stringify({ contact_type: id, product_id: product.id }) } as any);
+                                    }
+                                }}
+                                className="flex items-center gap-1.5 text-indigo-600 hover:text-[#FFBF00] transition-colors group/btn"
+                            >
+                                <Eye className="w-3.5 h-3.5" />
+                                <span className="text-[11px] font-black uppercase tracking-tighter italic">Tampilkan</span>
+                            </button>
+                        ) : (
+                            <p className="text-xs font-bold text-[#0A1128] truncate">
+                                {value}
+                            </p>
+                        )}
                     </div>
                 </div>
                 {isRevealed && isLink && (
                     <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-[#FFBF00] group-hover:translate-x-1 transition-all" />
                 )}
             </div>
+        );
+    };
+
+    // Modern Marketplace Icon Component (Row 3)
+    const MarketplaceIcon = ({ url, src, alt }: { url?: string, src: string, alt: string }) => {
+        if (!url) return null;
+        return (
+            <a 
+                href={url.startsWith('http') ? url : `https://${url}`} 
+                target="_blank" 
+                rel="noreferrer"
+                className="w-14 h-14 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-center hover:bg-white hover:scale-110 hover:shadow-lg hover:border-[#FFBF00]/30 transition-all duration-300"
+                onClick={() => {
+                    if (product?.id) track.mutate({ merchantId: product.merchant_id, actionType: 'CLICK_CONTACT', metadata: JSON.stringify({ contact_type: alt.toLowerCase(), product_id: product.id }) } as any);
+                }}
+                title={`Kunjungi ${alt}`}
+            >
+                <img src={src} alt={alt} className="w-8 h-8 object-contain" />
+            </a>
         );
     };
 
@@ -474,34 +504,42 @@ export const ProductDetailPage: React.FC = () => {
                                 </div>
 
                                 <div className="space-y-8">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <ContactItem id="wa" label="WhatsApp" value={product.whatsapp || product.m_whatsapp || merchantStats?.whatsapp} icon={MessageCircle} iconColor="text-[#25D366]" isLink />
-                                        <ContactItem id="phone" label="No Telpon" value={product.phone || product.m_phone || merchantStats?.phone} icon={Phone} />
+                                    <div className="space-y-4">
+                                        <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] ml-1 flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-slate-300" /> Kontak Langsung
+                                        </h3>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <SecureContactItem id="wa" label="WhatsApp" value={product.whatsapp || product.m_whatsapp || merchantStats?.whatsapp} icon={MessageCircle} iconColor="text-[#25D366]" isLink />
+                                            <SecureContactItem id="phone" label="No Telepon" value={product.phone || product.m_phone || merchantStats?.phone} icon={Phone} isLink />
+                                        </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                        <ContactItem id="ig" label="Instagram" value={product.instagram || product.m_instagram || merchantStats?.instagram} icon={Instagram} iconColor="text-[#E4405F]" />
-                                        <ContactItem id="fb" label="Facebook" value={product.facebook || product.m_facebook || merchantStats?.facebook} icon={Facebook} iconColor="text-[#1877F2]" />
-                                        <ContactItem id="x" label="X Platform" value={product.x_url || product.m_x_url || merchantStats?.x_url} customIcon={<XLogoIcon className="w-4 h-4" />} />
-                                        <ContactItem id="web" label="Website" value={product.website_url || product.m_website || merchantStats?.website} icon={Globe} iconColor="text-indigo-600" isLink />
+                                    <div className="space-y-4 pt-6 border-t border-slate-50">
+                                        <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] ml-1 flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-slate-300" /> Sosial Media & Web
+                                        </h3>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <SecureContactItem id="ig" label="Instagram" value={product.instagram || product.m_instagram || merchantStats?.instagram} icon={Instagram} iconColor="text-[#E4405F]" isLink />
+                                            <SecureContactItem id="tiktok" label="TikTok" value={product.tiktok_url || product.m_tiktok_url || merchantStats?.tiktok} customIcon={
+                                                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
+                                            } isLink />
+                                            <SecureContactItem id="fb" label="Facebook" value={product.facebook || product.m_facebook || merchantStats?.facebook} icon={Facebook} iconColor="text-[#1877F2]" isLink />
+                                            <SecureContactItem id="x" label="X (Twitter)" value={product.x_url || product.m_x_url || merchantStats?.x_url} customIcon={<XLogoIcon className="w-4 h-4" />} isLink />
+                                            <SecureContactItem id="web" label="Website" value={product.website_url || product.m_website || merchantStats?.website} icon={Globe} iconColor="text-indigo-600" isLink />
+                                        </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 border-t border-slate-50">
-                                        <ContactItem 
-                                            id="tokopedia" 
-                                            label="Tokopedia" 
-                                            value={product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url} 
-                                            customIcon={<img src="/images/logos/marketplace/logo_tokopedia.png" className="w-6 h-6 object-contain" alt="TK" />} 
-                                            isLink
-                                        />
-                                        <ContactItem 
-                                            id="shopee" 
-                                            label="Shopee" 
-                                            value={product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url} 
-                                            customIcon={<img src="/images/logos/marketplace/logo_shopee.png" className="w-6 h-6 object-contain" alt="SP" />} 
-                                            isLink
-                                        />
-                                    </div>
+                                    {(product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url || product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url) && (
+                                        <div className="space-y-4 pt-6 border-t border-slate-50">
+                                            <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] ml-1 flex items-center gap-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-slate-300" /> Marketplace Official
+                                            </h3>
+                                            <div className="flex flex-wrap items-center gap-4">
+                                                <MarketplaceIcon url={product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url} src="/images/logos/marketplace/logo_shopee.png" alt="Shopee" />
+                                                <MarketplaceIcon url={product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url} src="/images/logos/marketplace/logo_tokopedia.png" alt="Tokopedia" />
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </m.div>
 
