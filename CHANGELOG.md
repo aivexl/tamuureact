@@ -1,19 +1,20 @@
 # Tamuu Changelog
 
+## [0.6.82] - 2026-03-13
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Shop: Premium Share Modal (Apple Standard)
+- **UI/UX Overhaul**: Replaced the native share API and simple clipboard fallbacks with a bespoke, high-fidelity `ShareModal`. Designed with an Apple-inspired minimalist aesthetic, featuring `backdrop-blur-xl` and spring-physics animations.
+- **Social Integration**: Integrated the latest branding for **X** (custom SVG), WhatsApp, Facebook, and Instagram.
+- **Contextual CTAs**: Implemented dynamic share text that automatically adapts to the context (Product vs. Store), including the mandatory "Cek selengkapnya di Tamuu.id" call-to-action.
+- **Smart Fallbacks**: Added an intelligent fallback for Instagram that copies the link to the clipboard and prompts the user via toast, overcoming platform-specific sharing limitations.
+- **Component Reusability**: Engineered the modal to be fully reusable across the platform, ensuring design consistency and reducing code duplication.
+
 ## [0.6.81] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production
-
-### Push Notifications: Automatic Permission & Auto-Subscription
-- **Proactive Engagement**: Implemented automatic push notification permission requests on application load. A strategic 2-second delay was added to ensure a smooth initial UI experience before triggering the browser prompt.
-- **Hook Architecture Evolution**: Refactored `usePushNotifications` to decouple permission requests from the full subscription flow. This allows the app to prompt for permissions even for unauthenticated visitors.
-- **Silent Auto-Subscription**: Enhanced the hook to automatically and silently synchronize push subscriptions with the backend as soon as a user logs in, provided they have already granted browser permissions.
-- **TypeScript Integrity**: Patched a type mismatch in `NotificationBell.tsx` to accommodate the updated `subscribe` function signature, ensuring 100% build success.
-
-## [0.6.80] - 2026-03-12
-**Status**: 🟢 Deployed
-**Environment**: Production
-
+...
 ### Critical: End-to-End Search Parameter Preservation
 - **Redirection Integrity**: Patched `ExternalRedirect`, `ProtectedRoute`, and the `App.tsx` root redirect to explicitly preserve and forward all URL search parameters and hashes. This ensures that parameters like `?tab=wishlist` are never stripped during domain transitions (tamuu.id → app.tamuu.id), authentication redirects, or root-path normalization.
 - **Deterministic Routing**: Reinforced the dashboard's URL-driven architecture to eliminate momentary "flash" states or resets back to the home tab.

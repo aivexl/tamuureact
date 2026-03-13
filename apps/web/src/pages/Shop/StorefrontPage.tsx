@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { m, AnimatePresence } from 'framer-motion';
 import {
@@ -34,10 +34,12 @@ import { StarRating } from '../../components/Shop/StarRating';
 import { ProductCard } from '../../components/Shop/ProductCard';
 import { Footer } from '../../components/Layout/Footer';
 import { Navbar } from '../../components/Layout/Navbar';
+import { ShareModal } from '../../components/Modals/ShareModal';
 
 export const StorefrontPage: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const { user, token, isAuthenticated, logout } = useStore();
 
     const { data, isLoading } = useStorefront(slug || '', token || undefined);
@@ -170,7 +172,10 @@ export const StorefrontPage: React.FC = () => {
                                             <Globe className="w-6 h-6" />
                                         </a>
                                     )}
-                                    <button className="w-14 h-14 bg-white border border-slate-100 rounded-2xl text-[#FFBF00] hover:bg-[#FFBF00] hover:text-[#0A1128] transition-all flex items-center justify-center shadow-sm">
+                                    <button 
+                                        onClick={() => setIsShareModalOpen(true)}
+                                        className="w-14 h-14 bg-white border border-slate-100 rounded-2xl text-[#FFBF00] hover:bg-[#0A1128] hover:text-white transition-all flex items-center justify-center shadow-sm"
+                                    >
                                         <Share2 className="w-6 h-6" />
                                     </button>
                                 </div>
@@ -225,6 +230,15 @@ export const StorefrontPage: React.FC = () => {
             </main>
 
             <Footer />
+
+            <ShareModal 
+                isOpen={isShareModalOpen}
+                onClose={() => setIsShareModalOpen(false)}
+                title={merchant.nama_toko}
+                url={window.location.href}
+                text={merchant.deskripsi}
+                type="store"
+            />
         </div>
     );
 };

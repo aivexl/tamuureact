@@ -41,6 +41,7 @@ import { useSEO } from '../../hooks/useSEO';
 import { formatCurrency, formatAbbreviatedNumber } from '../../lib/utils';
 import { toast } from 'react-hot-toast';
 import { ReportProductModal } from '../../components/Modals/ReportProductModal';
+import { ShareModal } from '../../components/Modals/ShareModal';
 import { INDONESIA_REGIONS } from '../../constants/regions';
 import { AnimatedCopyIcon } from '../../components/ui/AnimatedCopyIcon';
 import { StarRating } from '../../components/Shop/StarRating';
@@ -51,6 +52,7 @@ export const ProductDetailPage: React.FC = () => {
     const navigate = useNavigate();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const { user, isAuthenticated, logout, token } = useStore();
 
     // Reviews State
@@ -166,16 +168,7 @@ export const ProductDetailPage: React.FC = () => {
     };
 
     const handleShare = () => {
-        if (navigator.share) {
-            navigator.share({
-                title: product?.nama_produk,
-                text: product?.deskripsi,
-                url: window.location.href,
-            }).catch(console.error);
-        } else {
-            navigator.clipboard.writeText(window.location.href);
-            toast.success('Link produk disalin!');
-        }
+        setIsShareModalOpen(true);
     };
 
     if (isLoadingProduct) return <div className="min-h-screen bg-white flex items-center justify-center"><PremiumLoader color="#0A1128" /></div>;
@@ -738,6 +731,15 @@ export const ProductDetailPage: React.FC = () => {
                 onClose={() => setIsReportModalOpen(false)}
                 productId={product.id}
                 productName={product.nama_produk}
+            />
+
+            <ShareModal 
+                isOpen={isShareModalOpen}
+                onClose={() => setIsShareModalOpen(false)}
+                title={product.nama_produk}
+                url={window.location.href}
+                text={product.deskripsi}
+                type="product"
             />
         </div>
     );
