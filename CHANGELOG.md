@@ -1,5 +1,13 @@
 # Tamuu Changelog
 
+## [0.6.90] - 2026-03-13
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Shop: Product Detail Page Layout Optimization
+- **Section Relocation**: Moved the "Other Products from Store" section from the top sidebar to a more prominent position below the "Reviews & Ratings" section.
+- **UI Enhancement**: Redesigned the "Other Products" cards with a larger footprint, background padding, and enhanced hover shadow effects to match the discovery section aesthetic.
+
 ## [0.6.89] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production

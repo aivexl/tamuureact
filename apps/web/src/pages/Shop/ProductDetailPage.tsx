@@ -481,31 +481,6 @@ export const ProductDetailPage: React.FC = () => {
                                     )}
                                 </div>
                             </div>
-
-                            {/* Horizontal Grid: Other Products from Store */}
-                            {otherProducts.length > 0 && !product.is_admin_listing && (
-                                <div className="space-y-4">
-                                    <div className="flex justify-between items-center">
-                                        <h3 className="text-xs font-black uppercase tracking-widest text-[#0A1128]">Produk Lain Dari Toko Ini</h3>
-                                    </div>
-                                    <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 -mx-2 px-2">
-                                        {otherProducts.map((p: any) => (
-                                            <m.div
-                                                key={p.id}
-                                                whileHover={{ y: -4 }}
-                                                onClick={() => navigate(`/shop/${product.merchant_slug === 'admin' ? 'umum' : product.merchant_slug}/${p.slug || p.id}`)}
-                                                className="w-40 flex-shrink-0 cursor-pointer group"
-                                            >
-                                                <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 mb-2 relative">
-                                                    <img src={p.images?.[0]?.image_url} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt={p.nama_produk} />
-                                                </div>
-                                                <p className="text-[10px] font-black text-[#0A1128] uppercase truncate leading-tight">{p.nama_produk}</p>
-                                                <p className="text-[9px] font-bold text-[#FFBF00]">{p.harga_estimasi && !isNaN(Number(p.harga_estimasi)) ? formatCurrency(p.harga_estimasi) : p.harga_estimasi}</p>
-                                            </m.div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>
@@ -770,6 +745,34 @@ export const ProductDetailPage: React.FC = () => {
                         </div>
                     </div>
                 </section>
+
+                {/* Horizontal Grid: Other Products from Store - MOVED BELOW REVIEWS */}
+                {otherProducts.length > 0 && !product.is_admin_listing && (
+                    <div className="max-w-7xl mx-auto px-6 mt-32 space-y-8">
+                        <div className="flex items-center gap-3">
+                            <div className="h-6 w-1.5 bg-[#FFBF00] rounded-full" />
+                            <h2 className="text-xl font-black uppercase tracking-widest text-[#0A1128] italic">Produk Lain Dari Toko Ini</h2>
+                        </div>
+                        <div className="flex gap-6 overflow-x-auto no-scrollbar pb-8 -mx-2 px-2">
+                            {otherProducts.map((p: any) => (
+                                <m.div
+                                    key={p.id}
+                                    whileHover={{ y: -8 }}
+                                    onClick={() => navigate(`/shop/${product.merchant_slug === 'admin' ? 'umum' : product.merchant_slug}/${p.slug || p.id}`)}
+                                    className="w-48 flex-shrink-0 cursor-pointer group bg-white p-3 rounded-[2rem] border border-slate-50 hover:shadow-2xl hover:shadow-slate-100 transition-all"
+                                >
+                                    <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 mb-4 relative">
+                                        <img src={p.images?.[0]?.image_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={p.nama_produk} />
+                                    </div>
+                                    <div className="px-1 space-y-1">
+                                        <p className="text-[11px] font-black text-[#0A1128] uppercase truncate leading-tight group-hover:text-[#FFBF00] transition-colors">{p.nama_produk}</p>
+                                        <p className="text-[10px] font-bold text-[#FFBF00]">{p.harga_estimasi && !isNaN(Number(p.harga_estimasi)) ? formatCurrency(p.harga_estimasi) : p.harga_estimasi}</p>
+                                    </div>
+                                </m.div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 <div className="max-w-7xl mx-auto px-6 mt-24 space-y-24">
                     <div className="space-y-10">
