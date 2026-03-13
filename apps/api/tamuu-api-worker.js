@@ -1106,7 +1106,8 @@ export default {
                     const isSuperAdmin = user && (user.email === 'admin@tamuu.id' || user.role === 'admin');
                     const verificationStatus = isSuperAdmin ? 1 : 0;
 
-                    // Insert Merchant Profile                    const insertResult = await env.DB.prepare(
+                    // Insert Merchant Profile
+                    const insertResult = await env.DB.prepare(
                         `INSERT INTO shop_merchants (id, user_id, slug, nama_toko, deskripsi, category_id, is_verified) 
                          VALUES (?, ?, ?, ?, ?, ?, ?)`
                     ).bind(merchantId, user_id, slug, nama_toko, deskripsi || null, category_id, verificationStatus).run();
