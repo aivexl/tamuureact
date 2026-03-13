@@ -232,7 +232,7 @@ export const ProductDetailPage: React.FC = () => {
 
     const handleWhatsApp = () => {
         const text = `Halo, saya tertarik dengan produk ${product?.nama_produk} di Tamuu Shop. Apakah masih tersedia?`;
-        const waNumber = product?.whatsapp || merchantStats?.whatsapp || '';
+        const waNumber = product?.m_whatsapp || merchantStats?.whatsapp || '';
         window.open(`https://wa.me/${waNumber.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`, '_blank');
     };
 
@@ -461,29 +461,29 @@ export const ProductDetailPage: React.FC = () => {
 
                                 <div className="space-y-8">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <ContactItem id="wa" label="WhatsApp" value={product.whatsapp || merchantStats?.whatsapp} icon={MessageCircle} iconColor="text-[#25D366]" isLink />
-                                        <ContactItem id="phone" label="No Telpon" value={product.phone || merchantStats?.phone} icon={Phone} />
+                                        <ContactItem id="wa" label="WhatsApp" value={product.m_whatsapp || merchantStats?.whatsapp} icon={MessageCircle} iconColor="text-[#25D366]" isLink />
+                                        <ContactItem id="phone" label="No Telpon" value={product.m_phone || merchantStats?.phone} icon={Phone} />
                                     </div>
 
                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                        <ContactItem id="ig" label="Instagram" value={product.instagram || merchantStats?.instagram} icon={Instagram} iconColor="text-[#E4405F]" />
-                                        <ContactItem id="fb" label="Facebook" value={product.facebook || merchantStats?.facebook} icon={Facebook} iconColor="text-[#1877F2]" />
-                                        <ContactItem id="x" label="X Platform" value={product.x_url || merchantStats?.x_url} customIcon={<XLogoIcon className="w-4 h-4" />} />
-                                        <ContactItem id="web" label="Website" value={product.website || merchantStats?.website} icon={Globe} iconColor="text-indigo-600" isLink />
+                                        <ContactItem id="ig" label="Instagram" value={product.m_instagram || merchantStats?.instagram} icon={Instagram} iconColor="text-[#E4405F]" />
+                                        <ContactItem id="fb" label="Facebook" value={product.m_facebook || merchantStats?.facebook} icon={Facebook} iconColor="text-[#1877F2]" />
+                                        <ContactItem id="x" label="X Platform" value={product.m_x_url || merchantStats?.x_url} customIcon={<XLogoIcon className="w-4 h-4" />} />
+                                        <ContactItem id="web" label="Website" value={product.m_website || merchantStats?.website} icon={Globe} iconColor="text-indigo-600" isLink />
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 border-t border-slate-50">
                                         <ContactItem 
                                             id="tokopedia" 
                                             label="Tokopedia" 
-                                            value={product.tokopedia_url || merchantStats?.tokopedia_url} 
+                                            value={product.m_tokopedia_url || merchantStats?.tokopedia_url} 
                                             customIcon={<img src="/images/logos/marketplace/logo_tokopedia.png" className="w-6 h-6 object-contain" alt="TK" />} 
                                             isLink
                                         />
                                         <ContactItem 
                                             id="shopee" 
                                             label="Shopee" 
-                                            value={product.shopee_url || merchantStats?.shopee_url} 
+                                            value={product.m_shopee_url || merchantStats?.shopee_url} 
                                             customIcon={<img src="/images/logos/marketplace/logo_shopee.png" className="w-6 h-6 object-contain" alt="SP" />} 
                                             isLink
                                         />

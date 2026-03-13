@@ -2441,30 +2441,32 @@ export default {
                     if (isUUID) {
                         product = await env.DB.prepare(`
                             SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url,
-                            m.whatsapp as m_whatsapp, m.phone as m_phone, m.instagram as m_instagram,
-                            m.facebook as m_facebook, m.x_url as m_x_url, m.website as m_website,
-                            m.shopee_url as m_shopee_url, m.tokopedia_url as m_tokopedia_url,
+                            c.whatsapp as m_whatsapp, c.phone as m_phone, c.instagram as m_instagram,
+                            c.facebook as m_facebook, c.x_url as m_x_url, c.website as m_website,
+                            c.shopee_url as m_shopee_url, c.tokopedia_url as m_tokopedia_url,
                             p.is_admin_listing, p.custom_store_name,
                             (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count,
                             (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,
                             (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
                             FROM shop_products p 
                             LEFT JOIN shop_merchants m ON p.merchant_id = m.id 
+                            LEFT JOIN shop_contacts c ON p.merchant_id = c.merchant_id
                             WHERE p.id = ?
                         `).bind(idOrSlug).first();
                     } else {
                         // Try by slug
                         product = await env.DB.prepare(`
                             SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url,
-                            m.whatsapp as m_whatsapp, m.phone as m_phone, m.instagram as m_instagram,
-                            m.facebook as m_facebook, m.x_url as m_x_url, m.website as m_website,
-                            m.shopee_url as m_shopee_url, m.tokopedia_url as m_tokopedia_url,
+                            c.whatsapp as m_whatsapp, c.phone as m_phone, c.instagram as m_instagram,
+                            c.facebook as m_facebook, c.x_url as m_x_url, c.website as m_website,
+                            c.shopee_url as m_shopee_url, c.tokopedia_url as m_tokopedia_url,
                             p.is_admin_listing, p.custom_store_name,
                             (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count,
                             (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,
                             (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
                             FROM shop_products p 
                             LEFT JOIN shop_merchants m ON p.merchant_id = m.id 
+                            LEFT JOIN shop_contacts c ON p.merchant_id = c.merchant_id
                             WHERE p.slug = ?
                         `).bind(idOrSlug).first();
                     }
@@ -2626,15 +2628,17 @@ export default {
                     }
 
                     await env.DB.prepare(`
-                        INSERT INTO shop_contacts (merchant_id, whatsapp, instagram, facebook, tiktok, website, email, alamat, kota)
-                        SELECT id, ?, ?, ?, ?, ?, ?, ?, ? FROM shop_merchants WHERE id = ? OR slug = ?
+                        INSERT INTO shop_contacts (merchant_id, whatsapp, phone, instagram, facebook, tiktok, website, email, alamat, kota, x_url, shopee_url, tokopedia_url, youtube)
+                        SELECT id, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? FROM shop_merchants WHERE id = ? OR slug = ?
                         ON CONFLICT(merchant_id) DO UPDATE SET
-                            whatsapp = EXCLUDED.whatsapp, instagram = EXCLUDED.instagram, facebook = EXCLUDED.facebook,
+                            whatsapp = EXCLUDED.whatsapp, phone = EXCLUDED.phone, instagram = EXCLUDED.instagram, facebook = EXCLUDED.facebook,
                             tiktok = EXCLUDED.tiktok, website = EXCLUDED.website, email = EXCLUDED.email,
-                            alamat = EXCLUDED.alamat, kota = EXCLUDED.kota, updated_at = CURRENT_TIMESTAMP
+                            alamat = EXCLUDED.alamat, kota = EXCLUDED.kota, x_url = EXCLUDED.x_url, 
+                            shopee_url = EXCLUDED.shopee_url, tokopedia_url = EXCLUDED.tokopedia_url, youtube = EXCLUDED.youtube, updated_at = CURRENT_TIMESTAMP
                     `).bind(
-                        whatsapp || '', instagram || '', facebook || '', tiktok || '', 
+                        whatsapp || '', phone || '', instagram || '', facebook || '', tiktok || '', 
                         website || '', email || '', alamat || '', kota || '',
+                        body.x_url || '', body.shopee_url || '', body.tokopedia_url || '', body.youtube || '',
                         merchant_id, merchant_id
                     ).run();
 
