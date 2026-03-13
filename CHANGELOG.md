@@ -1,5 +1,18 @@
 # Tamuu Changelog
 
+## [0.6.95] - 2026-03-13
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Shop: Merchant Photo Gallery Refactor
+- **UX Optimization**: Relocated image upload and bulk delete controls to be persistently visible below the photo grid. This improves accessibility and prevents accidental interactions within the grid area.
+- **Improved Empty State**: Added consistent placeholder slots when the gallery is empty to maintain layout stability.
+- **Image Intelligence**: Confirmed the implementation of the Unicorn Standard image engine which automatically optimizes all uploads:
+    - Automatic conversion to high-compression **WebP** format.
+    - Intelligent resizing to **1600x1600** HD standard.
+    - **BlurHash** generation for seamless "ghost loading" placeholders.
+    - Perceptual quality preservation at **80%**.
+
 ## [0.6.94] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production

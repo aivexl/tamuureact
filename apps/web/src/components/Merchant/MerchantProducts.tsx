@@ -11,7 +11,7 @@ import {
 } from '../../hooks/queries/useShop';
 import api from '../../lib/api';
 import { formatCurrency } from '../../lib/utils';
-import { Search, MapPin, ChevronDown, Check, X, Store, ShoppingBag, Youtube, Twitter, Globe, ShieldCheck, MessageCircle, Phone, Instagram, Facebook } from 'lucide-react';
+import { Search, MapPin, ChevronDown, Check, X, Store, ShoppingBag, Youtube, Twitter, Globe, ShieldCheck, MessageCircle, Phone, Instagram, Facebook, Image as ImageIcon } from 'lucide-react';
 
 // Custom Icons for Tiktok
 const TiktokIcon = ({ className }: { className?: string }) => (
@@ -753,7 +753,7 @@ export const MerchantProducts: React.FC = () => {
 
                                         {/* Social & Marketplace Links Card */}
                                         <div className="bg-[#FBFBFB] rounded-[40px] border border-slate-100 p-10 space-y-10 shadow-sm relative">
-                                            <h4 className="text-lg font-black text-[#0A1128]">Tautan <span className="text-[#FFBF00]">Eksternal</span></h4>
+                                            <h4 className="text-lg font-black text-[#0A1128]">Kontak <span className="text-[#FFBF00]">Vendor</span></h4>
                                             
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                                 {[
@@ -804,39 +804,66 @@ export const MerchantProducts: React.FC = () => {
                                                 <span className="text-[10px] text-[#FFBF00] font-black tracking-widest">{images.length} / 5</span>
                                             </div>
 
+                                            {/* Photo Grid - Now dedicated to display only */}
                                             <div className="grid grid-cols-2 gap-4 mb-8">
                                                 {images.map((img, idx) => (
                                                     <div key={idx} className="aspect-square bg-white/5 border border-white/10 rounded-2xl relative overflow-hidden group shadow-lg">
                                                         <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('${img}')` }}></div>
-                                                        <div className="absolute inset-0 bg-[#0A1128]/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        
+                                                        {/* Persistent Delete Button */}
+                                                        <div className="absolute top-2 right-2 z-10">
                                                             <button
-                                                                onClick={() => handleRemoveImage(idx)}
-                                                                className="p-3 bg-red-500/20 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all transform hover:scale-110 shadow-2xl"
+                                                                onClick={(e) => { e.stopPropagation(); handleRemoveImage(idx); }}
+                                                                className="w-8 h-8 bg-rose-500 text-white rounded-xl flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all border border-white/20"
+                                                                title="Hapus Foto"
                                                             >
-                                                                <TrashIcon className="w-5 h-5" />
+                                                                <TrashIcon className="w-4 h-4" />
                                                             </button>
                                                         </div>
                                                     </div>
                                                 ))}
-                                                {images.length < 5 && (
-                                                    <div
-                                                        onClick={() => !isProductUploading && fileInputRef.current?.click()}
-                                                        className="aspect-square border-2 border-dashed border-white/10 hover:border-[#FFBF00]/40 rounded-2xl bg-white/[0.01] flex flex-col items-center justify-center p-4 text-center transition-all cursor-pointer group relative overflow-hidden shadow-inner"
-                                                    >
-                                                        <div className="absolute inset-0 bg-[#FFBF00]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                        {isProductUploading ? (
-                                                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-[#FFBF00]"></div>
-                                                        ) : (
-                                                            <>
-                                                                <div className="h-12 w-12 rounded-2xl bg-[#0A1128] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-500 group-hover:bg-[#FFBF00]/20 border border-white/5 group-hover:border-[#FFBF00]/50 shadow-2xl">
-                                                                    <UploadCloudIcon className="w-6 h-6 text-[#FFBF00] opacity-60 group-hover:opacity-100" />
-                                                                </div>
-                                                                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Import Media</p>
-                                                            </>
-                                                        )}
-                                                    </div>
+                                                
+                                                {/* Placeholder slots to maintain 2x2 grid feel when empty */}
+                                                {images.length === 0 && (
+                                                    <>
+                                                        <div className="aspect-square border-2 border-dashed border-slate-100 rounded-2xl bg-slate-50/50 flex items-center justify-center">
+                                                            <ImageIcon className="w-8 h-8 text-slate-200" />
+                                                        </div>
+                                                        <div className="aspect-square border-2 border-dashed border-slate-100 rounded-2xl bg-slate-50/50 flex items-center justify-center">
+                                                            <ImageIcon className="w-8 h-8 text-slate-200" />
+                                                        </div>
+                                                    </>
                                                 )}
                                             </div>
+
+                                            {/* Action Row - Always Visible Below the Box */}
+                                            <div className="flex flex-col gap-3">
+                                                <button
+                                                    type="button"
+                                                    disabled={images.length >= 5 || isProductUploading}
+                                                    onClick={() => fileInputRef.current?.click()}
+                                                    className="w-full py-4 bg-[#0A1128] hover:bg-black text-white rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50 disabled:grayscale"
+                                                >
+                                                    {isProductUploading ? (
+                                                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-[#FFBF00]"></div>
+                                                    ) : (
+                                                        <PlusCircleIcon className="w-4 h-4 text-[#FFBF00]" />
+                                                    )}
+                                                    {isProductUploading ? 'Mengunggah...' : 'Tambah Media'}
+                                                </button>
+
+                                                {images.length > 0 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => { if(window.confirm('Hapus semua foto?')) setImages([]); }}
+                                                        className="w-full py-4 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-3 transition-all active:scale-95 border border-rose-100"
+                                                    >
+                                                        <TrashIcon className="w-4 h-4" />
+                                                        Hapus Semua
+                                                    </button>
+                                                )}
+                                            </div>
+
                                             <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleUpload} />
 
                                             <div className="mt-auto p-6 bg-white/[0.02] border border-white/5 rounded-3xl">
