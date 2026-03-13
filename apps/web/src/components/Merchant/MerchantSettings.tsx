@@ -47,6 +47,7 @@ export const MerchantSettings: React.FC = () => {
     const [shopeeUrl, setShopeeUrl] = useState('');
     const [email, setEmail] = useState('');
     const [alamat, setAlamat] = useState('');
+    const [googleMapsUrl, setGoogleMapsUrl] = useState('');
 
     const [isDirty, setIsDirty] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -77,6 +78,7 @@ export const MerchantSettings: React.FC = () => {
             setShopeeUrl(c.shopee_url || '');
             setEmail(c.email || '');
             setAlamat(c.alamat || '');
+            setGoogleMapsUrl(c.google_maps_url || '');
             
             hasHydrated.current = true;
             setIsDirty(false);
@@ -136,7 +138,8 @@ export const MerchantSettings: React.FC = () => {
                     tokopedia_url: tokopediaUrl,
                     shopee_url: shopeeUrl,
                     email: email,
-                    alamat: alamat
+                    alamat: alamat,
+                    google_maps_url: googleMapsUrl
                 }
             });
             setIsDirty(false);
@@ -243,6 +246,20 @@ export const MerchantSettings: React.FC = () => {
                         <div className="space-y-3">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Deskripsi Toko</label>
                             <textarea value={deskripsi} onChange={e => { setDeskripsi(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-[2rem] p-8 text-sm font-medium text-slate-600 min-h-[150px] focus:ring-2 focus:ring-[#FFBF00]/20 transition-all" placeholder="Gambarkan layanan terbaik brand Anda..." />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Alamat Lengkap</label>
+                                <textarea value={alamat} onChange={e => { setAlamat(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-[2rem] p-8 text-sm font-medium text-slate-600 min-h-[100px] focus:ring-2 focus:ring-[#FFBF00]/20 transition-all" placeholder="Alamat fisik toko..." />
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Link Google Maps (URL)</label>
+                                <div className="relative">
+                                    <Globe className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                                    <input value={googleMapsUrl} onChange={e => { setGoogleMapsUrl(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128]" placeholder="https://maps.google.com/..." />
+                                </div>
+                            </div>
                         </div>
 
                         {/* Contacts Section */}

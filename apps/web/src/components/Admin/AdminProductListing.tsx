@@ -362,6 +362,8 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
         is_featured: product?.is_featured || 0,
         is_landing_featured: product?.is_landing_featured || 0
     });
+
+    const [isSyncingStore, setIsSyncingStore] = useState(false);
         
             const [selectedCategory, setSelectedCategory] = useState(
         () => {
@@ -373,6 +375,50 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
         const cat = product?.kategori_produk || '';
         return SHOP_CATEGORIES.includes(cat) ? '' : cat;
     });
+
+    // Reactive Sync Logic for Admin: Pull latest data from other products with same store name
+    useEffect(() => {
+        if (isSyncingStore && formData.custom_store_name) {
+            // Find latest product with same store name (excluding current)
+            const latestMatch = allProducts
+                .filter(p => 
+                    p.custom_store_name?.toLowerCase() === formData.custom_store_name.toLowerCase() && 
+                    p.product_id !== product?.product_id
+                )
+                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+
+            if (latestMatch) {
+                setFormData(prev => ({
+                    ...prev,
+                    whatsapp: latestMatch.whatsapp || prev.whatsapp,
+                    phone: latestMatch.phone || prev.phone,
+                    instagram: latestMatch.instagram || prev.instagram,
+                    facebook: latestMatch.facebook || prev.facebook,
+                    tiktok_url: latestMatch.tiktok_url || prev.tiktok_url,
+                    youtube_url: latestMatch.youtube_url || prev.youtube_url,
+                    x_url: latestMatch.x_url || prev.x_url,
+                    website_url: latestMatch.website_url || prev.website_url,
+                    tokopedia_url: latestMatch.tokopedia_url || prev.tokopedia_url,
+                    shopee_url: latestMatch.shopee_url || prev.shopee_url,
+                    alamat_lengkap: latestMatch.alamat_lengkap || prev.alamat_lengkap,
+                    google_maps_url: latestMatch.google_maps_url || prev.google_maps_url,
+                    kategori_produk: latestMatch.kategori_produk || prev.kategori_produk,
+                    kota: latestMatch.kota || prev.kota
+                }));
+
+                // Sync UI category
+                if (latestMatch.kategori_produk) {
+                    if (SHOP_CATEGORIES.includes(latestMatch.kategori_produk)) {
+                        setSelectedCategory(latestMatch.kategori_produk);
+                        setCustomCategory('');
+                    } else {
+                        setSelectedCategory('Lainnya');
+                        setCustomCategory(latestMatch.kategori_produk);
+                    }
+                }
+            }
+        }
+    }, [isSyncingStore, formData.custom_store_name]);
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -686,6 +732,40 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    {/* Sync Store History */}
+                    <div className="bg-white/5 backdrop-blur-xl rounded-[2.5rem] border border-white/10 p-10 space-y-8 shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-48 h-48 bg-[#FFBF00]/5 rounded-full -mr-24 -mt-24 blur-3xl" />
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-xl bg-[#FFBF00]/10 text-[#FFBF00] flex items-center justify-center border border-[#FFBF00]/20"><Store className="w-5 h-5" /></div>
+                                <div>
+                                    <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white">Sinkronisasi Riwayat</h3>
+                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Gunakan data dari listing sebelumnya</p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsSyncingStore(!isSyncingStore)}
+                                className={`relative w-14 h-7 rounded-full transition-all duration-500 shadow-inner ${isSyncingStore ? 'bg-[#FFBF00]' : 'bg-white/10'}`}
+                            >
+                                <div className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow-xl transition-all duration-500 flex items-center justify-center ${isSyncingStore ? 'left-8 rotate-0' : 'left-1 -rotate-90'}`}>
+                                    <Check className={`w-3 h-3 text-[#FFBF00] transition-opacity duration-500 ${isSyncingStore ? 'opacity-100' : 'opacity-0'}`} />
+                                </div>
+                            </button>
+                        </div>
+
+                        {isSyncingStore && (
+                            <m.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-5 bg-[#FFBF00]/5 border border-[#FFBF00]/20 rounded-[1.5rem] relative z-10 flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-[#FFBF00]/20 flex items-center justify-center text-[#FFBF00] animate-pulse">
+                                    <ShieldCheck className="w-4 h-4" />
+                                </div>
+                                <p className="text-[10px] font-black text-[#FFBF00] uppercase tracking-widest leading-relaxed">
+                                    Mode Sinkronisasi Aktif: Data kontak dan lokasi mengikuti entri terbaru di registry untuk "{formData.custom_store_name || 'Generic Vendor'}".
+                                </p>
+                            </m.div>
+                        )}
                     </div>
 
                     {/* Location Detail */}

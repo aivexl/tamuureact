@@ -1,5 +1,16 @@
 # Tamuu Changelog
 
+## [0.6.92] - 2026-03-13
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Shop: Unified Contact Synchronization
+- **New Feature**: Added "Sync with Store Settings" toggle in the Merchant Product Form. When active, it automatically synchronizes the product's contact and location data with the global store profile.
+- **New Feature**: Added "Sync Store History" toggle in the Admin Product Form. This allows administrators to pull the latest contact/location data for a specific brand from the existing registry entries.
+- **Store Settings Enhancement**: Added `google_maps_url` and `alamat_lengkap` support to the Store Profile. Merchants can now manage their global location link in one place.
+- **Database Architecture**: Added `google_maps_url` column to the `shop_contacts` table via migration `0056`.
+- **API Worker Update**: Enhanced the merchant profile update endpoint to handle persistent Google Maps URLs.
+
 ## [0.6.91] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production

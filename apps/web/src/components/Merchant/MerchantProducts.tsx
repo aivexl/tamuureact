@@ -11,7 +11,7 @@ import {
 } from '../../hooks/queries/useShop';
 import api from '../../lib/api';
 import { formatCurrency } from '../../lib/utils';
-import { Search, MapPin, ChevronDown, Check, X, Store, ShoppingBag, Youtube, Twitter, Globe } from 'lucide-react';
+import { Search, MapPin, ChevronDown, Check, X, Store, ShoppingBag, Youtube, Twitter, Globe, ShieldCheck } from 'lucide-react';
 
 // Custom Icons for Tiktok
 const TiktokIcon = ({ className }: { className?: string }) => (
@@ -94,6 +94,8 @@ export const MerchantProducts: React.FC = () => {
     const [alamatLengkap, setAlamatLengkap] = useState('');
     const [googleMapsUrl, setGoogleMapsUrl] = useState('');
 
+    const [isSyncingStore, setIsSyncingStore] = useState(false);
+
     // Searchable Kota State
     const [isKotaOpen, setIsKotaOpen] = useState(false);
     const [kotaSearchQuery, setKotaSearchQuery] = useState('');
@@ -109,6 +111,27 @@ export const MerchantProducts: React.FC = () => {
         'Lainnya'
     ];
     const [images, setImages] = useState<string[]>([]);
+
+    // Reactive Sync Logic: When toggle is ON, pull from merchantData
+    React.useEffect(() => {
+        if (isSyncingStore && merchantData?.merchant) {
+            const m = merchantData.merchant;
+            const c = merchantData.contacts || {};
+            setWhatsapp(c.whatsapp || '');
+            setPhone(c.phone || '');
+            setInstagram(c.instagram || '');
+            setFacebook(c.facebook || '');
+            setTiktokUrl(c.tiktok || '');
+            setYoutubeUrl(c.youtube || '');
+            setXUrl(c.x_url || '');
+            setWebsiteUrl(c.website || '');
+            setTokopediaUrl(c.tokopedia_url || '');
+            setShopeeUrl(c.shopee_url || '');
+            setAlamatLengkap(c.alamat || '');
+            setGoogleMapsUrl(c.google_maps_url || '');
+            setKota(c.kota || m.kota || 'Kota Jakarta Selatan');
+        }
+    }, [isSyncingStore, merchantData]);
 
     const [isProductUploading, setIsProductUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -136,6 +159,7 @@ export const MerchantProducts: React.FC = () => {
         setShopeeUrl('');
         setAlamatLengkap('');
         setGoogleMapsUrl('');
+        setIsSyncingStore(false);
     };
 
     const handleAddNew = () => {
@@ -662,9 +686,36 @@ export const MerchantProducts: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        {/* Location Detail Card */}
                                         <div className="bg-[#FBFBFB] rounded-[40px] border border-slate-100 p-10 space-y-8 shadow-sm relative">
-                                            <div className="flex items-center gap-4">
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-slate-100">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 rounded-xl bg-[#0A1128] text-[#FFBF00] flex items-center justify-center border border-white/5 shadow-lg"><Store className="w-5 h-5" /></div>
+                                                    <div>
+                                                        <h4 className="text-lg font-black text-[#0A1128]">Sinkronisasi <span className="text-[#FFBF00]">Toko</span></h4>
+                                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Gunakan Data Global Toko</p>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setIsSyncingStore(!isSyncingStore)}
+                                                    className={`relative w-14 h-7 rounded-full transition-all duration-500 shadow-inner ${isSyncingStore ? 'bg-[#FFBF00]' : 'bg-slate-200'}`}
+                                                >
+                                                    <div className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow-xl transition-all duration-500 flex items-center justify-center ${isSyncingStore ? 'left-8 rotate-0' : 'left-1 -rotate-90'}`}>
+                                                        <Check className={`w-3 h-3 text-[#FFBF00] transition-opacity duration-500 ${isSyncingStore ? 'opacity-100' : 'opacity-0'}`} />
+                                                    </div>
+                                                </button>
+                                            </div>
+
+                                            {isSyncingStore && (
+                                                <m.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-[#FFBF00]/5 border border-[#FFBF00]/20 rounded-2xl">
+                                                    <p className="text-[10px] font-bold text-[#0A1128] uppercase tracking-widest flex items-center gap-2">
+                                                        <ShieldCheck className="w-3 h-3" />
+                                                        Mode Sinkronisasi Aktif: Data kontak dan lokasi mengikuti Profile Toko.
+                                                    </p>
+                                                </m.div>
+                                            )}
+
+                                            <div className="flex items-center gap-4 pt-4">
                                                 <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center border border-orange-500/20"><MapPin className="w-5 h-5" /></div>
                                                 <div>
                                                     <h4 className="text-lg font-black text-[#0A1128]">Lokasi <span className="text-[#FFBF00]">Detail</span></h4>

@@ -2618,7 +2618,7 @@ export default {
                 const { 
                     merchant_id, user_id, nama_toko, deskripsi, logo_url, banner_url, 
                     category_id, kota, whatsapp, instagram, facebook, tiktok, 
-                    website, email, alamat 
+                    website, email, alamat, google_maps_url
                 } = body;
 
                 if (!merchant_id || !user_id) return json({ error: 'Missing required IDs' }, { ...corsHeaders, status: 400 });
@@ -2647,17 +2647,19 @@ export default {
                     }
 
                     await env.DB.prepare(`
-                        INSERT INTO shop_contacts (merchant_id, whatsapp, phone, instagram, facebook, tiktok, website, email, alamat, kota, x_url, shopee_url, tokopedia_url, youtube)
-                        SELECT id, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? FROM shop_merchants WHERE id = ? OR slug = ?
+                        INSERT INTO shop_contacts (merchant_id, whatsapp, phone, instagram, facebook, tiktok, website, email, alamat, kota, x_url, shopee_url, tokopedia_url, youtube, google_maps_url)
+                        SELECT id, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? FROM shop_merchants WHERE id = ? OR slug = ?
                         ON CONFLICT(merchant_id) DO UPDATE SET
                             whatsapp = EXCLUDED.whatsapp, phone = EXCLUDED.phone, instagram = EXCLUDED.instagram, facebook = EXCLUDED.facebook,
                             tiktok = EXCLUDED.tiktok, website = EXCLUDED.website, email = EXCLUDED.email,
                             alamat = EXCLUDED.alamat, kota = EXCLUDED.kota, x_url = EXCLUDED.x_url, 
-                            shopee_url = EXCLUDED.shopee_url, tokopedia_url = EXCLUDED.tokopedia_url, youtube = EXCLUDED.youtube, updated_at = CURRENT_TIMESTAMP
+                            shopee_url = EXCLUDED.shopee_url, tokopedia_url = EXCLUDED.tokopedia_url, youtube = EXCLUDED.youtube, 
+                            google_maps_url = EXCLUDED.google_maps_url, updated_at = CURRENT_TIMESTAMP
                     `).bind(
                         whatsapp || '', phone || '', instagram || '', facebook || '', tiktok || '', 
                         website || '', email || '', alamat || '', kota || '',
                         body.x_url || '', body.shopee_url || '', body.tokopedia_url || '', body.youtube || '',
+                        google_maps_url || '',
                         merchant_id, merchant_id
                     ).run();
 
