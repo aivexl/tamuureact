@@ -1,11 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { Search, Store, UserCheck, ShieldOff, Image as ImageIcon, Plus, Trash2, Link as LinkIcon, UploadCloud, CheckCircle2, AlertTriangle, ShieldAlert, Ban } from 'lucide-react';
+import { Search, Store, UserCheck, ShieldOff, Image as ImageIcon, Plus, Trash2, Link as LinkIcon, UploadCloud, CheckCircle2, AlertTriangle, ShieldAlert, Ban, Power, Trash } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { PremiumLoader } from '../ui/PremiumLoader';
 import { useAdminShopCarousel, useAdminAddCarousel, useAdminDeleteCarousel, useAdminMerchants, useAdminUpdateMerchant } from '../../hooks/queries/useShop';
 import { useStore } from '../../store/useStore';
-import { storage } from '../../lib/api';
+import { storage, admin } from '../../lib/api';
 
 export const AdminStoreManagement: React.FC = () => {
     const { token } = useStore();
@@ -79,6 +79,22 @@ export const AdminStoreManagement: React.FC = () => {
                 toast.error(err.message || 'Failed to update status');
             }
         });
+    };
+
+    const handleDeleteMerchant = async (id: string, name: string) => {
+        if (!confirm(`Are you sure you want to PERMANENTLY DELETE merchant "${name}"? This action cannot be undone.`)) return;
+
+        try {
+            // We use a generic delete endpoint if available or call admin API
+            // Let's check api.ts for deleteMerchant
+            const res = await admin.deleteMerchant(id, token || undefined);
+            if (res.success) {
+                toast.success(`Merchant "${name}" deleted successfully.`);
+                refetchMerchants();
+            }
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to delete merchant');
+        }
     };
 
     const handleAddSlide = async () => {
@@ -214,9 +230,9 @@ export const AdminStoreManagement: React.FC = () => {
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-6">
+                                            <td className="px-8 py-6 text-right">
                                                 <div className="flex items-center justify-end gap-2">
-                                                    {/* VERIFY BUTTON */}
+                                                    {/* VERIFY / UNVERIFY */}
                                                     <button
                                                         onClick={() => handleVerifyMerchant(merchant.id, merchant.nama_toko, merchant.is_verified)}
                                                         className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border ${
@@ -224,18 +240,18 @@ export const AdminStoreManagement: React.FC = () => {
                                                             ? 'bg-rose-500/10 text-rose-500 border-rose-500/20 hover:bg-rose-500 hover:text-white' 
                                                             : 'bg-teal-500 text-white border-teal-500 hover:bg-teal-600 shadow-lg shadow-teal-500/20'
                                                         }`}
-                                                        title={merchant.is_verified === 1 ? 'Unverify Merchant' : 'Verify Merchant'}
+                                                        title={merchant.is_verified === 1 ? 'Suspend / Unverify Merchant' : 'Verify Merchant'}
                                                     >
-                                                        {merchant.is_verified === 1 ? <ShieldOff className="w-3.5 h-3.5" /> : <UserCheck className="w-3.5 h-3.5" />}
-                                                        {merchant.is_verified === 1 ? 'Unverify' : 'Verify'}
+                                                        {merchant.is_verified === 1 ? <Ban className="w-3.5 h-3.5" /> : <UserCheck className="w-3.5 h-3.5" />}
+                                                        {merchant.is_verified === 1 ? 'Suspend' : 'Verify'}
                                                     </button>
 
-                                                    {/* SPONSOR BUTTON */}
+                                                    {/* SPONSOR TOGGLE */}
                                                     <button
                                                         onClick={() => handlePromoteMerchant(merchant.id, merchant.nama_toko, 'is_sponsored', merchant.is_sponsored)}
                                                         className={`p-2.5 rounded-xl border transition-all ${
                                                             merchant.is_sponsored === 1
-                                                            ? 'bg-purple-500 text-white border-purple-500'
+                                                            ? 'bg-purple-500 text-white border-purple-500 shadow-lg shadow-purple-500/20'
                                                             : 'bg-white/5 text-slate-500 border-white/5 hover:border-purple-500/50 hover:text-purple-400'
                                                         }`}
                                                         title="Toggle Sponsored Status"
@@ -243,17 +259,26 @@ export const AdminStoreManagement: React.FC = () => {
                                                         <ShieldAlert className="w-4 h-4" />
                                                     </button>
 
-                                                    {/* FEATURE BUTTON */}
+                                                    {/* FEATURE TOGGLE */}
                                                     <button
                                                         onClick={() => handlePromoteMerchant(merchant.id, merchant.nama_toko, 'is_landing_featured', merchant.is_landing_featured)}
                                                         className={`p-2.5 rounded-xl border transition-all ${
                                                             merchant.is_landing_featured === 1
-                                                            ? 'bg-blue-500 text-white border-blue-500'
+                                                            ? 'bg-blue-500 text-white border-blue-500 shadow-lg shadow-blue-500/20'
                                                             : 'bg-white/5 text-slate-500 border-white/5 hover:border-blue-500/50 hover:text-blue-400'
                                                         }`}
                                                         title="Toggle Landing Featured"
                                                     >
                                                         <Plus className="w-4 h-4" />
+                                                    </button>
+
+                                                    {/* DELETE BUTTON */}
+                                                    <button
+                                                        onClick={() => handleDeleteMerchant(merchant.id, merchant.nama_toko)}
+                                                        className="p-2.5 rounded-xl bg-white/5 text-slate-500 border border-white/5 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all group/del"
+                                                        title="Delete Merchant Permanently"
+                                                    >
+                                                        <Trash2 className="w-4 h-4 group-hover/del:scale-110 transition-transform" />
                                                     </button>
                                                 </div>
                                             </td>
@@ -266,6 +291,7 @@ export const AdminStoreManagement: React.FC = () => {
                 </div>
             ) : (
                 <div className="space-y-6">
+                    {/* Carousel Content remains same */}
                     <div className="flex justify-between items-center">
                         <h2 className="text-xl font-black text-white uppercase tracking-widest flex items-center gap-3 italic">
                             <ImageIcon className="w-5 h-5 text-teal-500" />

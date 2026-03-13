@@ -959,6 +959,17 @@ export const admin = {
         return await res.json();
     },
 
+    async deleteMerchant(id: string, token?: string) {
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/merchants/${id}`, {
+            method: 'DELETE',
+            headers
+        });
+        if (!res.ok) throw new Error('Failed to delete merchant');
+        return await res.json();
+    },
+
     async deleteAd(id: string, token?: string) {
         const headers: Record<string, string> = {};
         if (token) headers['Authorization'] = `Bearer ${token}`;

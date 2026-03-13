@@ -2005,6 +2005,22 @@ export default {
                     }
                 }
 
+                if (path.startsWith('/api/admin/shop/merchants/') && method === 'DELETE') {
+                    try {
+                        const parts = path.split('/');
+                        const merchantIdFromPath = parts[parts.length - 1];
+                        if (!merchantIdFromPath) return json({ error: 'Merchant ID required' }, { ...corsHeaders, status: 400 });
+
+                        // CTO POLICY: Cascade delete is handled by D1 via FOREIGN KEY ON DELETE CASCADE
+                        // but we will explicitly delete to ensure clean cleanup
+                        await env.DB.prepare('DELETE FROM shop_merchants WHERE id = ?').bind(merchantIdFromPath).run();
+
+                        return json({ success: true }, corsHeaders);
+                    } catch (error) {
+                        return json({ error: 'Failed to delete merchant', details: error.message }, { ...corsHeaders, status: 500 });
+                    }
+                }
+
                 if (path === '/api/admin/shop/products/approve' && method === 'PATCH') {
                     try {
                         const { id, is_approved, rejection_reason } = await request.json();
