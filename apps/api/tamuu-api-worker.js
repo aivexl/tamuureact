@@ -1405,42 +1405,53 @@ export default {
 
                         console.log(`[Shop] Updating product ${productId} with status ${finalStatus}`);
 
+                        const updateFields = [];
+                        const params = [];
+
+                        const addField = (name, value) => {
+                            if (value !== undefined) {
+                                updateFields.push(`${name} = ?`);
+                                params.push(value === "" ? null : value);
+                            }
+                        };
+
+                        addField('nama_produk', nama_produk);
+                        addField('deskripsi', deskripsi);
+                        addField('harga_estimasi', harga_estimasi);
+                        addField('status', finalStatus);
+                        addField('kategori_produk', kategori_produk);
+                        addField('kota', kota);
+                        addField('tiktok_url', tiktok_url);
+                        addField('youtube_url', youtube_url);
+                        addField('x_url', x_url);
+                        addField('website_url', website_url);
+                        addField('tokopedia_url', tokopedia_url);
+                        addField('shopee_url', shopee_url);
+                        addField('alamat_lengkap', alamat_lengkap);
+                        addField('google_maps_url', google_maps_url);
+                        addField('whatsapp', whatsapp);
+                        addField('phone', phone);
+                        addField('instagram', instagram);
+                        addField('facebook', facebook);
+
+                        if (nama_produk) {
+                            addField('slug', generateSlug(nama_produk));
+                        }
+
+                        if (finalStatus === 'PUBLISHED') {
+                            updateFields.push('is_approved = 0');
+                        }
+
+                        if (updateFields.length === 0) {
+                            return json({ success: true, message: 'No changes' }, corsHeaders);
+                        }
+
                         const statements = [
                             env.DB.prepare(`
                                 UPDATE shop_products 
-                                SET nama_produk = COALESCE(?, nama_produk),
-                                    deskripsi = COALESCE(?, deskripsi),
-                                    harga_estimasi = COALESCE(?, harga_estimasi),
-                                    status = COALESCE(?, status),
-                                    kategori_produk = COALESCE(?, kategori_produk),
-                                    kota = COALESCE(?, kota),
-                                    tiktok_url = COALESCE(?, tiktok_url),
-                                    youtube_url = COALESCE(?, youtube_url),
-                                    x_url = COALESCE(?, x_url),
-                                    website_url = COALESCE(?, website_url),
-                                    tokopedia_url = COALESCE(?, tokopedia_url),
-                                    shopee_url = COALESCE(?, shopee_url),
-                                    is_approved = CASE WHEN ? = 'PUBLISHED' THEN 0 ELSE is_approved END,
-                                    slug = COALESCE(?, slug),
-                                    alamat_lengkap = COALESCE(?, alamat_lengkap),
-                                    google_maps_url = COALESCE(?, google_maps_url),
-                                    whatsapp = COALESCE(?, whatsapp),
-                                    phone = COALESCE(?, phone),
-                                    instagram = COALESCE(?, instagram),
-                                    facebook = COALESCE(?, facebook),
-                                    updated_at = CURRENT_TIMESTAMP
+                                SET ${updateFields.join(', ')}, updated_at = CURRENT_TIMESTAMP
                                 WHERE id = ?
-                            `).bind(
-                                nama_produk, deskripsi, harga_estimasi, finalStatus, 
-                                kategori_produk || null, kota || null, tiktok_url || null, 
-                                youtube_url || null, x_url || null, website_url || null, 
-                                tokopedia_url || null, shopee_url || null, finalStatus, 
-                                newSlug,
-                                alamat_lengkap || null,
-                                google_maps_url || null,
-                                whatsapp || null, phone || null, instagram || null, facebook || null,
-                                productId
-                            )
+                            `).bind(...params, productId)
                         ];
 
                         // Sync images: Delete and re-insert in the same transaction
@@ -1849,19 +1860,8 @@ export default {
                         
                         const products = await env.DB.prepare(`
                             SELECT 
+                                p.*,
                                 p.id as product_id, 
-                                p.nama_produk, 
-                                p.status, 
-                                p.harga_estimasi, 
-                                p.kota, 
-                                p.merchant_id, 
-                                p.is_admin_listing,
-                                p.custom_store_name,
-                                p.is_approved,
-                                p.rejection_reason,
-                                p.is_special,
-                                p.is_featured,
-                                p.is_landing_featured,
                                 p.created_at as product_created_at,
                                 m.nama_toko, 
                                 m.slug as merchant_slug

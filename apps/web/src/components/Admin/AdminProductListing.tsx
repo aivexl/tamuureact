@@ -346,21 +346,22 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
         custom_store_name: product?.custom_store_name || '',
         is_admin_listing: 1,
         images: product?.images?.map((img: any) => img.image_url) || [],
-                tokopedia_url: product?.tokopedia_url || '',
-                shopee_url: product?.shopee_url || '',
-                website_url: product?.website_url || '',
-                tiktok_url: product?.tiktok_url || '',
-                youtube_url: product?.youtube_url || '',
-                x_url: product?.x_url || '',
-                whatsapp: product?.whatsapp || '',
-                phone: product?.phone || '',
-                instagram: product?.instagram || '',
-                facebook: product?.facebook || '',
-                alamat_lengkap: product?.alamat_lengkap || '',
-                google_maps_url: product?.google_maps_url || '',
-                is_special: product?.is_special || 0,
-                is_featured: product?.is_featured || 0
-            });
+        tokopedia_url: product?.tokopedia_url || '',
+        shopee_url: product?.shopee_url || '',
+        website_url: product?.website_url || '',
+        tiktok_url: product?.tiktok_url || '',
+        youtube_url: product?.youtube_url || '',
+        x_url: product?.x_url || '',
+        whatsapp: product?.whatsapp || '',
+        phone: product?.phone || '',
+        instagram: product?.instagram || '',
+        facebook: product?.facebook || '',
+        alamat_lengkap: product?.alamat_lengkap || '',
+        google_maps_url: product?.google_maps_url || '',
+        is_special: product?.is_special || 0,
+        is_featured: product?.is_featured || 0,
+        is_landing_featured: product?.is_landing_featured || 0
+    });
         
             const [selectedCategory, setSelectedCategory] = useState(
         () => {
@@ -845,23 +846,47 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                         </div>
                     </div>
 
-                    {/* Governance Policy */}
+                    {/* Governance & Visibility */}
                     <div className="bg-[#0A1128] rounded-[2.5rem] p-10 text-white space-y-8 shadow-2xl shadow-black/40 relative overflow-hidden border border-white/5">
                         <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full -mr-24 -mt-24 blur-3xl" />
                         <div className="flex items-center gap-4 relative z-10">
-                            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-[#FFBF00] border border-white/10"><AlertCircle className="w-5 h-5" /></div>
+                            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-[#FFBF00] border border-white/10"><ShieldCheck className="w-5 h-5" /></div>
                             <div>
-                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#FFBF00]">Penting</h3>
-                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Aturan Produk</p>
+                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#FFBF00]">Governance</h3>
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Administrative Controls</p>
                             </div>
                         </div>
-                        <p className="text-sm text-slate-400 leading-relaxed relative z-10 italic">
-                            Produk ini akan tampil di halaman utama. Pastikan link Tokopedia atau Shopee sudah benar untuk memudahkan transaksi.
-                        </p>
-                        <div className="pt-4 relative z-10">
-                            <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/5 rounded-xl w-fit">
-                                <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
-                                <span className="text-[9px] font-black text-teal-400 uppercase tracking-widest tracking-widest">Data Valid</span>
+                        
+                        <div className="space-y-6 relative z-10">
+                            {[
+                                { id: 'is_special', label: 'Special Product', desc: 'Tampilkan label Special di listing' },
+                                { id: 'is_featured', label: 'Featured Product', desc: 'Prioritaskan di hasil pencarian' },
+                                { id: 'is_landing_featured', label: 'Landing Featured', desc: 'Tampilkan di Homepage (Discovery)' }
+                            ].map((item) => (
+                                <div key={item.id} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all group">
+                                    <div className="flex flex-col">
+                                        <span className="text-xs font-black uppercase tracking-widest group-hover:text-[#FFBF00] transition-colors">{item.label}</span>
+                                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tight">{item.desc}</span>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData(prev => ({ ...prev, [item.id]: (formData as any)[item.id] ? 0 : 1 }))}
+                                        className={`w-12 h-6 rounded-full transition-all relative ${
+                                            (formData as any)[item.id] ? 'bg-[#FFBF00]' : 'bg-slate-800'
+                                        }`}
+                                    >
+                                        <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${
+                                            (formData as any)[item.id] ? 'left-7' : 'left-1'
+                                        }`} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="pt-4 relative z-10 border-t border-white/5">
+                            <div className="flex items-center gap-2 px-4 py-2 bg-teal-500/10 border border-teal-500/20 rounded-xl w-fit">
+                                <Check className="w-3.5 h-3.5 text-teal-400" />
+                                <span className="text-[9px] font-black text-teal-400 uppercase tracking-widest">Admin Control Active</span>
                             </div>
                         </div>
                     </div>

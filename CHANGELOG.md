@@ -1,5 +1,16 @@
 # Tamuu Changelog
 
+## [0.6.89] - 2026-03-13
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Shop: Product Persistence & Registry Data Integrity
+- **Persistence Refactor**: Rewrote the product update logic in `tamuu-api-worker.js` to use dynamic field updates instead of `COALESCE`. This allows users to correctly clear fields (like removing a marketplace link) which was previously blocked by the `COALESCE(?, field)` pattern.
+- **Admin Registry Expansion**: Fixed a critical data-omission bug in the admin product list query. Added all missing columns (`tokopedia_url`, `shopee_url`, `whatsapp`, `phone`, etc.) to the `SELECT` statement, enabling full administrative editing capabilities.
+- **Admin Promoted Flags Control**: Added a new "Governance & Visibility" control panel to the Admin Product form, allowing administrators to toggle `is_special`, `is_featured`, and `is_landing_featured` flags directly.
+- **Merchant Form Fix**: Resolved an issue where contact fields were being lost during product updates in the user dashboard due to missing keys in the `handleSave` payload.
+- **Form State Fix**: Corrected a state initialization bug in `AdminProductListing.tsx` that caused certain promoted flags to be ignored during edits.
+
 ## [0.6.88] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production

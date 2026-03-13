@@ -256,6 +256,10 @@ export const MerchantProducts: React.FC = () => {
             status: finalStatus,
             images: images,
             kota: kota,
+            whatsapp: whatsapp,
+            phone: phone,
+            instagram: instagram,
+            facebook: facebook,
             tiktok_url: tiktokUrl,
             youtube_url: youtubeUrl,
             x_url: xUrl,
@@ -265,6 +269,7 @@ export const MerchantProducts: React.FC = () => {
             alamat_lengkap: alamatLengkap,
             google_maps_url: googleMapsUrl
         };
+
 
         try {
             if (view === 'add') {
