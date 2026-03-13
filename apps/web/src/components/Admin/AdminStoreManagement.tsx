@@ -1,33 +1,20 @@
 import React, { useState, useRef } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { Search, Filter, MoreVertical, ShieldAlert, Store, UserX, UserCheck, ShieldOff, Image as ImageIcon, Plus, Trash2, Link as LinkIcon, ChevronRight, UploadCloud } from 'lucide-react';
+import { Search, Store, UserCheck, ShieldOff, Image as ImageIcon, Plus, Trash2, Link as LinkIcon, UploadCloud, CheckCircle2, AlertTriangle, ShieldAlert, Ban } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { PremiumLoader } from '../ui/PremiumLoader';
-import { useAdminShopCarousel, useAdminAddCarousel, useAdminDeleteCarousel } from '../../hooks/queries/useShop';
+import { useAdminShopCarousel, useAdminAddCarousel, useAdminDeleteCarousel, useAdminMerchants, useAdminUpdateMerchant } from '../../hooks/queries/useShop';
 import { useStore } from '../../store/useStore';
 import { storage } from '../../lib/api';
-
-// Mock Data for Merchants
-const MOCK_MERCHANTS = [
-    {
-        id: '1',
-        name: 'Nusantara Wedding Organizer',
-        owner: 'Budi Santoso',
-        email: 'budi@nusantara.id',
-        status: 'active',
-        joinedAt: '2023-11-15',
-        productsCount: 9,
-        rating: 4.8
-    }
-];
 
 export const AdminStoreManagement: React.FC = () => {
     const { token } = useStore();
     const [activeTab, setActiveTab] = useState<'merchants' | 'carousel'>('merchants');
     const [searchQuery, setSearchQuery] = useState('');
-    const [merchants, setMerchants] = useState(MOCK_MERCHANTS);
-    const [isLoading, setIsLoading] = useState(false);
-    const [activeActionMenu, setActiveActionMenu] = useState<string | null>(null);
+    
+    // Real Data Hooks
+    const { data: merchants = [], isLoading: isLoadingMerchants, refetch: refetchMerchants } = useAdminMerchants();
+    const updateMerchantMutation = useAdminUpdateMerchant();
 
     // Carousel State
     const { data: slides = [], isLoading: isLoadingCarousel } = useAdminShopCarousel(token || '');
@@ -57,24 +44,41 @@ export const AdminStoreManagement: React.FC = () => {
         }
     };
 
-    const filteredMerchants = merchants.filter(merchant =>
-        merchant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        merchant.email.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredMerchants = Array.isArray(merchants) ? merchants.filter(merchant =>
+        (merchant.nama_toko || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (merchant.email || '').toLowerCase().includes(searchQuery.toLowerCase())
+    ) : [];
 
-    const handleStatusChange = (id: string, newStatus: 'active' | 'suspended' | 'banned', merchantName: string) => {
-        setIsLoading(true);
-        setActiveActionMenu(null);
+    const handleVerifyMerchant = (id: string, name: string, currentStatus: number) => {
+        const newStatus = currentStatus === 1 ? 0 : 1;
+        updateMerchantMutation.mutate({ 
+            id, 
+            data: { is_verified: newStatus } 
+        }, {
+            onSuccess: () => {
+                toast.success(`${name} ${newStatus === 1 ? 'Verified' : 'Unverified'} successfully`);
+                refetchMerchants();
+            },
+            onError: (err: any) => {
+                toast.error(err.message || 'Failed to update verification status');
+            }
+        });
+    };
 
-        // Simulate API update
-        setTimeout(() => {
-            setMerchants(prev => prev.map(m => m.id === id ? { ...m, status: newStatus } : m));
-            setIsLoading(false);
-
-            if (newStatus === 'suspended') toast.error(`${merchantName} has been Suspended.`);
-            if (newStatus === 'banned') toast.error(`${merchantName} has been Banned from the platform.`);
-            if (newStatus === 'active') toast.success(`${merchantName} is now Active.`);
-        }, 600);
+    const handlePromoteMerchant = (id: string, name: string, field: string, currentValue: number) => {
+        const newValue = currentValue === 1 ? 0 : 1;
+        updateMerchantMutation.mutate({ 
+            id, 
+            data: { [field]: newValue } 
+        }, {
+            onSuccess: () => {
+                toast.success(`${name} status updated successfully`);
+                refetchMerchants();
+            },
+            onError: (err: any) => {
+                toast.error(err.message || 'Failed to update status');
+            }
+        });
     };
 
     const handleAddSlide = async () => {
@@ -98,24 +102,18 @@ export const AdminStoreManagement: React.FC = () => {
         }
     };
 
-    const getStatusBadge = (status: string) => {
-        switch (status) {
-            case 'active':
-                return <span className="px-3 py-1 rounded-full bg-teal-500/10 text-teal-400 text-xs font-bold uppercase tracking-wider border border-teal-500/20">Active</span>;
-            case 'suspended':
-                return <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 text-xs font-bold uppercase tracking-wider border border-amber-500/20">Suspended</span>;
-            case 'banned':
-                return <span className="px-3 py-1 rounded-full bg-rose-500/10 text-rose-500 text-xs font-bold uppercase tracking-wider border border-rose-500/20 flex items-center gap-1"><ShieldOff className="w-3 h-3" /> Banned</span>;
-            default:
-                return null;
+    const getStatusBadge = (merchant: any) => {
+        if (merchant.is_verified === 1) {
+            return <span className="px-3 py-1 rounded-full bg-teal-500/10 text-teal-400 text-[9px] font-black uppercase tracking-widest border border-teal-500/20 flex items-center gap-1.5 w-fit"><CheckCircle2 className="w-2.5 h-2.5" /> Verified</span>;
         }
+        return <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 text-[9px] font-black uppercase tracking-widest border border-amber-500/20 flex items-center gap-1.5 w-fit"><AlertTriangle className="w-2.5 h-2.5" /> Unverified</span>;
     };
 
     return (
         <div className="max-w-7xl mx-auto space-y-8 pb-32">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-3">
+                    <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-3 italic">
                         <Store className="w-8 h-8 text-teal-500" />
                         Tamuu Shop Admin
                     </h1>
@@ -160,53 +158,116 @@ export const AdminStoreManagement: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Merchant Grid */}
+                    {/* Merchant Table */}
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="border-b border-white/5 text-xs uppercase tracking-widest text-slate-500 bg-black/20">
-                                    <th className="px-6 py-4 font-bold">Merchant Name</th>
-                                    <th className="px-6 py-4 font-bold">Owner Contact</th>
-                                    <th className="px-6 py-4 font-bold">Status</th>
-                                    <th className="px-6 py-4 font-bold">Listings</th>
-                                    <th className="px-6 py-4 font-bold text-right">Sanctions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-white/5">
-                                {filteredMerchants.map((merchant) => (
-                                    <tr key={merchant.id} className="hover:bg-white/[0.02] transition-colors group">
-                                        <td className="px-6 py-4">
-                                            <div className="font-bold text-white text-sm">{merchant.name}</div>
-                                            <div className="text-xs text-slate-500 mt-0.5">Joined {merchant.joinedAt}</div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="text-sm font-medium text-slate-300">{merchant.owner}</div>
-                                            <div className="text-xs text-slate-500 mt-0.5">{merchant.email}</div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            {getStatusBadge(merchant.status)}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="text-sm font-bold text-slate-300">{merchant.productsCount} <span className="text-xs text-slate-500 font-normal">Active</span></div>
-                                        </td>
-                                        <td className="px-6 py-4 text-right relative">
-                                            <button
-                                                onClick={() => setActiveActionMenu(activeActionMenu === merchant.id ? null : merchant.id)}
-                                                className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                                            >
-                                                <MoreVertical className="w-5 h-5" />
-                                            </button>
-                                        </td>
+                        {isLoadingMerchants ? (
+                            <div className="py-32 flex flex-col items-center justify-center gap-4">
+                                <PremiumLoader variant="inline" color="#14B8A6" />
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-teal-500/50">Synchronizing Ledger...</p>
+                            </div>
+                        ) : (
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="border-b border-white/5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 bg-black/40">
+                                        <th className="px-8 py-6">Merchant Profile</th>
+                                        <th className="px-8 py-6">Identity</th>
+                                        <th className="px-8 py-6">Status</th>
+                                        <th className="px-8 py-6 text-right">Actions</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-white/5">
+                                    {filteredMerchants.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={4} className="px-8 py-20 text-center text-slate-500 italic font-medium">No merchants found matching your criteria.</td>
+                                        </tr>
+                                    ) : filteredMerchants.map((merchant) => (
+                                        <tr key={merchant.id} className="hover:bg-white/[0.02] transition-colors group">
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+                                                        {merchant.logo_url ? (
+                                                            <img src={merchant.logo_url} className="w-full h-full object-cover" alt="" />
+                                                        ) : (
+                                                            <Store className="w-5 h-5 text-slate-700" />
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-black text-white text-base tracking-tight italic">{merchant.nama_toko}</div>
+                                                        <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Slug: {merchant.slug}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-6">
+                                                <div className="text-sm font-black text-slate-300 tracking-tight">{merchant.email || 'N/A'}</div>
+                                                <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5 italic">ID: {merchant.id.substring(0, 8)}...</div>
+                                            </td>
+                                            <td className="px-8 py-6">
+                                                <div className="flex flex-col gap-2">
+                                                    {getStatusBadge(merchant)}
+                                                    <div className="flex gap-1.5">
+                                                        {merchant.is_sponsored === 1 && (
+                                                            <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-400 text-[8px] font-black uppercase tracking-widest border border-purple-500/20">Sponsored</span>
+                                                        )}
+                                                        {merchant.is_landing_featured === 1 && (
+                                                            <span className="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-400 text-[8px] font-black uppercase tracking-widest border border-blue-500/20">Featured</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center justify-end gap-2">
+                                                    {/* VERIFY BUTTON */}
+                                                    <button
+                                                        onClick={() => handleVerifyMerchant(merchant.id, merchant.nama_toko, merchant.is_verified)}
+                                                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border ${
+                                                            merchant.is_verified === 1 
+                                                            ? 'bg-rose-500/10 text-rose-500 border-rose-500/20 hover:bg-rose-500 hover:text-white' 
+                                                            : 'bg-teal-500 text-white border-teal-500 hover:bg-teal-600 shadow-lg shadow-teal-500/20'
+                                                        }`}
+                                                        title={merchant.is_verified === 1 ? 'Unverify Merchant' : 'Verify Merchant'}
+                                                    >
+                                                        {merchant.is_verified === 1 ? <ShieldOff className="w-3.5 h-3.5" /> : <UserCheck className="w-3.5 h-3.5" />}
+                                                        {merchant.is_verified === 1 ? 'Unverify' : 'Verify'}
+                                                    </button>
+
+                                                    {/* SPONSOR BUTTON */}
+                                                    <button
+                                                        onClick={() => handlePromoteMerchant(merchant.id, merchant.nama_toko, 'is_sponsored', merchant.is_sponsored)}
+                                                        className={`p-2.5 rounded-xl border transition-all ${
+                                                            merchant.is_sponsored === 1
+                                                            ? 'bg-purple-500 text-white border-purple-500'
+                                                            : 'bg-white/5 text-slate-500 border-white/5 hover:border-purple-500/50 hover:text-purple-400'
+                                                        }`}
+                                                        title="Toggle Sponsored Status"
+                                                    >
+                                                        <ShieldAlert className="w-4 h-4" />
+                                                    </button>
+
+                                                    {/* FEATURE BUTTON */}
+                                                    <button
+                                                        onClick={() => handlePromoteMerchant(merchant.id, merchant.nama_toko, 'is_landing_featured', merchant.is_landing_featured)}
+                                                        className={`p-2.5 rounded-xl border transition-all ${
+                                                            merchant.is_landing_featured === 1
+                                                            ? 'bg-blue-500 text-white border-blue-500'
+                                                            : 'bg-white/5 text-slate-500 border-white/5 hover:border-blue-500/50 hover:text-blue-400'
+                                                        }`}
+                                                        title="Toggle Landing Featured"
+                                                    >
+                                                        <Plus className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
                     </div>
                 </div>
             ) : (
                 <div className="space-y-6">
                     <div className="flex justify-between items-center">
-                        <h2 className="text-xl font-black text-white uppercase tracking-widest flex items-center gap-3">
+                        <h2 className="text-xl font-black text-white uppercase tracking-widest flex items-center gap-3 italic">
                             <ImageIcon className="w-5 h-5 text-teal-500" />
                             Shop Carousel Slides
                         </h2>

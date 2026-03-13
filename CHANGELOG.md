@@ -1,5 +1,15 @@
 # Tamuu Changelog
 
+## [0.7.3] - 2026-03-13
+**Status**: 🔵 In Development
+**Environment**: Staging/Production
+
+### Admin: Governance UX Overhaul
+- **Action Dashboard Migration**: Replaced the legacy "Sanctions" menu with an explicit "Actions" suite in Store Management.
+- **Immediate Controls**: Removed conditional toggles for merchant actions; Verify, Sponsor, and Feature buttons are now persistently visible for streamlined operations.
+- **Data Synchronization**: Switched from mock data to live D1 merchant stream in the Admin Store Management component.
+- **Real-time Verification**: Connected the Verify button to the `PATCH /api/admin/shop/merchants` endpoint for instant trust state toggling.
+
 ## [0.7.2] - 2026-03-13
 **Status**: 🔵 In Development
 **Environment**: Staging/Production

@@ -2129,6 +2129,10 @@ export default {
                         if (!productId) return json({ error: 'Product ID required' }, { ...corsHeaders, status: 400 });
 
                         const body = await request.json();
+                        
+                        // Identify caller: Only Super Admins get auto-approval bypass
+                        const isSuperAdmin = adminCheck.user && (adminCheck.user.email === 'admin@tamuu.id' || adminCheck.user.role === 'admin');
+                        
                         const {
                             nama_produk, deskripsi, harga_estimasi, status, images,
                             kategori_produk, kota, is_admin_listing, custom_store_name,
@@ -2140,12 +2144,9 @@ export default {
                         let updateFields = [];
                         let params = [];
 
-                        const addField = (field, value) => {
-                            if (value !== undefined) {
-                                updateFields.push(`${field} = ?`);
-                                params.push(value);
-                            }
-                        };
+                        if (isSuperAdmin && status === 'PUBLISHED') {
+                            updateFields.push('is_approved = 1');
+                        }
 
                         addField('nama_produk', nama_produk);
                         addField('deskripsi', deskripsi);
