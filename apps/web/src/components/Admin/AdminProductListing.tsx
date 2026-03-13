@@ -734,6 +734,24 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                         </div>
                     </div>
 
+                    {/* Description - MOVED HERE */}
+                    <div className="bg-white/5 backdrop-blur-xl rounded-[2.5rem] border border-white/10 p-10 space-y-8 shadow-2xl">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-400 flex items-center justify-center border border-teal-500/20"><Check className="w-5 h-5" /></div>
+                            <div>
+                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white">Deskripsi Lengkap</h3>
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Spesifikasi & Detail Produk</p>
+                            </div>
+                        </div>
+                        <textarea
+                            rows={10}
+                            value={formData.deskripsi}
+                            onChange={e => setFormData({...formData, deskripsi: e.target.value})}
+                            className="w-full bg-white/5 border border-white/10 rounded-[2rem] p-10 text-sm text-slate-300 font-medium focus:ring-2 focus:ring-indigo-500/50 focus:bg-white/10 transition-all resize-none backdrop-blur-md placeholder:text-slate-500"
+                            placeholder="Jelaskan fitur, spesifikasi, and keunggulan produk Anda di sini..."
+                        />
+                    </div>
+
                     {/* Sync Store History */}
                     <div className="bg-white/5 backdrop-blur-xl rounded-[2.5rem] border border-white/10 p-10 space-y-8 shadow-2xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-48 h-48 bg-[#FFBF00]/5 rounded-full -mr-24 -mt-24 blur-3xl" />
@@ -804,24 +822,6 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                                 <p className="text-[9px] text-slate-500 italic ml-1">*Buka Google Maps, cari lokasi, lalu salin link (URL) dari browser.</p>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Description */}
-                    <div className="bg-white/5 backdrop-blur-xl rounded-[2.5rem] border border-white/10 p-10 space-y-8 shadow-2xl">
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-400 flex items-center justify-center border border-teal-500/20"><Check className="w-5 h-5" /></div>
-                            <div>
-                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white">Deskripsi Lengkap</h3>
-                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Spesifikasi & Detail Produk</p>
-                            </div>
-                        </div>
-                        <textarea
-                            rows={10}
-                            value={formData.deskripsi}
-                            onChange={e => setFormData({...formData, deskripsi: e.target.value})}
-                            className="w-full bg-white/5 border border-white/10 rounded-[2rem] p-10 text-sm text-slate-300 font-medium focus:ring-2 focus:ring-indigo-500/50 focus:bg-white/10 transition-all resize-none backdrop-blur-md placeholder:text-slate-500"
-                            placeholder="Jelaskan fitur, spesifikasi, dan keunggulan produk Anda di sini..."
-                        />
                     </div>
 
                     {/* External Links */}

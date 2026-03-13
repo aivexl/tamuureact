@@ -673,7 +673,7 @@ export const MerchantProducts: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        {/* Description Card */}
+                                        {/* Description Card - MOVED HERE */}
                                         <div className="bg-[#FBFBFB] rounded-[40px] border border-slate-100 p-10 space-y-8 shadow-sm relative">
                                             <h4 className="text-lg font-black text-[#0A1128]">Deskripsi <span className="text-[#FFBF00]">Produk/Jasa</span></h4>
                                             <div className="border border-slate-100 rounded-3xl overflow-hidden bg-white">
@@ -681,7 +681,7 @@ export const MerchantProducts: React.FC = () => {
                                                     value={deskripsi}
                                                     onChange={e => setDeskripsi(e.target.value)}
                                                     className="w-full bg-transparent border-none p-6 text-sm text-slate-600 font-medium focus:ring-0 placeholder:text-slate-500 resize-none min-h-[250px] focus:outline-none"
-                                                    placeholder="Jelaskan spesifikasi, sejarah, dan nilai premium dari aset ini..."
+                                                    placeholder="Jelaskan fitur, spesifikasi, and keunggulan produk Anda di sini..."
                                                 />
                                             </div>
                                         </div>

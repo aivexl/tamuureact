@@ -1,5 +1,12 @@
 # Tamuu Changelog
 
+## [0.6.93] - 2026-03-13
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Shop: Form Layout Optimization
+- **UX Refinement**: Relocated the "Deskripsi Lengkap" card to be positioned immediately below the "Detail Produk" card in both Merchant and Admin product forms. This aligns the data entry flow with natural cognitive progression (Basic Identity -> Detailed Specs -> Location/Sync -> External Links).
+
 ## [0.6.92] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production
