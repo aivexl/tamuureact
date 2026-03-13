@@ -2,6 +2,8 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { m, AnimatePresence } from 'framer-motion';
 import {
+    ExternalLink,
+    ArrowUpRight,
     Share2,
     Heart,
     MessageCircle,
@@ -29,8 +31,8 @@ import {
     Facebook, 
     Eye, 
     EyeOff
-} from 'lucide-react';
-import {
+    } from 'lucide-react';
+    import {
     useProductDetails,
     useTrackInteraction,
     useToggleWishlist,
@@ -38,28 +40,34 @@ import {
     useMerchantProducts,
     useMerchantStats,
     useSmartRecommendations
-} from '../../hooks/queries/useShop';
-import { shop, type Review } from '../../lib/api';
-import { PremiumLoader } from '../../components/ui/PremiumLoader';
-import { Footer } from '../../components/Layout/Footer';
-import { useStore } from '../../store/useStore';
-import { useSEO } from '../../hooks/useSEO';
-import { formatCurrency, formatAbbreviatedNumber } from '../../lib/utils';
-import { toast } from 'react-hot-toast';
-import { ReportProductModal } from '../../components/Modals/ReportProductModal';
-import { ShareModal } from '../../components/Modals/ShareModal';
-import { INDONESIA_REGIONS } from '../../constants/regions';
-import { AnimatedCopyIcon } from '../../components/ui/AnimatedCopyIcon';
-import { StarRating } from '../../components/Shop/StarRating';
-import { Navbar } from '../../components/Layout/Navbar';
+    } from '../../hooks/queries/useShop';
+    import { shop, type Review } from '../../lib/api';
+    import { PremiumLoader } from '../../components/ui/PremiumLoader';
+    import { Footer } from '../../components/Layout/Footer';
+    import { useStore } from '../../store/useStore';
+    import { useSEO } from '../../hooks/useSEO';
+    import { formatCurrency, formatAbbreviatedNumber } from '../../lib/utils';
+    import { toast } from 'react-hot-toast';
+    import { ReportProductModal } from '../../components/Modals/ReportProductModal';
+    import { ShareModal } from '../../components/Modals/ShareModal';
+    import { INDONESIA_REGIONS } from '../../constants/regions';
+    import { AnimatedCopyIcon } from '../../components/ui/AnimatedCopyIcon';
+    import { StarRating } from '../../components/Shop/StarRating';
+    import { Navbar } from '../../components/Layout/Navbar';
 
-const XLogoIcon = ({ className }: { className?: string }) => (
+    const XLogoIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
         <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 22.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
     </svg>
-);
+    );
 
-export const ProductDetailPage: React.FC = () => {
+    const TikTokIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+    </svg>
+    );
+
+    export const ProductDetailPage: React.FC = () => {
     const { slug, productId } = useParams<{ slug: string, productId: string }>();
     const navigate = useNavigate();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -80,13 +88,13 @@ export const ProductDetailPage: React.FC = () => {
     const { data: merchantStats } = useMerchantStats(product?.merchant_id);
     const { data: recommendations = [] } = useSmartRecommendations(productId, product?.kategori_produk);
     const [visibleRecs, setVisibleRecs] = useState(4);
-    
+
     const toggleWishlistMutation = useToggleWishlist();
     const track = useTrackInteraction();
 
     const isWishlisted = wishlist.some((item: any) => item.id === product?.id);
 
-    // Modern Secure Contact Component (Rows 1 & 2)
+    // Modern Secure Contact Component (Rows 1 & 2) - Truly Seamless List Design
     const SecureContactItem = ({ 
         id, 
         icon: Icon, 
@@ -107,6 +115,22 @@ export const ProductDetailPage: React.FC = () => {
         if (!value) return null;
         const isRevealed = revealedContacts[id];
 
+        const handleOpenLink = (e: React.MouseEvent) => {
+            e.stopPropagation();
+            if (!isRevealed) return;
+
+            let url = value.startsWith('http') ? value : `https://${value}`;
+            if (id === 'wa' || id === 'phone') {
+                const cleanNumber = value.replace(/\D/g, '');
+                url = `https://wa.me/${cleanNumber}`;
+            } else if (id === 'ig' && !value.includes('instagram.com')) {
+                url = `https://instagram.com/${value.replace('@', '')}`;
+            } else if (id === 'tiktok' && !value.includes('tiktok.com')) {
+                url = `https://tiktok.com/@${value.replace('@', '')}`;
+            }
+            window.open(url, '_blank');
+        };
+
         return (
             <div 
                 onClick={() => {
@@ -121,61 +145,41 @@ export const ProductDetailPage: React.FC = () => {
                             track.mutate({ merchantId: product.merchant_id, actionType: 'CLICK_CONTACT', metadata: JSON.stringify({ contact_type: id, product_id: product.id }) } as any);
                         }
                     }
-                    else if (isRevealed && isLink) {
-                        let url = value.startsWith('http') ? value : `https://${value}`;
-                        if (id === 'wa' || id === 'phone') {
-                            const cleanNumber = value.replace(/\D/g, '');
-                            url = `https://wa.me/${cleanNumber}`;
-                        } else if (id === 'ig' && !value.includes('instagram.com')) {
-                            url = `https://instagram.com/${value.replace('@', '')}`;
-                        } else if (id === 'tiktok' && !value.includes('tiktok.com')) {
-                            url = `https://tiktok.com/@${value.replace('@', '')}`;
-                        }
-                        window.open(url, '_blank');
-                    }
                 }}
-                className={`flex items-center gap-3 p-3 sm:p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-md hover:border-[#FFBF00]/30 transition-all duration-300 cursor-pointer group`}
+                className={`flex items-center gap-4 py-4 group transition-all duration-300 ${!isRevealed ? 'cursor-pointer hover:bg-slate-50/80 rounded-2xl px-4 -mx-4' : 'px-0'}`}
             >
-                <div className={`w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm border border-slate-100 flex-shrink-0 group-hover:scale-110 transition-transform ${iconColor}`}>
-                    {customIcon || (Icon && <Icon className="w-5 h-5 fill-current" />)}
+                <div className={`w-11 h-11 rounded-2xl bg-white flex items-center justify-center shadow-sm border border-slate-100 flex-shrink-0 group-hover:scale-110 transition-transform ${iconColor}`}>
+                    {customIcon || (Icon && <Icon size={20} />)}
                 </div>
                 <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">{label}</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] leading-none mb-1.5">{label}</p>
                     <div className="relative">
                         {!isRevealed ? (
-                            <button 
-                                onClick={(e) => { 
-                                    e.stopPropagation(); 
-                                    if (!isAuthenticated) {
-                                        toast.error('Silakan login terlebih dahulu.');
-                                        navigate('/login');
-                                        return;
-                                    }
-                                    toggleReveal(id); 
-                                    if (product?.id) {
-                                        track.mutate({ merchantId: product.merchant_id, actionType: 'CLICK_CONTACT', metadata: JSON.stringify({ contact_type: id, product_id: product.id }) } as any);
-                                    }
-                                }}
-                                className="flex items-center gap-1.5 text-indigo-600 hover:text-[#FFBF00] transition-colors group/btn"
-                            >
+                            <div className="flex items-center gap-1.5 text-indigo-600 font-black uppercase tracking-tighter italic text-[11px]">
                                 <Eye className="w-3.5 h-3.5" />
-                                <span className="text-[11px] font-black uppercase tracking-tighter italic">Tampilkan</span>
-                            </button>
+                                <span>Tampilkan</span>
+                            </div>
                         ) : (
-                            <p className="text-xs font-bold text-[#0A1128] truncate">
+                            <p className="text-sm font-bold text-[#0A1128] truncate">
                                 {value}
                             </p>
                         )}
                     </div>
                 </div>
                 {isRevealed && isLink && (
-                    <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-[#FFBF00] group-hover:translate-x-1 transition-all" />
+                    <button 
+                        onClick={handleOpenLink}
+                        className="w-9 h-9 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-[#FFBF00] hover:text-[#0A1128] hover:shadow-lg hover:shadow-[#FFBF00]/20 transition-all border border-slate-100"
+                        title="Buka Tautan"
+                    >
+                        <ArrowUpRight className="w-4 h-4" />
+                    </button>
                 )}
             </div>
         );
     };
 
-    // Modern Marketplace Icon Component (Row 3)
+    // Modern Marketplace Icon Component (Row 3) - Truly Seamless
     const MarketplaceIcon = ({ url, src, alt }: { url?: string, src: string, alt: string }) => {
         if (!url) return null;
         return (
@@ -183,17 +187,16 @@ export const ProductDetailPage: React.FC = () => {
                 href={url.startsWith('http') ? url : `https://${url}`} 
                 target="_blank" 
                 rel="noreferrer"
-                className="w-14 h-14 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-center hover:bg-white hover:scale-110 hover:shadow-lg hover:border-[#FFBF00]/30 transition-all duration-300"
+                className="w-14 h-14 flex items-center justify-center hover:scale-110 transition-all duration-300 group"
                 onClick={() => {
                     if (product?.id) track.mutate({ merchantId: product.merchant_id, actionType: 'CLICK_CONTACT', metadata: JSON.stringify({ contact_type: alt.toLowerCase(), product_id: product.id }) } as any);
                 }}
                 title={`Kunjungi ${alt}`}
             >
-                <img src={src} alt={alt} className="w-8 h-8 object-contain" />
+                <img src={src} alt={alt} className="w-10 h-10 object-contain filter grayscale group-hover:grayscale-0 transition-all" />
             </a>
         );
     };
-
     // Reviews State
     const [reviews, setReviews] = useState<Review[]>([]);
     const [isLoadingReviews, setIsLoadingReviews] = useState(true);
@@ -503,38 +506,36 @@ export const ProductDetailPage: React.FC = () => {
                                     <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Verified Secure</span>
                                 </div>
 
-                                <div className="space-y-8">
-                                    <div className="space-y-4">
-                                        <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] ml-1 flex items-center gap-2">
+                                <div className="space-y-6">
+                                    <div className="space-y-2">
+                                        <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] ml-1 flex items-center gap-2 mb-4">
                                             <div className="w-1.5 h-1.5 rounded-full bg-slate-300" /> Kontak Langsung
                                         </h3>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="flex flex-col">
                                             <SecureContactItem id="wa" label="WhatsApp" value={product.whatsapp || product.m_whatsapp || merchantStats?.whatsapp} icon={MessageCircle} iconColor="text-[#25D366]" isLink />
-                                            <SecureContactItem id="phone" label="No Telepon" value={product.phone || product.m_phone || merchantStats?.phone} icon={Phone} isLink />
+                                            <SecureContactItem id="phone" label="No Telepon" value={product.phone || product.m_phone || merchantStats?.phone} icon={Phone} iconColor="text-slate-600" isLink />
                                         </div>
                                     </div>
 
-                                    <div className="space-y-4 pt-6 border-t border-slate-50">
-                                        <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] ml-1 flex items-center gap-2">
+                                    <div className="space-y-2 pt-6 border-t border-slate-50">
+                                        <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] ml-1 flex items-center gap-2 mb-4">
                                             <div className="w-1.5 h-1.5 rounded-full bg-slate-300" /> Sosial Media & Web
                                         </h3>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <div className="flex flex-col">
                                             <SecureContactItem id="ig" label="Instagram" value={product.instagram || product.m_instagram || merchantStats?.instagram} icon={Instagram} iconColor="text-[#E4405F]" isLink />
-                                            <SecureContactItem id="tiktok" label="TikTok" value={product.tiktok_url || product.m_tiktok_url || merchantStats?.tiktok} customIcon={
-                                                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
-                                            } isLink />
+                                            <SecureContactItem id="tiktok" label="TikTok" value={product.tiktok_url || product.m_tiktok_url || merchantStats?.tiktok} customIcon={<TikTokIcon className="w-5 h-5" />} iconColor="text-black" isLink />
                                             <SecureContactItem id="fb" label="Facebook" value={product.facebook || product.m_facebook || merchantStats?.facebook} icon={Facebook} iconColor="text-[#1877F2]" isLink />
-                                            <SecureContactItem id="x" label="X (Twitter)" value={product.x_url || product.m_x_url || merchantStats?.x_url} customIcon={<XLogoIcon className="w-4 h-4" />} isLink />
+                                            <SecureContactItem id="x" label="X (Twitter)" value={product.x_url || product.m_x_url || merchantStats?.x_url} customIcon={<XLogoIcon className="w-4 h-4" />} iconColor="text-black" isLink />
                                             <SecureContactItem id="web" label="Website" value={product.website_url || product.m_website || merchantStats?.website} icon={Globe} iconColor="text-indigo-600" isLink />
                                         </div>
                                     </div>
 
                                     {(product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url || product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url) && (
-                                        <div className="space-y-4 pt-6 border-t border-slate-50">
-                                            <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] ml-1 flex items-center gap-2">
+                                        <div className="space-y-2 pt-6 border-t border-slate-50">
+                                            <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] ml-1 flex items-center gap-2 mb-4">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-slate-300" /> Marketplace Official
                                             </h3>
-                                            <div className="flex flex-wrap items-center gap-4">
+                                            <div className="flex items-center gap-8 pl-1">
                                                 <MarketplaceIcon url={product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url} src="/images/logos/marketplace/logo_shopee.png" alt="Shopee" />
                                                 <MarketplaceIcon url={product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url} src="/images/logos/marketplace/logo_tokopedia.png" alt="Tokopedia" />
                                             </div>

@@ -1,5 +1,18 @@
 # Tamuu Changelog
 
+## [0.6.87] - 2026-03-13
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### UI/UX: Vendor Contact Redesign
+- **Seamless List Layout**: Replaced the previous grid/card layout with a truly seamless vertical stack list, removing redundant inner cards for a cleaner, integrated feel.
+- **Modern Social Branding**: Integrated the latest SVG icons for **X (Twitter)** and **TikTok** with official brand colors.
+- **Controlled Navigation**: Implemented a "Click-to-Reveal" mechanism. Links are now gated behind an explicit "Arrow" button that appears only after the contact info is revealed, preventing accidental tab opens.
+- **Premium Marketplace Interaction**: Added a sophisticated grayscale-to-color transition on hover for Shopee and Tokopedia official links.
+- **Icon Rendering Fixes**: Standardized icon handling to properly support both stroke-based (Lucide) and fill-based (Custom SVG) icons with consistent brand coloring.
+
+## [0.6.86] - 2026-03-13
+
 ## [0.5.3] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production
