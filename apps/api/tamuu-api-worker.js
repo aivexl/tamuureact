@@ -1585,7 +1585,8 @@ export default {
                         (SELECT COUNT(*) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = m.id) as review_count
                         FROM shop_merchants m
                         LEFT JOIN shop_category c ON m.category_id = c.id
-                        WHERE m.is_verified = 1 AND m.id != 'admin-merchant'
+                        LEFT JOIN users u ON m.user_id = u.id
+                        WHERE (m.is_verified = 1 OR u.role = 'admin') AND m.id != 'admin-merchant'
                     `;
 
                     let params = [];
@@ -1624,7 +1625,9 @@ export default {
                         (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
                         FROM shop_products p 
                         LEFT JOIN shop_merchants m ON p.merchant_id = m.id
-                        WHERE p.status = 'PUBLISHED' AND p.is_approved = 1 AND (m.is_verified = 1 OR p.is_admin_listing = 1)
+                        LEFT JOIN users u ON m.user_id = u.id
+                        WHERE p.status = 'PUBLISHED' AND p.is_approved = 1 
+                        AND (m.is_verified = 1 OR p.is_admin_listing = 1 OR u.role = 'admin')
                     `;
                     let params = [];
 
@@ -1700,7 +1703,9 @@ export default {
                         (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
                         FROM shop_products p 
                         LEFT JOIN shop_merchants m ON p.merchant_id = m.id 
-                        WHERE p.status = 'PUBLISHED' AND p.is_approved = 1 AND (m.is_verified = 1 OR p.is_admin_listing = 1)
+                        LEFT JOIN users u ON m.user_id = u.id
+                        WHERE p.status = 'PUBLISHED' AND p.is_approved = 1 
+                        AND (m.is_verified = 1 OR p.is_admin_listing = 1 OR u.role = 'admin')
                         ${typeCondition}
                         ORDER BY ${orderBy} LIMIT ${limit}
                     `;
@@ -1777,7 +1782,9 @@ export default {
                         (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
                         FROM shop_products p
                         LEFT JOIN shop_merchants m ON p.merchant_id = m.id
-                        WHERE p.kategori_produk = ? AND p.id != ? AND p.status = 'PUBLISHED' AND p.is_approved = 1 AND (m.is_verified = 1 OR p.is_admin_listing = 1)
+                        LEFT JOIN users u ON m.user_id = u.id
+                        WHERE p.kategori_produk = ? AND p.id != ? AND p.status = 'PUBLISHED' AND p.is_approved = 1 
+                        AND (m.is_verified = 1 OR p.is_admin_listing = 1 OR u.role = 'admin')
                         LIMIT ?
                     `).bind(category, productId, limit).all();
 
@@ -1790,7 +1797,9 @@ export default {
                             (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
                             FROM shop_products p
                             LEFT JOIN shop_merchants m ON p.merchant_id = m.id
-                            WHERE p.id != ? AND p.kategori_produk != ? AND p.status = 'PUBLISHED' AND p.is_approved = 1 AND (m.is_verified = 1 OR p.is_admin_listing = 1)
+                            LEFT JOIN users u ON m.user_id = u.id
+                            WHERE p.id != ? AND p.kategori_produk != ? AND p.status = 'PUBLISHED' AND p.is_approved = 1 
+                            AND (m.is_verified = 1 OR p.is_admin_listing = 1 OR u.role = 'admin')
                             ORDER BY p.created_at DESC LIMIT ?
                         `).bind(productId, category, remaining).all();
                         
