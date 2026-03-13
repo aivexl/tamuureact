@@ -738,7 +738,6 @@ export const ProductDetailPage: React.FC = () => {
                 onClose={() => setIsShareModalOpen(false)}
                 title={product.nama_produk}
                 url={window.location.href}
-                text={product.deskripsi}
                 type="product"
             />
         </div>

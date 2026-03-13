@@ -236,7 +236,6 @@ export const StorefrontPage: React.FC = () => {
                 onClose={() => setIsShareModalOpen(false)}
                 title={merchant.nama_toko}
                 url={window.location.href}
-                text={merchant.deskripsi}
                 type="store"
             />
         </div>

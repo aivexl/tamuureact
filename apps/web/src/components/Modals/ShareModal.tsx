@@ -30,24 +30,21 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     onClose,
     title,
     url,
-    text = "",
     type = 'product'
 }) => {
     const [copied, setCopied] = useState(false);
     
-    // Construct rich share text based on type
-    const shareTitle = type === 'product' ? `Produk: ${title}` : `Toko: ${title}`;
-    const baseText = text || `Cek ${type === 'product' ? 'produk' : 'toko'} menarik ini di Tamuu.id: ${title}`;
-    const fullShareText = `${baseText}\n\nCek selengkapnya di Tamuu.id\n${url}`;
+    // Construct rich share text based on type: Title + CTA + URL
+    const fullShareText = `${title}\n\nCek selengkapnya di Tamuu.id\n${url}`;
 
     const handleCopyLink = async () => {
         try {
-            await navigator.clipboard.writeText(url);
+            await navigator.clipboard.writeText(fullShareText);
             setCopied(true);
-            toast.success('Link disalin ke clipboard!');
+            toast.success('Berhasil disalin!');
             setTimeout(() => setCopied(false), 2000);
         } catch (err) {
-            toast.error('Gagal menyalin link');
+            toast.error('Gagal menyalin');
         }
     };
 
@@ -71,7 +68,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             icon: <XIcon size={22} />,
             color: 'bg-black',
             textColor: 'text-white',
-            onClick: () => window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(baseText)}&url=${encodeURIComponent(url)}`, '_blank')
+            onClick: () => window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(fullShareText)}`, '_blank')
         },
         {
             name: 'Instagram',
@@ -80,7 +77,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             textColor: 'text-white',
             onClick: () => {
                 handleCopyLink();
-                toast('Buka Instagram untuk membagikan link yang sudah disalin', { icon: '📸' });
+                toast('Buka Instagram untuk membagikan teks yang sudah disalin', { icon: '📸' });
             }
         },
     ];
@@ -158,7 +155,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                                 }`}
                             >
                                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4 text-[#FFBF00]" />}
-                                {copied ? 'Berhasil Disalin' : 'Salin Link Utama'}
+                                {copied ? 'Berhasil Disalin' : 'Salin'}
                             </button>
                         </div>
                         
