@@ -11,7 +11,7 @@ import {
 } from '../../hooks/queries/useShop';
 import api from '../../lib/api';
 import { formatCurrency } from '../../lib/utils';
-import { Search, MapPin, ChevronDown, Check, X, Store, ShoppingBag, Youtube, Twitter, Globe, ShieldCheck } from 'lucide-react';
+import { Search, MapPin, ChevronDown, Check, X, Store, ShoppingBag, Youtube, Twitter, Globe, ShieldCheck, MessageCircle, Phone, Instagram, Facebook } from 'lucide-react';
 
 // Custom Icons for Tiktok
 const TiktokIcon = ({ className }: { className?: string }) => (
@@ -752,56 +752,43 @@ export const MerchantProducts: React.FC = () => {
                                         </div>
 
                                         {/* Social & Marketplace Links Card */}
-                                        <div className="bg-[#FBFBFB] rounded-[40px] border border-slate-100 p-10 space-y-8 shadow-sm relative">
+                                        <div className="bg-[#FBFBFB] rounded-[40px] border border-slate-100 p-10 space-y-10 shadow-sm relative">
                                             <h4 className="text-lg font-black text-[#0A1128]">Tautan <span className="text-[#FFBF00]">Eksternal</span></h4>
                                             
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <div className="space-y-3">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">TikTok</label>
-                                                    <div className="relative">
-                                                        <TiktokIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                                                        <input value={tiktokUrl} onChange={e => setTiktokUrl(e.target.value)} placeholder="https://tiktok.com/@..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20 placeholder:text-slate-500" />
-                                                    </div>
-                                                </div>
-                                                <div className="space-y-3">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">YouTube</label>
-                                                    <div className="relative">
-                                                        <Youtube className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                                                        <input value={youtubeUrl} onChange={e => setYoutubeUrl(e.target.value)} placeholder="https://youtube.com/..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20 placeholder:text-slate-500" />
-                                                    </div>
-                                                </div>
-                                                <div className="space-y-3">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">X (Twitter)</label>
-                                                    <div className="relative">
-                                                        <XLogoIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                                                        <input value={xUrl} onChange={e => setXUrl(e.target.value)} placeholder="https://x.com/..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20 placeholder:text-slate-500" />
-                                                    </div>
-                                                </div>
-                                                <div className="space-y-3">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Website</label>
-                                                    <div className="relative">
-                                                        <Globe className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                                                        <input value={websiteUrl} onChange={e => setWebsiteUrl(e.target.value)} placeholder="https://..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20 placeholder:text-slate-500" />
-                                                    </div>
-                                                </div>
-                                                <div className="space-y-3">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tokopedia</label>
-                                                    <div className="relative">
-                                                        <div className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 flex items-center justify-center grayscale opacity-50">
-                                                            <img src="/images/logos/marketplace/logo_tokopedia.png" alt="Tokopedia" className="w-full h-full object-contain" />
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                {[
+                                                    { label: 'WhatsApp', icon: MessageCircle, value: whatsapp, setter: setWhatsapp, placeholder: '08...', iconColor: 'text-[#25D366]' },
+                                                    { label: 'No Telepon', icon: Phone, value: phone, setter: setPhone, placeholder: '08...', iconColor: 'text-slate-600' },
+                                                    { label: 'Instagram', icon: Instagram, value: instagram, setter: setInstagram, placeholder: '@username', iconColor: 'text-[#E4405F]' },
+                                                    { label: 'Facebook', icon: Facebook, value: facebook, setter: setFacebook, placeholder: 'https://facebook.com/...', iconColor: 'text-[#1877F2]' },
+                                                    { label: 'TikTok URL', customIcon: TiktokIcon, value: tiktokUrl, setter: setTiktokUrl, placeholder: 'https://tiktok.com/@...', iconColor: 'text-black' },
+                                                    { label: 'YouTube URL', icon: Youtube, value: youtubeUrl, setter: setYoutubeUrl, placeholder: 'https://youtube.com/...', iconColor: 'text-[#FF0000]' },
+                                                    { label: 'X (Twitter)', customIcon: XLogoIcon, value: xUrl, setter: setXUrl, placeholder: 'https://x.com/...', iconColor: 'text-black' },
+                                                    { label: 'Website Resmi', icon: Globe, value: websiteUrl, setter: setWebsiteUrl, placeholder: 'https://...', iconColor: 'text-indigo-600' },
+                                                    { label: 'Tokopedia', img: '/images/logos/marketplace/logo_tokopedia.png', value: tokopediaUrl, setter: setTokopediaUrl, placeholder: 'https://tokopedia.com/...' },
+                                                    { label: 'Shopee', img: '/images/logos/marketplace/logo_shopee.png', value: shopeeUrl, setter: setShopeeUrl, placeholder: 'https://shopee.co.id/...' }
+                                                ].map((item, idx) => (
+                                                    <div key={idx} className="space-y-3">
+                                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{item.label}</label>
+                                                        <div className="relative">
+                                                            {item.icon ? (
+                                                                <item.icon className={`absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 ${item.iconColor || 'text-slate-300'}`} />
+                                                            ) : item.customIcon ? (
+                                                                <item.customIcon className={`absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 ${item.iconColor || 'text-slate-300'}`} />
+                                                            ) : (
+                                                                <div className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 flex items-center justify-center grayscale opacity-50">
+                                                                    <img src={item.img} alt={item.label} className="w-full h-full object-contain" />
+                                                                </div>
+                                                            )}
+                                                            <input 
+                                                                value={item.value} 
+                                                                onChange={e => item.setter(e.target.value)} 
+                                                                placeholder={item.placeholder} 
+                                                                className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20 placeholder:text-slate-500 transition-all outline-none" 
+                                                            />
                                                         </div>
-                                                        <input value={tokopediaUrl} onChange={e => setTokopediaUrl(e.target.value)} placeholder="https://tokopedia.com/..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20 placeholder:text-slate-500" />
                                                     </div>
-                                                </div>
-                                                <div className="space-y-3">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Shopee</label>
-                                                    <div className="relative">
-                                                        <div className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 flex items-center justify-center grayscale opacity-50">
-                                                            <img src="/images/logos/marketplace/logo_shopee.png" alt="Shopee" className="w-full h-full object-contain" />
-                                                        </div>
-                                                        <input value={shopeeUrl} onChange={e => setShopeeUrl(e.target.value)} placeholder="https://shopee.co.id/..." className="w-full bg-white border border-slate-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/20 placeholder:text-slate-500" />
-                                                    </div>
-                                                </div>
+                                                ))}
                                             </div>
                                         </div>
                                     </div>

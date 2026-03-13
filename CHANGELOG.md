@@ -1,5 +1,12 @@
 # Tamuu Changelog
 
+## [0.6.94] - 2026-03-13
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Shop: Merchant Form Completeness
+- **Social & Contact Links**: Expanded the "Tautan Eksternal" section in the Merchant Product Form to include WhatsApp, Phone, Instagram, and Facebook fields. This ensures that the user form is now as complete as the administrative listing form, allowing vendors full control over their transactional and social touchpoints.
+
 ## [0.6.93] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production
