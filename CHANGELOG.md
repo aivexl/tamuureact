@@ -4,10 +4,11 @@
 **Status**: 🔵 In Development
 **Environment**: Staging/Production
 
-### Shop: Administrative UX & Visibility Restoration
-- **Admin Auto-Approval Restoration**: Re-implemented auto-approval for products created or updated via the merchant interface (`/store/*/products`) for administrators and verified merchants. This restores the behavior where admin-posted products are immediately visible in discovery, search, and storefronts while maintaining the simulation of a standard user workflow.
-- **Legacy Bypass Mitigation**: Standardized the `is_approved = 1` default across both Merchant and Admin dashboards to ensure consistency and eliminate redundant approval gates for trusted entities.
-- **Root Cause Fix**: Resolved the "Hidden Admin Product" issue where products created by admins were being trapped in a `Pending` state indefinitely due to overly strict logic introduced in 0.6.98.
+### Shop: Role-Based Governance & Visibility Restoration
+- **Super Admin Auto-Approval Restoration**: Re-implemented immediate auto-approval (`is_approved = 1`) exclusively for Super Administrators (verified by role or email) when posting via the merchant interface.
+- **Regular Admin & User Parity**: Standardized behavior for regular admins and standard users; products posted via the merchant portal now correctly default to `is_approved = 0` (Pending Review), requiring manual vetting via the Admin Registry.
+- **Backend Auth Hardening**: Enhanced `verifyToken` and product handlers to perform deep identity verification, ensuring administrative bypasses are only granted to the highest privilege level.
+- **Visibility Fix**: Resolved the issue where Super Admin products were not appearing due to the broad strict enforcement introduced in previous versions.
 
 ## [0.7.0] - 2026-03-13
 **Status**: 🟢 Deployed

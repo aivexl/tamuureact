@@ -1314,6 +1314,15 @@ export default {
                         const productId = crypto.randomUUID();
                         const finalStatus = (status === 'PUBLISHED' || status === 'DRAFT') ? status : 'DRAFT';
 
+                        // CTO POLICY: Automatic Approval only for Super Administrator
+                        const authHeader = request.headers.get('Authorization');
+                        const token = authHeader ? authHeader.replace('Bearer ', '').trim() : null;
+                        const user = await verifyToken(token, env);
+                        
+                        // Distinction: Super Admin (Immediate) vs Regular Admin/User (Pending)
+                        const isSuperAdmin = user && (user.email === 'admin@tamuu.id' || user.role === 'admin');
+                        const approvalStatus = isSuperAdmin ? 1 : 0;
+
                         let productSlug = generateSlug(nama_produk);
                         if (!productSlug) productSlug = productId.substring(0, 8);
 
@@ -1340,7 +1349,7 @@ export default {
                                     harga_estimasi || null, finalStatus, kategori_produk || null, 
                                     kota || null, tiktok_url || null, youtube_url || null, 
                                     x_url || null, website_url || null, tokopedia_url || null, shopee_url || null,
-                                    1,
+                                    approvalStatus,
                                     productSlug,
                                     alamat_lengkap || null,                                google_maps_url || null,
                                 whatsapp || null, phone || null, instagram || null, facebook || null
@@ -1443,7 +1452,14 @@ export default {
                         }
 
                         if (finalStatus === 'PUBLISHED') {
-                            updateFields.push('is_approved = 1');
+                            // Identify caller to determine approval bypass
+                            const authHeader = request.headers.get('Authorization');
+                            const token = authHeader ? authHeader.replace('Bearer ', '').trim() : null;
+                            const user = await verifyToken(token, env);
+                            const isSuperAdmin = user && (user.email === 'admin@tamuu.id' || user.role === 'admin');
+
+                            // Super Admins are auto-approved, regular admins/users are reset to Pending
+                            updateFields.push(`is_approved = ${isSuperAdmin ? 1 : 0}`);
                         }
 
                         if (updateFields.length === 0) {
@@ -2027,6 +2043,10 @@ export default {
                 if (path === '/api/admin/shop/products' && method === 'POST') {
                     try {
                         const body = await request.json();
+                        // Identify caller: Only Super Admins get auto-approval bypass
+                        const isSuperAdmin = adminCheck.user && (adminCheck.user.email === 'admin@tamuu.id' || adminCheck.user.role === 'admin');
+                        const approvalStatus = isSuperAdmin ? 1 : 0;
+
                         const { 
                             nama_produk, deskripsi, harga_estimasi, status, images, 
                             kategori_produk, kota, is_admin_listing, custom_store_name,
@@ -2071,7 +2091,7 @@ export default {
                                     kota || null, is_admin_listing ? 1 : 0, custom_store_name || null,
                                     tiktok_url || null, youtube_url || null, x_url || null,
                                     website_url || null, tokopedia_url || null, shopee_url || null,
-                                    1,
+                                    approvalStatus,
                                     slug,
                                     alamat_lengkap || null,
                                     google_maps_url || null,
@@ -5489,7 +5509,7 @@ async function verifyToken(token, env) {
         }
 
         // 2. Resolve User from D1
-        const user = await env.DB.prepare('SELECT id, email, name FROM users WHERE id = ? OR email = ?')
+        const user = await env.DB.prepare('SELECT id, email, name, role FROM users WHERE id = ? OR email = ?')
             .bind(userId, email || userId)
             .first();
 
