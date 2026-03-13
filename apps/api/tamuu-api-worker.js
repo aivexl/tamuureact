@@ -1333,17 +1333,16 @@ export default {
                                     kategori_produk, kota, tiktok_url, youtube_url, x_url, website_url, 
                                     tokopedia_url, shopee_url, is_approved, slug, alamat_lengkap, google_maps_url,
                                     whatsapp, phone, instagram, facebook
-                                )
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                            `).bind(
-                                productId, merchant_id, nama_produk, deskripsi || '-', 
-                                harga_estimasi || null, finalStatus, kategori_produk || null, 
-                                kota || null, tiktok_url || null, youtube_url || null, 
-                                x_url || null, website_url || null, tokopedia_url || null, shopee_url || null,
-                                0,
-                                productSlug,
-                                alamat_lengkap || null,
-                                google_maps_url || null,
+                                    )
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                    `).bind(
+                                    productId, merchant_id, nama_produk, deskripsi || '-', 
+                                    harga_estimasi || null, finalStatus, kategori_produk || null, 
+                                    kota || null, tiktok_url || null, youtube_url || null, 
+                                    x_url || null, website_url || null, tokopedia_url || null, shopee_url || null,
+                                    1,
+                                    productSlug,
+                                    alamat_lengkap || null,                                google_maps_url || null,
                                 whatsapp || null, phone || null, instagram || null, facebook || null
                             )
                         ];
@@ -1444,7 +1443,7 @@ export default {
                         }
 
                         if (finalStatus === 'PUBLISHED') {
-                            updateFields.push('is_approved = 0');
+                            updateFields.push('is_approved = 1');
                         }
 
                         if (updateFields.length === 0) {
@@ -2064,25 +2063,24 @@ export default {
                                     tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url,
                                     is_approved, slug, alamat_lengkap, google_maps_url, is_special, is_featured, is_landing_featured,
                                     whatsapp, phone, instagram, facebook
-                                )
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                            `).bind(
-                                productId, merchantId, finalNama || '(Tanpa Nama)', deskripsi || '-', 
-                                harga_estimasi || null, finalStatus, kategori_produk || null, 
-                                kota || null, is_admin_listing ? 1 : 0, custom_store_name || null,
-                                tiktok_url || null, youtube_url || null, x_url || null, 
-                                website_url || null, tokopedia_url || null, shopee_url || null,
-                                is_admin_listing ? 1 : 0,
-                                slug,
-                                alamat_lengkap || null,
-                                google_maps_url || null,
-                                is_special ? 1 : 0,
-                                is_featured ? 1 : 0,
-                                is_landing_featured ? 1 : 0,
-                                whatsapp || null, phone || null, instagram || null, facebook || null
-                            )
-                        ];
-
+                                    )
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                    `).bind(
+                                    productId, merchantId, finalNama || '(Tanpa Nama)', deskripsi || '-',
+                                    harga_estimasi || null, finalStatus, kategori_produk || null,
+                                    kota || null, is_admin_listing ? 1 : 0, custom_store_name || null,
+                                    tiktok_url || null, youtube_url || null, x_url || null,
+                                    website_url || null, tokopedia_url || null, shopee_url || null,
+                                    1,
+                                    slug,
+                                    alamat_lengkap || null,
+                                    google_maps_url || null,
+                                    is_special ? 1 : 0,
+                                    is_featured ? 1 : 0,
+                                    is_landing_featured ? 1 : 0,
+                                    whatsapp || null, phone || null, instagram || null, facebook || null
+                                    )
+                                    ];
                         if (Array.isArray(images) && images.length > 0) {
                             for (let i = 0; i < images.length; i++) {
                                 if (images[i]) {
