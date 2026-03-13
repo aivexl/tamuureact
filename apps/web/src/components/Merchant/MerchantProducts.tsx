@@ -11,7 +11,7 @@ import {
 } from '../../hooks/queries/useShop';
 import api from '../../lib/api';
 import { formatCurrency } from '../../lib/utils';
-import { Search, MapPin, ChevronDown, Check, X, Store, ShoppingBag, Youtube, Twitter, Globe, ShieldCheck, MessageCircle, Phone, Instagram, Facebook, Image as ImageIcon } from 'lucide-react';
+import { Search, MapPin, ChevronDown, Check, X, Store, ShoppingBag, Youtube, Twitter, Globe, ShieldCheck, MessageCircle, Phone, Instagram, Facebook, Image as ImageIcon, ArrowUpRight } from 'lucide-react';
 
 // Custom Icons for Tiktok
 const TiktokIcon = ({ className }: { className?: string }) => (
@@ -458,23 +458,42 @@ export const MerchantProducts: React.FC = () => {
                                                         </>
                                                     )}
                                                 </div>
-
-                                                <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                                    <button onClick={() => handleEdit(prod)} className="p-4 bg-white/10 rounded-2xl text-white hover:bg-[#FFBF00] hover:text-[#0A1128] transition-all transform hover:scale-110">
-                                                        <EditIcon className="w-5 h-5" />
-                                                    </button>
-                                                    <button onClick={() => handleDelete(prod.id)} className="p-4 bg-white/10 rounded-2xl text-white hover:bg-red-500 transition-all transform hover:scale-110">
-                                                        <TrashIcon className="w-5 h-5" />
-                                                    </button>
-                                                </div>
                                             </div>
 
                                             <div className="p-8 space-y-6">
-                                                <h4 className="text-lg font-black tracking-tight text-[#0A1128] group-hover:text-[#FFBF00] transition-colors line-clamp-1 italic">{prod.nama_produk}</h4>
+                                                <div className="space-y-2">
+                                                    <h4 className="text-lg font-black tracking-tight text-[#0A1128] group-hover:text-[#FFBF00] transition-colors line-clamp-1 italic">{prod.nama_produk}</h4>
+                                                    
+                                                    {/* Product Actions - Always Visible */}
+                                                    <div className="flex items-center gap-2 pt-1">
+                                                        <button 
+                                                            onClick={() => handleEdit(prod)} 
+                                                            className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-slate-50 hover:bg-[#FFBF00] text-slate-400 hover:text-[#0A1128] rounded-xl border border-slate-100 transition-all text-[9px] font-black uppercase tracking-widest shadow-sm"
+                                                        >
+                                                            <EditIcon className="w-3 h-3" />
+                                                            Edit
+                                                        </button>
+                                                        <a 
+                                                            href={`/shop/${merchantData?.merchant?.slug || 'umum'}/${prod.slug || prod.id}`}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-slate-50 hover:bg-[#0A1128] text-slate-400 hover:text-white rounded-xl border border-slate-100 transition-all text-[9px] font-black uppercase tracking-widest shadow-sm"
+                                                        >
+                                                            View
+                                                            <ArrowUpRight className="w-3 h-3" />
+                                                        </a>
+                                                        <button 
+                                                            onClick={() => handleDelete(prod.id)} 
+                                                            className="w-10 h-10 flex items-center justify-center bg-slate-50 hover:bg-rose-500 text-slate-400 hover:text-white rounded-xl border border-slate-100 transition-all shadow-sm"
+                                                        >
+                                                            <TrashIcon className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                </div>
                                                 
-                                                <div className="flex flex-col gap-4">
-                                                    {/* Price Row - Independent to avoid truncation */}
-                                                    <div className="pt-2 border-t border-slate-50">
+                                                <div className="flex flex-col gap-4 pt-2 border-t border-slate-50">
+                                                    {/* Price Row */}
+                                                    <div>
                                                         <p className="text-[9px] font-black text-[#FFBF00] uppercase tracking-widest mb-1 opacity-60">Harga</p>
                                                         <p className="text-xl font-black text-[#0A1128]">
                                                             {prod.harga_estimasi && !isNaN(Number(prod.harga_estimasi)) 
@@ -483,7 +502,7 @@ export const MerchantProducts: React.FC = () => {
                                                         </p>
                                                     </div>
 
-                                                    {/* Meta Row - Below price row */}
+                                                    {/* Meta Row */}
                                                     <div className="space-y-3">
                                                         <div className="flex items-center gap-2">
                                                             <span className="px-2 py-0.5 rounded bg-slate-50 text-slate-400 text-[8px] font-black uppercase tracking-widest border border-slate-100">

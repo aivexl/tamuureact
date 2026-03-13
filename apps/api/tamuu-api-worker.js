@@ -1321,6 +1321,11 @@ export default {
                         console.log(`[Shop] PERSISTENCE INITIATED: ${productId} | Merchant: ${merchant_id} | Status: ${finalStatus} | Slug: ${productSlug}`);
 
                         // Atomic Transaction using Batch
+                        // CTO POLICY: If an admin is uploading via merchant route, auto-approve
+                        const authHeader = request.headers.get('Authorization') || '';
+                        const isAdmin = authHeader.includes('admin@tamuu.id');
+                        const approvalStatus = (finalStatus === 'PUBLISHED' && !isAdmin) ? 0 : 1;
+
                         const statements = [
                             env.DB.prepare(`
                                 INSERT INTO shop_products (
@@ -1335,7 +1340,7 @@ export default {
                                 harga_estimasi || null, finalStatus, kategori_produk || null, 
                                 kota || null, tiktok_url || null, youtube_url || null, 
                                 x_url || null, website_url || null, tokopedia_url || null, shopee_url || null,
-                                finalStatus === 'PUBLISHED' ? 0 : 1,
+                                approvalStatus,
                                 productSlug,
                                 alamat_lengkap || null,
                                 google_maps_url || null,
@@ -1434,12 +1439,16 @@ export default {
                         addField('instagram', instagram);
                         addField('facebook', facebook);
 
-                        if (nama_produk) {
-                            addField('slug', generateSlug(nama_produk));
+                        // CTO POLICY: If an admin is updating via merchant route, auto-approve
+                        const authHeader = request.headers.get('Authorization') || '';
+                        const isAdmin = authHeader.includes('admin@tamuu.id');
+                        if (finalStatus === 'PUBLISHED') {
+                            updateFields.push('is_approved = ?');
+                            params.push(isAdmin ? 1 : 0);
                         }
 
-                        if (finalStatus === 'PUBLISHED') {
-                            updateFields.push('is_approved = 0');
+                        if (nama_produk) {
+                            addField('slug', generateSlug(nama_produk));
                         }
 
                         if (updateFields.length === 0) {

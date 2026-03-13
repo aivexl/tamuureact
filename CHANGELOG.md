@@ -1,5 +1,17 @@
 # Tamuu Changelog
 
+## [0.6.97] - 2026-03-13
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Shop: Merchant Experience & Administrative Flow
+- **Admin Auto-Approval**: Implemented an administrative bypass for product approval. When an admin uploads or updates a product via the `/store/*/products` user interface, the product is automatically set to `is_approved = 1`, ensuring immediate visibility on the home page/discovery while still preserving the "normal user" simulation (keeping `is_admin_listing = 0`).
+- **Product Card UI Refactor**: Enhanced the product list in the merchant dashboard:
+    - Relocated **Edit** and **Delete** buttons from the image overlay to a dedicated action row below the product title for better accessibility.
+    - Added a new **"View"** button with an `ArrowUpRight` icon for instant preview of live products.
+    - Ensured all action buttons are persistently visible (removed hover dependency).
+- **Discovery Fix**: Resolved an issue where certain products (like `AA31BCF0`) were hidden from discovery due to lack of merchant verification or pending approval.
+
 ## [0.6.96] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production
