@@ -1,5 +1,13 @@
 # Tamuu Changelog
 
+## [0.6.98] - 2026-03-13
+**Status**: 🟢 Deployed
+**Environment**: Production
+
+### Shop: Consistency & Standardization
+- **Approval Logic Reversion**: Reverted the administrative auto-approval bypass for products uploaded via the merchant interface (`/store/*/products`). All users, including administrators, are now treated as standard merchants when using this route. Published products will default to `is_approved = 0` and require manual approval in the Admin Product Registry to appear in discovery.
+- **Form UI Consistency**: Maintained the refactored product card UI with persistent action buttons and "View" links, while ensuring no hidden administrative flags are automatically applied.
+
 ## [0.6.97] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production
