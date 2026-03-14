@@ -1308,7 +1308,7 @@ export default {
                             merchant_id, nama_produk, deskripsi, harga_estimasi, status, images, 
                             kategori_produk, kota, tiktok_url, youtube_url, x_url, website_url, 
                             tokopedia_url, shopee_url, alamat_lengkap, google_maps_url,
-                            whatsapp, phone, instagram, facebook
+                            whatsapp, phone, instagram, facebook, kontak_utama
                         } = body;
 
                         if (!merchant_id || !nama_produk) {
@@ -1345,9 +1345,9 @@ export default {
                                     id, merchant_id, nama_produk, deskripsi, harga_estimasi, status, 
                                     kategori_produk, kota, tiktok_url, youtube_url, x_url, website_url, 
                                     tokopedia_url, shopee_url, is_approved, slug, alamat_lengkap, google_maps_url,
-                                    whatsapp, phone, instagram, facebook
+                                    whatsapp, phone, instagram, facebook, kontak_utama
                                     )
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                                     `).bind(
                                     productId, merchant_id, nama_produk, deskripsi || '-', 
                                     harga_estimasi || null, finalStatus, kategori_produk || null, 
@@ -1356,7 +1356,8 @@ export default {
                                     approvalStatus,
                                     productSlug,
                                     alamat_lengkap || null,                                google_maps_url || null,
-                                whatsapp || null, phone || null, instagram || null, facebook || null
+                                whatsapp || null, phone || null, instagram || null, facebook || null,
+                                kontak_utama || 'whatsapp'
                             )
                         ];
 
@@ -1402,7 +1403,7 @@ export default {
                             nama_produk, deskripsi, harga_estimasi, status, images, 
                             kategori_produk, kota, tiktok_url, youtube_url, x_url, website_url, 
                             tokopedia_url, shopee_url, alamat_lengkap, google_maps_url,
-                            whatsapp, phone, instagram, facebook
+                            whatsapp, phone, instagram, facebook, kontak_utama
                         } = body;
 
                         const finalStatus = (status === 'PUBLISHED' || status === 'DRAFT') ? status : undefined;
@@ -1450,6 +1451,7 @@ export default {
                         addField('phone', phone);
                         addField('instagram', instagram);
                         addField('facebook', facebook);
+                        addField('kontak_utama', kontak_utama);
 
                         if (nama_produk) {
                             addField('slug', generateSlug(nama_produk));
@@ -2160,6 +2162,13 @@ export default {
 
                         let updateFields = [];
                         let params = [];
+
+                        const addField = (name, value) => {
+                            if (value !== undefined) {
+                                updateFields.push(`${name} = ?`);
+                                params.push(value === "" ? null : value);
+                            }
+                        };
 
                         if (isSuperAdmin && status === 'PUBLISHED') {
                             updateFields.push('is_approved = 1');
@@ -2892,8 +2901,9 @@ export default {
                 const body = await request.json();
                 const { 
                     merchant_id, user_id, nama_toko, deskripsi, logo_url, banner_url, 
-                    category_id, kota, whatsapp, instagram, facebook, tiktok, 
-                    website, email, alamat, google_maps_url, kontak_utama
+                    category_id, kota, whatsapp, phone, instagram, facebook, tiktok, 
+                    website, email, alamat, google_maps_url, kontak_utama,
+                    x_url, shopee_url, tokopedia_url, youtube
                 } = body;
 
                 if (!merchant_id || !user_id) return json({ error: 'Missing required IDs' }, { ...corsHeaders, status: 400 });
