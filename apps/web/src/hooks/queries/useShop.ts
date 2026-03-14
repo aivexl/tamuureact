@@ -172,8 +172,10 @@ export const useUpdateProductStatus = () => {
     return useMutation({
         mutationFn: ({ productId, userId, status }: { productId: string, userId: string, status: string }) =>
             shop.updateProductStatus(productId, userId, status),
-        onSuccess: () => {
+        onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ['merchant_products'] });
+            queryClient.invalidateQueries({ queryKey: ['shop_product', variables.productId] });
+            queryClient.invalidateQueries({ queryKey: ['shop_product'] });
             queryClient.invalidateQueries({ queryKey: ['storefront'] });
         }
     });

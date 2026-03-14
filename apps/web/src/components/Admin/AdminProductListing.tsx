@@ -377,7 +377,7 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
         phone: product?.phone || '',
         instagram: product?.instagram || '',
         facebook: product?.facebook || '',
-        kontak_utama: product?.kontak_utama || 'whatsapp',
+        kontak_utama: product?.kontak_utama ?? 'whatsapp',
         alamat_lengkap: product?.alamat_lengkap || '',
         google_maps_url: product?.google_maps_url || '',
         is_special: product?.is_special || 0,

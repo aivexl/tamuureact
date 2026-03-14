@@ -1,5 +1,10 @@
 # Tamuu Changelog
 
+## [0.8.2] - 2026-03-14
+### Fixed
+- **Data Safety Hardening**: Patched `AdminProductListing` and `ProductDetailPage` to use nullish coalescing for primary contact resolution, ensuring more robust default value handling.
+- **State Synchronization Optimization**: Enhanced the `useUpdateProductStatus` hook to invalidate specific product detail queries. This ensures that when an admin or merchant updates a product's status, the detail page reflects the change immediately without manual refresh.
+
 ## [0.8.1] - 2026-03-14
 ### Fixed
 - **Dynamic Contact Button Resolution**: Patched a critical logic error in the Product Detail Page where the "Hubungi Sekarang" button was incorrectly defaulting to WhatsApp despite specific product settings. The button now correctly respects the `kontak_utama` saved for each individual product.

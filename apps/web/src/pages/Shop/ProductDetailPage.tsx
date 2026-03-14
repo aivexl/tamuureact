@@ -298,10 +298,10 @@ export const ProductDetailPage: React.FC = () => {
         }
 
         // Resolve the primary contact mode
-        // 1. Product-specific choice
+        // 1. Product-specific choice (STRICT)
         // 2. Merchant-level fallback choice
         // 3. Default to whatsapp
-        const mode = product?.kontak_utama || (product as any)?.m_kontak_utama || merchantStats?.kontak_utama || 'whatsapp';
+        const mode = product?.kontak_utama ?? (product as any)?.m_kontak_utama ?? merchantStats?.kontak_utama ?? 'whatsapp';
 
         // Check global mode preference as a secondary override/fallback
         const globalMode = systemSettings?.global_chat_mode;
