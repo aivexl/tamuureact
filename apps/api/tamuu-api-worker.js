@@ -2173,10 +2173,16 @@ export default {
                         const productId = url.searchParams.get('id');
                         if (!productId) return json({ error: 'Product ID required' }, { ...corsHeaders, status: 400 });
 
-                        const body = await request.json();
+                        let body;
+                        try {
+                            body = await request.json();
+                        } catch (e) {
+                            return json({ error: 'Invalid JSON body' }, { ...corsHeaders, status: 400 });
+                        }
                         
-                        // Identify caller: Only Super Admins get auto-approval bypass
-                        const isSuperAdmin = adminCheck.user && (adminCheck.user.email === 'admin@tamuu.id' || adminCheck.user.role === 'admin');
+                        // Identify caller
+                        const user = adminCheck.user || {};
+                        const isSuperAdmin = user.email === 'admin@tamuu.id' || user.role === 'admin';
                         
                         let updateFields = [];
                         let params = [];
@@ -2192,39 +2198,26 @@ export default {
                             updateFields.push('is_approved = 1');
                         }
 
-                        // Core Fields from Body
-                        addField('nama_produk', body.nama_produk);
-                        addField('deskripsi', body.deskripsi);
-                        addField('harga_estimasi', body.harga_estimasi);
-                        addField('status', body.status);
-                        addField('kategori_produk', body.kategori_produk);
-                        addField('kota', body.kota);
-                        
-                        if (body.is_admin_listing !== undefined) {
-                            addField('is_admin_listing', Number(body.is_admin_listing) ? 1 : 0);
+                        // Explicit field mapping to ensure no undefined/null leaks into SQL names
+                        const textFields = [
+                            'nama_produk', 'deskripsi', 'harga_estimasi', 'status', 
+                            'kategori_produk', 'kota', 'custom_store_name',
+                            'tiktok_url', 'youtube_url', 'x_url', 'website_url', 
+                            'tokopedia_url', 'shopee_url', 'alamat_lengkap', 'google_maps_url',
+                            'whatsapp', 'phone', 'instagram', 'facebook', 'kontak_utama'
+                        ];
+
+                        for (const f of textFields) {
+                            if (body[f] !== undefined) {
+                                addField(f, body[f]);
+                            }
                         }
-                        addField('custom_store_name', body.custom_store_name);
-                        
-                        addField('tiktok_url', body.tiktok_url);
-                        addField('youtube_url', body.youtube_url);
-                        addField('x_url', body.x_url);
-                        addField('website_url', body.website_url);
-                        addField('tokopedia_url', body.tokopedia_url);
-                        addField('shopee_url', body.shopee_url);
-                        
-                        addField('alamat_lengkap', body.alamat_lengkap);
-                        addField('google_maps_url', body.google_maps_url);
-                        
-                        if (body.is_special !== undefined) addField('is_special', Number(body.is_special) ? 1 : 0);
-                        if (body.is_featured !== undefined) addField('is_featured', Number(body.is_featured) ? 1 : 0);
-                        if (body.is_landing_featured !== undefined) addField('is_landing_featured', Number(body.is_landing_featured) ? 1 : 0);
-                        
-                        // Contact Hardening
-                        addField('whatsapp', body.whatsapp);
-                        addField('phone', body.phone);
-                        addField('instagram', body.instagram);
-                        addField('facebook', body.facebook);
-                        addField('kontak_utama', body.kontak_utama);
+
+                        // Explicit numeric/boolean mapping
+                        if (body.is_admin_listing !== undefined) addField('is_admin_listing', body.is_admin_listing ? 1 : 0);
+                        if (body.is_special !== undefined) addField('is_special', body.is_special ? 1 : 0);
+                        if (body.is_featured !== undefined) addField('is_featured', body.is_featured ? 1 : 0);
+                        if (body.is_landing_featured !== undefined) addField('is_landing_featured', body.is_landing_featured ? 1 : 0);
                         
                         if (body.nama_produk) {
                             addField('slug', generateSlug(body.nama_produk));
@@ -2238,13 +2231,14 @@ export default {
                             statements.push(env.DB.prepare(sql).bind(...params));
                         }
 
-                        if (Array.isArray(body.images)) {
+                        if (body.images && Array.isArray(body.images)) {
                             statements.push(env.DB.prepare('DELETE FROM shop_product_images WHERE product_id = ?').bind(productId));
                             for (let i = 0; i < body.images.length; i++) {
-                                if (body.images[i]) {
+                                const imgUrl = body.images[i];
+                                if (imgUrl && typeof imgUrl === 'string') {
                                     statements.push(
                                         env.DB.prepare('INSERT INTO shop_product_images (id, product_id, image_url, order_index) VALUES (?, ?, ?, ?)')
-                                            .bind(crypto.randomUUID(), productId, body.images[i], i)
+                                            .bind(crypto.randomUUID(), productId, imgUrl, i)
                                     );
                                 }
                             }
@@ -2256,8 +2250,13 @@ export default {
 
                         return json({ success: true, id: productId }, corsHeaders);
                     } catch (error) {
-                        console.error('[Admin] PUT EXCEPTION:', error.stack);
-                        return json({ error: 'Failed to update product', details: error.message }, { ...corsHeaders, status: 500 });
+                        console.error('[Admin] PUT CRITICAL FAILURE:', error.message);
+                        return json({ 
+                            error: 'Failed to update product', 
+                            details: error.message,
+                            stack: error.stack,
+                            timestamp: new Date().toISOString()
+                        }, { ...corsHeaders, status: 500 });
                     }
                 }
                 // Delete Any Product (Administrative Overrule)
