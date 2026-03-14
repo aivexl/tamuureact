@@ -2250,10 +2250,20 @@ export default {
                             }
                         }
 
-                        console.log(`[Admin] UPDATING PRODUCT ${productId} | STATEMENTS: ${statements.length} | FIELDS: ${updateFields.length}`);
+                        console.log(`[Admin] BATCH PREP: ${statements.length} statements for product ${productId}`);
 
                         if (statements.length > 0) {
-                            await env.DB.batch(statements);
+                            try {
+                                await env.DB.batch(statements);
+                            } catch (batchError) {
+                                console.error('[Admin] D1 BATCH ERROR:', batchError.message);
+                                return json({ 
+                                    error: 'Database operation failed', 
+                                    details: batchError.message,
+                                    product_id: productId,
+                                    statement_count: statements.length
+                                }, { ...corsHeaders, status: 500 });
+                            }
                         }
 
                         return json({ success: true, id: productId }, corsHeaders);
