@@ -1457,6 +1457,8 @@ export default {
                         addField('instagram', instagram);
                         addField('facebook', facebook);
                         addField('kontak_utama', kontak_utama);
+                        
+                        console.log(`[Admin] PERSISTENCE: kontak_utama=${kontak_utama} | body=${JSON.stringify(body).substring(0, 100)}...`);
 
                         if (nama_produk) {
                             addField('slug', generateSlug(nama_produk));
@@ -2213,6 +2215,8 @@ export default {
                         addField('instagram', instagram);
                         addField('facebook', facebook);
                         addField('kontak_utama', kontak_utama);
+                        
+                        console.log(`[Admin] PERSISTENCE: kontak_utama=${kontak_utama} | body=${JSON.stringify(body).substring(0, 100)}...`);
 
                         if (nama_produk) {
                             const newSlug = generateSlug(nama_produk);
