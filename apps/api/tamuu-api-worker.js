@@ -1108,9 +1108,9 @@ export default {
 
                     // Insert Merchant Profile
                     const insertResult = await env.DB.prepare(
-                        `INSERT INTO shop_merchants (id, user_id, slug, nama_toko, deskripsi, category_id, is_verified) 
-                         VALUES (?, ?, ?, ?, ?, ?, ?)`
-                    ).bind(merchantId, user_id, slug, nama_toko, deskripsi || null, category_id, verificationStatus).run();
+                        `INSERT INTO shop_merchants (id, user_id, slug, nama_toko, deskripsi, category_id, is_verified, kontak_utama) 
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+                    ).bind(merchantId, user_id, slug, nama_toko, deskripsi || null, category_id, verificationStatus, 'whatsapp').run();
 
                     // CRITICAL: D1 silent failure prevention
                     // If foreign constraints fail, insertResult.changes will be 0 but won't throw exception
@@ -1361,7 +1361,7 @@ export default {
                                     productSlug,
                                     alamat_lengkap || null,                                google_maps_url || null,
                                 whatsapp || null, phone || null, instagram || null, facebook || null,
-                                kontak_utama || 'whatsapp'
+                                kontak_utama || null
                             )
                         ];
 
@@ -1790,8 +1790,9 @@ export default {
                             (SELECT COUNT(*) FROM shop_products WHERE merchant_id = ? AND status = 'PUBLISHED') as total_products,
                             (SELECT COUNT(*) FROM shop_wishlist sw JOIN shop_products sp ON sw.product_id = sp.id WHERE sp.merchant_id = ?) as total_wishlist,
                             (SELECT AVG(rating) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = ?) as avg_rating,
-                            (SELECT COUNT(*) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = ?) as review_count
-                    `).bind(merchantId, merchantId, merchantId, merchantId).first();
+                            (SELECT COUNT(*) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = ?) as review_count,
+                            (SELECT kontak_utama FROM shop_merchants WHERE id = ?) as kontak_utama
+                    `).bind(merchantId, merchantId, merchantId, merchantId, merchantId).first();
                     return json({ success: true, stats }, corsHeaders);
                 } catch (error) {
                     return json({ error: 'Failed to fetch stats' }, { ...corsHeaders, status: 500 });

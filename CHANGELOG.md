@@ -1,5 +1,12 @@
 # Tamuu Changelog
 
+## [0.7.9] - 2026-03-14
+### Fixed
+- **Database Schema Integrity**: Manually provisioned missing `kontak_utama` column in `shop_products` table via remote D1 execution to unblock the migration pipeline.
+- **Merchant Contact Fallback Nexus**: Optimized `ProductDetailPage.tsx` to implement a multi-tier fallback for the primary contact button: Product Level -> Merchant Global Level -> Default (WhatsApp).
+- **Dashboard State Accuracy**: Patched the `kontakUtama` selector in the Merchant Product form to correctly trigger the `isDirty` state, ensuring changes are captured during save operations.
+- **Data Inheritance Refactor**: Removed hardcoded 'whatsapp' default in `handleEdit` to allow products to correctly inherit global merchant settings when specific data is absent.
+
 ## [0.7.8] - 2026-03-14
 ### Fixed
 - **Primary Contact Persistence**: Patched `PUT /api/shop/merchant/settings` and product update endpoints to correctly bind `kontak_utama`, ensuring merchant and product preferences persist in D1.

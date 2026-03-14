@@ -199,7 +199,7 @@ export const MerchantProducts: React.FC = () => {
         setShopeeUrl(prod.shopee_url || '');
         setAlamatLengkap(prod.alamat_lengkap || '');
         setGoogleMapsUrl(prod.google_maps_url || '');
-        setKontakUtama(prod.kontak_utama || 'whatsapp');
+        setKontakUtama(prod.kontak_utama);
         setView('edit');
     };
 
@@ -804,7 +804,7 @@ export const MerchantProducts: React.FC = () => {
                                                     </div>
                                                     <select
                                                         value={kontakUtama}
-                                                        onChange={e => setKontakUtama(e.target.value as any)}
+                                                        onChange={e => { setKontakUtama(e.target.value as any); }}
                                                         className="w-full bg-white border border-slate-100 rounded-[1.5rem] pl-16 pr-12 py-5 text-sm font-black text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/50 transition-all appearance-none cursor-pointer backdrop-blur-md uppercase tracking-widest outline-none"
                                                     >
                                                         <option value="whatsapp">WhatsApp</option>

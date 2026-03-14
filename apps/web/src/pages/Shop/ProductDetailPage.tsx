@@ -298,7 +298,7 @@ export const ProductDetailPage: React.FC = () => {
         if (globalMode === 'internal') return handleChat();
 
         // Fallback to individual vendor preference
-        const mode = product.kontak_utama || merchantStats?.kontak_utama || 'whatsapp';
+        const mode = product.kontak_utama || product.m_kontak_utama || merchantStats?.kontak_utama || 'whatsapp';
         
         const getUrl = (val: string, platform: string) => {
             if (!val) return null;
