@@ -356,6 +356,7 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
         phone: product?.phone || '',
         instagram: product?.instagram || '',
         facebook: product?.facebook || '',
+        kontak_utama: product?.kontak_utama || 'whatsapp',
         alamat_lengkap: product?.alamat_lengkap || '',
         google_maps_url: product?.google_maps_url || '',
         is_special: product?.is_special || 0,
@@ -403,7 +404,8 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                     alamat_lengkap: latestMatch.alamat_lengkap || prev.alamat_lengkap,
                     google_maps_url: latestMatch.google_maps_url || prev.google_maps_url,
                     kategori_produk: latestMatch.kategori_produk || prev.kategori_produk,
-                    kota: latestMatch.kota || prev.kota
+                    kota: latestMatch.kota || prev.kota,
+                    kontak_utama: latestMatch.kontak_utama || prev.kontak_utama
                 }));
 
                 // Sync UI category
@@ -831,6 +833,33 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                             <div>
                                 <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white">Kontak & Link Eksternal</h3>
                                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Vendor Contact & Marketplace</p>
+                            </div>
+                        </div>
+
+                        {/* Primary Contact Gateway */}
+                        <div className="p-8 bg-[#FFBF00]/5 rounded-[2rem] border border-[#FFBF00]/20 space-y-6">
+                            <div className="flex flex-col">
+                                <label className="text-[10px] font-black text-[#FFBF00] uppercase tracking-widest ml-1">Metode Kontak Utama</label>
+                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-tight mt-1 ml-1 italic">
+                                    Pilih tombol aksi utama yang akan muncul di halaman detail produk.
+                                </p>
+                            </div>
+                            
+                            <div className="relative">
+                                <MessageCircle className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-[#FFBF00]" />
+                                <select
+                                    value={formData.kontak_utama}
+                                    onChange={e => setFormData({...formData, kontak_utama: e.target.value})}
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-16 pr-8 py-5 text-sm font-black text-white focus:ring-2 focus:ring-[#FFBF00]/50 focus:bg-white/10 transition-all appearance-none cursor-pointer backdrop-blur-md uppercase tracking-widest"
+                                >
+                                    <option value="whatsapp" className="bg-[#0A0A0A]">WhatsApp (Recommended)</option>
+                                    <option value="chat" className="bg-[#0A0A0A]">Chat Internal Tamuu</option>
+                                    <option value="phone" className="bg-[#0A0A0A]">Telepon Langsung</option>
+                                    <option value="instagram" className="bg-[#0A0A0A]">Direct Message Instagram</option>
+                                    <option value="tokopedia" className="bg-[#0A0A0A]">Tokopedia Marketplace</option>
+                                    <option value="shopee" className="bg-[#0A0A0A]">Shopee Marketplace</option>
+                                </select>
+                                <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 pointer-events-none" />
                             </div>
                         </div>
                         

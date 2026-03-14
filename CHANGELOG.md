@@ -1,5 +1,13 @@
 # Tamuu Changelog
 
+## [0.7.5] - 2026-03-14
+**Status**: 🔵 In Development
+**Environment**: Staging/Production
+
+### Admin: Administrative Listing Completeness
+- **Primary Contact Selection**: Added "Metode Kontak Utama" (Primary Contact Method) selection to the Administrative Product Listing form. This allows admins to designate the primary action button (WhatsApp, Chat, Phone, Instagram, Tokopedia, or Shopee) for global registry products.
+- **Store Sync Expansion**: Enhanced the reactive store synchronization logic to automatically pull the primary contact preference when a registered brand is selected in the admin dashboard, ensuring consistency across a vendor's product catalog.
+
 ## [0.7.4] - 2026-03-14
 **Status**: 🔵 In Development
 **Environment**: Staging/Production
