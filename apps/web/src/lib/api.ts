@@ -295,29 +295,28 @@ export const storage = {
 // ============================================
 export const users = {
     async getProfile(userId: string) {
-        const res = await safeFetch(`${API_BASE}/api/users/profile?userId=${userId}`);
+        // Redirect to getMe as we don't have a separate profile by ID endpoint yet
+        // and typically user already has email in store
+        const res = await safeFetch(`${API_BASE}/api/auth/me?uid=${userId}`);
         if (!res.ok) throw new Error('Failed to fetch profile');
         const data = await res.json();
         return sanitizeValue(data);
     },
 
     async getMe(email: string, extra?: any) {
-        const res = await safeFetch(`${API_BASE}/api/users/me?email=${email}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(extra || {})
-        });
+        const params = new URLSearchParams({ email, ...extra });
+        const res = await safeFetch(`${API_BASE}/api/auth/me?${params.toString()}`);
         if (!res.ok) throw new Error('Failed to fetch user data');
         return res.json();
     },
 
     async updateProfile(userId: string | any, profile?: any) {
-        const id = profile ? userId : userId.userId;
+        const id = profile ? userId : (userId.id || userId.userId);
         const data = profile || userId;
-        const res = await safeFetch(`${API_BASE}/api/users/profile`, {
-            method: 'PUT',
+        const res = await safeFetch(`${API_BASE}/api/user/profile`, {
+            method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: id, ...sanitizeValue(data) })
+            body: JSON.stringify(sanitizeValue({ ...data, id }))
         });
         const responseData = await res.json();
         if (!res.ok) throw new Error(responseData.error || 'Failed to update profile');
