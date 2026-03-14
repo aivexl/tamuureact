@@ -22,7 +22,11 @@ import {
     Eye,
     EyeOff,
     ChevronDown,
-    ArrowRight
+    ArrowRight,
+    Ban,
+    UserX,
+    UserCheck,
+    AlertTriangle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { admin } from '@/lib/api';
@@ -50,6 +54,7 @@ interface UserData {
     max_invitations: number;
     invitation_count: number;
     created_at: string;
+    status: 'active' | 'suspended' | 'banned';
 }
 
 interface AdminUsersPageProps {
@@ -169,6 +174,16 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
         }
     };
 
+    const handleUpdateStatus = async (userId: string, status: 'active' | 'suspended' | 'banned', name: string) => {
+        try {
+            await admin.updateUserStatus(userId, status);
+            toast.success(`${name} is now ${status.toUpperCase()}`);
+            fetchUsers();
+        } catch (err) {
+            toast.error('Failed to update user status');
+        }
+    };
+
     const handleUpdateAccess = async () => {
         if (!selectedUser) return;
         try {
@@ -246,6 +261,17 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
     const isExpired = (expiry: string | null) => {
         if (!expiry) return false;
         return new Date(expiry) < new Date();
+    };
+
+    const getStatusBadge = (status: string) => {
+        switch (status) {
+            case 'suspended':
+                return <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-500 text-[8px] font-black uppercase tracking-widest border border-amber-500/20">Suspended</span>;
+            case 'banned':
+                return <span className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-500 text-[8px] font-black uppercase tracking-widest border border-rose-500/20">Banned</span>;
+            default:
+                return <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-500 text-[8px] font-black uppercase tracking-widest border border-emerald-500/20">Active</span>;
+        }
     };
 
     return (
@@ -351,7 +377,10 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
                                                     <User className="w-5 h-5" />}
                                         </div>
                                         <div>
-                                            <p className="text-white font-bold">{user.name || 'Anonymous User'}</p>
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-white font-bold">{user.name || 'Anonymous User'}</p>
+                                                {getStatusBadge(user.status)}
+                                            </div>
                                             <p className="text-xs text-slate-500 font-medium flex items-center gap-1.5 mt-0.5 lowercase">
                                                 <Mail className="w-3 h-3 opacity-50" />
                                                 {user.email}
@@ -400,8 +429,34 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
                                     <p className="text-xs text-white font-medium">{parseUTCDate(user.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                                     <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mt-1 opacity-50">Joined</p>
                                 </td>
-                                <td className="px-8 py-6">
+                                <td className="px-8 py-6 text-right">
                                     <div className="flex items-center justify-end gap-2">
+                                        {/* SUSPEND BUTTON */}
+                                        <button
+                                            onClick={() => handleUpdateStatus(user.id, user.status === 'suspended' ? 'active' : 'suspended', user.name || user.email)}
+                                            className={`p-2.5 rounded-xl border transition-all ${
+                                                user.status === 'suspended'
+                                                ? 'bg-amber-500 text-white border-amber-500 shadow-lg shadow-amber-500/20'
+                                                : 'bg-white/5 text-slate-500 border-white/5 hover:border-amber-500/50 hover:text-amber-400'
+                                            }`}
+                                            title={user.status === 'suspended' ? 'Activate User' : 'Suspend User'}
+                                        >
+                                            {user.status === 'suspended' ? <UserCheck className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
+                                        </button>
+
+                                        {/* BAN BUTTON */}
+                                        <button
+                                            onClick={() => handleUpdateStatus(user.id, user.status === 'banned' ? 'active' : 'banned', user.name || user.email)}
+                                            className={`p-2.5 rounded-xl border transition-all ${
+                                                user.status === 'banned'
+                                                ? 'bg-rose-600 text-white border-rose-600 shadow-lg shadow-rose-600/20'
+                                                : 'bg-white/5 text-slate-500 border-white/5 hover:border-rose-500/50 hover:text-rose-500'
+                                            }`}
+                                            title={user.status === 'banned' ? 'Unban User' : 'Ban User'}
+                                        >
+                                            <UserX className="w-4 h-4" />
+                                        </button>
+
                                         <button
                                             onClick={() => {
                                                 setSelectedUser(user);
@@ -415,15 +470,18 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
                                                 setIsEditModalOpen(true);
                                             }}
                                             className="p-2.5 bg-white/5 hover:bg-teal-500/10 text-slate-400 hover:text-teal-400 rounded-xl transition-all border border-white/5 hover:border-teal-500/30"
+                                            title="Edit Subscription"
                                         >
                                             <Edit className="w-4 h-4" />
                                         </button>
+                                        
                                         <button
                                             onClick={() => {
                                                 setSelectedUser(user);
                                                 setIsDeleteModalOpen(true);
                                             }}
                                             className="p-2.5 bg-white/5 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 rounded-xl transition-all border border-white/5 hover:border-rose-500/30"
+                                            title="Delete Permanently"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </button>

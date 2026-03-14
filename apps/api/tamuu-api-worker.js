@@ -3647,7 +3647,56 @@ t.*,
                 return json(result, corsHeaders);
             }
 
-            // ADMIN: Update User Access (Role & Permissions)
+            // ADMIN: Update User (Access, Subscription, Status)
+            if (path.startsWith('/api/admin/users/') && method === 'PATCH') {
+                const parts = path.split('/');
+                const userId = parts[parts.length - 1];
+                if (!userId) return json({ error: 'User ID required' }, { ...corsHeaders, status: 400 });
+
+                const { role, permissions, status, tier, expires_at, max_invitations } = await request.json();
+
+                const updates = [];
+                const values = [];
+
+                if (role) {
+                    updates.push('role = ?');
+                    values.push(role);
+                }
+                if (permissions) {
+                    updates.push('permissions = ?');
+                    values.push(JSON.stringify(permissions));
+                }
+                if (status) {
+                    updates.push('status = ?');
+                    values.push(status);
+                }
+                if (tier) {
+                    updates.push('tier = ?');
+                    values.push(tier);
+                }
+                if (expires_at !== undefined) {
+                    updates.push('expires_at = ?');
+                    values.push(expires_at);
+                }
+                if (max_invitations !== undefined) {
+                    updates.push('max_invitations = ?');
+                    values.push(max_invitations);
+                }
+
+                if (updates.length > 0) {
+                    values.push(userId);
+                    await env.DB.prepare(
+                        `UPDATE users SET ${updates.join(', ')}, updated_at = datetime("now") WHERE id = ? `
+                    ).bind(...values).run();
+                }
+
+                const updatedUser = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first();
+                if (updatedUser) updatedUser.permissions = JSON.parse(updatedUser.permissions || '[]');
+
+                return json({ success: true, user: updatedUser }, corsHeaders);
+            }
+
+            // ADMIN: Update User Access (Role & Permissions) - LEGACY
             if (path.startsWith('/api/admin/users/') && path.endsWith('/access') && method === 'PUT') {
                 const userId = path.split('/')[4];
                 const { role, permissions } = await request.json();
@@ -3680,7 +3729,7 @@ t.*,
             // ADMIN: List All Users
             if (path === '/api/admin/users' && method === 'GET') {
                 const roleFilter = url.searchParams.get('role');
-                let query = 'SELECT id, email, name, role, permissions, tier, expires_at, max_invitations, invitation_count, created_at FROM users';
+                let query = 'SELECT id, email, name, role, permissions, tier, expires_at, max_invitations, invitation_count, created_at, status FROM users';
                 let params = [];
 
                 if (roleFilter) {
@@ -5461,11 +5510,17 @@ async function verifyAdmin(request, env) {
         
         // 2. Database Lookup (Primary Identity Source)
         // We check by ID (UUID) or Email to catch all session types
-        const user = await env.DB.prepare('SELECT id, role, email, permissions, tier FROM users WHERE id = ? OR email = ?')
+        const user = await env.DB.prepare('SELECT id, role, email, permissions, tier, status FROM users WHERE id = ? OR email = ?')
             .bind(token, extractedEmail || token)
             .first();
 
         if (user) {
+            // CTO POLICY: Banned or Suspended accounts lose all administrative privileges immediately
+            if (user.status && user.status !== 'active') {
+                console.warn(`[Auth] Denied: Administrative user ${user.email} is ${user.status}`);
+                return { isAdmin: false, reason: `Account Status: ${user.status.toUpperCase()}` };
+            }
+
             const permissions = typeof user.permissions === 'string' ? JSON.parse(user.permissions || '[]') : (user.permissions || []);
             const userTier = (user.tier || 'free').toLowerCase();
             const userRole = (user.role || 'user').toLowerCase();
@@ -5530,9 +5585,14 @@ async function verifyToken(token, env) {
         }
 
         // 2. Resolve User from D1
-        const user = await env.DB.prepare('SELECT id, email, name, role FROM users WHERE id = ? OR email = ?')
+        const user = await env.DB.prepare('SELECT id, email, name, role, status FROM users WHERE id = ? OR email = ?')
             .bind(userId, email || userId)
             .first();
+
+        if (user && (user.status === 'suspended' || user.status === 'banned')) {
+            console.warn(`[verifyToken] Access Denied: User ${user.email} is ${user.status}`);
+            return null;
+        }
 
         return user;
     } catch (error) {

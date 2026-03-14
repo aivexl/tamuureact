@@ -862,6 +862,20 @@ export const admin = {
         return sanitizeValue(updatedData);
     },
 
+    async updateUser(userId: string, data: { role?: string; permissions?: string[]; status?: string; tier?: string; expires_at?: string | null; max_invitations?: number }) {
+        const res = await safeFetch(`${API_BASE}/api/admin/users/${userId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sanitizeValue(data))
+        });
+        if (!res.ok) throw new Error('Failed to update user');
+        return await res.json();
+    },
+
+    async updateUserStatus(userId: string, status: 'active' | 'suspended' | 'banned') {
+        return this.updateUser(userId, { status });
+    },
+
     async listTransactions(filters?: { status?: string; startDate?: string; endDate?: string }) {
         const query = new URLSearchParams(filters as any).toString();
         const res = await safeFetch(`${API_BASE}/api/admin/transactions?${query}`);

@@ -1,5 +1,15 @@
 # Tamuu Changelog
 
+## [0.7.4] - 2026-03-14
+**Status**: 🔵 In Development
+**Environment**: Staging/Production
+
+### Admin: User Governance & Security Hardening
+- **User Status Lifecycle**: Introduced `status` column to users table (Active, Suspended, Banned) for granular account control.
+- **Administrative Actions**: Added explicit "Suspend" and "Ban" buttons to the Users Management dashboard, providing immediate access to account state toggling.
+- **Auth Middleware Enforcement**: Hardened `verifyToken` and `verifyAdmin` to strictly block access for any account with a non-active status, ensuring security across all API endpoints.
+- **Unified Identity Registry**: Refactored user update endpoints to handle comprehensive profile, subscription, and status modifications in a single streamlined interface.
+
 ## [0.7.3] - 2026-03-13
 **Status**: 🔵 In Development
 **Environment**: Staging/Production
