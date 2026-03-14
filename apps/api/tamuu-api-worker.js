@@ -2178,14 +2178,6 @@ export default {
                         // Identify caller: Only Super Admins get auto-approval bypass
                         const isSuperAdmin = adminCheck.user && (adminCheck.user.email === 'admin@tamuu.id' || adminCheck.user.role === 'admin');
                         
-                        const {
-                            nama_produk, deskripsi, harga_estimasi, status, images,
-                            kategori_produk, kota, is_admin_listing, custom_store_name,
-                            tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url,
-                            alamat_lengkap, google_maps_url, is_special, is_featured, is_landing_featured,
-                            whatsapp, phone, instagram, facebook, kontak_utama
-                        } = body;
-
                         let updateFields = [];
                         let params = [];
 
@@ -2196,62 +2188,63 @@ export default {
                             }
                         };
 
-                        if (isSuperAdmin && status === 'PUBLISHED') {
+                        if (isSuperAdmin && body.status === 'PUBLISHED') {
                             updateFields.push('is_approved = 1');
                         }
 
-                        // Use explicit body extraction to avoid any destructuring issues
+                        // Core Fields from Body
                         addField('nama_produk', body.nama_produk);
                         addField('deskripsi', body.deskripsi);
                         addField('harga_estimasi', body.harga_estimasi);
                         addField('status', body.status);
                         addField('kategori_produk', body.kategori_produk);
                         addField('kota', body.kota);
-                        if (body.is_admin_listing !== undefined) addField('is_admin_listing', Number(body.is_admin_listing) ? 1 : 0);
+                        
+                        if (body.is_admin_listing !== undefined) {
+                            addField('is_admin_listing', Number(body.is_admin_listing) ? 1 : 0);
+                        }
                         addField('custom_store_name', body.custom_store_name);
+                        
                         addField('tiktok_url', body.tiktok_url);
                         addField('youtube_url', body.youtube_url);
                         addField('x_url', body.x_url);
                         addField('website_url', body.website_url);
                         addField('tokopedia_url', body.tokopedia_url);
                         addField('shopee_url', body.shopee_url);
+                        
                         addField('alamat_lengkap', body.alamat_lengkap);
                         addField('google_maps_url', body.google_maps_url);
+                        
                         if (body.is_special !== undefined) addField('is_special', Number(body.is_special) ? 1 : 0);
                         if (body.is_featured !== undefined) addField('is_featured', Number(body.is_featured) ? 1 : 0);
                         if (body.is_landing_featured !== undefined) addField('is_landing_featured', Number(body.is_landing_featured) ? 1 : 0);
                         
-                        // Contact Fields (STRICT)
+                        // Contact Hardening
                         addField('whatsapp', body.whatsapp);
                         addField('phone', body.phone);
                         addField('instagram', body.instagram);
                         addField('facebook', body.facebook);
                         addField('kontak_utama', body.kontak_utama);
                         
-                        console.log(`[Admin] PERSISTENCE HARDENED: ID=${productId} | kontak_utama=${body.kontak_utama} | fieldsCount=${updateFields.length}`);
-
                         if (body.nama_produk) {
-                            const newSlug = generateSlug(body.nama_produk);
-                            updateFields.push('slug = ?');
-                            params.push(newSlug);
+                            addField('slug', generateSlug(body.nama_produk));
                         }
 
                         const statements = [];
 
                         if (updateFields.length > 0) {
-                            params.push(productId);
                             const sql = `UPDATE shop_products SET ${updateFields.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
-                            console.log(`[Admin] EXECUTING SQL: ${sql} | PARAMS: ${JSON.stringify(params)}`);
+                            params.push(productId);
                             statements.push(env.DB.prepare(sql).bind(...params));
                         }
 
-                        if (Array.isArray(images)) {
+                        if (Array.isArray(body.images)) {
                             statements.push(env.DB.prepare('DELETE FROM shop_product_images WHERE product_id = ?').bind(productId));
-                            for (let i = 0; i < images.length; i++) {
-                                if (images[i]) {
+                            for (let i = 0; i < body.images.length; i++) {
+                                if (body.images[i]) {
                                     statements.push(
                                         env.DB.prepare('INSERT INTO shop_product_images (id, product_id, image_url, order_index) VALUES (?, ?, ?, ?)')
-                                            .bind(crypto.randomUUID(), productId, images[i], i)
+                                            .bind(crypto.randomUUID(), productId, body.images[i], i)
                                     );
                                 }
                             }
@@ -2261,8 +2254,9 @@ export default {
                             await env.DB.batch(statements);
                         }
 
-                        return json({ success: true }, corsHeaders);
+                        return json({ success: true, id: productId }, corsHeaders);
                     } catch (error) {
+                        console.error('[Admin] PUT EXCEPTION:', error.stack);
                         return json({ error: 'Failed to update product', details: error.message }, { ...corsHeaders, status: 500 });
                     }
                 }
