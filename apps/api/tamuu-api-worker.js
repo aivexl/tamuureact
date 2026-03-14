@@ -2136,7 +2136,7 @@ export default {
                                     is_featured ? 1 : 0,
                                     is_landing_featured ? 1 : 0,
                                     whatsapp || null, phone || null, instagram || null, facebook || null,
-                                    kontak_utama || 'whatsapp'
+                                    kontak_utama
                                     )
                                     ];
                         if (Array.isArray(images) && images.length > 0) {
@@ -2195,7 +2195,7 @@ export default {
                         addField('status', status);
                         addField('kategori_produk', kategori_produk);
                         addField('kota', kota);
-                        if (is_admin_listing !== undefined) addField('is_admin_listing', is_admin_listing ? 1 : 0);
+                        if (is_admin_listing !== undefined) addField('is_admin_listing', Number(is_admin_listing) ? 1 : 0);
                         addField('custom_store_name', custom_store_name);
                         addField('tiktok_url', tiktok_url);
                         addField('youtube_url', youtube_url);
@@ -2205,9 +2205,9 @@ export default {
                         addField('shopee_url', shopee_url);
                         addField('alamat_lengkap', alamat_lengkap);
                         addField('google_maps_url', google_maps_url);
-                        if (is_special !== undefined) addField('is_special', is_special ? 1 : 0);
-                        if (is_featured !== undefined) addField('is_featured', is_featured ? 1 : 0);
-                        if (is_landing_featured !== undefined) addField('is_landing_featured', is_landing_featured ? 1 : 0);
+                        if (is_special !== undefined) addField('is_special', Number(is_special) ? 1 : 0);
+                        if (is_featured !== undefined) addField('is_featured', Number(is_featured) ? 1 : 0);
+                        if (is_landing_featured !== undefined) addField('is_landing_featured', Number(is_landing_featured) ? 1 : 0);
                         addField('whatsapp', whatsapp);
                         addField('phone', phone);
                         addField('instagram', instagram);

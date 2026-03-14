@@ -2,10 +2,10 @@
 
 ## [0.8.2] - 2026-03-14
 ### Fixed
+- **Enterprise Persistence Nexus**: Hardened the `AdminProductListing` backend to strictly persist the `kontak_utama` field across POST and PUT operations, eliminating default-value regressions.
 - **Primary Contact Resolution Hardening**: Completely refactored `ProductDetailPage.tsx` to use a centralized, memoized contact mode resolution engine. This ensures the primary action button, its icon, and its label are 100% synchronized with both administrative and merchant-level settings.
-- **Backend Persistence Integrity**: Patched `tamuu-api-worker.js` to prevent the `kontak_utama` field from being unintentionally reset or defaulted to "whatsapp" during administrative updates.
-- **Admin UI Synchronization**: Refined `AdminProductListing.tsx` to ensure `kontak_utama` is correctly initialized and persisted when adding or editing products in the global registry.
-- **State Synchronization Optimization**: Enhanced the `useUpdateProductStatus` hook to invalidate specific product detail queries. This ensures that when an admin or merchant updates a product's status, the detail page reflects the change immediately without manual refresh.
+- **Strict Data Casting**: Implemented explicit boolean-to-numeric casting for visibility flags (`is_special`, `is_featured`, `is_landing_featured`) in the admin registry to ensure deterministic UI states.
+- **State Synchronization Optimization**: Enhanced query invalidation protocols to force immediate re-fetch of product details after any administrative update, eliminating stale cache artifacts.
 
 ## [0.8.1] - 2026-03-14
 ### Fixed
