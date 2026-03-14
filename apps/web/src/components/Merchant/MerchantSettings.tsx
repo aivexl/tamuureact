@@ -45,10 +45,11 @@ export const MerchantSettings: React.FC = () => {
     const [website, setWebsite] = useState('');
     const [tokopediaUrl, setTokopediaUrl] = useState('');
     const [shopeeUrl, setShopeeUrl] = useState('');
+    const [tiktokshopUrl, setTiktokshopUrl] = useState('');
     const [email, setEmail] = useState('');
     const [alamat, setAlamat] = useState('');
     const [googleMapsUrl, setGoogleMapsUrl] = useState('');
-    const [kontakUtama, setKontakUtama] = useState<'whatsapp' | 'phone' | 'instagram' | 'facebook' | 'tiktok' | 'tokopedia' | 'shopee' | 'chat' | 'x' | 'youtube' | 'website'>('whatsapp');
+    const [kontakUtama, setKontakUtama] = useState<'whatsapp' | 'phone' | 'instagram' | 'facebook' | 'tiktok' | 'tokopedia' | 'shopee' | 'tiktokshop' | 'chat' | 'x' | 'youtube' | 'website'>('whatsapp');
 
     const [isDirty, setIsDirty] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -76,6 +77,7 @@ export const MerchantSettings: React.FC = () => {
             setXUrl(c.x_url || '');
             setWebsite(c.website || '');
             setTokopediaUrl(c.tokopedia_url || '');
+            setTiktokshopUrl(c.tiktokshop_url || '');
             setShopeeUrl(c.shopee_url || '');
             setEmail(c.email || '');
             setAlamat(c.alamat || '');
@@ -138,6 +140,7 @@ export const MerchantSettings: React.FC = () => {
                     x_url: xUrl,
                     website: website,
                     tokopedia_url: tokopediaUrl,
+                    tiktokshop_url: tiktokshopUrl,
                     shopee_url: shopeeUrl,
                     email: email,
                     alamat: alamat,
@@ -221,6 +224,7 @@ export const MerchantSettings: React.FC = () => {
                                     {kontakUtama === 'website' && <Globe className="w-5 h-5 text-indigo-600" />}
                                     {kontakUtama === 'tokopedia' && <img src="/images/logos/marketplace/logo_tokopedia.png" className="w-5 h-5 object-contain" alt="" />}
                                     {kontakUtama === 'shopee' && <img src="/images/logos/marketplace/logo_shopee.png" className="w-5 h-5 object-contain" alt="" />}
+                                    {kontakUtama === 'tiktokshop' && <img src="/images/logos/marketplace/logo-tiktokshop.png" className="w-5 h-5 object-contain" alt="" />}
                                 </div>
                                 <select
                                     value={kontakUtama}
@@ -238,6 +242,7 @@ export const MerchantSettings: React.FC = () => {
                                     <option value="website">Website Resmi</option>
                                     <option value="tokopedia">Tokopedia</option>
                                     <option value="shopee">Shopee</option>
+                                    <option value="tiktokshop">TikTok Shop</option>
                                 </select>
                                 <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 pointer-events-none transition-transform duration-300 group-focus-within:rotate-180" />
                             </div>
@@ -359,6 +364,15 @@ export const MerchantSettings: React.FC = () => {
                                         <img src="/images/logos/marketplace/logo_shopee.png" alt="Shopee" className="w-full h-full object-contain" />
                                     </div>
                                     <input value={shopeeUrl} onChange={e => { setShopeeUrl(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128]" placeholder="shopee.co.id/..." />
+                                </div>
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">TikTok Shop</label>
+                                <div className="relative">
+                                    <div className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 flex items-center justify-center opacity-80">
+                                        <img src="/images/logos/marketplace/logo-tiktokshop.png" alt="TikTok Shop" className="w-full h-full object-contain" />
+                                    </div>
+                                    <input value={tiktokshopUrl} onChange={e => { setTiktokshopUrl(e.target.value); setIsDirty(true); }} className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-[#0A1128]" placeholder="shop.tiktok.com/..." />
                                 </div>
                             </div>
                             <div className="space-y-3">

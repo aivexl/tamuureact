@@ -187,7 +187,7 @@ export const ProductDetailPage: React.FC = () => {
         );
     };
 
-    const MarketplaceIcon = ({ url, src, alt }: { url?: string, src: string, alt: string }) => {
+    const MarketplaceIcon = ({ url, src, alt, keepColor }: { url?: string, src: string, alt: string, keepColor?: boolean }) => {
         if (!url) return null;
         return (
             <a 
@@ -200,7 +200,7 @@ export const ProductDetailPage: React.FC = () => {
                 }}
                 title={`Kunjungi ${alt}`}
             >
-                <img src={src} alt={alt} className="w-7 h-7 object-contain filter grayscale group-hover:grayscale-0 transition-all" />
+                <img src={src} alt={alt} className={`w-7 h-7 object-contain transition-all ${keepColor ? '' : 'filter grayscale group-hover:grayscale-0'}`} />
             </a>
         );
     };
@@ -397,6 +397,12 @@ export const ProductDetailPage: React.FC = () => {
                 break;
             }
             
+            case 'tiktokshop': {
+                const url = getUrl(product.tiktokshop_url || (product as any).m_tiktokshop_url || merchantStats?.tiktokshop_url, 'tiktokshop');
+                if (url) window.open(url, '_blank');
+                else handleWhatsApp();
+                break;
+            }
             case 'shopee': {
                 const url = getUrl(product.shopee_url || (product as any).m_shopee_url || merchantStats?.shopee_url, 'shopee');
                 if (url) window.open(url, '_blank');
@@ -431,6 +437,7 @@ export const ProductDetailPage: React.FC = () => {
             case 'website': return 'Kunjungi Website';
             case 'tokopedia': return 'Beli di Tokopedia';
             case 'shopee': return 'Beli di Shopee';
+            case 'tiktokshop': return 'Beli di TikTok Shop';
             case 'whatsapp': return 'Chat WhatsApp';
             default: return 'Hubungi Sekarang';
         }
@@ -451,6 +458,7 @@ export const ProductDetailPage: React.FC = () => {
             case 'website': return <Globe className="w-5 h-5" />;
             case 'tokopedia': return <img src="/images/logos/marketplace/logo_tokopedia.png" className="w-5 h-5 object-contain" alt="" />;
             case 'shopee': return <img src="/images/logos/marketplace/logo_shopee.png" className="w-5 h-5 object-contain" alt="" />;
+            case 'tiktokshop': return <img src="/images/logos/marketplace/logo-tiktokshop.png" className="w-5 h-5 object-contain" alt="" />;
             case 'whatsapp': return <MessageCircle className="w-5 h-5" />;
             default: return <MessageCircle className="w-5 h-5" />;
         }
@@ -574,10 +582,11 @@ export const ProductDetailPage: React.FC = () => {
                                         count={product.review_count || 0} 
                                         size={18} 
                                     />
-                                    {(product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url || product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url) && (
+                                    {(product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url || product.tiktokshop_url || product.m_tiktokshop_url || merchantStats?.tiktokshop_url || product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url) && (
                                         <div className="flex items-center gap-4">
                                             <MarketplaceIcon url={product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url} src="/images/logos/marketplace/logo_shopee.png" alt="Shopee" />
                                             <MarketplaceIcon url={product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url} src="/images/logos/marketplace/logo_tokopedia.png" alt="Tokopedia" />
+                                            <MarketplaceIcon url={product.tiktokshop_url || product.m_tiktokshop_url || merchantStats?.tiktokshop_url} src="/images/logos/marketplace/logo-tiktokshop.png" alt="TikTok Shop" keepColor={true} />
                                         </div>
                                     )}
                                 </div>
@@ -667,13 +676,16 @@ export const ProductDetailPage: React.FC = () => {
                                     </div>
 
                                     {/* Baris 4: Marketplace (Icons Only) */}
-                                    {(product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url || product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url) && (
+                                    {(product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url || product.tiktokshop_url || product.m_tiktokshop_url || merchantStats?.tiktokshop_url || product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url) && (
                                         <div className="flex items-center gap-6 px-3 pt-2">
                                             <div className="w-10 h-10 flex items-center justify-center">
                                                 <MarketplaceIcon url={product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url} src="/images/logos/marketplace/logo_shopee.png" alt="Shopee" />
                                             </div>
                                             <div className="w-10 h-10 flex items-center justify-center">
                                                 <MarketplaceIcon url={product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url} src="/images/logos/marketplace/logo_tokopedia.png" alt="Tokopedia" />
+                                            </div>
+                                            <div className="w-10 h-10 flex items-center justify-center">
+                                                <MarketplaceIcon url={product.tiktokshop_url || product.m_tiktokshop_url || merchantStats?.tiktokshop_url} src="/images/logos/marketplace/logo-tiktokshop.png" alt="TikTok Shop" keepColor={true} />
                                             </div>
                                         </div>
                                     )}

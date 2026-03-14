@@ -90,10 +90,11 @@ export const MerchantProducts: React.FC = () => {
     const [xUrl, setXUrl] = useState('');
     const [websiteUrl, setWebsiteUrl] = useState('');
     const [tokopediaUrl, setTokopediaUrl] = useState('');
+    const [tiktokshopUrl, setTiktokshopUrl] = useState('');
     const [shopeeUrl, setShopeeUrl] = useState('');
     const [alamatLengkap, setAlamatLengkap] = useState('');
     const [googleMapsUrl, setGoogleMapsUrl] = useState('');
-    const [kontakUtama, setKontakUtama] = useState<'whatsapp' | 'phone' | 'instagram' | 'facebook' | 'tiktok' | 'tokopedia' | 'shopee' | 'chat' | 'x' | 'youtube' | 'website'>('whatsapp');
+    const [kontakUtama, setKontakUtama] = useState<'whatsapp' | 'phone' | 'instagram' | 'facebook' | 'tiktok' | 'tokopedia' | 'shopee' | 'tiktokshop' | 'chat' | 'x' | 'youtube' | 'website'>('whatsapp');
 
     const [isSyncingStore, setIsSyncingStore] = useState(false);
 
@@ -127,6 +128,7 @@ export const MerchantProducts: React.FC = () => {
             setXUrl(c.x_url || '');
             setWebsiteUrl(c.website || '');
             setTokopediaUrl(c.tokopedia_url || '');
+            setTiktokshopUrl(c.tiktokshop_url || '');
             setShopeeUrl(c.shopee_url || '');
             setAlamatLengkap(c.alamat || '');
             setGoogleMapsUrl(c.google_maps_url || '');
@@ -196,6 +198,7 @@ export const MerchantProducts: React.FC = () => {
         setXUrl(prod.x_url || '');
         setWebsiteUrl(prod.website_url || '');
         setTokopediaUrl(prod.tokopedia_url || '');
+        setTiktokshopUrl(prod.tiktokshop_url || '');
         setShopeeUrl(prod.shopee_url || '');
         setAlamatLengkap(prod.alamat_lengkap || '');
         setGoogleMapsUrl(prod.google_maps_url || '');
@@ -293,6 +296,7 @@ export const MerchantProducts: React.FC = () => {
             x_url: xUrl,
             website_url: websiteUrl,
             tokopedia_url: tokopediaUrl,
+            tiktokshop_url: tiktokshopUrl,
             shopee_url: shopeeUrl,
             alamat_lengkap: alamatLengkap,
             google_maps_url: googleMapsUrl,
@@ -815,6 +819,7 @@ export const MerchantProducts: React.FC = () => {
                                                         {kontakUtama === 'website' && <Globe className="w-5 h-5 text-indigo-400" />}
                                                         {kontakUtama === 'tokopedia' && <img src="/images/logos/marketplace/logo_tokopedia.png" className="w-5 h-5 object-contain" alt="" />}
                                                         {kontakUtama === 'shopee' && <img src="/images/logos/marketplace/logo_shopee.png" className="w-5 h-5 object-contain" alt="" />}
+                                    {kontakUtama === 'tiktokshop' && <img src="/images/logos/marketplace/logo-tiktokshop.png" className="w-5 h-5 object-contain" alt="" />}
                                                     </div>
                                                     <select
                                                         value={kontakUtama}
@@ -832,6 +837,7 @@ export const MerchantProducts: React.FC = () => {
                                                         <option value="website">Website Resmi</option>
                                                         <option value="tokopedia">Tokopedia</option>
                                                         <option value="shopee">Shopee</option>
+                                    <option value="tiktokshop">TikTok Shop</option>
                                                     </select>
                                                     <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 pointer-events-none transition-transform duration-300 group-focus-within:rotate-180" />
                                                 </div>
@@ -848,7 +854,8 @@ export const MerchantProducts: React.FC = () => {
                                                     { label: 'X (Twitter)', customIcon: XLogoIcon, value: xUrl, setter: setXUrl, placeholder: 'https://x.com/...', iconColor: 'text-black' },
                                                     { label: 'Website Resmi', icon: Globe, value: websiteUrl, setter: setWebsiteUrl, placeholder: 'https://...', iconColor: 'text-indigo-600' },
                                                     { label: 'Tokopedia', img: '/images/logos/marketplace/logo_tokopedia.png', value: tokopediaUrl, setter: setTokopediaUrl, placeholder: 'https://tokopedia.com/...' },
-                                                    { label: 'Shopee', img: '/images/logos/marketplace/logo_shopee.png', value: shopeeUrl, setter: setShopeeUrl, placeholder: 'https://shopee.co.id/...' }
+                                                    { label: 'Shopee', img: '/images/logos/marketplace/logo_shopee.png', value: shopeeUrl, setter: setShopeeUrl, placeholder: 'https://shopee.co.id/...' },
+                                                    { label: 'TikTok Shop', img: '/images/logos/marketplace/logo-tiktokshop.png', value: tiktokshopUrl, setter: setTiktokshopUrl, placeholder: 'https://shop.tiktok.com/...', keepColor: true }
                                                 ].map((item, idx) => (
                                                     <div key={idx} className="space-y-3">
                                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{item.label}</label>
@@ -858,7 +865,7 @@ export const MerchantProducts: React.FC = () => {
                                                             ) : item.customIcon ? (
                                                                 <item.customIcon className={`absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 ${item.iconColor || 'text-slate-300'}`} />
                                                             ) : (
-                                                                <div className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 flex items-center justify-center grayscale opacity-50">
+                                                                <div className={`absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 flex items-center justify-center ${item.keepColor ? 'opacity-80' : 'grayscale opacity-50'}`}>
                                                                     <img src={item.img} alt={item.label} className="w-full h-full object-contain" />
                                                                 </div>
                                                             )}

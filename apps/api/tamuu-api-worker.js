@@ -1230,7 +1230,7 @@ export default {
                     `).bind(nama_toko, slug, deskripsi_panjang, logo_url, banner_url, kontak_utama, category_id, merchant_id).run();
 
                     // Extract new social media fields
-                    const { facebook, tiktok, website, youtube, x_url, tokopedia_url, shopee_url, phone } = body;
+                    const { facebook, tiktok, website, youtube, x_url, tokopedia_url, shopee_url, tiktokshop_url, phone } = body;
 
                     // 2. Update shop_contacts (Upsert via REPLACE INTO or UPDATE)
                     // We know they have a row because onboarding seeded it, but we can do an UPDATE.
@@ -1250,7 +1250,7 @@ export default {
                             phone = COALESCE(?, phone),
                             updated_at = CURRENT_TIMESTAMP
                         WHERE merchant_id = ?
-                    `).bind(whatsapp, instagram, facebook, tiktok, website, youtube, x_url, tokopedia_url, shopee_url, email, alamat, phone, merchant_id).run();
+                    `).bind(whatsapp, instagram, facebook, tiktok, website, youtube, x_url, tokopedia_url, shopee_url, tiktokshop_url, email, alamat, phone, merchant_id).run();
 
                     return json({ success: true, message: 'Settings saved successfully' }, corsHeaders);
                 } catch (error) {
@@ -1312,7 +1312,7 @@ export default {
                         const { 
                             merchant_id, nama_produk, deskripsi, harga_estimasi, status, images, 
                             kategori_produk, kota, tiktok_url, youtube_url, x_url, website_url, 
-                            tokopedia_url, shopee_url, alamat_lengkap, google_maps_url,
+                            tokopedia_url, shopee_url, tiktokshop_url, alamat_lengkap, google_maps_url,
                             whatsapp, phone, instagram, facebook, kontak_utama
                         } = body;
 
@@ -1349,7 +1349,7 @@ export default {
                                 INSERT INTO shop_products (
                                     id, merchant_id, nama_produk, deskripsi, harga_estimasi, status, 
                                     kategori_produk, kota, tiktok_url, youtube_url, x_url, website_url, 
-                                    tokopedia_url, shopee_url, is_approved, slug, alamat_lengkap, google_maps_url,
+                                    tokopedia_url, shopee_url, tiktokshop_url, is_approved, slug, alamat_lengkap, google_maps_url,
                                     whatsapp, phone, instagram, facebook, kontak_utama
                                     )
                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -1407,7 +1407,7 @@ export default {
                         const { 
                             nama_produk, deskripsi, harga_estimasi, status, images, 
                             kategori_produk, kota, tiktok_url, youtube_url, x_url, website_url, 
-                            tokopedia_url, shopee_url, alamat_lengkap, google_maps_url,
+                            tokopedia_url, shopee_url, tiktokshop_url, alamat_lengkap, google_maps_url,
                             whatsapp, phone, instagram, facebook, kontak_utama
                         } = body;
 
@@ -1434,7 +1434,13 @@ export default {
                         const addField = (name, value) => {
                             if (value !== undefined) {
                                 updateFields.push(`${name} = ?`);
-                                params.push(value === "" ? null : value);
+                                if (value === "") {
+                                    if (name === 'nama_produk') params.push('(Tanpa Nama)');
+                                    else if (name === 'deskripsi') params.push('-');
+                                    else params.push(null);
+                                } else {
+                                    params.push(value);
+                                }
                             }
                         };
 
@@ -1450,6 +1456,7 @@ export default {
                         addField('website_url', website_url);
                         addField('tokopedia_url', tokopedia_url);
                         addField('shopee_url', shopee_url);
+                        addField('tiktokshop_url', tiktokshop_url);
                         addField('alamat_lengkap', alamat_lengkap);
                         addField('google_maps_url', google_maps_url);
                         addField('whatsapp', body.whatsapp);
@@ -1795,7 +1802,7 @@ export default {
                             (SELECT AVG(rating) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = ?) as avg_rating,
                             (SELECT COUNT(*) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = ?) as review_count,
                             m.kontak_utama,
-                            c.whatsapp, c.phone, c.instagram, c.facebook, c.tiktok, c.website, c.x_url, c.youtube, c.shopee_url, c.tokopedia_url, c.google_maps_url, c.alamat as alamat_lengkap
+                            c.whatsapp, c.phone, c.instagram, c.facebook, c.tiktok, c.website, c.x_url, c.youtube, c.shopee_url, c.tokopedia_url, c.tiktokshop_url, c.google_maps_url, c.alamat as alamat_lengkap
                         FROM shop_merchants m
                         LEFT JOIN shop_contacts c ON m.id = c.merchant_id
                         WHERE m.id = ?
@@ -2098,7 +2105,7 @@ export default {
                         const { 
                             nama_produk, deskripsi, harga_estimasi, status, images, 
                             kategori_produk, kota, is_admin_listing, custom_store_name,
-                            tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url,
+                            tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url, tiktokshop_url,
                             alamat_lengkap, google_maps_url, is_special, is_featured, is_landing_featured,
                             whatsapp, phone, instagram, facebook, kontak_utama
                         } = body;
@@ -2128,7 +2135,7 @@ export default {
                                 INSERT INTO shop_products (
                                     id, merchant_id, nama_produk, deskripsi, harga_estimasi, status, 
                                     kategori_produk, kota, is_admin_listing, custom_store_name,
-                                    tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url,
+                                    tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url, tiktokshop_url,
                                     is_approved, slug, alamat_lengkap, google_maps_url, is_special, is_featured, is_landing_featured,
                                     whatsapp, phone, instagram, facebook, kontak_utama
                                     )
@@ -2190,7 +2197,13 @@ export default {
                         const addField = (name, value) => {
                             if (value !== undefined) {
                                 updateFields.push(`${name} = ?`);
-                                params.push(value === "" ? null : value);
+                                if (value === "") {
+                                    if (name === 'nama_produk') params.push('(Tanpa Nama)');
+                                    else if (name === 'deskripsi') params.push('-');
+                                    else params.push(null);
+                                } else {
+                                    params.push(value);
+                                }
                             }
                         };
 
@@ -2203,7 +2216,7 @@ export default {
                             'nama_produk', 'deskripsi', 'harga_estimasi', 'status', 
                             'kategori_produk', 'kota', 'custom_store_name',
                             'tiktok_url', 'youtube_url', 'x_url', 'website_url', 
-                            'tokopedia_url', 'shopee_url', 'alamat_lengkap', 'google_maps_url',
+                            'tokopedia_url', 'shopee_url', 'tiktokshop_url', 'alamat_lengkap', 'google_maps_url',
                             'whatsapp', 'phone', 'instagram', 'facebook', 'kontak_utama'
                         ];
 
@@ -2781,7 +2794,7 @@ export default {
                             SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url, m.kontak_utama as m_kontak_utama,
                             c.whatsapp as m_whatsapp, c.phone as m_phone, c.instagram as m_instagram,
                             c.facebook as m_facebook, c.x_url as m_x_url, c.website as m_website,
-                            c.shopee_url as m_shopee_url, c.tokopedia_url as m_tokopedia_url,
+                            c.shopee_url as m_shopee_url, c.tokopedia_url as m_tokopedia_url, c.tiktokshop_url as m_tiktokshop_url,
                             c.youtube as m_youtube,
                             p.is_admin_listing, p.custom_store_name,
                             (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count,
@@ -2798,7 +2811,7 @@ export default {
                             SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url, m.kontak_utama as m_kontak_utama,
                             c.whatsapp as m_whatsapp, c.phone as m_phone, c.instagram as m_instagram,
                             c.facebook as m_facebook, c.x_url as m_x_url, c.website as m_website,
-                            c.shopee_url as m_shopee_url, c.tokopedia_url as m_tokopedia_url,
+                            c.shopee_url as m_shopee_url, c.tokopedia_url as m_tokopedia_url, c.tiktokshop_url as m_tiktokshop_url,
                             c.youtube as m_youtube,
                             p.is_admin_listing, p.custom_store_name,
                             (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count,
@@ -2975,12 +2988,12 @@ export default {
                             whatsapp = EXCLUDED.whatsapp, phone = EXCLUDED.phone, instagram = EXCLUDED.instagram, facebook = EXCLUDED.facebook,
                             tiktok = EXCLUDED.tiktok, website = EXCLUDED.website, email = EXCLUDED.email,
                             alamat = EXCLUDED.alamat, kota = EXCLUDED.kota, x_url = EXCLUDED.x_url, 
-                            shopee_url = EXCLUDED.shopee_url, tokopedia_url = EXCLUDED.tokopedia_url, youtube = EXCLUDED.youtube, 
+                            shopee_url = EXCLUDED.shopee_url, tokopedia_url = EXCLUDED.tokopedia_url, tiktokshop_url = EXCLUDED.tiktokshop_url, youtube = EXCLUDED.youtube, 
                             google_maps_url = EXCLUDED.google_maps_url, updated_at = CURRENT_TIMESTAMP
                     `).bind(
                         whatsapp || '', phone || '', instagram || '', facebook || '', tiktok || '', 
                         website || '', email || '', alamat || '', kota || '',
-                        body.x_url || '', body.shopee_url || '', body.tokopedia_url || '', body.youtube || '',
+                        body.x_url || '', body.shopee_url || '', body.tokopedia_url || '', body.tiktokshop_url || '', body.youtube || '',
                         google_maps_url || '',
                         merchant_id, merchant_id
                     ).run();

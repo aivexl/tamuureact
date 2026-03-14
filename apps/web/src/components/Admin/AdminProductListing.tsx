@@ -375,6 +375,7 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
         images: product?.images?.map((img: any) => img.image_url) || [],
         tokopedia_url: product?.tokopedia_url || '',
         shopee_url: product?.shopee_url || '',
+        tiktokshop_url: product?.tiktokshop_url || '',
         website_url: product?.website_url || '',
         tiktok_url: product?.tiktok_url || '',
         youtube_url: product?.youtube_url || '',
@@ -391,7 +392,7 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
     });
 
     // Standalone state for Primary Contact Method (CTO Standard Isolation)
-    const [kontakUtama, setKontakUtama] = useState<'whatsapp' | 'phone' | 'instagram' | 'facebook' | 'tiktok' | 'tokopedia' | 'shopee' | 'chat' | 'x' | 'youtube' | 'website'>(
+    const [kontakUtama, setKontakUtama] = useState<'whatsapp' | 'phone' | 'instagram' | 'facebook' | 'tiktok' | 'tokopedia' | 'shopee' | 'tiktokshop' | 'chat' | 'x' | 'youtube' | 'website'>(
         product?.kontak_utama || 'whatsapp'
     );
 
@@ -913,6 +914,7 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                                     {kontakUtama === 'website' && <Globe className="w-5 h-5 text-indigo-400" />}
                                     {kontakUtama === 'tokopedia' && <img src="/images/logos/marketplace/logo_tokopedia.png" className="w-5 h-5 object-contain" alt="" />}
                                     {kontakUtama === 'shopee' && <img src="/images/logos/marketplace/logo_shopee.png" className="w-5 h-5 object-contain" alt="" />}
+                                    {kontakUtama === 'tiktokshop' && <img src="/images/logos/marketplace/logo-tiktokshop.png" className="w-5 h-5 object-contain" alt="" />}
                                 </div>
                                 <select
                                     value={kontakUtama}
@@ -946,15 +948,16 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                                 { label: 'X (Twitter)', icon: XLogoIcon, key: 'x_url', placeholder: 'https://x.com/...' },
                                 { label: 'Website Resmi', icon: Globe, key: 'website_url', placeholder: 'https://...' },
                                 { label: 'Tokopedia', img: '/images/logos/marketplace/logo_tokopedia.png', key: 'tokopedia_url', placeholder: 'https://tokopedia.com/...' },
-                                { label: 'Shopee', img: '/images/logos/marketplace/logo_shopee.png', key: 'shopee_url', placeholder: 'https://shopee.co.id/...' }
-                            ].map((item) => (
+                                { label: 'Shopee', img: '/images/logos/marketplace/logo_shopee.png', key: 'shopee_url', placeholder: 'https://shopee.co.id/...' },
+                                { label: 'TikTok Shop', img: '/images/logos/marketplace/logo-tiktokshop.png', key: 'tiktokshop_url', placeholder: 'https://shop.tiktok.com/...', keepColor: true }
+                            ].map((item: any) => (
                                 <div key={item.key} className="space-y-3">
                                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{item.label}</label>
                                     <div className="relative">
                                         {item.icon ? (
                                             <item.icon className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
                                         ) : (
-                                            <img src={item.img} className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 grayscale opacity-40 group-focus-within:opacity-100 transition-opacity" alt="" />
+                                            <img src={item.img} className={`absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 transition-opacity ${item.keepColor ? 'opacity-80' : 'grayscale opacity-40 group-focus-within:opacity-100'}`} alt="" />
                                         )}
                                         <input 
                                             value={(formData as any)[item.key]} 
