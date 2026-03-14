@@ -2198,7 +2198,7 @@ export default {
                             updateFields.push('is_approved = 1');
                         }
 
-                        // Explicit field mapping to ensure no undefined/null leaks into SQL names
+                        // Explicit field mapping
                         const textFields = [
                             'nama_produk', 'deskripsi', 'harga_estimasi', 'status', 
                             'kategori_produk', 'kota', 'custom_store_name',
@@ -2213,14 +2213,21 @@ export default {
                             }
                         }
 
-                        // Explicit numeric/boolean mapping
                         if (body.is_admin_listing !== undefined) addField('is_admin_listing', body.is_admin_listing ? 1 : 0);
                         if (body.is_special !== undefined) addField('is_special', body.is_special ? 1 : 0);
                         if (body.is_featured !== undefined) addField('is_featured', body.is_featured ? 1 : 0);
                         if (body.is_landing_featured !== undefined) addField('is_landing_featured', body.is_landing_featured ? 1 : 0);
                         
+                        // Local generateSlug to avoid scope issues
+                        const localGenerateSlug = (text) => {
+                            if (!text) return "";
+                            return text.toString().toLowerCase().trim()
+                                .replace(/\s+/g, '-').replace(/[^\w-]+/g, '')
+                                .replace(/--+/g, '-').replace(/^-+/, '').replace(/-+$/, '');
+                        };
+
                         if (body.nama_produk) {
-                            addField('slug', generateSlug(body.nama_produk));
+                            addField('slug', localGenerateSlug(body.nama_produk));
                         }
 
                         const statements = [];
@@ -2244,18 +2251,19 @@ export default {
                             }
                         }
 
+                        console.log(`[Admin] UPDATING PRODUCT ${productId} | STATEMENTS: ${statements.length} | FIELDS: ${updateFields.length}`);
+
                         if (statements.length > 0) {
                             await env.DB.batch(statements);
                         }
 
                         return json({ success: true, id: productId }, corsHeaders);
                     } catch (error) {
-                        console.error('[Admin] PUT CRITICAL FAILURE:', error.message);
+                        console.error('[Admin] PUT EXCEPTION:', error.message);
                         return json({ 
                             error: 'Failed to update product', 
                             details: error.message,
-                            stack: error.stack,
-                            timestamp: new Date().toISOString()
+                            stack: error.stack
                         }, { ...corsHeaders, status: 500 });
                     }
                 }
