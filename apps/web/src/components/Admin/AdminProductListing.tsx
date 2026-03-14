@@ -383,7 +383,6 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
         phone: product?.phone || '',
         instagram: product?.instagram || '',
         facebook: product?.facebook || '',
-        kontak_utama: product?.kontak_utama || 'whatsapp',
         alamat_lengkap: product?.alamat_lengkap || '',
         google_maps_url: product?.google_maps_url || '',
         is_special: product?.is_special || 0,
@@ -391,9 +390,17 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
         is_landing_featured: product?.is_landing_featured || 0
     });
 
+    // Standalone state for Primary Contact Method (CTO Standard Isolation)
+    const [kontakUtama, setKontakUtama] = useState<'whatsapp' | 'phone' | 'instagram' | 'facebook' | 'tiktok' | 'tokopedia' | 'shopee' | 'chat' | 'x' | 'youtube' | 'website'>(
+        product?.kontak_utama || 'whatsapp'
+    );
+
     const [isSyncingStore, setIsSyncingStore] = useState(false);
+    // Track previous sync state to detect ON toggle
+    const prevSyncRef = useRef(false);
+    const prevStoreNameRef = useRef(formData.custom_store_name);
         
-            const [selectedCategory, setSelectedCategory] = useState(
+    const [selectedCategory, setSelectedCategory] = useState(
         () => {
         const cat = product?.kategori_produk || '';
         if (cat === '' || SHOP_CATEGORIES.includes(cat)) return cat;
@@ -405,12 +412,13 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
     });
 
     // Reactive Sync Logic for Admin: Pull latest data from other products with same store name
-    // Refined to only trigger when isSyncingStore is first enabled or store name changes, 
-    // to prevent overwriting manual choices made while in form view.
+    // HARDENED: Only trigger ONCE when toggle is flipped to ON or when store name is explicitly changed
     useEffect(() => {
-        if (isSyncingStore && formData.custom_store_name) {
+        const syncTurnedOn = isSyncingStore && !prevSyncRef.current;
+        const storeNameChanged = isSyncingStore && formData.custom_store_name !== prevStoreNameRef.current;
+
+        if (syncTurnedOn || storeNameChanged) {
             // Find latest product with same store name (excluding current)
-            // STRICT: Only sync from other administrative listings to maintain registry integrity
             const latestMatch = allProducts
                 .filter(p => 
                     p.is_admin_listing === 1 &&
@@ -420,6 +428,7 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                 .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
 
             if (latestMatch) {
+                console.log('[Admin] SYNCING DATA FROM:', latestMatch.nama_produk);
                 setFormData(prev => ({
                     ...prev,
                     whatsapp: latestMatch.whatsapp || prev.whatsapp,
@@ -435,9 +444,13 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                     alamat_lengkap: latestMatch.alamat_lengkap || prev.alamat_lengkap,
                     google_maps_url: latestMatch.google_maps_url || prev.google_maps_url,
                     kategori_produk: latestMatch.kategori_produk || prev.kategori_produk,
-                    kota: latestMatch.kota || prev.kota,
-                    kontak_utama: latestMatch.kontak_utama || prev.kontak_utama
+                    kota: latestMatch.kota || prev.kota
                 }));
+
+                // Update standalone state
+                if (latestMatch.kontak_utama) {
+                    setKontakUtama(latestMatch.kontak_utama);
+                }
 
                 // Sync UI category
                 if (latestMatch.kategori_produk) {
@@ -451,7 +464,10 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                 }
             }
         }
-    }, [isSyncingStore, formData.custom_store_name, allProducts.length]); // only trigger on explicit name/toggle changes
+        
+        prevSyncRef.current = isSyncingStore;
+        prevStoreNameRef.current = formData.custom_store_name;
+    }, [isSyncingStore, formData.custom_store_name, allProducts]);
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -517,7 +533,13 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
 
         setLoading(true);
         try {
-            const payload = { ...formData, status: targetStatus, kategori_produk: finalKategori };
+            // MERGE Standalone state into payload
+            const payload = { 
+                ...formData, 
+                status: targetStatus, 
+                kategori_produk: finalKategori,
+                kontak_utama: kontakUtama 
+            };
             console.log('[Admin] SAVING PRODUCT PAYLOAD:', payload);
             await onSave(payload);
         } catch (error) {
@@ -880,21 +902,21 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                             
                             <div className="relative group">
                                 <div className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-3 pointer-events-none transition-transform duration-300 group-focus-within:scale-110">
-                                    {formData.kontak_utama === 'whatsapp' && <MessageCircle className="w-5 h-5 text-[#25D366]" />}
-                                    {formData.kontak_utama === 'chat' && <MessageSquare className="w-5 h-5 text-indigo-400" />}
-                                    {formData.kontak_utama === 'phone' && <Phone className="w-5 h-5 text-slate-400" />}
-                                    {formData.kontak_utama === 'instagram' && <Instagram className="w-5 h-5 text-[#E4405F]" />}
-                                    {formData.kontak_utama === 'facebook' && <Facebook className="w-5 h-5 text-[#1877F2]" />}
-                                    {formData.kontak_utama === 'tiktok' && <TiktokIcon className="w-5 h-5 text-white" />}
-                                    {formData.kontak_utama === 'x' && <XLogoIcon className="w-5 h-5 text-white" />}
-                                    {formData.kontak_utama === 'youtube' && <Youtube className="w-5 h-5 text-[#FF0000]" />}
-                                    {formData.kontak_utama === 'website' && <Globe className="w-5 h-5 text-indigo-400" />}
-                                    {formData.kontak_utama === 'tokopedia' && <img src="/images/logos/marketplace/logo_tokopedia.png" className="w-5 h-5 object-contain" alt="" />}
-                                    {formData.kontak_utama === 'shopee' && <img src="/images/logos/marketplace/logo_shopee.png" className="w-5 h-5 object-contain" alt="" />}
+                                    {kontakUtama === 'whatsapp' && <MessageCircle className="w-5 h-5 text-[#25D366]" />}
+                                    {kontakUtama === 'chat' && <MessageSquare className="w-5 h-5 text-indigo-400" />}
+                                    {kontakUtama === 'phone' && <Phone className="w-5 h-5 text-slate-400" />}
+                                    {kontakUtama === 'instagram' && <Instagram className="w-5 h-5 text-[#E4405F]" />}
+                                    {kontakUtama === 'facebook' && <Facebook className="w-5 h-5 text-[#1877F2]" />}
+                                    {kontakUtama === 'tiktok' && <TiktokIcon className="w-5 h-5 text-white" />}
+                                    {kontakUtama === 'x' && <XLogoIcon className="w-5 h-5 text-white" />}
+                                    {kontakUtama === 'youtube' && <Youtube className="w-5 h-5 text-[#FF0000]" />}
+                                    {kontakUtama === 'website' && <Globe className="w-5 h-5 text-indigo-400" />}
+                                    {kontakUtama === 'tokopedia' && <img src="/images/logos/marketplace/logo_tokopedia.png" className="w-5 h-5 object-contain" alt="" />}
+                                    {kontakUtama === 'shopee' && <img src="/images/logos/marketplace/logo_shopee.png" className="w-5 h-5 object-contain" alt="" />}
                                 </div>
                                 <select
-                                    value={formData.kontak_utama}
-                                    onChange={e => setFormData({...formData, kontak_utama: e.target.value as any})}
+                                    value={kontakUtama}
+                                    onChange={e => setKontakUtama(e.target.value as any)}
                                     className="w-full bg-white/5 border border-white/10 rounded-[1.5rem] pl-16 pr-12 py-5 text-sm font-black text-white focus:ring-2 focus:ring-[#FFBF00]/50 focus:bg-white/10 transition-all appearance-none cursor-pointer backdrop-blur-md uppercase tracking-widest"
                                 >
                                     <option value="whatsapp" className="bg-[#0A0A0A]">WhatsApp</option>

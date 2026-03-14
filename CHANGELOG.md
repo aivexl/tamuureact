@@ -1,11 +1,12 @@
 # Tamuu Changelog
 
-## [0.8.2] - 2026-03-14
+## [0.8.3] - 2026-03-14
 ### Fixed
-- **Enterprise Persistence Nexus**: Hardened the `AdminProductListing` backend to strictly persist the `kontak_utama` field across POST and PUT operations, eliminating default-value regressions.
-- **Primary Contact Resolution Hardening**: Completely refactored `ProductDetailPage.tsx` to use a centralized, memoized contact mode resolution engine. This ensures the primary action button, its icon, and its label are 100% synchronized with both administrative and merchant-level settings.
-- **Strict Data Casting**: Implemented explicit boolean-to-numeric casting for visibility flags (`is_special`, `is_featured`, `is_landing_featured`) in the admin registry to ensure deterministic UI states.
-- **State Synchronization Optimization**: Enhanced query invalidation protocols to force immediate re-fetch of product details after any administrative update, eliminating stale cache artifacts.
+- **Primary Contact State Isolation**: Implemented a definitive architectural fix for the Administrative Registry by decoupling the `kontak_utama` state from the general product form object. This absolute isolation prevents the background sync engine from accidentally overwriting manual user selections, ensuring 100% persistence reliability.
+- **Form State Integrity**: Added unique React keys to the Admin Product Form to force complete state initialization on every edit operation, eliminating cross-product data contamination.
+- **Explicit UUID Resolution**: Hardened the save pipeline to use absolute UUID resolution (`product_id`) for all administrative updates, guaranteeing zero-miss database targeting.
+
+## [0.8.2] - 2026-03-14
 
 ## [0.8.1] - 2026-03-14
 ### Fixed
