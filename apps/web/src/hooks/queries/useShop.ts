@@ -133,8 +133,9 @@ export const useUpdateMerchantProduct = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: ({ id, data }: { id: string, data: any }) => shop.updateMerchantProduct({ id, data }),
-        onSuccess: () => {
+        onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ['merchant_products'] });
+            queryClient.invalidateQueries({ queryKey: ['shop_product', variables.id] });
             queryClient.invalidateQueries({ queryKey: ['shop_product'] });
         }
     });
@@ -144,8 +145,10 @@ export const useDeleteMerchantProduct = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (id: string) => shop.deleteMerchantProduct(id),
-        onSuccess: () => {
+        onSuccess: (_, id) => {
             queryClient.invalidateQueries({ queryKey: ['merchant_products'] });
+            queryClient.invalidateQueries({ queryKey: ['shop_product', id] });
+            queryClient.invalidateQueries({ queryKey: ['shop_product'] });
         }
     });
 };
@@ -261,8 +264,10 @@ export const useAdminDeleteProduct = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (productId: string) => shop.adminDeleteProduct(productId, token || user?.id || ''),
-        onSuccess: () => {
+        onSuccess: (_, productId) => {
             queryClient.invalidateQueries({ queryKey: ['admin_all_products'] });
+            queryClient.invalidateQueries({ queryKey: ['shop_product', productId] });
+            queryClient.invalidateQueries({ queryKey: ['shop_product'] });
         }
     });
 };
@@ -274,6 +279,7 @@ export const useAdminAddProduct = () => {
         mutationFn: (data: any) => shop.adminAddProduct(data, token || user?.id || ''),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin_all_products'] });
+            queryClient.invalidateQueries({ queryKey: ['shop_product'] });
         }
     });
 };
@@ -283,8 +289,10 @@ export const useAdminUpdateProduct = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: ({ id, data }: { id: string, data: any }) => shop.adminUpdateProduct(id, data, token || user?.id || ''),
-        onSuccess: () => {
+        onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ['admin_all_products'] });
+            queryClient.invalidateQueries({ queryKey: ['shop_product', variables.id] });
+            queryClient.invalidateQueries({ queryKey: ['shop_product'] });
         }
     });
 };

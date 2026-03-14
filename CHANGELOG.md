@@ -1,5 +1,12 @@
 # Tamuu Changelog
 
+## [0.8.1] - 2026-03-14
+### Fixed
+- **Dynamic Contact Button Resolution**: Patched a critical logic error in the Product Detail Page where the "Hubungi Sekarang" button was incorrectly defaulting to WhatsApp despite specific product settings. The button now correctly respects the `kontak_utama` saved for each individual product.
+- **Data Integrity & Schema Patch**: Executed a proactive database update to ensure `kontak_utama` is never null across the entire product registry.
+- **Cache Invalidation Protocol**: Enhanced the `useShop` hooks to properly invalidate specific product detail queries upon update, ensuring that changes made in the dashboard reflect instantly on the public storefront without requiring a hard refresh.
+- **Product Update Reliability**: Patched the backend update handlers to prevent empty strings from reverting contact methods to null, ensuring persistence of chosen platforms.
+
 ## [0.8.0] - 2026-03-14
 ### Fixed
 - **Per-Product Contact Specificity**: Corrected a backend bug where Admin Dashboard edits were failing to save specific contact fields (`whatsapp`, `instagram`, etc.). Products now strictly maintain their individual contact preferences independent of the merchant profile.

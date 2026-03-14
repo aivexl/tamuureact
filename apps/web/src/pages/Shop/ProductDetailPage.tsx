@@ -292,16 +292,22 @@ export const ProductDetailPage: React.FC = () => {
     };
 
     const handlePrimaryContact = () => {
-        // CTO Policy: Global Admin Switch takes precedence
-        const globalMode = systemSettings?.global_chat_mode;
-        if (globalMode === 'whatsapp') return handleWhatsApp();
-        if (globalMode === 'internal') return handleChat();
+        // Analytics
+        if (product?.id) {
+            track.mutate({ merchantId: product.merchant_id, actionType: 'CLICK_CONTACT', productId: product.id });
+        }
 
-        // Fallback to individual vendor preference
+        // Resolve the primary contact mode
+        // 1. Product-specific choice
+        // 2. Merchant-level fallback choice
+        // 3. Default to whatsapp
         const mode = product?.kontak_utama || (product as any)?.m_kontak_utama || merchantStats?.kontak_utama || 'whatsapp';
+
+        // Check global mode preference as a secondary override/fallback
+        const globalMode = systemSettings?.global_chat_mode;
         
-        const getUrl = (val: string, platform: string) => {
-            if (!val) return null;
+        const getUrl = (val: string | undefined, platform: string) => {
+            if (!val || val.length < 2) return null;
             if (val.startsWith('http')) return val;
             switch(platform) {
                 case 'instagram': return `https://instagram.com/${val.replace('@', '')}`;
@@ -309,85 +315,105 @@ export const ProductDetailPage: React.FC = () => {
                 case 'facebook': return `https://facebook.com/${val}`;
                 case 'x': return `https://x.com/${val.replace('@', '')}`;
                 case 'youtube': return val.includes('youtube.com') ? val : `https://youtube.com/${val}`;
+                case 'tokopedia': return val.startsWith('tokopedia.com') ? `https://${val}` : `https://tokopedia.com/${val}`;
+                case 'shopee': return val.startsWith('shopee.co.id') ? `https://${val}` : `https://shopee.co.id/${val}`;
                 default: return `https://${val}`;
             }
         };
 
+        const fallbackToGlobal = () => {
+            if (globalMode === 'internal') return handleChat();
+            handleWhatsApp();
+        };
+
         switch (mode) {
-            case 'chat': return handleChat();
+            case 'chat': 
+            case 'internal':
+                return handleChat();
+            
             case 'phone': {
-                const phone = product.phone || product.m_phone || merchantStats?.phone;
+                const phone = product.phone || (product as any).m_phone || merchantStats?.phone;
                 if (phone) window.open(`tel:${phone}`, '_self');
                 else handleWhatsApp();
                 break;
             }
+            
             case 'instagram': {
-                const ig = product.instagram || product.m_instagram || merchantStats?.instagram;
-                const url = getUrl(ig, 'instagram');
+                const url = getUrl(product.instagram || (product as any).m_instagram || merchantStats?.instagram, 'instagram');
                 if (url) window.open(url, '_blank');
                 else handleWhatsApp();
                 break;
             }
+            
             case 'facebook': {
-                const fb = product.facebook || product.m_facebook || merchantStats?.facebook;
-                const url = getUrl(fb, 'facebook');
+                const url = getUrl(product.facebook || (product as any).m_facebook || merchantStats?.facebook, 'facebook');
                 if (url) window.open(url, '_blank');
                 else handleWhatsApp();
                 break;
             }
+            
             case 'tiktok': {
-                const tt = product.tiktok_url || product.m_tiktok_url || merchantStats?.tiktok;
-                const url = getUrl(tt, 'tiktok');
+                const url = getUrl(product.tiktok_url || (product as any).m_tiktok_url || merchantStats?.tiktok, 'tiktok');
                 if (url) window.open(url, '_blank');
                 else handleWhatsApp();
                 break;
             }
+            
             case 'x': {
-                const x = product.x_url || product.m_x_url || merchantStats?.x_url;
-                const url = getUrl(x, 'x');
+                const url = getUrl(product.x_url || (product as any).m_x_url || merchantStats?.x_url, 'x');
                 if (url) window.open(url, '_blank');
                 else handleWhatsApp();
                 break;
             }
+            
             case 'youtube': {
-                const yt = product.youtube_url || product.m_youtube_url || merchantStats?.youtube_url;
-                const url = getUrl(yt, 'youtube');
+                const url = getUrl(product.youtube_url || (product as any).m_youtube_url || merchantStats?.youtube_url, 'youtube');
                 if (url) window.open(url, '_blank');
                 else handleWhatsApp();
                 break;
             }
+            
             case 'website': {
-                const web = product.website_url || product.m_website || merchantStats?.website;
-                if (web) window.open(web.startsWith('http') ? web : `https://${web}`, '_blank');
+                const url = getUrl(product.website_url || (product as any).m_website || merchantStats?.website, 'website');
+                if (url) window.open(url, '_blank');
                 else handleWhatsApp();
                 break;
             }
+            
             case 'tokopedia': {
-                const tokped = product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url;
-                if (tokped) window.open(tokped.startsWith('http') ? tokped : `https://${tokped}`, '_blank');
+                const url = getUrl(product.tokopedia_url || (product as any).m_tokopedia_url || merchantStats?.tokopedia_url, 'tokopedia');
+                if (url) window.open(url, '_blank');
                 else handleWhatsApp();
                 break;
             }
+            
             case 'shopee': {
-                const shopee = product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url;
-                if (shopee) window.open(shopee.startsWith('http') ? shopee : `https://${shopee}`, '_blank');
+                const url = getUrl(product.shopee_url || (product as any).m_shopee_url || merchantStats?.shopee_url, 'shopee');
+                if (url) window.open(url, '_blank');
                 else handleWhatsApp();
                 break;
             }
-            default: return handleWhatsApp();
+            
+            case 'whatsapp':
+                return handleWhatsApp();
+                
+            default: 
+                return fallbackToGlobal();
         }
     };
 
     const getPrimaryButtonLabel = () => {
-        const globalMode = systemSettings?.global_chat_mode;
-        if (globalMode === 'whatsapp') return 'Hubungi Sekarang';
-        if (globalMode === 'internal') return 'Chat Penjual';
-
         if (!product) return 'Hubungi Sekarang';
 
         const mode = product?.kontak_utama || (product as any)?.m_kontak_utama || merchantStats?.kontak_utama || 'whatsapp';
+        
+        // If we want to respect global mode as a secondary label override
+        const globalMode = systemSettings?.global_chat_mode;
+        if (mode === 'whatsapp' && globalMode === 'internal') return 'Chat Penjual';
+
         switch (mode) {
             case 'chat': return 'Chat Sekarang';
+            case 'internal': return 'Chat Sekarang';
             case 'phone': return 'Hubungi Telepon';
             case 'instagram': return 'Buka Instagram';
             case 'facebook': return 'Buka Facebook';
@@ -397,20 +423,19 @@ export const ProductDetailPage: React.FC = () => {
             case 'website': return 'Kunjungi Website';
             case 'tokopedia': return 'Beli di Tokopedia';
             case 'shopee': return 'Beli di Shopee';
+            case 'whatsapp': return 'Chat WhatsApp';
             default: return 'Hubungi Sekarang';
         }
     };
 
     const getPrimaryButtonIcon = () => {
-        const globalMode = systemSettings?.global_chat_mode;
-        if (globalMode === 'whatsapp') return <MessageCircle className="w-5 h-5" />;
-        if (globalMode === 'internal') return <MessageSquare className="w-5 h-5" />;
-
         if (!product) return <MessageCircle className="w-5 h-5" />;
 
         const mode = product?.kontak_utama || (product as any)?.m_kontak_utama || merchantStats?.kontak_utama || 'whatsapp';
+        
         switch (mode) {
             case 'chat': return <MessageSquare className="w-5 h-5" />;
+            case 'internal': return <MessageSquare className="w-5 h-5" />;
             case 'phone': return <Phone className="w-5 h-5" />;
             case 'instagram': return <Instagram className="w-5 h-5" />;
             case 'facebook': return <Facebook className="w-5 h-5" />;
