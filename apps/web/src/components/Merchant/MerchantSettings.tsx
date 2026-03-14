@@ -48,7 +48,7 @@ export const MerchantSettings: React.FC = () => {
     const [email, setEmail] = useState('');
     const [alamat, setAlamat] = useState('');
     const [googleMapsUrl, setGoogleMapsUrl] = useState('');
-    const [kontakUtama, setKontakUtama] = useState<'whatsapp' | 'phone' | 'instagram' | 'chat'>('whatsapp');
+    const [kontakUtama, setKontakUtama] = useState<'whatsapp' | 'phone' | 'instagram' | 'facebook' | 'tiktok' | 'tokopedia' | 'shopee' | 'chat' | 'x' | 'youtube' | 'website'>('whatsapp');
 
     const [isDirty, setIsDirty] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -200,7 +200,7 @@ export const MerchantSettings: React.FC = () => {
                         <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'logo')} />
 
                         {/* Primary Contact Gateway - Seamless Choice */}
-                        <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-8">
+                        <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-6">
                             <div className="space-y-1">
                                 <h3 className="text-sm font-black text-[#0A1128] uppercase tracking-tight">Metode Kontak Utama</h3>
                                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">
@@ -208,49 +208,38 @@ export const MerchantSettings: React.FC = () => {
                                 </p>
                             </div>
                             
-                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                                {[
-                                    { id: 'whatsapp', label: 'WhatsApp', icon: MessageCircle, color: 'text-[#25D366]' },
-                                    { id: 'chat', label: 'Chat Tamuu', icon: MessageSquare, color: 'text-indigo-600' },
-                                    { id: 'phone', label: 'Telepon', icon: Phone, color: 'text-slate-600' },
-                                    { id: 'instagram', label: 'Instagram', icon: Instagram, color: 'text-[#E4405F]' },
-                                    { id: 'facebook', label: 'Facebook', icon: Facebook, color: 'text-[#1877F2]' },
-                                    { id: 'tiktok', label: 'TikTok', icon: TiktokIcon, color: 'text-black' },
-                                    { id: 'x', label: 'X / Twitter', icon: XLogoIcon, color: 'text-black' },
-                                    { id: 'youtube', label: 'YouTube', icon: Youtube, color: 'text-[#FF0000]' },
-                                    { id: 'website', label: 'Website', icon: Globe, color: 'text-indigo-600' },
-                                    { id: 'tokopedia', label: 'Tokopedia', img: '/images/logos/marketplace/logo_tokopedia.png' },
-                                    { id: 'shopee', label: 'Shopee', img: '/images/logos/marketplace/logo_shopee.png' },
-                                ].map((choice) => (
-                                    <button
-                                        key={choice.id}
-                                        type="button"
-                                        onClick={() => { setKontakUtama(choice.id as any); setIsDirty(true); }}
-                                        className={`flex flex-col items-center justify-center p-5 rounded-3xl border-2 transition-all duration-500 gap-3 group relative overflow-hidden ${
-                                            kontakUtama === choice.id 
-                                            ? 'bg-white border-[#FFBF00] shadow-xl shadow-[#FFBF00]/10' 
-                                            : 'bg-transparent border-slate-100 opacity-50 hover:opacity-100 hover:border-slate-300'
-                                        }`}
-                                    >
-                                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-transform duration-500 group-hover:scale-110 ${
-                                            kontakUtama === choice.id ? 'bg-[#FFBF00]/10' : 'bg-slate-50'
-                                        }`}>
-                                            {choice.icon ? (
-                                                <choice.icon className={`w-5 h-5 ${choice.color}`} />
-                                            ) : (
-                                                <img src={choice.img} className={`w-6 h-6 object-contain ${kontakUtama === choice.id ? '' : 'grayscale opacity-50'}`} alt="" />
-                                            )}
-                                        </div>
-                                        <span className={`text-[9px] font-black uppercase tracking-widest ${kontakUtama === choice.id ? 'text-[#0A1128]' : 'text-slate-400'}`}>
-                                            {choice.label}
-                                        </span>
-                                        {kontakUtama === choice.id && (
-                                            <div className="absolute top-2 right-2">
-                                                <Check className="w-3 h-3 text-[#FFBF00]" />
-                                            </div>
-                                        )}
-                                    </button>
-                                ))}
+                            <div className="relative group max-w-md">
+                                <div className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-3 pointer-events-none transition-transform duration-300 group-focus-within:scale-110">
+                                    {kontakUtama === 'whatsapp' && <MessageCircle className="w-5 h-5 text-[#25D366]" />}
+                                    {kontakUtama === 'chat' && <MessageSquare className="w-5 h-5 text-indigo-600" />}
+                                    {kontakUtama === 'phone' && <Phone className="w-5 h-5 text-slate-600" />}
+                                    {kontakUtama === 'instagram' && <Instagram className="w-5 h-5 text-[#E4405F]" />}
+                                    {kontakUtama === 'facebook' && <Facebook className="w-5 h-5 text-[#1877F2]" />}
+                                    {kontakUtama === 'tiktok' && <TiktokIcon className="w-5 h-5 text-black" />}
+                                    {kontakUtama === 'x' && <XLogoIcon className="w-5 h-5 text-black" />}
+                                    {kontakUtama === 'youtube' && <Youtube className="w-5 h-5 text-[#FF0000]" />}
+                                    {kontakUtama === 'website' && <Globe className="w-5 h-5 text-indigo-600" />}
+                                    {kontakUtama === 'tokopedia' && <img src="/images/logos/marketplace/logo_tokopedia.png" className="w-5 h-5 object-contain" alt="" />}
+                                    {kontakUtama === 'shopee' && <img src="/images/logos/marketplace/logo_shopee.png" className="w-5 h-5 object-contain" alt="" />}
+                                </div>
+                                <select
+                                    value={kontakUtama}
+                                    onChange={e => { setKontakUtama(e.target.value as any); setIsDirty(true); }}
+                                    className="w-full bg-white border border-slate-200 rounded-[1.5rem] pl-16 pr-12 py-5 text-sm font-black text-[#0A1128] focus:ring-2 focus:ring-[#FFBF00]/50 transition-all appearance-none cursor-pointer backdrop-blur-md uppercase tracking-widest outline-none"
+                                >
+                                    <option value="whatsapp">WhatsApp</option>
+                                    <option value="chat">Chat Internal Tamuu</option>
+                                    <option value="phone">Telepon Langsung</option>
+                                    <option value="instagram">Instagram</option>
+                                    <option value="facebook">Facebook</option>
+                                    <option value="tiktok">TikTok</option>
+                                    <option value="x">X (Twitter)</option>
+                                    <option value="youtube">YouTube</option>
+                                    <option value="website">Website Resmi</option>
+                                    <option value="tokopedia">Tokopedia</option>
+                                    <option value="shopee">Shopee</option>
+                                </select>
+                                <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 pointer-events-none transition-transform duration-300 group-focus-within:rotate-180" />
                             </div>
                         </div>
 

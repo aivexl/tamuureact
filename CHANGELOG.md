@@ -1,5 +1,10 @@
 # Tamuu Changelog
 
+## [0.7.7] - 2026-03-14
+### Changed
+- **Contact Selection Reversion**: Reverted "Metode Kontak Utama" from grid selection to a premium Apple-standard minimalist dropdown across Admin Product Listing, Merchant Products, and Merchant Settings for better usability.
+- **Platform Parity**: Maintained full 11-platform support (WhatsApp, Chat, Phone, Instagram, Facebook, TikTok, X, YouTube, Website, Tokopedia, Shopee) within the new dropdown UI.
+
 ## [0.7.6] - 2026-03-14
 **Status**: 🔵 In Development
 **Environment**: Staging/Production
