@@ -97,21 +97,24 @@ export const AdminProductListing: React.FC = () => {
         }
     };
 
-    const handleSave = async (formData: any) => {
+    const handleSave = async (payload: any) => {
         try {
             if (editingProduct) {
-                // Ensure we use the correct ID key for the mutation
-                const productId = editingProduct.product_id || editingProduct.id;
-                await updateMutation.mutateAsync({ id: productId, data: formData });
-                toast.success('Listing updated');
+                // Determine the absolute UUID for this product
+                const targetId = editingProduct.product_id || editingProduct.id;
+                console.log(`[Admin] UPDATING PRODUCT: ${targetId}`, payload);
+                await updateMutation.mutateAsync({ id: targetId, data: payload });
+                toast.success('Listing updated successfully');
             } else {
-                await addMutation.mutateAsync({ ...formData, is_admin_listing: 1 });
+                console.log('[Admin] CREATING NEW PRODUCT', payload);
+                await addMutation.mutateAsync({ ...payload, is_admin_listing: 1 });
                 toast.success('Listing added to global shop');
             }
             setView('list');
             setEditingProduct(null);
         } catch (err: any) {
-            toast.error(err.message || 'Save failed');
+            console.error('[Admin] SAVE ERROR:', err);
+            toast.error(err.message || 'Save operation failed');
         }
     };
 
@@ -316,6 +319,7 @@ export const AdminProductListing: React.FC = () => {
                         exit={{ opacity: 0, scale: 1.02 }}
                     >
                         <ProductForm 
+                            key={editingProduct?.product_id || editingProduct?.id || 'new'}
                             product={editingProduct} 
                             allProducts={products}
                             onSave={handleSave} 

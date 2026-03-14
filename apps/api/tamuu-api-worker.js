@@ -1912,7 +1912,13 @@ export default {
                         
                         const products = await env.DB.prepare(`
                             SELECT 
-                                p.*,
+                                p.id, p.merchant_id, p.nama_produk, p.deskripsi, p.harga_estimasi, p.status, 
+                                p.kategori_produk, p.kota, p.is_admin_listing, p.custom_store_name, 
+                                p.tiktok_url, p.youtube_url, p.x_url, p.website_url, p.tokopedia_url, p.shopee_url,
+                                p.is_approved, p.slug, p.alamat_lengkap, p.google_maps_url, 
+                                p.is_special, p.is_featured, p.is_landing_featured,
+                                p.whatsapp, p.phone, p.instagram, p.facebook, p.kontak_utama,
+                                p.created_at, p.updated_at,
                                 p.id as product_id, 
                                 p.created_at as product_created_at,
                                 m.nama_toko, 
@@ -2194,35 +2200,38 @@ export default {
                             updateFields.push('is_approved = 1');
                         }
 
-                        addField('nama_produk', nama_produk);
-                        addField('deskripsi', deskripsi);
-                        addField('harga_estimasi', harga_estimasi);
-                        addField('status', status);
-                        addField('kategori_produk', kategori_produk);
-                        addField('kota', kota);
-                        if (is_admin_listing !== undefined) addField('is_admin_listing', Number(is_admin_listing) ? 1 : 0);
-                        addField('custom_store_name', custom_store_name);
-                        addField('tiktok_url', tiktok_url);
-                        addField('youtube_url', youtube_url);
-                        addField('x_url', x_url);
-                        addField('website_url', website_url);
-                        addField('tokopedia_url', tokopedia_url);
-                        addField('shopee_url', shopee_url);
-                        addField('alamat_lengkap', alamat_lengkap);
-                        addField('google_maps_url', google_maps_url);
-                        if (is_special !== undefined) addField('is_special', Number(is_special) ? 1 : 0);
-                        if (is_featured !== undefined) addField('is_featured', Number(is_featured) ? 1 : 0);
-                        if (is_landing_featured !== undefined) addField('is_landing_featured', Number(is_landing_featured) ? 1 : 0);
+                        // Use explicit body extraction to avoid any destructuring issues
+                        addField('nama_produk', body.nama_produk);
+                        addField('deskripsi', body.deskripsi);
+                        addField('harga_estimasi', body.harga_estimasi);
+                        addField('status', body.status);
+                        addField('kategori_produk', body.kategori_produk);
+                        addField('kota', body.kota);
+                        if (body.is_admin_listing !== undefined) addField('is_admin_listing', Number(body.is_admin_listing) ? 1 : 0);
+                        addField('custom_store_name', body.custom_store_name);
+                        addField('tiktok_url', body.tiktok_url);
+                        addField('youtube_url', body.youtube_url);
+                        addField('x_url', body.x_url);
+                        addField('website_url', body.website_url);
+                        addField('tokopedia_url', body.tokopedia_url);
+                        addField('shopee_url', body.shopee_url);
+                        addField('alamat_lengkap', body.alamat_lengkap);
+                        addField('google_maps_url', body.google_maps_url);
+                        if (body.is_special !== undefined) addField('is_special', Number(body.is_special) ? 1 : 0);
+                        if (body.is_featured !== undefined) addField('is_featured', Number(body.is_featured) ? 1 : 0);
+                        if (body.is_landing_featured !== undefined) addField('is_landing_featured', Number(body.is_landing_featured) ? 1 : 0);
+                        
+                        // Contact Fields (STRICT)
                         addField('whatsapp', body.whatsapp);
                         addField('phone', body.phone);
                         addField('instagram', body.instagram);
                         addField('facebook', body.facebook);
                         addField('kontak_utama', body.kontak_utama);
                         
-                        console.log(`[Admin] PERSISTENCE HARDENED: ID=${productId || 'NEW'} | kontak_utama=${body.kontak_utama}`);
+                        console.log(`[Admin] PERSISTENCE HARDENED: ID=${productId} | kontak_utama=${body.kontak_utama} | fieldsCount=${updateFields.length}`);
 
-                        if (nama_produk) {
-                            const newSlug = generateSlug(nama_produk);
+                        if (body.nama_produk) {
+                            const newSlug = generateSlug(body.nama_produk);
                             updateFields.push('slug = ?');
                             params.push(newSlug);
                         }

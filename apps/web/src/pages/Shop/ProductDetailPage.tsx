@@ -278,7 +278,18 @@ export const ProductDetailPage: React.FC = () => {
 
     const resolvedContactMode = useMemo(() => {
         if (!product) return 'whatsapp';
-        return product?.kontak_utama ?? (product as any)?.m_kontak_utama ?? merchantStats?.kontak_utama ?? 'whatsapp';
+        
+        // MEGA CORE RESOLUTION: Prioritize Product setting (DB Column shop_products.kontak_utama)
+        // If it's explicitly set to anything truthy, we use it.
+        const productChoice = product.kontak_utama || (product as any).product_kontak_utama;
+        if (productChoice) return productChoice;
+
+        // Fallback 1: Merchant level setting
+        const merchantChoice = (product as any)?.m_kontak_utama || merchantStats?.kontak_utama;
+        if (merchantChoice) return merchantChoice;
+
+        // Fallback 2: Default
+        return 'whatsapp';
     }, [product, merchantStats]);
 
     const handleWhatsApp = () => {
