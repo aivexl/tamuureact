@@ -1,5 +1,12 @@
 # Tamuu Changelog
 
+## [0.7.8] - 2026-03-14
+### Fixed
+- **Primary Contact Persistence**: Patched `PUT /api/shop/merchant/settings` and product update endpoints to correctly bind `kontak_utama`, ensuring merchant and product preferences persist in D1.
+- **Discovery Visibility Nexus**: Added `kontak_utama` to Shop Directory, Product Discovery, and Storefront APIs, ensuring the frontend Product Detail Page (PDP) receives the metadata required for dynamic CTA button rendering.
+- **Robust Approval Preservation**: Refactored the product update logic to preserve existing `is_approved` status for regular merchants, preventing approved products from reverting to "Pending" on update.
+- **PDP CTA Hardening**: Updated `ProductDetailPage.tsx` with robust fallback logic and support for all 11 contact platforms (Website, Tokopedia, Shopee included), ensuring a functional primary action button even when specific product data is sparse.
+
 ## [0.7.7] - 2026-03-14
 ### Changed
 - **Contact Selection Reversion**: Reverted "Metode Kontak Utama" from grid selection to a premium Apple-standard minimalist dropdown across Admin Product Listing, Merchant Products, and Merchant Settings for better usability.
