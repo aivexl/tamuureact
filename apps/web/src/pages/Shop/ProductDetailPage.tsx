@@ -383,6 +383,8 @@ export const ProductDetailPage: React.FC = () => {
         if (globalMode === 'whatsapp') return 'Hubungi Sekarang';
         if (globalMode === 'internal') return 'Chat Penjual';
 
+        if (!product) return 'Hubungi Sekarang';
+
         const mode = product.kontak_utama || merchantStats?.kontak_utama || 'whatsapp';
         switch (mode) {
             case 'chat': return 'Chat Sekarang';
@@ -403,6 +405,8 @@ export const ProductDetailPage: React.FC = () => {
         const globalMode = systemSettings?.global_chat_mode;
         if (globalMode === 'whatsapp') return <MessageCircle className="w-5 h-5" />;
         if (globalMode === 'internal') return <MessageSquare className="w-5 h-5" />;
+
+        if (!product) return <MessageCircle className="w-5 h-5" />;
 
         const mode = product.kontak_utama || merchantStats?.kontak_utama || 'whatsapp';
         switch (mode) {

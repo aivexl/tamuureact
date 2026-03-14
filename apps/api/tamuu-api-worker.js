@@ -1195,7 +1195,9 @@ export default {
                         whatsapp,
                         instagram,
                         email,
-                        alamat
+                        alamat,
+                        kontak_utama,
+                        category_id
                     } = body;
 
                     if (!merchant_id) return json({ error: 'Merchant ID required' }, { ...corsHeaders, status: 400 });
@@ -1221,9 +1223,11 @@ export default {
                             deskripsi_panjang = COALESCE(?, deskripsi_panjang),
                             logo_url = COALESCE(?, logo_url),
                             banner_url = COALESCE(?, banner_url),
+                            kontak_utama = COALESCE(?, kontak_utama),
+                            category_id = COALESCE(?, category_id),
                             updated_at = CURRENT_TIMESTAMP
                         WHERE id = ?
-                    `).bind(nama_toko, slug, deskripsi_panjang, logo_url, banner_url, merchant_id).run();
+                    `).bind(nama_toko, slug, deskripsi_panjang, logo_url, banner_url, kontak_utama, category_id, merchant_id).run();
 
                     // Extract new social media fields
                     const { facebook, tiktok, website, youtube, x_url, tokopedia_url, shopee_url } = body;
@@ -1464,8 +1468,13 @@ export default {
                             const user = await verifyToken(token, env);
                             const isSuperAdmin = user && (user.email === 'admin@tamuu.id' || user.role === 'admin');
 
-                            // Super Admins are auto-approved, regular admins/users are reset to Pending
-                            updateFields.push(`is_approved = ${isSuperAdmin ? 1 : 0}`);
+                            // CTO FIX: Maintain approval status if already approved, only force 1 for Super Admin
+                            if (isSuperAdmin) {
+                                updateFields.push('is_approved = 1');
+                            } else {
+                                // For regular merchants, keep existing status (don't reset to 0 if already 1 or 2)
+                                updateFields.push('is_approved = COALESCE(is_approved, 0)');
+                            }
                         }
 
                         if (updateFields.length === 0) {
@@ -1600,7 +1609,7 @@ export default {
                     const search = url.searchParams.get('q');
 
                     let query = `
-                        SELECT m.id, m.nama_toko, m.slug, m.logo_url, m.banner_url, m.is_sponsored, m.kota, m.is_landing_featured, c.nama_kategori,
+                        SELECT m.id, m.nama_toko, m.slug, m.logo_url, m.banner_url, m.is_sponsored, m.kota, m.is_landing_featured, m.kontak_utama, c.nama_kategori,
                         (SELECT COUNT(*) FROM shop_wishlist sw JOIN shop_products sp ON sw.product_id = sp.id WHERE sp.merchant_id = m.id) as wishlist_count,
                         (SELECT AVG(rating) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = m.id) as avg_rating,
                         (SELECT COUNT(*) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = m.id) as review_count
@@ -2645,7 +2654,7 @@ export default {
 
                 try {
                     const merchant = await env.DB.prepare(`
-                        SELECT m.*, c.nama_kategori,
+                        SELECT m.*, c.nama_kategori, m.kontak_utama,
                         (SELECT AVG(rating) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = m.id) as avg_rating,
                         (SELECT COUNT(*) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = m.id) as review_count
                         FROM shop_merchants m 
@@ -2741,7 +2750,7 @@ export default {
                     let product;
                     if (isUUID) {
                         product = await env.DB.prepare(`
-                            SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url,
+                            SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url, m.kontak_utama as m_kontak_utama,
                             c.whatsapp as m_whatsapp, c.phone as m_phone, c.instagram as m_instagram,
                             c.facebook as m_facebook, c.x_url as m_x_url, c.website as m_website,
                             c.shopee_url as m_shopee_url, c.tokopedia_url as m_tokopedia_url,
@@ -2758,7 +2767,7 @@ export default {
                     } else {
                         // Try by slug
                         product = await env.DB.prepare(`
-                            SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url,
+                            SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url, m.kontak_utama as m_kontak_utama,
                             c.whatsapp as m_whatsapp, c.phone as m_phone, c.instagram as m_instagram,
                             c.facebook as m_facebook, c.x_url as m_x_url, c.website as m_website,
                             c.shopee_url as m_shopee_url, c.tokopedia_url as m_tokopedia_url,
