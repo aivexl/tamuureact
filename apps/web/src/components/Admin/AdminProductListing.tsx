@@ -100,7 +100,9 @@ export const AdminProductListing: React.FC = () => {
     const handleSave = async (formData: any) => {
         try {
             if (editingProduct) {
-                await updateMutation.mutateAsync({ id: editingProduct.product_id, data: formData });
+                // Ensure we use the correct ID key for the mutation
+                const productId = editingProduct.product_id || editingProduct.id;
+                await updateMutation.mutateAsync({ id: productId, data: formData });
                 toast.success('Listing updated');
             } else {
                 await addMutation.mutateAsync({ ...formData, is_admin_listing: 1 });
@@ -399,13 +401,17 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
     });
 
     // Reactive Sync Logic for Admin: Pull latest data from other products with same store name
+    // Refined to only trigger when isSyncingStore is first enabled or store name changes, 
+    // to prevent overwriting manual choices made while in form view.
     useEffect(() => {
         if (isSyncingStore && formData.custom_store_name) {
             // Find latest product with same store name (excluding current)
+            // STRICT: Only sync from other administrative listings to maintain registry integrity
             const latestMatch = allProducts
                 .filter(p => 
+                    p.is_admin_listing === 1 &&
                     p.custom_store_name?.toLowerCase() === formData.custom_store_name.toLowerCase() && 
-                    p.product_id !== product?.product_id
+                    (p.product_id || p.id) !== (product?.product_id || product?.id)
                 )
                 .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
 
@@ -441,7 +447,7 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                 }
             }
         }
-    }, [isSyncingStore, formData.custom_store_name]);
+    }, [isSyncingStore, formData.custom_store_name, allProducts.length]); // only trigger on explicit name/toggle changes
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -507,7 +513,9 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
 
         setLoading(true);
         try {
-            await onSave({ ...formData, status: targetStatus, kategori_produk: finalKategori });
+            const payload = { ...formData, status: targetStatus, kategori_produk: finalKategori };
+            console.log('[Admin] SAVING PRODUCT PAYLOAD:', payload);
+            await onSave(payload);
         } catch (error) {
             console.error('Save error:', error);
         } finally {

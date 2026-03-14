@@ -1452,13 +1452,13 @@ export default {
                         addField('shopee_url', shopee_url);
                         addField('alamat_lengkap', alamat_lengkap);
                         addField('google_maps_url', google_maps_url);
-                        addField('whatsapp', whatsapp);
-                        addField('phone', phone);
-                        addField('instagram', instagram);
-                        addField('facebook', facebook);
-                        addField('kontak_utama', kontak_utama);
+                        addField('whatsapp', body.whatsapp);
+                        addField('phone', body.phone);
+                        addField('instagram', body.instagram);
+                        addField('facebook', body.facebook);
+                        addField('kontak_utama', body.kontak_utama);
                         
-                        console.log(`[Admin] PERSISTENCE: kontak_utama=${kontak_utama} | body=${JSON.stringify(body).substring(0, 100)}...`);
+                        console.log(`[Admin] PERSISTENCE HARDENED: ID=${productId || 'NEW'} | kontak_utama=${body.kontak_utama}`);
 
                         if (nama_produk) {
                             addField('slug', generateSlug(nama_produk));
@@ -1959,6 +1959,9 @@ export default {
                         }, {
                             headers: {
                                 ...corsHeaders,
+                                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                                'Pragma': 'no-cache',
+                                'Expires': '0',
                                 'X-Admin-Identity': adminUserEmail,
                                 'X-Registry-Count': rawCount.toString()
                             }
@@ -2210,13 +2213,13 @@ export default {
                         if (is_special !== undefined) addField('is_special', Number(is_special) ? 1 : 0);
                         if (is_featured !== undefined) addField('is_featured', Number(is_featured) ? 1 : 0);
                         if (is_landing_featured !== undefined) addField('is_landing_featured', Number(is_landing_featured) ? 1 : 0);
-                        addField('whatsapp', whatsapp);
-                        addField('phone', phone);
-                        addField('instagram', instagram);
-                        addField('facebook', facebook);
-                        addField('kontak_utama', kontak_utama);
+                        addField('whatsapp', body.whatsapp);
+                        addField('phone', body.phone);
+                        addField('instagram', body.instagram);
+                        addField('facebook', body.facebook);
+                        addField('kontak_utama', body.kontak_utama);
                         
-                        console.log(`[Admin] PERSISTENCE: kontak_utama=${kontak_utama} | body=${JSON.stringify(body).substring(0, 100)}...`);
+                        console.log(`[Admin] PERSISTENCE HARDENED: ID=${productId || 'NEW'} | kontak_utama=${body.kontak_utama}`);
 
                         if (nama_produk) {
                             const newSlug = generateSlug(nama_produk);
@@ -2228,13 +2231,9 @@ export default {
 
                         if (updateFields.length > 0) {
                             params.push(productId);
-                            statements.push(
-                                env.DB.prepare(`
-                                    UPDATE shop_products
-                                    SET ${updateFields.join(', ')}, updated_at = CURRENT_TIMESTAMP
-                                    WHERE id = ?
-                                `).bind(...params)
-                            );
+                            const sql = `UPDATE shop_products SET ${updateFields.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
+                            console.log(`[Admin] EXECUTING SQL: ${sql} | PARAMS: ${JSON.stringify(params)}`);
+                            statements.push(env.DB.prepare(sql).bind(...params));
                         }
 
                         if (Array.isArray(images)) {
