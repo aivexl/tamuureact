@@ -2234,8 +2234,7 @@ export default {
 
                         if (updateFields.length > 0) {
                             const sql = `UPDATE shop_products SET ${updateFields.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
-                            params.push(productId);
-                            statements.push(env.DB.prepare(sql).bind(...params));
+                            statements.push(env.DB.prepare(sql).bind(...params, productId));
                         }
 
                         if (body.images && Array.isArray(body.images)) {
