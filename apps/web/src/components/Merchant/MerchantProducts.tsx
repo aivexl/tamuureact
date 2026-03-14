@@ -11,7 +11,7 @@ import {
 } from '../../hooks/queries/useShop';
 import api from '../../lib/api';
 import { formatCurrency } from '../../lib/utils';
-import { Search, MapPin, ChevronDown, Check, X, Store, ShoppingBag, Youtube, Twitter, Globe, ShieldCheck, MessageCircle, Phone, Instagram, Facebook, Image as ImageIcon, ArrowUpRight } from 'lucide-react';
+import { Search, MapPin, ChevronDown, Check, X, Store, ShoppingBag, Youtube, Globe, ShieldCheck, MessageCircle, MessageSquare, Phone, Instagram, Facebook, Image as ImageIcon, ArrowUpRight } from 'lucide-react';
 
 // Custom Icons for Tiktok
 const TiktokIcon = ({ className }: { className?: string }) => (
@@ -93,6 +93,7 @@ export const MerchantProducts: React.FC = () => {
     const [shopeeUrl, setShopeeUrl] = useState('');
     const [alamatLengkap, setAlamatLengkap] = useState('');
     const [googleMapsUrl, setGoogleMapsUrl] = useState('');
+    const [kontakUtama, setKontakUtama] = useState<'whatsapp' | 'phone' | 'instagram' | 'facebook' | 'tiktok' | 'tokopedia' | 'shopee' | 'chat' | 'x' | 'youtube' | 'website'>('whatsapp');
 
     const [isSyncingStore, setIsSyncingStore] = useState(false);
 
@@ -130,6 +131,7 @@ export const MerchantProducts: React.FC = () => {
             setAlamatLengkap(c.alamat || '');
             setGoogleMapsUrl(c.google_maps_url || '');
             setKota(c.kota || m.kota || 'Kota Jakarta Selatan');
+            setKontakUtama((m.kontak_utama as any) || 'whatsapp');
         }
     }, [isSyncingStore, merchantData]);
 
@@ -159,6 +161,7 @@ export const MerchantProducts: React.FC = () => {
         setShopeeUrl('');
         setAlamatLengkap('');
         setGoogleMapsUrl('');
+        setKontakUtama('whatsapp');
         setIsSyncingStore(false);
     };
 
@@ -196,6 +199,7 @@ export const MerchantProducts: React.FC = () => {
         setShopeeUrl(prod.shopee_url || '');
         setAlamatLengkap(prod.alamat_lengkap || '');
         setGoogleMapsUrl(prod.google_maps_url || '');
+        setKontakUtama(prod.kontak_utama || 'whatsapp');
         setView('edit');
     };
 
@@ -291,7 +295,8 @@ export const MerchantProducts: React.FC = () => {
             tokopedia_url: tokopediaUrl,
             shopee_url: shopeeUrl,
             alamat_lengkap: alamatLengkap,
-            google_maps_url: googleMapsUrl
+            google_maps_url: googleMapsUrl,
+            kontak_utama: kontakUtama
         };
 
 
@@ -774,6 +779,63 @@ export const MerchantProducts: React.FC = () => {
                                         <div className="bg-[#FBFBFB] rounded-[40px] border border-slate-100 p-10 space-y-10 shadow-sm relative">
                                             <h4 className="text-lg font-black text-[#0A1128]">Kontak <span className="text-[#FFBF00]">Vendor</span></h4>
                                             
+                                            {/* Primary Contact Gateway */}
+                                            <div className="p-8 bg-white rounded-[2.5rem] border border-slate-100 space-y-8">
+                                                <div className="flex flex-col">
+                                                    <label className="text-[10px] font-black text-[#FFBF00] uppercase tracking-widest ml-1">Metode Kontak Utama</label>
+                                                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-tight mt-1 ml-1 italic">
+                                                        Pilih platform yang akan menjadi tombol aksi utama di halaman detail produk.
+                                                    </p>
+                                                </div>
+                                                
+                                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                                    {[
+                                                        { id: 'whatsapp', label: 'WhatsApp', icon: MessageCircle, color: 'text-[#25D366]' },
+                                                        { id: 'chat', label: 'Chat Tamuu', icon: MessageSquare, color: 'text-indigo-400' },
+                                                        { id: 'phone', label: 'Telepon', icon: Phone, color: 'text-slate-400' },
+                                                        { id: 'instagram', label: 'Instagram', icon: Instagram, color: 'text-[#E4405F]' },
+                                                        { id: 'facebook', label: 'Facebook', icon: Facebook, color: 'text-[#1877F2]' },
+                                                        { id: 'tiktok', label: 'TikTok', icon: TiktokIcon, color: 'text-black' },
+                                                        { id: 'x', label: 'X / Twitter', icon: XLogoIcon, color: 'text-black' },
+                                                        { id: 'youtube', label: 'YouTube', icon: Youtube, color: 'text-[#FF0000]' },
+                                                        { id: 'website', label: 'Website', icon: Globe, color: 'text-indigo-400' },
+                                                        { id: 'tokopedia', label: 'Tokopedia', img: '/images/logos/marketplace/logo_tokopedia.png' },
+                                                        { id: 'shopee', label: 'Shopee', img: '/images/logos/marketplace/logo_shopee.png' },
+                                                    ].map((item) => (
+                                                        <button
+                                                            key={item.id}
+                                                            type="button"
+                                                            onClick={() => setKontakUtama(item.id as any)}
+                                                            className={`flex flex-col items-center justify-center p-5 rounded-3xl border transition-all duration-500 group relative overflow-hidden ${
+                                                                kontakUtama === item.id 
+                                                                ? 'bg-[#FFBF00] border-[#FFBF00] shadow-[0_10px_30px_rgba(255,191,0,0.2)]' 
+                                                                : 'bg-white border-slate-100 hover:border-[#FFBF00]/30 hover:bg-slate-50'
+                                                            }`}
+                                                        >
+                                                            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center mb-3 transition-transform duration-500 group-hover:scale-110 relative z-10 ${
+                                                                kontakUtama === item.id ? 'bg-black/10 text-black' : 'bg-slate-50 ' + (item.color || 'text-slate-400')
+                                                            }`}>
+                                                                {item.icon ? (
+                                                                    <item.icon className="w-5 h-5" />
+                                                                ) : (
+                                                                    <img src={item.img} className={`w-6 h-6 object-contain ${kontakUtama === item.id ? '' : 'grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all'}`} alt="" />
+                                                                )}
+                                                            </div>
+                                                            <span className={`text-[10px] font-black uppercase tracking-widest relative z-10 ${
+                                                                kontakUtama === item.id ? 'text-black' : 'text-slate-500 group-hover:text-[#0A1128]'
+                                                            }`}>
+                                                                {item.label}
+                                                            </span>
+                                                            {kontakUtama === item.id && (
+                                                                <div className="absolute top-3 right-3">
+                                                                    <Check className="w-3 h-3 text-black" />
+                                                                </div>
+                                                            )}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                                 {[
                                                     { label: 'WhatsApp', icon: MessageCircle, value: whatsapp, setter: setWhatsapp, placeholder: '08...', iconColor: 'text-[#25D366]' },

@@ -300,6 +300,19 @@ export const ProductDetailPage: React.FC = () => {
         // Fallback to individual vendor preference
         const mode = product.kontak_utama || merchantStats?.kontak_utama || 'whatsapp';
         
+        const getUrl = (val: string, platform: string) => {
+            if (!val) return null;
+            if (val.startsWith('http')) return val;
+            switch(platform) {
+                case 'instagram': return `https://instagram.com/${val.replace('@', '')}`;
+                case 'tiktok': return `https://tiktok.com/@${val.replace('@', '')}`;
+                case 'facebook': return `https://facebook.com/${val}`;
+                case 'x': return `https://x.com/${val.replace('@', '')}`;
+                case 'youtube': return val.includes('youtube.com') ? val : `https://youtube.com/${val}`;
+                default: return `https://${val}`;
+            }
+        };
+
         switch (mode) {
             case 'chat': return handleChat();
             case 'phone': {
@@ -310,7 +323,54 @@ export const ProductDetailPage: React.FC = () => {
             }
             case 'instagram': {
                 const ig = product.instagram || product.m_instagram || merchantStats?.instagram;
-                if (ig) window.open(`https://instagram.com/${ig.replace('@', '')}`, '_blank');
+                const url = getUrl(ig, 'instagram');
+                if (url) window.open(url, '_blank');
+                else handleWhatsApp();
+                break;
+            }
+            case 'facebook': {
+                const fb = product.facebook || product.m_facebook || merchantStats?.facebook;
+                const url = getUrl(fb, 'facebook');
+                if (url) window.open(url, '_blank');
+                else handleWhatsApp();
+                break;
+            }
+            case 'tiktok': {
+                const tt = product.tiktok_url || product.m_tiktok_url || merchantStats?.tiktok;
+                const url = getUrl(tt, 'tiktok');
+                if (url) window.open(url, '_blank');
+                else handleWhatsApp();
+                break;
+            }
+            case 'x': {
+                const x = product.x_url || product.m_x_url || merchantStats?.x_url;
+                const url = getUrl(x, 'x');
+                if (url) window.open(url, '_blank');
+                else handleWhatsApp();
+                break;
+            }
+            case 'youtube': {
+                const yt = product.youtube_url || product.m_youtube_url || merchantStats?.youtube_url;
+                const url = getUrl(yt, 'youtube');
+                if (url) window.open(url, '_blank');
+                else handleWhatsApp();
+                break;
+            }
+            case 'website': {
+                const web = product.website_url || product.m_website || merchantStats?.website;
+                if (web) window.open(web.startsWith('http') ? web : `https://${web}`, '_blank');
+                else handleWhatsApp();
+                break;
+            }
+            case 'tokopedia': {
+                const tokped = product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url;
+                if (tokped) window.open(tokped.startsWith('http') ? tokped : `https://${tokped}`, '_blank');
+                else handleWhatsApp();
+                break;
+            }
+            case 'shopee': {
+                const shopee = product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url;
+                if (shopee) window.open(shopee.startsWith('http') ? shopee : `https://${shopee}`, '_blank');
                 else handleWhatsApp();
                 break;
             }
@@ -327,7 +387,14 @@ export const ProductDetailPage: React.FC = () => {
         switch (mode) {
             case 'chat': return 'Chat Sekarang';
             case 'phone': return 'Hubungi Telepon';
-            case 'instagram': return 'Kirim DM Instagram';
+            case 'instagram': return 'Buka Instagram';
+            case 'facebook': return 'Buka Facebook';
+            case 'tiktok': return 'Buka TikTok';
+            case 'x': return 'Buka X (Twitter)';
+            case 'youtube': return 'Buka YouTube';
+            case 'website': return 'Kunjungi Website';
+            case 'tokopedia': return 'Beli di Tokopedia';
+            case 'shopee': return 'Beli di Shopee';
             default: return 'Hubungi Sekarang';
         }
     };
@@ -342,6 +409,13 @@ export const ProductDetailPage: React.FC = () => {
             case 'chat': return <MessageSquare className="w-5 h-5" />;
             case 'phone': return <Phone className="w-5 h-5" />;
             case 'instagram': return <Instagram className="w-5 h-5" />;
+            case 'facebook': return <Facebook className="w-5 h-5" />;
+            case 'tiktok': return <TikTokIcon className="w-5 h-5" />;
+            case 'x': return <XLogoIcon className="w-5 h-5" />;
+            case 'youtube': return <Youtube className="w-5 h-5" />;
+            case 'website': return <Globe className="w-5 h-5" />;
+            case 'tokopedia': return <img src="/images/logos/marketplace/logo_tokopedia.png" className="w-5 h-5 object-contain" alt="" />;
+            case 'shopee': return <img src="/images/logos/marketplace/logo_shopee.png" className="w-5 h-5 object-contain" alt="" />;
             default: return <MessageCircle className="w-5 h-5" />;
         }
     };

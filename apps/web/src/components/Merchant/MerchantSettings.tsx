@@ -4,7 +4,7 @@ import { useStore } from '../../store/useStore';
 import { useMerchantProfile, useUpdateMerchantProfile } from '../../hooks/queries/useShop';
 import api from '../../lib/api';
 import { INDONESIA_REGIONS } from '../../constants/regions';
-import { MapPin, Search, ChevronDown, Check, X, Camera, Globe, Mail, Phone, Instagram, Facebook, Link as LinkIcon, ExternalLink, ShieldCheck, Youtube, Twitter, Store, ShoppingBag, MessageSquare } from 'lucide-react';
+import { MapPin, Search, ChevronDown, Check, X, Camera, Globe, Mail, Phone, Instagram, Facebook, Link as LinkIcon, ExternalLink, ShieldCheck, Youtube, Twitter, Store, ShoppingBag, MessageSquare, MessageCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { PremiumLoader } from '../ui/PremiumLoader';
 
@@ -200,37 +200,54 @@ export const MerchantSettings: React.FC = () => {
                         <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'logo')} />
 
                         {/* Primary Contact Gateway - Seamless Choice */}
-                        <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-6">
+                        <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-8">
                             <div className="space-y-1">
                                 <h3 className="text-sm font-black text-[#0A1128] uppercase tracking-tight">Metode Kontak Utama</h3>
                                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">
-                                    Pilih jalur komunikasi yang akan aktif pada tombol "Hubungi Sekarang" di halaman produk.
+                                    Pilih platform utama untuk tombol aksi "Hubungi Sekarang" di profile publik Anda.
                                 </p>
                             </div>
                             
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                                 {[
-                                    { id: 'whatsapp', label: 'WhatsApp', icon: Phone, color: 'text-[#25D366]' },
-                                    { id: 'chat', label: 'Chat Internal', icon: MessageSquare, color: 'text-indigo-600' },
+                                    { id: 'whatsapp', label: 'WhatsApp', icon: MessageCircle, color: 'text-[#25D366]' },
+                                    { id: 'chat', label: 'Chat Tamuu', icon: MessageSquare, color: 'text-indigo-600' },
                                     { id: 'phone', label: 'Telepon', icon: Phone, color: 'text-slate-600' },
-                                    { id: 'instagram', label: 'Instagram', icon: Instagram, color: 'text-[#E4405F]' }
+                                    { id: 'instagram', label: 'Instagram', icon: Instagram, color: 'text-[#E4405F]' },
+                                    { id: 'facebook', label: 'Facebook', icon: Facebook, color: 'text-[#1877F2]' },
+                                    { id: 'tiktok', label: 'TikTok', icon: TiktokIcon, color: 'text-black' },
+                                    { id: 'x', label: 'X / Twitter', icon: XLogoIcon, color: 'text-black' },
+                                    { id: 'youtube', label: 'YouTube', icon: Youtube, color: 'text-[#FF0000]' },
+                                    { id: 'website', label: 'Website', icon: Globe, color: 'text-indigo-600' },
+                                    { id: 'tokopedia', label: 'Tokopedia', img: '/images/logos/marketplace/logo_tokopedia.png' },
+                                    { id: 'shopee', label: 'Shopee', img: '/images/logos/marketplace/logo_shopee.png' },
                                 ].map((choice) => (
                                     <button
                                         key={choice.id}
                                         type="button"
                                         onClick={() => { setKontakUtama(choice.id as any); setIsDirty(true); }}
-                                        className={`flex flex-col items-center justify-center p-4 rounded-3xl border-2 transition-all gap-2 ${
+                                        className={`flex flex-col items-center justify-center p-5 rounded-3xl border-2 transition-all duration-500 gap-3 group relative overflow-hidden ${
                                             kontakUtama === choice.id 
                                             ? 'bg-white border-[#FFBF00] shadow-xl shadow-[#FFBF00]/10' 
-                                            : 'bg-transparent border-slate-100 opacity-50 hover:border-slate-300'
+                                            : 'bg-transparent border-slate-100 opacity-50 hover:opacity-100 hover:border-slate-300'
                                         }`}
                                     >
-                                        <div className={`w-8 h-8 rounded-xl bg-white flex items-center justify-center shadow-sm ${choice.color}`}>
-                                            <choice.icon className="w-4 h-4" />
+                                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-transform duration-500 group-hover:scale-110 ${
+                                            kontakUtama === choice.id ? 'bg-[#FFBF00]/10' : 'bg-slate-50'
+                                        }`}>
+                                            {choice.icon ? (
+                                                <choice.icon className={`w-5 h-5 ${choice.color}`} />
+                                            ) : (
+                                                <img src={choice.img} className={`w-6 h-6 object-contain ${kontakUtama === choice.id ? '' : 'grayscale opacity-50'}`} alt="" />
+                                            )}
                                         </div>
-                                        <span className="text-[10px] font-black uppercase tracking-widest">{choice.label}</span>
+                                        <span className={`text-[9px] font-black uppercase tracking-widest ${kontakUtama === choice.id ? 'text-[#0A1128]' : 'text-slate-400'}`}>
+                                            {choice.label}
+                                        </span>
                                         {kontakUtama === choice.id && (
-                                            <div className="px-2 py-0.5 bg-[#FFBF00] text-[8px] font-black text-white rounded-full uppercase">Aktif</div>
+                                            <div className="absolute top-2 right-2">
+                                                <Check className="w-3 h-3 text-[#FFBF00]" />
+                                            </div>
                                         )}
                                     </button>
                                 ))}

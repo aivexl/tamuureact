@@ -1,5 +1,18 @@
 # Tamuu Changelog
 
+## [0.7.6] - 2026-03-14
+**Status**: 🔵 In Development
+**Environment**: Staging/Production
+
+### UI/UX: Premium Primary Contact Nexus (Apple Standard)
+- **Apple Standard Selection Grid**: Replaced all legacy dropdowns for "Metode Kontak Utama" with a high-fidelity, icon-driven selection grid. This applies to:
+    - Admin Product Listing form.
+    - Merchant/User Product form.
+    - Global Store Settings.
+- **Expanded Platform Support**: Both backend and frontend now fully support a wider range of primary contact actions: WhatsApp, Chat, Phone, Instagram, Facebook, TikTok, X (Twitter), YouTube, Website, Tokopedia, and Shopee.
+- **Action-Oriented Product Detail**: Updated the primary CTA button on the Product Detail Page to use descriptive, platform-specific labels (e.g., "Buka Instagram", "Buka Facebook", "Buka TikTok") instead of generic terms, driving higher user intent and clarity.
+- **Visual Refinement**: Implemented active-state highlighting with high-contrast `#FFBF00` branding and smooth `framer-motion` transitions for a premium interactive feel.
+
 ## [0.7.5] - 2026-03-14
 **Status**: 🔵 In Development
 **Environment**: Staging/Production

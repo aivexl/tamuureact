@@ -24,6 +24,7 @@ import {
     ArrowLeft,
     ShieldCheck,
     MessageCircle,
+    MessageSquare,
     Phone,
     Instagram,
     Facebook
@@ -837,29 +838,62 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                         </div>
 
                         {/* Primary Contact Gateway */}
-                        <div className="p-8 bg-[#FFBF00]/5 rounded-[2rem] border border-[#FFBF00]/20 space-y-6">
+                        <div className="p-8 bg-white/5 rounded-[2.5rem] border border-white/10 space-y-8">
                             <div className="flex flex-col">
                                 <label className="text-[10px] font-black text-[#FFBF00] uppercase tracking-widest ml-1">Metode Kontak Utama</label>
                                 <p className="text-[9px] text-slate-500 font-bold uppercase tracking-tight mt-1 ml-1 italic">
-                                    Pilih tombol aksi utama yang akan muncul di halaman detail produk.
+                                    Pilih platform yang akan menjadi tombol aksi utama di halaman detail produk.
                                 </p>
                             </div>
                             
-                            <div className="relative">
-                                <MessageCircle className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-[#FFBF00]" />
-                                <select
-                                    value={formData.kontak_utama}
-                                    onChange={e => setFormData({...formData, kontak_utama: e.target.value})}
-                                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-16 pr-8 py-5 text-sm font-black text-white focus:ring-2 focus:ring-[#FFBF00]/50 focus:bg-white/10 transition-all appearance-none cursor-pointer backdrop-blur-md uppercase tracking-widest"
-                                >
-                                    <option value="whatsapp" className="bg-[#0A0A0A]">WhatsApp (Recommended)</option>
-                                    <option value="chat" className="bg-[#0A0A0A]">Chat Internal Tamuu</option>
-                                    <option value="phone" className="bg-[#0A0A0A]">Telepon Langsung</option>
-                                    <option value="instagram" className="bg-[#0A0A0A]">Direct Message Instagram</option>
-                                    <option value="tokopedia" className="bg-[#0A0A0A]">Tokopedia Marketplace</option>
-                                    <option value="shopee" className="bg-[#0A0A0A]">Shopee Marketplace</option>
-                                </select>
-                                <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 pointer-events-none" />
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                {[
+                                    { id: 'whatsapp', label: 'WhatsApp', icon: MessageCircle, color: 'text-[#25D366]' },
+                                    { id: 'chat', label: 'Chat Tamuu', icon: MessageSquare, color: 'text-indigo-400' },
+                                    { id: 'phone', label: 'Telepon', icon: Phone, color: 'text-slate-400' },
+                                    { id: 'instagram', label: 'Instagram', icon: Instagram, color: 'text-[#E4405F]' },
+                                    { id: 'facebook', label: 'Facebook', icon: Facebook, color: 'text-[#1877F2]' },
+                                    { id: 'tiktok', label: 'TikTok', icon: TiktokIcon, color: 'text-white' },
+                                    { id: 'x', label: 'X / Twitter', icon: XLogoIcon, color: 'text-white' },
+                                    { id: 'youtube', label: 'YouTube', icon: Youtube, color: 'text-[#FF0000]' },
+                                    { id: 'website', label: 'Website', icon: Globe, color: 'text-indigo-400' },
+                                    { id: 'tokopedia', label: 'Tokopedia', img: '/images/logos/marketplace/logo_tokopedia.png' },
+                                    { id: 'shopee', label: 'Shopee', img: '/images/logos/marketplace/logo_shopee.png' },
+                                ].map((item) => (
+                                    <button
+                                        key={item.id}
+                                        type="button"
+                                        onClick={() => setFormData({...formData, kontak_utama: item.id as any})}
+                                        className={`flex flex-col items-center justify-center p-5 rounded-3xl border transition-all duration-500 group relative overflow-hidden ${
+                                            formData.kontak_utama === item.id 
+                                            ? 'bg-[#FFBF00] border-[#FFBF00] shadow-[0_10px_30px_rgba(255,191,0,0.2)]' 
+                                            : 'bg-white/5 border-white/5 hover:border-white/20 hover:bg-white/10'
+                                        }`}
+                                    >
+                                        {formData.kontak_utama === item.id && (
+                                            <m.div layoutId="activeContact" className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
+                                        )}
+                                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center mb-3 transition-transform duration-500 group-hover:scale-110 relative z-10 ${
+                                            formData.kontak_utama === item.id ? 'bg-black/10 text-black' : 'bg-white/5 ' + (item.color || 'text-slate-400')
+                                        }`}>
+                                            {item.icon ? (
+                                                <item.icon className="w-5 h-5" />
+                                            ) : (
+                                                <img src={item.img} className={`w-6 h-6 object-contain ${formData.kontak_utama === item.id ? '' : 'grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all'}`} alt="" />
+                                            )}
+                                        </div>
+                                        <span className={`text-[10px] font-black uppercase tracking-widest relative z-10 ${
+                                            formData.kontak_utama === item.id ? 'text-black' : 'text-slate-500 group-hover:text-white'
+                                        }`}>
+                                            {item.label}
+                                        </span>
+                                        {formData.kontak_utama === item.id && (
+                                            <div className="absolute top-3 right-3">
+                                                <Check className="w-3 h-3 text-black" />
+                                            </div>
+                                        )}
+                                    </button>
+                                ))}
                             </div>
                         </div>
                         
