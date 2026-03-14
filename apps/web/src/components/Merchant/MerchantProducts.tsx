@@ -509,10 +509,24 @@ export const MerchantProducts: React.FC = () => {
 
                                                     {/* Meta Row */}
                                                     <div className="space-y-3">
-                                                        <div className="flex items-center gap-2">
+                                                        <div className="flex items-center justify-between gap-2">
                                                             <span className="px-2 py-0.5 rounded bg-slate-50 text-slate-400 text-[8px] font-black uppercase tracking-widest border border-slate-100">
                                                                 No. Produk: tamuu-shop-{prod.id.substring(0, 8).toUpperCase()}
                                                             </span>
+                                                            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#FFBF00]/5 text-[#FFBF00] text-[8px] font-black uppercase tracking-widest border border-[#FFBF00]/10">
+                                                                {prod.kontak_utama === 'whatsapp' && <MessageCircle size={8} />}
+                                                                {prod.kontak_utama === 'chat' && <MessageSquare size={8} />}
+                                                                {prod.kontak_utama === 'phone' && <Phone size={8} />}
+                                                                {prod.kontak_utama === 'instagram' && <Instagram size={8} />}
+                                                                {prod.kontak_utama === 'facebook' && <Facebook size={8} />}
+                                                                {prod.kontak_utama === 'tiktok' && <TiktokIcon className="w-2 h-2" />}
+                                                                {prod.kontak_utama === 'x' && <XLogoIcon className="w-2 h-2" />}
+                                                                {prod.kontak_utama === 'youtube' && <Youtube size={8} />}
+                                                                {prod.kontak_utama === 'website' && <Globe size={8} />}
+                                                                {prod.kontak_utama === 'tokopedia' && <img src="/images/logos/marketplace/logo_tokopedia.png" className="w-2.5 h-2.5 object-contain" alt="" />}
+                                                                {prod.kontak_utama === 'shopee' && <img src="/images/logos/marketplace/logo_shopee.png" className="w-2.5 h-2.5 object-contain" alt="" />}
+                                                                <span>{prod.kontak_utama || 'WhatsApp'}</span>
+                                                            </div>
                                                         </div>
                                                         <div className="flex items-center justify-between gap-4">
                                                             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest opacity-60 line-clamp-1 flex-1">{prod.kategori_produk || 'Umum'}</p>
@@ -783,8 +797,8 @@ export const MerchantProducts: React.FC = () => {
                                             <div className="p-8 bg-white rounded-[2.5rem] border border-slate-100 space-y-6">
                                                 <div className="flex flex-col">
                                                     <label className="text-[10px] font-black text-[#FFBF00] uppercase tracking-widest ml-1">Metode Kontak Utama</label>
-                                                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-tight mt-1 ml-1 italic">
-                                                        Pilih platform yang akan menjadi tombol aksi utama di halaman detail produk.
+                                                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-tight mt-1 ml-1 italic leading-relaxed">
+                                                        Pilih platform yang akan menjadi tombol aksi utama di halaman detail produk. <span className="text-[#FFBF00]">Sinkron otomatis dari profil toko jika Sinkronisasi Toko aktif.</span>
                                                     </p>
                                                 </div>
                                                 

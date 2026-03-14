@@ -183,8 +183,10 @@ export const AdminProductListing: React.FC = () => {
                                         <tr className="border-b border-white/5">
                                             <th className="px-10 py-8 text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">Info Produk</th>
                                             <th className="px-10 py-8 text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">Nama Toko</th>
-                                            <th className="px-10 py-8 text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">Harga</th>
-                                            <th className="px-10 py-8 text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">Status</th>
+                                            <th className="px-10 py-6 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Harga</th>
+                                            <th className="px-10 py-6 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Metode</th>
+                                            <th className="px-10 py-6 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Status</th>
+
                                             <th className="px-10 py-8 text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] text-right">Aksi</th>
                                         </tr>
                                     </thead>
@@ -227,6 +229,24 @@ export const AdminProductListing: React.FC = () => {
                                                             ? formatCurrency(product.harga_estimasi) 
                                                             : product.harga_estimasi || '-'}
                                                     </p>
+                                                </td>
+                                                <td className="px-10 py-8">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center border border-white/5 shadow-sm">
+                                                            {product.kontak_utama === 'whatsapp' && <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />}
+                                                            {product.kontak_utama === 'chat' && <MessageSquare className="w-3.5 h-3.5 text-indigo-400" />}
+                                                            {product.kontak_utama === 'phone' && <Phone className="w-3.5 h-3.5 text-slate-400" />}
+                                                            {product.kontak_utama === 'instagram' && <Instagram className="w-3.5 h-3.5 text-[#E4405F]" />}
+                                                            {product.kontak_utama === 'facebook' && <Facebook className="w-3.5 h-3.5 text-[#1877F2]" />}
+                                                            {product.kontak_utama === 'tiktok' && <TiktokIcon className="w-3.5 h-3.5 text-white" />}
+                                                            {product.kontak_utama === 'x' && <XLogoIcon className="w-3.5 h-3.5 text-white" />}
+                                                            {product.kontak_utama === 'youtube' && <Youtube className="w-3.5 h-3.5 text-[#FF0000]" />}
+                                                            {product.kontak_utama === 'website' && <Globe className="w-3.5 h-3.5 text-indigo-400" />}
+                                                            {product.kontak_utama === 'tokopedia' && <img src="/images/logos/marketplace/logo_tokopedia.png" className="w-4 h-4 object-contain" alt="" />}
+                                                            {product.kontak_utama === 'shopee' && <img src="/images/logos/marketplace/logo_shopee.png" className="w-4 h-4 object-contain" alt="" />}
+                                                        </div>
+                                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter italic">{product.kontak_utama || 'WhatsApp'}</p>
+                                                    </div>
                                                 </td>
                                                 <td className="px-10 py-8">
                                                     <div className="flex items-center">

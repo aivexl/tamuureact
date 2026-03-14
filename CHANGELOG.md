@@ -1,5 +1,16 @@
 # Tamuu Changelog
 
+## [0.8.0] - 2026-03-14
+### Fixed
+- **Per-Product Contact Specificity**: Corrected a backend bug where Admin Dashboard edits were failing to save specific contact fields (`whatsapp`, `instagram`, etc.). Products now strictly maintain their individual contact preferences independent of the merchant profile.
+- **Sync Logic Reversion**: Removed bulk propagation logic that previously overwrote all a merchant's products, restoring full control over per-product contact methods.
+- **PDP "Intent First" Logic**: Optimized the Product Detail Page to strictly prioritize the product's individual contact setting, ensuring user intent is respected even when a merchant's global profile differs.
+- **Marketplace Branding Consistency**: Restored specific Tokopedia and Shopee brand logos across the PDP, Admin Registry, and Merchant Dashboard with optimized premium sizing.
+
+### Added
+- **Admin Registry Transparency**: Injected a new "Metode" column into the Administrative Product Listing table, providing instant visibility of the primary contact method for all global registry items.
+- **Merchant Insight Badge**: Added a dynamic "Metode Kontak" badge to product cards in the Merchant Dashboard for immediate visual confirmation of per-product settings.
+
 ## [0.7.9] - 2026-03-14
 ### Fixed
 - **Database Schema Integrity**: Manually provisioned missing `kontak_utama` column in `shop_products` table via remote D1 execution to unblock the migration pipeline.

@@ -1230,7 +1230,7 @@ export default {
                     `).bind(nama_toko, slug, deskripsi_panjang, logo_url, banner_url, kontak_utama, category_id, merchant_id).run();
 
                     // Extract new social media fields
-                    const { facebook, tiktok, website, youtube, x_url, tokopedia_url, shopee_url } = body;
+                    const { facebook, tiktok, website, youtube, x_url, tokopedia_url, shopee_url, phone } = body;
 
                     // 2. Update shop_contacts (Upsert via REPLACE INTO or UPDATE)
                     // We know they have a row because onboarding seeded it, but we can do an UPDATE.
@@ -1247,9 +1247,10 @@ export default {
                             shopee_url = COALESCE(?, shopee_url),
                             email = COALESCE(?, email),
                             alamat = COALESCE(?, alamat),
+                            phone = COALESCE(?, phone),
                             updated_at = CURRENT_TIMESTAMP
                         WHERE merchant_id = ?
-                    `).bind(whatsapp, instagram, facebook, tiktok, website, youtube, x_url, tokopedia_url, shopee_url, email, alamat, merchant_id).run();
+                    `).bind(whatsapp, instagram, facebook, tiktok, website, youtube, x_url, tokopedia_url, shopee_url, email, alamat, phone, merchant_id).run();
 
                     return json({ success: true, message: 'Settings saved successfully' }, corsHeaders);
                 } catch (error) {
@@ -1786,19 +1787,23 @@ export default {
                     if (!merchantId) return json({ error: 'Missing merchant_id' }, { ...corsHeaders, status: 400 });
 
                     const stats = await env.DB.prepare(`
-                        SELECT 
+                        SELECT
                             (SELECT COUNT(*) FROM shop_products WHERE merchant_id = ? AND status = 'PUBLISHED') as total_products,
                             (SELECT COUNT(*) FROM shop_wishlist sw JOIN shop_products sp ON sw.product_id = sp.id WHERE sp.merchant_id = ?) as total_wishlist,
                             (SELECT AVG(rating) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = ?) as avg_rating,
                             (SELECT COUNT(*) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = ?) as review_count,
-                            (SELECT kontak_utama FROM shop_merchants WHERE id = ?) as kontak_utama
+                            m.kontak_utama,
+                            c.whatsapp, c.phone, c.instagram, c.facebook, c.tiktok, c.website, c.x_url, c.youtube, c.shopee_url, c.tokopedia_url, c.google_maps_url, c.alamat as alamat_lengkap
+                        FROM shop_merchants m
+                        LEFT JOIN shop_contacts c ON m.id = c.merchant_id
+                        WHERE m.id = ?
                     `).bind(merchantId, merchantId, merchantId, merchantId, merchantId).first();
                     return json({ success: true, stats }, corsHeaders);
                 } catch (error) {
+                    console.error('[Shop] Stats Error:', error);
                     return json({ error: 'Failed to fetch stats' }, { ...corsHeaders, status: 500 });
                 }
             }
-
             // 5e. PUBLIC DISCOVERY: Smart Recommendations
             if (path === '/api/shop/products/recommendations' && method === 'GET') {
                 try {
@@ -2931,7 +2936,7 @@ export default {
                                             WHERE (id = ? OR slug = ?) AND user_id = ?
                                         `).bind(
                                             nama_toko || '', deskripsi || '', logo_url || null,
-                                            banner_url || null, category_id || '', kontak_utama || 'whatsapp',
+                                            banner_url || null, category_id || '', kontak_utama,
                                             merchant_id, merchant_id, user_id
                                         ).run();
                     if (updateOp.meta.changes === 0) {

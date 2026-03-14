@@ -298,7 +298,7 @@ export const ProductDetailPage: React.FC = () => {
         if (globalMode === 'internal') return handleChat();
 
         // Fallback to individual vendor preference
-        const mode = product.kontak_utama || product.m_kontak_utama || merchantStats?.kontak_utama || 'whatsapp';
+        const mode = product?.kontak_utama || (product as any)?.m_kontak_utama || merchantStats?.kontak_utama || 'whatsapp';
         
         const getUrl = (val: string, platform: string) => {
             if (!val) return null;
@@ -385,7 +385,7 @@ export const ProductDetailPage: React.FC = () => {
 
         if (!product) return 'Hubungi Sekarang';
 
-        const mode = product.kontak_utama || merchantStats?.kontak_utama || 'whatsapp';
+        const mode = product?.kontak_utama || (product as any)?.m_kontak_utama || merchantStats?.kontak_utama || 'whatsapp';
         switch (mode) {
             case 'chat': return 'Chat Sekarang';
             case 'phone': return 'Hubungi Telepon';
@@ -408,7 +408,7 @@ export const ProductDetailPage: React.FC = () => {
 
         if (!product) return <MessageCircle className="w-5 h-5" />;
 
-        const mode = product.kontak_utama || merchantStats?.kontak_utama || 'whatsapp';
+        const mode = product?.kontak_utama || (product as any)?.m_kontak_utama || merchantStats?.kontak_utama || 'whatsapp';
         switch (mode) {
             case 'chat': return <MessageSquare className="w-5 h-5" />;
             case 'phone': return <Phone className="w-5 h-5" />;
@@ -420,6 +420,7 @@ export const ProductDetailPage: React.FC = () => {
             case 'website': return <Globe className="w-5 h-5" />;
             case 'tokopedia': return <img src="/images/logos/marketplace/logo_tokopedia.png" className="w-5 h-5 object-contain" alt="" />;
             case 'shopee': return <img src="/images/logos/marketplace/logo_shopee.png" className="w-5 h-5 object-contain" alt="" />;
+            case 'whatsapp': return <MessageCircle className="w-5 h-5" />;
             default: return <MessageCircle className="w-5 h-5" />;
         }
     };
