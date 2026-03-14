@@ -1456,7 +1456,7 @@ export default {
                         addField('phone', phone);
                         addField('instagram', instagram);
                         addField('facebook', facebook);
-                        addField('kontak_utama', kontak_utama || 'whatsapp');
+                        addField('kontak_utama', kontak_utama);
 
                         if (nama_produk) {
                             addField('slug', generateSlug(nama_produk));
@@ -2212,7 +2212,7 @@ export default {
                         addField('phone', phone);
                         addField('instagram', instagram);
                         addField('facebook', facebook);
-                        addField('kontak_utama', kontak_utama || 'whatsapp');
+                        addField('kontak_utama', kontak_utama);
 
                         if (nama_produk) {
                             const newSlug = generateSlug(nama_produk);

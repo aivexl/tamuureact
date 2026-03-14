@@ -276,6 +276,11 @@ export const ProductDetailPage: React.FC = () => {
         }
     }, [product?.id]);
 
+    const resolvedContactMode = useMemo(() => {
+        if (!product) return 'whatsapp';
+        return product?.kontak_utama ?? (product as any)?.m_kontak_utama ?? merchantStats?.kontak_utama ?? 'whatsapp';
+    }, [product, merchantStats]);
+
     const handleWhatsApp = () => {
         const text = `Halo, saya tertarik dengan produk ${product?.nama_produk} di Tamuu Shop. Apakah masih tersedia?`;
         const waNumber = product?.whatsapp || product?.m_whatsapp || merchantStats?.whatsapp || '';
@@ -296,12 +301,6 @@ export const ProductDetailPage: React.FC = () => {
         if (product?.id) {
             track.mutate({ merchantId: product.merchant_id, actionType: 'CLICK_CONTACT', productId: product.id });
         }
-
-        // Resolve the primary contact mode
-        // 1. Product-specific choice (STRICT)
-        // 2. Merchant-level fallback choice
-        // 3. Default to whatsapp
-        const mode = product?.kontak_utama ?? (product as any)?.m_kontak_utama ?? merchantStats?.kontak_utama ?? 'whatsapp';
 
         // Check global mode preference as a secondary override/fallback
         const globalMode = systemSettings?.global_chat_mode;
@@ -326,7 +325,7 @@ export const ProductDetailPage: React.FC = () => {
             handleWhatsApp();
         };
 
-        switch (mode) {
+        switch (resolvedContactMode) {
             case 'chat': 
             case 'internal':
                 return handleChat();
@@ -404,14 +403,12 @@ export const ProductDetailPage: React.FC = () => {
 
     const getPrimaryButtonLabel = () => {
         if (!product) return 'Hubungi Sekarang';
-
-        const mode = product?.kontak_utama || (product as any)?.m_kontak_utama || merchantStats?.kontak_utama || 'whatsapp';
         
         // If we want to respect global mode as a secondary label override
         const globalMode = systemSettings?.global_chat_mode;
-        if (mode === 'whatsapp' && globalMode === 'internal') return 'Chat Penjual';
+        if (resolvedContactMode === 'whatsapp' && globalMode === 'internal') return 'Chat Penjual';
 
-        switch (mode) {
+        switch (resolvedContactMode) {
             case 'chat': return 'Chat Sekarang';
             case 'internal': return 'Chat Sekarang';
             case 'phone': return 'Hubungi Telepon';
@@ -430,10 +427,8 @@ export const ProductDetailPage: React.FC = () => {
 
     const getPrimaryButtonIcon = () => {
         if (!product) return <MessageCircle className="w-5 h-5" />;
-
-        const mode = product?.kontak_utama || (product as any)?.m_kontak_utama || merchantStats?.kontak_utama || 'whatsapp';
         
-        switch (mode) {
+        switch (resolvedContactMode) {
             case 'chat': return <MessageSquare className="w-5 h-5" />;
             case 'internal': return <MessageSquare className="w-5 h-5" />;
             case 'phone': return <Phone className="w-5 h-5" />;
