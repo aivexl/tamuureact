@@ -183,6 +183,16 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                         />
                     )}
 
+                    {hasPermission('management:chats') && (
+                        <SidebarItem
+                            href="/admin/chat-monitoring"
+                            icon={MessageSquare}
+                            label="Chat Monitoring"
+                            active={location.pathname === '/admin/chat-monitoring'}
+                            sidebarOpen={sidebarOpen}
+                        />
+                    )}
+
                     {hasPermission('management:stores') && (
                         <>
                             <SidebarItem

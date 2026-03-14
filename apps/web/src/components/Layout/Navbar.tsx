@@ -12,10 +12,12 @@ import {
     ShieldAlert,
     Search,
     MapPin,
-    Heart
+    Heart,
+    MessageSquare
 } from 'lucide-react';
 
 import { useStore } from '../../store/useStore';
+import { useChat } from '../../hooks/useChat';
 import { NotificationBell } from './NotificationBell';
 import { INDONESIA_REGIONS } from '../../constants/regions';
 
@@ -35,6 +37,14 @@ export const Navbar: React.FC = () => {
 
     const location = useLocation();
     const navigate = useNavigate();
+
+    // Chat Unread Count Logic
+    const { useConversations } = useChat();
+    const { data: chatData } = useConversations();
+    const totalUnread = useMemo(() => {
+        if (!chatData?.conversations) return 0;
+        return chatData.conversations.reduce((acc: number, conv: any) => acc + (conv.unread_count_user || 0), 0);
+    }, [chatData]);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -274,6 +284,18 @@ export const Navbar: React.FC = () => {
                                         >
                                             <Heart className="w-5 h-5" />
                                         </Link>
+                                        
+                                        <Link
+                                            to="/dashboard?tab=messages"
+                                            className="p-2.5 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-indigo-600 transition-all relative"
+                                            aria-label="Pesan"
+                                        >
+                                            <MessageSquare className="w-5 h-5" />
+                                            {totalUnread > 0 && (
+                                                <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white animate-pulse" />
+                                            )}
+                                        </Link>
+
                                         <NotificationBell />
                                         
                                         <div className="relative profile-dropdown-container">

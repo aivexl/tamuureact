@@ -2360,6 +2360,176 @@ export default {
                 }
             }
 
+            // 11. SHOP P2P CHAT SYSTEM (Super Ultra Chat)
+            if (path.startsWith('/api/shop/chat/')) {
+                const authHeader = request.headers.get('Authorization');
+                if (!authHeader) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
+                const user = await verifyToken(authHeader.replace('Bearer ', '').trim(), env);
+                if (!user) return json({ error: 'Invalid token' }, { ...corsHeaders, status: 401 });
+
+                // Identify if user is also a merchant
+                const merchant = await env.DB.prepare('SELECT id FROM shop_merchants WHERE user_id = ?').bind(user.id).first();
+
+                // GET CONVERSATIONS
+                if (path === '/api/shop/chat/conversations' && method === 'GET') {
+                    try {
+                        const results = await env.DB.prepare(`
+                            SELECT 
+                                c.*, 
+                                u.name as customer_name, u.avatar_url as customer_avatar,
+                                m.nama_toko as merchant_name, m.logo_url as merchant_logo
+                            FROM shop_conversations c
+                            JOIN users u ON c.user_id = u.id
+                            JOIN shop_merchants m ON c.merchant_id = m.id
+                            WHERE c.user_id = ? OR c.merchant_id = ?
+                            ORDER BY c.updated_at DESC
+                        `).bind(user.id, merchant?.id || 'none').all();
+                        
+                        return json({ success: true, conversations: results.results }, corsHeaders);
+                    } catch (error) {
+                        return json({ error: 'Failed to fetch conversations', details: error.message }, { ...corsHeaders, status: 500 });
+                    }
+                }
+
+                // GET MESSAGES
+                if (path.startsWith('/api/shop/chat/messages/') && method === 'GET') {
+                    const convId = path.split('/').pop();
+                    try {
+                        const results = await env.DB.prepare(`
+                            SELECT * FROM shop_messages 
+                            WHERE conversation_id = ? 
+                            ORDER BY created_at ASC
+                        `).bind(convId).all();
+                        return json({ success: true, messages: results.results }, corsHeaders);
+                    } catch (error) {
+                        return json({ error: 'Failed to fetch messages', details: error.message }, { ...corsHeaders, status: 500 });
+                    }
+                }
+
+                // SEND MESSAGE
+                if (path === '/api/shop/chat/send' && method === 'POST') {
+                    try {
+                        const { recipient_id, content, type, merchant_id } = await request.json();
+                        if (!content) return json({ error: 'Content required' }, { ...corsHeaders, status: 400 });
+
+                        // Recipient can be either a user or a merchant
+                        // Logic: If merchant_id is provided, it's a message to/from a store
+                        let conversationId;
+                        let targetMerchantId = merchant_id;
+                        let targetUserId = recipient_id;
+
+                        // Auto-resolve conversation or create new
+                        // If caller is merchant, user_id is target. If caller is user, merchant_id is target.
+                        const isMerchantSender = merchant && merchant.id === merchant_id;
+                        
+                        if (!isMerchantSender) {
+                            // User sending to merchant
+                            targetUserId = user.id;
+                        } else {
+                            // Merchant sending to user
+                            targetMerchantId = merchant.id;
+                        }
+
+                        const existing = await env.DB.prepare(`
+                            SELECT id FROM shop_conversations 
+                            WHERE user_id = ? AND merchant_id = ?
+                        `).bind(targetUserId, targetMerchantId).first();
+
+                        if (existing) {
+                            conversationId = existing.id;
+                        } else {
+                            conversationId = crypto.randomUUID();
+                            await env.DB.prepare(`
+                                INSERT INTO shop_conversations (id, user_id, merchant_id)
+                                VALUES (?, ?, ?)
+                            `).bind(conversationId, targetUserId, targetMerchantId).run();
+                        }
+
+                        const messageId = crypto.randomUUID();
+                        await env.DB.prepare(`
+                            INSERT INTO shop_messages (id, conversation_id, sender_id, content, type)
+                            VALUES (?, ?, ?, ?, ?)
+                        `).bind(messageId, conversationId, user.id, content, type || 'text').run();
+
+                        // Update conversation meta and unread counts
+                        const unreadField = isMerchantSender ? 'unread_count_user' : 'unread_count_vendor';
+                        await env.DB.prepare(`
+                            UPDATE shop_conversations 
+                            SET last_message = ?, 
+                                last_sender_id = ?, 
+                                ${unreadField} = ${unreadField} + 1,
+                                updated_at = CURRENT_TIMESTAMP
+                            WHERE id = ?
+                        `).bind(content, user.id, conversationId).run();
+
+                        return json({ success: true, messageId, conversationId }, corsHeaders);
+                    } catch (error) {
+                        return json({ error: 'Failed to send message', details: error.message }, { ...corsHeaders, status: 500 });
+                    }
+                }
+
+                // MARK AS READ
+                if (path.startsWith('/api/shop/chat/read/') && method === 'PATCH') {
+                    const convId = path.split('/').pop();
+                    try {
+                        const isMerchant = merchant && (await env.DB.prepare('SELECT id FROM shop_conversations WHERE id = ? AND merchant_id = ?').bind(convId, merchant.id).first());
+                        const unreadField = isMerchant ? 'unread_count_vendor' : 'unread_count_user';
+                        
+                        await env.DB.prepare(`
+                            UPDATE shop_conversations SET ${unreadField} = 0 WHERE id = ?
+                        `).bind(convId).run();
+
+                        // Mark messages as read
+                        await env.DB.prepare(`
+                            UPDATE shop_messages SET read_at = CURRENT_TIMESTAMP 
+                            WHERE conversation_id = ? AND sender_id != ? AND read_at IS NULL
+                        `).bind(convId, user.id).run();
+
+                        return json({ success: true }, corsHeaders);
+                    } catch (error) {
+                        return json({ error: 'Failed to mark as read', details: error.message }, { ...corsHeaders, status: 500 });
+                    }
+                }
+            }
+
+            // 12. ADMIN SHOP CHAT MONITORING (Stealth Mode)
+            if (path.startsWith('/api/admin/shop/chats')) {
+                const adminCheck = await verifyAdmin(request, env);
+                if (!adminCheck.isAdmin) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 403 });
+
+                if (path === '/api/admin/shop/chats' && method === 'GET') {
+                    try {
+                        const results = await env.DB.prepare(`
+                            SELECT 
+                                c.*, 
+                                u.name as customer_name, u.email as customer_email,
+                                m.nama_toko as merchant_name
+                            FROM shop_conversations c
+                            JOIN users u ON c.user_id = u.id
+                            JOIN shop_merchants m ON c.merchant_id = m.id
+                            ORDER BY c.updated_at DESC
+                        `).all();
+                        return json({ success: true, conversations: results.results }, corsHeaders);
+                    } catch (error) {
+                        return json({ error: 'Failed to fetch monitoring list', details: error.message }, { ...corsHeaders, status: 500 });
+                    }
+                }
+
+                if (path.startsWith('/api/admin/shop/chats/') && method === 'GET') {
+                    const convId = path.split('/').pop();
+                    try {
+                        const messages = await env.DB.prepare(`
+                            SELECT * FROM shop_messages 
+                            WHERE conversation_id = ? 
+                            ORDER BY created_at ASC
+                        `).bind(convId).all();
+                        return json({ success: true, messages: messages.results }, corsHeaders);
+                    } catch (error) {
+                        return json({ error: 'Failed to fetch chat history', details: error.message }, { ...corsHeaders, status: 500 });
+                    }
+                }
+            }
+
             // 10. PUBLIC DISCOVERY: Wishlist Management
             if (path === '/api/shop/wishlist' && method === 'GET') {
                 const userId = url.searchParams.get('user_id');

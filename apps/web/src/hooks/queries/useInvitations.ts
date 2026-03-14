@@ -48,8 +48,9 @@ export interface DisplayDesign {
 export function useInvitations(userId?: string) {
     return useQuery({
         queryKey: queryKeys.invitations.list(userId),
-        queryFn: () => invitations.list(userId),
+        queryFn: () => invitations.list(userId!),
         staleTime: STALE_TIMES.invitations,
+        enabled: !!userId,
     });
 }
 
@@ -141,8 +142,9 @@ export function useDeleteInvitation() {
 export function useDisplayDesigns(userId?: string) {
     return useQuery({
         queryKey: queryKeys.displayDesigns.list(userId),
-        queryFn: () => userDisplayDesigns.list(userId ? { userId } : undefined),
+        queryFn: () => userDisplayDesigns.list(userId ? { userId } : { userId: '' }),
         staleTime: STALE_TIMES.invitations,
+        enabled: !!userId,
     });
 }
 

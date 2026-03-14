@@ -68,6 +68,7 @@ const AdminProductListingPage = lazy(() => import('./pages/Admin/AdminProductLis
 const AdminReportsPage = lazy(() => import('./pages/Admin/AdminReportsPage').then(m => ({ default: m.AdminReportsPage })));
 const AdminFeedbackPage = lazy(() => import('./pages/AdminFeedbackPage').then(m => ({ default: m.AdminFeedbackPage })));
 const AdminPushNotificationPage = lazy(() => import('./pages/Admin/AdminPushNotificationPage').then(m => ({ default: m.AdminPushNotificationPage })));
+const AdminChatMonitoringPage = lazy(() => import('./pages/Admin/AdminChatMonitoringPage').then(m => ({ default: m.AdminChatMonitoringPage })));
 
 // Shop & Merchant Pages
 const MerchantPortalPage = lazy(() => import('./pages/Merchant/MerchantPortalPage').then(m => ({ default: m.MerchantPortalPage })));
@@ -200,8 +201,8 @@ const App: React.FC = () => {
                                 <Route path="/admin/admins" element={<ProtectedRoute requiredRole="admin"><AdminUsersPage role="admin" /></ProtectedRoute>} />
                                 <Route path="/admin/resellers" element={<ProtectedRoute requiredRole="admin"><AdminUsersPage role="reseller" /></ProtectedRoute>} />
                                 <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsersPage role="user" /></ProtectedRoute>} />
-                                <Route path="/admin/transactions" element={<ProtectedRoute requiredRole="admin"><AdminTransactionsPage /></ProtectedRoute>} />
-                                <Route path="/admin/activity" element={<ProtectedRoute requiredRole="admin"><AdminActivityPage /></ProtectedRoute>} />
+                                <Route path="/admin/chat-monitoring" element={<ProtectedRoute requiredRole="admin"><AdminChatMonitoringPage /></ProtectedRoute>} />
+                                <Route path="/admin/transactions" element={<ProtectedRoute requiredRole="admin"><AdminTransactionsPage /></ProtectedRoute>} />                                <Route path="/admin/activity" element={<ProtectedRoute requiredRole="admin"><AdminActivityPage /></ProtectedRoute>} />
                                 <Route path="/admin/feedback" element={<ProtectedRoute requiredRole="admin"><AdminFeedbackPage /></ProtectedRoute>} />
                                 <Route path="/admin/push-notifications" element={<ProtectedRoute requiredRole="admin"><AdminPushNotificationPage /></ProtectedRoute>} />
                                 <Route path="/admin/templates" element={<ProtectedRoute requiredRole="admin"><AdminTemplatesPage /></ProtectedRoute>} />

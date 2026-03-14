@@ -1,4 +1,5 @@
-ALTER TABLE shop_products ADD COLUMN whatsapp TEXT;
-ALTER TABLE shop_products ADD COLUMN phone TEXT;
-ALTER TABLE shop_products ADD COLUMN instagram TEXT;
-ALTER TABLE shop_products ADD COLUMN facebook TEXT;
+-- Redundant: Columns already exist in shop_products
+-- ALTER TABLE shop_products ADD COLUMN whatsapp TEXT;
+-- ALTER TABLE shop_products ADD COLUMN phone TEXT;
+-- ALTER TABLE shop_products ADD COLUMN instagram TEXT;
+-- ALTER TABLE shop_products ADD COLUMN facebook TEXT;

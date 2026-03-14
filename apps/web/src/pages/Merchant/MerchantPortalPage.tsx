@@ -9,6 +9,7 @@ import { MerchantProducts } from '../../components/Merchant/MerchantProducts';
 import { MerchantSettings } from '../../components/Merchant/MerchantSettings';
 import { MerchantAnalytics } from '../../components/Merchant/MerchantAnalytics';
 import { MerchantAds } from '../../components/Merchant/MerchantAds';
+import { ChatInterface } from '../../components/Chat/ChatInterface';
 import { useSEO } from '../../hooks/useSEO';
 
 // Icons
@@ -124,6 +125,7 @@ export const MerchantPortalPage: React.FC = () => {
                     <Routes>
                         <Route path="dashboard" element={<MerchantOverview />} />
                         <Route path="products" element={<MerchantProducts />} />
+                        <Route path="messages" element={<ChatInterface mode="vendor" />} />
                         <Route path="ads" element={<MerchantAds />} />
                         <Route path="settings" element={<MerchantSettings />} />
                         <Route path="analytics" element={<MerchantAnalytics />} />

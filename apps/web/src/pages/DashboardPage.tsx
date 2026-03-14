@@ -15,6 +15,7 @@ import { DashboardQuotaWidget } from '../components/Dashboard/DashboardQuotaWidg
 import { FeedbackTab } from '../components/Dashboard/FeedbackTab';
 import { WishlistTab } from '../components/Dashboard/WishlistTab';
 import { AnimatedCopyIcon } from '../components/ui/AnimatedCopyIcon';
+import { ChatInterface } from '../components/Chat/ChatInterface';
 
 // ============================================
 // INLINE SVG ICONS (Zero external dependency)
@@ -143,11 +144,12 @@ const StoreIcon = ({ className }: { className?: string }) => (
 // ============================================
 // MENU ITEMS
 // ============================================
-type TabId = 'dashboard' | 'invitations' | 'wishlist' | 'displays' | 'guests' | 'scan' | 'wishes' | 'invoice' | 'tutorial' | 'feedback';
+type TabId = 'dashboard' | 'invitations' | 'wishlist' | 'messages' | 'displays' | 'guests' | 'scan' | 'wishes' | 'invoice' | 'tutorial' | 'feedback';
 
 const menuItems: { id: TabId; label: string; icon: React.FC<{ className?: string }> }[] = [
     { id: 'dashboard', label: 'Home', icon: LayoutDashboardIcon },
     { id: 'invitations', label: 'Undangan', icon: MailIcon },
+    { id: 'messages', label: 'Messages', icon: MessageSquareIcon },
     { id: 'wishlist', label: 'Wishlist', icon: HeartIcon },
     { id: 'displays', label: 'Display', icon: MonitorIcon },
     { id: 'guests', label: 'Buku Tamu', icon: UsersIcon },
@@ -291,14 +293,14 @@ export const DashboardPage: React.FC = () => {
                     </button>
                 </div>
 
-                {/* 4. Buku Tamu */}
+                {/* 4. Messages */}
                 <Link
-                    to="/dashboard?tab=guests"
+                    to="/dashboard?tab=messages"
                     onClick={() => { setIsMobileMoreOpen(false); setIsMobileCreateOpen(false); }}
-                    className={`flex flex-col items-center justify-center w-14 h-14 transition-all ${activeTab === 'guests' && !isMobileMoreOpen ? 'text-[#0A1128]' : 'text-slate-400 hover:text-slate-600'}`}
+                    className={`flex flex-col items-center justify-center w-14 h-14 transition-all ${activeTab === 'messages' && !isMobileMoreOpen ? 'text-[#0A1128]' : 'text-slate-400 hover:text-slate-600'}`}
                 >
-                    <UsersIcon className={`w-5 h-5 mb-1 ${activeTab === 'guests' && !isMobileMoreOpen ? 'text-[#0A1128]' : ''}`} />
-                    <span className="text-[8px] font-black uppercase tracking-widest">Tamu</span>
+                    <MessageSquareIcon className={`w-5 h-5 mb-1 ${activeTab === 'messages' && !isMobileMoreOpen ? 'text-[#0A1128]' : ''}`} />
+                    <span className="text-[8px] font-black uppercase tracking-widest">Messages</span>
                 </Link>
 
                 {/* 5. More Menu */}
@@ -691,6 +693,13 @@ export const DashboardPage: React.FC = () => {
                                         </div>
                                     ))}
                                 </div>
+                            </m.div>
+                        )}
+
+                        {/* Messages Tab */}
+                        {activeTab === 'messages' && (
+                            <m.div key="messages" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                                <ChatInterface mode="user" />
                             </m.div>
                         )}
 

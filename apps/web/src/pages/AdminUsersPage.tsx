@@ -606,6 +606,7 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
                                                             { id: 'management:admins', label: 'Manage Admin Accounts' },
                                                             { id: 'management:resellers', label: 'Manage Reseller Accounts' },
                                                             { id: 'management:users', label: 'Manage User Accounts' },
+                                                            { id: 'management:chats', label: 'Manage Shop Chats' },
                                                             { id: 'system:activity', label: 'View Live Activity' },
                                                             { id: 'system:settings', label: 'System Settings' }
                                                         ].map((p) => (

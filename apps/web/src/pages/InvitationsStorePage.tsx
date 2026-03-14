@@ -352,7 +352,7 @@ export const InvitationsStorePage: React.FC = () => {
                             All
                         </button>
 
-                        {categoryList.map((cat) => (
+                        {categoryList.map((cat: any) => (
                             <button
                                 key={cat.id}
                                 onClick={() => { setSelectedCategory(cat.name); setShowFavoritesOnly(false); }}
