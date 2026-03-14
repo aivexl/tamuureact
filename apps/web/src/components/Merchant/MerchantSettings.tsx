@@ -4,7 +4,7 @@ import { useStore } from '../../store/useStore';
 import { useMerchantProfile, useUpdateMerchantProfile } from '../../hooks/queries/useShop';
 import api from '../../lib/api';
 import { INDONESIA_REGIONS } from '../../constants/regions';
-import { MapPin, Search, ChevronDown, Check, X, Camera, Globe, Mail, Phone, Instagram, Facebook, Link as LinkIcon, ExternalLink, ShieldCheck, Youtube, Twitter, Store, ShoppingBag } from 'lucide-react';
+import { MapPin, Search, ChevronDown, Check, X, Camera, Globe, Mail, Phone, Instagram, Facebook, Link as LinkIcon, ExternalLink, ShieldCheck, Youtube, Twitter, Store, ShoppingBag, MessageSquare } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { PremiumLoader } from '../ui/PremiumLoader';
 
@@ -48,6 +48,7 @@ export const MerchantSettings: React.FC = () => {
     const [email, setEmail] = useState('');
     const [alamat, setAlamat] = useState('');
     const [googleMapsUrl, setGoogleMapsUrl] = useState('');
+    const [kontakUtama, setKontakUtama] = useState<'whatsapp' | 'phone' | 'instagram' | 'chat'>('whatsapp');
 
     const [isDirty, setIsDirty] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -79,6 +80,7 @@ export const MerchantSettings: React.FC = () => {
             setEmail(c.email || '');
             setAlamat(c.alamat || '');
             setGoogleMapsUrl(c.google_maps_url || '');
+            setKontakUtama((m.kontak_utama as any) || 'whatsapp');
             
             hasHydrated.current = true;
             setIsDirty(false);
@@ -139,7 +141,8 @@ export const MerchantSettings: React.FC = () => {
                     shopee_url: shopeeUrl,
                     email: email,
                     alamat: alamat,
-                    google_maps_url: googleMapsUrl
+                    google_maps_url: googleMapsUrl,
+                    kontak_utama: kontakUtama
                 }
             });
             setIsDirty(false);
@@ -195,6 +198,44 @@ export const MerchantSettings: React.FC = () => {
 
                         <input type="file" ref={bannerInputRef} className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'banner')} />
                         <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'logo')} />
+
+                        {/* Primary Contact Gateway - Seamless Choice */}
+                        <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-6">
+                            <div className="space-y-1">
+                                <h3 className="text-sm font-black text-[#0A1128] uppercase tracking-tight">Metode Kontak Utama</h3>
+                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">
+                                    Pilih jalur komunikasi yang akan aktif pada tombol "Hubungi Sekarang" di halaman produk.
+                                </p>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {[
+                                    { id: 'whatsapp', label: 'WhatsApp', icon: Phone, color: 'text-[#25D366]' },
+                                    { id: 'chat', label: 'Chat Internal', icon: MessageSquare, color: 'text-indigo-600' },
+                                    { id: 'phone', label: 'Telepon', icon: Phone, color: 'text-slate-600' },
+                                    { id: 'instagram', label: 'Instagram', icon: Instagram, color: 'text-[#E4405F]' }
+                                ].map((choice) => (
+                                    <button
+                                        key={choice.id}
+                                        type="button"
+                                        onClick={() => { setKontakUtama(choice.id as any); setIsDirty(true); }}
+                                        className={`flex flex-col items-center justify-center p-4 rounded-3xl border-2 transition-all gap-2 ${
+                                            kontakUtama === choice.id 
+                                            ? 'bg-white border-[#FFBF00] shadow-xl shadow-[#FFBF00]/10' 
+                                            : 'bg-transparent border-slate-100 opacity-50 hover:border-slate-300'
+                                        }`}
+                                    >
+                                        <div className={`w-8 h-8 rounded-xl bg-white flex items-center justify-center shadow-sm ${choice.color}`}>
+                                            <choice.icon className="w-4 h-4" />
+                                        </div>
+                                        <span className="text-[10px] font-black uppercase tracking-widest">{choice.label}</span>
+                                        {kontakUtama === choice.id && (
+                                            <div className="px-2 py-0.5 bg-[#FFBF00] text-[8px] font-black text-white rounded-full uppercase">Aktif</div>
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
 
                         {/* Form Fields */}
                         <div className="pt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

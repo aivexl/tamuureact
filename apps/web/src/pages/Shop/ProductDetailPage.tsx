@@ -7,6 +7,7 @@ import {
     Share2,
     Heart,
     MessageCircle,
+    MessageSquare,
     ChevronLeft,
     ChevronRight,
     ShieldCheck,
@@ -82,6 +83,12 @@ export const ProductDetailPage: React.FC = () => {
     };
 
     const { user, isAuthenticated, logout, token } = useStore();
+
+    // System Config
+    const [systemSettings, setSystemSettings] = useState<any>(null);
+    useEffect(() => {
+        shop.getSystemSettings().then(res => setSystemSettings(res.settings));
+    }, []);
 
     // Data Fetching
     const { data: product, isLoading: isLoadingProduct, refetch: refetchProduct } = useProductDetails(productId || '');
@@ -271,8 +278,72 @@ export const ProductDetailPage: React.FC = () => {
 
     const handleWhatsApp = () => {
         const text = `Halo, saya tertarik dengan produk ${product?.nama_produk} di Tamuu Shop. Apakah masih tersedia?`;
-        const waNumber = product?.m_whatsapp || merchantStats?.whatsapp || '';
+        const waNumber = product?.whatsapp || product?.m_whatsapp || merchantStats?.whatsapp || '';
         window.open(`https://wa.me/${waNumber.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`, '_blank');
+    };
+
+    const handleChat = () => {
+        if (!isAuthenticated) {
+            toast.error('Silakan login untuk memulai chat.');
+            navigate('/login');
+            return;
+        }
+        navigate(`/dashboard?tab=messages&merchantId=${product.merchant_id}`);
+    };
+
+    const handlePrimaryContact = () => {
+        // CTO Policy: Global Admin Switch takes precedence
+        const globalMode = systemSettings?.global_chat_mode;
+        if (globalMode === 'whatsapp') return handleWhatsApp();
+        if (globalMode === 'internal') return handleChat();
+
+        // Fallback to individual vendor preference
+        const mode = product.kontak_utama || merchantStats?.kontak_utama || 'whatsapp';
+        
+        switch (mode) {
+            case 'chat': return handleChat();
+            case 'phone': {
+                const phone = product.phone || product.m_phone || merchantStats?.phone;
+                if (phone) window.open(`tel:${phone}`, '_self');
+                else handleWhatsApp();
+                break;
+            }
+            case 'instagram': {
+                const ig = product.instagram || product.m_instagram || merchantStats?.instagram;
+                if (ig) window.open(`https://instagram.com/${ig.replace('@', '')}`, '_blank');
+                else handleWhatsApp();
+                break;
+            }
+            default: return handleWhatsApp();
+        }
+    };
+
+    const getPrimaryButtonLabel = () => {
+        const globalMode = systemSettings?.global_chat_mode;
+        if (globalMode === 'whatsapp') return 'Hubungi Sekarang';
+        if (globalMode === 'internal') return 'Chat Penjual';
+
+        const mode = product.kontak_utama || merchantStats?.kontak_utama || 'whatsapp';
+        switch (mode) {
+            case 'chat': return 'Chat Sekarang';
+            case 'phone': return 'Hubungi Telepon';
+            case 'instagram': return 'Kirim DM Instagram';
+            default: return 'Hubungi Sekarang';
+        }
+    };
+
+    const getPrimaryButtonIcon = () => {
+        const globalMode = systemSettings?.global_chat_mode;
+        if (globalMode === 'whatsapp') return <MessageCircle className="w-5 h-5" />;
+        if (globalMode === 'internal') return <MessageSquare className="w-5 h-5" />;
+
+        const mode = product.kontak_utama || merchantStats?.kontak_utama || 'whatsapp';
+        switch (mode) {
+            case 'chat': return <MessageSquare className="w-5 h-5" />;
+            case 'phone': return <Phone className="w-5 h-5" />;
+            case 'instagram': return <Instagram className="w-5 h-5" />;
+            default: return <MessageCircle className="w-5 h-5" />;
+        }
     };
 
     const toggleWishlist = () => {
@@ -461,23 +532,31 @@ export const ProductDetailPage: React.FC = () => {
 
                                 {/* Compact Contact Grid (Seamless) */}
                                 <div className="space-y-4">
-                                    {/* Baris 1: WhatsApp & No Telepon */}
+                                    {/* Baris 1: WhatsApp & Chat Internal */}
                                     <div className="grid grid-cols-2 gap-3">
-                                        <div><SecureContactItem id="wa" label="" value={product.whatsapp || product.m_whatsapp || merchantStats?.whatsapp} icon={MessageCircle} iconColor="text-[#25D366]" isLink /></div>
-                                        <div><SecureContactItem id="phone" label="" value={product.phone || product.m_phone || merchantStats?.phone} icon={Phone} iconColor="text-slate-600" isLink /></div>
+                                        <div><SecureContactItem id="wa" label="WhatsApp" value={product.whatsapp || product.m_whatsapp || merchantStats?.whatsapp} icon={MessageCircle} iconColor="text-[#25D366]" isLink /></div>
+                                        <div><SecureContactItem id="chat" label="Chat" value="Tanya di Sini" icon={MessageSquare} iconColor="text-indigo-600" isLink /></div>
                                     </div>
 
-                                    {/* Baris 2: Sosial Media & Website */}
+                                    {/* Baris 2: No Telepon & Sosmed Utama */}
                                     <div className="grid grid-cols-2 gap-3">
-                                        <div><SecureContactItem id="ig" label="" value={product.instagram || product.m_instagram || merchantStats?.instagram} icon={Instagram} iconColor="text-[#E4405F]" isLink /></div>
-                                        <div><SecureContactItem id="web" label="" value={product.website_url || product.m_website || merchantStats?.website} icon={Globe} iconColor="text-indigo-600" isLink /></div>
-                                        <div><SecureContactItem id="tiktok" label="" value={product.tiktok_url || product.m_tiktok_url || merchantStats?.tiktok} customIcon={<TikTokIcon className="w-3.5 h-3.5" />} iconColor="text-black" isLink /></div>
-                                        <div><SecureContactItem id="fb" label="" value={product.facebook || product.m_facebook || merchantStats?.facebook} icon={Facebook} iconColor="text-[#1877F2]" isLink /></div>
-                                        <div><SecureContactItem id="x" label="" value={product.x_url || product.m_x_url} customIcon={<XLogoIcon className="w-3.5 h-3.5" />} iconColor="text-black" isLink /></div>
-                                        <div><SecureContactItem id="yt" label="" value={product.youtube_url || product.m_youtube} icon={Youtube} iconColor="text-[#FF0000]" isLink /></div>
+                                        <div><SecureContactItem id="phone" label="Telepon" value={product.phone || product.m_phone || merchantStats?.phone} icon={Phone} iconColor="text-slate-600" isLink /></div>
+                                        <div><SecureContactItem id="ig" label="Instagram" value={product.instagram || product.m_instagram || merchantStats?.instagram} icon={Instagram} iconColor="text-[#E4405F]" isLink /></div>
                                     </div>
 
-                                    {/* Baris 3: Marketplace (Icons Only) */}
+                                    {/* Baris 3: Sosial Media & Website */}
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div><SecureContactItem id="web" label="Website" value={product.website_url || product.m_website || merchantStats?.website} icon={Globe} iconColor="text-indigo-600" isLink /></div>
+                                        <div><SecureContactItem id="tiktok" label="TikTok" value={product.tiktok_url || product.m_tiktok_url || merchantStats?.tiktok} customIcon={<TikTokIcon className="w-3.5 h-3.5" />} iconColor="text-black" isLink /></div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 overflow-x-auto py-1 no-scrollbar">
+                                        {product.facebook && <div><SecureContactItem id="fb" label="" value={product.facebook} icon={Facebook} iconColor="text-[#1877F2]" isLink /></div>}
+                                        {product.x_url && <div><SecureContactItem id="x" label="" value={product.x_url} customIcon={<XLogoIcon className="w-3.5 h-3.5" />} iconColor="text-black" isLink /></div>}
+                                        {product.youtube_url && <div><SecureContactItem id="yt" label="" value={product.youtube_url} icon={Youtube} iconColor="text-[#FF0000]" isLink /></div>}
+                                    </div>
+
+                                    {/* Baris 4: Marketplace (Icons Only) */}
                                     {(product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url || product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url) && (
                                         <div className="flex items-center gap-6 px-3 pt-2">
                                             <div className="w-10 h-10 flex items-center justify-center">
@@ -861,11 +940,11 @@ export const ProductDetailPage: React.FC = () => {
                     </button>
 
                     <button
-                        onClick={handleWhatsApp}
+                        onClick={handlePrimaryContact}
                         className="flex-1 h-16 bg-[#0A1128] text-white rounded-[2rem] font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl shadow-black/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
                     >
-                        <MessageCircle className="w-5 h-5" />
-                        Hubungi Sekarang
+                        {getPrimaryButtonIcon()}
+                        {getPrimaryButtonLabel()}
                     </button>
                 </div>
             </div>

@@ -967,6 +967,26 @@ export interface Product {
     website?: string;
     alamat_lengkap?: string;
     google_maps_url?: string;
+    kontak_utama?: 'whatsapp' | 'phone' | 'instagram' | 'facebook' | 'tiktok' | 'tokopedia' | 'shopee' | 'chat';
+}
+
+export interface Merchant {
+    id: string;
+    user_id: string;
+    slug: string;
+    nama_toko: string;
+    deskripsi: string;
+    logo_url: string;
+    banner_url: string;
+    is_verified: number;
+    is_sponsored: number;
+    is_landing_featured?: number;
+    kota: string;
+    nama_kategori?: string;
+    wishlist_count?: number;
+    avg_rating?: number;
+    review_count?: number;
+    kontak_utama?: 'whatsapp' | 'phone' | 'instagram' | 'facebook' | 'tiktok' | 'tokopedia' | 'shopee' | 'chat';
 }
 
 export const shop = {
@@ -1225,6 +1245,12 @@ export const shop = {
         const res = await safeFetch(`${API_BASE}/api/shop/wishlist?user_id=${userId}`);
         const data = await res.json();
         return sanitizeValue(data.wishlist || []);
+    },
+
+    async getSystemSettings() {
+        const res = await safeFetch(`${API_BASE}/api/system/settings`);
+        if (!res.ok) return { settings: { global_chat_mode: 'whatsapp' } };
+        return res.json();
     },
 
     async toggleWishlist(userId: string, productId: string) {

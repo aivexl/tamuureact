@@ -2072,7 +2072,7 @@ export default {
                             kategori_produk, kota, is_admin_listing, custom_store_name,
                             tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url,
                             alamat_lengkap, google_maps_url, is_special, is_featured, is_landing_featured,
-                            whatsapp, phone, instagram, facebook
+                            whatsapp, phone, instagram, facebook, kontak_utama
                         } = body;
 
                         const finalStatus = status || 'PUBLISHED';
@@ -2102,9 +2102,9 @@ export default {
                                     kategori_produk, kota, is_admin_listing, custom_store_name,
                                     tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url,
                                     is_approved, slug, alamat_lengkap, google_maps_url, is_special, is_featured, is_landing_featured,
-                                    whatsapp, phone, instagram, facebook
+                                    whatsapp, phone, instagram, facebook, kontak_utama
                                     )
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                                     `).bind(
                                     productId, merchantId, finalNama || '(Tanpa Nama)', deskripsi || '-',
                                     harga_estimasi || null, finalStatus, kategori_produk || null,
@@ -2118,7 +2118,8 @@ export default {
                                     is_special ? 1 : 0,
                                     is_featured ? 1 : 0,
                                     is_landing_featured ? 1 : 0,
-                                    whatsapp || null, phone || null, instagram || null, facebook || null
+                                    whatsapp || null, phone || null, instagram || null, facebook || null,
+                                    kontak_utama || 'whatsapp'
                                     )
                                     ];
                         if (Array.isArray(images) && images.length > 0) {
@@ -2154,7 +2155,7 @@ export default {
                             kategori_produk, kota, is_admin_listing, custom_store_name,
                             tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url,
                             alamat_lengkap, google_maps_url, is_special, is_featured, is_landing_featured,
-                            whatsapp, phone, instagram, facebook
+                            whatsapp, phone, instagram, facebook, kontak_utama
                         } = body;
 
                         let updateFields = [];
@@ -2187,6 +2188,7 @@ export default {
                         addField('phone', phone);
                         addField('instagram', instagram);
                         addField('facebook', facebook);
+                        addField('kontak_utama', kontak_utama);
 
                         if (nama_produk) {
                             const newSlug = generateSlug(nama_produk);
@@ -2360,6 +2362,18 @@ export default {
                 }
             }
 
+            // 14. PUBLIC SYSTEM SETTINGS
+            if (path === '/api/system/settings' && method === 'GET') {
+                try {
+                    const results = await env.DB.prepare('SELECT key, value FROM system_settings').all();
+                    const settings = {};
+                    results.results.forEach(s => settings[s.key] = s.value);
+                    return json({ success: true, settings }, corsHeaders);
+                } catch (error) {
+                    return json({ settings: { global_chat_mode: 'whatsapp' } }, corsHeaders); // Safe fallback
+                }
+            }
+
             // 11. SHOP P2P CHAT SYSTEM (Super Ultra Chat)
             if (path.startsWith('/api/shop/chat/')) {
                 const authHeader = request.headers.get('Authorization');
@@ -2446,10 +2460,13 @@ export default {
                         }
 
                         const messageId = crypto.randomUUID();
+                        // CTO POLICY: Text-only messaging for efficiency. No media/attachments.
+                        const finalType = 'text'; 
+                        
                         await env.DB.prepare(`
                             INSERT INTO shop_messages (id, conversation_id, sender_id, content, type)
                             VALUES (?, ?, ?, ?, ?)
-                        `).bind(messageId, conversationId, user.id, content, type || 'text').run();
+                        `).bind(messageId, conversationId, user.id, content, finalType).run();
 
                         // Update conversation meta and unread counts
                         const unreadField = isMerchantSender ? 'unread_count_user' : 'unread_count_vendor';
@@ -2489,6 +2506,41 @@ export default {
                     } catch (error) {
                         return json({ error: 'Failed to mark as read', details: error.message }, { ...corsHeaders, status: 500 });
                     }
+                }
+            }
+
+            // 13. ADMIN SYSTEM SETTINGS
+            if (path === '/api/admin/system/settings' && method === 'GET') {
+                const adminCheck = await verifyAdmin(request, env);
+                if (!adminCheck.isAdmin) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 403 });
+
+                try {
+                    const results = await env.DB.prepare('SELECT * FROM system_settings').all();
+                    const settings = {};
+                    results.results.forEach(s => settings[s.key] = s.value);
+                    return json({ success: true, settings }, corsHeaders);
+                } catch (error) {
+                    return json({ error: 'Failed to fetch settings' }, { ...corsHeaders, status: 500 });
+                }
+            }
+
+            if (path === '/api/admin/system/settings' && method === 'PATCH') {
+                const adminCheck = await verifyAdmin(request, env);
+                if (!adminCheck.isAdmin) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 403 });
+
+                try {
+                    const { key, value } = await request.json();
+                    if (!key || value === undefined) return json({ error: 'Key and value required' }, { ...corsHeaders, status: 400 });
+
+                    await env.DB.prepare(`
+                        INSERT INTO system_settings (key, value, updated_at) 
+                        VALUES (?, ?, CURRENT_TIMESTAMP)
+                        ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP
+                    `).bind(key, value).run();
+
+                    return json({ success: true }, corsHeaders);
+                } catch (error) {
+                    return json({ error: 'Failed to update settings' }, { ...corsHeaders, status: 500 });
                 }
             }
 
@@ -2841,7 +2893,7 @@ export default {
                 const { 
                     merchant_id, user_id, nama_toko, deskripsi, logo_url, banner_url, 
                     category_id, kota, whatsapp, instagram, facebook, tiktok, 
-                    website, email, alamat, google_maps_url
+                    website, email, alamat, google_maps_url, kontak_utama
                 } = body;
 
                 if (!merchant_id || !user_id) return json({ error: 'Missing required IDs' }, { ...corsHeaders, status: 400 });
@@ -2855,11 +2907,11 @@ export default {
                     // 2. ATOMIC EXECUTION (Forced Persistence with Hard Change Verification)
                                         const updateOp = await env.DB.prepare(`
                                             UPDATE shop_merchants
-                                            SET nama_toko = ?, deskripsi = ?, logo_url = ?, banner_url = ?, category_id = COALESCE(NULLIF(?, ''), category_id), updated_at = CURRENT_TIMESTAMP
+                                            SET nama_toko = ?, deskripsi = ?, logo_url = ?, banner_url = ?, category_id = COALESCE(NULLIF(?, ''), category_id), kontak_utama = ?, updated_at = CURRENT_TIMESTAMP
                                             WHERE (id = ? OR slug = ?) AND user_id = ?
                                         `).bind(
                                             nama_toko || '', deskripsi || '', logo_url || null,
-                                            banner_url || null, category_id || '',
+                                            banner_url || null, category_id || '', kontak_utama || 'whatsapp',
                                             merchant_id, merchant_id, user_id
                                         ).run();
                     if (updateOp.meta.changes === 0) {
