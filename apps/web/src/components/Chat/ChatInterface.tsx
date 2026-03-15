@@ -208,7 +208,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ mode, initialConvI
                         <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
                             <AnimatePresence initial={false}>
                                 {selectedId ? messages.map((msg: any) => {
-                                    const isMe = msg.sender_id === user?.id;
+                                    // Robust isMe logic: 
+                                    // - User mode: true if sender is the user.
+                                    // - Vendor mode: true if sender is NOT the customer.
+                                    // - Admin mode: true if sender is NOT the customer (vendor on right, user on left).
+                                    const isMe = mode === 'user' ? msg.sender_id === user?.id : msg.sender_id !== activeConv?.user_id;
+                                    
                                     return (
                                         <m.div
                                             initial={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -216,17 +221,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ mode, initialConvI
                                             key={msg.id}
                                             className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
                                         >
-                                            <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm shadow-sm ${isMe ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white text-slate-800 rounded-tl-none border border-slate-100'}`}>
+                                            <div className={`max-w-[80%] px-5 py-3.5 rounded-2xl text-sm shadow-sm ${isMe ? 'bg-[#0A1128] text-white rounded-br-sm' : 'bg-white text-slate-800 rounded-bl-sm border border-slate-100'}`}>
                                                 <p className="leading-relaxed font-medium">{msg.content}</p>
-                                                <div className={`flex items-center gap-1 mt-1 justify-end ${isMe ? 'text-indigo-200' : 'text-slate-400'}`}>
-                                                    <span className="text-[10px] font-bold">
+                                                <div className={`flex items-center gap-1 mt-1.5 justify-end ${isMe ? 'text-slate-400' : 'text-slate-400'}`}>
+                                                    <span className="text-[9px] font-bold">
                                                         {parseUTCDate(msg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                                                     </span>
                                                     {isMe && (
                                                         msg.read_at ? (
-                                                            <CheckCheck className="w-4 h-4 text-emerald-300 ml-1" strokeWidth={3} />
+                                                            <CheckCheck className="w-4 h-4 text-blue-400 ml-1" />
                                                         ) : (
-                                                            <Check className="w-4 h-4 text-indigo-200 ml-1" strokeWidth={3} />
+                                                            <Check className="w-4 h-4 text-slate-400 ml-1" />
                                                         )
                                                     )}
                                                 </div>
