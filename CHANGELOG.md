@@ -1,5 +1,18 @@
 # Tamuu Changelog
 
+## [0.8.6] - 2026-03-15
+### Added
+- **Vendor Contact Architectural Redesign**: Overhauled the contact section into a high-fidelity 3-column layout positioned strategically above the product description.
+- **Columnar Communication Hub**:
+    - **Column 1 (Direct)**: Internal Chat, WhatsApp, and Phone (using a secure copy-to-clipboard system).
+    - **Column 2 (Social)**: Instagram, TikTok (latest branding), and Official Website.
+    - **Column 3 (Marketplace)**: Shopee, Tokopedia, and TikTok Shop with up-to-date official logos.
+- **Strategic UX Repositioning**: Relocated the vendor contact hub from the sidebar to a full-width card above the product description, creating a more balanced and accessible informational hierarchy.
+- **Apple-Grade Aesthetic**:
+    - Enforced clean, bold typography for headers, eliminating italics for an enterprise-standard look.
+    - Implemented a smooth "Click-to-Reveal" mechanism for contact privacy and interaction tracking.
+    - Removed all promotional or "lebay" filler text to maintain professional clarity.
+
 ## [0.8.5] - 2026-03-15
 ### Added
 - **UI Architecture Refinement**: Restored the Sponsor Banner Card to the Product Detail Page with a full-bleed photographic design, eliminating border artifacts.

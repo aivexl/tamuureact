@@ -116,85 +116,104 @@ export const ProductDetailPage: React.FC = () => {
 
     const isWishlisted = wishlist.some((item: any) => item.id === product?.id);
 
-    // Minimalist Secure Contact Component
-    const SecureContactItem = ({ 
+    // Premium Vendor Contact Component
+    const VendorContactItem = ({ 
         id, 
         icon: Icon, 
         label, 
         value, 
-        isLink = false,
+        type = 'link', 
         iconColor = "text-[#0A1128]",
-        customIcon = null
+        customIcon = null,
+        imgSrc = null
     }: { 
         id: string, 
         icon?: any, 
         label: string, 
         value?: string, 
-        isLink?: boolean,
+        type?: 'link' | 'copy' | 'chat' | 'marketplace',
         iconColor?: string,
-        customIcon?: React.ReactNode
+        customIcon?: React.ReactNode,
+        imgSrc?: string | null
     }) => {
         if (!value) return null;
         const isRevealed = revealedContacts[id];
 
-        const handleOpenLink = (e: React.MouseEvent) => {
+        const handleAction = (e: React.MouseEvent) => {
             e.stopPropagation();
-            if (!isRevealed) return;
-
-            let url = value.startsWith('http') ? value : `https://${value}`;
-            if (id === 'wa' || id === 'phone') {
-                const cleanNumber = value.replace(/\D/g, '');
-                url = `https://wa.me/${cleanNumber}`;
-            } else if (id === 'ig' && !value.includes('instagram.com')) {
-                url = `https://instagram.com/${value.replace('@', '')}`;
-            } else if (id === 'tiktok' && !value.includes('tiktok.com')) {
-                url = `https://tiktok.com/@${value.replace('@', '')}`;
+            if (!isAuthenticated) {
+                toast.error('Silakan login untuk melihat detail kontak vendor.');
+                navigate('/login');
+                return;
             }
-            window.open(url, '_blank');
+            if (!isRevealed) {
+                toggleReveal(id);
+                if (product?.id) {
+                    track.mutate({ merchantId: product.merchant_id, actionType: 'CLICK_CONTACT', metadata: JSON.stringify({ contact_type: id, product_id: product.id }) } as any);
+                }
+                return;
+            }
+
+            if (type === 'chat') {
+                handleChat();
+            } else if (type === 'link' || type === 'marketplace') {
+                const getUrl = (val: string, platform: string) => {
+                    if (val.startsWith('http')) return val;
+                    switch(platform) {
+                        case 'wa': return `https://wa.me/${val.replace(/\D/g, '')}`;
+                        case 'ig': return `https://instagram.com/${val.replace('@', '')}`;
+                        case 'tiktok': return `https://tiktok.com/@${val.replace('@', '')}`;
+                        case 'fb': return `https://facebook.com/${val}`;
+                        case 'tokopedia': return val.startsWith('tokopedia.com') ? `https://${val}` : `https://tokopedia.com/${val}`;
+                        case 'shopee': return val.startsWith('shopee.co.id') ? `https://${val}` : `https://shopee.co.id/${val}`;
+                        case 'tiktokshop': return val.startsWith('tiktok.com') ? `https://${val}` : `https://tiktok.com/${val}`;
+                        default: return `https://${val}`;
+                    }
+                };
+                const url = getUrl(value, id);
+                if (url) window.open(url, '_blank');
+            }
         };
 
         return (
             <div 
-                onClick={() => {
-                    if (!isAuthenticated) {
-                        toast.error('Silakan login untuk melihat detail kontak vendor.');
-                        navigate('/login');
-                        return;
-                    }
-                    if (!isRevealed) {
-                        toggleReveal(id);
-                        if (product?.id) {
-                            track.mutate({ merchantId: product.merchant_id, actionType: 'CLICK_CONTACT', metadata: JSON.stringify({ contact_type: id, product_id: product.id }) } as any);
-                        }
-                    }
-                }}
-                className={`flex items-center gap-2.5 py-3 px-3 transition-all duration-300 border border-slate-50 rounded-xl hover:bg-slate-50/50 ${!isRevealed ? 'cursor-pointer' : ''}`}
+                onClick={handleAction}
+                className={`flex items-center gap-4 py-4 px-5 transition-all duration-500 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 hover:border-slate-200 hover:shadow-md group ${!isRevealed ? 'cursor-pointer' : ''}`}
             >
-                <div className={`w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm border border-slate-100 flex-shrink-0 group-hover:scale-110 transition-transform ${iconColor}`}>
-                    {customIcon || (Icon && <Icon size={14} />)}
+                <div className={`w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 flex-shrink-0 transition-all duration-500 group-hover:scale-110 group-hover:bg-white ${iconColor}`}>
+                    {imgSrc ? (
+                        <img src={imgSrc} alt={label} className="w-7 h-7 object-contain" />
+                    ) : (
+                        customIcon || (Icon && <Icon size={20} />)
+                    )}
                 </div>
                 <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{label}</p>
                     <div className="relative">
                         {!isRevealed ? (
-                            <div className="flex items-center gap-1 text-indigo-600 font-black uppercase tracking-tighter italic text-[9px]">
-                                <Eye className="w-2.5 h-2.5" />
+                            <div className="flex items-center gap-2 text-indigo-600 font-bold uppercase tracking-tight text-[11px]">
+                                <Eye className="w-3.5 h-3.5" />
                                 <span>Tampilkan</span>
                             </div>
                         ) : (
-                            <p className="text-[10px] font-bold text-[#0A1128] truncate">
-                                {value}
+                            <p className="text-[13px] font-bold text-[#0A1128] truncate">
+                                {value === 'Tanya di Sini' ? 'Mulai Chat' : value}
                             </p>
                         )}
                     </div>
                 </div>
-                {isRevealed && isLink && (
-                    <button 
-                        onClick={handleOpenLink}
-                        className="w-6 h-6 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-[#FFBF00] hover:text-[#0A1128] transition-all border border-slate-100"
-                        title="Buka Tautan"
-                    >
-                        <ArrowUpRight className="w-3 h-3" />
-                    </button>
+                {isRevealed && (
+                    <div className="flex-shrink-0">
+                        {type === 'copy' ? (
+                            <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 hover:text-[#FFBF00] hover:bg-white transition-all" onClick={(e) => e.stopPropagation()}>
+                                <AnimatedCopyIcon text={value} size={18} successMessage={`${label} disalin!`} />
+                            </div>
+                        ) : (type === 'link' || type === 'marketplace' || type === 'chat') && (
+                            <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-[#0A1128] hover:text-white transition-all border border-slate-100">
+                                <ArrowUpRight className="w-4 h-4" />
+                            </div>
+                        )}
+                    </div>
                 )}
             </div>
         );
@@ -613,10 +632,10 @@ export const ProductDetailPage: React.FC = () => {
                                 </p>
                             </div>
 
-                            {/* Merchant & Contact Section (Repositioned & Compact) */}
-                            <div className="p-6 md:p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-6">
+                            {/* Merchant Section (Sidebar - Compact) */}
+                            <div className="p-6 md:p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100">
                                 {/* Store Card */}
-                                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 pb-6 border-b border-slate-100/50">
+                                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
                                     <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white border-4 border-white shadow-lg flex-shrink-0">
                                         <img 
                                             src={product.is_admin_listing ? `https://api.dicebear.com/7.x/initials/svg?seed=${product.custom_store_name || 'Admin'}` : (product.logo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${product.nama_toko}`)} 
@@ -660,48 +679,6 @@ export const ProductDetailPage: React.FC = () => {
                                         </Link>
                                     )}
                                 </div>
-
-                                {/* Compact Contact Grid (Seamless) */}
-                                <div className="space-y-4">
-                                    {/* Baris 1: WhatsApp & Chat Internal */}
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div><SecureContactItem id="wa" label="WhatsApp" value={product.whatsapp || product.m_whatsapp || merchantStats?.whatsapp} icon={MessageCircle} iconColor="text-[#25D366]" isLink /></div>
-                                        <div><SecureContactItem id="chat" label="Chat" value="Tanya di Sini" icon={MessageSquare} iconColor="text-indigo-600" isLink /></div>
-                                    </div>
-
-                                    {/* Baris 2: No Telepon & Sosmed Utama */}
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div><SecureContactItem id="phone" label="Telepon" value={product.phone || product.m_phone || merchantStats?.phone} icon={Phone} iconColor="text-slate-600" isLink /></div>
-                                        <div><SecureContactItem id="ig" label="Instagram" value={product.instagram || product.m_instagram || merchantStats?.instagram} icon={Instagram} iconColor="text-[#E4405F]" isLink /></div>
-                                    </div>
-
-                                    {/* Baris 3: Sosial Media & Website */}
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div><SecureContactItem id="web" label="Website" value={product.website_url || product.m_website || merchantStats?.website} icon={Globe} iconColor="text-indigo-600" isLink /></div>
-                                        <div><SecureContactItem id="tiktok" label="TikTok" value={product.tiktok_url || product.m_tiktok_url || merchantStats?.tiktok} customIcon={<TikTokIcon className="w-3.5 h-3.5" />} iconColor="text-black" isLink /></div>
-                                    </div>
-
-                                    <div className="flex items-center gap-2 overflow-x-auto py-1 no-scrollbar">
-                                        {product.facebook && <div><SecureContactItem id="fb" label="" value={product.facebook} icon={Facebook} iconColor="text-[#1877F2]" isLink /></div>}
-                                        {product.x_url && <div><SecureContactItem id="x" label="" value={product.x_url} customIcon={<XLogoIcon className="w-3.5 h-3.5" />} iconColor="text-black" isLink /></div>}
-                                        {product.youtube_url && <div><SecureContactItem id="yt" label="" value={product.youtube_url} icon={Youtube} iconColor="text-[#FF0000]" isLink /></div>}
-                                    </div>
-
-                                    {/* Baris 4: Marketplace (Icons Only) */}
-                                    {(product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url || product.tiktokshop_url || product.m_tiktokshop_url || merchantStats?.tiktokshop_url || product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url) && (
-                                        <div className="flex items-center gap-6 px-3 pt-2">
-                                            <div className="w-10 h-10 flex items-center justify-center">
-                                                <MarketplaceIcon url={product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url} src="/images/logos/marketplace/logo_shopee.png" alt="Shopee" />
-                                            </div>
-                                            <div className="w-10 h-10 flex items-center justify-center">
-                                                <MarketplaceIcon url={product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url} src="/images/logos/marketplace/logo_tokopedia.png" alt="Tokopedia" />
-                                            </div>
-                                            <div className="w-10 h-10 flex items-center justify-center">
-                                                <MarketplaceIcon url={product.tiktokshop_url || product.m_tiktokshop_url || merchantStats?.tiktokshop_url} src="/images/logos/marketplace/logo-tiktokshop.png" alt="TikTok Shop" />
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -710,17 +687,112 @@ export const ProductDetailPage: React.FC = () => {
                 {/* BOTTOM CONTENT SECTION */}
                 <div className="max-w-7xl mx-auto px-6 mt-20">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-                        <div className="lg:col-span-7 flex flex-col h-full">
+                        <div className="lg:col-span-12 flex flex-col h-full gap-8">
+                            {/* Vendor Contact Card - New Position */}
+                            <m.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="p-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm space-y-8"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
+                                    <h2 className="text-xl font-black uppercase tracking-tighter">Kontak Vendor</h2>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    {/* Kolom 1: Direct Communication */}
+                                    <div className="space-y-4">
+                                        <VendorContactItem 
+                                            id="chat" 
+                                            label="Chat Internal" 
+                                            value="Tanya di Sini" 
+                                            icon={MessageSquare} 
+                                            iconColor="text-indigo-600" 
+                                            type="chat" 
+                                        />
+                                        <VendorContactItem 
+                                            id="wa" 
+                                            label="WhatsApp" 
+                                            value={product.whatsapp || product.m_whatsapp || merchantStats?.whatsapp} 
+                                            icon={MessageCircle} 
+                                            iconColor="text-[#25D366]" 
+                                            type="link" 
+                                        />
+                                        <VendorContactItem 
+                                            id="phone" 
+                                            label="Nomor Telepon" 
+                                            value={product.phone || product.m_phone || merchantStats?.phone} 
+                                            icon={Phone} 
+                                            iconColor="text-slate-600" 
+                                            type="copy" 
+                                        />
+                                    </div>
+
+                                    {/* Kolom 2: Social Media & Web */}
+                                    <div className="space-y-4">
+                                        <VendorContactItem 
+                                            id="ig" 
+                                            label="Instagram" 
+                                            value={product.instagram || product.m_instagram || merchantStats?.instagram} 
+                                            icon={Instagram} 
+                                            iconColor="text-[#E4405F]" 
+                                            type="link" 
+                                        />
+                                        <VendorContactItem 
+                                            id="tiktok" 
+                                            label="TikTok" 
+                                            value={product.tiktok_url || product.m_tiktok_url || merchantStats?.tiktok} 
+                                            customIcon={<TikTokIcon className="w-5 h-5" />} 
+                                            iconColor="text-black" 
+                                            type="link" 
+                                        />
+                                        <VendorContactItem 
+                                            id="web" 
+                                            label="Website Official" 
+                                            value={product.website_url || product.m_website || merchantStats?.website} 
+                                            icon={Globe} 
+                                            iconColor="text-indigo-600" 
+                                            type="link" 
+                                        />
+                                    </div>
+
+                                    {/* Kolom 3: Marketplace */}
+                                    <div className="space-y-4">
+                                        <VendorContactItem 
+                                            id="shopee" 
+                                            label="Shopee" 
+                                            value={product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url} 
+                                            imgSrc="/images/logos/marketplace/logo_shopee.png" 
+                                            type="marketplace" 
+                                        />
+                                        <VendorContactItem 
+                                            id="tokopedia" 
+                                            label="Tokopedia" 
+                                            value={product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url} 
+                                            imgSrc="/images/logos/marketplace/logo_tokopedia.png" 
+                                            type="marketplace" 
+                                        />
+                                        <VendorContactItem 
+                                            id="tiktokshop" 
+                                            label="TikTok Shop" 
+                                            value={product.tiktokshop_url || product.m_tiktokshop_url || merchantStats?.tiktokshop_url} 
+                                            imgSrc="/images/logos/marketplace/logo-tiktokshop.png" 
+                                            type="marketplace" 
+                                        />
+                                    </div>
+                                </div>
+                            </m.div>
+
                             {/* Deskripsi Card - Main Position */}
                             <m.div 
                                 layout
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
                                 className="p-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm space-y-8 flex flex-col h-full"
                             >
                                 <div className="flex items-center gap-3">
                                     <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
-                                    <h2 className="text-xl font-black uppercase tracking-tighter italic">Deskripsi Produk</h2>
+                                    <h2 className="text-xl font-black uppercase tracking-tighter">Deskripsi Produk</h2>
                                 </div>
                                 
                                 <div className="relative flex-1 flex flex-col">
@@ -771,17 +843,17 @@ export const ProductDetailPage: React.FC = () => {
                             </m.div>
                         </div>
 
-                        {/* Right Column (Spans 5/12) - Alamat Stacked */}
-                        <div className="lg:col-span-5 flex flex-col gap-8 h-full">
+                        {/* Alamat Card */}
+                        <div className="lg:col-span-6 flex flex-col h-full">
                             <m.div 
-                                initial={{ opacity: 0, x: 20 }}
+                                initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="p-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6 flex flex-col"
+                                className="p-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6 flex flex-col h-full"
                             >
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
-                                        <h2 className="text-xl font-black uppercase tracking-tighter italic">Alamat Lengkap</h2>
+                                        <h2 className="text-xl font-black uppercase tracking-tighter">Alamat Lengkap</h2>
                                     </div>
                                     {product.alamat_lengkap && (
                                         <div className="p-1 bg-slate-50 hover:bg-[#FFBF00]/10 rounded-2xl transition-all">
@@ -826,12 +898,14 @@ export const ProductDetailPage: React.FC = () => {
                                     </a>
                                 )}
                             </m.div>
+                        </div>
 
-                            {/* Sponsor Banner Card */}
+                        {/* Sponsor Banner Card */}
+                        <div className="lg:col-span-6 flex flex-col h-full">
                             <m.div 
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm flex-1 flex flex-col min-h-[400px] overflow-hidden group"
+                                className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm flex-1 flex flex-col min-h-[400px] overflow-hidden group h-full"
                             >
                                 {sidebarAds.length > 0 ? (
                                     <a 
