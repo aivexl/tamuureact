@@ -98,6 +98,19 @@ export const ProductDetailPage: React.FC = () => {
     const { data: recommendations = [] } = useSmartRecommendations(productId, product?.kategori_produk);
     const [visibleRecs, setVisibleRecs] = useState(4);
 
+    const [sidebarAds, setSidebarAds] = useState<any[]>([]);
+    useEffect(() => {
+        const fetchAds = async () => {
+            try {
+                const ads = await shop.getAds('PRODUCT_DETAIL_SIDEBAR');
+                setSidebarAds(ads || []);
+            } catch (err) {
+                console.error('Failed to fetch sidebar ads:', err);
+            }
+        };
+        fetchAds();
+    }, []);
+
     const toggleWishlistMutation = useToggleWishlist();
     const track = useTrackInteraction();
 
@@ -813,6 +826,45 @@ export const ProductDetailPage: React.FC = () => {
                                         <Map className="w-4 h-4 text-[#FFBF00]" />
                                         Buka Di Google Maps
                                     </a>
+                                )}
+                            </m.div>
+
+                            {/* Sponsor Banner Card */}
+                            <m.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="p-1 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm flex-1 flex flex-col min-h-[400px] overflow-hidden group"
+                            >
+                                {sidebarAds.length > 0 ? (
+                                    <a 
+                                        href={sidebarAds[0].link_url || '#'} 
+                                        target="_blank" 
+                                        rel="noreferrer"
+                                        className="relative w-full h-full flex-1 rounded-[2.2rem] overflow-hidden block"
+                                    >
+                                        <img 
+                                            src={sidebarAds[0].image_url} 
+                                            alt="Sponsor" 
+                                            className="w-full h-full object-cover" 
+                                        />
+                                        {/* Minimal Ads Tag */}
+                                        <div className="absolute top-6 right-6 px-2.5 py-1 bg-black/20 backdrop-blur-md rounded-lg border border-white/20">
+                                            <p className="text-white text-[7px] font-black uppercase tracking-widest opacity-80">Ads</p>
+                                        </div>
+                                    </a>
+                                ) : (
+                                    <div className="flex-1 flex flex-col items-center justify-center p-10 text-center space-y-6">
+                                        <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center border border-slate-100">
+                                            <Megaphone className="w-8 h-8 text-slate-200" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Sponsorship Space</h3>
+                                            <p className="text-[9px] text-slate-300 font-bold uppercase tracking-tighter">Promosikan brand Anda di sini</p>
+                                        </div>
+                                        <button className="px-6 py-3 bg-slate-50 text-slate-400 border border-slate-100 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-[#0A1128] hover:text-white transition-all">
+                                            Kontak Admin
+                                        </button>
+                                    </div>
                                 )}
                             </m.div>
                         </div>
