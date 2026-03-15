@@ -11,6 +11,7 @@
 - **TikTok Shop Persistence**: Resolved a critical data omission bug where `tiktokshop_url` was missing from the Administrative Product Registry retrieval query.
 - **Atomic Creation Hardening**: Patched a column mismatch and binding error in both Admin and Merchant product creation endpoints that caused contact metadata to be lost or shifted during the initial save operation.
 - **Database Schema Sync**: Verified and synchronized the Cloudflare D1 production schema to ensure `tiktokshop_url` columns are present in both `shop_products` and `shop_contacts` tables.
+- **Marketplace UI Refinement**: Removed grayscale filters and opacity reductions from Shopee and Tokopedia icons across all components (Admin, Merchant, and Public Storefront), ensuring official brand colors are persistently visible.
 
 ## [0.8.3] - 2026-03-14
 ### Fixed
