@@ -192,22 +192,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ mode, initialConvI
                                             ? (mode === 'vendor' ? activeConv.customer_name : activeConv.merchant_name)
                                             : (isMerchantLoading ? 'Loading...' : (merchantInfo?.nama_toko || 'New Merchant'))}
                                     </p>
-                                    {selectedId && activeConv ? (
-                                        isUserActive(activeConv) ? (
-                                            <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest flex items-center gap-1">
-                                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                                                Active Now
-                                            </p>
-                                        ) : (
-                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                                                Last seen: {formatDistanceToNow(parseUTCDate(activeConv.updated_at), { addSuffix: true, locale: id })}
-                                            </p>
-                                        )
-                                    ) : (
-                                        <p className="text-[10px] text-indigo-500 font-bold uppercase tracking-widest flex items-center gap-1">
-                                            Start New Chat
-                                        </p>
-                                    )}
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
+                                        {selectedId ? 'Tamuu Chat' : 'Start New Chat'}
+                                    </p>
                                 </div>
                             </div>
                             {mode === 'admin' && (
@@ -231,15 +218,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ mode, initialConvI
                                         >
                                             <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm shadow-sm ${isMe ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white text-slate-800 rounded-tl-none border border-slate-100'}`}>
                                                 <p className="leading-relaxed font-medium">{msg.content}</p>
-                                                <div className={`flex items-center gap-1 mt-1.5 justify-end ${isMe ? 'text-indigo-200' : 'text-slate-400'}`}>
+                                                <div className={`flex items-center gap-1 mt-1 justify-end ${isMe ? 'text-indigo-200' : 'text-slate-400'}`}>
                                                     <span className="text-[10px] font-bold">
                                                         {parseUTCDate(msg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                                                     </span>
                                                     {isMe && (
                                                         msg.read_at ? (
-                                                            <CheckCheck className="w-3.5 h-3.5 text-teal-300 ml-0.5" />
+                                                            <CheckCheck className="w-4 h-4 text-emerald-300 ml-1" strokeWidth={3} />
                                                         ) : (
-                                                            <Check className="w-3 h-3 ml-0.5 opacity-70" />
+                                                            <Check className="w-4 h-4 text-indigo-200 ml-1" strokeWidth={3} />
                                                         )
                                                     )}
                                                 </div>
