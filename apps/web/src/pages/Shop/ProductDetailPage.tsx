@@ -75,7 +75,12 @@ export const ProductDetailPage: React.FC = () => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [revealedContacts, setRevealedContacts] = useState<Record<string, boolean>>({});
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+
+    const toggleReveal = (key: string) => {
+        setRevealedContacts(prev => ({ ...prev, [key]: !prev[key] }));
+    };
 
     const { user, isAuthenticated, logout, token } = useStore();
 
@@ -122,7 +127,8 @@ export const ProductDetailPage: React.FC = () => {
         customIcon = null,
         imgSrc = null,
         logoOnly = false,
-        compact = false
+        compact = false,
+        noHide = false
     }: { 
         id: string, 
         icon?: any, 
@@ -133,15 +139,25 @@ export const ProductDetailPage: React.FC = () => {
         customIcon?: React.ReactNode,
         imgSrc?: string | null,
         logoOnly?: boolean,
-        compact?: boolean
+        compact?: boolean,
+        noHide?: boolean
     }) => {
-        if (!value) return <div className="h-11 bg-slate-50/10 border border-dashed border-slate-100/20 rounded-xl" />;
+        if (!value) return <div className={`h-11 bg-slate-50/10 border border-dashed border-slate-100/20 rounded-xl ${logoOnly ? 'w-11' : ''}`} />;
+        const isRevealed = noHide || revealedContacts[id];
 
         const handleAction = (e: React.MouseEvent) => {
             e.stopPropagation();
             if (!isAuthenticated) {
                 toast.error('Silakan login untuk detail kontak vendor.');
                 navigate('/login');
+                return;
+            }
+
+            if (!isRevealed) {
+                toggleReveal(id);
+                if (product?.id) {
+                    track.mutate({ merchantId: product.merchant_id, actionType: 'CLICK_CONTACT', metadata: JSON.stringify({ contact_type: id, product_id: product.id }) } as any);
+                }
                 return;
             }
 
@@ -172,7 +188,7 @@ export const ProductDetailPage: React.FC = () => {
         return (
             <div 
                 onClick={handleAction}
-                className={`h-11 flex items-center transition-all duration-300 bg-white border border-slate-100 rounded-xl hover:bg-slate-50 hover:border-slate-200 hover:shadow-sm group cursor-pointer ${logoOnly ? 'justify-center px-2' : compact ? 'px-2 gap-1.5' : 'px-3 gap-2.5'}`}
+                className={`h-11 flex items-center transition-all duration-300 bg-white border border-slate-100 rounded-xl hover:bg-slate-50 hover:border-slate-200 hover:shadow-sm group cursor-pointer ${logoOnly ? 'w-11 justify-center' : compact ? 'px-2 gap-1.5' : 'px-3 gap-2.5'}`}
                 title={label}
             >
                 <div className={`flex-shrink-0 flex items-center justify-center transition-transform duration-300 group-hover:scale-110 ${iconColor} ${logoOnly ? 'w-full' : ''}`}>
@@ -185,12 +201,19 @@ export const ProductDetailPage: React.FC = () => {
                 {!logoOnly && (
                     <div className="flex-1 min-w-0">
                         <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-0.5">{label}</p>
-                        <p className={`font-black text-[#0A1128] truncate leading-none ${compact ? 'text-[8px]' : 'text-[10px]'}`}>
-                            {value === 'Tanya di Sini' ? 'Mulai Chat' : value}
-                        </p>
+                        {!isRevealed ? (
+                            <div className="flex items-center gap-1 text-indigo-600 font-bold uppercase tracking-tight text-[8px]">
+                                <Eye className="w-2.5 h-2.5" />
+                                <span>Lihat</span>
+                            </div>
+                        ) : (
+                            <p className={`font-black text-[#0A1128] truncate leading-none ${compact ? 'text-[8px]' : 'text-[10px]'}`}>
+                                {value === 'Tanya di Sini' ? 'Mulai Chat' : value}
+                            </p>
+                        )}
                     </div>
                 )}
-                {!logoOnly && (
+                {!logoOnly && isRevealed && (
                     <div className="flex-shrink-0 ml-auto">
                         {type === 'copy' ? (
                             <div className="text-slate-300 group-hover:text-[#FFBF00] transition-colors">
@@ -687,7 +710,7 @@ export const ProductDetailPage: React.FC = () => {
                                     <h2 className="text-xl font-black uppercase tracking-tighter">Kontak Vendor</h2>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.8fr)_auto] gap-4 md:gap-6">
                                     {/* Kolom 1: Direct Communication (Balanced 3-Row) */}
                                     <div className="space-y-3">
                                         {!product.hide_chat ? (
@@ -698,6 +721,7 @@ export const ProductDetailPage: React.FC = () => {
                                                 icon={MessageSquare} 
                                                 iconColor="text-indigo-600" 
                                                 type="chat" 
+                                                noHide
                                             />
                                         ) : <div className="h-11" />}
                                         <VendorContactItem 
@@ -785,6 +809,7 @@ export const ProductDetailPage: React.FC = () => {
                                             imgSrc="/images/logos/marketplace/logo_shopee.png" 
                                             type="marketplace" 
                                             logoOnly
+                                            noHide
                                         />
                                         <VendorContactItem 
                                             id="tokopedia" 
@@ -793,6 +818,7 @@ export const ProductDetailPage: React.FC = () => {
                                             imgSrc="/images/logos/marketplace/logo_tokopedia.png" 
                                             type="marketplace" 
                                             logoOnly
+                                            noHide
                                         />
                                         <VendorContactItem 
                                             id="tiktokshop" 
@@ -801,6 +827,7 @@ export const ProductDetailPage: React.FC = () => {
                                             imgSrc="/images/logos/marketplace/logo-tiktokshop.png" 
                                             type="marketplace" 
                                             logoOnly
+                                            noHide
                                         />
                                     </div>
                                 </div>
