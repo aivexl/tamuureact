@@ -724,23 +724,21 @@ export const ProductDetailPage: React.FC = () => {
                                 </div>
                                 
                                 <div className="relative flex-1 flex flex-col">
+                                    <div className="flex-1" />
                                     <m.div 
-                                        animate={{ height: isDescriptionExpanded ? 'auto' : '350px' }}
+                                        animate={{ height: isDescriptionExpanded ? 'auto' : '450px' }}
                                         transition={{ duration: 0.5, ease: [0.04, 0.62, 0.23, 0.98] }}
                                         className="overflow-hidden relative"
                                     >
-                                        <div className="text-slate-600 text-sm leading-relaxed font-medium whitespace-pre-wrap">
+                                        <div className="text-slate-600 text-[13px] leading-relaxed font-medium whitespace-pre-wrap">
                                             {product.deskripsi || "Vendor belum memberikan deskripsi lengkap untuk produk ini."}
                                         </div>
                                     </m.div>
 
-                                    {/* Spacer to push "Read More" and Footer down proportionally */}
-                                    <div className="flex-1" />
-
-                                    {product.deskripsi && product.deskripsi.length > 600 && (
+                                    {product.deskripsi && product.deskripsi.length > 800 && (
                                         <button 
                                             onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                                            className="mt-8 flex items-center gap-2 text-[#FFBF00] font-black uppercase tracking-widest text-[10px] hover:text-[#0A1128] transition-colors group"
+                                            className="mt-6 flex items-center gap-2 text-[#FFBF00] font-black uppercase tracking-widest text-[10px] hover:text-[#0A1128] transition-colors group"
                                         >
                                             {isDescriptionExpanded ? (
                                                 <>Tampilkan Lebih Sedikit <ChevronDown className="w-3 h-3 rotate-180 transition-transform" /></>
@@ -792,11 +790,12 @@ export const ProductDetailPage: React.FC = () => {
                                     )}
                                 </div>
                                 
-                                <div className="flex-1">
+                                <div className="flex-1 flex flex-col">
+                                    <div className="flex-1" />
                                     {product.alamat_lengkap ? (
                                         <div className="space-y-4">
                                             <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 italic">
-                                                <p className="text-slate-600 text-sm font-bold leading-relaxed uppercase tracking-tight">
+                                                <p className="text-slate-600 text-[12px] font-medium leading-relaxed uppercase tracking-tight">
                                                     {product.alamat_lengkap}
                                                 </p>
                                             </div>
