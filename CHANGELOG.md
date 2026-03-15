@@ -1,5 +1,17 @@
 # Tamuu Changelog
 
+## [0.8.8] - 2026-03-15
+### Changed
+- **System Deactivation**: Temporarily disabled the "Display" (Welcome Board TV) system across the entire platform.
+    - Hidden "Display" tab from User Dashboard.
+    - Hidden "Layar Sapaan" (Monitor) item from Admin Sidebar.
+    - Hidden "Display Templates" statistic card from Admin Dashboard.
+    - Removed "Display" feature highlights from Landing Page.
+    - Removed "Welcome Board TV" FAQ from Landing Page.
+    - Hidden "Welcome Board (TV Display)" asset selection from the invitation editor.
+    - Disabled all display-related routes in `App.tsx` (accessible via URL).
+    - *Note: No code was deleted; the system remains dormant and ready for future reactivation.*
+
 ## [0.8.7] - 2026-03-15
 ### Fixed
 - **Chat Interface Refinement**: 

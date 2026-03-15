@@ -135,13 +135,13 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                         sidebarOpen={sidebarOpen}
                     />
 
-                    <SidebarItem
+                    {/* <SidebarItem
                         href="/admin/templates/display"
                         icon={Monitor}
                         label="Layar Sapaan"
                         active={location.pathname === '/admin/templates/display'}
                         sidebarOpen={sidebarOpen}
-                    />
+                    /> */}
 
                     <SidebarItem
                         href="/admin/templates/shop"

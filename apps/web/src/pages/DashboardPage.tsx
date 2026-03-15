@@ -144,14 +144,15 @@ const StoreIcon = ({ className }: { className?: string }) => (
 // ============================================
 // MENU ITEMS
 // ============================================
-type TabId = 'dashboard' | 'invitations' | 'wishlist' | 'messages' | 'displays' | 'guests' | 'scan' | 'wishes' | 'invoice' | 'tutorial' | 'feedback';
+// type TabId = 'dashboard' | 'invitations' | 'wishlist' | 'messages' | 'displays' | 'guests' | 'scan' | 'wishes' | 'invoice' | 'tutorial' | 'feedback';
+type TabId = 'dashboard' | 'invitations' | 'wishlist' | 'messages' | 'guests' | 'scan' | 'wishes' | 'invoice' | 'tutorial' | 'feedback';
 
 const menuItems: { id: TabId; label: string; icon: React.FC<{ className?: string }> }[] = [
     { id: 'dashboard', label: 'Home', icon: LayoutDashboardIcon },
     { id: 'invitations', label: 'Undangan', icon: MailIcon },
     { id: 'messages', label: 'Messages', icon: MessageSquareIcon },
     { id: 'wishlist', label: 'Wishlist', icon: HeartIcon },
-    { id: 'displays', label: 'Display', icon: MonitorIcon },
+    // { id: 'displays', label: 'Display', icon: MonitorIcon },
     { id: 'guests', label: 'Buku Tamu', icon: UsersIcon },
     { id: 'scan', label: 'Scan', icon: ScanIcon },
     { id: 'wishes', label: 'Ucapan', icon: MessageSquareIcon },
@@ -710,10 +711,10 @@ export const DashboardPage: React.FC = () => {
                             </m.div>
                         )}
 
-                        {/* Displays Tab */}
-                        {activeTab === 'displays' && (
+                        {/* Displays Tab (DISABLED) */}
+                        {/* {activeTab === 'displays' && (
                             <WelcomeDisplaysTab />
-                        )}
+                        )} */}
 
                         {/* Guests Tab */}
                         {activeTab === 'guests' && (

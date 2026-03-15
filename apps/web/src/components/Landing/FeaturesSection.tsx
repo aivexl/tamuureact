@@ -93,11 +93,11 @@ const features = [
         description: "Narasi perjalanan cinta yang disajikan secara sinematik.",
         icon: BookOpen,
     },
-    {
+    /* {
         title: "Display",
         description: "Visualisasi data dan foto tamu langsung di layar besar lokasi.",
         icon: Monitor,
-    },
+    }, */
 ];
 
 const FeaturesSection: React.FC = () => {

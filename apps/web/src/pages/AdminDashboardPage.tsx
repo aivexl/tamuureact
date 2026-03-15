@@ -26,7 +26,7 @@ const INITIAL_STATS = [
     { id: 'totalUsers', label: 'Total Users', value: '0', change: '...', icon: Users, color: 'text-blue-400', bg: 'bg-blue-400/10' },
     { id: 'totalInvitations', label: 'Active Invitations', value: '0', change: '...', icon: Smartphone, color: 'text-teal-400', bg: 'bg-teal-400/10' },
     { id: 'totalTemplates', label: 'Invitation Templates', value: '0', change: '...', icon: Layers, color: 'text-amber-400', bg: 'bg-amber-400/10' },
-    { id: 'totalDisplays', label: 'Display Templates', value: '0', change: '...', icon: Monitor, color: 'text-purple-400', bg: 'bg-purple-400/10' },
+    // { id: 'totalDisplays', label: 'Display Templates', value: '0', change: '...', icon: Monitor, color: 'text-purple-400', bg: 'bg-purple-400/10' },
 ];
 
 const StatCard = ({ stat, index }: { stat: any, index: number }) => (

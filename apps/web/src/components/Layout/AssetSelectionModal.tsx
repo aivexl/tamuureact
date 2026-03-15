@@ -635,7 +635,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
             case 'profile_card': return 'Pilih Peran Profil';
             case 'profile_photo': return 'Pilih Bentuk Foto Profil';
             case 'name_board': return 'Add Name Board (Invitation)';
-            case 'welcome_board': return 'Add Welcome Board (TV Display)';
+            // case 'welcome_board': return 'Add Welcome Board (TV Display)';
             default: {
                 const label = type?.replace('_', ' ') || '';
                 return `MISSING_TYPE: Add ${label.charAt(0).toUpperCase() + label.slice(1)}`;

@@ -226,14 +226,14 @@ const App: React.FC = () => {
                                 <Route path="/editor" element={<ProtectedRoute><EditorPage /></ProtectedRoute>} />
                                 <Route path="/editor/:id" element={<ProtectedRoute><EditorPage /></ProtectedRoute>} />
                                 <Route path="/admin/editor/:slug" element={<ProtectedRoute requiredRole="admin"><EditorPage isTemplate={true} /></ProtectedRoute>} />
-                                <Route path="/admin/display-editor/:slug" element={<ProtectedRoute requiredRole="admin"><DisplayEditorPage /></ProtectedRoute>} />
-                                <Route path="/admin/display/:slug" element={<ProtectedRoute requiredRole="admin"><AdminDisplayPreviewPage /></ProtectedRoute>} />
+                                {/* <Route path="/admin/display-editor/:slug" element={<ProtectedRoute requiredRole="admin"><DisplayEditorPage /></ProtectedRoute>} /> */}
+                                {/* <Route path="/admin/display/:slug" element={<ProtectedRoute requiredRole="admin"><AdminDisplayPreviewPage /></ProtectedRoute>} /> */}
                                 <Route path="/user/editor/:id" element={<ProtectedRoute><UserEditorPage /></ProtectedRoute>} />
-                                <Route path="/user/display-editor/:id" element={<ProtectedRoute><UserEditorPage mode="welcome" /></ProtectedRoute>} />
+                                {/* <Route path="/user/display-editor/:id" element={<ProtectedRoute><UserEditorPage mode="welcome" /></ProtectedRoute>} /> */}
 
                                 {/* Guest Experience */}
                                 <Route path="/welcome/:invitationId/:guestId" element={<GuestWelcomePage />} />
-                                <Route path="/display/:slug" element={<GuestWelcomeDisplay />} />
+                                {/* <Route path="/display/:slug" element={<GuestWelcomeDisplay />} /> */}
                                 <Route path="/guests/scan/:id" element={<GuestScannerPage />} />
                             </>
                         ) : (

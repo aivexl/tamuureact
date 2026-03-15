@@ -21,10 +21,10 @@ const FAQ_ITEMS = [
         q: 'Apakah tamu bisa RSVP dan kirim ucapan?',
         a: 'Tentu! Setiap undangan dilengkapi fitur RSVP untuk konfirmasi kehadiran dan kolom ucapan/wishes yang bisa dilihat langsung oleh Anda sebagai penyelenggara.'
     },
-    {
+    /* {
         q: 'Bisakah undangan ditampilkan di TV/layar besar?',
         a: 'Bisa! Kami menyediakan Display Editor khusus dengan resolusi landscape (1920x1080) yang optimal untuk ditampilkan di TV atau proyektor saat acara berlangsung.'
-    },
+    }, */
     {
         q: 'Apakah data saya aman?',
         a: 'Keamanan adalah prioritas kami. Data Anda tersimpan di infrastruktur Cloudflare yang terenkripsi dan terproteksi. Kami tidak pernah membagikan data pribadi Anda kepada pihak ketiga.'
