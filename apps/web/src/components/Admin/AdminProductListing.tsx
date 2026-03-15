@@ -249,6 +249,7 @@ export const AdminProductListing: React.FC = () => {
                                                             {product.kontak_utama === 'website' && <Globe className="w-3.5 h-3.5 text-indigo-400" />}
                                                             {product.kontak_utama === 'tokopedia' && <img src="/images/logos/marketplace/logo_tokopedia.png" className="w-4 h-4 object-contain" alt="" />}
                                                             {product.kontak_utama === 'shopee' && <img src="/images/logos/marketplace/logo_shopee.png" className="w-4 h-4 object-contain" alt="" />}
+                                                            {product.kontak_utama === 'tiktokshop' && <img src="/images/logos/marketplace/logo-tiktokshop.png" className="w-4 h-4 object-contain" alt="" />}
                                                         </div>
                                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter italic">{product.kontak_utama || 'WhatsApp'}</p>
                                                     </div>
@@ -932,6 +933,7 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                                     <option value="website" className="bg-[#0A0A0A]">Website Resmi</option>
                                     <option value="tokopedia" className="bg-[#0A0A0A]">Tokopedia</option>
                                     <option value="shopee" className="bg-[#0A0A0A]">Shopee</option>
+                                    <option value="tiktokshop" className="bg-[#0A0A0A]">TikTok Shop</option>
                                 </select>
                                 <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 pointer-events-none transition-transform duration-300 group-focus-within:rotate-180" />
                             </div>

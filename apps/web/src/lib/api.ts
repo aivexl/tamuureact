@@ -967,7 +967,7 @@ export interface Product {
     website?: string;
     alamat_lengkap?: string;
     google_maps_url?: string;
-    kontak_utama?: 'whatsapp' | 'phone' | 'instagram' | 'facebook' | 'tiktok' | 'x' | 'youtube' | 'website' | 'tokopedia' | 'shopee' | 'chat';
+    kontak_utama?: 'whatsapp' | 'phone' | 'instagram' | 'facebook' | 'tiktok' | 'x' | 'youtube' | 'website' | 'tokopedia' | 'shopee' | 'chat' | 'tiktokshop';
 }
 
 export interface Merchant {
@@ -986,7 +986,7 @@ export interface Merchant {
     wishlist_count?: number;
     avg_rating?: number;
     review_count?: number;
-    kontak_utama?: 'whatsapp' | 'phone' | 'instagram' | 'facebook' | 'tiktok' | 'x' | 'youtube' | 'website' | 'tokopedia' | 'shopee' | 'chat';
+    kontak_utama?: 'whatsapp' | 'phone' | 'instagram' | 'facebook' | 'tiktok' | 'x' | 'youtube' | 'website' | 'tokopedia' | 'shopee' | 'chat' | 'tiktokshop';
 }
 
 export const shop = {

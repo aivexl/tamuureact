@@ -529,6 +529,7 @@ export const MerchantProducts: React.FC = () => {
                                                                 {prod.kontak_utama === 'website' && <Globe size={8} />}
                                                                 {prod.kontak_utama === 'tokopedia' && <img src="/images/logos/marketplace/logo_tokopedia.png" className="w-2.5 h-2.5 object-contain" alt="" />}
                                                                 {prod.kontak_utama === 'shopee' && <img src="/images/logos/marketplace/logo_shopee.png" className="w-2.5 h-2.5 object-contain" alt="" />}
+                                                                {prod.kontak_utama === 'tiktokshop' && <img src="/images/logos/marketplace/logo-tiktokshop.png" className="w-2.5 h-2.5 object-contain" alt="" />}
                                                                 <span>{prod.kontak_utama || 'WhatsApp'}</span>
                                                             </div>
                                                         </div>
@@ -837,7 +838,7 @@ export const MerchantProducts: React.FC = () => {
                                                         <option value="website">Website Resmi</option>
                                                         <option value="tokopedia">Tokopedia</option>
                                                         <option value="shopee">Shopee</option>
-                                    <option value="tiktokshop">TikTok Shop</option>
+                                                        <option value="tiktokshop">TikTok Shop</option>
                                                     </select>
                                                     <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 pointer-events-none transition-transform duration-300 group-focus-within:rotate-180" />
                                                 </div>
