@@ -4,6 +4,8 @@
 ### Added
 - **UI Architecture Refinement**: Restored the Sponsor Banner Card to the Product Detail Page with a full-bleed photographic design, eliminating border artifacts.
 - **Layout Synchronization**: Implemented a forced-stretch grid architecture to ensure the Product Description card precisely aligns its vertical geometry with the Sidebar Ads card.
+- **Typography Optimization**: Reduced font sizes for Product Description and Alamat Lengkap to `text-sm` for improved readability and professional aesthetic.
+- **Proportional Content Distribution**: Eliminated gradient overlays on text truncation and increased the initial visible description height to `350px`, providing more context before the "Baca Selengkapnya" trigger.
 - **Professional Navigation Hub**: Refactored the Admin Dashboard sidebar with a high-fidelity Chevron toggle and optimized header positioning for an enterprise-grade experience.
 
 ## [0.8.4] - 2026-03-15
