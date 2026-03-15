@@ -7,6 +7,11 @@
 - **Merchant Workflow Expansion**: Updated the Merchant Product Form to allow vendors to set TikTok Shop as their primary contact platform, enabling a dedicated "Beli di TikTok Shop" CTA on the public Product Detail Page.
 - **Data Architecture Persistence**: Updated `api.ts` and backend union types to support `tiktokshop` as a first-class contact method, ensuring reliable persistence in Cloudflare D1.
 
+### Fixed
+- **TikTok Shop Persistence**: Resolved a critical data omission bug where `tiktokshop_url` was missing from the Administrative Product Registry retrieval query.
+- **Atomic Creation Hardening**: Patched a column mismatch and binding error in both Admin and Merchant product creation endpoints that caused contact metadata to be lost or shifted during the initial save operation.
+- **Database Schema Sync**: Verified and synchronized the Cloudflare D1 production schema to ensure `tiktokshop_url` columns are present in both `shop_products` and `shop_contacts` tables.
+
 ## [0.8.3] - 2026-03-14
 ### Fixed
 - **Primary Contact State Isolation**: Implemented a definitive architectural fix for the Administrative Registry by decoupling the `kontak_utama` state from the general product form object. This absolute isolation prevents the background sync engine from accidentally overwriting manual user selections, ensuring 100% persistence reliability.

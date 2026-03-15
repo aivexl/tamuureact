@@ -1352,12 +1352,12 @@ export default {
                                     tokopedia_url, shopee_url, tiktokshop_url, is_approved, slug, alamat_lengkap, google_maps_url,
                                     whatsapp, phone, instagram, facebook, kontak_utama
                                     )
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                                     `).bind(
                                     productId, merchant_id, nama_produk, deskripsi || '-', 
                                     harga_estimasi || null, finalStatus, kategori_produk || null, 
                                     kota || null, tiktok_url || null, youtube_url || null, 
-                                    x_url || null, website_url || null, tokopedia_url || null, shopee_url || null,
+                                    x_url || null, website_url || null, tokopedia_url || null, shopee_url || null, tiktokshop_url || null,
                                     approvalStatus,
                                     productSlug,
                                     alamat_lengkap || null,                                google_maps_url || null,
@@ -1921,7 +1921,7 @@ export default {
                             SELECT 
                                 p.id, p.merchant_id, p.nama_produk, p.deskripsi, p.harga_estimasi, p.status, 
                                 p.kategori_produk, p.kota, p.is_admin_listing, p.custom_store_name, 
-                                p.tiktok_url, p.youtube_url, p.x_url, p.website_url, p.tokopedia_url, p.shopee_url,
+                                p.tiktok_url, p.youtube_url, p.x_url, p.website_url, p.tokopedia_url, p.shopee_url, p.tiktokshop_url,
                                 p.is_approved, p.slug, p.alamat_lengkap, p.google_maps_url, 
                                 p.is_special, p.is_featured, p.is_landing_featured,
                                 p.whatsapp, p.phone, p.instagram, p.facebook, p.kontak_utama,
@@ -2139,13 +2139,13 @@ export default {
                                     is_approved, slug, alamat_lengkap, google_maps_url, is_special, is_featured, is_landing_featured,
                                     whatsapp, phone, instagram, facebook, kontak_utama
                                     )
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                                     `).bind(
                                     productId, merchantId, finalNama || '(Tanpa Nama)', deskripsi || '-',
                                     harga_estimasi || null, finalStatus, kategori_produk || null,
                                     kota || null, is_admin_listing ? 1 : 0, custom_store_name || null,
                                     tiktok_url || null, youtube_url || null, x_url || null,
-                                    website_url || null, tokopedia_url || null, shopee_url || null,
+                                    website_url || null, tokopedia_url || null, shopee_url || null, tiktokshop_url || null,
                                     approvalStatus,
                                     slug,
                                     alamat_lengkap || null,
