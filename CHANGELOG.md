@@ -1,5 +1,12 @@
 # Tamuu Changelog
 
+## [0.8.4] - 2026-03-15
+### Added
+- **TikTok Shop Integration**: Added "TikTok Shop" to the Primary Contact Method list across the entire product ecosystem, including API types, Admin Dashboard, and Merchant Portal.
+- **Admin Registry Transparency**: Injected TikTok Shop icons and selection options into the Administrative Product Listing form and table for global registry items.
+- **Merchant Workflow Expansion**: Updated the Merchant Product Form to allow vendors to set TikTok Shop as their primary contact platform, enabling a dedicated "Beli di TikTok Shop" CTA on the public Product Detail Page.
+- **Data Architecture Persistence**: Updated `api.ts` and backend union types to support `tiktokshop` as a first-class contact method, ensuring reliable persistence in Cloudflare D1.
+
 ## [0.8.3] - 2026-03-14
 ### Fixed
 - **Primary Contact State Isolation**: Implemented a definitive architectural fix for the Administrative Registry by decoupling the `kontak_utama` state from the general product form object. This absolute isolation prevents the background sync engine from accidentally overwriting manual user selections, ensuring 100% persistence reliability.
