@@ -1,5 +1,12 @@
 # Tamuu Changelog
 
+## [0.9.0] - 2026-03-15
+### Added
+- **Dynamic OG Image Generator**: Implemented an edge-rendered, zero-storage OG image API (`/api/og`) using WebAssembly (`@resvg/resvg-wasm`) and Satori. Generates 1:1 aspect ratio PNGs optimized for WhatsApp and social media chat bubbles on-the-fly.
+- **Personalized Previews**: OG images now dynamically inject the exact guest name and custom QR code when accessed via guest-specific invitation links.
+- **Share Card Panel**: Added a new "Kartu" (Share Card) editor panel to the user dashboard. Allows users to configure event name, couple names, date, location, and recipient name for real-time OG image preview generation.
+- **Enhanced SEO Metadata**: Updated `PreviewPage.tsx` to utilize `useSEO` for injecting dynamic `og:image` and `twitter:image` tags ensuring correct scraping by social platforms.
+
 ## [0.8.9] - 2026-03-15
 ### Fixed
 - **InvitationsGrid Critical Fix**: Resolved a persistent `TypeError` ("includes is not a function") by implementing robust defensive array checks for wishlist data across the platform.

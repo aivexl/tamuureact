@@ -1,3 +1,5 @@
+import './init.js';
+
 /**
  * Tamuu API Worker v0.6.68
  * Handles all database (D1) and storage (R2) operations
@@ -7,6 +9,13 @@
 import { TamuuAIEngine } from './ai-system-v8-enhanced.js';
 import { handleEnhancedChat } from './enhanced-chat-handler.js';
 import { createAdminChatHandler } from './admin-chat-integration.js';
+import satori, { init as initSatori } from 'satori';
+import { initWasm as initResvg, Resvg } from '@resvg/resvg-wasm';
+import QRCode from 'qrcode';
+// @ts-ignore
+import resvg_wasm from './resvg.wasm';
+
+let resvgInitialized = false;
 
 export default {
     async fetch(request, env, ctx) {
@@ -5688,6 +5697,214 @@ name = COALESCE(?, name),
             }
 
             // ============================================
+            // DYNAMIC INVITATION CARD (OG IMAGE)
+            // ============================================
+            if (path === '/api/og' && method === 'GET') {
+                try {
+                    // Smart Parameters Extraction
+                    const eventName = url.searchParams.get('event') || 'The Wedding of';
+                    const name1 = url.searchParams.get('n1') || 'Andi';
+                    const name2 = url.searchParams.get('n2') || 'Sita';
+                    const dateTime = url.searchParams.get('time') || '';
+                    const location = url.searchParams.get('loc') || '';
+                    const guestName = url.searchParams.get('to') || '';
+                    const qrData = url.searchParams.get('qr') || url.searchParams.get('to') || 'https://tamuu.id';
+
+                    // 1. Initialize Engines (WASM)
+                    if (!resvgInitialized) {
+                        try {
+                            await initResvg(resvg_wasm);
+                            resvgInitialized = true;
+                        } catch (e) {
+                            console.error('[OG] Resvg Init Failed:', e);
+                        }
+                    }
+
+                    // 2. Fetch Font Data (Cached at Edge)
+                    const fontData = await getFontData();
+
+                    // 3. Generate QR Code
+                    const qrCodeDataUri = await QRCode.toDataURL(qrData, { 
+                        margin: 1, 
+                        width: 200,
+                        color: { dark: '#1a1a1a', light: '#ffffff' }
+                    });
+
+                    // 4. Render Layout with Satori (Enterprise UX)
+                    const svg = await satori(
+                        {
+                            type: 'div',
+                            props: {
+                                style: {
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    width: '1080px',
+                                    height: '1080px',
+                                    backgroundColor: '#ffffff',
+                                    padding: '80px',
+                                    position: 'relative',
+                                    fontFamily: 'Inter',
+                                },
+                                children: [
+                                    // HEADER: Logo & QR (Top Aligned)
+                                    {
+                                        type: 'div',
+                                        props: {
+                                            style: {
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center',
+                                                width: '100%',
+                                                marginBottom: '40px'
+                                            },
+                                            children: [
+                                                // Logo Tamuu (Shifted Left)
+                                                {
+                                                    type: 'div',
+                                                    props: {
+                                                        style: { display: 'flex', alignItems: 'center', marginLeft: '-20px' },
+                                                        children: [
+                                                            {
+                                                                type: 'img',
+                                                                props: {
+                                                                    src: 'https://tamuu.id/logo.png', // Ensure this points to actual logo
+                                                                    style: { width: '180px' }
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                // QR Code (Top Right)
+                                                {
+                                                    type: 'img',
+                                                    props: {
+                                                        src: qrCodeDataUri,
+                                                        style: { width: '160px', height: '160px', borderRadius: '12px' }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+
+                                    // BODY: Event & Names (Vertical Smart Stack)
+                                    {
+                                        type: 'div',
+                                        props: {
+                                            style: {
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                flexGrow: 1,
+                                                textAlign: 'center',
+                                            },
+                                            children: [
+                                                {
+                                                    type: 'div',
+                                                    props: {
+                                                        children: eventName,
+                                                        style: { fontSize: '32px', color: '#666', marginBottom: '40px', textTransform: 'uppercase', letterSpacing: '4px' }
+                                                    }
+                                                },
+                                                {
+                                                    type: 'div',
+                                                    props: {
+                                                        style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' },
+                                                        children: [
+                                                            { type: 'div', props: { children: name1, style: { fontSize: '96px', fontWeight: 'bold', color: '#1a1a1a' } } },
+                                                            { type: 'div', props: { children: '&', style: { fontSize: '64px', color: '#999', fontStyle: 'italic' } } },
+                                                            { type: 'div', props: { children: name2, style: { fontSize: '96px', fontWeight: 'bold', color: '#1a1a1a' } } }
+                                                        ]
+                                                    }
+                                                },
+                                                {
+                                                    type: 'div',
+                                                    props: {
+                                                        style: { marginTop: '60px', display: 'flex', flexDirection: 'column', gap: '8px' },
+                                                        children: [
+                                                            { type: 'div', props: { children: dateTime, style: { fontSize: '28px', color: '#444', fontWeight: '500' } } },
+                                                            { type: 'div', props: { children: location, style: { fontSize: '24px', color: '#888' } } }
+                                                        ]
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+
+                                    // FOOTER: Guest Name Box (Proporsional)
+                                    {
+                                        type: 'div',
+                                        props: {
+                                            style: {
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                backgroundColor: '#f8fafc',
+                                                padding: '50px',
+                                                borderRadius: '32px',
+                                                border: '2px solid #f1f5f9',
+                                                width: '80%',
+                                                alignSelf: 'center',
+                                                marginTop: '40px'
+                                            },
+                                            children: [
+                                                {
+                                                    type: 'div',
+                                                    props: {
+                                                        children: 'Kepada Yth:',
+                                                        style: { fontSize: '24px', color: '#94a3b8', marginBottom: '12px' }
+                                                    }
+                                                },
+                                                {
+                                                    type: 'div',
+                                                    props: {
+                                                        children: guestName || 'Tamu Undangan',
+                                                        style: { fontSize: '48px', fontWeight: 'bold', color: '#334155', textAlign: 'center' }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            width: 1080,
+                            height: 1080,
+                            fonts: [
+                                {
+                                    name: 'Inter',
+                                    data: fontData,
+                                    weight: 700,
+                                    style: 'normal',
+                                },
+                            ],
+                        }
+                    );
+
+                    // 5. Convert SVG to PNG
+                    const resvg = new Resvg(svg, {
+                        fitTo: { mode: 'width', value: 1080 }
+                    });
+                    const pngData = resvg.render();
+                    const pngBuffer = pngData.asPng();
+
+                    // 6. Response with Long Caching
+                    return new Response(pngBuffer, {
+                        headers: {
+                            'Content-Type': 'image/png',
+                            'Cache-Control': 'public, max-age=604800, immutable',
+                            'Access-Control-Allow-Origin': '*'
+                        }
+                    });
+
+                } catch (err) {
+                    console.error('[OG ERROR]', err);
+                    return json({ error: 'Failed to generate image', details: err.message }, { ...corsHeaders, status: 500 });
+                }
+            }
+
+            // ============================================
             // HEALTH CHECK
             // ============================================
             if (path === '/api/health') {
@@ -5771,6 +5988,15 @@ function parseJsonFields(row) {
     }
 
     return result;
+}
+
+let fontCache = null;
+async function getFontData() {
+    if (fontCache) return fontCache;
+    // CTO Standard: Load reliable system font for rendering
+    const res = await fetch('https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGkyMZhrib2f-z4.ttf');
+    fontCache = await res.arrayBuffer();
+    return fontCache;
 }
 
 /**

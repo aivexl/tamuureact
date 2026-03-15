@@ -11,6 +11,7 @@ import { Modal } from '@/components/ui/Modal';
 import { MusicPanel } from '@/components/UserEditor/Panels/MusicPanel';
 import { PremiumLoader } from '../components/ui/PremiumLoader';
 
+import { ShareCardPanel } from '@/components/UserEditor/Panels/ShareCardPanel';
 import { SharePanel } from '@/components/UserEditor/Panels/SharePanel';
 import { ExportPanel } from '@/components/UserEditor/Panels/ExportPanel';
 import { OrbitPanel } from '@/components/UserEditor/Panels/OrbitPanel';
@@ -296,6 +297,7 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                 {activePanel === 'wishes' && <WishesPanel />}
                 {activePanel === 'analytics' && <AnalyticsPanel />}
                 {activePanel === 'share' && <SharePanel slug={invitation?.slug} />}
+                {activePanel === 'share_card' && <ShareCardPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
                 {activePanel === 'download' && <ExportPanel previewRef={previewRef as React.RefObject<HTMLElement>} />}
                 {activePanel === 'seo' && <SEOPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}
                 {activePanel === 'gallery' && <GalleryPanel invitationId={invitation?.id} onClose={() => setActivePanel(null)} />}

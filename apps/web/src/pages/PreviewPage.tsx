@@ -133,6 +133,24 @@ export const PreviewPage: React.FC = () => {
     const invitationData = previewResponse?.data;
     const guestData = useStore(state => state.guestData);
 
+    // GHOST V4.0: UNICORN OG ENGINE
+    const ogSettings = invitationData?.og_settings ? (typeof invitationData.og_settings === 'string' ? JSON.parse(invitationData.og_settings) : invitationData.og_settings) : null;
+    let dynamicOgImage = invitationData?.og_image || invitationData?.thumbnail_url;
+
+    if (ogSettings) {
+        const baseUrl = 'https://api.tamuu.id/api/og';
+        const params = new URLSearchParams({
+            event: ogSettings.event || 'The Wedding of',
+            n1: ogSettings.n1 || '',
+            n2: ogSettings.n2 || '',
+            time: ogSettings.time || '',
+            loc: ogSettings.loc || '',
+            to: guestData?.name || 'Bapak/Ibu/Saudara/i',
+            qr: `https://tamuu.id/${slug}`
+        });
+        dynamicOgImage = `${baseUrl}?${params.toString()}`;
+    }
+
     // DYNAMIC SEO: Personalize social preview if guest exists
     const baseTitle = (invitationData?.seo_title || invitationData?.name || slug || 'Invitation').toUpperCase();
     const seoTitle = guestData ? `${baseTitle} - KHUSUS UNTUK ${guestData.name.toUpperCase()}` : baseTitle;
@@ -143,7 +161,7 @@ export const PreviewPage: React.FC = () => {
     useSEO({
         title: seoTitle,
         description: seoDescription,
-        image: invitationData?.og_image || invitationData?.thumbnail_url,
+        image: dynamicOgImage,
         noindex: !isTemplate
     });
 

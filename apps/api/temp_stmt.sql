@@ -1,1 +1,1 @@
-ALTER TABLE users ADD COLUMN bank1_holder TEXT;
+ALTER TABLE invitations ADD COLUMN og_settings TEXT DEFAULT '{}';
