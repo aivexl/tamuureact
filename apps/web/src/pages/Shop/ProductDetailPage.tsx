@@ -723,7 +723,7 @@ export const ProductDetailPage: React.FC = () => {
                                     <h2 className="text-xl font-black uppercase tracking-tighter italic">Deskripsi Produk</h2>
                                 </div>
                                 
-                                <div className="relative">
+                                <div className="relative flex-1 flex flex-col">
                                     <m.div 
                                         animate={{ height: isDescriptionExpanded ? 'auto' : '200px' }}
                                         transition={{ duration: 0.5, ease: [0.04, 0.62, 0.23, 0.98] }}
@@ -738,10 +738,13 @@ export const ProductDetailPage: React.FC = () => {
                                         )}
                                     </m.div>
 
+                                    {/* Spacer to push "Read More" and Footer down proportionally */}
+                                    <div className="flex-1" />
+
                                     {product.deskripsi && product.deskripsi.length > 300 && (
                                         <button 
                                             onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                                            className="mt-4 flex items-center gap-2 text-[#FFBF00] font-black uppercase tracking-widest text-[10px] hover:text-[#0A1128] transition-colors group"
+                                            className="mt-8 flex items-center gap-2 text-[#FFBF00] font-black uppercase tracking-widest text-[10px] hover:text-[#0A1128] transition-colors group"
                                         >
                                             {isDescriptionExpanded ? (
                                                 <>Tampilkan Lebih Sedikit <ChevronDown className="w-3 h-3 rotate-180 transition-transform" /></>
@@ -752,7 +755,7 @@ export const ProductDetailPage: React.FC = () => {
                                     )}
                                 </div>
                                 
-                                <div className="pt-8 border-t border-slate-50 flex flex-col sm:flex-row items-center justify-between mt-auto gap-4">
+                                <div className="pt-8 border-t border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
                                     <div 
                                         className="group flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 transition-all w-full sm:w-auto justify-center"
                                     >
