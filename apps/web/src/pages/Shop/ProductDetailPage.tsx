@@ -585,7 +585,7 @@ export const ProductDetailPage: React.FC = () => {
                                         <div className="flex items-center gap-4">
                                             <MarketplaceIcon url={product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url} src="/images/logos/marketplace/logo_shopee.png" alt="Shopee" />
                                             <MarketplaceIcon url={product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url} src="/images/logos/marketplace/logo_tokopedia.png" alt="Tokopedia" />
-                                            <MarketplaceIcon url={product.tiktokshop_url || product.m_tiktokshop_url || merchantStats?.tiktokshop_url} src="/images/logos/marketplace/logo-tiktokshop.png" alt="TikTok Shop" keepColor={true} />
+                                            <MarketplaceIcon url={product.tiktokshop_url || product.m_tiktokshop_url || merchantStats?.tiktokshop_url} src="/images/logos/marketplace/logo-tiktokshop.png" alt="TikTok Shop" />
                                         </div>
                                     )}
                                 </div>
@@ -684,7 +684,7 @@ export const ProductDetailPage: React.FC = () => {
                                                 <MarketplaceIcon url={product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url} src="/images/logos/marketplace/logo_tokopedia.png" alt="Tokopedia" />
                                             </div>
                                             <div className="w-10 h-10 flex items-center justify-center">
-                                                <MarketplaceIcon url={product.tiktokshop_url || product.m_tiktokshop_url || merchantStats?.tiktokshop_url} src="/images/logos/marketplace/logo-tiktokshop.png" alt="TikTok Shop" keepColor={true} />
+                                                <MarketplaceIcon url={product.tiktokshop_url || product.m_tiktokshop_url || merchantStats?.tiktokshop_url} src="/images/logos/marketplace/logo-tiktokshop.png" alt="TikTok Shop" />
                                             </div>
                                         </div>
                                     )}
