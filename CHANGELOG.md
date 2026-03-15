@@ -1,6 +1,10 @@
 # Tamuu Changelog
 
 ## [0.8.8] - 2026-03-15
+### Fixed
+- **Identity Sync Restoration**: Resolved a critical issue where user invitations were missing due to an ID mismatch. Restored `user.id` to the primary Supabase UUID while maintaining the canonical D1 ID in a separate `d1_id` field.
+- **Invitations Grid Stability**: Fixed a `TypeError` (`includes` is not a function) caused by invalid wishlist data responses.
+
 ### Changed
 - **System Deactivation**: Temporarily disabled the "Display" (Welcome Board TV) system across the entire platform.
     - Hidden "Display" tab from User Dashboard.
@@ -9,6 +13,7 @@
     - Removed "Display" feature highlights from Landing Page.
     - Removed "Welcome Board TV" FAQ from Landing Page.
     - Hidden "Welcome Board (TV Display)" asset selection from the invitation editor.
+    - Hidden "Display" icon from the User Editor main menu.
     - Disabled all display-related routes in `App.tsx` (accessible via URL).
     - *Note: No code was deleted; the system remains dormant and ready for future reactivation.*
 

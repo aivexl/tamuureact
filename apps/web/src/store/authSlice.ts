@@ -14,7 +14,8 @@ export const TIER_LABELS: Record<string, string> = {
 };
 
 export interface User {
-    id: string;
+    id: string; // Supabase UUID
+    d1_id?: string; // Canonical D1 Database ID
     email: string;
     name?: string;
     gender?: string;

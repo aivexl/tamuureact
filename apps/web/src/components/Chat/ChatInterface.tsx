@@ -210,10 +210,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ mode, initialConvI
                                 {selectedId ? messages.map((msg: any) => {
                                     // Robust isMe logic: 
                                     // - Admin mode: Vendor on right, User on left (admin is spectator)
-                                    // - User/Vendor mode: True if sender_id matches current logged-in user
+                                    // - User/Vendor mode: True if sender_id matches current logged-in user (canonical D1 ID)
                                     const isMe = mode === 'admin' 
                                         ? msg.sender_id !== activeConv?.user_id 
-                                        : msg.sender_id === user?.id;
+                                        : msg.sender_id === (user?.d1_id || user?.id);
                                     
                                     return (
                                         <m.div
