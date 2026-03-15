@@ -949,8 +949,8 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                                 { label: 'YouTube URL', icon: Youtube, key: 'youtube_url', placeholder: 'https://youtube.com/...' },
                                 { label: 'X (Twitter)', icon: XLogoIcon, key: 'x_url', placeholder: 'https://x.com/...' },
                                 { label: 'Website Resmi', icon: Globe, key: 'website_url', placeholder: 'https://...' },
-                                { label: 'Tokopedia', img: '/images/logos/marketplace/logo_tokopedia.png', key: 'tokopedia_url', placeholder: 'https://tokopedia.com/...' },
-                                { label: 'Shopee', img: '/images/logos/marketplace/logo_shopee.png', key: 'shopee_url', placeholder: 'https://shopee.co.id/...' },
+                                { label: 'Tokopedia', img: '/images/logos/marketplace/logo_tokopedia.png', key: 'tokopedia_url', placeholder: 'https://tokopedia.com/...', keepColor: true },
+                                { label: 'Shopee', img: '/images/logos/marketplace/logo_shopee.png', key: 'shopee_url', placeholder: 'https://shopee.co.id/...', keepColor: true },
                                 { label: 'TikTok Shop', img: '/images/logos/marketplace/logo-tiktokshop.png', key: 'tiktokshop_url', placeholder: 'https://shop.tiktok.com/...', keepColor: true }
                             ].map((item: any) => (
                                 <div key={item.key} className="space-y-3">

@@ -854,8 +854,8 @@ export const MerchantProducts: React.FC = () => {
                                                     { label: 'YouTube URL', icon: Youtube, value: youtubeUrl, setter: setYoutubeUrl, placeholder: 'https://youtube.com/...', iconColor: 'text-[#FF0000]' },
                                                     { label: 'X (Twitter)', customIcon: XLogoIcon, value: xUrl, setter: setXUrl, placeholder: 'https://x.com/...', iconColor: 'text-black' },
                                                     { label: 'Website Resmi', icon: Globe, value: websiteUrl, setter: setWebsiteUrl, placeholder: 'https://...', iconColor: 'text-indigo-600' },
-                                                    { label: 'Tokopedia', img: '/images/logos/marketplace/logo_tokopedia.png', value: tokopediaUrl, setter: setTokopediaUrl, placeholder: 'https://tokopedia.com/...' },
-                                                    { label: 'Shopee', img: '/images/logos/marketplace/logo_shopee.png', value: shopeeUrl, setter: setShopeeUrl, placeholder: 'https://shopee.co.id/...' },
+                                                    { label: 'Tokopedia', img: '/images/logos/marketplace/logo_tokopedia.png', value: tokopediaUrl, setter: setTokopediaUrl, placeholder: 'https://tokopedia.com/...', keepColor: true },
+                                                    { label: 'Shopee', img: '/images/logos/marketplace/logo_shopee.png', value: shopeeUrl, setter: setShopeeUrl, placeholder: 'https://shopee.co.id/...', keepColor: true },
                                                     { label: 'TikTok Shop', img: '/images/logos/marketplace/logo-tiktokshop.png', value: tiktokshopUrl, setter: setTiktokshopUrl, placeholder: 'https://shop.tiktok.com/...', keepColor: true }
                                                 ].map((item, idx) => (
                                                     <div key={idx} className="space-y-3">

@@ -187,12 +187,12 @@ export const ProductDetailPage: React.FC = () => {
         );
     };
 
-    const MarketplaceIcon = ({ url, src, alt, keepColor }: { url?: string, src: string, alt: string, keepColor?: boolean }) => {
+    const MarketplaceIcon = ({ url, src, alt }: { url?: string, src: string, alt: string }) => {
         if (!url) return null;
         return (
-            <a 
-                href={url.startsWith('http') ? url : `https://${url}`} 
-                target="_blank" 
+            <a
+                href={url.startsWith('http') ? url : `https://${url}`}
+                target="_blank"
                 rel="noreferrer"
                 className="w-10 h-10 flex items-center justify-center hover:scale-110 transition-all duration-300 group"
                 onClick={() => {
@@ -200,11 +200,10 @@ export const ProductDetailPage: React.FC = () => {
                 }}
                 title={`Kunjungi ${alt}`}
             >
-                <img src={src} alt={alt} className={`w-7 h-7 object-contain transition-all ${keepColor ? '' : 'filter grayscale group-hover:grayscale-0'}`} />
+                <img src={src} alt={alt} className="w-7 h-7 object-contain transition-all" />
             </a>
         );
     };
-
     // Reviews State
     const [reviews, setReviews] = useState<Review[]>([]);
     const [isLoadingReviews, setIsLoadingReviews] = useState(true);
