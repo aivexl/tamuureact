@@ -1796,12 +1796,29 @@ export default {
                     const merchantId = url.searchParams.get('merchant_id');
                     if (!merchantId) return json({ error: 'Missing merchant_id' }, { ...corsHeaders, status: 400 });
 
+                    // Handle Admin fallback gracefully
+                    if (merchantId === 'admin') {
+                        return json({ 
+                            success: true, 
+                            stats: { 
+                                nama_toko: 'Tamuu Official',
+                                kontak_utama: 'chat',
+                                total_products: 0,
+                                total_wishlist: 0,
+                                avg_rating: 5,
+                                review_count: 0
+                            } 
+                        }, corsHeaders);
+                    }
+
                     const stats = await env.DB.prepare(`
                         SELECT
                             (SELECT COUNT(*) FROM shop_products WHERE merchant_id = ? AND status = 'PUBLISHED') as total_products,
                             (SELECT COUNT(*) FROM shop_wishlist sw JOIN shop_products sp ON sw.product_id = sp.id WHERE sp.merchant_id = ?) as total_wishlist,
                             (SELECT AVG(rating) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = ?) as avg_rating,
                             (SELECT COUNT(*) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = ?) as review_count,
+                            m.nama_toko,
+                            m.logo_url,
                             m.kontak_utama,
                             c.whatsapp, c.phone, c.instagram, c.facebook, c.tiktok, c.website, c.x_url, c.youtube, c.shopee_url, c.tokopedia_url, c.tiktokshop_url, c.google_maps_url, c.alamat as alamat_lengkap
                         FROM shop_merchants m

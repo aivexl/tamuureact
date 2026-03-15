@@ -699,7 +699,7 @@ export const DashboardPage: React.FC = () => {
                         {/* Messages Tab */}
                         {activeTab === 'messages' && (
                             <m.div key="messages" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
-                                <ChatInterface mode="user" />
+                                <ChatInterface mode="user" initialMerchantId={searchParams.get('merchantId') || undefined} />
                             </m.div>
                         )}
 

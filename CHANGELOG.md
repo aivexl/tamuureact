@@ -1,5 +1,19 @@
 # Tamuu Changelog
 
+## [0.8.7] - 2026-03-15
+### Fixed
+- **Chat Interface Refinement**: 
+    - Resolved critical bubble alignment issues where sender messages incorrectly appeared on the left. Sender messages now strictly align to the right side of the conversation.
+    - Integrated delivery status icons (single check for sent, double blue check for read) for the sender's own messages.
+    - Hardened the `isMe` logic to accurately differentiate between User, Vendor, and Admin modes, preventing bubble fragmentation.
+- **Authentication & Identity Sync**:
+    - Refactored `AuthProvider` to prioritize the canonical Cloudflare D1 User ID during initial sync. This prevents identification mismatches between Supabase and the internal chat registry.
+    - Added an "Admin Stealth Mode" identity to the chat stats API, ensuring that administrators can engage in monitoring without requiring a merchant profile.
+- **API Performance & Metadata**:
+    - Optimized the merchant stats retrieval endpoint to include shop names and logo URLs, reducing frontend query waterfalls.
+- **Dashboard UX**:
+    - Enhanced the dashboard to support `merchantId` deep-linking, allowing the chat interface to automatically open or initiate sessions based on URL parameters.
+
 ## [0.8.6] - 2026-03-15
 ### Added
 - **Vendor Contact Architectural Redesign**: Overhauled the contact section into a high-fidelity 3-column layout positioned strategically above the product description.

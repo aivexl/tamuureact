@@ -209,10 +209,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ mode, initialConvI
                             <AnimatePresence initial={false}>
                                 {selectedId ? messages.map((msg: any) => {
                                     // Robust isMe logic: 
-                                    // - User mode: true if sender is the user.
-                                    // - Vendor mode: true if sender is NOT the customer.
-                                    // - Admin mode: true if sender is NOT the customer (vendor on right, user on left).
-                                    const isMe = mode === 'user' ? msg.sender_id === user?.id : msg.sender_id !== activeConv?.user_id;
+                                    // - Admin mode: Vendor on right, User on left (admin is spectator)
+                                    // - User/Vendor mode: True if sender_id matches current logged-in user
+                                    const isMe = mode === 'admin' 
+                                        ? msg.sender_id !== activeConv?.user_id 
+                                        : msg.sender_id === user?.id;
                                     
                                     return (
                                         <m.div
