@@ -20,7 +20,9 @@ import {
     ShoppingBag,
     ShieldAlert,
     MessageSquare,
-    BellRing
+    BellRing,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { AdminChatSidebarWrapper } from './AdminChatSidebarWrapper';
@@ -76,19 +78,35 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                 className={`fixed lg:sticky top-0 left-0 z-50 flex flex-col bg-[#0F0F0F] border-r border-white/5 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'
                     } h-screen`}
             >
-                {/* Brand */}
-                <div className="p-6 border-b border-white/5">
+                {/* Brand & Toggle */}
+                <div className="p-6 border-b border-white/5 relative">
                     <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center shadow-lg shadow-teal-500/20">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center shadow-lg shadow-teal-500/20 flex-shrink-0">
                             <span className="font-black text-slate-900 text-lg">T</span>
                         </div>
                         {sidebarOpen && (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                                <h1 className="font-bold text-lg tracking-tight">Tamuu Admin</h1>
-                                <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Control Center</p>
+                            <motion.div 
+                                initial={{ opacity: 0, x: -10 }} 
+                                animate={{ opacity: 1, x: 0 }}
+                                className="min-w-0"
+                            >
+                                <h1 className="font-bold text-lg tracking-tight truncate">Tamuu Admin</h1>
+                                <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold truncate">Control Center</p>
                             </motion.div>
                         )}
                     </div>
+
+                    {/* Desktop Toggle Button - Positioned at top header area */}
+                    <button
+                        onClick={() => setSidebarOpen(!sidebarOpen)}
+                        className="hidden lg:flex absolute -right-3 top-8 w-6 h-6 bg-[#1A1A1A] border border-white/10 rounded-full items-center justify-center text-slate-400 hover:text-teal-400 hover:border-teal-500/50 transition-all duration-300 shadow-lg shadow-black/50 z-50 group active:scale-90"
+                    >
+                        {sidebarOpen ? (
+                            <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
+                        ) : (
+                            <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                        )}
+                    </button>
                 </div>
 
                 {/* Nav */}
@@ -277,14 +295,6 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                         <LogOut className="w-5 h-5" />
                         {sidebarOpen && <span className="text-sm font-bold">Sign Out</span>}
                     </button>
-
-                    {/* Size Toggle (Desktop only) */}
-                    <button
-                        onClick={() => setSidebarOpen(!sidebarOpen)}
-                        className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#0A0A0A] border border-white/10 rounded-full items-center justify-center text-slate-400 hover:text-white transition-colors"
-                    >
-                        {sidebarOpen ? <X className="w-3 h-3" /> : <Menu className="w-3 h-3" />}
-                    </button>
                 </div>
             </aside>
 
@@ -299,7 +309,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                 </header>
 
                 {/* Page Content */}
-                <div className="flex-1 overflow-y-auto bg-[#0A0A0A] p-6 lg:p-10 relative">
+                <div className="flex-1 overflow-y-auto bg-[#0A0A0A] p-6 lg:p-10 relative border-l border-white/5 shadow-inner">
                     {/* Glossy ambient background */}
                     <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-teal-500/5 to-transparent pointer-events-none" />
                     <div className="relative z-10">
@@ -315,20 +325,6 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                     onClick={() => setSidebarOpen(false)}
                 />
             )}
-
-            {/* AI CHATBOT SIDEBAR - Enterprise Wrapper for Backward Compatibility */}
-            {/* 
-            <AdminChatSidebarWrapper
-                useEnhanced={false} // Set to true untuk aktifkan enhanced version
-                userId={user?.id}
-                enhancedProps={{
-                    enableSessionTracking: true,
-                    enableQuickActions: true,
-                    enableSettingsPanel: true,
-                    aiPersonality: 'professional'
-                }}
-            />
-            */}
         </div>
     );
 };

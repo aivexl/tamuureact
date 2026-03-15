@@ -709,14 +709,14 @@ export const ProductDetailPage: React.FC = () => {
 
                 {/* BOTTOM CONTENT SECTION */}
                 <div className="max-w-7xl mx-auto px-6 mt-20">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                        <div className="lg:col-span-7 flex flex-col gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                        <div className="lg:col-span-7 flex flex-col h-full">
                             {/* Deskripsi Card - Main Position */}
                             <m.div 
                                 layout
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className="p-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm space-y-8 flex flex-col"
+                                className="p-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm space-y-8 flex flex-col h-full"
                             >
                                 <div className="flex items-center gap-3">
                                     <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
@@ -775,7 +775,7 @@ export const ProductDetailPage: React.FC = () => {
                         </div>
 
                         {/* Right Column (Spans 5/12) - Alamat Stacked */}
-                        <div className="lg:col-span-5 flex flex-col gap-8">
+                        <div className="lg:col-span-5 flex flex-col gap-8 h-full">
                             <m.div 
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -833,14 +833,14 @@ export const ProductDetailPage: React.FC = () => {
                             <m.div 
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="p-1 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm flex-1 flex flex-col min-h-[400px] overflow-hidden group"
+                                className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm flex-1 flex flex-col min-h-[400px] overflow-hidden group"
                             >
                                 {sidebarAds.length > 0 ? (
                                     <a 
                                         href={sidebarAds[0].link_url || '#'} 
                                         target="_blank" 
                                         rel="noreferrer"
-                                        className="relative w-full h-full flex-1 rounded-[2.2rem] overflow-hidden block"
+                                        className="relative w-full h-full flex-1 overflow-hidden block"
                                     >
                                         <img 
                                             src={sidebarAds[0].image_url} 
