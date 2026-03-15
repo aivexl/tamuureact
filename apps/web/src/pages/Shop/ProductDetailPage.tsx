@@ -794,8 +794,8 @@ export const ProductDetailPage: React.FC = () => {
                                     <div className="flex-1" />
                                     {product.alamat_lengkap ? (
                                         <div className="space-y-4">
-                                            <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 italic">
-                                                <p className="text-slate-600 text-[12px] font-medium leading-relaxed uppercase tracking-tight">
+                                            <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                                                <p className="text-slate-600 text-[11px] font-normal leading-relaxed uppercase tracking-tight">
                                                     {product.alamat_lengkap}
                                                 </p>
                                             </div>
