@@ -27,7 +27,8 @@ import {
     MessageSquare,
     Phone,
     Instagram,
-    Facebook
+    Facebook,
+    Eye
 } from 'lucide-react';
 import { useAdminProducts, useAdminDeleteProduct, useAdminAddProduct, useAdminUpdateProduct } from '../../hooks/queries/useShop';
 import { formatCurrency } from '../../lib/utils';
@@ -100,13 +101,10 @@ export const AdminProductListing: React.FC = () => {
     const handleSave = async (payload: any) => {
         try {
             if (editingProduct) {
-                // Determine the absolute UUID for this product
                 const targetId = editingProduct.product_id || editingProduct.id;
-                console.log(`[Admin] UPDATING PRODUCT: ${targetId}`, payload);
                 await updateMutation.mutateAsync({ id: targetId, data: payload });
                 toast.success('Listing updated successfully');
             } else {
-                console.log('[Admin] CREATING NEW PRODUCT', payload);
                 await addMutation.mutateAsync({ ...payload, is_admin_listing: 1 });
                 toast.success('Listing added to global shop');
             }
@@ -389,16 +387,15 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
         google_maps_url: product?.google_maps_url || '',
         is_special: product?.is_special || 0,
         is_featured: product?.is_featured || 0,
-        is_landing_featured: product?.is_landing_featured || 0
+        is_landing_featured: product?.is_landing_featured || 0,
+        hide_chat: product?.hide_chat || 0
     });
 
-    // Standalone state for Primary Contact Method (CTO Standard Isolation)
     const [kontakUtama, setKontakUtama] = useState<'whatsapp' | 'phone' | 'instagram' | 'facebook' | 'tiktok' | 'tokopedia' | 'shopee' | 'tiktokshop' | 'chat' | 'x' | 'youtube' | 'website'>(
         product?.kontak_utama || 'whatsapp'
     );
 
     const [isSyncingStore, setIsSyncingStore] = useState(false);
-    // Track previous sync state to detect ON toggle
     const prevSyncRef = useRef(false);
     const prevStoreNameRef = useRef(formData.custom_store_name);
         
@@ -413,14 +410,11 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
         return SHOP_CATEGORIES.includes(cat) ? '' : cat;
     });
 
-    // Reactive Sync Logic for Admin: Pull latest data from other products with same store name
-    // HARDENED: Only trigger ONCE when toggle is flipped to ON or when store name is explicitly changed
     useEffect(() => {
         const syncTurnedOn = isSyncingStore && !prevSyncRef.current;
         const storeNameChanged = isSyncingStore && formData.custom_store_name !== prevStoreNameRef.current;
 
         if (syncTurnedOn || storeNameChanged) {
-            // Find latest product with same store name (excluding current)
             const latestMatch = allProducts
                 .filter(p => 
                     p.is_admin_listing === 1 &&
@@ -430,7 +424,6 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                 .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
 
             if (latestMatch) {
-                console.log('[Admin] SYNCING DATA FROM:', latestMatch.nama_produk);
                 setFormData(prev => ({
                     ...prev,
                     whatsapp: latestMatch.whatsapp || prev.whatsapp,
@@ -446,15 +439,14 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                     alamat_lengkap: latestMatch.alamat_lengkap || prev.alamat_lengkap,
                     google_maps_url: latestMatch.google_maps_url || prev.google_maps_url,
                     kategori_produk: latestMatch.kategori_produk || prev.kategori_produk,
-                    kota: latestMatch.kota || prev.kota
+                    kota: latestMatch.kota || prev.kota,
+                    hide_chat: latestMatch.hide_chat || prev.hide_chat
                 }));
 
-                // Update standalone state
                 if (latestMatch.kontak_utama) {
                     setKontakUtama(latestMatch.kontak_utama);
                 }
 
-                // Sync UI category
                 if (latestMatch.kategori_produk) {
                     if (SHOP_CATEGORIES.includes(latestMatch.kategori_produk)) {
                         setSelectedCategory(latestMatch.kategori_produk);
@@ -500,7 +492,6 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
         const targetStatus = forceStatus || formData.status;
         const finalKategori = selectedCategory === 'Lainnya' ? customCategory : selectedCategory;
 
-        // Strict duplicate name check (blocking)
         const isDuplicate = allProducts.some((p: any) => 
             p.nama_produk.toLowerCase().trim() === formData.nama_produk.toLowerCase().trim() && 
             p.product_id !== product?.product_id
@@ -514,7 +505,6 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
             return;
         }
 
-        // Validation for PUBLISHED status
         if (targetStatus === 'PUBLISHED') {
             const missingFields = [];
             if (!formData.nama_produk.trim()) missingFields.push('Nama Produk/Jasa');
@@ -535,14 +525,12 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
 
         setLoading(true);
         try {
-            // MERGE Standalone state into payload
             const payload = { 
                 ...formData, 
                 status: targetStatus, 
                 kategori_produk: finalKategori,
                 kontak_utama: kontakUtama 
             };
-            console.log('[Admin] SAVING PRODUCT PAYLOAD:', payload);
             await onSave(payload);
         } catch (error) {
             console.error('Save error:', error);
@@ -654,10 +642,10 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                                                     youtube_url: details.youtube_url || prev.youtube_url,
                                                     x_url: details.x_url || prev.x_url,
                                                     kategori_produk: details.kategori_produk || prev.kategori_produk,
-                                                    kota: details.kota || prev.kota
+                                                    kota: details.kota || prev.kota,
+                                                    hide_chat: details.hide_chat || prev.hide_chat
                                                 }));
                                                 
-                                                // Sync UI category
                                                 if (details.kategori_produk) {
                                                     if (SHOP_CATEGORIES.includes(details.kategori_produk)) {
                                                         setSelectedCategory(details.kategori_produk);
@@ -793,7 +781,6 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                         </div>
                     </div>
 
-                    {/* Description - MOVED HERE */}
                     <div className="bg-white/5 backdrop-blur-xl rounded-[2.5rem] border border-white/10 p-10 space-y-8 shadow-2xl">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-400 flex items-center justify-center border border-teal-500/20"><Check className="w-5 h-5" /></div>
@@ -811,7 +798,6 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                         />
                     </div>
 
-                    {/* Sync Store History */}
                     <div className="bg-white/5 backdrop-blur-xl rounded-[2.5rem] border border-white/10 p-10 space-y-8 shadow-2xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-48 h-48 bg-[#FFBF00]/5 rounded-full -mr-24 -mt-24 blur-3xl" />
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
@@ -893,7 +879,31 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                             </div>
                         </div>
 
-                        {/* Primary Contact Gateway */}
+                        {/* Chat Control */}
+                        <div className="p-8 bg-white/5 rounded-[2.5rem] border border-white/10 flex items-center justify-between group hover:bg-white/[0.08] transition-all">
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20 group-hover:scale-110 transition-transform"><MessageSquare className="w-5 h-5" /></div>
+                                <div className="flex flex-col">
+                                    <span className="text-xs font-black text-white uppercase tracking-widest">Internal Chat</span>
+                                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tight">Toggle chat visibility on product page</span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${formData.hide_chat ? 'text-rose-400' : 'text-teal-400'}`}>
+                                    {formData.hide_chat ? 'Hidden' : 'Visible'}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData(prev => ({ ...prev, hide_chat: prev.hide_chat ? 0 : 1 }))}
+                                    className={`relative w-14 h-7 rounded-full transition-all duration-500 shadow-inner ${formData.hide_chat ? 'bg-slate-800' : 'bg-indigo-600'}`}
+                                >
+                                    <div className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow-xl transition-all duration-500 flex items-center justify-center ${formData.hide_chat ? 'left-1' : 'left-8'}`}>
+                                        {!formData.hide_chat ? <Check className="w-3 h-3 text-indigo-600" /> : <X className="w-3 h-3 text-slate-400" />}
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
                         <div className="p-8 bg-white/5 rounded-[2.5rem] border border-white/10 space-y-6">
                             <div className="flex flex-col">
                                 <label className="text-[10px] font-black text-[#FFBF00] uppercase tracking-widest ml-1">Metode Kontak Utama</label>
@@ -1088,7 +1098,6 @@ const StoreNameCombobox: React.FC<{ value: string, allProducts: any[], onChange:
     const [search, setSearch] = useState('');
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Extract unique stores from all listings
     const stores = useMemo(() => {
         const storeMap = new Map();
         allProducts.forEach(p => {

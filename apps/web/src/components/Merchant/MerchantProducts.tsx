@@ -11,7 +11,7 @@ import {
 } from '../../hooks/queries/useShop';
 import api from '../../lib/api';
 import { formatCurrency } from '../../lib/utils';
-import { Search, MapPin, ChevronDown, Check, X, Store, ShoppingBag, Youtube, Globe, ShieldCheck, MessageCircle, MessageSquare, Phone, Instagram, Facebook, Image as ImageIcon, ArrowUpRight } from 'lucide-react';
+import { Search, MapPin, ChevronDown, Check, X, Store, ShoppingBag, Youtube, Globe, ShieldCheck, MessageCircle, MessageSquare, Phone, Instagram, Facebook, Image as ImageIcon, ArrowUpRight, Eye } from 'lucide-react';
 
 // Custom Icons for Tiktok
 const TiktokIcon = ({ className }: { className?: string }) => (
@@ -35,17 +35,11 @@ const SearchIcon = ({ className }: { className?: string }) => (
 const FilterIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></svg>
 );
-const EyeIcon = ({ className }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
-);
 const EditIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
 );
 const TrashIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" /></svg>
-);
-const UploadCloudIcon = ({ className }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" /><path d="M12 12v9" /><path d="m16 16-4-4-4 4" /></svg>
 );
 const ArrowLeftIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
@@ -202,7 +196,7 @@ export const MerchantProducts: React.FC = () => {
         setShopeeUrl(prod.shopee_url || '');
         setAlamatLengkap(prod.alamat_lengkap || '');
         setGoogleMapsUrl(prod.google_maps_url || '');
-        setKontakUtama(prod.kontak_utama);
+        setKontakUtama(prod.kontak_utama || 'whatsapp');
         setView('edit');
     };
 
@@ -240,7 +234,6 @@ export const MerchantProducts: React.FC = () => {
 
     const handleSave = async (forceStatus?: string) => {
         if (!merchantId) {
-            console.error('[MerchantProducts] Cannot save: merchantId is missing', { merchantData });
             alert('Identitas toko tidak ditemukan. Mohon refresh halaman.');
             return;
         }
@@ -248,7 +241,6 @@ export const MerchantProducts: React.FC = () => {
         const finalStatus = (forceStatus || status) as 'DRAFT' | 'PUBLISHED';
         const finalKategori = selectedCategory === 'Lainnya' ? customCategory : selectedCategory;
 
-        // Strict duplicate name check (blocking)
         const isDuplicate = products.some((p: any) => 
             p.nama_produk.toLowerCase().trim() === namaProduk.toLowerCase().trim() && 
             p.id !== editingId
@@ -259,7 +251,6 @@ export const MerchantProducts: React.FC = () => {
             return;
         }
 
-        // Validation for PUBLISHED status
         if (finalStatus === 'PUBLISHED') {
             const missingFields = [];
             if (!namaProduk.trim()) missingFields.push('Nama Produk/Jasa');
@@ -269,13 +260,11 @@ export const MerchantProducts: React.FC = () => {
             if (images.length < 2) missingFields.push('Minimal 2 Foto');
 
             if (missingFields.length > 0) {
-                // Using alert since react-hot-toast might not be available in this scope or context
                 alert(`Gagal publikasi! Wajib diisi: ${missingFields.join(', ')}`);
                 return;
             }
         }
 
-        console.log('[MerchantProducts] Saving product:', { name: namaProduk, status: finalStatus, merchantId });
         setSaveType(finalStatus);
 
         const payload = {
@@ -311,7 +300,6 @@ export const MerchantProducts: React.FC = () => {
                 await updateProduct({ id: editingId, data: payload });
             }
             
-            // CTO Level Robustness: Small delay to allow D1 replication before showing list
             await new Promise(resolve => setTimeout(resolve, 500));
             
             setView('list');
@@ -333,7 +321,6 @@ export const MerchantProducts: React.FC = () => {
                productNo.toLowerCase().includes(searchLower);
     });
 
-    // Filter regions based on search
     const filteredRegions = useMemo(() => {
         const query = kotaSearchQuery.toLowerCase().trim();
         if (!query) return INDONESIA_REGIONS;
@@ -343,7 +330,6 @@ export const MerchantProducts: React.FC = () => {
     return (
         <div className="flex flex-col h-full w-full relative bg-white text-slate-900">
 
-            {/* Header Section */}
             <header className="px-6 md:px-10 py-10 border-b border-slate-100 bg-[#FBFBFB] flex flex-col md:flex-row md:items-center justify-between gap-6 sticky top-0 z-30 backdrop-blur-3xl bg-opacity-90">
                 <div className="flex flex-col">
                     <m.h2 initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="text-3xl font-black text-[#0A1128] tracking-tight">
@@ -382,7 +368,6 @@ export const MerchantProducts: React.FC = () => {
                                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
                                 className="space-y-10"
                             >
-                                {/* Toolbars - Tamuu Signature Minimalist Architecture */}
                                 <div className="flex flex-col sm:flex-row items-center justify-between gap-8 bg-white p-2 rounded-[2.5rem] shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] border border-slate-50">
                                     <div className="flex items-center gap-6 pl-6">
                                         <div className="flex flex-col">
@@ -409,7 +394,6 @@ export const MerchantProducts: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* Registry Grid */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                     {filteredProducts.length === 0 ? (
                                         <div className="col-span-full py-24 text-center border-2 border-dashed border-slate-100 rounded-[40px] bg-[#FBFBFB]">
@@ -473,7 +457,6 @@ export const MerchantProducts: React.FC = () => {
                                                 <div className="space-y-2">
                                                     <h4 className="text-lg font-black tracking-tight text-[#0A1128] group-hover:text-[#FFBF00] transition-colors line-clamp-1 italic">{prod.nama_produk}</h4>
                                                     
-                                                    {/* Product Actions - Always Visible */}
                                                     <div className="flex items-center gap-2 pt-1">
                                                         <button 
                                                             onClick={() => handleEdit(prod)} 
@@ -501,7 +484,6 @@ export const MerchantProducts: React.FC = () => {
                                                 </div>
                                                 
                                                 <div className="flex flex-col gap-4 pt-2 border-t border-slate-50">
-                                                    {/* Price Row */}
                                                     <div>
                                                         <p className="text-[9px] font-black text-[#FFBF00] uppercase tracking-widest mb-1 opacity-60">Harga</p>
                                                         <p className="text-xl font-black text-[#0A1128]">
@@ -511,7 +493,6 @@ export const MerchantProducts: React.FC = () => {
                                                         </p>
                                                     </div>
 
-                                                    {/* Meta Row */}
                                                     <div className="space-y-3">
                                                         <div className="flex items-center justify-between gap-2">
                                                             <span className="px-2 py-0.5 rounded bg-slate-50 text-slate-400 text-[8px] font-black uppercase tracking-widest border border-slate-100">
@@ -553,9 +534,7 @@ export const MerchantProducts: React.FC = () => {
                                 className="max-w-5xl mx-auto"
                             >
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                                    {/* Left Col */}
                                     <div className="lg:col-span-7 space-y-10">
-                                        {/* Basic Info Card */}
                                         <div className="relative z-10 bg-[#FBFBFB] rounded-[40px] border border-slate-100 p-10 space-y-8 shadow-sm relative overflow-hidden">
                                             <div className="flex items-center justify-between">
                                                 <h4 className="text-lg font-black text-[#0A1128]">Detail <span className="text-[#FFBF00]">Produk/Jasa</span></h4>
@@ -640,7 +619,6 @@ export const MerchantProducts: React.FC = () => {
                                                         <span className="text-[8px] font-bold text-rose-400/60 uppercase tracking-widest mt-0.5">(Wajib Diisi)</span>
                                                     </div>
                                                     
-                                                    {/* Searchable Region Selector */}
                                                     <div className="relative z-20">
                                                         <div 
                                                             onClick={() => setIsKotaOpen(!isKotaOpen)}
@@ -716,7 +694,6 @@ export const MerchantProducts: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        {/* Description Card - MOVED HERE */}
                                         <div className="bg-[#FBFBFB] rounded-[40px] border border-slate-100 p-10 space-y-8 shadow-sm relative">
                                             <h4 className="text-lg font-black text-[#0A1128]">Deskripsi <span className="text-[#FFBF00]">Produk/Jasa</span></h4>
                                             <div className="border border-slate-100 rounded-3xl overflow-hidden bg-white">
@@ -794,16 +771,14 @@ export const MerchantProducts: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        {/* Social & Marketplace Links Card */}
                                         <div className="bg-[#FBFBFB] rounded-[40px] border border-slate-100 p-10 space-y-10 shadow-sm relative">
                                             <h4 className="text-lg font-black text-[#0A1128]">Kontak <span className="text-[#FFBF00]">Vendor</span></h4>
                                             
-                                            {/* Primary Contact Gateway */}
                                             <div className="p-8 bg-white rounded-[2.5rem] border border-slate-100 space-y-6">
                                                 <div className="flex flex-col">
                                                     <label className="text-[10px] font-black text-[#FFBF00] uppercase tracking-widest ml-1">Metode Kontak Utama</label>
                                                     <p className="text-[9px] text-slate-500 font-bold uppercase tracking-tight mt-1 ml-1 italic leading-relaxed">
-                                                        Pilih platform yang akan menjadi tombol aksi utama di halaman detail produk. <span className="text-[#FFBF00]">Sinkron otomatis dari profil toko jika Sinkronisasi Toko aktif.</span>
+                                                        Pilih platform yang akan menjadi tombol aksi utama di halaman detail produk.
                                                     </p>
                                                 </div>
                                                 
@@ -820,7 +795,7 @@ export const MerchantProducts: React.FC = () => {
                                                         {kontakUtama === 'website' && <Globe className="w-5 h-5 text-indigo-400" />}
                                                         {kontakUtama === 'tokopedia' && <img src="/images/logos/marketplace/logo_tokopedia.png" className="w-5 h-5 object-contain" alt="" />}
                                                         {kontakUtama === 'shopee' && <img src="/images/logos/marketplace/logo_shopee.png" className="w-5 h-5 object-contain" alt="" />}
-                                    {kontakUtama === 'tiktokshop' && <img src="/images/logos/marketplace/logo-tiktokshop.png" className="w-5 h-5 object-contain" alt="" />}
+                                                        {kontakUtama === 'tiktokshop' && <img src="/images/logos/marketplace/logo-tiktokshop.png" className="w-5 h-5 object-contain" alt="" />}
                                                     </div>
                                                     <select
                                                         value={kontakUtama}
@@ -883,7 +858,6 @@ export const MerchantProducts: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    {/* Right Col */}
                                     <div className="lg:col-span-5 space-y-10">
                                         <div className="bg-[#FBFBFB] rounded-[40px] border border-slate-100 p-10 shadow-sm flex flex-col min-h-[500px] relative">
                                             <div className="flex items-center justify-between mb-8">
@@ -894,13 +868,11 @@ export const MerchantProducts: React.FC = () => {
                                                 <span className="text-[10px] text-[#FFBF00] font-black tracking-widest">{images.length} / 5</span>
                                             </div>
 
-                                            {/* Photo Grid - Now dedicated to display only */}
                                             <div className="grid grid-cols-2 gap-4 mb-8">
                                                 {images.map((img, idx) => (
                                                     <div key={idx} className="aspect-square bg-white/5 border border-white/10 rounded-2xl relative overflow-hidden group shadow-lg">
                                                         <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('${img}')` }}></div>
                                                         
-                                                        {/* Persistent Delete Button */}
                                                         <div className="absolute top-2 right-2 z-10">
                                                             <button
                                                                 onClick={(e) => { e.stopPropagation(); handleRemoveImage(idx); }}
@@ -913,7 +885,6 @@ export const MerchantProducts: React.FC = () => {
                                                     </div>
                                                 ))}
                                                 
-                                                {/* Placeholder slots to maintain 2x2 grid feel when empty */}
                                                 {images.length === 0 && (
                                                     <>
                                                         <div className="aspect-square border-2 border-dashed border-slate-100 rounded-2xl bg-slate-50/50 flex items-center justify-center">
@@ -926,7 +897,6 @@ export const MerchantProducts: React.FC = () => {
                                                 )}
                                             </div>
 
-                                            {/* Action Row - Always Visible Below the Box */}
                                             <div className="flex flex-col gap-3">
                                                 <button
                                                     type="button"
@@ -970,7 +940,6 @@ export const MerchantProducts: React.FC = () => {
                 </div>
             </div>
 
-            {/* FIXED FOOTER ACTIONS */}
             <AnimatePresence>
                 {(view === 'add' || view === 'edit') && (
                     <m.footer

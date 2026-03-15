@@ -75,12 +75,7 @@ export const ProductDetailPage: React.FC = () => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-    const [revealedContacts, setRevealedContacts] = useState<Record<string, boolean>>({});
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-
-    const toggleReveal = (key: string) => {
-        setRevealedContacts(prev => ({ ...prev, [key]: !prev[key] }));
-    };
 
     const { user, isAuthenticated, logout, token } = useStore();
 
@@ -117,6 +112,7 @@ export const ProductDetailPage: React.FC = () => {
     const isWishlisted = wishlist.some((item: any) => item.id === product?.id);
 
     // Premium Vendor Contact Component
+    // Premium Vendor Contact Component
     const VendorContactItem = ({ 
         id, 
         icon: Icon, 
@@ -125,7 +121,9 @@ export const ProductDetailPage: React.FC = () => {
         type = 'link', 
         iconColor = "text-[#0A1128]",
         customIcon = null,
-        imgSrc = null
+        imgSrc = null,
+        logoOnly = false,
+        compact = false
     }: { 
         id: string, 
         icon?: any, 
@@ -134,23 +132,17 @@ export const ProductDetailPage: React.FC = () => {
         type?: 'link' | 'copy' | 'chat' | 'marketplace',
         iconColor?: string,
         customIcon?: React.ReactNode,
-        imgSrc?: string | null
+        imgSrc?: string | null,
+        logoOnly?: boolean,
+        compact?: boolean
     }) => {
-        if (!value) return null;
-        const isRevealed = revealedContacts[id];
+        if (!value) return <div className="h-11 bg-slate-50/30 border border-dashed border-slate-100 rounded-xl opacity-40" />;
 
         const handleAction = (e: React.MouseEvent) => {
             e.stopPropagation();
             if (!isAuthenticated) {
-                toast.error('Silakan login untuk melihat detail kontak vendor.');
+                toast.error('Silakan login untuk detail kontak vendor.');
                 navigate('/login');
-                return;
-            }
-            if (!isRevealed) {
-                toggleReveal(id);
-                if (product?.id) {
-                    track.mutate({ merchantId: product.merchant_id, actionType: 'CLICK_CONTACT', metadata: JSON.stringify({ contact_type: id, product_id: product.id }) } as any);
-                }
                 return;
             }
 
@@ -164,76 +156,44 @@ export const ProductDetailPage: React.FC = () => {
                         case 'ig': return `https://instagram.com/${val.replace('@', '')}`;
                         case 'tiktok': return `https://tiktok.com/@${val.replace('@', '')}`;
                         case 'fb': return `https://facebook.com/${val}`;
-                        case 'tokopedia': return val.startsWith('tokopedia.com') ? `https://${val}` : `https://tokopedia.com/${val}`;
-                        case 'shopee': return val.startsWith('shopee.co.id') ? `https://${val}` : `https://shopee.co.id/${val}`;
-                        case 'tiktokshop': return val.startsWith('tiktok.com') ? `https://${val}` : `https://tiktok.com/${val}`;
+                        case 'tokopedia': return val.includes('tokopedia.com') ? (val.startsWith('http') ? val : `https://${val}`) : `https://tokopedia.com/${val}`;
+                        case 'shopee': return val.includes('shopee.co.id') ? (val.startsWith('http') ? val : `https://${val}`) : `https://shopee.co.id/${val}`;
+                        case 'tiktokshop': return val.includes('tiktok.com') ? (val.startsWith('http') ? val : `https://${val}`) : `https://tiktok.com/${val}`;
                         default: return `https://${val}`;
                     }
                 };
                 const url = getUrl(value, id);
                 if (url) window.open(url, '_blank');
+            } else if (type === 'copy') {
+                navigator.clipboard.writeText(value);
+                toast.success(`${label} disalin!`);
             }
         };
 
         return (
             <div 
                 onClick={handleAction}
-                className={`flex items-center gap-4 py-4 px-5 transition-all duration-500 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 hover:border-slate-200 hover:shadow-md group ${!isRevealed ? 'cursor-pointer' : ''}`}
+                className={`h-11 flex items-center transition-all duration-300 bg-white border border-slate-100 rounded-xl hover:bg-slate-50 hover:border-slate-200 hover:shadow-sm group cursor-pointer ${logoOnly ? 'justify-center px-2' : compact ? 'px-2 gap-2' : 'px-3 gap-3'}`}
+                title={label}
             >
-                <div className={`w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 flex-shrink-0 transition-all duration-500 group-hover:scale-110 group-hover:bg-white ${iconColor}`}>
+                <div className={`flex-shrink-0 flex items-center justify-center transition-transform duration-300 group-hover:scale-110 ${iconColor} ${logoOnly ? 'w-full' : ''}`}>
                     {imgSrc ? (
-                        <img src={imgSrc} alt={label} className="w-7 h-7 object-contain" />
+                        <img src={imgSrc} alt={label} className="w-6 h-6 object-contain" />
                     ) : (
-                        customIcon || (Icon && <Icon size={20} />)
+                        customIcon || (Icon && <Icon size={compact ? 16 : 18} />)
                     )}
                 </div>
-                <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{label}</p>
-                    <div className="relative">
-                        {!isRevealed ? (
-                            <div className="flex items-center gap-2 text-indigo-600 font-bold uppercase tracking-tight text-[11px]">
-                                <Eye className="w-3.5 h-3.5" />
-                                <span>Tampilkan</span>
-                            </div>
-                        ) : (
-                            <p className="text-[13px] font-bold text-[#0A1128] truncate">
-                                {value === 'Tanya di Sini' ? 'Mulai Chat' : value}
-                            </p>
-                        )}
+                {!logoOnly && (
+                    <div className="flex-1 min-w-0">
+                        <p className={`font-black uppercase tracking-tight text-[#0A1128] truncate leading-none ${compact ? 'text-[8px]' : 'text-[10px]'}`}>{label}</p>
                     </div>
-                </div>
-                {isRevealed && (
-                    <div className="flex-shrink-0">
-                        {type === 'copy' ? (
-                            <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 hover:text-[#FFBF00] hover:bg-white transition-all" onClick={(e) => e.stopPropagation()}>
-                                <AnimatedCopyIcon text={value} size={18} successMessage={`${label} disalin!`} />
-                            </div>
-                        ) : (type === 'link' || type === 'marketplace' || type === 'chat') && (
-                            <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-[#0A1128] hover:text-white transition-all border border-slate-100">
-                                <ArrowUpRight className="w-4 h-4" />
-                            </div>
-                        )}
+                )}
+                {type === 'copy' && !logoOnly && !compact && (
+                    <div className="flex-shrink-0 text-slate-300 group-hover:text-[#FFBF00]">
+                        <ArrowUpRight size={12} />
                     </div>
                 )}
             </div>
-        );
-    };
-
-    const MarketplaceIcon = ({ url, src, alt }: { url?: string, src: string, alt: string }) => {
-        if (!url) return null;
-        return (
-            <a
-                href={url.startsWith('http') ? url : `https://${url}`}
-                target="_blank"
-                rel="noreferrer"
-                className="w-10 h-10 flex items-center justify-center hover:scale-110 transition-all duration-300 group"
-                onClick={() => {
-                    if (product?.id) track.mutate({ merchantId: product.merchant_id, actionType: 'CLICK_CONTACT', metadata: JSON.stringify({ contact_type: alt.toLowerCase(), product_id: product.id }) } as any);
-                }}
-                title={`Kunjungi ${alt}`}
-            >
-                <img src={src} alt={alt} className="w-7 h-7 object-contain transition-all" />
-            </a>
         );
     };
     // Reviews State
@@ -615,9 +575,27 @@ export const ProductDetailPage: React.FC = () => {
                                     />
                                     {(product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url || product.tiktokshop_url || product.m_tiktokshop_url || merchantStats?.tiktokshop_url || product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url) && (
                                         <div className="flex items-center gap-4">
-                                            <MarketplaceIcon url={product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url} src="/images/logos/marketplace/logo_shopee.png" alt="Shopee" />
-                                            <MarketplaceIcon url={product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url} src="/images/logos/marketplace/logo_tokopedia.png" alt="Tokopedia" />
-                                            <MarketplaceIcon url={product.tiktokshop_url || product.m_tiktokshop_url || merchantStats?.tiktokshop_url} src="/images/logos/marketplace/logo-tiktokshop.png" alt="TikTok Shop" />
+                                            <div className="w-10 h-10 flex items-center justify-center hover:scale-110 transition-all duration-300">
+                                                {product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url ? (
+                                                    <a href={product.shopee_url?.startsWith('http') ? product.shopee_url : `https://${product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url}`} target="_blank" rel="noreferrer">
+                                                        <img src="/images/logos/marketplace/logo_shopee.png" alt="Shopee" className="w-7 h-7 object-contain" />
+                                                    </a>
+                                                ) : null}
+                                            </div>
+                                            <div className="w-10 h-10 flex items-center justify-center hover:scale-110 transition-all duration-300">
+                                                {product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url ? (
+                                                    <a href={product.tokopedia_url?.startsWith('http') ? product.tokopedia_url : `https://${product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url}`} target="_blank" rel="noreferrer">
+                                                        <img src="/images/logos/marketplace/logo_tokopedia.png" alt="Tokopedia" className="w-7 h-7 object-contain" />
+                                                    </a>
+                                                ) : null}
+                                            </div>
+                                            <div className="w-10 h-10 flex items-center justify-center hover:scale-110 transition-all duration-300">
+                                                {product.tiktokshop_url || product.m_tiktokshop_url || merchantStats?.tiktokshop_url ? (
+                                                    <a href={product.tiktokshop_url?.startsWith('http') ? product.tiktokshop_url : `https://${product.tiktokshop_url || product.m_tiktokshop_url || merchantStats?.tiktokshop_url}`} target="_blank" rel="noreferrer">
+                                                        <img src="/images/logos/marketplace/logo-tiktokshop.png" alt="TikTok Shop" className="w-7 h-7 object-contain" />
+                                                    </a>
+                                                ) : null}
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -699,37 +677,43 @@ export const ProductDetailPage: React.FC = () => {
                                     <h2 className="text-xl font-black uppercase tracking-tighter">Kontak Vendor</h2>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    {/* Kolom 1: Direct Communication */}
-                                    <div className="space-y-4">
-                                        <VendorContactItem 
-                                            id="chat" 
-                                            label="Chat Internal" 
-                                            value="Tanya di Sini" 
-                                            icon={MessageSquare} 
-                                            iconColor="text-indigo-600" 
-                                            type="chat" 
-                                        />
-                                        <VendorContactItem 
-                                            id="wa" 
-                                            label="WhatsApp" 
-                                            value={product.whatsapp || product.m_whatsapp || merchantStats?.whatsapp} 
-                                            icon={MessageCircle} 
-                                            iconColor="text-[#25D366]" 
-                                            type="link" 
-                                        />
-                                        <VendorContactItem 
-                                            id="phone" 
-                                            label="Nomor Telepon" 
-                                            value={product.phone || product.m_phone || merchantStats?.phone} 
-                                            icon={Phone} 
-                                            iconColor="text-slate-600" 
-                                            type="copy" 
-                                        />
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                                    {/* Kolom 1: Direct Communication (2-Row Architecture) */}
+                                    <div className="space-y-3">
+                                        {!product.hide_chat && (
+                                            <VendorContactItem 
+                                                id="chat" 
+                                                label="Chat" 
+                                                value="Tanya di Sini" 
+                                                icon={MessageSquare} 
+                                                iconColor="text-indigo-600" 
+                                                type="chat" 
+                                            />
+                                        )}
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <VendorContactItem 
+                                                id="wa" 
+                                                label="WhatsApp" 
+                                                value={product.whatsapp || product.m_whatsapp || merchantStats?.whatsapp} 
+                                                icon={MessageCircle} 
+                                                iconColor="text-[#25D366]" 
+                                                type="link" 
+                                                compact
+                                            />
+                                            <VendorContactItem 
+                                                id="phone" 
+                                                label="Telepon" 
+                                                value={product.phone || product.m_phone || merchantStats?.phone} 
+                                                icon={Phone} 
+                                                iconColor="text-slate-600" 
+                                                type="copy" 
+                                                compact
+                                            />
+                                        </div>
                                     </div>
 
-                                    {/* Kolom 2: Social Media & Web */}
-                                    <div className="space-y-4">
+                                    {/* Kolom 2: Social Media (3x2 Premium Grid) */}
+                                    <div className="grid grid-cols-3 gap-3">
                                         <VendorContactItem 
                                             id="ig" 
                                             label="Instagram" 
@@ -737,14 +721,16 @@ export const ProductDetailPage: React.FC = () => {
                                             icon={Instagram} 
                                             iconColor="text-[#E4405F]" 
                                             type="link" 
+                                            logoOnly
                                         />
                                         <VendorContactItem 
                                             id="tiktok" 
                                             label="TikTok" 
                                             value={product.tiktok_url || product.m_tiktok_url || merchantStats?.tiktok} 
-                                            customIcon={<TikTokIcon className="w-5 h-5" />} 
+                                            customIcon={<TikTokIcon className="w-4 h-4" />} 
                                             iconColor="text-black" 
                                             type="link" 
+                                            logoOnly
                                         />
                                         <VendorContactItem 
                                             id="fb" 
@@ -753,14 +739,16 @@ export const ProductDetailPage: React.FC = () => {
                                             icon={Facebook} 
                                             iconColor="text-[#1877F2]" 
                                             type="link" 
+                                            logoOnly
                                         />
                                         <VendorContactItem 
                                             id="x" 
                                             label="X (Twitter)" 
                                             value={product.x_url || (product as any).m_x_url || merchantStats?.x_url} 
-                                            customIcon={<XLogoIcon className="w-5 h-5" />} 
+                                            customIcon={<XLogoIcon className="w-4 h-4" />} 
                                             iconColor="text-black" 
                                             type="link" 
+                                            logoOnly
                                         />
                                         <VendorContactItem 
                                             id="yt" 
@@ -769,25 +757,28 @@ export const ProductDetailPage: React.FC = () => {
                                             icon={Youtube} 
                                             iconColor="text-[#FF0000]" 
                                             type="link" 
+                                            logoOnly
                                         />
                                         <VendorContactItem 
                                             id="web" 
-                                            label="Website Official" 
+                                            label="Website" 
                                             value={product.website_url || product.m_website || merchantStats?.website} 
                                             icon={Globe} 
                                             iconColor="text-indigo-600" 
                                             type="link" 
+                                            logoOnly
                                         />
                                     </div>
 
-                                    {/* Kolom 3: Marketplace */}
-                                    <div className="space-y-4">
+                                    {/* Kolom 3: Marketplace (Compact Proportional Grid) */}
+                                    <div className="grid grid-cols-2 gap-3">
                                         <VendorContactItem 
                                             id="shopee" 
                                             label="Shopee" 
                                             value={product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url} 
                                             imgSrc="/images/logos/marketplace/logo_shopee.png" 
                                             type="marketplace" 
+                                            logoOnly
                                         />
                                         <VendorContactItem 
                                             id="tokopedia" 
@@ -795,6 +786,7 @@ export const ProductDetailPage: React.FC = () => {
                                             value={product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url} 
                                             imgSrc="/images/logos/marketplace/logo_tokopedia.png" 
                                             type="marketplace" 
+                                            logoOnly
                                         />
                                         <VendorContactItem 
                                             id="tiktokshop" 
@@ -802,7 +794,10 @@ export const ProductDetailPage: React.FC = () => {
                                             value={product.tiktokshop_url || product.m_tiktokshop_url || merchantStats?.tiktokshop_url} 
                                             imgSrc="/images/logos/marketplace/logo-tiktokshop.png" 
                                             type="marketplace" 
+                                            logoOnly
                                         />
+                                        {/* Blank proportional box if needed for grid alignment */}
+                                        <div className="h-11 rounded-xl bg-slate-50/10 border border-slate-100/5" />
                                     </div>
                                 </div>
                             </m.div>
