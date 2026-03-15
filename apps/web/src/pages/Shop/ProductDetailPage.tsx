@@ -747,6 +747,30 @@ export const ProductDetailPage: React.FC = () => {
                                             type="link" 
                                         />
                                         <VendorContactItem 
+                                            id="fb" 
+                                            label="Facebook" 
+                                            value={product.facebook || (product as any).m_facebook || merchantStats?.facebook} 
+                                            icon={Facebook} 
+                                            iconColor="text-[#1877F2]" 
+                                            type="link" 
+                                        />
+                                        <VendorContactItem 
+                                            id="x" 
+                                            label="X (Twitter)" 
+                                            value={product.x_url || (product as any).m_x_url || merchantStats?.x_url} 
+                                            customIcon={<XLogoIcon className="w-5 h-5" />} 
+                                            iconColor="text-black" 
+                                            type="link" 
+                                        />
+                                        <VendorContactItem 
+                                            id="yt" 
+                                            label="YouTube" 
+                                            value={product.youtube_url || (product as any).m_youtube_url || merchantStats?.youtube_url} 
+                                            icon={Youtube} 
+                                            iconColor="text-[#FF0000]" 
+                                            type="link" 
+                                        />
+                                        <VendorContactItem 
                                             id="web" 
                                             label="Website Official" 
                                             value={product.website_url || product.m_website || merchantStats?.website} 

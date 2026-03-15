@@ -5,7 +5,7 @@
 - **Vendor Contact Architectural Redesign**: Overhauled the contact section into a high-fidelity 3-column layout positioned strategically above the product description.
 - **Columnar Communication Hub**:
     - **Column 1 (Direct)**: Internal Chat, WhatsApp, and Phone (using a secure copy-to-clipboard system).
-    - **Column 2 (Social)**: Instagram, TikTok (latest branding), and Official Website.
+    - **Column 2 (Social)**: Instagram, TikTok, Facebook, X (Twitter), YouTube, and Official Website.
     - **Column 3 (Marketplace)**: Shopee, Tokopedia, and TikTok Shop with up-to-date official logos.
 - **Strategic UX Repositioning**: Relocated the vendor contact hub from the sidebar to a full-width card above the product description, creating a more balanced and accessible informational hierarchy.
 - **Apple-Grade Aesthetic**:
