@@ -538,21 +538,22 @@ export const categories = {
 };
 
 // ============================================
-// WISHLIST API
+// WISHLIST API (Invitations)
 // ============================================
 export const wishlist = {
-    async get(userId: string) {
-        const res = await safeFetch(`${API_BASE}/api/shop/wishlist?user_id=${userId}`);
+    async get(userId: string, email?: string) {
+        const url = email ? `${API_BASE}/api/wishlist?user_id=${userId}&email=${encodeURIComponent(email)}` : `${API_BASE}/api/wishlist?user_id=${userId}`;
+        const res = await safeFetch(url);
         return res.json();
     },
     async list(userId: string, email?: string) {
-        return this.get(userId);
+        return this.get(userId, email);
     },
-    async toggle(userId: string, productId: string, isWishlisted?: boolean, email?: string) {
-        const res = await safeFetch(`${API_BASE}/api/shop/wishlist`, {
-            method: 'POST',
+    async toggle(userId: string, templateId: string, isWishlisted: boolean, email?: string) {
+        const res = await safeFetch(`${API_BASE}/api/wishlist`, {
+            method: isWishlisted ? 'DELETE' : 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: userId, product_id: productId })
+            body: JSON.stringify({ user_id: userId, template_id: templateId, email })
         });
         return res.json();
     }

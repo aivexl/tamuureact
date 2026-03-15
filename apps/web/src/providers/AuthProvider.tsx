@@ -94,8 +94,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (d1User) {
                 const updatedUser: User = {
                     ...initialUser,
-                    id: initialUser.id, // Supabase UUID remains the primary ID for existing APIs
-                    d1_id: d1User.id, // D1 ID stored separately for chat/internal identity
+                    id: d1User.id || initialUser.id, // THE CANONICAL ID: Must use D1 ID for DB relationship consistency
+                    d1_id: d1User.id,
                     tier: d1User.tier || 'free',
                     maxInvitations: d1User.maxInvitations || 1,
                     invitationCount: d1User.invitationCount || 0,

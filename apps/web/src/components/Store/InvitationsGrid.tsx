@@ -42,6 +42,9 @@ export const InvitationsGrid: React.FC<InvitationsGridProps> = ({
     const { user } = useStore();
     const navigate = useNavigate();
 
+    // CTO POLICY: Robust handling of wishlist data to prevent platform crashes
+    const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
+
     const checkAccess = (templateTier?: SubscriptionTier) => {
         if (!templateTier || templateTier === 'free') return true;
         if (user?.tier === 'vvip') return true;
@@ -105,13 +108,13 @@ export const InvitationsGrid: React.FC<InvitationsGridProps> = ({
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        const isWishlisted = wishlist.includes(template.id);
+                                        const isWishlisted = safeWishlist.includes(template.id);
                                         onToggleWishlist?.(template.id, isWishlisted);
                                     }}
-                                    className={`w-8 h-8 backdrop-blur-md rounded-full flex items-center justify-center transition-all shadow-sm ${wishlist.includes(template.id) ? 'bg-rose-500 text-white' : 'bg-white/80 text-slate-400 hover:text-rose-500'}`}
+                                    className={`w-8 h-8 backdrop-blur-md rounded-full flex items-center justify-center transition-all shadow-sm ${safeWishlist.includes(template.id) ? 'bg-rose-500 text-white' : 'bg-white/80 text-slate-400 hover:text-rose-500'}`}
                                     aria-label="Sukai desain ini"
                                 >
-                                    <Heart className={`w-4 h-4 ${wishlist.includes(template.id) ? 'fill-current' : ''}`} />
+                                    <Heart className={`w-4 h-4 ${safeWishlist.includes(template.id) ? 'fill-current' : ''}`} />
                                 </button>
                             </div>
 

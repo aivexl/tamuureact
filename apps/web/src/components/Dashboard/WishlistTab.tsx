@@ -25,8 +25,13 @@ export const WishlistTab: React.FC = () => {
     const { data: productWishlist = [], isLoading: isLoadingProdWishlist } = useProductWishlist(user?.id);
     const toggleProductWishlist = useToggleProductWishlist();
 
-    const wishlistedTemplates = allTemplates.filter((t: any) => 
-        (invitationWishlistIds as string[]).includes(t.id)
+    // CTO POLICY: Defensive mapping to prevent platform crash during API transitions
+    const safeInvIds = Array.isArray(invitationWishlistIds) ? invitationWishlistIds : [];
+    const safeTemplates = Array.isArray(allTemplates) ? allTemplates : [];
+    const safeProductWishlist = Array.isArray(productWishlist) ? productWishlist : [];
+
+    const wishlistedTemplates = safeTemplates.filter((t: any) => 
+        safeInvIds.includes(t.id)
     );
 
     const handleToggleInvitation = (templateId: string, isWishlisted: boolean) => {
@@ -91,9 +96,9 @@ export const WishlistTab: React.FC = () => {
                     ) : (
                         <>
                             {activeSubTab === 'products' ? (
-                                productWishlist.length > 0 ? (
+                                safeProductWishlist.length > 0 ? (
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                                        {productWishlist.map((product: any) => (
+                                        {safeProductWishlist.map((product: any) => (
                                             <ProductCard 
                                                 key={product.id} 
                                                 product={product} 
@@ -117,7 +122,7 @@ export const WishlistTab: React.FC = () => {
                                         filteredTemplates={wishlistedTemplates}
                                         onUseTemplate={(id) => navigate(`/onboarding?templateId=${id}`)}
                                         onPreviewTemplate={(slug, id) => window.open(`/preview/${slug || id}`, '_blank')}
-                                        wishlist={invitationWishlistIds as string[]}
+                                        wishlist={safeInvIds}
                                         onToggleWishlist={handleToggleInvitation}
                                     />
                                 ) : (

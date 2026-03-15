@@ -176,6 +176,9 @@ export const InvitationsStorePage: React.FC = () => {
     }, [user?.id, user?.email, navigate, toggleWishlistMutation]);
 
     const filteredTemplates = useMemo(() => {
+        // CTO POLICY: Robust handling of wishlist data to prevent platform crashes
+        const safeWishlistData = Array.isArray(wishlistData) ? wishlistData : [];
+
         return templates.filter((t: Template) => {
             // CTO FIX: Strictly isolate displays from the invitations store
             if (t.type === 'display') return false;
@@ -183,7 +186,7 @@ export const InvitationsStorePage: React.FC = () => {
             const matchesCategory = selectedCategory === 'All' || t.category === selectedCategory;
             const matchesSearch = t.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 t.category?.toLowerCase().includes(searchQuery.toLowerCase());
-            const matchesFavorites = !showFavoritesOnly || wishlistData.includes(t.id);
+            const matchesFavorites = !showFavoritesOnly || safeWishlistData.includes(t.id);
             return matchesCategory && matchesSearch && matchesFavorites;
         });
     }, [templates, selectedCategory, searchQuery, showFavoritesOnly, wishlistData]);

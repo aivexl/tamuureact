@@ -1,5 +1,11 @@
 # Tamuu Changelog
 
+## [0.8.9] - 2026-03-15
+### Fixed
+- **InvitationsGrid Critical Fix**: Resolved a persistent `TypeError` ("includes is not a function") by implementing robust defensive array checks for wishlist data across the platform.
+- **Invitation Visibility Restored**: Guaranteed that user invitations appear correctly by synchronizing the canonical D1 User ID as the primary identifier, ensuring exact matches with database foreign keys.
+- **Wishlist API Synchronization**: Corrected the invitation template wishlist endpoint mapping in the frontend API client.
+
 ## [0.8.8] - 2026-03-15
 ### Fixed
 - **Identity Sync Restoration**: Resolved a critical issue where user invitations were missing due to an ID mismatch. Restored `user.id` to the primary Supabase UUID while maintaining the canonical D1 ID in a separate `d1_id` field.
