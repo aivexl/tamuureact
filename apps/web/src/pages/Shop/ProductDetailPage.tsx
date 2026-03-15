@@ -709,129 +709,122 @@ export const ProductDetailPage: React.FC = () => {
                                     <h2 className="text-xl font-black uppercase tracking-tighter">Kontak Vendor</h2>
                                 </div>
 
-                                <div className="space-y-6">
-                                    {/* Marketplace Row (Top - Horizontal 3 Columns) */}
-                                    <div className="grid grid-cols-3 gap-4 md:gap-6">
-                                        <VendorContactItem 
-                                            id="shopee" 
-                                            label="Shopee" 
-                                            value={product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url} 
-                                            imgSrc="/images/logos/marketplace/logo_shopee.png" 
-                                            type="marketplace" 
-                                            logoOnly
-                                            noHide
-                                        />
-                                        <VendorContactItem 
-                                            id="tokopedia" 
-                                            label="Tokopedia" 
-                                            value={product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url} 
-                                            imgSrc="/images/logos/marketplace/logo_tokopedia.png" 
-                                            type="marketplace" 
-                                            logoOnly
-                                            noHide
-                                        />
-                                        <VendorContactItem 
-                                            id="tiktokshop" 
-                                            label="TikTok Shop" 
-                                            value={product.tiktokshop_url || product.m_tiktokshop_url || merchantStats?.tiktokshop_url} 
-                                            imgSrc="/images/logos/marketplace/logo-tiktokshop.png" 
-                                            type="marketplace" 
-                                            logoOnly
-                                            noHide
-                                        />
-                                    </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                                    {/* Row 1: Marketplace (Full Width Reference) */}
+                                    <VendorContactItem 
+                                        id="shopee" 
+                                        label="Shopee" 
+                                        value={product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url} 
+                                        imgSrc="/images/logos/marketplace/logo_shopee.png" 
+                                        type="marketplace" 
+                                        logoOnly
+                                        noHide
+                                    />
+                                    <VendorContactItem 
+                                        id="tokopedia" 
+                                        label="Tokopedia" 
+                                        value={product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url} 
+                                        imgSrc="/images/logos/marketplace/logo_tokopedia.png" 
+                                        type="marketplace" 
+                                        logoOnly
+                                        noHide
+                                    />
+                                    <VendorContactItem 
+                                        id="tiktokshop" 
+                                        label="TikTok Shop" 
+                                        value={product.tiktokshop_url || product.m_tiktokshop_url || merchantStats?.tiktokshop_url} 
+                                        imgSrc="/images/logos/marketplace/logo-tiktokshop.png" 
+                                        type="marketplace" 
+                                        logoOnly
+                                        noHide
+                                    />
 
-                                    {/* Direct & Social Columns (Bottom - 2 Columns) */}
-                                    <div className="grid grid-cols-1 md:grid-cols-[1fr_1.8fr] gap-4 md:gap-6">
-                                        {/* Kolom 1: Direct Communication (Balanced 3-Row) */}
-                                        <div className="space-y-3">
-                                            {!product.hide_chat ? (
-                                                <VendorContactItem 
-                                                    id="chat" 
-                                                    label="Chat" 
-                                                    value="Tanya di Sini" 
-                                                    icon={MessageSquare} 
-                                                    iconColor="text-indigo-600" 
-                                                    type="chat" 
-                                                    noHide
-                                                />
-                                            ) : <div className="h-11" />}
-                                            <VendorContactItem 
-                                                id="wa" 
-                                                label="WhatsApp" 
-                                                value={product.whatsapp || product.m_whatsapp || merchantStats?.whatsapp} 
-                                                icon={MessageCircle} 
-                                                iconColor="text-[#25D366]" 
-                                                type="link" 
-                                            />
-                                            <VendorContactItem 
-                                                id="phone" 
-                                                label="Nomor Telepon" 
-                                                value={product.phone || product.m_phone || merchantStats?.phone} 
-                                                icon={Phone} 
-                                                iconColor="text-slate-600" 
-                                                type="copy" 
-                                            />
-                                        </div>
+                                    {/* Row 2: Chat + 2 Socials */}
+                                    {!product.hide_chat ? (
+                                        <VendorContactItem 
+                                            id="chat" 
+                                            label="Chat" 
+                                            value="Tanya di Sini" 
+                                            icon={MessageSquare} 
+                                            iconColor="text-indigo-600" 
+                                            type="chat" 
+                                            noHide
+                                        />
+                                    ) : <div className="h-11" />}
+                                    <VendorContactItem 
+                                        id="ig" 
+                                        label="Instagram" 
+                                        value={product.instagram || product.m_instagram || merchantStats?.instagram} 
+                                        icon={Instagram} 
+                                        iconColor="text-[#E4405F]" 
+                                        type="link" 
+                                        compact
+                                    />
+                                    <VendorContactItem 
+                                        id="tiktok" 
+                                        label="TikTok" 
+                                        value={product.tiktok_url || product.m_tiktok_url || merchantStats?.tiktok} 
+                                        customIcon={<TikTokIcon className="w-4 h-4" />} 
+                                        iconColor="text-black" 
+                                        type="link" 
+                                        compact
+                                    />
 
-                                        {/* Kolom 2: Social Media (2 Columns x 3 Rows Grid) */}
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <VendorContactItem 
-                                                id="ig" 
-                                                label="Instagram" 
-                                                value={product.instagram || product.m_instagram || merchantStats?.instagram} 
-                                                icon={Instagram} 
-                                                iconColor="text-[#E4405F]" 
-                                                type="link" 
-                                                compact
-                                            />
-                                            <VendorContactItem 
-                                                id="tiktok" 
-                                                label="TikTok" 
-                                                value={product.tiktok_url || product.m_tiktok_url || merchantStats?.tiktok} 
-                                                customIcon={<TikTokIcon className="w-4 h-4" />} 
-                                                iconColor="text-black" 
-                                                type="link" 
-                                                compact
-                                            />
-                                            <VendorContactItem 
-                                                id="fb" 
-                                                label="Facebook" 
-                                                value={product.facebook || (product as any).m_facebook || merchantStats?.facebook} 
-                                                icon={Facebook} 
-                                                iconColor="text-[#1877F2]" 
-                                                type="link" 
-                                                compact
-                                            />
-                                            <VendorContactItem 
-                                                id="x" 
-                                                label="X (Twitter)" 
-                                                value={product.x_url || (product as any).m_x_url || merchantStats?.x_url} 
-                                                customIcon={<XLogoIcon className="w-4 h-4" />} 
-                                                iconColor="text-black" 
-                                                type="link" 
-                                                compact
-                                            />
-                                            <VendorContactItem 
-                                                id="yt" 
-                                                label="YouTube" 
-                                                value={product.youtube_url || (product as any).m_youtube_url || merchantStats?.youtube_url} 
-                                                icon={Youtube} 
-                                                iconColor="text-[#FF0000]" 
-                                                type="link" 
-                                                compact
-                                            />
-                                            <VendorContactItem 
-                                                id="web" 
-                                                label="Website" 
-                                                value={product.website_url || product.m_website || merchantStats?.website} 
-                                                icon={Globe} 
-                                                iconColor="text-indigo-600" 
-                                                type="link" 
-                                                compact
-                                            />
-                                        </div>
-                                    </div>
+                                    {/* Row 3: WA + 2 Socials */}
+                                    <VendorContactItem 
+                                        id="wa" 
+                                        label="WhatsApp" 
+                                        value={product.whatsapp || product.m_whatsapp || merchantStats?.whatsapp} 
+                                        icon={MessageCircle} 
+                                        iconColor="text-[#25D366]" 
+                                        type="link" 
+                                    />
+                                    <VendorContactItem 
+                                        id="fb" 
+                                        label="Facebook" 
+                                        value={product.facebook || (product as any).m_facebook || merchantStats?.facebook} 
+                                        icon={Facebook} 
+                                        iconColor="text-[#1877F2]" 
+                                        type="link" 
+                                        compact
+                                    />
+                                    <VendorContactItem 
+                                        id="x" 
+                                        label="X (Twitter)" 
+                                        value={product.x_url || (product as any).m_x_url || merchantStats?.x_url} 
+                                        customIcon={<XLogoIcon className="w-4 h-4" />} 
+                                        iconColor="text-black" 
+                                        type="link" 
+                                        compact
+                                    />
+
+                                    {/* Row 4: Phone + 2 Socials */}
+                                    <VendorContactItem 
+                                        id="phone" 
+                                        label="Nomor Telepon" 
+                                        value={product.phone || product.m_phone || merchantStats?.phone} 
+                                        icon={Phone} 
+                                        iconColor="text-slate-600" 
+                                        type="copy" 
+                                    />
+                                    <VendorContactItem 
+                                        id="yt" 
+                                        label="YouTube" 
+                                        value={product.youtube_url || (product as any).m_youtube_url || merchantStats?.youtube_url} 
+                                        icon={Youtube} 
+                                        iconColor="text-[#FF0000]" 
+                                        type="link" 
+                                        compact
+                                    />
+                                    <VendorContactItem 
+                                        id="web" 
+                                        label="Website" 
+                                        value={product.website_url || product.m_website || merchantStats?.website} 
+                                        icon={Globe} 
+                                        iconColor="text-indigo-600" 
+                                        type="link" 
+                                        compact
+                                    />
                                 </div>
                             </m.div>
 
