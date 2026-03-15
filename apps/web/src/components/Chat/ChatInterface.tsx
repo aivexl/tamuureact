@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { Send, User, Store, Clock, CheckCheck, ChevronLeft, MessageSquare, Shield } from 'lucide-react';
+import { Send, User, Store, Check, CheckCheck, ChevronLeft, MessageSquare, Shield } from 'lucide-react';
 import { useChat } from '../../hooks/useChat';
 import { useMerchantStats } from '../../hooks/queries/useShop';
 import { useStore } from '../../store/useStore';
 import { formatDistanceToNow } from 'date-fns';
 import { id } from 'date-fns/locale';
+import { parseUTCDate } from '../../lib/utils';
 
 interface ChatInterfaceProps {
     mode: 'user' | 'vendor' | 'admin';
@@ -86,6 +87,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ mode, initialConvI
 
     const activeConv = conversations.find((c: any) => c.id === selectedId);
 
+    // Helper to determine if user is active (last message within 15 minutes)
+    const isUserActive = (conv: any) => {
+        if (!conv || !conv.updated_at) return false;
+        const lastUpdate = parseUTCDate(conv.updated_at).getTime();
+        const now = new Date().getTime();
+        const diffMinutes = (now - lastUpdate) / (1000 * 60);
+        return diffMinutes <= 15;
+    };
+
     return (
         <div className="flex h-[calc(100vh-200px)] bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
             {/* Sidebar: Conversations List */}
@@ -106,7 +116,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ mode, initialConvI
                                     className="w-full p-4 flex items-center gap-4 transition-all border-b border-indigo-100 bg-indigo-50/50"
                                     onClick={() => setSelectedId(undefined)}
                                 >
-                                    <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center overflow-hidden border border-indigo-200">
+                                    <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center overflow-hidden border border-indigo-200 shrink-0">
                                         <Store className="w-6 h-6 text-indigo-400" />
                                     </div>
                                     <div className="flex-1 text-left min-w-0">
@@ -123,7 +133,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ mode, initialConvI
                                     onClick={() => { setSelectedId(conv.id); setTempMerchantId(undefined); }}
                                     className={`w-full p-4 flex items-center gap-4 transition-all border-b border-slate-50/50 ${selectedId === conv.id ? 'bg-indigo-50/30' : 'hover:bg-slate-50'}`}
                                 >
-                                    <div className="relative">
+                                    <div className="relative shrink-0">
                                         <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200">
                                             {mode === 'vendor' ? (
                                                 conv.customer_avatar ? <img src={conv.customer_avatar} className="w-full h-full object-cover" /> : <User className="w-6 h-6 text-slate-400" />
@@ -138,12 +148,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ mode, initialConvI
                                         )}
                                     </div>
                                     <div className="flex-1 text-left min-w-0">
-                                        <div className="flex justify-between items-start mb-0.5">
-                                            <p className="text-sm font-bold text-slate-900 truncate">
+                                        <div className="flex justify-between items-start gap-2 mb-0.5">
+                                            <p className="text-sm font-bold text-slate-900 truncate flex-1">
                                                 {mode === 'vendor' ? conv.customer_name : conv.merchant_name}
                                             </p>
-                                            <span className="text-[10px] text-slate-400 font-medium">
-                                                {formatDistanceToNow(new Date(conv.updated_at), { addSuffix: false, locale: id })}
+                                            <span className="text-[10px] text-slate-400 font-medium shrink-0 pt-0.5">
+                                                {formatDistanceToNow(parseUTCDate(conv.updated_at), { addSuffix: false, locale: id })}
                                             </span>
                                         </div>
                                         <p className="text-xs text-slate-500 truncate italic">
@@ -165,7 +175,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ mode, initialConvI
                         <div className="p-4 bg-white border-b border-slate-50 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <button onClick={() => { setSelectedId(undefined); setTempMerchantId(undefined); }} className="md:hidden p-2 -ml-2 text-slate-400"><ChevronLeft /></button>
-                                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-100">
+                                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-100 shrink-0">
                                     {selectedId && activeConv ? (
                                         mode === 'vendor' ? (
                                             activeConv.customer_avatar ? <img src={activeConv.customer_avatar} className="w-full h-full object-cover" /> : <User className="w-5 h-5 text-slate-400" />
@@ -176,20 +186,32 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ mode, initialConvI
                                         <Store className="w-5 h-5 text-indigo-400" />
                                     )}
                                 </div>
-                                <div>
-                                    <p className="font-black text-slate-900 leading-tight">
+                                <div className="min-w-0">
+                                    <p className="font-black text-slate-900 leading-tight truncate">
                                         {selectedId && activeConv 
                                             ? (mode === 'vendor' ? activeConv.customer_name : activeConv.merchant_name)
                                             : (isMerchantLoading ? 'Loading...' : (merchantInfo?.nama_toko || 'New Merchant'))}
                                     </p>
-                                    <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest flex items-center gap-1">
-                                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                                        {selectedId ? 'Active Now' : 'Start New Chat'}
-                                    </p>
+                                    {selectedId && activeConv ? (
+                                        isUserActive(activeConv) ? (
+                                            <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest flex items-center gap-1">
+                                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                                                Active Now
+                                            </p>
+                                        ) : (
+                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                                Last seen: {formatDistanceToNow(parseUTCDate(activeConv.updated_at), { addSuffix: true, locale: id })}
+                                            </p>
+                                        )
+                                    ) : (
+                                        <p className="text-[10px] text-indigo-500 font-bold uppercase tracking-widest flex items-center gap-1">
+                                            Start New Chat
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                             {mode === 'admin' && (
-                                <div className="px-3 py-1 bg-rose-50 text-rose-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-rose-100 flex items-center gap-1.5">
+                                <div className="px-3 py-1 bg-rose-50 text-rose-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-rose-100 flex items-center gap-1.5 shrink-0">
                                     <Shield className="w-3 h-3" /> Monitoring Mode
                                 </div>
                             )}
@@ -209,18 +231,23 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ mode, initialConvI
                                         >
                                             <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm shadow-sm ${isMe ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white text-slate-800 rounded-tl-none border border-slate-100'}`}>
                                                 <p className="leading-relaxed font-medium">{msg.content}</p>
-                                                <div className={`flex items-center gap-1.5 mt-1.5 justify-end ${isMe ? 'text-indigo-200' : 'text-slate-400'}`}>
-                                                    <Clock className="w-3 h-3" />
+                                                <div className={`flex items-center gap-1 mt-1.5 justify-end ${isMe ? 'text-indigo-200' : 'text-slate-400'}`}>
                                                     <span className="text-[10px] font-bold">
-                                                        {new Date(msg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                                        {parseUTCDate(msg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                                                     </span>
-                                                    {isMe && <CheckCheck className={`w-3 h-3 ${msg.read_at ? 'text-teal-300' : 'opacity-50'}`} />}
+                                                    {isMe && (
+                                                        msg.read_at ? (
+                                                            <CheckCheck className="w-3.5 h-3.5 text-teal-300 ml-0.5" />
+                                                        ) : (
+                                                            <Check className="w-3 h-3 ml-0.5 opacity-70" />
+                                                        )
+                                                    )}
                                                 </div>
                                             </div>
                                         </m.div>
                                     );
                                 }) : (
-                                    <div className="h-full flex flex-col items-center justify-center text-center opacity-60">
+                                    <div className="h-full flex flex-col items-center justify-center text-center opacity-60 px-4">
                                         <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
                                             <MessageSquare className="w-8 h-8 text-slate-300" />
                                         </div>
@@ -246,7 +273,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ mode, initialConvI
                                     <button
                                         onClick={handleSend}
                                         disabled={!input.trim()}
-                                        className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center hover:bg-indigo-700 transition-all disabled:opacity-50 active:scale-95 shadow-lg shadow-indigo-200"
+                                        className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center hover:bg-indigo-700 transition-all disabled:opacity-50 active:scale-95 shadow-lg shadow-indigo-200 shrink-0"
                                     >
                                         <Send className="w-5 h-5" />
                                     </button>
