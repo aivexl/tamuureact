@@ -1313,7 +1313,7 @@ export default {
                             merchant_id, nama_produk, deskripsi, harga_estimasi, status, images, 
                             kategori_produk, kota, tiktok_url, youtube_url, x_url, website_url, 
                             tokopedia_url, shopee_url, tiktokshop_url, alamat_lengkap, google_maps_url,
-                            whatsapp, phone, instagram, facebook, kontak_utama
+                            whatsapp, phone, instagram, facebook, kontak_utama, hide_chat
                         } = body;
 
                         if (!merchant_id || !nama_produk) {
@@ -1341,7 +1341,7 @@ export default {
                             return json({ error: `Produk dengan nama serupa "${nama_produk}" sudah ada.` }, { ...corsHeaders, status: 400 });
                         }
 
-                        console.log(`[Shop] PERSISTENCE INITIATED: ${productId} | Merchant: ${merchant_id} | Status: ${finalStatus} | Slug: ${productSlug}`);
+                        console.log(`[Shop] PERSISTENCE INITIATED: ${productId} | Merchant: ${merchant_id} | Status: ${finalStatus} | Slug: ${productSlug} | HideChat: ${hide_chat}`);
 
                         // Atomic Transaction using Batch
                         const statements = [
@@ -1350,9 +1350,9 @@ export default {
                                     id, merchant_id, nama_produk, deskripsi, harga_estimasi, status, 
                                     kategori_produk, kota, tiktok_url, youtube_url, x_url, website_url, 
                                     tokopedia_url, shopee_url, tiktokshop_url, is_approved, slug, alamat_lengkap, google_maps_url,
-                                    whatsapp, phone, instagram, facebook, kontak_utama
+                                    whatsapp, phone, instagram, facebook, kontak_utama, hide_chat
                                     )
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                                     `).bind(
                                     productId, merchant_id, nama_produk, deskripsi || '-', 
                                     harga_estimasi || null, finalStatus, kategori_produk || null, 
@@ -1362,7 +1362,7 @@ export default {
                                     productSlug,
                                     alamat_lengkap || null,                                google_maps_url || null,
                                 whatsapp || null, phone || null, instagram || null, facebook || null,
-                                kontak_utama || null
+                                kontak_utama || null, hide_chat || 0
                             )
                         ];
 
@@ -1464,8 +1464,9 @@ export default {
                         addField('instagram', body.instagram);
                         addField('facebook', body.facebook);
                         addField('kontak_utama', body.kontak_utama);
+                        addField('hide_chat', body.hide_chat);
                         
-                        console.log(`[Admin] PERSISTENCE HARDENED: ID=${productId || 'NEW'} | kontak_utama=${body.kontak_utama}`);
+                        console.log(`[Admin] PERSISTENCE HARDENED: ID=${productId || 'NEW'} | kontak_utama=${body.kontak_utama} | hide_chat=${body.hide_chat}`);
 
                         if (nama_produk) {
                             addField('slug', generateSlug(nama_produk));

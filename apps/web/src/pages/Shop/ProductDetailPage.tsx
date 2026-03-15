@@ -112,7 +112,6 @@ export const ProductDetailPage: React.FC = () => {
     const isWishlisted = wishlist.some((item: any) => item.id === product?.id);
 
     // Premium Vendor Contact Component
-    // Premium Vendor Contact Component
     const VendorContactItem = ({ 
         id, 
         icon: Icon, 
@@ -136,7 +135,7 @@ export const ProductDetailPage: React.FC = () => {
         logoOnly?: boolean,
         compact?: boolean
     }) => {
-        if (!value) return <div className="h-11 bg-slate-50/30 border border-dashed border-slate-100 rounded-xl opacity-40" />;
+        if (!value) return <div className="h-11 bg-slate-50/10 border border-dashed border-slate-100/20 rounded-xl" />;
 
         const handleAction = (e: React.MouseEvent) => {
             e.stopPropagation();
@@ -173,24 +172,35 @@ export const ProductDetailPage: React.FC = () => {
         return (
             <div 
                 onClick={handleAction}
-                className={`h-11 flex items-center transition-all duration-300 bg-white border border-slate-100 rounded-xl hover:bg-slate-50 hover:border-slate-200 hover:shadow-sm group cursor-pointer ${logoOnly ? 'justify-center px-2' : compact ? 'px-2 gap-2' : 'px-3 gap-3'}`}
+                className={`h-11 flex items-center transition-all duration-300 bg-white border border-slate-100 rounded-xl hover:bg-slate-50 hover:border-slate-200 hover:shadow-sm group cursor-pointer ${logoOnly ? 'justify-center px-2' : compact ? 'px-2 gap-1.5' : 'px-3 gap-2.5'}`}
                 title={label}
             >
                 <div className={`flex-shrink-0 flex items-center justify-center transition-transform duration-300 group-hover:scale-110 ${iconColor} ${logoOnly ? 'w-full' : ''}`}>
                     {imgSrc ? (
-                        <img src={imgSrc} alt={label} className="w-6 h-6 object-contain" />
+                        <img src={imgSrc} alt={label} className="w-5 h-5 object-contain" />
                     ) : (
-                        customIcon || (Icon && <Icon size={compact ? 16 : 18} />)
+                        customIcon || (Icon && <Icon size={compact ? 14 : 16} />)
                     )}
                 </div>
                 {!logoOnly && (
                     <div className="flex-1 min-w-0">
-                        <p className={`font-black uppercase tracking-tight text-[#0A1128] truncate leading-none ${compact ? 'text-[8px]' : 'text-[10px]'}`}>{label}</p>
+                        <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-0.5">{label}</p>
+                        <p className={`font-black text-[#0A1128] truncate leading-none ${compact ? 'text-[8px]' : 'text-[10px]'}`}>
+                            {value === 'Tanya di Sini' ? 'Mulai Chat' : value}
+                        </p>
                     </div>
                 )}
-                {type === 'copy' && !logoOnly && !compact && (
-                    <div className="flex-shrink-0 text-slate-300 group-hover:text-[#FFBF00]">
-                        <ArrowUpRight size={12} />
+                {!logoOnly && (
+                    <div className="flex-shrink-0 ml-auto">
+                        {type === 'copy' ? (
+                            <div className="text-slate-300 group-hover:text-[#FFBF00] transition-colors">
+                                <AnimatedCopyIcon text={value} size={10} showToast={false} />
+                            </div>
+                        ) : (type === 'link' || type === 'chat') && (
+                            <div className="text-slate-300 group-hover:text-[#0A1128] transition-colors">
+                                <ArrowUpRight size={10} />
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
@@ -678,9 +688,9 @@ export const ProductDetailPage: React.FC = () => {
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                                    {/* Kolom 1: Direct Communication (2-Row Architecture) */}
+                                    {/* Kolom 1: Direct Communication (Balanced 3-Row) */}
                                     <div className="space-y-3">
-                                        {!product.hide_chat && (
+                                        {!product.hide_chat ? (
                                             <VendorContactItem 
                                                 id="chat" 
                                                 label="Chat" 
@@ -689,31 +699,27 @@ export const ProductDetailPage: React.FC = () => {
                                                 iconColor="text-indigo-600" 
                                                 type="chat" 
                                             />
-                                        )}
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <VendorContactItem 
-                                                id="wa" 
-                                                label="WhatsApp" 
-                                                value={product.whatsapp || product.m_whatsapp || merchantStats?.whatsapp} 
-                                                icon={MessageCircle} 
-                                                iconColor="text-[#25D366]" 
-                                                type="link" 
-                                                compact
-                                            />
-                                            <VendorContactItem 
-                                                id="phone" 
-                                                label="Telepon" 
-                                                value={product.phone || product.m_phone || merchantStats?.phone} 
-                                                icon={Phone} 
-                                                iconColor="text-slate-600" 
-                                                type="copy" 
-                                                compact
-                                            />
-                                        </div>
+                                        ) : <div className="h-11" />}
+                                        <VendorContactItem 
+                                            id="wa" 
+                                            label="WhatsApp" 
+                                            value={product.whatsapp || product.m_whatsapp || merchantStats?.whatsapp} 
+                                            icon={MessageCircle} 
+                                            iconColor="text-[#25D366]" 
+                                            type="link" 
+                                        />
+                                        <VendorContactItem 
+                                            id="phone" 
+                                            label="Nomor Telepon" 
+                                            value={product.phone || product.m_phone || merchantStats?.phone} 
+                                            icon={Phone} 
+                                            iconColor="text-slate-600" 
+                                            type="copy" 
+                                        />
                                     </div>
 
-                                    {/* Kolom 2: Social Media (3x2 Premium Grid) */}
-                                    <div className="grid grid-cols-3 gap-3">
+                                    {/* Kolom 2: Social Media (2 Columns x 3 Rows Grid) */}
+                                    <div className="grid grid-cols-2 gap-3">
                                         <VendorContactItem 
                                             id="ig" 
                                             label="Instagram" 
@@ -721,7 +727,7 @@ export const ProductDetailPage: React.FC = () => {
                                             icon={Instagram} 
                                             iconColor="text-[#E4405F]" 
                                             type="link" 
-                                            logoOnly
+                                            compact
                                         />
                                         <VendorContactItem 
                                             id="tiktok" 
@@ -730,7 +736,7 @@ export const ProductDetailPage: React.FC = () => {
                                             customIcon={<TikTokIcon className="w-4 h-4" />} 
                                             iconColor="text-black" 
                                             type="link" 
-                                            logoOnly
+                                            compact
                                         />
                                         <VendorContactItem 
                                             id="fb" 
@@ -739,7 +745,7 @@ export const ProductDetailPage: React.FC = () => {
                                             icon={Facebook} 
                                             iconColor="text-[#1877F2]" 
                                             type="link" 
-                                            logoOnly
+                                            compact
                                         />
                                         <VendorContactItem 
                                             id="x" 
@@ -748,7 +754,7 @@ export const ProductDetailPage: React.FC = () => {
                                             customIcon={<XLogoIcon className="w-4 h-4" />} 
                                             iconColor="text-black" 
                                             type="link" 
-                                            logoOnly
+                                            compact
                                         />
                                         <VendorContactItem 
                                             id="yt" 
@@ -757,7 +763,7 @@ export const ProductDetailPage: React.FC = () => {
                                             icon={Youtube} 
                                             iconColor="text-[#FF0000]" 
                                             type="link" 
-                                            logoOnly
+                                            compact
                                         />
                                         <VendorContactItem 
                                             id="web" 
@@ -766,12 +772,12 @@ export const ProductDetailPage: React.FC = () => {
                                             icon={Globe} 
                                             iconColor="text-indigo-600" 
                                             type="link" 
-                                            logoOnly
+                                            compact
                                         />
                                     </div>
 
-                                    {/* Kolom 3: Marketplace (Compact Proportional Grid) */}
-                                    <div className="grid grid-cols-2 gap-3">
+                                    {/* Kolom 3: Marketplace (Logo-Only Stacked) */}
+                                    <div className="space-y-3">
                                         <VendorContactItem 
                                             id="shopee" 
                                             label="Shopee" 
@@ -796,8 +802,6 @@ export const ProductDetailPage: React.FC = () => {
                                             type="marketplace" 
                                             logoOnly
                                         />
-                                        {/* Blank proportional box if needed for grid alignment */}
-                                        <div className="h-11 rounded-xl bg-slate-50/10 border border-slate-100/5" />
                                     </div>
                                 </div>
                             </m.div>
