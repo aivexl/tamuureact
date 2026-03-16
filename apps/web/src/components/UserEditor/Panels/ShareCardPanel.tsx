@@ -281,44 +281,48 @@ export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, on
                                     key={getPreviewUrl()} // Force reload on change
                                 />
                             ) : (
-                                <div className="w-full h-full bg-white flex flex-col p-[8%] relative font-sans leading-none">
-                                    {/* CSS Preview Layout - Mimics Satori OG Generator */}
-                                    <div className="flex justify-between items-center w-full mb-[4%]">
-                                        <img src="/assets/tamuu-logo-header.png" alt="Tamuu" className="w-[24%]" />
-                                        <div className="w-[15%] aspect-square bg-slate-100 rounded-[8%] flex items-center justify-center border border-slate-200">
-                                            <QrCode className="w-1/2 h-1/2 text-slate-800" />
-                                        </div>
+                                <div className="w-full h-full bg-white flex flex-col p-[10%] relative leading-none items-center justify-between" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                    {/* CSS Preview Layout - New Design */}
+                                    <div className="flex flex-col items-center w-full">
+                                        <img src="/assets/tamuu-logo-header.png" alt="Tamuu" className="w-[35%]" />
                                     </div>
 
-                                    <div className="flex-grow flex flex-col justify-center items-center text-center gap-[4%]">
-                                        <div className="text-[10px] text-slate-400 uppercase tracking-[4px] font-bold">
+                                    <div className="flex-grow flex flex-col justify-center items-center text-center gap-[4%] w-full">
+                                        <div className="text-[10px] text-slate-400 uppercase tracking-[6px] font-normal">
                                             {eventName || 'The Wedding of'}
                                         </div>
                                         
                                         <div className="flex flex-col items-center gap-[1%] w-full">
-                                            <div className="text-2xl font-black text-slate-900 leading-tight">
+                                            <div className="text-2xl font-extrabold text-slate-900 leading-tight">
                                                 {name1 || 'Mempelai 1'}
                                             </div>
-                                            <div className="text-xl text-slate-300 italic serif font-light">&</div>
-                                            <div className="text-2xl font-black text-slate-900 leading-tight">
+                                            <div className="text-xl text-slate-300 italic font-light">&</div>
+                                            <div className="text-2xl font-extrabold text-slate-900 leading-tight">
                                                 {name2 || 'Mempelai 2'}
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-col gap-[1%] mt-[2%]">
-                                            <div className="text-[10px] text-slate-600 font-bold uppercase tracking-wider">
+                                        <div className="flex flex-col gap-[1%] mt-[4%]">
+                                            <div className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">
                                                 {dateTime || 'Tanggal Acara'}
                                             </div>
-                                            <div className="text-[8px] text-slate-400 font-medium">
+                                            <div className="text-[8px] text-slate-400 font-normal">
                                                 {location || 'Lokasi Acara'}
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="mt-auto bg-slate-50 border border-slate-100 rounded-2xl p-[5%] flex flex-col items-center gap-[2%] w-[90%] mx-auto">
-                                        <div className="text-[7px] text-slate-400 font-bold uppercase tracking-widest">Kepada Yth:</div>
-                                        <div className="text-sm font-black text-slate-700 text-center truncate w-full">
-                                            {guestName || 'Bapak/Ibu/Saudara/i'}
+                                    <div className="mt-auto flex flex-col items-center w-full">
+                                        <div className="flex flex-col items-center w-full">
+                                            <div className="text-[8px] text-slate-400 font-normal uppercase tracking-[3px] mb-1">Kepada Yth:</div>
+                                            <div className="text-lg font-bold text-slate-700 text-center truncate w-full mb-4">
+                                                {guestName || 'Bapak/Ibu/Saudara/i'}
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Larger QR Code Container */}
+                                        <div className="w-[30%] aspect-square bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 p-2 shadow-sm">
+                                            <QrCode className="w-full h-full text-slate-800" />
                                         </div>
                                     </div>
                                 </div>

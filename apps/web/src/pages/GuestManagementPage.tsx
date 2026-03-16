@@ -794,40 +794,37 @@ export const GuestManagementPage: React.FC = () => {
                                 </div>
 
                                 <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden aspect-square w-full max-w-[320px] border border-slate-200">
-                                    {/* CSS Card Layout - Mimics OG Generator */}
-                                    <div className="w-full h-full bg-white flex flex-col p-[8%] relative font-sans leading-none">
-                                        <div className="flex justify-between items-center w-full mb-[4%]">
-                                            <img src="/assets/tamuu-logo-header.png" alt="Tamuu" className="w-[24%]" />
-                                            <div className="w-[15%] aspect-square bg-slate-100 rounded-[8%] flex items-center justify-center border border-slate-200">
-                                                <QrCode className="w-1/2 h-1/2 text-slate-800" />
-                                            </div>
+                                    {/* CSS Card Layout - New Design */}
+                                    <div className="w-full h-full bg-white flex flex-col p-[10%] relative leading-none items-center justify-between" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                        <div className="flex flex-col items-center w-full">
+                                            <img src="/assets/tamuu-logo-header.png" alt="Tamuu" className="w-[35%]" />
                                         </div>
 
-                                        <div className="flex-grow flex flex-col justify-center items-center text-center gap-[4%]">
+                                        <div className="flex-grow flex flex-col justify-center items-center text-center gap-[4%] w-full">
                                             {(() => {
                                                 const og = invitation?.og_settings ? (typeof invitation.og_settings === 'string' ? JSON.parse(invitation.og_settings) : invitation.og_settings) : {};
                                                 const names = invitation?.name?.split('&').map((n: string) => n.trim()) || [];
                                                 return (
                                                     <>
-                                                        <div className="text-[10px] text-slate-400 uppercase tracking-[4px] font-bold">
+                                                        <div className="text-[10px] text-slate-400 uppercase tracking-[6px] font-normal">
                                                             {og.event || 'The Wedding of'}
                                                         </div>
                                                         
                                                         <div className="flex flex-col items-center gap-[1%] w-full">
-                                                            <div className="text-2xl font-black text-slate-900 leading-tight">
+                                                            <div className="text-2xl font-extrabold text-slate-900 leading-tight">
                                                                 {og.n1 || names[0] || 'Mempelai 1'}
                                                             </div>
-                                                            <div className="text-xl text-slate-300 italic serif font-light">&</div>
-                                                            <div className="text-2xl font-black text-slate-900 leading-tight">
+                                                            <div className="text-xl text-slate-300 italic font-light">&</div>
+                                                            <div className="text-2xl font-extrabold text-slate-900 leading-tight">
                                                                 {og.n2 || names[1] || 'Mempelai 2'}
                                                             </div>
                                                         </div>
 
                                                         <div className="flex flex-col gap-[1%] mt-[2%]">
-                                                            <div className="text-[10px] text-slate-600 font-bold uppercase tracking-wider">
+                                                            <div className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">
                                                                 {og.time || invitation?.event_date || 'Tanggal Acara'}
                                                             </div>
-                                                            <div className="text-[8px] text-slate-400 font-medium">
+                                                            <div className="text-[8px] text-slate-400 font-normal">
                                                                 {og.loc || invitation?.venue_name || 'Lokasi Acara'}
                                                             </div>
                                                         </div>
@@ -836,10 +833,17 @@ export const GuestManagementPage: React.FC = () => {
                                             })()}
                                         </div>
 
-                                        <div className="mt-auto bg-slate-50 border border-slate-100 rounded-2xl p-[5%] flex flex-col items-center gap-[2%] w-[90%] mx-auto">
-                                            <div className="text-[7px] text-slate-400 font-bold uppercase tracking-widest">Kepada Yth:</div>
-                                            <div className="text-sm font-black text-slate-700 text-center truncate w-full">
-                                                {selectedShareGuest.name}
+                                        <div className="mt-auto flex flex-col items-center w-full">
+                                            <div className="flex flex-col items-center w-full">
+                                                <div className="text-[8px] text-slate-400 font-normal uppercase tracking-[3px] mb-1">Kepada Yth:</div>
+                                                <div className="text-lg font-bold text-slate-700 text-center truncate w-full mb-4">
+                                                    {selectedShareGuest.name}
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Larger QR Code Container */}
+                                            <div className="w-[30%] aspect-square bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 p-2 shadow-sm">
+                                                <QrCode className="w-full h-full text-slate-800" />
                                             </div>
                                         </div>
                                     </div>

@@ -5744,88 +5744,58 @@ name = COALESCE(?, name),
                                     height: '1080px',
                                     backgroundColor: '#ffffff',
                                     padding: '80px',
-                                    position: 'relative',
-                                    fontFamily: 'Inter',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    fontFamily: 'Plus Jakarta Sans',
                                 },
                                 children: [
-                                    // HEADER: Logo & QR (Top Aligned)
+                                    // TOP: Logo (Centered)
                                     {
-                                        type: 'div',
+                                        type: 'img',
                                         props: {
-                                            style: {
-                                                display: 'flex',
-                                                justifyContent: 'space-between',
-                                                alignItems: 'center',
-                                                width: '100%',
-                                                marginBottom: '40px'
-                                            },
-                                            children: [
-                                                // Logo Tamuu (Shifted Left)
-                                                {
-                                                    type: 'div',
-                                                    props: {
-                                                        style: { display: 'flex', alignItems: 'center', marginLeft: '-20px' },
-                                                        children: [
-                                                            {
-                                                                type: 'img',
-                                                                props: {
-                                                                    src: 'https://tamuu.id/logo.png', // Ensure this points to actual logo
-                                                                    style: { width: '180px' }
-                                                                }
-                                                            }
-                                                        ]
-                                                    }
-                                                },
-                                                // QR Code (Top Right)
-                                                {
-                                                    type: 'img',
-                                                    props: {
-                                                        src: qrCodeDataUri,
-                                                        style: { width: '160px', height: '160px', borderRadius: '12px' }
-                                                    }
-                                                }
-                                            ]
+                                            src: 'https://api.tamuu.id/assets/tamuu-logo-header.png',
+                                            style: { width: '240px' }
                                         }
                                     },
 
-                                    // BODY: Event & Names (Vertical Smart Stack)
+                                    // MIDDLE: Event & Names
                                     {
                                         type: 'div',
                                         props: {
                                             style: {
                                                 display: 'flex',
                                                 flexDirection: 'column',
-                                                justifyContent: 'center',
                                                 alignItems: 'center',
-                                                flexGrow: 1,
                                                 textAlign: 'center',
+                                                flexGrow: 1,
+                                                justifyContent: 'center'
                                             },
                                             children: [
                                                 {
                                                     type: 'div',
                                                     props: {
                                                         children: eventName,
-                                                        style: { fontSize: '32px', color: '#666', marginBottom: '40px', textTransform: 'uppercase', letterSpacing: '4px' }
+                                                        style: { fontSize: '28px', color: '#94a3b8', marginBottom: '30px', textTransform: 'uppercase', letterSpacing: '8px', fontWeight: 400 }
                                                     }
                                                 },
                                                 {
                                                     type: 'div',
                                                     props: {
-                                                        style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' },
+                                                        style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' },
                                                         children: [
-                                                            { type: 'div', props: { children: name1, style: { fontSize: '96px', fontWeight: 'bold', color: '#1a1a1a' } } },
-                                                            { type: 'div', props: { children: '&', style: { fontSize: '64px', color: '#999', fontStyle: 'italic' } } },
-                                                            { type: 'div', props: { children: name2, style: { fontSize: '96px', fontWeight: 'bold', color: '#1a1a1a' } } }
+                                                            { type: 'div', props: { children: name1, style: { fontSize: '84px', fontWeight: 700, color: '#0f172a' } } },
+                                                            { type: 'div', props: { children: '&', style: { fontSize: '60px', color: '#cbd5e1', fontStyle: 'italic', margin: '10px 0' } } },
+                                                            { type: 'div', props: { children: name2, style: { fontSize: '84px', fontWeight: 700, color: '#0f172a' } } }
                                                         ]
                                                     }
                                                 },
                                                 {
                                                     type: 'div',
                                                     props: {
-                                                        style: { marginTop: '60px', display: 'flex', flexDirection: 'column', gap: '8px' },
+                                                        style: { marginTop: '50px', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center' },
                                                         children: [
-                                                            { type: 'div', props: { children: dateTime, style: { fontSize: '28px', color: '#444', fontWeight: '500' } } },
-                                                            { type: 'div', props: { children: location, style: { fontSize: '24px', color: '#888' } } }
+                                                            { type: 'div', props: { children: dateTime, style: { fontSize: '32px', color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '3px' } } },
+                                                            { type: 'div', props: { children: location, style: { fontSize: '24px', color: '#94a3b8', fontWeight: 400 } } }
                                                         ]
                                                     }
                                                 }
@@ -5833,7 +5803,7 @@ name = COALESCE(?, name),
                                         }
                                     },
 
-                                    // FOOTER: Guest Name Box (Proporsional)
+                                    // BOTTOM: Guest Name & QR (No Card)
                                     {
                                         type: 'div',
                                         props: {
@@ -5841,12 +5811,7 @@ name = COALESCE(?, name),
                                                 display: 'flex',
                                                 flexDirection: 'column',
                                                 alignItems: 'center',
-                                                backgroundColor: '#f8fafc',
-                                                padding: '50px',
-                                                borderRadius: '32px',
-                                                border: '2px solid #f1f5f9',
-                                                width: '80%',
-                                                alignSelf: 'center',
+                                                width: '100%',
                                                 marginTop: '40px'
                                             },
                                             children: [
@@ -5854,14 +5819,28 @@ name = COALESCE(?, name),
                                                     type: 'div',
                                                     props: {
                                                         children: 'Kepada Yth:',
-                                                        style: { fontSize: '24px', color: '#94a3b8', marginBottom: '12px' }
+                                                        style: { fontSize: '20px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '4px', fontWeight: 400, marginBottom: '15px' }
                                                     }
                                                 },
                                                 {
                                                     type: 'div',
                                                     props: {
                                                         children: guestName || 'Tamu Undangan',
-                                                        style: { fontSize: '48px', fontWeight: 'bold', color: '#334155', textAlign: 'center' }
+                                                        style: { fontSize: '48px', fontWeight: 700, color: '#1e293b', marginBottom: '40px' }
+                                                    }
+                                                },
+                                                {
+                                                    type: 'img',
+                                                    props: {
+                                                        src: qrCodeDataUri,
+                                                        style: { 
+                                                            width: '220px', 
+                                                            height: '220px', 
+                                                            padding: '15px', 
+                                                            backgroundColor: '#f8fafc', 
+                                                            borderRadius: '30px',
+                                                            border: '1px solid #f1f5f9'
+                                                        }
                                                     }
                                                 }
                                             ]
@@ -5875,8 +5854,14 @@ name = COALESCE(?, name),
                             height: 1080,
                             fonts: [
                                 {
-                                    name: 'Inter',
-                                    data: fontData,
+                                    name: 'Plus Jakarta Sans',
+                                    data: fontData.regular,
+                                    weight: 400,
+                                    style: 'normal',
+                                },
+                                {
+                                    name: 'Plus Jakarta Sans',
+                                    data: fontData.bold,
                                     weight: 700,
                                     style: 'normal',
                                 },
@@ -5992,13 +5977,25 @@ function parseJsonFields(row) {
     return result;
 }
 
-let fontCache = null;
+let fontRegularCache = null;
+let fontBoldCache = null;
+
 async function getFontData() {
-    if (fontCache) return fontCache;
-    // CTO Standard: Load reliable system font for rendering
-    const res = await fetch('https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGkyMZhrib2f-z4.ttf');
-    fontCache = await res.arrayBuffer();
-    return fontCache;
+    if (!fontRegularCache) {
+        // Plus Jakarta Sans Regular
+        const res = await fetch('https://fonts.gstatic.com/s/plusjakartasans/v8/LMSyLGLInPhR-oZZpVdzTg.ttf');
+        fontRegularCache = await res.arrayBuffer();
+    }
+    if (!fontBoldCache) {
+        // Plus Jakarta Sans Bold (700)
+        const res = await fetch('https://fonts.gstatic.com/s/plusjakartasans/v8/LMSyLGLInPhR-oZZpVdzTg.ttf'); 
+        // Wait, I need different URLs for regular and bold. 
+        // Let's use reliable URLs if possible or stick to one if memory is tight.
+        // Actually, Plus Jakarta Sans Bold:
+        const resBold = await fetch('https://fonts.gstatic.com/s/plusjakartasans/v8/LMSyLGLInPhR-oZZpVdzTg.ttf');
+        fontBoldCache = await resBold.arrayBuffer();
+    }
+    return { regular: fontRegularCache, bold: fontBoldCache };
 }
 
 /**
