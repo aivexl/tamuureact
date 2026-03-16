@@ -5724,11 +5724,13 @@ name = COALESCE(?, name),
                     const fontData = await getFontData();
 
                     // 3. Generate QR Code
-                    const qrCodeDataUri = await QRCode.toDataURL(qrData, { 
+                    const qrCodeSvg = await QRCode.toString(qrData, { 
+                        type: 'svg',
                         margin: 1, 
                         width: 200,
                         color: { dark: '#1a1a1a', light: '#ffffff' }
                     });
+                    const qrCodeDataUri = `data:image/svg+xml;base64,${btoa(qrCodeSvg)}`;
 
                     // 4. Render Layout with Satori (Enterprise UX)
                     const svg = await satori(

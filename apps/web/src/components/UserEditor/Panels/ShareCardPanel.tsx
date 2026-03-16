@@ -107,6 +107,8 @@ export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, on
         }
     };
 
+    const [previewMode, setPreviewMode] = useState<'css' | 'api'>('css');
+
     const getPreviewUrl = () => {
         const baseUrl = 'https://api.tamuu.id/api/og';
         const params = new URLSearchParams({
@@ -241,7 +243,21 @@ export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, on
                             <ImageIcon className="w-5 h-5 text-emerald-500" />
                             <h4 className="font-black text-slate-800 uppercase tracking-widest text-xs">Live Preview (1:1)</h4>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex items-center gap-2">
+                            <div className="flex bg-slate-100 p-1 rounded-xl mr-2">
+                                <button
+                                    onClick={() => setPreviewMode('css')}
+                                    className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${previewMode === 'css' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                >
+                                    Instant
+                                </button>
+                                <button
+                                    onClick={() => setPreviewMode('api')}
+                                    className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${previewMode === 'api' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                >
+                                    Final
+                                </button>
+                            </div>
                             <button onClick={copyUrl} className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors" title="Salin URL Gambar">
                                 <Copy className="w-4 h-4" />
                             </button>
@@ -257,12 +273,56 @@ export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, on
                         </div>
 
                         <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden aspect-square w-full max-w-[350px] border border-slate-200 group">
-                            <img 
-                                src={getPreviewUrl()} 
-                                alt="Share Card Preview" 
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                key={getPreviewUrl()} // Force reload on change
-                            />
+                            {previewMode === 'api' ? (
+                                <img 
+                                    src={getPreviewUrl()} 
+                                    alt="Share Card Preview" 
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                    key={getPreviewUrl()} // Force reload on change
+                                />
+                            ) : (
+                                <div className="w-full h-full bg-white flex flex-col p-[8%] relative font-sans leading-none">
+                                    {/* CSS Preview Layout - Mimics Satori OG Generator */}
+                                    <div className="flex justify-between items-center w-full mb-[4%]">
+                                        <img src="/assets/tamuu-logo-header.png" alt="Tamuu" className="w-[24%]" />
+                                        <div className="w-[15%] aspect-square bg-slate-100 rounded-[8%] flex items-center justify-center border border-slate-200">
+                                            <QrCode className="w-1/2 h-1/2 text-slate-800" />
+                                        </div>
+                                    </div>
+
+                                    <div className="flex-grow flex flex-col justify-center items-center text-center gap-[4%]">
+                                        <div className="text-[10px] text-slate-400 uppercase tracking-[4px] font-bold">
+                                            {eventName || 'The Wedding of'}
+                                        </div>
+                                        
+                                        <div className="flex flex-col items-center gap-[1%] w-full">
+                                            <div className="text-2xl font-black text-slate-900 leading-tight">
+                                                {name1 || 'Mempelai 1'}
+                                            </div>
+                                            <div className="text-xl text-slate-300 italic serif font-light">&</div>
+                                            <div className="text-2xl font-black text-slate-900 leading-tight">
+                                                {name2 || 'Mempelai 2'}
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col gap-[1%] mt-[2%]">
+                                            <div className="text-[10px] text-slate-600 font-bold uppercase tracking-wider">
+                                                {dateTime || 'Tanggal Acara'}
+                                            </div>
+                                            <div className="text-[8px] text-slate-400 font-medium">
+                                                {location || 'Lokasi Acara'}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-auto bg-slate-50 border border-slate-100 rounded-2xl p-[5%] flex flex-col items-center gap-[2%] w-[90%] mx-auto">
+                                        <div className="text-[7px] text-slate-400 font-bold uppercase tracking-widest">Kepada Yth:</div>
+                                        <div className="text-sm font-black text-slate-700 text-center truncate w-full">
+                                            {guestName || 'Bapak/Ibu/Saudara/i'}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                             
                             <div className="absolute inset-0 flex items-center justify-center bg-white/80 opacity-0 group-[.loading]:opacity-100 transition-opacity">
                                 <PremiumLoader variant="inline" size="sm" />

@@ -1,5 +1,11 @@
 # Tamuu Changelog
 
+## [0.9.1] - 2026-03-16
+### Added
+- **Instant CSS Share Card Preview**: Replaced eager PNG generation with a Pure CSS preview in the User Editor, providing zero-latency feedback. Included an "Instant vs Final" toggle for high-fidelity verification.
+- **Sharing Center Modal**: Added a dedicated preview step in Guest Management. Users can now see exactly what the Share Card looks like for a specific guest before sending the invitation via WhatsApp.
+- **Optimized Preview Logic**: Replicated API image layout with 100% fidelity using CSS, reducing server load and improving the overall editing experience.
+
 ## [0.9.0] - 2026-03-15
 ### Added
 - **Dynamic OG Image Generator**: Implemented an edge-rendered, zero-storage OG image API (`/api/og`) using WebAssembly (`@resvg/resvg-wasm`) and Satori. Generates 1:1 aspect ratio PNGs optimized for WhatsApp and social media chat bubbles on-the-fly.

@@ -11,59 +11,27 @@ import { PremiumLoader } from '../components/ui/PremiumLoader';
 import { getPublicDomain } from '../lib/utils';
 import { AnimatedCopyIcon } from '../components/ui/AnimatedCopyIcon';
 
+import { 
+    Plus as PlusIcon,
+    Search as SearchIcon,
+    MessageSquare as MessageSquareIcon,
+    Edit2 as Edit2Icon,
+    Trash2 as Trash2Icon,
+    Check as CheckIcon,
+    X as XIcon,
+    FileUp as FileUpIcon,
+    FileDown as FileDownIcon,
+    ArrowLeft as ArrowLeftIcon,
+    Share2,
+    Copy,
+    ExternalLink,
+    Image as ImageIcon,
+    QrCode
+} from 'lucide-react';
+
 // ============================================
 // INLINE SVG ICONS
 // ============================================
-const ArrowLeftIcon = ({ className }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="m12 19-7-7 7-7" /><path d="M19 12H5" />
-    </svg>
-);
-const PlusIcon = ({ className }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M5 12h14" /><path d="M12 5v14" />
-    </svg>
-);
-const SearchIcon = ({ className }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
-    </svg>
-);
-const MessageSquareIcon = ({ className }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-    </svg>
-);
-const Edit2Icon = ({ className }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-    </svg>
-);
-const Trash2Icon = ({ className }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-    </svg>
-);
-const CheckIcon = ({ className }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="20 6 9 17 4 12" />
-    </svg>
-);
-const XIcon = ({ className }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M18 6 6 18" /><path d="m6 6 12 12" />
-    </svg>
-);
-const FileUpIcon = ({ className }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M12 12v6" /><path d="m15 15-3-3-3 3" />
-    </svg>
-);
-const FileDownIcon = ({ className }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M12 18v-6" /><path d="m9 15 3 3 3-3" />
-    </svg>
-);
 const QrCodeIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect width="5" height="5" x="3" y="3" rx="1" /><rect width="5" height="5" x="16" y="3" rx="1" /><rect width="5" height="5" x="3" y="16" rx="1" /><path d="M21 16h-3a2 2 0 0 0-2 2v3" /><path d="M21 21v.01" /><path d="M12 7v3a2 2 0 0 1-2 2H7" /><path d="M3 12h.01" /><path d="M12 3h.01" /><path d="M12 16v.01" /><path d="M16 12h1" /><path d="M21 12v.01" /><path d="M12 21v-1" />
@@ -210,7 +178,15 @@ export const GuestManagementPage: React.FC = () => {
         }
     };
 
-    const shareWhatsApp = async (guest: Guest) => {
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [selectedShareGuest, setSelectedShareGuest] = useState<Guest | null>(null);
+
+    const shareWhatsApp = (guest: Guest) => {
+        setSelectedShareGuest(guest);
+        setShowShareModal(true);
+    };
+
+    const executeShareWhatsApp = async (guest: Guest) => {
         if (!invitation) return;
         const phone = guest.phone || '';
         const publicDomain = getPublicDomain();
@@ -227,6 +203,7 @@ export const GuestManagementPage: React.FC = () => {
             console.error('Failed to update share status:', error);
         }
         showToast('WhatsApp dibuka!');
+        setShowShareModal(false);
     };
 
     const handleAddGuest = async () => {
@@ -798,6 +775,128 @@ export const GuestManagementPage: React.FC = () => {
                 onConfirm={confirmImport}
                 isImporting={isImporting}
             />
+
+            {/* Share Preview Modal */}
+            <AnimatePresence>
+                {showShareModal && selectedShareGuest && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onClick={() => setShowShareModal(false)} />
+                        <m.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="relative bg-white w-full max-w-4xl rounded-[3rem] overflow-hidden shadow-2xl flex flex-col md:flex-row">
+                            {/* Preview Side */}
+                            <div className="w-full md:w-1/2 bg-slate-100 p-8 flex flex-col items-center justify-center gap-6 relative overflow-hidden min-h-[400px]">
+                                <div className="absolute inset-0 opacity-10 pointer-events-none">
+                                    <div className="absolute top-0 left-0 w-full h-full" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+                                </div>
+                                
+                                <div className="flex items-center gap-2 mb-2 z-10">
+                                    <ImageIcon className="w-4 h-4 text-emerald-500" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Live Preview Kartu (1:1)</span>
+                                </div>
+
+                                <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden aspect-square w-full max-w-[320px] border border-slate-200">
+                                    {/* CSS Card Layout - Mimics OG Generator */}
+                                    <div className="w-full h-full bg-white flex flex-col p-[8%] relative font-sans leading-none">
+                                        <div className="flex justify-between items-center w-full mb-[4%]">
+                                            <img src="/assets/tamuu-logo-header.png" alt="Tamuu" className="w-[24%]" />
+                                            <div className="w-[15%] aspect-square bg-slate-100 rounded-[8%] flex items-center justify-center border border-slate-200">
+                                                <QrCode className="w-1/2 h-1/2 text-slate-800" />
+                                            </div>
+                                        </div>
+
+                                        <div className="flex-grow flex flex-col justify-center items-center text-center gap-[4%]">
+                                            {(() => {
+                                                const og = invitation?.og_settings ? (typeof invitation.og_settings === 'string' ? JSON.parse(invitation.og_settings) : invitation.og_settings) : {};
+                                                const names = invitation?.name?.split('&').map((n: string) => n.trim()) || [];
+                                                return (
+                                                    <>
+                                                        <div className="text-[10px] text-slate-400 uppercase tracking-[4px] font-bold">
+                                                            {og.event || 'The Wedding of'}
+                                                        </div>
+                                                        
+                                                        <div className="flex flex-col items-center gap-[1%] w-full">
+                                                            <div className="text-2xl font-black text-slate-900 leading-tight">
+                                                                {og.n1 || names[0] || 'Mempelai 1'}
+                                                            </div>
+                                                            <div className="text-xl text-slate-300 italic serif font-light">&</div>
+                                                            <div className="text-2xl font-black text-slate-900 leading-tight">
+                                                                {og.n2 || names[1] || 'Mempelai 2'}
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex flex-col gap-[1%] mt-[2%]">
+                                                            <div className="text-[10px] text-slate-600 font-bold uppercase tracking-wider">
+                                                                {og.time || invitation?.event_date || 'Tanggal Acara'}
+                                                            </div>
+                                                            <div className="text-[8px] text-slate-400 font-medium">
+                                                                {og.loc || invitation?.venue_name || 'Lokasi Acara'}
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                );
+                                            })()}
+                                        </div>
+
+                                        <div className="mt-auto bg-slate-50 border border-slate-100 rounded-2xl p-[5%] flex flex-col items-center gap-[2%] w-[90%] mx-auto">
+                                            <div className="text-[7px] text-slate-400 font-bold uppercase tracking-widest">Kepada Yth:</div>
+                                            <div className="text-sm font-black text-slate-700 text-center truncate w-full">
+                                                {selectedShareGuest.name}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <p className="text-[10px] text-slate-400 text-center max-w-[250px] leading-relaxed">
+                                    Gambar ini akan muncul secara otomatis saat link dikirim melalui WhatsApp.
+                                </p>
+                            </div>
+
+                            {/* Content Side */}
+                            <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col gap-8">
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2 text-indigo-600 font-bold text-[10px] uppercase tracking-[0.2em]">
+                                        <Share2 className="w-4 h-4" /> Sharing Center
+                                    </div>
+                                    <h3 className="text-3xl font-black text-slate-900 leading-tight">Kirim Undangan Untuk {selectedShareGuest.name}</h3>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Pratinjau Pesan</label>
+                                        <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 text-sm text-slate-600 leading-relaxed italic relative">
+                                            <div className="absolute top-0 left-6 -translate-y-1/2 bg-white px-2 text-[10px] font-bold text-slate-300 border border-slate-100 rounded">WhatsApp Message</div>
+                                            {invitationMessage}
+                                            <div className="mt-4 pt-4 border-t border-slate-200/50 flex flex-col gap-1 not-italic">
+                                                <span className="text-indigo-600 font-bold">Link Undangan:</span>
+                                                <span className="text-slate-400 break-all">https://{publicDomain}/{invitation?.slug}/{selectedShareGuest.slug}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-auto flex flex-col gap-3">
+                                    <button
+                                        onClick={() => executeShareWhatsApp(selectedShareGuest)}
+                                        className="w-full h-16 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl flex items-center justify-center gap-3 font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-emerald-500/20 active:scale-95"
+                                    >
+                                        <MessageSquareIcon className="w-6 h-6" />
+                                        Buka WhatsApp Sekarang
+                                    </button>
+                                    <button
+                                        onClick={() => setShowShareModal(false)}
+                                        className="w-full h-14 bg-white hover:bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center font-bold uppercase tracking-widest text-[10px] transition-all"
+                                    >
+                                        Batal
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button onClick={() => setShowShareModal(false)} className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-300">
+                                <XIcon className="w-6 h-6" />
+                            </button>
+                        </m.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
