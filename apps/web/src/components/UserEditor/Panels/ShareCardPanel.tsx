@@ -263,70 +263,69 @@ export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, on
                         </div>
 
                         <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden aspect-square w-full max-w-[350px] border border-slate-200 group">
-                            {previewMode === 'api' ? (
-                                <img 
-                                    src={getPreviewUrl()} 
-                                    alt="Share Card Preview" 
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                    key={getPreviewUrl()} // Force reload on change
-                                />
-                            ) : (
-                                <div className="w-full h-full bg-white flex flex-col p-[10%] relative leading-none" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                                    {/* Top Section: Split Layout */}
-                                    <div className="flex justify-between items-start w-full">
-                                        {/* Left Side: Branding & Core Names */}
-                                        <div className="flex flex-col items-start w-[65%]">
-                                            <img src="/assets/tamuu-logo-header.png" alt="Tamuu" className="w-[35%] opacity-50 grayscale brightness-50 mb-[12%]" />
-                                            
-                                            <div className="text-[7px] text-slate-400 uppercase tracking-[8px] font-medium mb-[6%] opacity-80">
-                                                {eventName || 'EVENT NAME'}
-                                            </div>
-                                            
-                                            <div className="flex flex-col items-start w-full">
-                                                <div className="text-lg font-bold text-slate-900 leading-tight tracking-tight">
-                                                    {name1 || 'MEMPELAI 1'}
-                                                </div>
-                                                <div className="text-base text-slate-300 font-extralight my-1">&</div>
-                                                <div className="text-lg font-bold text-slate-900 leading-tight tracking-tight">
-                                                    {name2 || 'MEMPELAI 2'}
-                                                </div>
-                                            </div>
-                                        </div>
+                        {previewMode === 'api' ? (
+                        <img 
+                            src={getPreviewUrl()} 
+                            alt="Share Card Preview" 
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            key={getPreviewUrl()} // Force reload on change
+                        />
+                        ) : (
+                        <div className="w-full h-full bg-white flex flex-col p-[10%] relative leading-none" style={{ fontFamily: "'Inter', sans-serif" }}>
+                            {/* Top Section: Split Layout 65/35 */}
+                            <div className="flex justify-between items-start w-full">
+                                {/* Left Side: Branding & Core Names */}
+                                <div className="flex flex-col items-start w-[65%]">
+                                    <img src="/assets/tamuu-logo-header.png" alt="Tamuu" className="w-[22%] opacity-50 grayscale brightness-50 mb-[10%]" />
 
-                                        {/* Right Side: Bare QR Anchor */}
-                                        <div className="w-[30%] aspect-square flex items-center justify-center pt-2">
-                                            <QrCode className="w-full h-full text-slate-800 opacity-90" strokeWidth={1} />
-                                        </div>
+                                    <div className="text-[6px] text-slate-400 uppercase tracking-[8px] font-medium mb-[5%] opacity-80">
+                                        {(eventName || 'THE WEDDING OF').toUpperCase()}
                                     </div>
 
-                                    {/* Middle Section: Logistics */}
-                                    <div className="flex flex-col items-start mt-[10%]">
-                                        <div className="flex flex-col gap-[3px]">
-                                            {dateTime.includes(',') ? dateTime.split(',').map((part, i) => (
-                                                <div key={i} className={`uppercase tracking-[2px] ${i === 0 ? 'text-[8px] text-slate-600 font-bold' : 'text-[7px] text-slate-400 font-medium opacity-80'}`}>
-                                                    {part.trim()}
-                                                </div>
-                                            )) : (
-                                                <div className="text-[8px] text-slate-600 font-bold uppercase tracking-[2px]">
-                                                    {dateTime || 'EVENT DATE'}
-                                                </div>
-                                            )}
-                                            <div className="text-[7px] text-slate-400 font-normal mt-1 opacity-70">
-                                                {location || 'LOCATION'}
-                                            </div>
+                                    <div className="flex flex-col items-start w-full">
+                                        <div className="text-[20px] font-bold text-slate-900 leading-[1.1] tracking-tighter uppercase">
+                                            {name1 || 'MEMPELAI 1'}
                                         </div>
-                                    </div>
-
-                                    {/* Bottom Section: Guest Identity */}
-                                    <div className="mt-auto flex flex-col items-start w-full">
-                                        <div className="text-[6px] text-slate-400 font-normal uppercase tracking-[3px] mb-1.5 opacity-60">Kepada Yth:</div>
-                                        <div className="text-sm font-semibold text-slate-800 truncate w-full pr-10">
-                                            {guestName || 'TAMU UNDANGAN'}
+                                        <div className="text-[14px] text-slate-300 font-extralight my-1">&</div>
+                                        <div className="text-[20px] font-bold text-slate-900 leading-[1.1] tracking-tighter uppercase">
+                                            {name2 || 'MEMPELAI 2'}
                                         </div>
                                     </div>
                                 </div>
-                            )}
-                            
+
+                                {/* Right Side: Bare QR Anchor */}
+                                <div className="w-[30%] aspect-square flex items-center justify-center pt-2">
+                                    <QrCode className="w-full h-full text-slate-800 opacity-90" strokeWidth={1} />
+                                </div>
+                            </div>
+
+                            {/* Middle Section: Logistics */}
+                            <div className="flex flex-col items-start mt-[10%]">
+                                <div className="flex flex-col gap-1">
+                                    {dateTime.includes(',') ? dateTime.split(',').map((part, i) => (
+                                        <div key={i} className={`uppercase tracking-[2px] ${i === 0 ? 'text-[8px] text-slate-600 font-bold' : 'text-[7px] text-slate-400 font-medium opacity-80'}`}>
+                                            {part.trim()}
+                                        </div>
+                                    )) : (
+                                        <div className="text-[8px] text-slate-600 font-bold uppercase tracking-[2px]">
+                                            {dateTime || 'EVENT DATE'}
+                                        </div>
+                                    )}
+                                    <div className="text-[7px] text-slate-400 font-normal mt-1 opacity-70 uppercase tracking-[1px]">
+                                        {location || 'LOCATION'}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Bottom Section: Guest Identity */}
+                            <div className="mt-auto flex flex-col items-start w-full">
+                                <div className="text-[6px] text-slate-400 font-normal uppercase tracking-[3px] mb-1.5 opacity-60">Kepada Yth:</div>
+                                <div className="text-[14px] font-bold text-slate-800 truncate w-full pr-10 uppercase tracking-tight">
+                                    {guestName || 'TAMU UNDANGAN'}
+                                </div>
+                            </div>
+                        </div>
+                        )}
                             <div className="absolute inset-0 flex items-center justify-center bg-white/80 opacity-0 group-[.loading]:opacity-100 transition-opacity">
                                 <PremiumLoader variant="inline" size="sm" />
                             </div>

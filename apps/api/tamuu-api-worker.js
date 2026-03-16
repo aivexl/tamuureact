@@ -5762,6 +5762,7 @@ name = COALESCE(?, name),
                     });
 
                     // 4. Render Layout with Satori (Enterprise UX - Apple Asymmetrical Standard)
+                    // ULTRA-DEEP ALIGNMENT: 1080x1080 Canvas
                     const svg = await satori(
                         {
                             type: 'div',
@@ -5777,24 +5778,24 @@ name = COALESCE(?, name),
                                     position: 'relative'
                                 },
                                 children: [
-                                    // TOP SECTION: CONTENT LEFT, QR RIGHT
+                                    // TOP SECTION: SPLIT 65/35
                                     {
                                         type: 'div',
                                         props: {
                                             style: { display: 'flex', width: '100%', alignItems: 'flex-start', justifyContent: 'space-between' },
                                             children: [
-                                                // LEFT COLUMN (Branding & Core Info)
+                                                // LEFT COLUMN: Branding & Core Names
                                                 {
                                                     type: 'div',
                                                     props: {
-                                                        style: { display: 'flex', flexDirection: 'column', width: '600px' },
+                                                        style: { display: 'flex', flexDirection: 'column', width: '650px' },
                                                         children: [
                                                             // Logo
                                                             {
                                                                 type: 'img',
                                                                 props: {
                                                                     src: 'https://api.tamuu.id/assets/tamuu-logo-header.png',
-                                                                    style: { width: '120px', opacity: 0.6, marginBottom: '60px' }
+                                                                    style: { width: '140px', opacity: 0.5, marginBottom: '80px' }
                                                                 }
                                                             },
                                                             // Event Type
@@ -5802,89 +5803,103 @@ name = COALESCE(?, name),
                                                                 type: 'div',
                                                                 props: {
                                                                     children: (eventName || 'THE WEDDING OF').toUpperCase(),
-                                                                    style: { fontSize: '16px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '10px', fontWeight: 400, marginBottom: '25px' }
+                                                                    style: { fontSize: '18px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '12px', fontWeight: 500, marginBottom: '30px', opacity: 0.8 }
                                                                 }
                                                             },
-                                                            // Couple Names (Left Aligned)
+                                                            // Couple Names
                                                             {
                                                                 type: 'div',
                                                                 props: {
                                                                     style: { display: 'flex', flexDirection: 'column', gap: '0px' },
                                                                     children: [
-                                                                        { type: 'div', props: { children: (name1 || 'NAME ONE').toUpperCase(), style: { fontSize: '52px', fontWeight: 700, color: '#0f172a', letterSpacing: '-2px' } } },
-                                                                        { type: 'div', props: { children: '&', style: { fontSize: '32px', color: '#cbd5e1', fontWeight: 300, margin: '5px 0' } } },
-                                                                        { type: 'div', props: { children: (name2 || 'NAME TWO').toUpperCase(), style: { fontSize: '52px', fontWeight: 700, color: '#0f172a', letterSpacing: '-2px' } } }
+                                                                        { type: 'div', props: { children: (name1 || 'NAME ONE').toUpperCase(), style: { fontSize: '64px', fontWeight: 700, color: '#0f172a', letterSpacing: '-2px', lineHeight: 1 } } },
+                                                                        { type: 'div', props: { children: '&', style: { fontSize: '40px', color: '#cbd5e1', fontWeight: 300, margin: '15px 0' } } },
+                                                                        { type: 'div', props: { children: (name2 || 'NAME TWO').toUpperCase(), style: { fontSize: '64px', fontWeight: 700, color: '#0f172a', letterSpacing: '-2px', lineHeight: 1 } } }
                                                                     ]
                                                                 }
                                                             }
                                                         ]
                                                     }
                                                 },
-                                                // RIGHT COLUMN (Bare QR Code - High Fidelity)
+                                                // RIGHT COLUMN: QR Anchor
                                                 {
-                                                    type: 'img',
+                                                    type: 'div',
                                                     props: {
-                                                        src: qrCodeDataUri,
-                                                        style: { width: '280px', height: '280px', marginTop: '10px' }
+                                                        style: { width: '300px', display: 'flex', justifyContent: 'flex-end', paddingTop: '20px' },
+                                                        children: [
+                                                            {
+                                                                type: 'img',
+                                                                props: {
+                                                                    src: qrCodeDataUri,
+                                                                    style: { width: '280px', height: '280px' }
+                                                                }
+                                                            }
+                                                        ]
                                                     }
                                                 }
                                             ]
                                         }
                                     },
 
-                                    // MIDDLE SECTION: LOGISTICS (Left Aligned)
+                                    // MIDDLE SECTION: LOGISTICS
                                     {
                                         type: 'div',
                                         props: {
-                                            style: { display: 'flex', flexDirection: 'column', marginTop: '60px' },
+                                            style: { display: 'flex', flexDirection: 'column', marginTop: '80px' },
                                             children: [
-                                                ...(dateTime.includes(',') ? 
-                                                    dateTime.split(',').map((part, i) => ({
-                                                        type: 'div',
-                                                        props: { 
-                                                            children: part.trim().toUpperCase(), 
-                                                            style: { 
-                                                                fontSize: i === 0 ? '22px' : '18px', 
-                                                                color: i === 0 ? '#475569' : '#94a3b8', 
-                                                                fontWeight: i === 0 ? 700 : 400,
-                                                                letterSpacing: '2px',
-                                                                marginBottom: '4px'
-                                                            } 
-                                                        }
-                                                    })) : 
-                                                    [{
-                                                        type: 'div',
-                                                        props: { children: (dateTime || 'EVENT DATE').toUpperCase(), style: { fontSize: '22px', color: '#475569', fontWeight: 700, letterSpacing: '2px' } }
-                                                    }]
-                                                ),
-                                                { type: 'div', props: { children: (location || 'EVENT LOCATION').toUpperCase(), style: { fontSize: '18px', color: '#64748b', fontWeight: 400, marginTop: '10px' } } }
+                                                {
+                                                    type: 'div',
+                                                    props: {
+                                                        style: { display: 'flex', flexDirection: 'column', gap: '8px' },
+                                                        children: [
+                                                            ...(dateTime.includes(',') ? 
+                                                                dateTime.split(',').map((part, i) => ({
+                                                                    type: 'div',
+                                                                    props: { 
+                                                                        children: part.trim().toUpperCase(), 
+                                                                        style: { 
+                                                                            fontSize: i === 0 ? '24px' : '20px', 
+                                                                            color: i === 0 ? '#475569' : '#94a3b8', 
+                                                                            fontWeight: i === 0 ? 700 : 400,
+                                                                            letterSpacing: '3px'
+                                                                        } 
+                                                                    }
+                                                                })) : 
+                                                                [{
+                                                                    type: 'div',
+                                                                    props: { children: (dateTime || 'EVENT DATE').toUpperCase(), style: { fontSize: '24px', color: '#475569', fontWeight: 700, letterSpacing: '3px' } }
+                                                                }]
+                                                            ),
+                                                            { type: 'div', props: { children: (location || 'EVENT LOCATION').toUpperCase(), style: { fontSize: '20px', color: '#64748b', fontWeight: 400, marginTop: '15px', letterSpacing: '1px' } } }
+                                                        ]
+                                                    }
+                                                }
                                             ]
                                         }
                                     },
 
-                                    // BOTTOM SECTION: GUEST IDENTITY (Anchored Bottom Left)
+                                    // BOTTOM SECTION: GUEST IDENTITY
                                     {
                                         type: 'div',
                                         props: {
                                             style: {
                                                 display: 'flex',
                                                 flexDirection: 'column',
-                                                marginTop: 'auto',
-                                                paddingTop: '60px'
+                                                marginTop: 'auto'
                                             },
                                             children: [
                                                 {
                                                     type: 'div',
                                                     props: {
                                                         children: 'Kepada Yth:',
-                                                        style: { fontSize: '14px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '4px', fontWeight: 400, marginBottom: '8px' }
+                                                        style: { fontSize: '16px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '5px', fontWeight: 400, marginBottom: '15px', opacity: 0.6 }
                                                     }
                                                 },
                                                 {
                                                     type: 'div',
                                                     props: {
                                                         children: (guestName || 'TAMU UNDANGAN').toUpperCase(),
-                                                        style: { fontSize: '32px', fontWeight: 700, color: '#1e293b', letterSpacing: '-0.5px' }
+                                                        style: { fontSize: '42px', fontWeight: 700, color: '#1e293b', letterSpacing: '-1px' }
                                                     }
                                                 }
                                             ]
@@ -5931,7 +5946,14 @@ name = COALESCE(?, name),
 
                 } catch (err) {
                     console.error('[OG ERROR]', err);
-                    return json({ error: 'Failed to generate image', details: err.message }, { ...corsHeaders, status: 500 });
+                    return json({ 
+                        error: 'Failed to generate image', 
+                        details: err.message,
+                        stack: err.stack,
+                        context: {
+                            eventName, name1, name2, dateTime, location, guestName
+                        }
+                    }, { ...corsHeaders, status: 500 });
                 }
             }
 

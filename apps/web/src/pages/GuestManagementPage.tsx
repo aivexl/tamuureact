@@ -795,28 +795,28 @@ export const GuestManagementPage: React.FC = () => {
 
                                 <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden aspect-square w-full max-w-[320px] border border-slate-200">
                                     {/* CSS Card Layout - Elegant Apple Asymmetrical Grid */}
-                                    <div className="w-full h-full bg-white flex flex-col p-[10%] relative leading-none" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                                        {/* Top Section: Split Layout */}
+                                    <div className="w-full h-full bg-white flex flex-col p-[10%] relative leading-none" style={{ fontFamily: "'Inter', sans-serif" }}>
+                                        {/* Top Section: Split Layout 65/35 */}
                                         <div className="flex justify-between items-start w-full">
                                             {/* Left Side: Branding & Core Names */}
                                             <div className="flex flex-col items-start w-[65%]">
-                                                <img src="/assets/tamuu-logo-header.png" alt="Tamuu" className="w-[35%] opacity-50 grayscale brightness-50 mb-[12%]" />
+                                                <img src="/assets/tamuu-logo-header.png" alt="Tamuu" className="w-[22%] opacity-50 grayscale brightness-50 mb-[10%]" />
                                                 
                                                 {(() => {
                                                     const og = invitation?.og_settings ? (typeof invitation.og_settings === 'string' ? JSON.parse(invitation.og_settings) : invitation.og_settings) : {};
                                                     const names = invitation?.name?.split('&').map((n: string) => n.trim()) || [];
                                                     return (
                                                         <>
-                                                            <div className="text-[7px] text-slate-400 uppercase tracking-[8px] font-medium mb-[6%] opacity-80">
-                                                                {og.event || 'EVENT NAME'}
+                                                            <div className="text-[6px] text-slate-400 uppercase tracking-[8px] font-medium mb-[5%] opacity-80">
+                                                                {(og.event || 'THE WEDDING OF').toUpperCase()}
                                                             </div>
                                                             
                                                             <div className="flex flex-col items-start w-full">
-                                                                <div className="text-lg font-bold text-slate-900 leading-tight tracking-tight">
+                                                                <div className="text-[20px] font-bold text-slate-900 leading-[1.1] tracking-tighter uppercase">
                                                                     {og.n1 || names[0] || 'MEMPELAI 1'}
                                                                 </div>
-                                                                <div className="text-base text-slate-300 font-extralight my-1">&</div>
-                                                                <div className="text-lg font-bold text-slate-900 leading-tight tracking-tight">
+                                                                <div className="text-[14px] text-slate-300 font-extralight my-1">&</div>
+                                                                <div className="text-[20px] font-bold text-slate-900 leading-[1.1] tracking-tighter uppercase">
                                                                     {og.n2 || names[1] || 'MEMPELAI 2'}
                                                                 </div>
                                                             </div>
@@ -837,7 +837,7 @@ export const GuestManagementPage: React.FC = () => {
                                                 const og = invitation?.og_settings ? (typeof invitation.og_settings === 'string' ? JSON.parse(invitation.og_settings) : invitation.og_settings) : {};
                                                 const dt = og.time || invitation?.event_date || '';
                                                 return (
-                                                    <div className="flex flex-col gap-[3px]">
+                                                    <div className="flex flex-col gap-1">
                                                         {dt.includes(',') ? dt.split(',').map((part: string, i: number) => (
                                                             <div key={i} className={`uppercase tracking-[2px] ${i === 0 ? 'text-[8px] text-slate-600 font-bold' : 'text-[7px] text-slate-400 font-medium opacity-80'}`}>
                                                                 {part.trim()}
@@ -847,7 +847,7 @@ export const GuestManagementPage: React.FC = () => {
                                                                 {dt || 'EVENT DATE'}
                                                             </div>
                                                         )}
-                                                        <div className="text-[7px] text-slate-400 font-normal mt-1 opacity-70">
+                                                        <div className="text-[7px] text-slate-400 font-normal mt-1 opacity-70 uppercase tracking-[1px]">
                                                             {og.loc || invitation?.venue_name || 'LOCATION'}
                                                         </div>
                                                     </div>
@@ -858,8 +858,8 @@ export const GuestManagementPage: React.FC = () => {
                                         {/* Bottom Section: Guest Identity */}
                                         <div className="mt-auto flex flex-col items-start w-full">
                                             <div className="text-[6px] text-slate-400 font-normal uppercase tracking-[3px] mb-1.5 opacity-60">Kepada Yth:</div>
-                                            <div className="text-sm font-semibold text-slate-800 truncate w-full pr-10">
-                                                {selectedShareGuest.name}
+                                            <div className="text-[14px] font-bold text-slate-800 truncate w-full pr-10 uppercase tracking-tight">
+                                                {selectedShareGuest?.name || 'TAMU UNDANGAN'}
                                             </div>
                                         </div>
                                     </div>
