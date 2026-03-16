@@ -794,56 +794,72 @@ export const GuestManagementPage: React.FC = () => {
                                 </div>
 
                                 <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden aspect-square w-full max-w-[320px] border border-slate-200">
-                                    {/* CSS Card Layout - New Design */}
-                                    <div className="w-full h-full bg-white flex flex-col p-[10%] relative leading-none items-center justify-between" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                                        <div className="flex flex-col items-center w-full">
-                                            <img src="/assets/tamuu-logo-header.png" alt="Tamuu" className="w-[35%]" />
+                                    {/* CSS Card Layout - Elegant Apple Asymmetrical Grid */}
+                                    <div className="w-full h-full bg-white flex flex-col p-[10%] relative leading-none" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                        {/* Top Section: Split Layout */}
+                                        <div className="flex justify-between items-start w-full">
+                                            {/* Left Side: Branding & Core Names */}
+                                            <div className="flex flex-col items-start w-[65%]">
+                                                <img src="/assets/tamuu-logo-header.png" alt="Tamuu" className="w-[35%] opacity-50 grayscale brightness-50 mb-[12%]" />
+                                                
+                                                {(() => {
+                                                    const og = invitation?.og_settings ? (typeof invitation.og_settings === 'string' ? JSON.parse(invitation.og_settings) : invitation.og_settings) : {};
+                                                    const names = invitation?.name?.split('&').map((n: string) => n.trim()) || [];
+                                                    return (
+                                                        <>
+                                                            <div className="text-[7px] text-slate-400 uppercase tracking-[8px] font-medium mb-[6%] opacity-80">
+                                                                {og.event || 'EVENT NAME'}
+                                                            </div>
+                                                            
+                                                            <div className="flex flex-col items-start w-full">
+                                                                <div className="text-lg font-bold text-slate-900 leading-tight tracking-tight">
+                                                                    {og.n1 || names[0] || 'MEMPELAI 1'}
+                                                                </div>
+                                                                <div className="text-base text-slate-300 font-extralight my-1">&</div>
+                                                                <div className="text-lg font-bold text-slate-900 leading-tight tracking-tight">
+                                                                    {og.n2 || names[1] || 'MEMPELAI 2'}
+                                                                </div>
+                                                            </div>
+                                                        </>
+                                                    );
+                                                })()}
+                                            </div>
+
+                                            {/* Right Side: Bare QR Anchor */}
+                                            <div className="w-[30%] aspect-square flex items-center justify-center pt-2">
+                                                <QrCode className="w-full h-full text-slate-800 opacity-90" strokeWidth={1} />
+                                            </div>
                                         </div>
 
-                                        <div className="flex-grow flex flex-col justify-center items-center text-center gap-[4%] w-full">
+                                        {/* Middle Section: Logistics */}
+                                        <div className="flex flex-col items-start mt-[10%]">
                                             {(() => {
                                                 const og = invitation?.og_settings ? (typeof invitation.og_settings === 'string' ? JSON.parse(invitation.og_settings) : invitation.og_settings) : {};
-                                                const names = invitation?.name?.split('&').map((n: string) => n.trim()) || [];
+                                                const dt = og.time || invitation?.event_date || '';
                                                 return (
-                                                    <>
-                                                        <div className="text-[10px] text-slate-400 uppercase tracking-[6px] font-normal">
-                                                            {og.event || 'The Wedding of'}
+                                                    <div className="flex flex-col gap-[3px]">
+                                                        {dt.includes(',') ? dt.split(',').map((part: string, i: number) => (
+                                                            <div key={i} className={`uppercase tracking-[2px] ${i === 0 ? 'text-[8px] text-slate-600 font-bold' : 'text-[7px] text-slate-400 font-medium opacity-80'}`}>
+                                                                {part.trim()}
+                                                            </div>
+                                                        )) : (
+                                                            <div className="text-[8px] text-slate-600 font-bold uppercase tracking-[2px]">
+                                                                {dt || 'EVENT DATE'}
+                                                            </div>
+                                                        )}
+                                                        <div className="text-[7px] text-slate-400 font-normal mt-1 opacity-70">
+                                                            {og.loc || invitation?.venue_name || 'LOCATION'}
                                                         </div>
-                                                        
-                                                        <div className="flex flex-col items-center gap-[1%] w-full">
-                                                            <div className="text-2xl font-extrabold text-slate-900 leading-tight">
-                                                                {og.n1 || names[0] || 'Mempelai 1'}
-                                                            </div>
-                                                            <div className="text-xl text-slate-300 italic font-light">&</div>
-                                                            <div className="text-2xl font-extrabold text-slate-900 leading-tight">
-                                                                {og.n2 || names[1] || 'Mempelai 2'}
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="flex flex-col gap-[1%] mt-[2%]">
-                                                            <div className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">
-                                                                {og.time || invitation?.event_date || 'Tanggal Acara'}
-                                                            </div>
-                                                            <div className="text-[8px] text-slate-400 font-normal">
-                                                                {og.loc || invitation?.venue_name || 'Lokasi Acara'}
-                                                            </div>
-                                                        </div>
-                                                    </>
+                                                    </div>
                                                 );
                                             })()}
                                         </div>
 
-                                        <div className="mt-auto flex flex-col items-center w-full">
-                                            <div className="flex flex-col items-center w-full">
-                                                <div className="text-[8px] text-slate-400 font-normal uppercase tracking-[3px] mb-1">Kepada Yth:</div>
-                                                <div className="text-lg font-bold text-slate-700 text-center truncate w-full mb-4">
-                                                    {selectedShareGuest.name}
-                                                </div>
-                                            </div>
-                                            
-                                            {/* Larger QR Code Container */}
-                                            <div className="w-[30%] aspect-square bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 p-2 shadow-sm">
-                                                <QrCode className="w-full h-full text-slate-800" />
+                                        {/* Bottom Section: Guest Identity */}
+                                        <div className="mt-auto flex flex-col items-start w-full">
+                                            <div className="text-[6px] text-slate-400 font-normal uppercase tracking-[3px] mb-1.5 opacity-60">Kepada Yth:</div>
+                                            <div className="text-sm font-semibold text-slate-800 truncate w-full pr-10">
+                                                {selectedShareGuest.name}
                                             </div>
                                         </div>
                                     </div>

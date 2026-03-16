@@ -28,8 +28,8 @@ export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, on
     const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState(false);
 
-    // Form State
-    const [eventName, setEventName] = useState('The Wedding of');
+    // Form State - Empty by default per user request
+    const [eventName, setEventName] = useState('');
     const [name1, setName1] = useState('');
     const [name2, setName2] = useState('');
     const [dateTime, setDateTime] = useState('');
@@ -45,26 +45,20 @@ export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, on
                 if (data) {
                     setSlug(data.slug || '');
                     
-                    // Parse existing settings if available, otherwise use defaults
+                    // Parse existing settings if available
                     if (data.og_settings) {
                         try {
                             const settings = JSON.parse(data.og_settings);
-                            setEventName(settings.event || 'The Wedding of');
+                            setEventName(settings.event || '');
                             setName1(settings.n1 || '');
                             setName2(settings.n2 || '');
-                            setDateTime(settings.time || data.event_date || '');
-                            setLocation(settings.loc || data.venue_name || '');
+                            setDateTime(settings.time || '');
+                            setLocation(settings.loc || '');
                         } catch (e) {
                             console.error('Failed to parse og_settings', e);
                         }
-                    } else {
-                        // Intelligent defaults from main data
-                        const names = data.name?.split('&').map((n: string) => n.trim()) || [];
-                        setName1(names[0] || '');
-                        setName2(names[1] || '');
-                        setDateTime(data.event_date || '');
-                        setLocation(data.venue_name || '');
                     }
+                    // CTO POLICY: Manual-only entry. No auto-population from data.name.
                 }
             } catch (error) {
                 console.error('Failed to load invitation data:', error);
@@ -146,11 +140,7 @@ export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, on
                 {/* Form Side */}
                 <div className="space-y-6">
                     <div className="bg-slate-50/50 rounded-[2rem] p-6 space-y-6 border border-slate-100">
-                        <div className="flex items-center gap-2">
-                            <Sparkles className="w-5 h-5 text-indigo-600" />
-                            <h4 className="font-black text-slate-800 uppercase tracking-widest text-xs">Konfigurasi Kartu</h4>
-                        </div>
-
+                        {/* Header removed per user request */}
                         <div className="space-y-4">
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Event Name</label>
@@ -158,7 +148,7 @@ export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, on
                                     <input
                                         value={eventName}
                                         onChange={e => setEventName(e.target.value)}
-                                        placeholder="The Wedding of"
+                                        placeholder="Contoh: The Wedding of"
                                         className="w-full pl-12 pr-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 outline-none font-bold text-slate-700"
                                     />
                                     <Type className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
@@ -172,7 +162,7 @@ export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, on
                                         <input
                                             value={name1}
                                             onChange={e => setName1(e.target.value)}
-                                            placeholder="Nama Pria"
+                                            placeholder="Nama"
                                             className="w-full pl-12 pr-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 outline-none font-bold text-slate-700"
                                         />
                                         <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
@@ -184,7 +174,7 @@ export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, on
                                         <input
                                             value={name2}
                                             onChange={e => setName2(e.target.value)}
-                                            placeholder="Nama Wanita"
+                                            placeholder="Nama"
                                             className="w-full pl-12 pr-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 outline-none font-bold text-slate-700"
                                         />
                                         <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
@@ -193,12 +183,12 @@ export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, on
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Waktu Acara</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Waktu Acara (Gunakan koma untuk baris baru)</label>
                                 <div className="relative">
                                     <input
                                         value={dateTime}
                                         onChange={e => setDateTime(e.target.value)}
-                                        placeholder="Minggu, 12 Desember 2026"
+                                        placeholder="Contoh: Minggu, 12 Des 2026, 10:00 WIB"
                                         className="w-full pl-12 pr-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 outline-none font-bold text-slate-700"
                                     />
                                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
@@ -211,7 +201,7 @@ export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, on
                                     <input
                                         value={location}
                                         onChange={e => setLocation(e.target.value)}
-                                        placeholder="Gedung Serbaguna, Jakarta"
+                                        placeholder="Lokasi"
                                         className="w-full pl-12 pr-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 outline-none font-bold text-slate-700"
                                     />
                                     <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
@@ -281,48 +271,57 @@ export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, on
                                     key={getPreviewUrl()} // Force reload on change
                                 />
                             ) : (
-                                <div className="w-full h-full bg-white flex flex-col p-[10%] relative leading-none items-center justify-between" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                                    {/* CSS Preview Layout - New Design */}
-                                    <div className="flex flex-col items-center w-full">
-                                        <img src="/assets/tamuu-logo-header.png" alt="Tamuu" className="w-[35%]" />
-                                    </div>
-
-                                    <div className="flex-grow flex flex-col justify-center items-center text-center gap-[4%] w-full">
-                                        <div className="text-[10px] text-slate-400 uppercase tracking-[6px] font-normal">
-                                            {eventName || 'The Wedding of'}
+                                <div className="w-full h-full bg-white flex flex-col p-[10%] relative leading-none" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                    {/* Top Section: Split Layout */}
+                                    <div className="flex justify-between items-start w-full">
+                                        {/* Left Side: Branding & Core Names */}
+                                        <div className="flex flex-col items-start w-[65%]">
+                                            <img src="/assets/tamuu-logo-header.png" alt="Tamuu" className="w-[35%] opacity-50 grayscale brightness-50 mb-[12%]" />
+                                            
+                                            <div className="text-[7px] text-slate-400 uppercase tracking-[8px] font-medium mb-[6%] opacity-80">
+                                                {eventName || 'EVENT NAME'}
+                                            </div>
+                                            
+                                            <div className="flex flex-col items-start w-full">
+                                                <div className="text-lg font-bold text-slate-900 leading-tight tracking-tight">
+                                                    {name1 || 'MEMPELAI 1'}
+                                                </div>
+                                                <div className="text-base text-slate-300 font-extralight my-1">&</div>
+                                                <div className="text-lg font-bold text-slate-900 leading-tight tracking-tight">
+                                                    {name2 || 'MEMPELAI 2'}
+                                                </div>
+                                            </div>
                                         </div>
-                                        
-                                        <div className="flex flex-col items-center gap-[1%] w-full">
-                                            <div className="text-2xl font-extrabold text-slate-900 leading-tight">
-                                                {name1 || 'Mempelai 1'}
-                                            </div>
-                                            <div className="text-xl text-slate-300 italic font-light">&</div>
-                                            <div className="text-2xl font-extrabold text-slate-900 leading-tight">
-                                                {name2 || 'Mempelai 2'}
-                                            </div>
-                                        </div>
 
-                                        <div className="flex flex-col gap-[1%] mt-[4%]">
-                                            <div className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">
-                                                {dateTime || 'Tanggal Acara'}
-                                            </div>
-                                            <div className="text-[8px] text-slate-400 font-normal">
-                                                {location || 'Lokasi Acara'}
-                                            </div>
+                                        {/* Right Side: Bare QR Anchor */}
+                                        <div className="w-[30%] aspect-square flex items-center justify-center pt-2">
+                                            <QrCode className="w-full h-full text-slate-800 opacity-90" strokeWidth={1} />
                                         </div>
                                     </div>
 
-                                    <div className="mt-auto flex flex-col items-center w-full">
-                                        <div className="flex flex-col items-center w-full">
-                                            <div className="text-[8px] text-slate-400 font-normal uppercase tracking-[3px] mb-1">Kepada Yth:</div>
-                                            <div className="text-lg font-bold text-slate-700 text-center truncate w-full mb-4">
-                                                {guestName || 'Bapak/Ibu/Saudara/i'}
+                                    {/* Middle Section: Logistics */}
+                                    <div className="flex flex-col items-start mt-[10%]">
+                                        <div className="flex flex-col gap-[3px]">
+                                            {dateTime.includes(',') ? dateTime.split(',').map((part, i) => (
+                                                <div key={i} className={`uppercase tracking-[2px] ${i === 0 ? 'text-[8px] text-slate-600 font-bold' : 'text-[7px] text-slate-400 font-medium opacity-80'}`}>
+                                                    {part.trim()}
+                                                </div>
+                                            )) : (
+                                                <div className="text-[8px] text-slate-600 font-bold uppercase tracking-[2px]">
+                                                    {dateTime || 'EVENT DATE'}
+                                                </div>
+                                            )}
+                                            <div className="text-[7px] text-slate-400 font-normal mt-1 opacity-70">
+                                                {location || 'LOCATION'}
                                             </div>
                                         </div>
-                                        
-                                        {/* Larger QR Code Container */}
-                                        <div className="w-[30%] aspect-square bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 p-2 shadow-sm">
-                                            <QrCode className="w-full h-full text-slate-800" />
+                                    </div>
+
+                                    {/* Bottom Section: Guest Identity */}
+                                    <div className="mt-auto flex flex-col items-start w-full">
+                                        <div className="text-[6px] text-slate-400 font-normal uppercase tracking-[3px] mb-1.5 opacity-60">Kepada Yth:</div>
+                                        <div className="text-sm font-semibold text-slate-800 truncate w-full pr-10">
+                                            {guestName || 'TAMU UNDANGAN'}
                                         </div>
                                     </div>
                                 </div>

@@ -416,7 +416,7 @@ export const guests = {
 
     async update(id: string, guest: any) {
         const res = await safeFetch(`${API_BASE}/api/guests/${id}`, {
-            method: 'PUT',
+            method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(sanitizeValue(guest))
         });

@@ -1,5 +1,11 @@
 # Tamuu Changelog
 
+## [0.9.2] - 2026-03-16
+### Fixed
+- **Guest Management API Synchronization**: Resolved Error 400 when fetching guest data by normalizing parameter parsing for both `invitation_id` and `invitationId` in the API worker.
+- **WhatsApp Share Reliability**: Changed guest update method from `PUT` to `PATCH` in the frontend API client to align with backend expectations, ensuring the "shared" status is correctly persisted when sending invitations.
+- **Unified Check-in/Check-out Endpoints**: Hardened backend handlers to support both URL-based parameters and JSON body requests for guest check-in and check-out, ensuring full synchronization with frontend hooks.
+
 ## [0.9.1] - 2026-03-16
 ### Added
 - **Instant CSS Share Card Preview**: Replaced eager PNG generation with a Pure CSS preview in the User Editor, providing zero-latency feedback. Included an "Instant vs Final" toggle for high-fidelity verification.

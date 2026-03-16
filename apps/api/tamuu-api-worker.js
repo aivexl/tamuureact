@@ -4097,11 +4097,18 @@ t.*,
             // GUESTS ENDPOINTS
             // ============================================
             if (path === '/api/guests' && method === 'GET') {
-                const invitationId = url.searchParams.get('invitationId');
-                if (!invitationId) return json({ error: 'Invitation ID required' }, { ...corsHeaders, status: 400 });
+                const reqUrl = new URL(request.url);
+                const invitationId = reqUrl.searchParams.get('invitationId') || reqUrl.searchParams.get('invitation_id');
+                
+                if (!invitationId) {
+                    logger.error('[API] GET /api/guests - Missing invitationId');
+                    return json({ error: 'Invitation ID required' }, { ...corsHeaders, status: 400 });
+                }
+
                 const { results } = await env.DB.prepare(
                     'SELECT * FROM guests WHERE invitation_id = ? ORDER BY created_at DESC'
                 ).bind(invitationId).all();
+                
                 return json(results, corsHeaders);
             }
 
@@ -4221,10 +4228,23 @@ name = COALESCE(?, name),
             // GUEST CHECK-IN ENDPOINT (Enterprise Feature)
             // POST /api/guests/:id/checkin OR /api/guests/code/:code/checkin
             // ============================================
-            if (path.match(/\/api\/guests\/[^/]+\/checkin/) && method === 'POST') {
-                const parts = path.split('/');
-                const idOrCode = parts[3];
-                const isCodeLookup = parts[2] === 'code';
+            if ((path.match(/\/api\/guests\/[^/]+\/checkin/) || path === '/api/guests/check-in') && method === 'POST') {
+                let idOrCode;
+                let isCodeLookup = false;
+
+                if (path === '/api/guests/check-in') {
+                    const body = await request.json();
+                    idOrCode = body.guest_id || body.id || body.check_in_code;
+                    isCodeLookup = !!body.check_in_code && !body.guest_id;
+                } else {
+                    const parts = path.split('/');
+                    idOrCode = parts[3];
+                    isCodeLookup = parts[2] === 'code';
+                }
+
+                if (!idOrCode) {
+                    return json({ error: 'Guest ID or Code required' }, { ...corsHeaders, status: 400 });
+                }
 
                 // Find guest by ID or check_in_code
                 let guest;
@@ -4293,11 +4313,22 @@ name = COALESCE(?, name),
 
             // ============================================
             // GUEST CHECK-OUT ENDPOINT (Enterprise Feature)
-            // POST /api/guests/:id/checkout
+            // POST /api/guests/:id/checkout OR /api/guests/check-out
             // ============================================
-            if (path.match(/\/api\/guests\/[^/]+\/checkout/) && method === 'POST') {
-                const parts = path.split('/');
-                const idOrCode = parts[3];
+            if ((path.match(/\/api\/guests\/[^/]+\/checkout/) || path === '/api/guests/check-out') && method === 'POST') {
+                let idOrCode;
+
+                if (path === '/api/guests/check-out') {
+                    const body = await request.json();
+                    idOrCode = body.guest_id || body.id;
+                } else {
+                    const parts = path.split('/');
+                    idOrCode = parts[3];
+                }
+
+                if (!idOrCode) {
+                    return json({ error: 'Guest ID required' }, { ...corsHeaders, status: 400 });
+                }
 
                 // Find guest by ID or check_in_code
                 let guest;
@@ -5723,16 +5754,14 @@ name = COALESCE(?, name),
                     // 2. Fetch Font Data (Cached at Edge)
                     const fontData = await getFontData();
 
-                    // 3. Generate QR Code
-                    const qrCodeSvg = await QRCode.toString(qrData, { 
-                        type: 'svg',
+                    // 3. Generate QR Code (PNG Data URL for Maximum Stability)
+                    const qrCodeDataUri = await QRCode.toDataURL(qrData, { 
                         margin: 1, 
-                        width: 200,
+                        width: 400,
                         color: { dark: '#1a1a1a', light: '#ffffff' }
                     });
-                    const qrCodeDataUri = `data:image/svg+xml;base64,${btoa(qrCodeSvg)}`;
 
-                    // 4. Render Layout with Satori (Enterprise UX)
+                    // 4. Render Layout with Satori (Enterprise UX - Apple Asymmetrical Standard)
                     const svg = await satori(
                         {
                             type: 'div',
@@ -5743,104 +5772,119 @@ name = COALESCE(?, name),
                                     width: '1080px',
                                     height: '1080px',
                                     backgroundColor: '#ffffff',
-                                    padding: '80px',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    fontFamily: 'Plus Jakarta Sans',
+                                    padding: '100px 100px',
+                                    fontFamily: 'Inter',
+                                    position: 'relative'
                                 },
                                 children: [
-                                    // TOP: Logo (Centered)
-                                    {
-                                        type: 'img',
-                                        props: {
-                                            src: 'https://api.tamuu.id/assets/tamuu-logo-header.png',
-                                            style: { width: '240px' }
-                                        }
-                                    },
-
-                                    // MIDDLE: Event & Names
+                                    // TOP SECTION: CONTENT LEFT, QR RIGHT
                                     {
                                         type: 'div',
                                         props: {
-                                            style: {
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                alignItems: 'center',
-                                                textAlign: 'center',
-                                                flexGrow: 1,
-                                                justifyContent: 'center'
-                                            },
+                                            style: { display: 'flex', width: '100%', alignItems: 'flex-start', justifyContent: 'space-between' },
                                             children: [
+                                                // LEFT COLUMN (Branding & Core Info)
                                                 {
                                                     type: 'div',
                                                     props: {
-                                                        children: eventName,
-                                                        style: { fontSize: '28px', color: '#94a3b8', marginBottom: '30px', textTransform: 'uppercase', letterSpacing: '8px', fontWeight: 400 }
-                                                    }
-                                                },
-                                                {
-                                                    type: 'div',
-                                                    props: {
-                                                        style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' },
+                                                        style: { display: 'flex', flexDirection: 'column', width: '600px' },
                                                         children: [
-                                                            { type: 'div', props: { children: name1, style: { fontSize: '84px', fontWeight: 700, color: '#0f172a' } } },
-                                                            { type: 'div', props: { children: '&', style: { fontSize: '60px', color: '#cbd5e1', fontStyle: 'italic', margin: '10px 0' } } },
-                                                            { type: 'div', props: { children: name2, style: { fontSize: '84px', fontWeight: 700, color: '#0f172a' } } }
+                                                            // Logo
+                                                            {
+                                                                type: 'img',
+                                                                props: {
+                                                                    src: 'https://api.tamuu.id/assets/tamuu-logo-header.png',
+                                                                    style: { width: '120px', opacity: 0.6, marginBottom: '60px' }
+                                                                }
+                                                            },
+                                                            // Event Type
+                                                            {
+                                                                type: 'div',
+                                                                props: {
+                                                                    children: (eventName || 'THE WEDDING OF').toUpperCase(),
+                                                                    style: { fontSize: '16px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '10px', fontWeight: 400, marginBottom: '25px' }
+                                                                }
+                                                            },
+                                                            // Couple Names (Left Aligned)
+                                                            {
+                                                                type: 'div',
+                                                                props: {
+                                                                    style: { display: 'flex', flexDirection: 'column', gap: '0px' },
+                                                                    children: [
+                                                                        { type: 'div', props: { children: (name1 || 'NAME ONE').toUpperCase(), style: { fontSize: '52px', fontWeight: 700, color: '#0f172a', letterSpacing: '-2px' } } },
+                                                                        { type: 'div', props: { children: '&', style: { fontSize: '32px', color: '#cbd5e1', fontWeight: 300, margin: '5px 0' } } },
+                                                                        { type: 'div', props: { children: (name2 || 'NAME TWO').toUpperCase(), style: { fontSize: '52px', fontWeight: 700, color: '#0f172a', letterSpacing: '-2px' } } }
+                                                                    ]
+                                                                }
+                                                            }
                                                         ]
                                                     }
                                                 },
+                                                // RIGHT COLUMN (Bare QR Code - High Fidelity)
                                                 {
-                                                    type: 'div',
+                                                    type: 'img',
                                                     props: {
-                                                        style: { marginTop: '50px', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center' },
-                                                        children: [
-                                                            { type: 'div', props: { children: dateTime, style: { fontSize: '32px', color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '3px' } } },
-                                                            { type: 'div', props: { children: location, style: { fontSize: '24px', color: '#94a3b8', fontWeight: 400 } } }
-                                                        ]
+                                                        src: qrCodeDataUri,
+                                                        style: { width: '280px', height: '280px', marginTop: '10px' }
                                                     }
                                                 }
                                             ]
                                         }
                                     },
 
-                                    // BOTTOM: Guest Name & QR (No Card)
+                                    // MIDDLE SECTION: LOGISTICS (Left Aligned)
+                                    {
+                                        type: 'div',
+                                        props: {
+                                            style: { display: 'flex', flexDirection: 'column', marginTop: '60px' },
+                                            children: [
+                                                ...(dateTime.includes(',') ? 
+                                                    dateTime.split(',').map((part, i) => ({
+                                                        type: 'div',
+                                                        props: { 
+                                                            children: part.trim().toUpperCase(), 
+                                                            style: { 
+                                                                fontSize: i === 0 ? '22px' : '18px', 
+                                                                color: i === 0 ? '#475569' : '#94a3b8', 
+                                                                fontWeight: i === 0 ? 700 : 400,
+                                                                letterSpacing: '2px',
+                                                                marginBottom: '4px'
+                                                            } 
+                                                        }
+                                                    })) : 
+                                                    [{
+                                                        type: 'div',
+                                                        props: { children: (dateTime || 'EVENT DATE').toUpperCase(), style: { fontSize: '22px', color: '#475569', fontWeight: 700, letterSpacing: '2px' } }
+                                                    }]
+                                                ),
+                                                { type: 'div', props: { children: (location || 'EVENT LOCATION').toUpperCase(), style: { fontSize: '18px', color: '#64748b', fontWeight: 400, marginTop: '10px' } } }
+                                            ]
+                                        }
+                                    },
+
+                                    // BOTTOM SECTION: GUEST IDENTITY (Anchored Bottom Left)
                                     {
                                         type: 'div',
                                         props: {
                                             style: {
                                                 display: 'flex',
                                                 flexDirection: 'column',
-                                                alignItems: 'center',
-                                                width: '100%',
-                                                marginTop: '40px'
+                                                marginTop: 'auto',
+                                                paddingTop: '60px'
                                             },
                                             children: [
                                                 {
                                                     type: 'div',
                                                     props: {
                                                         children: 'Kepada Yth:',
-                                                        style: { fontSize: '20px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '4px', fontWeight: 400, marginBottom: '15px' }
+                                                        style: { fontSize: '14px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '4px', fontWeight: 400, marginBottom: '8px' }
                                                     }
                                                 },
                                                 {
                                                     type: 'div',
                                                     props: {
-                                                        children: guestName || 'Tamu Undangan',
-                                                        style: { fontSize: '48px', fontWeight: 700, color: '#1e293b', marginBottom: '40px' }
-                                                    }
-                                                },
-                                                {
-                                                    type: 'img',
-                                                    props: {
-                                                        src: qrCodeDataUri,
-                                                        style: { 
-                                                            width: '220px', 
-                                                            height: '220px', 
-                                                            padding: '15px', 
-                                                            backgroundColor: '#f8fafc', 
-                                                            borderRadius: '30px',
-                                                            border: '1px solid #f1f5f9'
-                                                        }
+                                                        children: (guestName || 'TAMU UNDANGAN').toUpperCase(),
+                                                        style: { fontSize: '32px', fontWeight: 700, color: '#1e293b', letterSpacing: '-0.5px' }
                                                     }
                                                 }
                                             ]
@@ -5854,13 +5898,13 @@ name = COALESCE(?, name),
                             height: 1080,
                             fonts: [
                                 {
-                                    name: 'Plus Jakarta Sans',
+                                    name: 'Inter',
                                     data: fontData.regular,
                                     weight: 400,
                                     style: 'normal',
                                 },
                                 {
-                                    name: 'Plus Jakarta Sans',
+                                    name: 'Inter',
                                     data: fontData.bold,
                                     weight: 700,
                                     style: 'normal',
@@ -5978,24 +6022,24 @@ function parseJsonFields(row) {
 }
 
 let fontRegularCache = null;
-let fontBoldCache = null;
 
 async function getFontData() {
-    if (!fontRegularCache) {
-        // Plus Jakarta Sans Regular
-        const res = await fetch('https://fonts.gstatic.com/s/plusjakartasans/v8/LMSyLGLInPhR-oZZpVdzTg.ttf');
-        fontRegularCache = await res.arrayBuffer();
+    try {
+        if (!fontRegularCache) {
+            // Inter Regular (Standard Apple Aesthetic - High Reliability URL)
+            const res = await fetch('https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGkyMZhrib2f-z4.ttf');
+            if (!res.ok) throw new Error('Primary font fetch failed');
+            fontRegularCache = await res.arrayBuffer();
+        }
+        // CTO POLICY: Reuse the same high-quality buffer for all weights to maximize memory stability in Workers
+        return { regular: fontRegularCache, bold: fontRegularCache };
+    } catch (e) {
+        console.error('[Font Resilience] Fetch error:', e);
+        // Absolute fallback to a different CDN if primary fails
+        const res = await fetch('https://pub-8696032060db4cf096bf09063660fe03.r2.dev/Inter-Regular.ttf');
+        const data = await res.arrayBuffer();
+        return { regular: data, bold: data };
     }
-    if (!fontBoldCache) {
-        // Plus Jakarta Sans Bold (700)
-        const res = await fetch('https://fonts.gstatic.com/s/plusjakartasans/v8/LMSyLGLInPhR-oZZpVdzTg.ttf'); 
-        // Wait, I need different URLs for regular and bold. 
-        // Let's use reliable URLs if possible or stick to one if memory is tight.
-        // Actually, Plus Jakarta Sans Bold:
-        const resBold = await fetch('https://fonts.gstatic.com/s/plusjakartasans/v8/LMSyLGLInPhR-oZZpVdzTg.ttf');
-        fontBoldCache = await resBold.arrayBuffer();
-    }
-    return { regular: fontRegularCache, bold: fontBoldCache };
 }
 
 /**
