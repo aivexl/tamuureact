@@ -69,8 +69,14 @@ export const QRModal: React.FC<QRModalProps> = ({
                         <div className="p-8 flex flex-col items-center">
                             {/* QR Card - Targeted for download */}
                             <div ref={qrRef} className="p-6 bg-white border border-slate-100 rounded-[2rem] shadow-sm flex flex-col items-center w-full">
-                                <div className="p-4 bg-white rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.05)] mb-4">
-                                    <QRCode value={url} size={200} viewBox={`0 0 256 256`} level="H" />
+                                <div className="p-4 bg-white rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.05)] mb-4 flex items-center justify-center">
+                                    <QRCode 
+                                        value={url} 
+                                        size={512} 
+                                        style={{ height: "auto", maxWidth: "100%", width: "100%" }} 
+                                        viewBox={`0 0 256 256`} 
+                                        level="H" 
+                                    />
                                 </div>
                                 <h2 className="text-xl font-black text-slate-900 text-center leading-tight mb-2">{guestName}</h2>
                                 <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${tierColor[tier as keyof typeof tierColor] || tierColor.reguler}`}>

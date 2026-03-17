@@ -109,13 +109,25 @@ export const GuestScannerPage: React.FC = () => {
         let guestCode: string | null = null;
 
         try {
-            // Case 1: URL format (e.g., https://tamuu.id/preview/slug?to=UUID_OR_CODE)
-            if (decodedText.includes('?to=')) {
+            // Case 1: URL format (standard or legacy)
+            if (decodedText.startsWith('http')) {
                 const url = new URL(decodedText);
+                
+                // Subcase A: Standardized query param (e.g. ?to=UUID)
                 const toParam = url.searchParams.get('to');
                 if (toParam) {
                     if (toParam.length > 20) guestId = toParam;
                     else guestCode = toParam;
+                } 
+                // Subcase B: Legacy path-based (e.g. /welcome/INV_ID/GUEST_ID)
+                else {
+                    const pathParts = url.pathname.split('/').filter(Boolean);
+                    // Usually the last part is the guest ID/Code
+                    const lastPart = pathParts[pathParts.length - 1];
+                    if (lastPart) {
+                        if (lastPart.length > 20) guestId = lastPart;
+                        else guestCode = lastPart;
+                    }
                 }
             } 
             // Case 2: JSON format

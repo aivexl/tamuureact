@@ -136,8 +136,14 @@ export const DownloadCardModal: React.FC<DownloadCardModalProps> = ({
                                         </div>
 
                                         {/* QR CONTAINER: MUST BE PURE WHITE FOR SCANNER DISCOVERY */}
-                                        <div className="w-[30%] aspect-square flex items-center justify-center bg-white rounded-xl p-2 border border-slate-100 shadow-sm">
-                                            <QRCode value={personalLink} size={256} style={{ height: "auto", maxWidth: "100%", width: "100%" }} viewBox={`0 0 256 256`} level="H" />
+                                        <div className="w-[30%] aspect-square flex items-center justify-center bg-white rounded-xl p-2.5 border border-slate-100 shadow-sm">
+                                            <QRCode 
+                                                value={personalLink} 
+                                                size={512} 
+                                                style={{ height: "auto", maxWidth: "100%", width: "100%" }} 
+                                                viewBox={`0 0 256 256`} 
+                                                level="H" 
+                                            />
                                         </div>
                                     </div>
 

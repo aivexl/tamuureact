@@ -781,7 +781,7 @@ export const GuestManagementPage: React.FC = () => {
                 isOpen={showQRModal}
                 onClose={() => setShowQRModal(false)}
                 guestName={selectedQRGuest?.name || 'Tamu'}
-                url={`${window.location.origin}/welcome/${invitationId || 'preview'}/${selectedQRGuest?.id || ''}`}
+                url={`${window.location.origin}/preview/${invitation?.slug}?to=${selectedQRGuest?.id || ''}`}
                 tier={selectedQRGuest?.tier}
             />
 

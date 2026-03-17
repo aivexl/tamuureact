@@ -1,5 +1,12 @@
 # Tamuu Changelog
 
+## [0.9.7] - 2026-03-17
+### Fixed
+- **Comprehensive QR Scannability Overhaul**: Re-engineered the entire QR ecosystem for absolute scanning reliability across all devices.
+    - **Advanced Scanner Parsing**: Hardened `GuestScannerPage` with a multi-tier parsing engine that handles Standard URLs (`?to=`), Legacy URLs (`/welcome/...`), JSON payloads, and Raw UUIDs.
+    - **High-Fidelity QR Generation**: Standardized all QR codes (`QRModal` and `DownloadCardModal`) to 512px resolution with a mandatory "Quiet Zone" margin for rapid recognition.
+    - **Unified Identification Protocol**: Converged all guest-facing QR links to use the robust UUID-based identification method, eliminating recognition failures.
+
 ## [0.9.6] - 2026-03-17
 ### Fixed
 - **QR Recognition & Check-In Nexus**: Resolved "QR Code tidak dikenali" error in Scanner Mode.
