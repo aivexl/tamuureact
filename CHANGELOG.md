@@ -1,5 +1,11 @@
 # Tamuu Changelog
 
+## [0.9.4] - 2026-03-17
+### Added
+- **Guest Card Download System**: Implemented a high-fidelity guest card generation engine. Users can now download personalized invitation cards (800x800px) featuring guest names, event details, and personalized QR codes directly from the dashboard.
+- **Premium Download Modal**: Integrated a specialized modal with real-time card previews, enterprise-grade `PremiumLoader` during generation, and a fluid checklist animation upon successful export.
+- **Enhanced Mobile Workflow**: Optimized the guest management interface for mobile-first interactions, providing instant access to invitation assets.
+
 ## [0.9.3] - 2026-03-17
 ### Fixed
 - **Auth Sync 500 Error Fix**: Resolved a critical parameter mismatch in the `INSERT INTO users` query within the `/api/auth/me` handler that was causing 500 Internal Server errors when syncing new profiles.

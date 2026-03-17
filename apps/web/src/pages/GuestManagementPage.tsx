@@ -5,6 +5,7 @@ import { useSEO } from '../hooks/useSEO';
 import { ImportModal } from '../components/Modals/ImportModal';
 import { ConfirmationModal } from '../components/Modals/ConfirmationModal';
 import { QRModal } from '../components/Modals/QRModal';
+import { DownloadCardModal } from '../components/Modals/DownloadCardModal';
 import * as XLSX from 'xlsx';
 import { guests as guestsApi, invitations as invitationsApi } from '../lib/api';
 import { PremiumLoader } from '../components/ui/PremiumLoader';
@@ -26,7 +27,8 @@ import {
     Copy,
     ExternalLink,
     Image as ImageIcon,
-    QrCode
+    QrCode,
+    Download
 } from 'lucide-react';
 
 // ============================================
@@ -290,6 +292,14 @@ export const GuestManagementPage: React.FC = () => {
         } finally {
             setIsDeleting(false);
         }
+    };
+
+    const [showDownloadModal, setShowDownloadModal] = useState(false);
+    const [selectedDownloadGuest, setSelectedDownloadGuest] = useState<Guest | null>(null);
+
+    const handleDownloadCard = (guest: Guest) => {
+        setSelectedDownloadGuest(guest);
+        setShowDownloadModal(true);
     };
 
     const handleShowQR = (guest: Guest) => {
@@ -598,6 +608,13 @@ export const GuestManagementPage: React.FC = () => {
                                                     >
                                                         <QrCodeIcon className="w-5 h-5" />
                                                     </button>
+                                                    <button
+                                                        onClick={() => handleDownloadCard(guest)}
+                                                        className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
+                                                        title="Download Card"
+                                                    >
+                                                        <Download className="w-5 h-5" />
+                                                    </button>
                                                     <div className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-xl transition-all">
                                                         <AnimatedCopyIcon 
                                                             text={`https://${publicDomain}/${invitation?.slug}/${guest.slug}`} 
@@ -766,6 +783,14 @@ export const GuestManagementPage: React.FC = () => {
                 guestName={selectedQRGuest?.name || 'Tamu'}
                 url={`${window.location.origin}/welcome/${invitationId || 'preview'}/${selectedQRGuest?.id || ''}`}
                 tier={selectedQRGuest?.tier}
+            />
+
+            <DownloadCardModal
+                isOpen={showDownloadModal}
+                onClose={() => setShowDownloadModal(false)}
+                guest={selectedDownloadGuest}
+                invitation={invitation}
+                publicDomain={publicDomain}
             />
 
             <ImportModal
