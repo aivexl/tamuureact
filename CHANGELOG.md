@@ -1,5 +1,12 @@
 # Tamuu Changelog
 
+## [0.9.5] - 2026-03-17
+### Fixed
+- **QR Code Scannability Hub**: Resolved an issue where guest cards were not recognized by the internal scanner. 
+    - Migrated QR URL to the standardized `/preview/:slug?to=:code` protocol for automated check-in compatibility.
+    - Enhanced visual contrast by enforcing a pure white (`#ffffff`) "Quiet Zone" container for all generated QR codes.
+    - Increased QR padding and shadow-depth for better edge detection in low-light scanning environments.
+
 ## [0.9.4] - 2026-03-17
 ### Added
 - **Guest Card Download System**: Implemented a high-fidelity guest card generation engine. Users can now download personalized invitation cards (800x800px) featuring guest names, event details, and personalized QR codes directly from the dashboard.

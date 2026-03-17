@@ -62,7 +62,10 @@ export const DownloadCardModal: React.FC<DownloadCardModalProps> = ({
     const names = invitation.name?.split('&').map((n: string) => n.trim()) || [];
     const dt = og.time || invitation.event_date || '';
     const loc = og.loc || invitation.venue_name || 'LOCATION';
-    const personalLink = `https://${publicDomain}/${invitation.slug}/${guest.slug}`;
+    
+    // CEO DESIGN STANDARD: The QR code MUST use the /preview route with ?to= parameter
+    // so that the GuestScannerPage can correctly parse it for automatic check-in.
+    const personalLink = `${window.location.origin}/preview/${invitation.slug}?to=${guest.checkInCode}`;
 
     return (
         <AnimatePresence>
@@ -131,7 +134,8 @@ export const DownloadCardModal: React.FC<DownloadCardModalProps> = ({
                                             </div>
                                         </div>
 
-                                        <div className="w-[30%] aspect-square flex items-center justify-center bg-slate-50 rounded-xl p-1.5 border border-slate-100">
+                                        {/* QR CONTAINER: MUST BE PURE WHITE FOR SCANNER DISCOVERY */}
+                                        <div className="w-[30%] aspect-square flex items-center justify-center bg-white rounded-xl p-2 border border-slate-100 shadow-sm">
                                             <QRCode value={personalLink} size={256} style={{ height: "auto", maxWidth: "100%", width: "100%" }} viewBox={`0 0 256 256`} level="H" />
                                         </div>
                                     </div>
