@@ -15,3 +15,9 @@ database_id = "cb0a336d-c070-49e6-80d4-c198a2df141d"
 [[r2_buckets]]
 binding = "ASSETS"
 bucket_name = "tamuu-assets"
+
+[[rules]]
+type = "CompiledWasm"
+globs = ["**/*.wasm"]
+fallthrough = true
+

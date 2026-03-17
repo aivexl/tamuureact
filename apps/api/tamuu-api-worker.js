@@ -10,12 +10,16 @@ import { TamuuAIEngine } from './ai-system-v8-enhanced.js';
 import { handleEnhancedChat } from './enhanced-chat-handler.js';
 import { createAdminChatHandler } from './admin-chat-integration.js';
 import satori, { init as initSatori } from 'satori';
+import initYoga from 'yoga-wasm-web';
 import { initWasm as initResvg, Resvg } from '@resvg/resvg-wasm';
 import QRCode from 'qrcode';
 // @ts-ignore
 import resvg_wasm from './resvg.wasm';
+// @ts-ignore
+import yoga_wasm from './yoga.wasm';
 
 let resvgInitialized = false;
+let satoriInitialized = false;
 
 export default {
     async fetch(request, env, ctx) {
@@ -5731,36 +5735,44 @@ name = COALESCE(?, name),
             // DYNAMIC INVITATION CARD (OG IMAGE)
             // ============================================
             if (path === '/api/og' && method === 'GET') {
-                try {
-                    // Smart Parameters Extraction
-                    const eventName = url.searchParams.get('event') || 'The Wedding of';
-                    const name1 = url.searchParams.get('n1') || 'Andi';
-                    const name2 = url.searchParams.get('n2') || 'Sita';
-                    const dateTime = url.searchParams.get('time') || '';
-                    const location = url.searchParams.get('loc') || '';
-                    const guestName = url.searchParams.get('to') || '';
-                    const qrData = url.searchParams.get('qr') || url.searchParams.get('to') || 'https://tamuu.id';
+                // Smart Parameters Extraction
+                const eventName = url.searchParams.get('event') || 'The Wedding of';
+                const name1 = url.searchParams.get('n1') || 'Andi';
+                const name2 = url.searchParams.get('n2') || 'Sita';
+                const dateTime = url.searchParams.get('time') || '';
+                const location = url.searchParams.get('loc') || '';
+                const guestName = url.searchParams.get('to') || '';
+                const qrData = url.searchParams.get('qr') || url.searchParams.get('to') || 'https://tamuu.id';
 
+                try {
                     // 1. Initialize Engines (WASM)
                     if (!resvgInitialized) {
-                        try {
-                            await initResvg(resvg_wasm);
-                            resvgInitialized = true;
-                        } catch (e) {
-                            console.error('[OG] Resvg Init Failed:', e);
+                        if (!(resvg_wasm instanceof WebAssembly.Module)) {
+                            throw new Error(`CRITICAL: resvg_wasm is not a WebAssembly.Module! It is a ${typeof resvg_wasm}.`);
                         }
+                        await initResvg(resvg_wasm);
+                        resvgInitialized = true;
+                    }
+                    if (!satoriInitialized) {
+                        if (!(yoga_wasm instanceof WebAssembly.Module)) {
+                            throw new Error(`CRITICAL: yoga_wasm is not a WebAssembly.Module! It is a ${typeof yoga_wasm}.`);
+                        }
+                        const yoga = await initYoga(yoga_wasm);
+                        initSatori(yoga);
+                        satoriInitialized = true;
                     }
 
                     // 2. Fetch Font Data (Cached at Edge)
                     const fontData = await getFontData();
 
-                    // 3. Generate QR Code (PNG Data URL for Maximum Stability)
-                    const qrCodeDataUri = await QRCode.toDataURL(qrData, { 
-                        margin: 1, 
+                    // 3. Generate QR Code (SVG instead of Canvas/PNG to prevent 500 error in Edge Workers)
+                    const qrCodeSvg = await QRCode.toString(qrData, {
+                        type: 'svg',
+                        margin: 1,
                         width: 400,
                         color: { dark: '#1a1a1a', light: '#ffffff' }
                     });
-
+                    const qrCodeDataUri = `data:image/svg+xml;base64,${btoa(qrCodeSvg)}`;
                     // 4. Render Layout with Satori (Enterprise UX - Apple Asymmetrical Standard)
                     // ULTRA-DEEP ALIGNMENT: 1080x1080 Canvas
                     const svg = await satori(

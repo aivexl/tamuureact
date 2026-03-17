@@ -73,10 +73,13 @@ async function handleCrawler(request, pathParts) {
         // DYNAMIC OG IMAGE ENGINE
         let dynamicOgImage = invitation.og_image || invitation.thumbnail_url;
         
-        // Construct API OG URL if settings exist
+        // Use static snapshot if available (Enterprise Fix: Client-side generation)
         const ogSettings = invitation.og_settings ? (typeof invitation.og_settings === 'string' ? JSON.parse(invitation.og_settings) : invitation.og_settings) : null;
         
-        if (ogSettings) {
+        if (ogSettings && ogSettings.og_image_url) {
+            dynamicOgImage = ogSettings.og_image_url;
+        } else if (ogSettings) {
+            // Fallback to dynamic if static snapshot is missing (legacy support)
             const params = new URLSearchParams({
                 event: ogSettings.event || 'The Wedding of',
                 n1: ogSettings.n1 || '',

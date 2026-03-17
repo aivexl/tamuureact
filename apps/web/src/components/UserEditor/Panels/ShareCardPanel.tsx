@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { m } from 'framer-motion';
 import { 
     Image as ImageIcon, 
@@ -14,8 +14,9 @@ import {
     ExternalLink
 } from 'lucide-react';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
-import { invitations } from '@/lib/api';
+import { invitations, storage } from '@/lib/api';
 import { useStore } from '@/store/useStore';
+import html2canvas from 'html2canvas';
 
 interface ShareCardPanelProps {
     invitationId: string;
@@ -23,7 +24,7 @@ interface ShareCardPanelProps {
 }
 
 export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, onClose }) => {
-    const { showModal } = useStore();
+    const { showModal, user } = useStore();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -36,6 +37,10 @@ export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, on
     const [location, setLocation] = useState('');
     const [guestName, setGuestName] = useState('Bapak/Ibu/Saudara/i');
     const [slug, setSlug] = useState('');
+    
+    // Snapshot state
+    const [savedImageUrl, setSavedImageUrl] = useState('');
+    const cardRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const loadData = async () => {
@@ -54,6 +59,7 @@ export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, on
                             setName2(settings.n2 || '');
                             setDateTime(settings.time || '');
                             setLocation(settings.loc || '');
+                            setSavedImageUrl(settings.og_image_url || '');
                         } catch (e) {
                             console.error('Failed to parse og_settings', e);
                         }
@@ -70,15 +76,46 @@ export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, on
         loadData();
     }, [invitationId]);
 
+    
     const handleSave = async () => {
         try {
             setSaving(true);
+            let finalImageUrl = savedImageUrl;
+
+            // 1. Generate Image from DOM via html2canvas
+            if (cardRef.current) {
+                try {
+                    const canvas = await html2canvas(cardRef.current, {
+                        scale: 3, // High quality render (3x resolution)
+                        useCORS: true,
+                        allowTaint: true,
+                        backgroundColor: '#ffffff',
+                    });
+
+                    // 2. Convert to Blob
+                    const blob = await new Promise<Blob | null>((resolve) => {
+                        canvas.toBlob((b) => resolve(b), 'image/png', 1.0);
+                    });
+
+                    if (blob) {
+                        // 3. Upload to R2 Storage
+                        const file = new File([blob], `og-${slug}-${Date.now()}.png`, { type: 'image/png' });
+                        const uploadResult = await storage.upload(file, 'og-images', { userId: user?.id });
+                        finalImageUrl = uploadResult.url;
+                        setSavedImageUrl(finalImageUrl);
+                    }
+                } catch (imgError) {
+                    console.error('Failed to generate/upload image:', imgError);
+                }
+            }
+
             const ogSettings = {
                 event: eventName,
                 n1: name1,
                 n2: name2,
                 time: dateTime,
-                loc: location
+                loc: location,
+                og_image_url: finalImageUrl
             };
             
             await invitations.update(invitationId, {
@@ -101,30 +138,29 @@ export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, on
         }
     };
 
-    const [previewMode, setPreviewMode] = useState<'css' | 'api'>('css');
 
-    const getPreviewUrl = () => {
-        const baseUrl = 'https://api.tamuu.id/api/og';
-        const params = new URLSearchParams({
-            event: eventName,
-            n1: name1,
-            n2: name2,
-            time: dateTime,
-            loc: location,
-            to: guestName,
-            qr: `https://tamuu.id/${slug}`
-        });
-        return `${baseUrl}?${params.toString()}`;
-    };
+    
 
+    
+
+    
     const copyUrl = () => {
-        navigator.clipboard.writeText(getPreviewUrl());
+        if (!savedImageUrl) {
+             showModal({
+                title: 'Belum Disimpan',
+                message: 'Silakan Simpan Pengaturan Kartu terlebih dahulu untuk menghasilkan Link Gambar.',
+                type: 'error'
+            });
+            return;
+        }
+        navigator.clipboard.writeText(savedImageUrl);
         showModal({
             title: 'URL Disalin',
-            message: 'Link gambar share telah disalin ke clipboard.',
+            message: 'Link gambar share statis telah disalin ke clipboard.',
             type: 'success'
         });
     };
+
 
     if (loading) {
         return (
@@ -234,24 +270,11 @@ export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, on
                             <h4 className="font-black text-slate-800 uppercase tracking-widest text-xs">Live Preview (1:1)</h4>
                         </div>
                         <div className="flex items-center gap-2">
-                            <div className="flex bg-slate-100 p-1 rounded-xl mr-2">
-                                <button
-                                    onClick={() => setPreviewMode('css')}
-                                    className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${previewMode === 'css' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                                >
-                                    Instant
-                                </button>
-                                <button
-                                    onClick={() => setPreviewMode('api')}
-                                    className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${previewMode === 'api' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                                >
-                                    Final
-                                </button>
-                            </div>
+                            
                             <button onClick={copyUrl} className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors" title="Salin URL Gambar">
                                 <Copy className="w-4 h-4" />
                             </button>
-                            <a href={getPreviewUrl()} target="_blank" rel="noopener noreferrer" className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors" title="Buka di Tab Baru">
+                            <a href={savedImageUrl || '#'} target="_blank" rel="noopener noreferrer" className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors" title="Buka di Tab Baru">
                                 <ExternalLink className="w-4 h-4" />
                             </a>
                         </div>
@@ -263,15 +286,8 @@ export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, on
                         </div>
 
                         <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden aspect-square w-full max-w-[350px] border border-slate-200 group">
-                        {previewMode === 'api' ? (
-                        <img 
-                            src={getPreviewUrl()} 
-                            alt="Share Card Preview" 
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                            key={getPreviewUrl()} // Force reload on change
-                        />
-                        ) : (
-                        <div className="w-full h-full bg-white flex flex-col p-[10%] relative leading-none" style={{ fontFamily: "'Inter', sans-serif" }}>
+                        
+                        <div ref={cardRef} className="w-full h-full bg-white flex flex-col p-[10%] relative leading-none" style={{ fontFamily: "'Inter', sans-serif" }}>
                             {/* Top Section: Split Layout 65/35 */}
                             <div className="flex justify-between items-start w-full">
                                 {/* Left Side: Branding & Core Names */}
@@ -325,7 +341,6 @@ export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, on
                                 </div>
                             </div>
                         </div>
-                        )}
                             <div className="absolute inset-0 flex items-center justify-center bg-white/80 opacity-0 group-[.loading]:opacity-100 transition-opacity">
                                 <PremiumLoader variant="inline" size="sm" />
                             </div>
