@@ -1,5 +1,10 @@
 # Tamuu Changelog
 
+## [0.9.3] - 2026-03-17
+### Fixed
+- **Auth Sync 500 Error Fix**: Resolved a critical parameter mismatch in the `INSERT INTO users` query within the `/api/auth/me` handler that was causing 500 Internal Server errors when syncing new profiles.
+- **Route Conflict Resolution**: Fixed a critical bug where the SEO proxy worker (`tamuu-worker`) unintentionally occupied the API domain (`api.tamuu.id/*`), intercepting all backend traffic and breaking the web app ("undangan tidak ditemukan" bug). Correctly re-routed the proxy to `tamuu.id/*` and restored the API.
+
 ## [0.9.2] - 2026-03-16
 ### Fixed
 - **Guest Management API Synchronization**: Resolved Error 400 when fetching guest data by normalizing parameter parsing for both `invitation_id` and `invitationId` in the API worker.
