@@ -520,8 +520,8 @@ export default {
 
                         await env.DB.prepare(
                             `INSERT INTO users (id, email, tamuu_id, name, gender, birth_date, tier, role, permissions, max_invitations, invitation_count, expires_at) 
-                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, ?)`
-                        ).bind(userIdToUse, email, tamuuId, name, gender, birthDate, initialTier, role, permissions, expiresAtString).run();
+                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                        ).bind(userIdToUse, email, tamuuId, name, gender, birthDate, initialTier, role, permissions, 1, 0, expiresAtString).run();
 
                         user = {
                             id: userIdToUse,
