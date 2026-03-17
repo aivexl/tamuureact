@@ -430,8 +430,11 @@ export const guests = {
         return res.json();
     },
 
-    async checkIn(invitationId: string | string, guestId?: string) {
-        const payload = guestId ? { invitation_id: invitationId, guest_id: guestId } : { guest_id: invitationId };
+    async checkIn(idOrCode: string) {
+        // CEO/CTO ROBUSTNESS: Automatically detect if it's a UUID or a short code
+        const isUuid = idOrCode.length > 20;
+        const payload = isUuid ? { guest_id: idOrCode } : { check_in_code: idOrCode };
+        
         const res = await safeFetch(`${API_BASE}/api/guests/check-in`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

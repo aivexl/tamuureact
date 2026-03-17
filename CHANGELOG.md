@@ -1,5 +1,12 @@
 # Tamuu Changelog
 
+## [0.9.6] - 2026-03-17
+### Fixed
+- **QR Recognition & Check-In Nexus**: Resolved "QR Code tidak dikenali" error in Scanner Mode.
+    - Updated `DownloadCardModal` to use the guest UUID as the primary QR identifier, ensuring 100% database match reliability.
+    - Refactored `api.ts` `checkIn` client to intelligently differentiate between UUIDs and check-in codes, sending the correct payload to the backend.
+    - Hardened `GuestScannerPage` with enhanced parsing logic for multiple QR formats (URL, JSON, and Raw Text).
+
 ## [0.9.5] - 2026-03-17
 ### Fixed
 - **QR Code Scannability Hub**: Resolved an issue where guest cards were not recognized by the internal scanner. 

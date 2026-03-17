@@ -105,52 +105,67 @@ export const GuestScannerPage: React.FC = () => {
         }
 
         // Parse QR Data: Can be guest ID, check_in_code, or URL with "to" param
-        let guestIdOrCode = decodedText;
+        let guestId: string | null = null;
+        let guestCode: string | null = null;
+
         try {
-            // Check if it's a URL (e.g., https://tamuu.id/preview/slug?to=GUEST_CODE)
+            // Case 1: URL format (e.g., https://tamuu.id/preview/slug?to=UUID_OR_CODE)
             if (decodedText.includes('?to=')) {
                 const url = new URL(decodedText);
-                guestIdOrCode = url.searchParams.get('to') || decodedText;
-            } else {
-                // Try parsing as JSON
+                const toParam = url.searchParams.get('to');
+                if (toParam) {
+                    if (toParam.length > 20) guestId = toParam;
+                    else guestCode = toParam;
+                }
+            } 
+            // Case 2: JSON format
+            else if (decodedText.startsWith('{')) {
                 const data = JSON.parse(decodedText);
-                guestIdOrCode = data.id || data.code || data.checkInCode || decodedText;
+                if (data.id) guestId = data.id;
+                else if (data.code || data.checkInCode) guestCode = data.code || data.checkInCode;
+            }
+            // Case 3: Raw text
+            else {
+                if (decodedText.length > 20) guestId = decodedText;
+                else guestCode = decodedText;
             }
         } catch (e) {
-            // Raw text - use as code directly
+            // Fallback to raw text if parsing fails
+            guestCode = decodedText;
         }
 
-        await performCheckIn(guestIdOrCode);
+        await performCheckIn(guestId, guestCode);
     };
 
-    const performCheckIn = async (guestIdOrCode: string) => {
+    const performCheckIn = async (guestId: string | null, guestCode: string | null) => {
         setIsLoading(true);
         setError(null);
 
         try {
-            // Call Check-In API
-            const result = await guestsApi.checkIn(guestIdOrCode);
+            const finalIdOrCode = guestId || guestCode;
+            if (!finalIdOrCode) throw new Error('Invalid QR Data');
 
-            if (result.success) {
+            const checkInResponse = await guestsApi.checkIn(finalIdOrCode);
+
+            if (checkInResponse.success) {
                 // SUCCESS: Guest checked in
-                setGuestName(result.guest.name);
+                setGuestName(checkInResponse.guest.name);
                 setCheckInStatus('success');
 
                 // Trigger display blast for visual effect with tier info
-                await triggerBlast(result.guest.name, result.guest.tier);
-            } else if (result.code === 'ALREADY_CHECKED_IN') {
+                await triggerBlast(checkInResponse.guest.name, checkInResponse.guest.tier);
+            } else if (checkInResponse.code === 'ALREADY_CHECKED_IN') {
                 // DUPLICATE: Already checked in
-                setGuestName(result.guest.name);
+                setGuestName(checkInResponse.guest.name);
                 setCheckInStatus('duplicate');
-                setError(`${result.guest.name} sudah check-in sebelumnya!`);
-                // Optional: still blast if admin wants to re-welcome
-                await triggerBlast(result.guest.name, result.guest.tier);
-            } else if (result.code === 'NOT_FOUND') {
+                setError(`${checkInResponse.guest.name} sudah check-in sebelumnya!`);
+                await triggerBlast(checkInResponse.guest.name, checkInResponse.guest.tier);
+            } else if (checkInResponse.code === 'NOT_FOUND') {
                 setCheckInStatus('error');
                 setError('QR Code tidak dikenali. Pastikan tamu terdaftar.');
             } else {
                 setCheckInStatus('error');
-                setError(result.error || 'Gagal melakukan check-in.');
+                setError(checkInResponse.error || 'Gagal melakukan check-in.');
             }
         } catch (err: any) {
             console.error(err);

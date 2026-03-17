@@ -64,8 +64,9 @@ export const DownloadCardModal: React.FC<DownloadCardModalProps> = ({
     const loc = og.loc || invitation.venue_name || 'LOCATION';
     
     // CEO DESIGN STANDARD: The QR code MUST use the /preview route with ?to= parameter
-    // so that the GuestScannerPage can correctly parse it for automatic check-in.
-    const personalLink = `${window.location.origin}/preview/${invitation.slug}?to=${guest.checkInCode}`;
+    // We use guest.id (UUID) as the primary identifier because it's guaranteed to be unique
+    // and recognized by the backend UUID lookup logic.
+    const personalLink = `${window.location.origin}/preview/${invitation.slug}?to=${guest.id}`;
 
     return (
         <AnimatePresence>
