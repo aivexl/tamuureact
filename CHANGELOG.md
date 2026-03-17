@@ -1,5 +1,12 @@
 # Tamuu Changelog
 
+## [0.9.10] - 2026-03-17
+### Fixed
+- **Global /welcome Route Standardization**: Standardized all guest invitation assets (WhatsApp sharing, QR codes, and Downloadable Cards) to use the `/welcome/:invitationId/:guestId` protocol.
+    - **Premium Preview Engine**: Ensures every shared link or QR result triggers the Cloudflare Pages Functions for high-fidelity "Card Gambar" OG previews.
+    - **Automated Attendance Sync**: The `/welcome` route provides an elite "Entrance Granted" experience with automatic check-in and haptic confirmation.
+    - **Universal Compatibility**: Maintains full synchronization with the `GuestScannerPage` multi-format parsing engine.
+
 ## [0.9.9] - 2026-03-17
 ### Fixed
 - **HTML2Canvas Capture Refinement**: Resolved blurriness and artifacts in the generated guest cards.

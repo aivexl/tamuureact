@@ -191,8 +191,7 @@ export const GuestManagementPage: React.FC = () => {
     const executeShareWhatsApp = async (guest: Guest) => {
         if (!invitation) return;
         const phone = guest.phone || '';
-        const publicDomain = getPublicDomain();
-        const personalLink = `https://${publicDomain}/${invitation.slug}/${guest.slug}?to=${guest.id}`;
+        const personalLink = `${window.location.origin}/welcome/${invitation.id}/${guest.id}`;
         const message = `${invitationMessage}\n\nLink Undangan: ${personalLink}`;
         window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
 
@@ -781,7 +780,7 @@ export const GuestManagementPage: React.FC = () => {
                 isOpen={showQRModal}
                 onClose={() => setShowQRModal(false)}
                 guestName={selectedQRGuest?.name || 'Tamu'}
-                url={`${window.location.origin}/${invitation?.slug}/${selectedQRGuest?.slug}?to=${selectedQRGuest?.id || ''}`}
+                url={`${window.location.origin}/welcome/${invitation?.id}/${selectedQRGuest?.id || ''}`}
                 tier={selectedQRGuest?.tier}
             />
 
