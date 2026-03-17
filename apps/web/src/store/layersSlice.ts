@@ -54,7 +54,13 @@ export type LayerType =
     | 'live_streaming'
     | 'profile_card'
     | 'profile_photo'
-    | 'photo_frame';
+    | 'photo_frame'
+    // ADDED FOR COMPATIBILITY WITH ElementRenderer
+    | 'open-invitation'
+    | 'rive'
+    | 'rsvp-wishes'
+    | 'name-board'
+    | 'map';
 
 
 // ============================================
@@ -855,6 +861,20 @@ export interface Layer {
 
     // Parallax & Advanced Motion
     parallaxFactor?: number;
+
+    // Masking
+    maskType?: 'none' | 'circle' | 'arch' | 'hexagon' | 'diamond' | 'blob';
+
+    // Legacy/Direct Style Properties (for compatibility)
+    color?: string;
+    fontSize?: number;
+    fontFamily?: string;
+    fontWeight?: string;
+    textAlign?: 'left' | 'center' | 'right';
+    lineHeight?: number;
+    letterSpacing?: number;
+    textTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize';
+    text?: string;
 
     // Type-specific configs
     textStyle?: TextStyle;

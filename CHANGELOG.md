@@ -1,5 +1,16 @@
 # Tamuu Changelog
 
+## [0.9.12] - 2026-03-17
+### Fixed
+- **Runtime Error Mitigation**: Resolved a critical "Uncaught TypeError: Cannot read properties of undefined (reading 'toUpperCase')" in `PreviewPage.tsx` by implementing robust null checks and optional chaining.
+- **Global Stability Pass**: Proactively applied similar safety patterns to `.toUpperCase()` and `.substring()` calls across high-traffic files:
+    - `BillingPage.tsx` & `GuestManagementPage.tsx` (Tier & Transaction data).
+    - `AdminProductListing.tsx` & `AdminProductManagement.tsx` (ID parsing).
+    - `MerchantProducts.tsx` & `ProductDetailPage.tsx` (Storefront logic).
+- **ElementRenderer Refactor**: Hardened the canvas rendering engine with standardized property access from `layersSlice`.
+    - Integrated fallback placeholders for `RiveElement` and `MapElement` to prevent build-time failures during component migrations.
+    - Standardized `Layer` type imports to ensure 100% type safety across the design ecosystem.
+
 ## [0.9.11] - 2026-03-17
 ### Added
 - **Smart Check-In/Check-Out Hub**: Implemented a state-aware scanner logic. If a guest is scanned a second time, the system automatically transitions to a Check-Out workflow, streamlining the entrance and exit lifecycle.

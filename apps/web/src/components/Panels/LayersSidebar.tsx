@@ -59,7 +59,12 @@ const layerIcons: Record<LayerType, React.ReactNode> = {
     profile_photo: <Users className="w-4 h-4" />,
     photo_frame: <Monitor className="w-4 h-4" />,
     gift_address: <Gift className="w-4 h-4" />,
-    quote: <Quote className="w-4 h-4" />
+    quote: <Quote className="w-4 h-4" />,
+    'map': <MapPin className="w-4 h-4" />,
+    'open-invitation': <MailOpen className="w-4 h-4" />,
+    'rive': <Zap className="w-4 h-4" />,
+    'rsvp-wishes': <MessageSquare className="w-4 h-4" />,
+    'name-board': <Users className="w-4 h-4" />
 };
 
 // Placeholder for missing Palette import usage in layerIcons

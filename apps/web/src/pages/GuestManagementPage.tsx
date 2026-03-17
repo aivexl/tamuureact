@@ -356,7 +356,7 @@ export const GuestManagementPage: React.FC = () => {
         const publicDomain = getPublicDomain();
         const exportData = guests.map(g => ({
             'Token/ID': g.checkInCode,
-            'Tier': g.tier.toUpperCase(),
+            'Tier': g.tier?.toUpperCase(),
             'Nama': g.name,
             'Slug URL': g.slug,
             'Personal Link': `https://${publicDomain}/${invitation?.slug}/${g.slug}`,
@@ -552,6 +552,7 @@ export const GuestManagementPage: React.FC = () => {
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center">Jumlah</th>
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center">Status WA</th>
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center">Check-in</th>
+                                    <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center">Check-out</th>
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center">Kehadiran</th>
                                     <th className="px-4 py-4 text-[11px] font-black uppercase tracking-tight whitespace-nowrap text-center">Aksi</th>
                                 </tr>
@@ -559,7 +560,7 @@ export const GuestManagementPage: React.FC = () => {
                             <tbody className="divide-y divide-slate-100">
                                 {filteredGuests.length === 0 ? (
                                     <tr>
-                                        <td colSpan={12} className="px-6 py-12 text-center text-slate-400 italic">
+                                        <td colSpan={13} className="px-6 py-12 text-center text-slate-400 italic">
                                             Belum ada data tamu. Klik "Tambah Tamu" untuk memulai.
                                         </td>
                                     </tr>
@@ -569,7 +570,7 @@ export const GuestManagementPage: React.FC = () => {
                                             <td className="px-4 py-4 text-[12px] font-mono text-slate-500 uppercase font-bold">{guest.checkInCode}</td>
                                             <td className="px-4 py-4">
                                                 <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ring-1 ring-inset ${getTierBadge(guest.tier)}`}>
-                                                    {guest.tier === 'reguler' ? 'REG' : guest.tier.toUpperCase()}
+                                                    {guest.tier === 'reguler' ? 'REG' : guest.tier?.toUpperCase()}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-4 text-[13px] font-bold text-slate-800">{guest.name}</td>
@@ -588,9 +589,14 @@ export const GuestManagementPage: React.FC = () => {
                                             <td className="px-4 py-4 text-center text-[11px] font-bold text-slate-500 tabular-nums">
                                                 {formatTime(guest.checkedInAt)}
                                             </td>
+                                            <td className="px-4 py-4 text-center text-[11px] font-bold text-rose-400 tabular-nums">
+                                                {formatTime(guest.checkedOutAt)}
+                                            </td>
                                             <td className="px-4 py-4 text-center">
                                                 {guest.checkedInAt ? (
-                                                    <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-[9px] font-black rounded-lg">HADIR</span>
+                                                    <span className={`px-2 py-1 text-[9px] font-black rounded-lg ${guest.checkedOutAt ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                                                        {guest.checkedOutAt ? 'KELUAR' : 'HADIR'}
+                                                    </span>
                                                 ) : (
                                                     <span className="px-2 py-1 bg-slate-100 text-slate-300 text-[9px] font-black rounded-lg">BELUM</span>
                                                 )}

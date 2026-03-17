@@ -315,7 +315,7 @@ export const MerchantProducts: React.FC = () => {
     const isBusy = isCreating || isUpdating;
 
     const filteredProducts = products.filter((p: any) => {
-        const productNo = `tamuu-shop-${p.id?.substring(0, 8).toUpperCase()}`;
+        const productNo = `tamuu-shop-${p.id?.substring(0, 8)?.toUpperCase()}`;
         const searchLower = searchQuery.toLowerCase();
         return p.nama_produk.toLowerCase().includes(searchLower) ||
                productNo.toLowerCase().includes(searchLower);
@@ -496,7 +496,7 @@ export const MerchantProducts: React.FC = () => {
                                                     <div className="space-y-3">
                                                         <div className="flex items-center justify-between gap-2">
                                                             <span className="px-2 py-0.5 rounded bg-slate-50 text-slate-400 text-[8px] font-black uppercase tracking-widest border border-slate-100">
-                                                                No. Produk: tamuu-shop-{prod.id.substring(0, 8).toUpperCase()}
+                                                                No. Produk: tamuu-shop-{prod.id?.substring(0, 8)?.toUpperCase()}
                                                             </span>
                                                             <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#FFBF00]/5 text-[#FFBF00] text-[8px] font-black uppercase tracking-widest border border-[#FFBF00]/10">
                                                                 {prod.kontak_utama === 'whatsapp' && <MessageCircle size={8} />}

@@ -312,7 +312,7 @@ export const LoveStoryPanel: React.FC<LoveStoryPanelProps> = ({ invitationId, on
                         <span className="font-bold text-xs uppercase tracking-widest">Batas Tercapai</span>
                     </div>
                     <p className="text-[10px] text-amber-500">
-                        Paket {userTier.toUpperCase()} hanya bisa {maxEvents} momen.
+                        Paket {userTier?.toUpperCase()} hanya bisa {maxEvents} momen.
                     </p>
                     <a
                         href="/upgrade"

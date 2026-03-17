@@ -160,8 +160,8 @@ export const PreviewPage: React.FC = () => {
     }
 
     // DYNAMIC SEO: Personalize social preview if guest exists
-    const baseTitle = (invitationData?.seo_title || invitationData?.name || slug || 'Invitation').toUpperCase();
-    const seoTitle = guestData ? `${baseTitle} - KHUSUS UNTUK ${guestData.name.toUpperCase()}` : baseTitle;
+    const baseTitle = (invitationData?.seo_title || invitationData?.name || slug || 'Invitation').toString().toUpperCase();
+    const seoTitle = guestData?.name ? `${baseTitle} - KHUSUS UNTUK ${guestData.name.toUpperCase()}` : baseTitle;
     const seoDescription = invitationData?.seo_description || (isTemplate
         ? 'Premium Wedding Invitation Templates by Tamuu'
         : 'Exclusive Digital Invitation - Private Access');

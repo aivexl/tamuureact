@@ -186,10 +186,9 @@ export const BillingPage: React.FC = () => {
                         <tbody>
                             <tr>
                                 <td style="padding: 20px 15px; border-bottom: 1px solid #f1f5f9;">
-                                    <p style="font-size: 16px; font-weight: 700; color: #0A1128; margin: 0;">Subscription Plan: ${tx.tier === 'pro' ? 'PRO' : tx.tier === 'ultimate' ? 'ULTIMATE' : tx.tier === 'elite' ? 'ELITE' : tx.tier.toUpperCase()}</p>
+                                    <p style="font-size: 16px; font-weight: 700; color: #0A1128; margin: 0;">Subscription Plan: ${tx.tier === 'pro' ? 'PRO' : tx.tier === 'ultimate' ? 'ULTIMATE' : tx.tier === 'elite' ? 'ELITE' : tx.tier?.toUpperCase()}</p>
                                     <p style="font-size: 12px; color: #64748b; margin: 5px 0 0 0;">Akses premium Tamuu selama 1 tahun</p>
-                                </td>
-                                <td style="padding: 20px 15px; border-bottom: 1px solid #f1f5f9; text-align: right; font-size: 16px; font-weight: 800; color: #0A1128;">
+                                </td>                                <td style="padding: 20px 15px; border-bottom: 1px solid #f1f5f9; text-align: right; font-size: 16px; font-weight: 800; color: #0A1128;">
                                     Rp ${tx.amount?.toLocaleString("id-ID")}
                                 </td>
                             </tr>

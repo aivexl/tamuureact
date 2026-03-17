@@ -67,7 +67,7 @@ export const AdminProductListing: React.FC = () => {
         return products.filter((p: any) => {
             if (p.is_admin_listing !== 1) return false;
             
-            const productNo = `tamuu-shop-${p.product_id?.substring(0, 8).toUpperCase()}`;
+            const productNo = `tamuu-shop-${p.product_id?.substring(0, 8)?.toUpperCase()}`;
             const searchLower = search.toLowerCase();
 
             return p.nama_produk.toLowerCase().includes(searchLower) ||
@@ -212,7 +212,7 @@ export const AdminProductListing: React.FC = () => {
                                                             <div className="flex flex-wrap items-center gap-2 mt-2">
                                                                 <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 text-[9px] font-black uppercase tracking-wider">{product.kategori_produk || 'Umum'}</span>
                                                                 <span className="px-2 py-0.5 rounded bg-white/5 text-slate-500 text-[9px] font-black uppercase tracking-widest border border-white/5">
-                                                                    No. Produk: tamuu-shop-{product.product_id.substring(0, 8).toUpperCase()}
+                                                                    No. Produk: tamuu-shop-{product.product_id?.substring(0, 8)?.toUpperCase()}
                                                                 </span>
                                                             </div>
                                                         </div>

@@ -177,7 +177,7 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ role: initialRol
     const handleUpdateStatus = async (userId: string, status: 'active' | 'suspended' | 'banned', name: string) => {
         try {
             await admin.updateUserStatus(userId, status);
-            toast.success(`${name} is now ${status.toUpperCase()}`);
+            toast.success(`${name} is now ${status?.toUpperCase()}`);
             fetchUsers();
         } catch (err) {
             toast.error('Failed to update user status');

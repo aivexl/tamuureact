@@ -867,20 +867,21 @@ export const ProductDetailPage: React.FC = () => {
                                 </div>
                                 
                                 <div className="pt-8 border-t border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
-                                    <div 
+                                    <div
                                         className="group flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 transition-all w-full sm:w-auto justify-center"
                                     >
                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                            No. Produk: <span className="text-slate-600 font-black">tamuu-shop-{product.id.substring(0, 8).toUpperCase()}</span>
+                                            No. Produk: <span className="text-slate-600 font-black">tamuu-shop-{product.id?.substring(0, 8)?.toUpperCase()}</span>
                                         </span>
                                         <div className="w-10 h-10 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-[#FFBF00] transition-all">
-                                            <AnimatedCopyIcon text={`tamuu-shop-${product.id.substring(0, 8).toUpperCase()}`} size={16} successMessage="ID Produk disalin!" />
+                                            <AnimatedCopyIcon text={`tamuu-shop-${product.id?.substring(0, 8)?.toUpperCase()}`} size={16} successMessage="ID Produk disalin!" />
                                         </div>
                                     </div>
-                                    <button 
+                                    <button
                                         onClick={() => setIsReportModalOpen(true)}
                                         className="flex items-center justify-center gap-2 px-6 py-2 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-100 text-rose-500 transition-all w-full sm:w-auto"
                                     >
+
                                         <ShieldAlert className="w-4 h-4" />
                                         <span className="text-[10px] font-black uppercase tracking-widest">Lapor</span>
                                     </button>
