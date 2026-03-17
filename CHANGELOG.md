@@ -1,5 +1,12 @@
 # Tamuu Changelog
 
+## [0.9.9] - 2026-03-17
+### Fixed
+- **HTML2Canvas Capture Refinement**: Resolved blurriness and artifacts in the generated guest cards.
+    - Stripped `shadow` and `border` properties from the QR container to prevent rendering glitches in the final image.
+    - Removed `backdrop-filter: blur` from interactive overlays, as it conflicts with the capture engine.
+    - Optimized `html2canvas` settings with `imageTimeout: 0` and `removeContainer: true` for cleaner, higher-fidelity exports.
+
 ## [0.9.8] - 2026-03-17
 ### Fixed
 - **Unified Guest Identification Protocol**: Standardized all guest touchpoints (WhatsApp Share, QR Modal, Download Card) to use the personalized slug-based URL with a redundant UUID fallback (`?to=UUID`).

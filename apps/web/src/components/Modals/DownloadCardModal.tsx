@@ -38,6 +38,8 @@ export const DownloadCardModal: React.FC<DownloadCardModalProps> = ({
                 scale: 3, // Ultra high definition for enterprise standard
                 backgroundColor: '#ffffff',
                 logging: false,
+                imageTimeout: 0,
+                removeContainer: true
             });
 
             const link = document.createElement('a');
@@ -136,7 +138,7 @@ export const DownloadCardModal: React.FC<DownloadCardModalProps> = ({
                                         </div>
 
                                         {/* QR CONTAINER: MUST BE PURE WHITE FOR SCANNER DISCOVERY */}
-                                        <div className="w-[30%] aspect-square flex items-center justify-center bg-white rounded-xl p-2.5 border border-slate-100 shadow-sm">
+                                        <div className="w-[30%] aspect-square flex items-center justify-center bg-white rounded-xl p-2">
                                             <QRCode 
                                                 value={personalLink} 
                                                 size={512} 
@@ -181,7 +183,7 @@ export const DownloadCardModal: React.FC<DownloadCardModalProps> = ({
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
                                             exit={{ opacity: 0 }}
-                                            className="absolute inset-0 bg-emerald-500/90 backdrop-blur-sm flex flex-col items-center justify-center text-white p-6 text-center"
+                                            className="absolute inset-0 bg-emerald-500/90 flex flex-col items-center justify-center text-white p-6 text-center"
                                         >
                                             <m.div
                                                 initial={{ scale: 0 }}
