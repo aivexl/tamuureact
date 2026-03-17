@@ -21,7 +21,8 @@
         "jsx": "react-jsx",
         "baseUrl": ".",
         "types": [
-            "vite/client"
+            "vite/client",
+            "web-bluetooth"
         ],
         "paths": {
             "@/*": [
@@ -31,6 +32,11 @@
     },
     "include": [
         "src"
+    ],
+    "exclude": [
+        "src/**/*.test.tsx",
+        "src/**/*.test.ts",
+        "src/test-setup.ts"
     ],
     "references": [
         {

@@ -443,11 +443,15 @@ export const guests = {
         return res.json();
     },
 
-    async checkOut(guestId: string) {
+    async checkOut(idOrCode: string) {
+        // CEO/CTO ROBUSTNESS: Automatically detect if it's a UUID or a short code
+        const isUuid = idOrCode.length > 20;
+        const payload = isUuid ? { guest_id: idOrCode } : { check_in_code: idOrCode };
+
         const res = await safeFetch(`${API_BASE}/api/guests/check-out`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ guest_id: guestId })
+            body: JSON.stringify(payload)
         });
         return res.json();
     }

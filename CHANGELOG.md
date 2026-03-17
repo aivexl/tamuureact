@@ -1,5 +1,11 @@
 # Tamuu Changelog
 
+## [0.9.11] - 2026-03-17
+### Added
+- **Smart Check-In/Check-Out Hub**: Implemented a state-aware scanner logic. If a guest is scanned a second time, the system automatically transitions to a Check-Out workflow, streamlining the entrance and exit lifecycle.
+- **Bluetooth Thermal Printing**: Integrated Web Bluetooth API for direct communication with standard 58mm/80mm thermal printers. Generates instant, stylized receipts for both Check-In and Check-Out events.
+- **Printer Management**: Added a dedicated Bluetooth status nexus in the Scanner Mode header for real-time device connection and monitoring.
+
 ## [0.9.10] - 2026-03-17
 ### Fixed
 - **Global /welcome Route Standardization**: Standardized all guest invitation assets (WhatsApp sharing, QR codes, and Downloadable Cards) to use the `/welcome/:invitationId/:guestId` protocol.

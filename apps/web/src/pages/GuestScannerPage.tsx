@@ -9,10 +9,14 @@ import {
     ArrowLeft,
     User,
     QrCode,
-    RefreshCw
+    RefreshCw,
+    Printer,
+    Bluetooth,
+    BluetoothOff
 } from 'lucide-react';
 import { PremiumLoader } from '../components/ui/PremiumLoader';
 import { guests as guestsApi, admin as adminApi } from '../lib/api';
+import { printer } from '../lib/printer';
 
 /**
  * GuestScannerPage - Professional QR Scanning Interface
@@ -29,9 +33,28 @@ export const GuestScannerPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [guestName, setGuestName] = useState<string | null>(null);
     const [permissionStatus, setPermissionStatus] = useState<'pending' | 'granted' | 'denied'>('pending');
-    const [checkInStatus, setCheckInStatus] = useState<'idle' | 'success' | 'duplicate' | 'error'>('idle');
+    const [checkInStatus, setCheckInStatus] = useState<'idle' | 'success' | 'duplicate' | 'error' | 'checkout'>('idle');
+    const [isPrinterConnected, setIsPrinterConnected] = useState(false);
 
     const scannerRef = useRef<Html5Qrcode | null>(null);
+
+    // Sync printer status
+    useEffect(() => {
+        const check = setInterval(() => {
+            setIsPrinterConnected(printer.isConnected());
+        }, 2000);
+        return () => clearInterval(check);
+    }, []);
+
+    const handleConnectPrinter = async () => {
+        setIsLoading(true);
+        const success = await printer.connect();
+        setIsPrinterConnected(success);
+        setIsLoading(false);
+        if (success) {
+            // Optional: Print a test or connection success message
+        }
+    };
 
     // Initialization: Cleanup on unmount
     useEffect(() => {
@@ -157,27 +180,47 @@ export const GuestScannerPage: React.FC = () => {
             const finalIdOrCode = guestId || guestCode;
             if (!finalIdOrCode) throw new Error('Invalid QR Data');
 
-            const checkInResponse = await guestsApi.checkIn(finalIdOrCode);
+            // SMART LOGIC: Always try check-in first
+            let response = await guestsApi.checkIn(finalIdOrCode);
 
-            if (checkInResponse.success) {
+            // If already checked in, trigger check-out automatically
+            if (response.code === 'ALREADY_CHECKED_IN') {
+                console.log('[Scanner] Smart Redirect: Guest already in, performing Check-Out');
+                response = await guestsApi.checkOut(finalIdOrCode);
+                
+                if (response.success) {
+                    setGuestName(response.guest.name);
+                    setCheckInStatus('checkout');
+                    
+                    // Print Receipt for Check-Out
+                    if (printer.isConnected()) {
+                        await printer.printReceipt(response.guest, 'check-out');
+                    }
+                    return; // Early exit for checkout success
+                }
+            }
+
+            if (response.success) {
                 // SUCCESS: Guest checked in
-                setGuestName(checkInResponse.guest.name);
+                setGuestName(response.guest.name);
                 setCheckInStatus('success');
 
+                // Print Receipt for Check-In
+                if (printer.isConnected()) {
+                    await printer.printReceipt(response.guest, 'check-in');
+                }
+
                 // Trigger display blast for visual effect with tier info
-                await triggerBlast(checkInResponse.guest.name, checkInResponse.guest.tier);
-            } else if (checkInResponse.code === 'ALREADY_CHECKED_IN') {
-                // DUPLICATE: Already checked in
-                setGuestName(checkInResponse.guest.name);
-                setCheckInStatus('duplicate');
-                setError(`${checkInResponse.guest.name} sudah check-in sebelumnya!`);
-                await triggerBlast(checkInResponse.guest.name, checkInResponse.guest.tier);
-            } else if (checkInResponse.code === 'NOT_FOUND') {
+                await triggerBlast(response.guest.name, response.guest.tier);
+            } else if (response.code === 'NOT_FOUND') {
                 setCheckInStatus('error');
                 setError('QR Code tidak dikenali. Pastikan tamu terdaftar.');
+            } else if (response.code === 'ALREADY_CHECKED_OUT') {
+                setCheckInStatus('error');
+                setError(`${response.guest.name} sudah check-out sebelumnya.`);
             } else {
                 setCheckInStatus('error');
-                setError(checkInResponse.error || 'Gagal melakukan check-in.');
+                setError(response.error || 'Gagal memproses data.');
             }
         } catch (err: any) {
             console.error(err);
@@ -222,7 +265,13 @@ export const GuestScannerPage: React.FC = () => {
                         <span className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Live Sync Active</span>
                     </div>
                 </div>
-                <div className="w-10" />
+                <button
+                    onClick={handleConnectPrinter}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md transition-all ${isPrinterConnected ? 'bg-teal-500/20 text-teal-400' : 'bg-white/10 text-white/40'}`}
+                    title={isPrinterConnected ? 'Printer Connected' : 'Connect Bluetooth Printer'}
+                >
+                    {isPrinterConnected ? <Bluetooth className="w-5 h-5" /> : <BluetoothOff className="w-5 h-5" />}
+                </button>
             </header>
 
             {/* Main Surface */}
@@ -275,20 +324,31 @@ export const GuestScannerPage: React.FC = () => {
                             )}
 
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                                    <CheckCircle2 className="w-6 h-6 sm:w-8 sm:h-8 text-green-500" />
+                                <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center flex-shrink-0 ${checkInStatus === 'checkout' ? 'bg-amber-500/20' : 'bg-green-500/20'}`}>
+                                    {checkInStatus === 'checkout' ? (
+                                        <XCircle className="w-6 h-6 sm:w-8 sm:h-8 text-amber-500" />
+                                    ) : (
+                                        <CheckCircle2 className="w-6 h-6 sm:w-8 sm:h-8 text-green-500" />
+                                    )}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mb-0.5">Guest Discovered</p>
-                                    <h3 className="text-lg sm:text-xl font-bold truncate text-[#FFBF00]">{guestName}</h3>
+                                    <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mb-0.5">
+                                        {checkInStatus === 'checkout' ? 'Guest Checked Out' : 'Guest Checked In'}
+                                    </p>
+                                    <h3 className={`text-lg sm:text-xl font-bold truncate ${checkInStatus === 'checkout' ? 'text-amber-400' : 'text-[#FFBF00]'}`}>{guestName}</h3>
                                 </div>
                             </div>
 
                             <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                                {isPrinterConnected && (
+                                    <div className="absolute top-4 right-4 animate-pulse">
+                                        <Printer className="w-4 h-4 text-teal-400" />
+                                    </div>
+                                )}
                                 <button
                                     onClick={() => triggerBlast(guestName || '')}
-                                    disabled={isLoading}
-                                    className="flex-1 py-3.5 bg-white/10 hover:bg-white/20 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 text-xs"
+                                    disabled={isLoading || checkInStatus === 'checkout'}
+                                    className="flex-1 py-3.5 bg-white/10 hover:bg-white/20 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-30 text-xs"
                                 >
                                     {isLoading ? <PremiumLoader variant="inline" size="sm" color="#FFBF00" /> : <RefreshCw className="w-4 h-4" />}
                                     Resend Blast
