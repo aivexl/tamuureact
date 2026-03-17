@@ -56,17 +56,25 @@ export const PreviewPage: React.FC = () => {
 
         // UNIFIED IDENTITY: Resolve Guest Data if guestSlug exists
         const resolveGuest = async () => {
-            if (guestSlug) {
+            const searchParams = new URLSearchParams(window.location.search);
+            const toParam = searchParams.get('to');
+            const targetSlug = guestSlug || toParam;
+
+            if (targetSlug) {
                 setIsGuestLoading(true);
                 try {
-                    console.log('[PreviewPage] Resolving guest identity:', guestSlug);
-                    const guestData = await api.guests.getBySlug(guestSlug);
+                    console.log('[PreviewPage] Resolving guest identity:', targetSlug);
+                    // Standardize lookup: try by ID if it looks like one, else by slug
+                    const guestData = targetSlug.length > 20 
+                        ? await api.guests.get(targetSlug)
+                        : await api.guests.getBySlug(targetSlug);
+                        
                     if (guestData) {
                         useStore.getState().setGuestData(guestData);
                         console.log('[PreviewPage] Guest resolved:', guestData.name);
                     }
                 } catch (e) {
-                    console.warn('[PreviewPage] Guest resolution failed or not found:', guestSlug);
+                    console.warn('[PreviewPage] Guest resolution failed or not found:', targetSlug);
                 } finally {
                     setIsGuestLoading(false);
                 }

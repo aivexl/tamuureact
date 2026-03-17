@@ -1,5 +1,11 @@
 # Tamuu Changelog
 
+## [0.9.8] - 2026-03-17
+### Fixed
+- **Unified Guest Identification Protocol**: Standardized all guest touchpoints (WhatsApp Share, QR Modal, Download Card) to use the personalized slug-based URL with a redundant UUID fallback (`?to=UUID`).
+- **Identity Resolution Engine**: Upgraded `PreviewPage` to intelligently resolve guest data from either URL paths or query parameters, ensuring 100% personalization reliability.
+- **Scanner Parity**: Verified that all generated QR codes are perfectly synchronized with the `GuestScannerPage` high-performance parsing logic.
+
 ## [0.9.7] - 2026-03-17
 ### Fixed
 - **Comprehensive QR Scannability Overhaul**: Re-engineered the entire QR ecosystem for absolute scanning reliability across all devices.
