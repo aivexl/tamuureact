@@ -5735,41 +5735,26 @@ name = COALESCE(?, name),
                 return new Response(object.body, { headers });
             }
 
-            // ============================================
-            // DYNAMIC INVITATION CARD (OG IMAGE)
+                        // ============================================
+            // DYNAMIC INVITATION CARD (OG IMAGE) - SVG Edition
             // ============================================
             if (path === '/api/og' && method === 'GET') {
-                // Smart Parameters Extraction
                 const eventName = url.searchParams.get('event') || 'The Wedding of';
                 const name1 = url.searchParams.get('n1') || 'Andi';
                 const name2 = url.searchParams.get('n2') || 'Sita';
                 const dateTime = url.searchParams.get('time') || '';
                 const location = url.searchParams.get('loc') || '';
-                const guestName = url.searchParams.get('to') || '';
-                const qrData = url.searchParams.get('qr') || url.searchParams.get('to') || 'https://tamuu.id';
+                const guestName = url.searchParams.get('to') || 'Tamu Undangan';
+                const qrData = url.searchParams.get('qr') || 'https://tamuu.id';
 
                 try {
-                    // 1. Initialize Engines (WASM)
-                    if (!resvgInitialized) {
-                        if (!(resvg_wasm instanceof WebAssembly.Module)) {
-                            throw new Error(`CRITICAL: resvg_wasm is not a WebAssembly.Module! It is a ${typeof resvg_wasm}.`);
-                        }
-                        await initResvg(resvg_wasm);
-                        resvgInitialized = true;
-                    }
                     if (!satoriInitialized) {
-                        if (!(yoga_wasm instanceof WebAssembly.Module)) {
-                            throw new Error(`CRITICAL: yoga_wasm is not a WebAssembly.Module! It is a ${typeof yoga_wasm}.`);
-                        }
-                        const yoga = await initYoga(yoga_wasm);
+                        const yoga = await initYoga();
                         initSatori(yoga);
                         satoriInitialized = true;
                     }
 
-                    // 2. Fetch Font Data (Cached at Edge)
                     const fontData = await getFontData();
-
-                    // 3. Generate QR Code (SVG instead of Canvas/PNG to prevent 500 error in Edge Workers)
                     const qrCodeSvg = await QRCode.toString(qrData, {
                         type: 'svg',
                         margin: 1,
@@ -5777,8 +5762,7 @@ name = COALESCE(?, name),
                         color: { dark: '#1a1a1a', light: '#ffffff' }
                     });
                     const qrCodeDataUri = `data:image/svg+xml;base64,${btoa(qrCodeSvg)}`;
-                    // 4. Render Layout with Satori (Enterprise UX - Apple Asymmetrical Standard)
-                    // ULTRA-DEEP ALIGNMENT: 1080x1080 Canvas
+
                     const svg = await satori(
                         {
                             type: 'div',
@@ -5789,66 +5773,67 @@ name = COALESCE(?, name),
                                     width: '1080px',
                                     height: '1080px',
                                     backgroundColor: '#ffffff',
-                                    padding: '100px 100px',
+                                    padding: '100px',
                                     fontFamily: 'Inter',
                                     position: 'relative'
                                 },
                                 children: [
-                                    // TOP SECTION: SPLIT 65/35
                                     {
                                         type: 'div',
                                         props: {
-                                            style: { display: 'flex', width: '100%', alignItems: 'flex-start', justifyContent: 'space-between' },
+                                            style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' },
                                             children: [
-                                                // LEFT COLUMN: Branding & Core Names
                                                 {
                                                     type: 'div',
                                                     props: {
-                                                        style: { display: 'flex', flexDirection: 'column', width: '650px' },
+                                                        style: { display: 'flex', flexDirection: 'column', width: '65%' },
                                                         children: [
-                                                            // Logo
                                                             {
                                                                 type: 'img',
                                                                 props: {
                                                                     src: 'https://api.tamuu.id/assets/tamuu-logo-header.png',
-                                                                    style: { width: '140px', opacity: 0.5, marginBottom: '80px' }
+                                                                    style: { width: '120px', opacity: 0.4, marginBottom: '60px' }
                                                                 }
                                                             },
-                                                            // Event Type
                                                             {
                                                                 type: 'div',
                                                                 props: {
-                                                                    children: (eventName || 'THE WEDDING OF').toUpperCase(),
-                                                                    style: { fontSize: '18px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '12px', fontWeight: 500, marginBottom: '30px', opacity: 0.8 }
+                                                                    style: { fontSize: '20px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '12px', fontWeight: 500, marginBottom: '40px' },
+                                                                    children: eventName.toUpperCase()
                                                                 }
                                                             },
-                                                            // Couple Names
                                                             {
                                                                 type: 'div',
                                                                 props: {
-                                                                    style: { display: 'flex', flexDirection: 'column', gap: '0px' },
-                                                                    children: [
-                                                                        { type: 'div', props: { children: (name1 || 'NAME ONE').toUpperCase(), style: { fontSize: '64px', fontWeight: 700, color: '#0f172a', letterSpacing: '-2px', lineHeight: 1 } } },
-                                                                        { type: 'div', props: { children: '&', style: { fontSize: '40px', color: '#cbd5e1', fontWeight: 300, margin: '15px 0' } } },
-                                                                        { type: 'div', props: { children: (name2 || 'NAME TWO').toUpperCase(), style: { fontSize: '64px', fontWeight: 700, color: '#0f172a', letterSpacing: '-2px', lineHeight: 1 } } }
-                                                                    ]
+                                                                    style: { fontSize: '72px', fontWeight: 800, color: '#0f172a', lineHeight: 1.1, letterSpacing: '-2px' },
+                                                                    children: name1.toUpperCase()
+                                                                }
+                                                            },
+                                                            {
+                                                                type: 'div',
+                                                                props: {
+                                                                    style: { fontSize: '48px', color: '#cbd5e1', fontWeight: 200, margin: '15px 0' },
+                                                                    children: '&'
+                                                                }
+                                                            },
+                                                            {
+                                                                type: 'div',
+                                                                props: {
+                                                                    style: { fontSize: '72px', fontWeight: 800, color: '#0f172a', lineHeight: 1.1, letterSpacing: '-2px' },
+                                                                    children: name2.toUpperCase()
                                                                 }
                                                             }
                                                         ]
                                                     }
                                                 },
-                                                // RIGHT COLUMN: QR Anchor
                                                 {
                                                     type: 'div',
                                                     props: {
-                                                        style: { width: '300px', display: 'flex', justifyContent: 'flex-end', paddingTop: '20px' },
+                                                        style: { width: '280px', height: '280px', display: 'flex', paddingTop: '20px' },
                                                         children: [
                                                             {
                                                                 type: 'img',
-                                                                props: {
-                                                                    src: qrCodeDataUri,
-                                                                    style: { width: '280px', height: '280px' }
-                                                                }
+                                                                props: { src: qrCodeDataUri, style: { width: '100%', height: '100%' } }
                                                             }
                                                         ]
                                                     }
@@ -5856,66 +5841,45 @@ name = COALESCE(?, name),
                                             ]
                                         }
                                     },
-
-                                    // MIDDLE SECTION: LOGISTICS
                                     {
                                         type: 'div',
                                         props: {
-                                            style: { display: 'flex', flexDirection: 'column', marginTop: '80px' },
+                                            style: { display: 'flex', flexDirection: 'column', marginTop: '100px' },
                                             children: [
                                                 {
                                                     type: 'div',
                                                     props: {
-                                                        style: { display: 'flex', flexDirection: 'column', gap: '8px' },
-                                                        children: [
-                                                            ...(dateTime.includes(',') ? 
-                                                                dateTime.split(',').map((part, i) => ({
-                                                                    type: 'div',
-                                                                    props: { 
-                                                                        children: part.trim().toUpperCase(), 
-                                                                        style: { 
-                                                                            fontSize: i === 0 ? '24px' : '20px', 
-                                                                            color: i === 0 ? '#475569' : '#94a3b8', 
-                                                                            fontWeight: i === 0 ? 700 : 400,
-                                                                            letterSpacing: '3px'
-                                                                        } 
-                                                                    }
-                                                                })) : 
-                                                                [{
-                                                                    type: 'div',
-                                                                    props: { children: (dateTime || 'EVENT DATE').toUpperCase(), style: { fontSize: '24px', color: '#475569', fontWeight: 700, letterSpacing: '3px' } }
-                                                                }]
-                                                            ),
-                                                            { type: 'div', props: { children: (location || 'EVENT LOCATION').toUpperCase(), style: { fontSize: '20px', color: '#64748b', fontWeight: 400, marginTop: '15px', letterSpacing: '1px' } } }
-                                                        ]
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    },
-
-                                    // BOTTOM SECTION: GUEST IDENTITY
-                                    {
-                                        type: 'div',
-                                        props: {
-                                            style: {
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                marginTop: 'auto'
-                                            },
-                                            children: [
-                                                {
-                                                    type: 'div',
-                                                    props: {
-                                                        children: 'Kepada Yth:',
-                                                        style: { fontSize: '16px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '5px', fontWeight: 400, marginBottom: '15px', opacity: 0.6 }
+                                                        style: { fontSize: '28px', color: '#475569', fontWeight: 700, letterSpacing: '4px' },
+                                                        children: dateTime.toUpperCase()
                                                     }
                                                 },
                                                 {
                                                     type: 'div',
                                                     props: {
-                                                        children: (guestName || 'TAMU UNDANGAN').toUpperCase(),
-                                                        style: { fontSize: '42px', fontWeight: 700, color: '#1e293b', letterSpacing: '-1px' }
+                                                        style: { fontSize: '24px', color: '#94a3b8', fontWeight: 400, marginTop: '15px', letterSpacing: '2px' },
+                                                        children: location.toUpperCase()
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        type: 'div',
+                                        props: {
+                                            style: { marginTop: 'auto', display: 'flex', flexDirection: 'column', width: '100%' },
+                                            children: [
+                                                {
+                                                    type: 'div',
+                                                    props: {
+                                                        style: { fontSize: '20px', color: '#94a3b8', letterSpacing: '6px', textTransform: 'uppercase', marginBottom: '10px', opacity: 0.6 },
+                                                        children: 'Kepada Yth:'
+                                                    }
+                                                },
+                                                {
+                                                    type: 'div',
+                                                    props: {
+                                                        style: { fontSize: '48px', fontWeight: 800, color: '#1e293b' },
+                                                        children: guestName.toUpperCase()
                                                     }
                                                 }
                                             ]
@@ -5930,46 +5894,25 @@ name = COALESCE(?, name),
                             fonts: [
                                 {
                                     name: 'Inter',
-                                    data: fontData.regular,
+                                    data: typeof fontData === 'object' && fontData.regular ? fontData.regular : fontData,
                                     weight: 400,
                                     style: 'normal',
-                                },
-                                {
-                                    name: 'Inter',
-                                    data: fontData.bold,
-                                    weight: 700,
-                                    style: 'normal',
-                                },
+                                }
                             ],
                         }
                     );
 
-                    // 5. Convert SVG to PNG
-                    const resvg = new Resvg(svg, {
-                        fitTo: { mode: 'width', value: 1080 }
-                    });
-                    const pngData = resvg.render();
-                    const pngBuffer = pngData.asPng();
-
-                    // 6. Response with Long Caching
-                    return new Response(pngBuffer, {
+                    return new Response(svg, {
                         headers: {
-                            'Content-Type': 'image/png',
-                            'Cache-Control': 'public, max-age=604800, immutable',
-                            'Access-Control-Allow-Origin': '*'
+                            ...corsHeaders,
+                            'Content-Type': 'image/svg+xml',
+                            'Cache-Control': 'public, max-age=31536000, immutable'
                         }
                     });
 
-                } catch (err) {
-                    console.error('[OG ERROR]', err);
-                    return json({ 
-                        error: 'Failed to generate image', 
-                        details: err.message,
-                        stack: err.stack,
-                        context: {
-                            eventName, name1, name2, dateTime, location, guestName
-                        }
-                    }, { ...corsHeaders, status: 500 });
+                } catch (error) {
+                    console.error('SVG Generation error:', error);
+                    return json({ error: 'Failed to generate card', details: error.message }, { ...corsHeaders, status: 500 });
                 }
             }
 

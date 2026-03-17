@@ -71,24 +71,24 @@ async function handleCrawler(request, pathParts) {
         const seoDescription = invitation.seo_description || 'Exclusive Digital Invitation - Private Access';
         
         // DYNAMIC OG IMAGE ENGINE
+        // Standard: Always prioritize personalized dynamic cards for guests
         let dynamicOgImage = invitation.og_image || invitation.thumbnail_url;
         
-        // Use static snapshot if available (Enterprise Fix: Client-side generation)
         const ogSettings = invitation.og_settings ? (typeof invitation.og_settings === 'string' ? JSON.parse(invitation.og_settings) : invitation.og_settings) : null;
         
-        if (ogSettings && ogSettings.og_image_url) {
-            dynamicOgImage = ogSettings.og_image_url;
-        } else if (ogSettings) {
-            // Fallback to dynamic if static snapshot is missing (legacy support)
+        if (ogSettings) {
             const params = new URLSearchParams({
                 event: ogSettings.event || 'The Wedding of',
                 n1: ogSettings.n1 || '',
                 n2: ogSettings.n2 || '',
                 time: ogSettings.time || '',
                 loc: ogSettings.loc || '',
-                to: guestName,
-                qr: `https://tamuu.id/${slug}`
+                to: guestName, // DYNAMIC: Personalized for guest
+                qr: guestSlug ? `https://tamuu.id/${slug}/${guestSlug}` : `https://tamuu.id/${slug}`
             });
+            
+            // We point to our internal generator for the personalized view
+            // WhatsApp/Social platforms will call this URL to get the SVG/PNG
             dynamicOgImage = `${API_BASE}/api/og?${params.toString()}`;
         }
 
