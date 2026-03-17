@@ -265,7 +265,7 @@ export const storage = {
         if (options.userId) formData.append('userId', options.userId);
         if (options.templateId) formData.append('templateId', options.templateId);
 
-        const res = await safeFetch(`${API_BASE}/api/storage/upload`, {
+        const res = await safeFetch(`${API_BASE}/api/assets/upload`, {
             method: 'POST',
             body: formData
         });

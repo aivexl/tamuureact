@@ -127,9 +127,37 @@ async function handleCrawler(request, pathParts) {
 
     } catch (error) {
         console.error('[SEO Proxy] Error:', error.message);
-        // Fallback to default Pages behavior on error
-        const pagesUrl = new URL(request.url);
-        pagesUrl.hostname = PAGES_DOMAIN;
-        return fetch(pagesUrl, request);
+        
+        // GRACEFUL FALLBACK (Enterprise Standard)
+        // If API fails, we STILL provide a valid OG HTML structure with a default image
+        // so WhatsApp doesn't show a broken/empty link card.
+        const defaultTitle = `Undangan - ${slug.toUpperCase()}`;
+        const defaultDesc = 'Buka link ini untuk melihat detail undangan digital.';
+        const defaultImage = 'https://api.tamuu.id/assets/tamuu-logo-header.png'; // Fallback image
+
+        const fallbackHtml = `<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>${defaultTitle}</title>
+    <meta name="description" content="${defaultDesc}">
+    <meta property="og:title" content="${defaultTitle}">
+    <meta property="og:description" content="${defaultDesc}">
+    <meta property="og:image" content="${defaultImage}">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="${request.url}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="${defaultTitle}">
+    <meta name="twitter:description" content="${defaultDesc}">
+    <meta name="twitter:image" content="${defaultImage}">
+</head>
+<body>
+    <script>window.location.href = "${request.url}";</script>
+</body>
+</html>`;
+
+        return new Response(fallbackHtml, {
+            headers: { 'Content-Type': 'text/html; charset=UTF-8', 'X-Proxy-Fallback': 'true' }
+        });
     }
 }

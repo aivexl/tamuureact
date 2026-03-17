@@ -53,13 +53,13 @@ export const ShareCardPanel: React.FC<ShareCardPanelProps> = ({ invitationId, on
                     // Parse existing settings if available
                     if (data.og_settings) {
                         try {
-                            const settings = JSON.parse(data.og_settings);
-                            setEventName(settings.event || '');
-                            setName1(settings.n1 || '');
-                            setName2(settings.n2 || '');
-                            setDateTime(settings.time || '');
-                            setLocation(settings.loc || '');
-                            setSavedImageUrl(settings.og_image_url || '');
+                            const settings = typeof data.og_settings === 'string' ? JSON.parse(data.og_settings) : data.og_settings;
+                            if (settings.event) setEventName(settings.event);
+                            if (settings.n1) setName1(settings.n1);
+                            if (settings.n2) setName2(settings.n2);
+                            if (settings.time) setDateTime(settings.time);
+                            if (settings.loc) setLocation(settings.loc);
+                            if (settings.og_image_url) setSavedImageUrl(settings.og_image_url);
                         } catch (e) {
                             console.error('Failed to parse og_settings', e);
                         }
