@@ -1,21 +1,6 @@
 /**
- * Tamuu AI System v9.0 - Enterprise Agentic
- * Advanced Agentic architecture with native tool calling and proactive diagnostics.
- * Fully human-centric tone with Indonesian EYD standards.
- * 
- * ARCHITECTURE UPDATE
- * What: Upgrade to Agentic V9.0
- * Why: To provide proactive, precise, and professional human-like support.
- * Impact: Real-time autonomous problem solving using native Gemini Function Calling.
- * Features: Gemini API integration, Indonesian language optimization, enterprise security
- * 
- * SECURITY NOTES:
- * - NEVER expose API keys in code - use environment variables only
- * - All sensitive data must be stored in encrypted environment variables
- * - Implement proper input validation and sanitization
- * - Use secure communication protocols (HTTPS/WSS)
- * - Regular security audits and penetration testing required
- * - Follow OWASP security guidelines for enterprise applications
+ * Tamuu AI System
+ * Sistem asisten cerdas Tamuu untuk bantuan pengguna.
  */
 
 import { v9Tools } from './v9-tools.js';
@@ -41,8 +26,8 @@ class TamuuAIEngine {
     }
 
     /**
-     * V9.0 Proactive Context Engine
-     * Performs silent audits and prepares context before the user even speaks.
+     * Sistem Konteks
+     * Menyiapkan konteks sebelum merespons pengguna.
      */
     async buildEnhancedContext(userId, messages, env) {
         const startTime = Date.now();
@@ -981,8 +966,8 @@ Ingat: Setiap karakter yang Anda keluarkan harus memancarkan kualitas yang bersi
     }
 
     /**
-     * Optimize Indonesian Response
-     * Enterprise-grade Indonesian language optimization with cultural context
+     * Optimasi Jawaban
+     * Penyesuaian bahasa agar lebih ramah dan profesional.
      */
     optimizeIndonesianResponse(response, context) {
         let optimized = response;
@@ -1108,36 +1093,34 @@ Ingat: Setiap karakter yang Anda keluarkan harus memancarkan kualitas yang bersi
         const userName = userProfile?.name || 'Kak';
         const userTier = userProfile?.tier || 'free';
 
-        // Enterprise-grade fallback responses by tier and intent
         const enterpriseFallbackResponses = {
             premium: {
-                'payment_issue': `Maaf ${userName}, sistem AI premium kami sedang maintenance. Tim engineer level 5 kami sedang menyelesaikan masalah ini dengan prioritas TINGGI. Mohon tunggu 2-3 menit. Saya akan notifikasi ${userName} saat sistem kembali online. 🏆`,
-                'technical_support': `Maaf ${userName}, enterprise infrastructure kami sedang scaling. Tim DevOps kami (24/7 standby) sedang menyelesaikan ini. ETA: 5 menit. ${userName} akan mendapat notifikasi prioritas. ⚡`,
-                'upgrade_inquiry': `Maaf ${userName}, sistem upgrade detection sedang optimization. Account manager premium ${userName} akan segera menghubungi dalam 10 menit. Saya akan email detail upgrade options. 📈`,
-                'feature_help': `Maaf ${userName}, AI feature engine sedang recalibration. Tim product kami akan kirim personalized tutorial ke email ${userName} dalam 15 menit. 📚`,
-                'account_management': `Maaf ${userName}, enterprise user management sedang security update. Tim security kami akan verifikasi dan update ${userName} dalam 5 menit. 🔒`
+                'payment_issue': `Mohon maaf ${userName}, sistem pembayaran sedang dalam pemeliharaan. Tim kami sedang menangani hal ini. Mohon tunggu sejenak atau coba kembali nanti.`,
+                'technical_support': `Mohon maaf ${userName}, sistem sedang dalam optimalisasi. Kami sedang menangani proses ini agar kembali normal secepatnya.`,
+                'upgrade_inquiry': `Mohon maaf ${userName}, sistem pembaruan sedang dalam masa optimalisasi. Kami akan segera memberikan informasi lengkap melalui email.`,
+                'feature_help': `Mohon maaf ${userName}, fitur AI sedang dalam kalibrasi. Kami akan segera mengirimkan panduan ke email ${userName}.`,
+                'account_management': `Mohon maaf ${userName}, sistem sedang dalam pembaruan keamanan. Mohon tunggu sekitar 5 menit.`
             },
             business: {
-                'payment_issue': `Maaf ${userName}, payment gateway kami sedang failover ke backup system. Finance team akan cek transaksi ${userName} manual. Mohon tunggu 10 menit. 💳`,
-                'technical_support': `Maaf ${userName}, business infrastructure sedang load balancing. System akan auto-recover dalam 10-15 menit. Saya akan monitor progress untuk ${userName}. 🔄`,
-                'upgrade_inquiry': `Maaf ${userName}, business upgrade portal sedang maintenance. Sales team akan contact ${userName} dengan custom proposal dalam 30 menit. 📋`,
-                'feature_help': `Maaf ${userName}, business feature documentation sedang update. Saya akan email comprehensive guide ke ${userName} dalam 20 menit. 📖`,
-                'account_management': `Maaf ${userName}, business account system sedang sync. Admin akan update ${userName} account dengan prioritas. Mohon tunggu 15 menit. ⚙️`
+                'payment_issue': `Mohon maaf ${userName}, gerbang pembayaran sedang dialihkan. Kami akan memeriksa transaksi ${userName} segera. Mohon tunggu sejenak.`,
+                'technical_support': `Mohon maaf ${userName}, sistem sedang dalam penyesuaian beban. Mohon tunggu sekitar 10 menit.`,
+                'upgrade_inquiry': `Mohon maaf ${userName}, portal pembaruan sedang dalam pemeliharaan. Tim kami akan segera menghubungi ${userName}.`,
+                'feature_help': `Mohon maaf ${userName}, panduan fitur sedang diperbarui. Kami akan mengirimkannya ke email ${userName} segera.`,
+                'account_management': `Mohon maaf ${userName}, sistem akun sedang dalam sinkronisasi. Kami akan memperbarui akun ${userName} secepatnya.`
             },
             free: {
-                'payment_issue': `Maaf Kak, sistem pembayaran sedang maintenance. Mohon cek email Kak untuk manual payment instructions atau coba lagi dalam 30 menit. 💰`,
-                'technical_support': `Maaf Kak, server sedang penuh. Tim kami sedang scale up capacity. Mohon coba lagi dalam 15-20 menit. Saya akan bantu dengan senang hati! 🚀`,
-                'upgrade_inquiry': `Maaf Kak, upgrade system sedang update. Mohon cek pricing page untuk info terbaru atau hubungi support. Saya siap bantu detailnya! ⭐`,
-                'feature_help': `Maaf Kak, feature demo sedang maintenance. Saya akan email video tutorial ke Kak dalam 30 menit. Stay tuned ya Kak! 📹`,
-                'account_management': `Maaf Kak, account system sedang backup. Mohon coba login lagi dalam 10 menit atau reset password jika needed. Saya monitor untuk Kak! 🔑`
+                'payment_issue': `Mohon maaf, sistem pembayaran sedang dalam pemeliharaan. Silakan coba kembali dalam 30 menit.`,
+                'technical_support': `Mohon maaf, server sedang penuh. Mohon coba kembali dalam 15-20 menit.`,
+                'upgrade_inquiry': `Mohon maaf, sistem sedang dalam sinkronisasi. Mohon periksa halaman harga untuk informasi terbaru.`,
+                'feature_help': `Mohon maaf, panduan fitur sedang dalam pemeliharaan. Silakan cek email Anda untuk tutorial.`,
+                'account_management': `Mohon maaf, sistem sedang dalam pencadangan data. Mohon coba masuk kembali dalam 10 menit.`
             }
         };
 
-        // Default responses for unknown intents
         const defaultFallbackResponses = {
-            premium: `Maaf ${userName}, AI Assistant Tamuu v8.0 Enterprise sedang maintenance. Tim engineer kami (1000+ staff) sedang menyelesaikan dengan priority HIGH. ETA: 5 menit. ${userName} akan get VIP notification. 🎯`,
-            business: `Maaf ${userName}, business system sedang optimization. Tim support kami akan manual process request ${userName}. Mohon tunggu 20 menit. Saya escalate ke management. 📊`,
-            free: `Maaf Kak, Tamuu AI Assistant sedang maintenance rutin. Tim kami sedang improve system untuk Kak. Mohon coba lagi dalam 15 menit. Terima kasih atas patience Kak! 🙏`
+            premium: `Mohon maaf ${userName}, Asisten AI Tamuu sedang dalam pemeliharaan rutin. Kami sedang menangani hal ini dengan prioritas utama.`,
+            business: `Mohon maaf ${userName}, sistem sedang dalam optimalisasi. Kami akan segera memproses permintaan ${userName}.`,
+            free: `Mohon maaf, Asisten AI Tamuu sedang dalam pemeliharaan rutin. Mohon coba kembali dalam 15 menit.`
         };
 
         // Check for specific intent and tier

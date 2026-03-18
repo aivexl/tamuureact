@@ -442,13 +442,13 @@ export const COUNTDOWN_VARIANT_PRESETS: CountdownVariantPreset[] = [
 // ============================================
 
 export const COUNTDOWN_CATEGORIES = [
-    { id: 'classic', name: 'Classic', icon: '✨', count: 3 },
-    { id: 'flip', name: 'Flip Clock', icon: '🔄', count: 3 },
-    { id: 'box', name: 'Box & Card', icon: '⬜', count: 4 },
-    { id: 'circle', name: 'Circle', icon: '⭕', count: 3 },
-    { id: 'modern', name: 'Modern', icon: '💫', count: 3 },
-    { id: 'luxury', name: 'Luxury', icon: '👑', count: 3 },
-    { id: 'unique', name: 'Unique', icon: '🎯', count: 1 },
+    { id: 'classic', name: 'Classic', count: 3 },
+    { id: 'flip', name: 'Flip Clock', count: 3 },
+    { id: 'box', name: 'Box & Card', count: 4 },
+    { id: 'circle', name: 'Circle', count: 3 },
+    { id: 'modern', name: 'Modern', count: 3 },
+    { id: 'luxury', name: 'Luxury', count: 3 },
+    { id: 'unique', name: 'Unique', count: 1 },
 ] as const;
 
 // ============================================

@@ -16,6 +16,7 @@ import { FeedbackTab } from '../components/Dashboard/FeedbackTab';
 import { WishlistTab } from '../components/Dashboard/WishlistTab';
 import { AnimatedCopyIcon } from '../components/ui/AnimatedCopyIcon';
 import { ChatInterface } from '../components/Chat/ChatInterface';
+import { Smartphone } from 'lucide-react';
 
 // ============================================
 // INLINE SVG ICONS (Zero external dependency)
@@ -755,36 +756,35 @@ export const DashboardPage: React.FC = () => {
                             <m.div key="scan" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6">
                                 <div className="flex items-center justify-between pt-2 md:pt-0">
                                     <div>
-                                        <h2 className="text-2xl md:text-3xl font-black text-slate-900 leading-tight">Scanner Hub</h2>
-                                        <p className="text-slate-500 text-sm">Pilih acara untuk aktivasi real-time sync.</p>
+                                       <h2 className="text-2xl md:text-3xl font-black text-slate-900 leading-tight">Pusat Scan</h2>
+                                       <p className="text-slate-500 text-sm">Pilih acara untuk aktivasi real-time sync.</p>
                                     </div>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {invitations.map((inv: Invitation, i: number) => (
-                                        <m.div
-                                            key={inv.id}
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: i * 0.1 }}
-                                            className="group bg-white rounded-3xl border border-slate-200 p-6 hover:shadow-2xl hover:border-teal-400 transition-all duration-500 relative overflow-hidden"
-                                        >
-                                            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-100 transition-opacity">
-                                                <ScanIcon className="w-12 h-12 text-teal-600" />
-                                            </div>
+                                       <m.div
+                                           key={inv.id}
+                                           initial={{ opacity: 0, y: 20 }}
+                                           animate={{ opacity: 1, y: 0 }}
+                                           transition={{ delay: i * 0.1 }}
+                                           className="group bg-white rounded-3xl border border-slate-200 p-6 hover:shadow-2xl hover:border-teal-400 transition-all duration-500 relative overflow-hidden"
+                                       >
+                                           <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-100 transition-opacity">
+                                               <ScanIcon className="w-12 h-12 text-teal-600" />
+                                           </div>
 
-                                            <div className="flex items-center gap-4 mb-6">
-                                                <div className="w-14 h-14 rounded-2xl bg-teal-50 flex items-center justify-center shadow-inner">
-                                                    <MailIcon className="w-7 h-7 text-teal-600" />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h3 className="font-bold text-slate-900 truncate text-lg group-hover:text-teal-600 transition-colors uppercase tracking-tight">{inv.name}</h3>
-                                                    <div className="flex items-center gap-2 mt-1">
-                                                        <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
-                                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Ready to Sync</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
+                                           <div className="flex items-center gap-4 mb-6">
+                                               <div className="w-14 h-14 rounded-2xl bg-teal-50 flex items-center justify-center shadow-inner">
+                                                   <MailIcon className="w-7 h-7 text-teal-600" />
+                                               </div>
+                                               <div className="flex-1 min-w-0">
+                                                   <h3 className="font-bold text-slate-900 truncate text-lg group-hover:text-teal-600 transition-colors uppercase tracking-tight">{inv.name}</h3>
+                                                   <div className="flex items-center gap-2 mt-1">
+                                                       <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+                                                       <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Siap</p>
+                                                   </div>
+                                               </div>
+                                           </div>
                                             <button
                                                 onClick={() => navigate(`/guests/scan/${inv.id}`)}
                                                 className="w-full py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-teal-500 hover:text-slate-900 transition-all active:scale-95 flex items-center justify-center gap-2"
@@ -799,11 +799,11 @@ export const DashboardPage: React.FC = () => {
                                 {/* Scanner Pro Tip */}
                                 <div className="mt-8 md:mt-12 bg-slate-900 text-white rounded-[2rem] p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 md:gap-8 overflow-hidden relative group">
                                     <div className="absolute top-0 left-0 w-full h-full bg-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl md:rounded-3xl bg-teal-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-teal-500/40">
-                                        <SparklesIcon className="w-8 h-8 md:w-10 md:h-10 text-white" />
+                                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl md:rounded-3xl bg-white/10 flex items-center justify-center flex-shrink-0">
+                                        <Smartphone className="w-8 h-8 md:w-10 md:h-10 text-white" />
                                     </div>
                                     <div className="flex-1 text-center md:text-left relative z-10">
-                                        <h4 className="text-lg md:text-xl font-black mb-2">Gunakan Smartphone 📱</h4>
+                                        <h4 className="text-lg md:text-xl font-black mb-2">Gunakan Smartphone</h4>
                                         <p className="text-slate-400 leading-relaxed text-xs md:text-sm">Fitur scanner dioptimalkan untuk responsivitas maksimal pada Google Chrome (Android) & Safari (iOS).</p>
                                     </div>
                                 </div>

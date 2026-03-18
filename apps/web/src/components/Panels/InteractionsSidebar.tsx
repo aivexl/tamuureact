@@ -16,32 +16,32 @@ const CATEGORIES = [
 ];
 
 const EFFECTS = [
-    { id: 'confetti', label: 'Classic Confetti', icon: '🎉', category: 'celebratory' },
-    { id: 'gold_rain', label: 'Golden Rain', icon: '💰', category: 'celebratory' },
-    { id: 'party_poppers', label: 'Party Poppers', icon: '🎊', category: 'celebratory' },
-    { id: 'glitter', label: 'Glitter', icon: '✨', category: 'celebratory' },
-    { id: 'balloons', label: 'Balloons', icon: '🎈', category: 'celebratory' },
+    { id: 'confetti', label: 'Classic Confetti', category: 'celebratory' },
+    { id: 'gold_rain', label: 'Golden Rain', category: 'celebratory' },
+    { id: 'party_poppers', label: 'Party Poppers', category: 'celebratory' },
+    { id: 'glitter', label: 'Glitter', category: 'celebratory' },
+    { id: 'balloons', label: 'Balloons', category: 'celebratory' },
 
-    { id: 'rose_petals', label: 'Rose Petals', icon: '🌹', category: 'nature' },
-    { id: 'sakura', label: 'Sakura Petals', icon: '🌸', category: 'nature' },
-    { id: 'autumn_leaves', label: 'Autumn Leaves', icon: '🍁', category: 'nature' },
-    { id: 'hearts', label: 'Hearts', icon: '❤️', category: 'nature' },
-    { id: 'feathers', label: 'Soft Feathers', icon: '🪶', category: 'nature' },
+    { id: 'rose_petals', label: 'Rose Petals', category: 'nature' },
+    { id: 'sakura', label: 'Sakura Petals', category: 'nature' },
+    { id: 'autumn_leaves', label: 'Autumn Leaves', category: 'nature' },
+    { id: 'hearts', label: 'Hearts', category: 'nature' },
+    { id: 'feathers', label: 'Soft Feathers', category: 'nature' },
 
-    { id: 'snow', label: 'Gentle Snow', icon: '❄️', category: 'atmospheric' },
-    { id: 'fireflies', label: 'Fireflies', icon: '🏮', category: 'atmospheric' },
-    { id: 'rain', label: 'Romantic Rain', icon: '🌧️', category: 'atmospheric' },
-    { id: 'mist', label: 'Mist Glow', icon: '🌫️', category: 'atmospheric' },
+    { id: 'snow', label: 'Gentle Snow', category: 'atmospheric' },
+    { id: 'fireflies', label: 'Fireflies', category: 'atmospheric' },
+    { id: 'rain', label: 'Romantic Rain', category: 'atmospheric' },
+    { id: 'mist', label: 'Mist Glow', category: 'atmospheric' },
 
-    { id: 'matrix', label: 'Digital Rain', icon: '📟', category: 'hitech' },
-    { id: 'sparks', label: 'Cyber Sparks', icon: '⚡', category: 'hitech' },
-    { id: 'glitch', label: 'Neon Glitch', icon: '📺', category: 'hitech' },
-    { id: 'hologram', label: 'Hologram', icon: '📡', category: 'hitech' },
+    { id: 'matrix', label: 'Digital Rain', category: 'hitech' },
+    { id: 'sparks', label: 'Cyber Sparks', category: 'hitech' },
+    { id: 'glitch', label: 'Neon Glitch', category: 'hitech' },
+    { id: 'hologram', label: 'Hologram', category: 'hitech' },
 
-    { id: 'aurora', label: 'Aurora', icon: '🌌', category: 'magic' },
-    { id: 'stars', label: 'Star Night', icon: '⭐', category: 'magic' },
-    { id: 'fairy_dust', label: 'Fairy Dust', icon: '🧚', category: 'magic' },
-    { id: 'phoenix', label: 'Phoenix Fire', icon: '🔥', category: 'magic' },
+    { id: 'aurora', label: 'Aurora', category: 'magic' },
+    { id: 'stars', label: 'Star Night', category: 'magic' },
+    { id: 'fairy_dust', label: 'Fairy Dust', category: 'magic' },
+    { id: 'phoenix', label: 'Phoenix Fire', category: 'magic' },
 ];
 
 export const InteractionsSidebar: React.FC = () => {
@@ -153,7 +153,6 @@ export const InteractionsSidebar: React.FC = () => {
                                     className="absolute inset-0 rounded-2xl ring-2 ring-premium-accent ring-inset pointer-events-none"
                                 />
                             )}
-                            <span className="text-3xl mb-2 group-hover:scale-110 transition-transform duration-300 drop-shadow-lg">{effect.icon}</span>
                             <span className={`text-[10px] font-bold text-center ${selectedEffect === effect.id ? 'text-white' : 'text-white/40 group-hover:text-white/60'}`}>
                                 {effect.label}
                             </span>

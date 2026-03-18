@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { feedback as feedbackApi } from '@/lib/api';
-import { MessageCircle, Bug, Sparkles, Send, CheckCircle2 } from 'lucide-react';
+import { MessageCircle, Bug, Send, CheckCircle2, MessageSquare } from 'lucide-react';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
 
 export const FeedbackTab: React.FC = () => {
@@ -98,7 +98,7 @@ export const FeedbackTab: React.FC = () => {
                         className={`p-6 rounded-3xl border-2 transition-all flex items-start gap-4 text-left ${category === 'feature' ? 'border-teal-500 bg-teal-50/30' : 'border-slate-100 bg-white hover:border-slate-200'}`}
                     >
                         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${category === 'feature' ? 'bg-teal-500 text-white' : 'bg-slate-100 text-slate-400'}`}>
-                            <Sparkles className="w-6 h-6" />
+                            <MessageSquare className="w-6 h-6" />
                         </div>
                         <div>
                             <h4 className={`font-black text-sm uppercase tracking-widest ${category === 'feature' ? 'text-teal-600' : 'text-slate-900'}`}>Request Fitur</h4>

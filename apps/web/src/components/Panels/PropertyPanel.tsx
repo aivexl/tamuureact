@@ -1511,9 +1511,9 @@ export const PropertyPanel: React.FC = () => {
                                     label="Variant"
                                     value={layer.quoteConfig?.variant || 'cinematic'}
                                     options={[
-                                        { value: 'cinematic', label: '🎬 Cinematic Glass' },
-                                        { value: 'solid', label: '🎨 Solid Color' },
-                                        { value: 'transparent', label: '👻 Transparent' }
+                                        { value: 'cinematic', label: 'Cinematic Glass' },
+                                        { value: 'solid', label: 'Solid Color' },
+                                        { value: 'transparent', label: 'Transparent' }
                                     ]}
                                     onChange={(v) => handleUpdate({ quoteConfig: { ...layer.quoteConfig!, variant: v as any } })}
                                 />
@@ -1546,8 +1546,8 @@ export const PropertyPanel: React.FC = () => {
                                     label="Kategori"
                                     value={layer.quoteConfig?.category || 'international'}
                                     options={[
-                                        { value: 'international', label: '🌍 Kutipan Internasional' },
-                                        { value: 'quran', label: '📖 Ayat Suci / Quran' }
+                                        { value: 'international', label: 'Kutipan Internasional' },
+                                        { value: 'quran', label: 'Ayat Suci / Quran' }
                                     ]}
                                     onChange={(v) => handleUpdate({ quoteConfig: { ...layer.quoteConfig!, category: v as any } })}
                                 />
@@ -1788,26 +1788,26 @@ export const PropertyPanel: React.FC = () => {
                                     label="Variant"
                                     value={layer.countdownConfig?.variant || 'elegant'}
                                     options={[
-                                        { value: 'elegant', label: '✨ Elegant' },
-                                        { value: 'classic', label: '✨ Classic' },
-                                        { value: 'minimal', label: '✨ Minimal' },
-                                        { value: 'flip', label: '🔄 Flip Clock' },
-                                        { value: 'flip-dark', label: '🔄 Flip Dark' },
-                                        { value: 'flip-neon', label: '🔄 Flip Neon' },
-                                        { value: 'boxed', label: '⬜ Boxed' },
-                                        { value: 'boxed-gradient', label: '⬜ Boxed Gradient' },
-                                        { value: 'card-glass', label: '⬜ Card Glass' },
-                                        { value: 'card-solid', label: '⬜ Card Solid' },
-                                        { value: 'circle-progress', label: '⭕ Circle Progress' },
-                                        { value: 'circle-minimal', label: '⭕ Circle Minimal' },
-                                        { value: 'ring', label: '⭕ Ring' },
-                                        { value: 'modern-split', label: '💫 Modern Split' },
-                                        { value: 'neon-glow', label: '💫 Neon Glow' },
-                                        { value: 'cyber', label: '💫 Cyber' },
-                                        { value: 'luxury-gold', label: '👑 Luxury Gold' },
-                                        { value: 'luxury-rose', label: '👑 Luxury Rose' },
-                                        { value: 'wedding-script', label: '👑 Wedding Script' },
-                                        { value: 'typewriter', label: '🎯 Typewriter' },
+                                        { value: 'elegant', label: 'Elegant' },
+                                        { value: 'classic', label: 'Classic' },
+                                        { value: 'minimal', label: 'Minimal' },
+                                        { value: 'flip', label: 'Flip Clock' },
+                                        { value: 'flip-dark', label: 'Flip Dark' },
+                                        { value: 'flip-neon', label: 'Flip Neon' },
+                                        { value: 'boxed', label: 'Boxed' },
+                                        { value: 'boxed-gradient', label: 'Boxed Gradient' },
+                                        { value: 'card-glass', label: 'Card Glass' },
+                                        { value: 'card-solid', label: 'Card Solid' },
+                                        { value: 'circle-progress', label: 'Circle Progress' },
+                                        { value: 'circle-minimal', label: 'Circle Minimal' },
+                                        { value: 'ring', label: 'Ring' },
+                                        { value: 'modern-split', label: 'Modern Split' },
+                                        { value: 'neon-glow', label: 'Neon Glow' },
+                                        { value: 'cyber', label: 'Cyber' },
+                                        { value: 'luxury-gold', label: 'Luxury Gold' },
+                                        { value: 'luxury-rose', label: 'Luxury Rose' },
+                                        { value: 'wedding-script', label: 'Wedding Script' },
+                                        { value: 'typewriter', label: 'Typewriter' },
                                     ]}
                                     onChange={(v) => handleUpdate({ countdownConfig: { ...layer.countdownConfig!, variant: v as any } })}
                                 />
@@ -2029,7 +2029,7 @@ export const PropertyPanel: React.FC = () => {
                                         })}
                                         className={`w-full py-2 rounded-lg text-xs font-medium mb-2 ${layer.countdownConfig?.animateOnChange !== false ? 'bg-premium-accent/20 text-premium-accent' : 'bg-white/5 text-white/60'}`}
                                     >
-                                        {layer.countdownConfig?.animateOnChange !== false ? '✓ Animate on Change' : 'Animate on Change'}
+                                        {layer.countdownConfig?.animateOnChange !== false ? 'Animate on Change' : 'Animate on Change'}
                                     </motion.button>
                                     <SelectInput
                                         label="Animation Type"
@@ -2058,7 +2058,7 @@ export const PropertyPanel: React.FC = () => {
                                     })}
                                     className={`w-full py-2 rounded-lg text-xs font-medium ${layer.countdownConfig?.showLabels !== false ? 'bg-premium-accent/20 text-premium-accent' : 'bg-white/5 text-white/60'}`}
                                 >
-                                    {layer.countdownConfig?.showLabels !== false ? '✓ Show Labels' : 'Show Labels'}
+                                    {layer.countdownConfig?.showLabels !== false ? 'Show Labels' : 'Show Labels'}
                                 </motion.button>
 
                                 {/* Show Separators Toggle */}
@@ -2072,7 +2072,7 @@ export const PropertyPanel: React.FC = () => {
                                     })}
                                     className={`w-full py-2 rounded-lg text-xs font-medium ${layer.countdownConfig?.showSeparators !== false ? 'bg-premium-accent/20 text-premium-accent' : 'bg-white/5 text-white/60'}`}
                                 >
-                                    {layer.countdownConfig?.showSeparators !== false ? '✓ Show Separators' : 'Show Separators'}
+                                    {layer.countdownConfig?.showSeparators !== false ? 'Show Separators' : 'Show Separators'}
                                 </motion.button>
                             </div>
                         </SectionComponent>
@@ -2587,9 +2587,9 @@ export const PropertyPanel: React.FC = () => {
                                     label="Trigger Method"
                                     value={layer.interactionConfig?.triggerType || 'click'}
                                     options={[
-                                        { value: 'click', label: '👆 On Click/Tap' },
-                                        { value: 'hover', label: '🖱️ On Hover' },
-                                        { value: 'auto', label: '⚡ Auto (On Load)' }
+                                        { value: 'click', label: 'On Click/Tap' },
+                                        { value: 'hover', label: 'On Hover' },
+                                        { value: 'auto', label: 'Auto (On Load)' }
                                     ]}
                                     onChange={(v) => handleUpdate({ interactionConfig: { ...layer.interactionConfig!, triggerType: v as any } })}
                                 />
@@ -2599,14 +2599,14 @@ export const PropertyPanel: React.FC = () => {
                                     label="Visual Effect"
                                     value={layer.interactionConfig?.effect || 'confetti'}
                                     options={[
-                                        { value: 'confetti', label: '🎉 Confetti' },
-                                        { value: 'gold_rain', label: '💰 Golden Rain' },
-                                        { value: 'rose_petals', label: '🌹 Rose Petals' },
-                                        { value: 'snow', label: '❄️ Snow' },
-                                        { value: 'matrix', label: '📟 Digital Matrix' },
-                                        { value: 'stars', label: '⭐ Stars' },
-                                        { value: 'hearts', label: '❤️ Hearts' },
-                                        { value: 'fireworks', label: '🚀 Fireworks' }
+                                        { value: 'confetti', label: 'Confetti' },
+                                        { value: 'gold_rain', label: 'Golden Rain' },
+                                        { value: 'rose_petals', label: 'Rose Petals' },
+                                        { value: 'snow', label: 'Snow' },
+                                        { value: 'matrix', label: 'Digital Matrix' },
+                                        { value: 'stars', label: 'Stars' },
+                                        { value: 'hearts', label: 'Hearts' },
+                                        { value: 'fireworks', label: 'Fireworks' }
                                     ]}
                                     onChange={(v) => handleUpdate({ interactionConfig: { ...layer.interactionConfig!, effect: v as any } })}
                                 />
@@ -2616,9 +2616,9 @@ export const PropertyPanel: React.FC = () => {
                                     label="Greeting Style"
                                     value={layer.interactionConfig?.greetingStyle || 'cinematic'}
                                     options={[
-                                        { value: 'cinematic', label: '🎬 Cinematic Typography' },
-                                        { value: 'simple', label: '📝 Simple Text' },
-                                        { value: 'none', label: '🚫 No Text (Effect Only)' }
+                                        { value: 'cinematic', label: 'Cinematic Typography' },
+                                        { value: 'simple', label: 'Simple Text' },
+                                        { value: 'none', label: 'No Text (Effect Only)' }
                                     ]}
                                     onChange={(v) => handleUpdate({ interactionConfig: { ...layer.interactionConfig!, greetingStyle: v as any } })}
                                 />
@@ -2647,7 +2647,7 @@ export const PropertyPanel: React.FC = () => {
 
                                 {/* Click Instruction */}
                                 <div className="p-3 rounded-lg bg-white/5 border border-white/10 text-center">
-                                    <div className="text-[10px] text-white/60 mb-1">💡 Cara Test</div>
+                                    <div className="text-[10px] text-white/60 mb-1">Cara Test</div>
                                     <div className="text-xs text-white/80 font-medium">Klik elemen Blast di canvas untuk melihat efek</div>
                                 </div>
                             </div>
@@ -3141,12 +3141,12 @@ export const PropertyPanel: React.FC = () => {
                                 label="Frame Style"
                                 value={layer.frameConfig?.variant || 'polaroid'}
                                 options={[
-                                    { value: 'polaroid', label: '📸 Classic Polaroid' },
-                                    { value: 'gallery', label: '🖼️ Gallery Frame' },
-                                    { value: 'film-strip', label: '🎞️ Film Strip' },
-                                    { value: 'washi-tape', label: '📌 Washi Tape' },
-                                    { value: 'arch', label: '🏛️ Modern Arch' },
-                                    { value: 'instagram', label: '📸 Instagram Post' }
+                                    { value: 'polaroid', label: 'Classic Polaroid' },
+                                    { value: 'gallery', label: 'Gallery Frame' },
+                                    { value: 'film-strip', label: 'Film Strip' },
+                                    { value: 'washi-tape', label: 'Washi Tape' },
+                                    { value: 'arch', label: 'Modern Arch' },
+                                    { value: 'instagram', label: 'Instagram Post' }
                                 ]}
                                 onChange={(v) => handleUpdate({ frameConfig: { ...layer.frameConfig!, variant: v as any } })}
                             />
@@ -3487,8 +3487,8 @@ export const PropertyPanel: React.FC = () => {
                                 label="Direction"
                                 value={layer.flyingBirdConfig?.direction || 'left'}
                                 options={[
-                                    { value: 'left', label: '← Fly Left' },
-                                    { value: 'right', label: '→ Fly Right' }
+                                    { value: 'left', label: 'Fly Left' },
+                                    { value: 'right', label: 'Fly Right' }
                                 ]}
                                 onChange={(v) => handleUpdate({ flyingBirdConfig: { ...layer.flyingBirdConfig!, direction: v as any } })}
                             />
@@ -4124,11 +4124,11 @@ export const PropertyPanel: React.FC = () => {
                                 { value: 'bounce', label: 'Bounce' },
                                 { value: 'pop-in', label: 'Pop In' },
                                 { value: 'blur-in', label: 'Blur In' },
-                                { value: 'twirl-in', label: 'Twirl In (Premium ✨)' },
-                                { value: 'door-open-left', label: '🚪 Door Open (Left)' },
-                                { value: 'door-open-right', label: '🚪 Door Open (Right)' },
-                                { value: 'door-2d-open-left', label: '🚪 Door 2D (Left)' },
-                                { value: 'door-2d-open-right', label: '🚪 Door 2D (Right)' }
+                                { value: 'twirl-in', label: 'Twirl In (Premium)' },
+                                { value: 'door-open-left', label: 'Door Open (Left)' },
+                                { value: 'door-open-right', label: 'Door Open (Right)' },
+                                { value: 'door-2d-open-left', label: 'Door 2D (Left)' },
+                                { value: 'door-2d-open-right', label: 'Door 2D (Right)' }
                             ]}
                             onChange={(v) => handleUpdate({
                                 animation: {
@@ -4204,14 +4204,14 @@ export const PropertyPanel: React.FC = () => {
                                 { value: 'glow', label: 'Glow' },
                                 { value: 'heartbeat', label: 'Heartbeat' },
                                 { value: 'sparkle', label: 'Sparkle' },
-                                { value: 'flap-bob', label: '🪶 Kepak + Naik-Turun' },
-                                { value: 'float-flap', label: '🌊 Melayang + Kepak' },
-                                { value: 'fly-left', label: '⬅️ Terjang Kiri' },
-                                { value: 'fly-right', label: '➡️ Terjang Kanan' },
-                                { value: 'fly-up', label: '⬆️ Terbang Atas' },
-                                { value: 'fly-down', label: '⬇️ Terbang Bawah' },
-                                { value: 'fly-random', label: '🎲 Gerakan Acak' },
-                                { value: 'twirl', label: '🌀 Twirl & Scale (Premium)' }
+                                { value: 'flap-bob', label: 'Kepak + Naik-Turun' },
+                                { value: 'float-flap', label: 'Melayang + Kepak' },
+                                { value: 'fly-left', label: 'Terjang Kiri' },
+                                { value: 'fly-right', label: 'Terjang Kanan' },
+                                { value: 'fly-up', label: 'Terbang Atas' },
+                                { value: 'fly-down', label: 'Terbang Bawah' },
+                                { value: 'fly-random', label: 'Gerakan Acak' },
+                                { value: 'twirl', label: 'Twirl & Scale (Premium)' }
                             ]}
                             onChange={(v) => handleUpdate({
                                 animation: {
@@ -4229,8 +4229,8 @@ export const PropertyPanel: React.FC = () => {
                                 label="Direction"
                                 value={layer.animation?.loop?.direction || 'cw'}
                                 options={[
-                                    { value: 'cw', label: 'Clockwise ↻' },
-                                    { value: 'ccw', label: 'Counter-Clockwise ↺' }
+                                    { value: 'cw', label: 'Clockwise' },
+                                    { value: 'ccw', label: 'Counter-Clockwise' }
                                 ]}
                                 onChange={(v) => handleUpdate({
                                     animation: {

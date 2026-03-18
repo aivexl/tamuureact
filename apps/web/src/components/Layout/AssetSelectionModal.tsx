@@ -430,10 +430,10 @@ const RSVP_WISHES_PRESETS = [
 ];
 
 const CONFETTI_PRESETS = [
-    { label: 'Golden Rain', colors: ['#FFD700', '#F0E68C', '#DAA520'], icon: '✨' },
-    { label: 'Party Pop', colors: ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF'], icon: '🎉' },
-    { label: 'Soft Pink', colors: ['#FFC0CB', '#FFB6C1', '#FF69B4'], icon: '🌸' },
-    { label: 'Ice Blue', colors: ['#E0FFFF', '#B0E0E6', '#ADD8E6'], icon: '❄️' },
+    { label: 'Golden Rain', colors: ['#FFD700', '#F0E68C', '#DAA520'] },
+    { label: 'Party Pop', colors: ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF'] },
+    { label: 'Soft Pink', colors: ['#FFC0CB', '#FFB6C1', '#FF69B4'] },
+    { label: 'Ice Blue', colors: ['#E0FFFF', '#B0E0E6', '#ADD8E6'] },
 ];
 
 const WAVE_PRESETS = [
@@ -457,70 +457,70 @@ const WEATHER_PRESETS = [
 ];
 
 const QR_PRESETS = [
-    { label: 'Standard', fg: '#000000', icon: '⬛' },
-    { label: 'Premium Gold', fg: '#bfa181', icon: '👑' },
-    { label: 'Royal Blue', fg: '#1a365d', icon: '🔷' },
+    { label: 'Standard', fg: '#000000' },
+    { label: 'Premium Gold', fg: '#bfa181' },
+    { label: 'Royal Blue', fg: '#1a365d' },
 ];
 
 const INTERACTIVE_QR_PRESETS = [
     {
         category: 'Celebratory',
         effects: [
-            { id: 'confetti', label: 'Classic Confetti', icon: '🎉' },
-            { id: 'gold_rain', label: 'Golden Rain', icon: '💰' },
-            { id: 'party_poppers', label: 'Party Poppers', icon: '🎊' },
-            { id: 'glitter', label: 'Glitter', icon: '✨' }
+            { id: 'confetti', label: 'Classic Confetti' },
+            { id: 'gold_rain', label: 'Golden Rain' },
+            { id: 'party_poppers', label: 'Party Poppers' },
+            { id: 'glitter', label: 'Glitter' }
         ]
     },
     {
         category: 'Nature & Romance',
         effects: [
-            { id: 'rose_petals', label: 'Rose Petals', icon: '🌹' },
-            { id: 'sakura', label: 'Sakura Petals', icon: '🌸' },
-            { id: 'autumn_leaves', label: 'Autumn Leaves', icon: '🍁' },
-            { id: 'hearts', label: 'Hearts', icon: '❤️' }
+            { id: 'rose_petals', label: 'Rose Petals' },
+            { id: 'sakura', label: 'Sakura Petals' },
+            { id: 'autumn_leaves', label: 'Autumn Leaves' },
+            { id: 'hearts', label: 'Hearts' }
         ]
     },
     {
         category: 'Atmospheric',
         effects: [
-            { id: 'snow', label: 'Gentle Snow', icon: '❄️' },
-            { id: 'fireflies', label: 'Fireflies', icon: '🏮' },
-            { id: 'bubbles', label: 'Morning Bubbles', icon: '🫧' },
-            { id: 'mist', label: 'Mist Glow', icon: '🌫️' }
+            { id: 'snow', label: 'Gentle Snow' },
+            { id: 'fireflies', label: 'Fireflies' },
+            { id: 'bubbles', label: 'Morning Bubbles' },
+            { id: 'mist', label: 'Mist Glow' }
         ]
     },
     {
         category: 'Techno & Matrix',
         effects: [
-            { id: 'matrix', label: 'Digital Rain', icon: '📟' },
-            { id: 'sparks', label: 'Cyber Sparks', icon: '⚡' },
-            { id: 'glitch', label: 'Neon Glitch', icon: '📺' },
-            { id: 'hexagons', label: 'Hexagons', icon: '⬢' }
+            { id: 'matrix', label: 'Digital Rain' },
+            { id: 'sparks', label: 'Cyber Sparks' },
+            { id: 'glitch', label: 'Neon Glitch' },
+            { id: 'hexagons', label: 'Hexagons' }
         ]
     },
     {
         category: 'Magic & Mystical',
         effects: [
-            { id: 'aurora', label: 'Aurora', icon: '🌌' },
-            { id: 'stars', label: 'Star Night', icon: '⭐' },
-            { id: 'orbs', label: 'Spirit Orbs', icon: '🔮' },
-            { id: 'plasma', label: 'Plasma Swirl', icon: '🌀' }
+            { id: 'aurora', label: 'Aurora' },
+            { id: 'stars', label: 'Star Night' },
+            { id: 'orbs', label: 'Spirit Orbs' },
+            { id: 'plasma', label: 'Plasma Swirl' }
         ]
     }
 ];
 const PARTICLE_PRESETS = {
     fireworks: [
-        { label: 'Victory Gold', colors: ['#FFD700', '#FFA500'], icon: '🚀' },
-        { label: 'Magenta Mist', colors: ['#FF00FF', '#800080'], icon: '🎇' },
+        { label: 'Victory Gold', colors: ['#FFD700', '#FFA500'] },
+        { label: 'Magenta Mist', colors: ['#FF00FF', '#800080'] },
     ],
     bubbles: [
-        { label: 'Crystal Clear', colorPath: 'white', icon: '🫧' },
-        { label: 'Rainbow', colorPath: 'gradient', icon: '🌈' },
+        { label: 'Crystal Clear', colorPath: 'white' },
+        { label: 'Rainbow', colorPath: 'gradient' },
     ],
     snow: [
-        { label: 'Winter Soft', color: '#ffffff', icon: '❄️' },
-        { label: 'Mist Glow', color: '#e2e8f0', icon: '🌫️' },
+        { label: 'Winter Soft', color: '#ffffff' },
+        { label: 'Mist Glow', color: '#e2e8f0' },
     ]
 };
 
@@ -736,7 +736,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                         {COUNTDOWN_CATEGORIES.map((category) => (
                             <div key={category.id}>
                                 <div className="flex items-center gap-2 mb-2">
-                                    <span className="text-sm">{category.icon}</span>
+                                    
                                     <span className="text-xs font-bold uppercase tracking-wider text-white/60">{category.name}</span>
                                     <span className="text-[9px] text-white/30">({category.count})</span>
                                 </div>
@@ -763,7 +763,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                     <div className="space-y-4">
                         {[
                             {
-                                id: 'classic', name: 'Classic', icon: '🎨', items: [
+                                id: 'classic', name: 'Classic', items: [
                                     { id: 1, name: 'Elegant', bg: '#1a1a2e', text: '#f8f9fa' },
                                     { id: 2, name: 'Light', bg: '#ffffff', text: '#2d3436' },
                                     { id: 3, name: 'Gold', bg: '#0a0a0a', text: '#d4af37' },
@@ -772,7 +772,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                                 ]
                             },
                             {
-                                id: 'glass', name: 'Glass', icon: '✨', items: [
+                                id: 'glass', name: 'Glass', items: [
                                     { id: 6, name: 'Frosted', bg: 'rgba(255,255,255,0.1)', text: '#ffffff' },
                                     { id: 7, name: 'Dark', bg: 'rgba(0,0,0,0.3)', text: '#ffffff' },
                                     { id: 8, name: 'Blue', bg: 'rgba(59,130,246,0.2)', text: '#ffffff' },
@@ -781,7 +781,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                                 ]
                             },
                             {
-                                id: 'neon', name: 'Neon', icon: '💡', items: [
+                                id: 'neon', name: 'Neon', items: [
                                     { id: 11, name: 'Cyan', bg: '#0a0a0a', text: '#00ffff' },
                                     { id: 12, name: 'Pink', bg: '#0a0a0a', text: '#ff00ff' },
                                     { id: 13, name: 'Green', bg: '#0a0a0a', text: '#00ff00' },
@@ -790,7 +790,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                                 ]
                             },
                             {
-                                id: 'badge', name: 'Badge', icon: '🏆', items: [
+                                id: 'badge', name: 'Badge', items: [
                                     { id: 16, name: 'VIP', bg: 'linear-gradient(135deg, #d4af37, #f4e4a6)', text: '#1a1a1a' },
                                     { id: 17, name: 'Premium', bg: 'linear-gradient(135deg, #667eea, #764ba2)', text: '#ffffff' },
                                     { id: 18, name: 'Royal', bg: 'linear-gradient(135deg, #1a1a2e, #4a4a6a)', text: '#d4af37' },
@@ -799,7 +799,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                                 ]
                             },
                             {
-                                id: 'luxury', name: 'Luxury', icon: '💎', items: [
+                                id: 'luxury', name: 'Luxury', items: [
                                     { id: 21, name: 'Black Tie', bg: '#000000', text: '#d4af37' },
                                     { id: 22, name: 'Champagne', bg: '#f5f5dc', text: '#8b7355' },
                                     { id: 23, name: 'Velvet', bg: '#800020', text: '#ffd700' },
@@ -807,7 +807,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                                 ]
                             },
                             {
-                                id: 'minimal', name: 'Minimal', icon: '⬜', items: [
+                                id: 'minimal', name: 'Minimal', items: [
                                     { id: 25, name: 'Pure White', bg: '#ffffff', text: '#000000' },
                                     { id: 26, name: 'Pure Black', bg: '#000000', text: '#ffffff' },
                                     { id: 27, name: 'Soft Gray', bg: '#f0f0f0', text: '#333333' },
@@ -817,7 +817,6 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                         ].map((category) => (
                             <div key={category.id}>
                                 <div className="flex items-center gap-2 mb-2">
-                                    <span className="text-sm">{category.icon}</span>
                                     <span className="text-xs font-bold uppercase tracking-wider text-white/60">{category.name}</span>
                                     <span className="text-[9px] text-white/30">({category.items.length})</span>
                                 </div>
@@ -868,7 +867,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                         </div>
                         {[
                             {
-                                id: 'classic', name: 'Classic', icon: '🎨', items: [
+                                id: 'classic', name: 'Classic', items: [
                                     { id: 1, name: 'Elegant', bg: '#1a1a2e', text: '#f8f9fa' },
                                     { id: 2, name: 'Light', bg: '#ffffff', text: '#2d3436' },
                                     { id: 3, name: 'Gold', bg: '#0a0a0a', text: '#d4af37' },
@@ -877,7 +876,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                                 ]
                             },
                             {
-                                id: 'glass', name: 'Glass', icon: '✨', items: [
+                                id: 'glass', name: 'Glass', items: [
                                     { id: 6, name: 'Frosted', bg: 'rgba(255,255,255,0.1)', text: '#ffffff' },
                                     { id: 7, name: 'Dark', bg: 'rgba(0,0,0,0.3)', text: '#ffffff' },
                                     { id: 8, name: 'Blue', bg: 'rgba(59,130,246,0.2)', text: '#ffffff' },
@@ -886,7 +885,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                                 ]
                             },
                             {
-                                id: 'neon', name: 'Neon', icon: '💡', items: [
+                                id: 'neon', name: 'Neon', items: [
                                     { id: 11, name: 'Cyan', bg: '#0a0a0a', text: '#00ffff' },
                                     { id: 12, name: 'Pink', bg: '#0a0a0a', text: '#ff00ff' },
                                     { id: 13, name: 'Green', bg: '#0a0a0a', text: '#00ff00' },
@@ -895,7 +894,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                                 ]
                             },
                             {
-                                id: 'badge', name: 'Badge', icon: '🏆', items: [
+                                id: 'badge', name: 'Badge', items: [
                                     { id: 16, name: 'VIP', bg: 'linear-gradient(135deg, #d4af37, #f4e4a6)', text: '#1a1a1a' },
                                     { id: 17, name: 'Premium', bg: 'linear-gradient(135deg, #667eea, #764ba2)', text: '#ffffff' },
                                     { id: 18, name: 'Royal', bg: 'linear-gradient(135deg, #1a1a2e, #4a4a6a)', text: '#d4af37' },
@@ -904,7 +903,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                                 ]
                             },
                             {
-                                id: 'luxury', name: 'Luxury', icon: '💎', items: [
+                                id: 'luxury', name: 'Luxury', items: [
                                     { id: 21, name: 'Black Tie', bg: '#000000', text: '#d4af37' },
                                     { id: 22, name: 'Champagne', bg: '#f5f5dc', text: '#8b7355' },
                                     { id: 23, name: 'Velvet', bg: '#800020', text: '#ffd700' },
@@ -912,7 +911,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                                 ]
                             },
                             {
-                                id: 'minimal', name: 'Minimal', icon: '⬜', items: [
+                                id: 'minimal', name: 'Minimal', items: [
                                     { id: 25, name: 'Pure White', bg: '#ffffff', text: '#000000' },
                                     { id: 26, name: 'Pure Black', bg: '#000000', text: '#ffffff' },
                                     { id: 27, name: 'Soft Gray', bg: '#f0f0f0', text: '#333333' },
@@ -922,7 +921,6 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                         ].map((category) => (
                             <div key={category.id}>
                                 <div className="flex items-center gap-2 mb-2">
-                                    <span className="text-sm">{category.icon}</span>
                                     <span className="text-xs font-bold uppercase tracking-wider text-white/60">{category.name}</span>
                                     <span className="text-[9px] text-white/30">({category.items.length})</span>
                                 </div>
@@ -1066,7 +1064,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                                 onClick={() => onSelect({ confettiConfig: { colors: preset.colors } })}
                                 className="flex flex-col items-center justify-center p-4 rounded-xl bg-white/5 hover:bg-premium-accent/20 border border-white/5 hover:border-premium-accent/40 transition-all gap-2"
                             >
-                                <span className="text-2xl">{preset.icon}</span>
+                                
                                 <span className="text-[10px] font-bold text-white/80">{preset.label}</span>
                                 <div className="flex gap-1 mt-1">
                                     {preset.colors.slice(0, 3).map((c, j) => (
@@ -1297,7 +1295,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                                     onClick={() => onSelect({ qrCodeConfig: { foreground: p.fg, interactiveEnabled: false } })}
                                     className="flex flex-col items-center p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all group"
                                 >
-                                    <span className="text-xl mb-1 group-hover:scale-110 transition-transform">{p.icon}</span>
+                                    
                                     <span className="text-[8px] text-white/60 truncate w-full text-center">Static {p.label}</span>
                                 </button>
                             ))}
@@ -1326,7 +1324,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                                                 })}
                                                 className="flex items-center gap-2 p-2.5 rounded-lg bg-white/5 hover:bg-premium-accent/20 border border-white/5 hover:border-premium-accent/40 transition-all group"
                                             >
-                                                <span className="text-sm group-hover:rotate-12 transition-transform">{eff.icon}</span>
+                                                
                                                 <span className="text-[10px] text-white/70 group-hover:text-white font-medium truncate">{eff.label}</span>
                                             </button>
                                         ))}
@@ -1423,7 +1421,7 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                                             onClick={() => onSelect({ interactionConfig: { effect: effect.id } })}
                                             className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-premium-accent/20 border border-white/5 hover:border-premium-accent/40 transition-all text-left group"
                                         >
-                                            <span className="text-2xl group-hover:scale-110 transition-transform">{effect.icon}</span>
+                                            
                                             <div>
                                                 <div className="text-xs font-bold text-white">{effect.label}</div>
                                                 <div className="text-[9px] text-white/40">Full screen burst</div>

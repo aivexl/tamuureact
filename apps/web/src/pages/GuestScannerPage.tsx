@@ -19,9 +19,7 @@ import { PremiumLoader } from '../components/ui/PremiumLoader';
 import { guests as guestsApi, admin as adminApi } from '../lib/api';
 
 /**
- * GuestScannerPage - Enterprise-Grade Event Access Control
- * Standard: Clean Light Enterprise (Apple Visual Language)
- * FAANG Standard: High Performance, Thermal-Optimized Snapshot (57mm x 30mm)
+ * GuestScannerPage - Sistem Kontrol Akses Undangan
  */
 export const GuestScannerPage: React.FC = () => {
     const { id } = useParams<{ id: string }>(); 
@@ -40,7 +38,7 @@ export const GuestScannerPage: React.FC = () => {
     const scannerRef = useRef<Html5Qrcode | null>(null);
     const ticketRef = useRef<HTMLDivElement>(null);
 
-    // Audio Feedback Engine
+    // Suara Notifikasi
     const playSound = (type: 'success' | 'error') => {
         try {
             const context = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -243,7 +241,7 @@ export const GuestScannerPage: React.FC = () => {
                         <ArrowLeft className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-600" />
                     </button>
                     <div className="truncate">
-                        <p className="text-xs md:text-sm font-black text-[#001F3F] truncate uppercase tracking-wider">Scan Tamuu Undangan</p>
+                        <p className="text-xs md:text-sm font-black text-[#001F3F] truncate uppercase tracking-wider">Scan Undangan</p>
                     </div>
                 </div>
             </header>
@@ -274,13 +272,12 @@ export const GuestScannerPage: React.FC = () => {
                 <div id="reader" className={`w-full max-w-sm aspect-square relative z-10 ${isScanning ? 'block' : 'hidden'}`}>
                     <div className="w-full h-full overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 shadow-sm" />
                     
-                    {/* Corner Accents - Apple Style */}
+                    {/* Corner Accents */}
                     <div className="absolute top-4 left-4 w-10 h-10 border-t-2 border-l-2 border-[#FFBF00] rounded-tl-lg pointer-events-none z-20" />
                     <div className="absolute top-4 right-4 w-10 h-10 border-t-2 border-r-2 border-[#FFBF00] rounded-tr-lg pointer-events-none z-20" />
                     <div className="absolute bottom-4 left-4 w-10 h-10 border-b-2 border-l-2 border-[#FFBF00] rounded-bl-lg pointer-events-none z-20" />
                     <div className="absolute bottom-4 right-4 w-10 h-10 border-b-2 border-r-2 border-[#FFBF00] rounded-br-lg pointer-events-none z-20" />
                     
-                    {/* High-End Scanning Line */}
                     <motion.div 
                         initial={{ top: '15%' }}
                         animate={{ top: '85%' }}

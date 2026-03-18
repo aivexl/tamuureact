@@ -8,7 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { m } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { templates as templatesApi, userDisplayDesigns } from '@/lib/api';
-import { Monitor, Check, Sparkles, Tv, ExternalLink } from 'lucide-react';
+import { Monitor, Check, Tv, ExternalLink, Zap } from 'lucide-react';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { useNavigate } from 'react-router-dom';
 
@@ -158,7 +158,7 @@ export const WelcomeDisplaysTab: React.FC = () => {
             {userDesigns.length > 0 && (
                 <div className="space-y-4">
                     <h3 className="text-lg font-bold text-slate-700 flex items-center gap-2">
-                        <Sparkles className="w-5 h-5 text-indigo-500" />
+                        <Zap className="w-5 h-5 text-indigo-500" />
                         Desain Anda
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

@@ -155,7 +155,7 @@ export const BillingPage: React.FC = () => {
                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 40px;">
                         <div>
                             <h1 style="font-size: 32px; font-weight: 900; color: #0A1128; margin: 0;">TAMUU</h1>
-                            <p style="color: #64748b; margin: 5px 0 0 0; font-size: 14px;">Premium Digital Invitations</p>
+                            <p style="color: #64748b; margin: 5px 0 0 0; font-size: 14px;">Undangan Digital Premium</p>
                         </div>
                         <div style="text-align: right;">
                             <h2 style="font-size: 18px; font-weight: 800; color: #0A1128; margin: 0;">STRUK TRANSAKSI</h2>
@@ -186,7 +186,7 @@ export const BillingPage: React.FC = () => {
                         <tbody>
                             <tr>
                                 <td style="padding: 20px 15px; border-bottom: 1px solid #f1f5f9;">
-                                    <p style="font-size: 16px; font-weight: 700; color: #0A1128; margin: 0;">Subscription Plan: ${tx.tier === 'pro' ? 'PRO' : tx.tier === 'ultimate' ? 'ULTIMATE' : tx.tier === 'elite' ? 'ELITE' : tx.tier?.toUpperCase()}</p>
+                                    <p style="font-size: 16px; font-weight: 700; color: #0A1128; margin: 0;">Paket Langganan: ${tx.tier === 'pro' ? 'PRO' : tx.tier === 'ultimate' ? 'ULTIMATE' : tx.tier === 'elite' ? 'ELITE' : tx.tier?.toUpperCase()}</p>
                                     <p style="font-size: 12px; color: #64748b; margin: 5px 0 0 0;">Akses premium Tamuu selama 1 tahun</p>
                                 </td>                                <td style="padding: 20px 15px; border-bottom: 1px solid #f1f5f9; text-align: right; font-size: 16px; font-weight: 800; color: #0A1128;">
                                     Rp ${tx.amount?.toLocaleString("id-ID")}
@@ -208,7 +208,7 @@ export const BillingPage: React.FC = () => {
                     </div>
 
                     <div style="margin-top: 40px; text-align: center;">
-                        <p style="font-size: 12px; color: #94a3b8; margin: 0;">Thank you for using Tamuu.</p>
+                        <p style="font-size: 12px; color: #94a3b8; margin: 0;">Terima kasih telah menggunakan Tamuu.</p>
                     </div>
                 </div>
             </div>
@@ -271,11 +271,11 @@ export const BillingPage: React.FC = () => {
     free: "FREE EXPLORER",
     pro: "PRO ACCESS",
     ultimate: "ULTIMATE EVENT",
-    elite: "ELITE EXCLUSIVE",
+    elite: "ELITE",
     // Legacy support
     vip: "PRO ACCESS",
     platinum: "ULTIMATE EVENT",
-    vvip: "ELITE EXCLUSIVE",
+    vvip: "ELITE",
   };
 
   const tierColors: Record<string, string> = {
@@ -304,10 +304,10 @@ export const BillingPage: React.FC = () => {
         <div className="max-w-4xl mx-auto">
           <div className="mb-10">
             <h1 className="text-3xl font-black text-[#0A1128] mb-2">
-              Billing & Subscription
+              Tagihan & Langganan
             </h1>
             <p className="text-slate-500">
-              Manage your plan, payment methods, and billing history.
+              Kelola paket, metode pembayaran, dan riwayat tagihan Anda.
             </p>
           </div>
 
@@ -353,7 +353,7 @@ export const BillingPage: React.FC = () => {
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-6">
                   <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">
-                    Active Plan
+                    Paket Aktif
                   </span>
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-tighter ${tierColors[user?.tier || "free"] || tierColors.free}`}
@@ -363,12 +363,12 @@ export const BillingPage: React.FC = () => {
                 </div>
 
                 <h2 className="text-4xl font-black text-[#0A1128] mb-1">
-                  {tierDisplay[user?.tier || "free"] || "Standard Access"}
+                  {tierDisplay[user?.tier || "free"] || "Akses Standar"}
                 </h2>
                 <p className="text-slate-500 mb-8">
                   {user?.tier === "free"
-                    ? "Upgrade to unlock premium features and templates."
-                    : `Your subscription is active until ${user?.expiresAt ? new Date(user.expiresAt).toLocaleDateString() : "next year"}.`}
+                    ? "Upgrade untuk membuka fitur dan template premium."
+                    : `Langganan Anda aktif hingga ${user?.expiresAt ? new Date(user.expiresAt).toLocaleDateString('id-ID') : "tahun depan"}.`}
                 </p>
 
                 <div className="flex flex-wrap gap-4">
@@ -377,12 +377,12 @@ export const BillingPage: React.FC = () => {
                     className="bg-[#0A1128] text-white px-6 py-3 rounded-2xl font-black text-sm hover:bg-[#152042] transition-colors"
                   >
                     {user?.tier === "free"
-                      ? "Upgrade Plan"
-                      : "Manage Subscription"}
+                      ? "Upgrade Paket"
+                      : "Kelola Langganan"}
                   </Link>
                   {user?.tier !== "free" && (
                     <button className="text-slate-400 font-bold text-sm hover:text-rose-500 transition-colors">
-                      Cancel Plan
+                      Batalkan Paket
                     </button>
                   )}
                 </div>
@@ -396,13 +396,13 @@ export const BillingPage: React.FC = () => {
               <div className="relative z-10 h-full flex flex-col justify-between">
                 <div>
                   <Zap className="w-8 h-8 text-[#FFBF00] mb-4" />
-                  <h3 className="text-lg font-bold mb-1">Usage</h3>
+                  <h3 className="text-lg font-bold mb-1">Penggunaan</h3>
                   <div className="flex items-baseline gap-2 mb-4">
                     <span className="text-3xl font-black text-[#FFBF00]">
                       {user?.invitationCount || 0}
                     </span>
                     <span className="text-white/40 text-sm">
-                      / {user?.maxInvitations} Invitations
+                      / {user?.maxInvitations} Undangan
                     </span>
                   </div>
                 </div>
@@ -418,7 +418,7 @@ export const BillingPage: React.FC = () => {
                     />
                   </div>
                   <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">
-                    Invitation quota
+                    Kuota Undangan
                   </p>
                 </div>
               </div>
@@ -432,10 +432,10 @@ export const BillingPage: React.FC = () => {
                 <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center">
                   <History className="w-5 h-5 text-slate-600" />
                 </div>
-                <h3 className="font-bold text-[#0A1128]">Payment History</h3>
+                <h3 className="font-bold text-[#0A1128]">Riwayat Pembayaran</h3>
               </div>
               <button className="text-[#FFBF00] text-sm font-black hover:underline px-4 py-2 bg-[#FFBF00]/5 rounded-xl">
-                Download All
+                Unduh Semua
               </button>
             </div>
 
@@ -452,12 +452,12 @@ export const BillingPage: React.FC = () => {
                   <table className="w-full text-left border-collapse" style={{ minWidth: '800px' }}>
                     <thead>
                       <tr className="bg-slate-50 text-[10px] uppercase tracking-widest font-black text-slate-400">
-                        <th className="px-8 py-4">Transaction ID</th>
-                        <th className="px-6 py-4">Date</th>
-                        <th className="px-6 py-4">Plan</th>
-                        <th className="px-6 py-4">Amount</th>
+                        <th className="px-8 py-4">ID Transaksi</th>
+                        <th className="px-6 py-4">Tanggal</th>
+                        <th className="px-6 py-4">Paket</th>
+                        <th className="px-6 py-4">Jumlah</th>
                         <th className="px-6 py-4">Status</th>
-                        <th className="px-8 py-4 text-right">Action</th>
+                        <th className="px-8 py-4 text-right">Aksi</th>
                         <th className="px-4 py-4"></th>
                       </tr>
                     </thead>
@@ -577,11 +577,10 @@ export const BillingPage: React.FC = () => {
                     <CreditCard className="w-8 h-8 text-slate-300" />
                   </div>
                   <h4 className="text-slate-900 font-bold mb-1">
-                    No invoices yet
+                    Belum ada tagihan
                   </h4>
                   <p className="text-slate-400 text-sm max-w-xs">
-                    Once you make a purchase, your invoices will appear here for
-                    you to download and manage.
+                    Setelah Anda melakukan pembelian, tagihan Anda akan muncul di sini untuk diunduh dan dikelola.
                   </p>
                 </div>
               )}
@@ -593,13 +592,13 @@ export const BillingPage: React.FC = () => {
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4" />
               <span className="text-xs font-bold uppercase tracking-tighter">
-                Secure SSL Encryption
+                Enkripsi SSL Aman
               </span>
             </div>
             <div className="flex items-center gap-2">
               <CreditCard className="w-4 h-4" />
               <span className="text-xs font-bold uppercase tracking-tighter">
-                Processed by Midtrans
+                Diproses oleh Midtrans
               </span>
             </div>
           </div>

@@ -264,14 +264,14 @@ export const AdminChatSidebarEnhanced: React.FC<AdminChatSidebarEnhancedProps> =
 
         const tierMessages: any = {
             business: {
-                professional: "Selamat datang di Admin Dashboard Tamuu Enterprise! 🏆 Sistem AI analitik kami siap membantu optimasi bisnis Kak dengan data-driven insights.",
-                strategic: "Halo Admin Strategis! 🎯 Mari kita analisis tren market dan strategi pertumbuhan dengan AI-powered business intelligence.",
-                analytical: "Selamat datang di Command Center! 📊 Sistem analitik advanced kami siap memproses big data untuk actionable insights."
+                professional: "Dashboard Admin Aktif. Analitik AI dioptimalkan untuk wawasan berbasis data.",
+                strategic: "Dashboard Strategis siap. Memantau tren pasar dan performa pertumbuhan.",
+                analytical: "Panel Kontrol Analitik aktif. Memproses data untuk informasi bisnis."
             },
             premium: {
-                professional: "Welcome Admin Premium! ✨ Tools advanced dan analytics premium siap mendukung decision making Kak.",
-                strategic: "Halo Strategic Partner! 🚀 Mari optimalkan performance dengan premium analytics dan strategic recommendations.",
-                analytical: "Admin Premium Analytics Active! 🔬 Advanced data processing siap memberikan deep insights."
+                professional: "Akses Admin Premium. Fitur tambahan dan analitik aktif untuk dukungan keputusan.",
+                strategic: "Interface Partner Strategis. Mengakses metrik performa premium dan rekomendasi.",
+                analytical: "Mesin Data Premium. Pemrosesan aktif untuk wawasan sistem yang mendalam."
             }
         };
 
@@ -331,7 +331,7 @@ export const AdminChatSidebarEnhanced: React.FC<AdminChatSidebarEnhancedProps> =
                                         <h3 className="text-lg font-bold text-white leading-none">Tamuu Admin AI</h3>
                                         <div className="flex items-center gap-1.5 mt-1.5">
                                             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Enterprise AI Engine V8</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Asisten AI Tamuu</span>
                                         </div>
                                     </div>
                                 </div>

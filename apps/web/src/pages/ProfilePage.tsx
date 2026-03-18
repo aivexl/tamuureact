@@ -90,7 +90,7 @@ const getTierConfig = (plan: string) => {
         free: { label: 'FREE EXPLORER', bgClass: 'bg-slate-100', textClass: 'text-slate-700 border-slate-200' },
         vip: { label: 'PRO ACCESS', bgClass: 'bg-indigo-100', textClass: 'text-indigo-700 border-indigo-200' },
         platinum: { label: 'ULTIMATE EVENT', bgClass: 'bg-emerald-100', textClass: 'text-emerald-700 border-emerald-200' },
-        vvip: { label: 'ELITE EXCLUSIVE', bgClass: 'bg-amber-100', textClass: 'text-amber-700 border-amber-200' },
+        vvip: { label: 'ELITE', bgClass: 'bg-amber-100', textClass: 'text-amber-700 border-amber-200' },
     };
     return configs[plan.toLowerCase()] || configs.free;
 };
@@ -187,7 +187,7 @@ export const ProfilePage: React.FC = () => {
 
     if (isStoreLoading && !profile) {
         return (
-            <PremiumLoader showLabel label="Synchronizing Identity..." />
+            <PremiumLoader showLabel label="Memuat data..." />
         );
     }
 
@@ -202,8 +202,8 @@ export const ProfilePage: React.FC = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className="mb-8"
                 >
-                    <h1 className="text-3xl font-bold text-slate-900">Account Settings</h1>
-                    <p className="mt-2 text-slate-600">Manage your profile information and security preferences.</p>
+                    <h1 className="text-3xl font-bold text-slate-900">Pengaturan Akun</h1>
+                    <p className="mt-2 text-slate-600">Kelola informasi profil dan keamanan Anda.</p>
                 </m.div>
 
                 {/* Profile Card */}
@@ -302,8 +302,8 @@ export const ProfilePage: React.FC = () => {
                                                                         'text-slate-900'
                                                                 }`}>
                                                                 {(profile?.email === 'user@tamuu.id' || profile?.email === 'admin@tamuu.id')
-                                                                    ? 'UNLIMITED ACCESS'
-                                                                    : (profile?.expires_at ? subStatus.label : 'FREE VERSION')}
+                                                                    ? 'AKSES TAK TERBATAS'
+                                                                    : (profile?.expires_at ? subStatus.label : 'VERSI GRATIS')}
                                                             </div>
                                                             {profile?.expires_at && !subStatus.isExpired && (
                                                                 <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest opacity-70 leading-none">
@@ -335,7 +335,7 @@ export const ProfilePage: React.FC = () => {
                                                 </div>
                                             </div>
 
-                                            {/* Advanced Progress Bar */}
+                                            {/* Progress Bar */}
                                             {!subStatus.isExpired && profile?.expires_at && (
                                                 <div className="mt-8">
                                                     <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden relative">
@@ -354,10 +354,10 @@ export const ProfilePage: React.FC = () => {
                                                         />
                                                     </div>
                                                     <div className="flex justify-between items-center mt-2.5">
-                                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Utilized Balance</span>
+                                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Sisa Saldo</span>
                                                         <span className="text-[9px] font-black text-slate-900 uppercase">
                                                             {(profile?.email === 'user@tamuu.id' || profile?.email === 'admin@tamuu.id')
-                                                                ? 'Unlimited Balance'
+                                                                ? 'Saldo Tak Terbatas'
                                                                 : `${subStatus.days} Hari Tersisa`}
                                                         </span>
                                                     </div>
@@ -370,7 +370,7 @@ export const ProfilePage: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         {/* Name */}
                                         <div className="space-y-1.5">
-                                            <label className="text-sm font-medium text-slate-700">Full Name</label>
+                                            <label className="text-sm font-medium text-slate-700">Nama Lengkap</label>
                                             <div className="relative">
                                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                                                     <UserIcon className="w-4 h-4" />
@@ -380,14 +380,14 @@ export const ProfilePage: React.FC = () => {
                                                     value={profileData.name}
                                                     onChange={(e) => handleInputChange('name', e.target.value)}
                                                     className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 transition-all outline-none text-sm"
-                                                    placeholder="Jane Doe"
+                                                    placeholder="Nama Anda"
                                                 />
                                             </div>
                                         </div>
 
                                         {/* Phone */}
                                         <div className="space-y-1.5">
-                                            <label className="text-sm font-medium text-slate-700">Phone Number</label>
+                                            <label className="text-sm font-medium text-slate-700">Nomor Telepon</label>
                                             <div className="relative">
                                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                                                     <PhoneIcon className="w-4 h-4" />
@@ -407,7 +407,7 @@ export const ProfilePage: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         {/* Gender */}
                                         <div className="space-y-1.5">
-                                            <label className="text-sm font-medium text-slate-700">Gender</label>
+                                            <label className="text-sm font-medium text-slate-700">Jenis Kelamin</label>
                                             <div className="relative">
                                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                                                     <UsersIcon className="w-4 h-4" />
@@ -417,16 +417,16 @@ export const ProfilePage: React.FC = () => {
                                                     onChange={(e) => handleInputChange('gender', e.target.value)}
                                                     className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 transition-all outline-none text-sm appearance-none"
                                                 >
-                                                    <option value="">Select Gender</option>
-                                                    <option value="male">Male</option>
-                                                    <option value="female">Female</option>
+                                                    <option value="">Pilih Jenis Kelamin</option>
+                                                    <option value="male">Laki-laki</option>
+                                                    <option value="female">Perempuan</option>
                                                 </select>
                                             </div>
                                         </div>
 
                                         {/* Birth Date */}
                                         <div className="space-y-1.5">
-                                            <label className="text-sm font-medium text-slate-700">Birth Date</label>
+                                            <label className="text-sm font-medium text-slate-700">Tanggal Lahir</label>
                                             <div className="relative">
                                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                                                     <CalendarIcon className="w-4 h-4" />
@@ -443,7 +443,7 @@ export const ProfilePage: React.FC = () => {
 
                                     {/* Email (Read-only) */}
                                     <div className="space-y-1.5 opacity-60">
-                                        <label className="text-sm font-medium text-slate-700">Email Address</label>
+                                        <label className="text-sm font-medium text-slate-700">Alamat Email</label>
                                         <div className="relative">
                                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                                                 <MailIcon className="w-4 h-4" />
@@ -627,7 +627,7 @@ export const ProfilePage: React.FC = () => {
                                     className="flex items-center gap-2 text-emerald-600 text-sm font-medium justify-center sm:justify-start"
                                 >
                                     <CheckIcon className="w-4 h-4" />
-                                    Profile updated successfully
+                                    Profil berhasil diperbarui
                                 </m.div>
                             )}
                         </div>
@@ -637,7 +637,7 @@ export const ProfilePage: React.FC = () => {
                             className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl shadow-md shadow-indigo-200 transition-all active:scale-95"
                         >
                             {isSaving ? <PremiumLoader variant="inline" size="sm" color="white" /> : <SaveIcon className="w-4 h-4" />}
-                            Save Changes
+                            Simpan Perubahan
                         </button>
                     </div>
                 </m.div>
