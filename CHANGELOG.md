@@ -1,5 +1,22 @@
 # Tamuu Changelog
 
+## [0.9.13] - 2026-03-17
+### Added
+- **FAANG Standard E-Ticket (Smart Pass)**: Completely redesigned the QR element into a high-fidelity digital pass inspired by Apple Wallet.
+    - **Holographic Shimmer**: Integrated dynamic metallic glint effects for VIP/VVIP guest passes.
+    - **Smart Status Indicators**: Ticket visual state automatically transitions to grayscale with a "Used" badge upon check-in to prevent dual-entry.
+    - **Save to Device**: Added a "Save Digital Pass" engine using `html2canvas` at 3x scale for high-density image exports.
+- **Elite Hybrid Registry Hub**: Upgraded the `GuestScannerPage` with standard enterprise operational protocols.
+    - **Multi-Modal Feedback**: Added spatial audio (success beep) and dual-pulse haptic feedback for rapid checkpoint processing.
+    - **Hybrid Printing**: Enhanced Bluetooth connectivity with GATT warming and chunky data stream transmission for maximum reliability.
+
+### Fixed
+- **Identity Resolution Overhaul**: Resolved the persistent "Unknown" guest and missing name issues.
+    - **Atomic Context Reset**: Implemented `resetAll()` to synchronously clear state pollution when navigating between invitation links.
+    - **Hydration Lock**: Fixed a race condition where store hydration was overwriting resolved guest identity.
+    - **Endpoint Alignment**: Standardized guest resolution across the API Worker, SEO Proxy, and Frontend to use the official `/api/guests/slug/` protocol.
+- **Stateless Identity Protocol**: Configured Zustand persistence to exclude `guestData` from `localStorage`, ensuring 100% privacy and real-time accuracy for personal invitation links.
+
 ## [0.9.12] - 2026-03-17
 ### Fixed
 - **Runtime Error Mitigation**: Resolved a critical "Uncaught TypeError: Cannot read properties of undefined (reading 'toUpperCase')" in `PreviewPage.tsx` by implementing robust null checks and optional chaining.

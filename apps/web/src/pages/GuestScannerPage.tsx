@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { motion, AnimatePresence } from 'framer-motion';
+import html2canvas from 'html2canvas';
 import {
     Camera,
     CheckCircle2,
@@ -12,18 +13,25 @@ import {
     RefreshCw,
     Printer,
     Bluetooth,
-    BluetoothOff
+    BluetoothOff,
+    Download,
+    Share2,
+    ShieldCheck,
+    MapPin,
+    Calendar,
+    ChevronRight,
+    Smartphone
 } from 'lucide-react';
 import { PremiumLoader } from '../components/ui/PremiumLoader';
 import { guests as guestsApi, admin as adminApi } from '../lib/api';
 import { printer } from '../lib/printer';
 
 /**
- * GuestScannerPage - Professional QR Scanning Interface
- * CEO/CTO DESIGN STANDARD: Glassmorphic, Haptic, High-Performance
+ * GuestScannerPage - Enterprise-Grade Event Access Control
+ * FAANG Standard: High Performance, Multimodal Feedback, Hybrid Printing
  */
 export const GuestScannerPage: React.FC = () => {
-    const { id } = useParams<{ id: string }>(); // Invitation/Display ID
+    const { id } = useParams<{ id: string }>(); 
     const navigate = useNavigate();
 
     // UI State
@@ -31,12 +39,37 @@ export const GuestScannerPage: React.FC = () => {
     const [isScanning, setIsScanning] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [guestName, setGuestName] = useState<string | null>(null);
+    const [lastGuest, setLastGuest] = useState<any>(null);
     const [permissionStatus, setPermissionStatus] = useState<'pending' | 'granted' | 'denied'>('pending');
     const [checkInStatus, setCheckInStatus] = useState<'idle' | 'success' | 'duplicate' | 'error' | 'checkout'>('idle');
     const [isPrinterConnected, setIsPrinterConnected] = useState(false);
-
+    
     const scannerRef = useRef<Html5Qrcode | null>(null);
+    const ticketRef = useRef<HTMLDivElement>(null);
+
+    // Audio Feedback Engine
+    const playSound = (type: 'success' | 'error') => {
+        try {
+            const context = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const oscillator = context.createOscillator();
+            const gain = context.createGain();
+
+            oscillator.type = type === 'success' ? 'sine' : 'square';
+            oscillator.frequency.setValueAtTime(type === 'success' ? 880 : 220, context.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(type === 'success' ? 440 : 110, context.currentTime + 0.1);
+
+            gain.gain.setValueAtTime(0.1, context.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.1);
+
+            oscillator.connect(gain);
+            gain.connect(context.destination);
+
+            oscillator.start();
+            oscillator.stop(context.currentTime + 0.1);
+        } catch (e) {
+            console.warn('Audio feedback failed');
+        }
+    };
 
     // Sync printer status
     useEffect(() => {
@@ -51,22 +84,12 @@ export const GuestScannerPage: React.FC = () => {
         const success = await printer.connect();
         setIsPrinterConnected(success);
         setIsLoading(false);
-        if (success) {
-            // Optional: Print a test or connection success message
-        }
     };
 
-    // Initialization: Cleanup on unmount
     useEffect(() => {
         return () => {
-            if (scannerRef.current) {
-                if (scannerRef.current.isScanning) {
-                    scannerRef.current.stop().then(() => {
-                        scannerRef.current?.clear();
-                    }).catch(console.error);
-                } else {
-                    scannerRef.current.clear();
-                }
+            if (scannerRef.current?.isScanning) {
+                scannerRef.current.stop().then(() => scannerRef.current?.clear()).catch(() => {});
             }
         };
     }, []);
@@ -75,12 +98,11 @@ export const GuestScannerPage: React.FC = () => {
         setError(null);
         setIsScanning(true);
         setScanResult(null);
-        setGuestName(null);
+        setLastGuest(null);
 
-        // CONFIG: Optimized for fast discovery
         const config = {
-            fps: 15, // Higher FPS for smoother elite experience
-            qrbox: { width: 260, height: 260 },
+            fps: 20, // FAANG Standard: High precision frame rate
+            qrbox: { width: 280, height: 280 },
             aspectRatio: 1.0,
             formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
         };
@@ -92,140 +114,98 @@ export const GuestScannerPage: React.FC = () => {
             await html5QrCode.start(
                 { facingMode: "environment" },
                 config,
-                (decodedText: string) => {
-                    handleScanSuccess(decodedText);
-                },
-                (errorMessage: string) => {
-                    if (errorMessage.includes("NotFoundException")) return;
-                    // Silent warning as frequent search misses are normal
-                }
+                (text) => handleScanSuccess(text),
+                (msg) => { if (!msg.includes("NotFoundException")) return; }
             );
 
             setPermissionStatus('granted');
         } catch (err: any) {
-            console.error("Camera Start Error:", err);
             setIsScanning(false);
             setPermissionStatus('denied');
-            if (err?.toString().includes("NotAllowedError")) {
-                setError("Izin kamera ditolak. Silakan aktifkan di pengaturan browser.");
-            } else {
-                setError("Gagal mengakses kamera. Pastikan tidak sedang digunakan aplikasi lain.");
-            }
+            setError("Kamera tidak dapat diakses. Mohon cek izin browser.");
         }
     };
 
     const handleScanSuccess = async (decodedText: string) => {
-        // Haptic Feedback (Vibrate 100ms)
         if (typeof navigator !== 'undefined' && navigator.vibrate) {
-            navigator.vibrate(100);
+            navigator.vibrate([100, 50, 100]); // Dual-pulse haptic
         }
 
         setIsScanning(false);
         setScanResult(decodedText);
 
-        if (scannerRef.current && scannerRef.current.isScanning) {
-            await scannerRef.current.stop().catch(console.error);
+        if (scannerRef.current?.isScanning) {
+            await scannerRef.current.stop().catch(() => {});
         }
 
-        // Parse QR Data: Can be guest ID, check_in_code, or URL with "to" param
         let guestId: string | null = null;
         let guestCode: string | null = null;
 
         try {
-            // Case 1: URL format (standard or legacy)
             if (decodedText.startsWith('http')) {
                 const url = new URL(decodedText);
-                
-                // Subcase A: Standardized query param (e.g. ?to=UUID)
                 const toParam = url.searchParams.get('to');
                 if (toParam) {
                     if (toParam.length > 20) guestId = toParam;
                     else guestCode = toParam;
-                } 
-                // Subcase B: Legacy path-based (e.g. /welcome/INV_ID/GUEST_ID)
-                else {
-                    const pathParts = url.pathname.split('/').filter(Boolean);
-                    // Usually the last part is the guest ID/Code
-                    const lastPart = pathParts[pathParts.length - 1];
-                    if (lastPart) {
-                        if (lastPart.length > 20) guestId = lastPart;
-                        else guestCode = lastPart;
-                    }
+                } else {
+                    const parts = url.pathname.split('/').filter(Boolean);
+                    const last = parts[parts.length - 1];
+                    if (last.length > 20) guestId = last;
+                    else guestCode = last;
                 }
-            } 
-            // Case 2: JSON format
-            else if (decodedText.startsWith('{')) {
+            } else if (decodedText.startsWith('{')) {
                 const data = JSON.parse(decodedText);
-                if (data.id) guestId = data.id;
-                else if (data.code || data.checkInCode) guestCode = data.code || data.checkInCode;
-            }
-            // Case 3: Raw text
-            else {
+                guestId = data.id || null;
+                guestCode = data.check_in_code || data.code || null;
+            } else {
                 if (decodedText.length > 20) guestId = decodedText;
                 else guestCode = decodedText;
             }
         } catch (e) {
-            // Fallback to raw text if parsing fails
             guestCode = decodedText;
         }
 
-        await performCheckIn(guestId, guestCode);
+        await performAction(guestId, guestCode);
     };
 
-    const performCheckIn = async (guestId: string | null, guestCode: string | null) => {
+    const performAction = async (guestId: string | null, guestCode: string | null) => {
         setIsLoading(true);
         setError(null);
 
         try {
-            const finalIdOrCode = guestId || guestCode;
-            if (!finalIdOrCode) throw new Error('Invalid QR Data');
+            const target = guestId || guestCode;
+            if (!target) throw new Error('Invalid Data');
 
-            // SMART LOGIC: Always try check-in first
-            let response = await guestsApi.checkIn(finalIdOrCode);
+            // SMART HUB: Process Check-In / Check-Out
+            let response = await guestsApi.checkIn(target);
 
-            // If already checked in, trigger check-out automatically
             if (response.code === 'ALREADY_CHECKED_IN') {
-                console.log('[Scanner] Smart Redirect: Guest already in, performing Check-Out');
-                response = await guestsApi.checkOut(finalIdOrCode);
-                
+                response = await guestsApi.checkOut(target);
                 if (response.success) {
-                    setGuestName(response.guest.name);
+                    setLastGuest(response.guest);
                     setCheckInStatus('checkout');
-                    
-                    // Print Receipt for Check-Out
-                    if (printer.isConnected()) {
-                        await printer.printReceipt(response.guest, 'check-out');
-                    }
-                    return; // Early exit for checkout success
+                    playSound('success');
+                    if (isPrinterConnected) await printer.printReceipt(response.guest, 'check-out');
+                    return;
                 }
             }
 
             if (response.success) {
-                // SUCCESS: Guest checked in
-                setGuestName(response.guest.name);
+                setLastGuest(response.guest);
                 setCheckInStatus('success');
-
-                // Print Receipt for Check-In
-                if (printer.isConnected()) {
-                    await printer.printReceipt(response.guest, 'check-in');
-                }
-
-                // Trigger display blast for visual effect with tier info
+                playSound('success');
+                if (isPrinterConnected) await printer.printReceipt(response.guest, 'check-in');
                 await triggerBlast(response.guest.name, response.guest.tier);
-            } else if (response.code === 'NOT_FOUND') {
-                setCheckInStatus('error');
-                setError('QR Code tidak dikenali. Pastikan tamu terdaftar.');
-            } else if (response.code === 'ALREADY_CHECKED_OUT') {
-                setCheckInStatus('error');
-                setError(`${response.guest.name} sudah check-out sebelumnya.`);
             } else {
+                playSound('error');
                 setCheckInStatus('error');
-                setError(response.error || 'Gagal memproses data.');
+                setError(response.error || 'Identity not recognized');
             }
-        } catch (err: any) {
-            console.error(err);
+        } catch (err) {
+            playSound('error');
             setCheckInStatus('error');
-            setError('Gagal terhubung ke server. Coba lagi.');
+            setError('Connection failed');
         } finally {
             setIsLoading(false);
         }
@@ -233,161 +213,228 @@ export const GuestScannerPage: React.FC = () => {
 
     const triggerBlast = async (name: string, tier?: string) => {
         try {
-            // CTO: Use the standardized Command Bus API for display sync
-            // Including TIER for "Tamuu VIP" label on screen
             await adminApi.triggerDisplay(id!, {
-                name: name,
-                tier: tier,
+                name,
+                tier,
                 effect: 'confetti',
                 style: 'cinematic',
                 timestamp: Date.now()
             });
-            console.log(`[Scanner] Blast triggered for ${name} (${tier})`);
-        } catch (err: any) {
-            console.warn('Display sync failed, but check-in was successful');
+        } catch (e) {}
+    };
+
+    const handleDownloadEPass = async () => {
+        if (!ticketRef.current || !lastGuest) return;
+        setIsLoading(true);
+        try {
+            const canvas = await html2canvas(ticketRef.current, {
+                scale: 2,
+                backgroundColor: null,
+                useCORS: true,
+                logging: false
+            });
+            
+            const link = document.createElement('a');
+            link.download = `TamuuPass_${lastGuest.name.replace(/\s+/g, '_')}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            
+            if (navigator.share) {
+                canvas.toBlob(async (blob) => {
+                    if (blob) {
+                        const file = new File([blob], `Pass_${lastGuest.name}.png`, { type: 'image/png' });
+                        try {
+                            await navigator.share({
+                                files: [file],
+                                title: 'Entrance Pass',
+                                text: `Pass untuk ${lastGuest.name}`
+                            });
+                        } catch (e) {}
+                    }
+                });
+            }
+        } catch (e) {
+            console.error('Snapshot failed', e);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-[#0A1128] text-white flex flex-col font-sans overflow-hidden">
-            {/* Header */}
-            <header className="p-4 sm:p-6 flex items-center justify-between">
-                <button
-                    onClick={() => navigate(-1)}
-                    className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-md"
-                >
-                    <ArrowLeft className="w-5 h-5" />
-                </button>
-                <div className="flex flex-col items-center">
-                    <h1 className="text-base sm:text-lg font-bold tracking-tight">Scanner Mode</h1>
-                    <div className="flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                        <span className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Live Sync Active</span>
+        <div className="min-h-screen bg-[#050811] text-white flex flex-col font-sans overflow-hidden">
+            {/* Enterprise Header */}
+            <header className="p-6 flex items-center justify-between border-b border-white/5 bg-black/20 backdrop-blur-2xl z-20">
+                <div className="flex items-center gap-4">
+                    <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 hover:bg-white/10 transition-all">
+                        <ArrowLeft className="w-5 h-5" />
+                    </button>
+                    <div>
+                        <h1 className="text-sm font-black uppercase tracking-[0.2em] text-white/90">Event Registry</h1>
+                        <div className="flex items-center gap-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="text-[9px] font-bold text-emerald-500/80 uppercase">Node Secure</span>
+                        </div>
                     </div>
                 </div>
-                <button
-                    onClick={handleConnectPrinter}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md transition-all ${isPrinterConnected ? 'bg-teal-500/20 text-teal-400' : 'bg-white/10 text-white/40'}`}
-                    title={isPrinterConnected ? 'Printer Connected' : 'Connect Bluetooth Printer'}
-                >
-                    {isPrinterConnected ? <Bluetooth className="w-5 h-5" /> : <BluetoothOff className="w-5 h-5" />}
-                </button>
+                
+                <div className="flex items-center gap-2">
+                    <div className={`px-3 py-1.5 rounded-full border ${isPrinterConnected ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-white/5 border-white/10 text-white/30'} flex items-center gap-2 transition-all`}>
+                        <Printer className="w-3.5 h-3.5" />
+                        <span className="text-[9px] font-black uppercase tracking-widest">{isPrinterConnected ? 'Online' : 'Offline'}</span>
+                    </div>
+                    <button onClick={handleConnectPrinter} className="w-10 h-10 rounded-full bg-[#FFBF00] text-black flex items-center justify-center shadow-lg shadow-[#FFBF00]/20 active:scale-90 transition-transform">
+                        {isPrinterConnected ? <Bluetooth className="w-5 h-5" /> : <BluetoothOff className="w-5 h-5" />}
+                    </button>
+                </div>
             </header>
 
-            {/* Main Surface */}
-            <main className="flex-1 flex flex-col items-center px-4 sm:px-6 pt-4 pb-12 overflow-y-auto">
+            <main className="flex-1 flex flex-col items-center justify-center p-6 relative">
+                {/* Background Decoration */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#FFBF00]/5 rounded-full blur-[120px] pointer-events-none" />
 
-                {/* Visual Context */}
                 {!isScanning && !scanResult && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="w-full max-w-sm bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-xl flex flex-col items-center text-center gap-6"
-                    >
-                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#FFBF00]/20 flex items-center justify-center">
-                            <QrCode className="w-8 h-8 sm:w-10 sm:h-10 text-[#FFBF00]" />
+                    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-sm flex flex-col items-center gap-8 z-10">
+                        <div className="relative">
+                            <div className="w-24 h-24 rounded-[2.5rem] bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-3xl">
+                                <QrCode className="w-10 h-10 text-[#FFBF00]" strokeWidth={1.5} />
+                            </div>
+                            <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg border-2 border-[#050811]">
+                                <Camera className="w-4 h-4 text-black" />
+                            </div>
                         </div>
-                        <div className="space-y-2">
-                            <h2 className="text-lg sm:text-xl font-bold">Ready to Scan?</h2>
-                            <p className="text-xs sm:text-sm text-white/50 leading-relaxed px-2 sm:px-4">
-                                Pastikan Welcome Display sudah terbuka di TV/Laptop. Scan QR tamu untuk memulai animasi.
-                            </p>
+                        
+                        <div className="text-center space-y-2">
+                            <h2 className="text-2xl font-black tracking-tight">Security Checkpoint</h2>
+                            <p className="text-xs text-white/40 uppercase tracking-widest font-bold">Point device at guest e-ticket</p>
                         </div>
-                        <button
-                            onClick={startScanner}
-                            className="w-full py-4 bg-[#FFBF00] text-[#0A1128] font-bold rounded-2xl flex items-center justify-center gap-3 active:scale-95 transition-transform"
-                        >
-                            <Camera className="w-5 h-5" />
-                            Buka Kamera
+
+                        <button onClick={startScanner} className="w-full h-16 bg-[#FFBF00] text-black font-black uppercase tracking-widest text-xs rounded-2xl flex items-center justify-center gap-3 shadow-2xl shadow-[#FFBF00]/20 active:scale-95 transition-all">
+                            Initialize Camera
                         </button>
                     </motion.div>
                 )}
 
-                {/* The Scanner Viewport */}
-                <div
-                    id="reader"
-                    className={`w-full max-w-sm mx-auto overflow-hidden rounded-3xl border-2 border-white/20 bg-black/40 ${isScanning ? 'block' : 'hidden'}`}
-                />
+                <div id="reader" className={`w-full max-w-sm aspect-square overflow-hidden rounded-[3rem] border-4 border-white/10 bg-black shadow-2xl z-10 ${isScanning ? 'block' : 'hidden'}`} />
 
-                {/* Scan Result Card */}
                 <AnimatePresence>
-                    {scanResult && (
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9, y: 50 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.9, y: 50 }}
-                            className="w-full max-w-sm mt-8 bg-white/5 border border-white/10 rounded-3xl p-5 sm:p-6 backdrop-blur-2xl relative overflow-hidden"
-                        >
-                            {/* Success Progress Bar */}
-                            {isLoading && (
-                                <div className="absolute top-0 left-0 h-1 bg-[#FFBF00] animate-progress-fast shadow-[0_0_10px_rgba(255,191,0,0.8)]" style={{ width: '100%' }} />
-                            )}
-
-                            <div className="flex items-center gap-4">
-                                <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center flex-shrink-0 ${checkInStatus === 'checkout' ? 'bg-amber-500/20' : 'bg-green-500/20'}`}>
-                                    {checkInStatus === 'checkout' ? (
-                                        <XCircle className="w-6 h-6 sm:w-8 sm:h-8 text-amber-500" />
-                                    ) : (
-                                        <CheckCircle2 className="w-6 h-6 sm:w-8 sm:h-8 text-green-500" />
-                                    )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mb-0.5">
-                                        {checkInStatus === 'checkout' ? 'Guest Checked Out' : 'Guest Checked In'}
-                                    </p>
-                                    <h3 className={`text-lg sm:text-xl font-bold truncate ${checkInStatus === 'checkout' ? 'text-amber-400' : 'text-[#FFBF00]'}`}>{guestName}</h3>
-                                </div>
-                            </div>
-
-                            <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                                {isPrinterConnected && (
-                                    <div className="absolute top-4 right-4 animate-pulse">
-                                        <Printer className="w-4 h-4 text-teal-400" />
-                                    </div>
+                    {scanResult && lastGuest && (
+                        <motion.div initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="w-full max-w-sm mt-8 z-10">
+                            {/* Verification Card */}
+                            <div className="bg-white/10 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-8 relative overflow-hidden shadow-2xl">
+                                {checkInStatus === 'success' && (
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.8)]" />
                                 )}
-                                <button
-                                    onClick={() => triggerBlast(guestName || '')}
-                                    disabled={isLoading || checkInStatus === 'checkout'}
-                                    className="flex-1 py-3.5 bg-white/10 hover:bg-white/20 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-30 text-xs"
-                                >
-                                    {isLoading ? <PremiumLoader variant="inline" size="sm" color="#FFBF00" /> : <RefreshCw className="w-4 h-4" />}
-                                    Resend Blast
-                                </button>
-                                <button
-                                    onClick={startScanner}
-                                    className="flex-1 py-3.5 bg-[#FFBF00] text-[#0A1128] rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform text-xs"
-                                >
-                                    <ArrowLeft className="w-4 h-4" />
-                                    Next Guest
-                                </button>
-                            </div>
+                                
+                                <div className="flex flex-col items-center text-center gap-6">
+                                    <div className={`w-20 h-20 rounded-full flex items-center justify-center ${checkInStatus === 'checkout' ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                                        {checkInStatus === 'checkout' ? <Smartphone className="w-10 h-10" /> : <ShieldCheck className="w-10 h-10" />}
+                                    </div>
 
-                            {error && (
-                                <p className="mt-4 text-[10px] sm:text-xs text-red-500 flex items-center gap-1.5 font-medium">
-                                    <XCircle className="w-4 h-4" />
-                                    {error}
-                                </p>
-                            )}
+                                    <div className="space-y-1">
+                                        <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.2em] inline-block ${lastGuest.tier === 'vip' || lastGuest.tier === 'vvip' ? 'bg-purple-500 text-white' : 'bg-white/10 text-white/60'}`}>
+                                            {lastGuest.tier || 'REGULER'} Guest
+                                        </div>
+                                        <h3 className="text-3xl font-black tracking-tighter text-white">{lastGuest.name}</h3>
+                                        <p className="text-xs font-bold text-white/40 uppercase tracking-widest">
+                                            {checkInStatus === 'checkout' ? 'Departure Confirmed' : 'Access Granted'}
+                                        </p>
+                                    </div>
+
+                                    <div className="w-full grid grid-cols-2 gap-3 py-6 border-y border-white/5">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">Table Unit</span>
+                                            <span className="text-sm font-bold text-[#FFBF00]">{lastGuest.table_number || lastGuest.tableNumber || 'N/A'}</span>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">Party Size</span>
+                                            <span className="text-sm font-bold text-white">{lastGuest.guest_count || 1} PAX</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="w-full flex flex-col gap-3">
+                                        <div className="flex gap-2">
+                                            <button onClick={handleDownloadEPass} className="flex-1 h-14 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl flex items-center justify-center gap-2 transition-all group">
+                                                <Download className="w-4 h-4 text-[#FFBF00] group-hover:scale-110 transition-transform" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest">E-Pass</span>
+                                            </button>
+                                            <button onClick={() => isPrinterConnected ? printer.printReceipt(lastGuest, checkInStatus === 'checkout' ? 'check-out' : 'check-in') : handleDownloadEPass()} className="flex-1 h-14 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl flex items-center justify-center gap-2 transition-all group">
+                                                <Printer className="w-4 h-4 text-[#FFBF00] group-hover:scale-110 transition-transform" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest">{isPrinterConnected ? 'Print' : 'Share'}</span>
+                                            </button>
+                                        </div>
+                                        <button onClick={startScanner} className="w-full h-16 bg-white text-black font-black uppercase tracking-widest text-xs rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-all">
+                                            Close & Next <ChevronRight className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
 
-                {/* Footer Guide */}
-                <div className="mt-auto pt-10 text-center">
-                    <p className="text-[10px] text-white/20 uppercase tracking-[0.2em] font-bold">Tamuu Elite Event Control • Pro v1.0</p>
-                </div>
+                {error && (
+                    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="mt-8 bg-red-500/10 border border-red-500/20 p-4 rounded-2xl flex items-center gap-3 text-red-400 z-10">
+                        <XCircle className="w-5 h-5" />
+                        <span className="text-xs font-bold uppercase tracking-widest">{error}</span>
+                        <button onClick={startScanner} className="ml-4 p-2 bg-red-500/20 rounded-lg hover:bg-red-500/30 transition-colors">
+                            <RefreshCw className="w-4 h-4" />
+                        </button>
+                    </motion.div>
+                )}
             </main>
 
-            {/* Global Smooth Transition Layer */}
-            {isLoading && (
-                <div className="fixed inset-0 bg-black/10 backdrop-blur-[2px] pointer-events-none z-50 flex items-center justify-center">
-                    <motion.div
-                        animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
-                        transition={{ repeat: Infinity, duration: 2 }}
-                        className="w-1 bg-[#FFBF00] h-screen fixed left-0"
-                    />
+            {/* Hidden Ticket Template for Snapshot */}
+            <div className="fixed -left-[1000px] top-0 pointer-events-none">
+                <div ref={ticketRef} className="w-[400px] bg-[#0A1128] text-white p-10 flex flex-col gap-8 rounded-[3rem] border border-white/10 relative overflow-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-[#FFBF00]/10 rounded-full blur-3xl -mr-20 -mt-20" />
+                    
+                    <div className="flex justify-between items-start">
+                        <img src="/assets/tamuu-logo-header.png" alt="Tamuu" className="h-6 opacity-80" />
+                        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#FFBF00]">Verified</div>
+                    </div>
+
+                    <div className="space-y-1">
+                        <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Identity Pass</div>
+                        <div className="text-3xl font-black tracking-tighter uppercase">{lastGuest?.name}</div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6 p-6 bg-white/5 rounded-3xl border border-white/10">
+                        <div className="space-y-1">
+                            <span className="text-[8px] font-bold text-white/30 uppercase tracking-widest block">Entry Status</span>
+                            <div className="flex items-center gap-2">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                                <span className="text-xs font-black uppercase tracking-widest text-emerald-400">Granted</span>
+                            </div>
+                        </div>
+                        <div className="space-y-1">
+                            <span className="text-[8px] font-bold text-white/30 uppercase tracking-widest block">Timestamp</span>
+                            <span className="text-[10px] font-bold text-white uppercase">{new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                        <div className="space-y-1">
+                            <span className="text-[8px] font-bold text-white/30 uppercase tracking-widest block">Tier Class</span>
+                            <span className="text-xs font-black text-[#FFBF00] uppercase tracking-widest">{lastGuest?.tier || 'Reguler'}</span>
+                        </div>
+                        <div className="space-y-1">
+                            <span className="text-[8px] font-bold text-white/30 uppercase tracking-widest block">Unit Placement</span>
+                            <span className="text-xs font-black text-white uppercase tracking-widest">{lastGuest?.table_number || lastGuest?.tableNumber || 'Auto'}</span>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col items-center gap-4 pt-4 border-t border-white/10">
+                        <div className="text-[9px] font-medium text-white/20 text-center uppercase tracking-[0.4em]">tamuu elite event protection</div>
+                    </div>
                 </div>
-            )}
+            </div>
+
+            {/* Global Loader Layer */}
+            <AnimatePresence>
+                {isLoading && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 backdrop-blur-md z-[100] flex flex-col items-center justify-center gap-6">
+                        <PremiumLoader color="#FFBF00" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#FFBF00] animate-pulse">Syncing Cloud Identity</span>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

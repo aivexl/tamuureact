@@ -1,17 +1,187 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Layer } from '@/store/layersSlice';
 import { useStore } from '@/store/useStore';
-import { m } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
+import html2canvas from 'html2canvas';
 import {
     Type, Image as ImageIcon, Clock, MailOpen,
     Heart, Square, Film, MapPin, Video, Sparkles, X,
     MessageSquare, Users, Circle, Triangle, Diamond, Star, Zap, Wind, Layout,
     Gift, Music, QrCode, Waves, Layers, Monitor, Share2, Sun, Hash, PlaySquare,
     Component, Palette, Eye, Shield, CreditCard, ExternalLink, Instagram, Twitter,
-    Play, Pause, ChevronRight, Copy
+    Play, Pause, ChevronRight, Copy, Download, ShieldCheck, CheckCircle2
 } from 'lucide-react';
 import { useAudioController } from '@/hooks/useAudioController';
 import { AnimatedCopyIcon } from '@/components/ui/AnimatedCopyIcon';
+import { patchLegacyUrl } from '@/lib/utils';
+
+// ============================================
+// SMART PASS / QR CODE ELEMENT (FAANG STANDARD)
+// ============================================
+export const QRCodeElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
+    const { triggerGlobalEffect } = useStore();
+    const guestData = useStore(state => state.guestData);
+    const [isDownloading, setIsResolving] = useState(false);
+    const passRef = useRef<HTMLDivElement>(null);
+    
+    useEffect(() => { onContentLoad?.(); }, []);
+
+    const config = layer.qrCodeConfig || {
+        value: 'https://tamuu.id',
+        foreground: '#000000',
+        background: '#ffffff',
+        interactiveEnabled: false,
+        successEffect: 'confetti',
+        theme: 'luxury' // luxury | minimal | glass
+    };
+    
+    // CTO Identity Resolution
+    const guestName = guestData?.name || 'TAMU UNDANGAN';
+    const checkInCode = guestData?.check_in_code || 'T-XXXXXX';
+    const isVIP = guestData?.tier === 'vip' || guestData?.tier === 'vvip';
+    const isCheckedIn = !!guestData?.checked_in_at;
+
+    const handleDownloadPass = async () => {
+        if (!passRef.current || isEditor) return;
+        setIsResolving(true);
+        try {
+            const canvas = await html2canvas(passRef.current, {
+                scale: 3,
+                useCORS: true,
+                backgroundColor: null,
+            });
+            const link = document.createElement('a');
+            link.download = `Pass_${guestName.replace(/\s+/g, '_')}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        } catch (e) {
+            console.error('Pass export failed', e);
+        } finally {
+            setIsResolving(false);
+        }
+    };
+
+    const fg = config.foreground || (isVIP ? '#FFBF00' : '#000000');
+
+    return (
+        <div className="w-full h-full flex flex-col items-center justify-center p-2">
+            {/* Boarding Pass Style Container */}
+            <m.div 
+                ref={passRef}
+                whileHover={!isEditor ? { y: -5, scale: 1.02 } : {}}
+                className={`relative w-full max-w-[320px] aspect-[3/4] flex flex-col overflow-hidden transition-all duration-700 ${isCheckedIn ? 'opacity-60 grayscale-[0.5]' : ''}`}
+                style={{ 
+                    borderRadius: 24,
+                    background: isVIP 
+                        ? 'linear-gradient(135deg, #0A1128 0%, #1C2541 100%)' 
+                        : 'white',
+                    boxShadow: '0 20px 50px rgba(0,0,0,0.2)',
+                    border: isVIP ? '1px solid rgba(255,191,0,0.3)' : '1px solid rgba(0,0,0,0.05)'
+                }}
+            >
+                {/* VIP Shimmer Effect */}
+                {isVIP && !isCheckedIn && (
+                    <m.div 
+                        animate={{ x: ['-100%', '200%'] }}
+                        transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12 pointer-events-none"
+                    />
+                )}
+
+                {/* Top Section: Branding */}
+                <div className={`p-6 flex justify-between items-start border-b border-dashed ${isVIP ? 'border-white/10' : 'border-black/5'}`}>
+                    <div className="space-y-1">
+                        <img 
+                            src={isVIP ? "/assets/tamuu-logo-header.png" : "/assets/tamuu-logo-dark.png"} 
+                            className="h-4 opacity-80" 
+                            alt="Tamuu" 
+                        />
+                        <p className={`text-[8px] font-black uppercase tracking-[0.2em] ${isVIP ? 'text-[#FFBF00]' : 'text-slate-400'}`}>
+                            {isVIP ? 'Elite Identity Pass' : 'Official Guest Pass'}
+                        </p>
+                    </div>
+                    {isVIP && <Star className="w-4 h-4 text-[#FFBF00] fill-[#FFBF00] animate-pulse" />}
+                </div>
+
+                {/* Center Section: QR */}
+                <div className="flex-1 flex flex-col items-center justify-center p-6 gap-4">
+                    <div className="relative group/qr">
+                        <div className={`p-3 rounded-2xl bg-white shadow-inner transition-all duration-500 ${isCheckedIn ? 'scale-90 opacity-50' : 'group-hover/qr:scale-105'}`}>
+                            <svg viewBox="0 0 100 100" className="w-32 h-32">
+                                <rect x="0" y="0" width="100" height="100" fill="white" />
+                                <rect x="5" y="5" width="35" height="35" stroke="#000" strokeWidth="6" fill="none" rx="4" />
+                                <rect x="13" y="13" width="19" height="19" fill="#000" rx="2" />
+                                <rect x="60" y="5" width="35" height="35" stroke="#000" strokeWidth="6" fill="none" rx="4" />
+                                <rect x="68" y="13" width="19" height="19" fill="#000" rx="2" />
+                                <rect x="5" y="60" width="35" height="35" stroke="#000" strokeWidth="6" fill="none" rx="4" />
+                                <rect x="13" y="68" width="19" height="19" fill="#000" rx="2" />
+                                <path d="M50 5 v90 M5 50 h90 M50 50 h25 v15 h-25 z M75 75 h20 v20 h-20 z" stroke="#000" strokeWidth="3" fill="none" strokeLinecap="round" />
+                                <rect x="65" y="65" width="15" height="15" fill="#000" opacity="0.6" rx="2" />
+                            </svg>
+                        </div>
+                        {isCheckedIn && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <m.div 
+                                    initial={{ scale: 0, rotate: -45 }}
+                                    animate={{ scale: 1, rotate: -15 }}
+                                    className="px-4 py-2 bg-emerald-500 text-white font-black text-xs uppercase tracking-widest shadow-2xl rounded-lg"
+                                >
+                                    Used
+                                </m.div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="text-center space-y-1">
+                        <h4 className={`text-xl font-black tracking-tighter ${isVIP ? 'text-white' : 'text-slate-900'}`}>
+                            {guestName}
+                        </h4>
+                        <p className={`font-mono text-[10px] font-bold tracking-[0.3em] ${isVIP ? 'text-white/40' : 'text-slate-400'}`}>
+                            {checkInCode}
+                        </p>
+                    </div>
+                </div>
+
+                {/* Bottom Section: Details */}
+                <div className={`p-6 mt-auto grid grid-cols-2 gap-4 border-t border-dashed ${isVIP ? 'border-white/10' : 'border-black/5'} bg-black/5`}>
+                    <div className="space-y-1">
+                        <span className="text-[7px] font-black uppercase text-white/30 tracking-widest block">Access Level</span>
+                        <span className={`text-[10px] font-bold uppercase ${isVIP ? 'text-[#FFBF00]' : 'text-slate-600'}`}>
+                            {isVIP ? 'Priority / VIP' : 'General Entry'}
+                        </span>
+                    </div>
+                    <div className="space-y-1 text-right">
+                        <span className="text-[7px] font-black uppercase text-white/30 tracking-widest block">Verification</span>
+                        <span className="text-[10px] font-bold text-emerald-500 uppercase flex items-center justify-end gap-1">
+                            <ShieldCheck className="w-3 h-3" /> Encrypted
+                        </span>
+                    </div>
+                </div>
+
+                {/* Ticket Punch Holes Visual */}
+                <div className={`absolute left-0 top-[25%] -translate-x-1/2 w-6 h-6 rounded-full ${isVIP ? 'bg-[#050811]' : 'bg-[#f8fafc]'}`} />
+                <div className={`absolute right-0 top-[25%] translate-x-1/2 w-6 h-6 rounded-full ${isVIP ? 'bg-[#050811]' : 'bg-[#f8fafc]'}`} />
+            </m.div>
+
+            {/* Action Button */}
+            {!isEditor && (
+                <m.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleDownloadPass}
+                    disabled={isDownloading}
+                    className="mt-6 flex items-center gap-3 px-8 py-4 bg-white/5 border border-white/10 hover:bg-white/10 rounded-2xl transition-all group"
+                >
+                    {isDownloading ? (
+                        <div className="w-4 h-4 border-2 border-[#FFBF00]/30 border-t-[#FFBF00] rounded-full animate-spin" />
+                    ) : (
+                        <Download className="w-4 h-4 text-[#FFBF00] group-hover:scale-110 transition-transform" />
+                    )}
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80">Save Digital Pass</span>
+                </m.button>
+            )}
+        </div>
+    );
+};
 
 // ============================================
 // PARTICLES ELEMENT (Confetti, Fireworks, etc.)
@@ -38,7 +208,6 @@ export const ParticlesElement: React.FC<{ layer: Layer, onContentLoad?: () => vo
         };
         resize();
 
-        // CTO Master Reset: Clear particles on reset
         particlesRef.current = [];
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -83,7 +252,6 @@ export const ParticlesElement: React.FC<{ layer: Layer, onContentLoad?: () => vo
                     rotationSpeed: 0
                 };
             }
-            // Snow
             return {
                 x: Math.random() * width,
                 y: -20,
@@ -97,7 +265,7 @@ export const ParticlesElement: React.FC<{ layer: Layer, onContentLoad?: () => vo
         };
 
         const render = () => {
-            if (!isPlaying) return; // Freeze when clock stops
+            if (!isPlaying) return; 
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const particles = particlesRef.current;
@@ -154,9 +322,6 @@ export const ParticlesElement: React.FC<{ layer: Layer, onContentLoad?: () => vo
 
         if (isPlaying) {
             animationFrame = requestAnimationFrame(render);
-        } else {
-            // Draw static state once even if stopped (to show frozen particles if scrubbing, 
-            // but for now we'll just clear on stop if it's a hard reset)
         }
 
         return () => cancelAnimationFrame(animationFrame);
@@ -181,7 +346,6 @@ export const DigitalGiftElement: React.FC<{ layer: Layer, isEditor?: boolean, on
         onContentLoad?.();
     }, []);
 
-    // CTO ULTRA ROBUST MAPPING: property-level defaults
     const rawConfig = layer.digitalGiftConfig || (layer as any).digital_gift_config || {};
     const config = {
         title: rawConfig.title || (rawConfig as any).title || 'Kado Digital',
@@ -237,7 +401,6 @@ export const GiftAddressElement: React.FC<{ layer: Layer, isEditor?: boolean, on
         onContentLoad?.();
     }, []);
 
-    // CTO ULTRA ROBUST MAPPING: property-level defaults for maximum resilience in /preview
     const rawConfig = layer.giftAddressConfig || (layer as any).gift_address_config || {};
     const config = {
         recipientName: rawConfig.recipientName || (rawConfig as any).recipient_name || 'Nama Penerima',
@@ -264,14 +427,10 @@ export const GiftAddressElement: React.FC<{ layer: Layer, isEditor?: boolean, on
 };
 
 // ============================================
-// PLACEHOLDERS FOR OTHERS
-// ============================================
-// ============================================
 // MUSIC PLAYER ELEMENT
 // ============================================
 export const MusicPlayerElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
     const playhead = useStore(state => state.playhead);
-    const isPlayingGlobal = useStore(state => state.isPlaying);
     useEffect(() => { onContentLoad?.(); }, []);
     const { play, pause, isPlaying: isAudioPlaying, currentUrl } = useAudioController();
     const config = layer.musicPlayerConfig || {
@@ -309,8 +468,9 @@ export const MusicPlayerElement: React.FC<{ layer: Layer, isEditor?: boolean, on
                     <Music className="w-5 h-5 text-premium-accent" />
                 )}
                 {isThisPlaying && (
-                    <div
-                        style={{ transform: `rotate(${t * 90}deg)` }}
+                    <m.div
+                        animate={{ rotate: 360 }}
+                        transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
                         className="absolute inset-0 border-2 border-dashed border-premium-accent/40 rounded-full"
                     />
                 )}
@@ -336,92 +496,10 @@ export const MusicPlayerElement: React.FC<{ layer: Layer, isEditor?: boolean, on
 };
 
 // ============================================
-// QR CODE ELEMENT
-// ============================================
-export const QRCodeElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
-    const { triggerGlobalEffect } = useStore();
-    const guestData = useStore(state => state.guestData);
-    
-    useEffect(() => { onContentLoad?.(); }, []);
-
-    const config = layer.qrCodeConfig || {
-        value: 'https://tamuu.id',
-        foreground: '#000000',
-        background: '#ffffff',
-        interactiveEnabled: false,
-        successEffect: 'confetti'
-    };
-    
-    // UNIFIED IDENTITY: Prioritize check_in_code for smart scanning, fallback to ID
-    const qrValue = guestData ? (guestData.check_in_code || guestData.id) : (config.value || 'https://tamuu.id');
-    const fg = config.foreground || '#000000';
-
-    const handleTrigger = () => {
-        if ('interactiveEnabled' in config && config.interactiveEnabled) {
-            triggerGlobalEffect(config.successEffect || 'confetti');
-        }
-    };
-
-    return (
-        <m.div
-            className="w-full h-full relative"
-            whileTap={config.interactiveEnabled && !isEditor ? { scale: 0.95 } : {}}
-            onClick={handleTrigger}
-        >
-            <div
-                className="w-full h-full p-3 bg-white flex items-center justify-center overflow-hidden shadow-xl"
-                style={{ borderRadius: 12 }}
-            >
-                <div className="w-full h-full flex flex-col items-center justify-center gap-1">
-                    <svg viewBox="0 0 100 100" className="w-full aspect-square">
-                        <rect x="0" y="0" width="100" height="100" fill="transparent" />
-                        <rect x="5" y="5" width="35" height="35" stroke={fg} strokeWidth="6" fill="none" rx="4" />
-                        <rect x="13" y="13" width="19" height="19" fill={fg} rx="2" />
-                        <rect x="60" y="5" width="35" height="35" stroke={fg} strokeWidth="6" fill="none" rx="4" />
-                        <rect x="68" y="13" width="19" height="19" fill={fg} rx="2" />
-                        <rect x="5" y="60" width="35" height="35" stroke={fg} strokeWidth="6" fill="none" rx="4" />
-                        <rect x="13" y="68" width="19" height="19" fill={fg} rx="2" />
-                        <path d="M50 5 v90 M5 50 h90 M50 50 h25 v15 h-25 z M75 75 h20 v20 h-20 z" stroke={fg} strokeWidth="3" fill="none" strokeLinecap="round" />
-                        <rect x="65" y="65" width="15" height="15" fill={fg} opacity="0.6" rx="2" />
-                        <rect x="50" y="85" width="10" height="10" fill={fg} rx="1" />
-                    </svg>
-                    
-                    <div className="text-[10px] font-mono font-black text-slate-900 tracking-widest uppercase mt-1">
-                        {guestData?.check_in_code || (guestData ? 'PERSONALIZED' : 'Smart E-Ticket')}
-                    </div>
-                </div>
-
-                {/* Interaction Label (Preview only if enabled) */}
-                {config.interactiveEnabled && !isEditor && (
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl cursor-pointer">
-                        <span className="text-white text-[10px] font-bold uppercase tracking-widest bg-premium-accent/80 px-3 py-1 rounded-full text-black">
-                            Scan Success Simulation
-                        </span>
-                    </div>
-                )}
-            </div>
-
-            {/* Editor Simulation Button */ }
-            {isEditor && config.interactiveEnabled && (
-                <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                    <button
-                        onClick={(e) => { e.stopPropagation(); handleTrigger(); }}
-                        className="bg-purple-600 hover:bg-purple-500 text-white text-[8px] font-bold px-3 py-1 rounded-full shadow-lg border border-white/20"
-                    >
-                        SIMULATE SUCCESS
-                    </button>
-                </div>
-            )}
-        </m.div>
-    );
-};
-
-// ============================================
 // ATMOSPHERIC VECTOR (Waves, Blobs)
 // ============================================
 export const AtmosphericVectorElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ layer, onContentLoad }) => {
     const playhead = useStore(state => state.playhead);
-    const isPlaying = useStore(state => state.isPlaying);
     useEffect(() => { onContentLoad?.(); }, []);
 
     const config = layer.waveConfig || { amplitude: 30, frequency: 0.02, speed: 1, color: 'rgba(191, 161, 129, 0.4)' };
@@ -429,7 +507,7 @@ export const AtmosphericVectorElement: React.FC<{ layer: Layer, onContentLoad?: 
     const t = playhead / 1000;
 
     if (type === 'generative_blob') {
-        const phase = Math.sin(t * (Math.PI * 2 / 5)); // 5s cycle
+        const phase = Math.sin(t * (Math.PI * 2 / 5)); 
         const d = `M${150 + phase * 5},100c0,${27.6 + phase * 2.8}-22.4,${50 + phase * 5}-50,${50 + phase * 5}s-50-22.4-50-50s22.4-50,50-50S${150 + phase * 5},${72.4 - phase * 2.8},${150 + phase * 5},100z`;
 
         return (
@@ -441,7 +519,7 @@ export const AtmosphericVectorElement: React.FC<{ layer: Layer, onContentLoad?: 
         );
     }
 
-    const wavePhase = Math.sin(t * (Math.PI * 2 / 4)); // 4s cycle
+    const wavePhase = Math.sin(t * (Math.PI * 2 / 4)); 
     const amp = config.amplitude || 30;
     const currentAmp = wavePhase * amp;
 
@@ -652,12 +730,11 @@ export const WeatherElement: React.FC<{ layer: Layer, onContentLoad?: () => void
 // ============================================
 export const MarqueeElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ layer, onContentLoad }) => {
     const playhead = useStore(state => state.playhead);
-    const isPlaying = useStore(state => state.isPlaying);
     useEffect(() => { onContentLoad?.(); }, []);
 
     const text = layer.content || "ENTERPRISE LEVEL • UNICORN STANDARDS • AWARD WINNING DESIGN • ";
-    const speed = 50; // pixels per second
-    const offset = -(playhead / 1000 * speed) % 400; // 400 is the width of the wrap
+    const speed = 50; 
+    const offset = -(playhead / 1000 * speed) % 400; 
 
     return (
         <div className="w-full h-full flex items-center overflow-hidden bg-premium-accent/10 border-y border-premium-accent/30 backdrop-blur-sm">

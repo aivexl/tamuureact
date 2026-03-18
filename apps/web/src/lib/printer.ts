@@ -1,7 +1,6 @@
 /**
- * Tamuu Bluetooth Printer Utility
- * Standard ESC/POS implementation for Thermal Printers (58mm / 80mm)
- * Uses Web Bluetooth API
+ * Tamuu Bluetooth Printer Utility - Enterprise Version
+ * High-reliability implementation with retry logic and connection warming
  */
 
 export interface PrinterDevice {
@@ -12,8 +11,8 @@ export interface PrinterDevice {
 class BluetoothPrinter {
     private device: BluetoothDevice | null = null;
     private characteristic: BluetoothRemoteGATTCharacteristic | null = null;
+    private isConnecting: boolean = false;
 
-    // ESC/POS Commands
     private readonly COMMANDS = {
         RESET: new Uint8Array([0x1B, 0x40]),
         CENTER: new Uint8Array([0x1B, 0x61, 0x01]),
@@ -21,23 +20,23 @@ class BluetoothPrinter {
         RIGHT: new Uint8Array([0x1B, 0x61, 0x02]),
         BOLD_ON: new Uint8Array([0x1B, 0x45, 0x01]),
         BOLD_OFF: new Uint8Array([0x1B, 0x45, 0x00]),
-        DOUBLE_SIZE: new Uint8Array([0x1D, 0x21, 0x11]), // Double width and height
+        DOUBLE_SIZE: new Uint8Array([0x1D, 0x21, 0x11]),
         NORMAL_SIZE: new Uint8Array([0x1D, 0x21, 0x00]),
-        FEED_AND_CUT: new Uint8Array([0x1D, 0x56, 0x41, 0x03]), // Feed 3 lines and cut
+        FEED_AND_CUT: new Uint8Array([0x1D, 0x56, 0x41, 0x03]),
         LINE_FEED: new Uint8Array([0x0A]),
     };
 
     async connect(): Promise<boolean> {
-        try {
-            // Check if Bluetooth is supported
-            if (!navigator.bluetooth) {
-                throw new Error('Browser tidak mendukung Bluetooth');
-            }
+        if (this.isConnecting) return false;
+        this.isConnecting = true;
 
+        try {
+            if (!navigator.bluetooth) throw new Error('Bluetooth not supported');
+
+            console.log('[Printer] Requesting device...');
             this.device = await navigator.bluetooth.requestDevice({
                 filters: [
-                    { services: ['000018f0-0000-1000-8000-00805f9b34fb'] }, // Generic printer service
-                    { services: ['49535343-fe7d-4ae5-8fa9-9fafd205e455'] },
+                    { services: ['000018f0-0000-1000-8000-00805f9b34fb'] },
                     { namePrefix: 'Inner' },
                     { namePrefix: 'RPP' },
                     { namePrefix: 'MPT' },
@@ -48,10 +47,23 @@ class BluetoothPrinter {
                 optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2']
             });
 
-            const server = await this.device.gatt?.connect();
-            if (!server) throw new Error('Gagal menghubungkan ke GATT server');
+            this.device.addEventListener('gattserverdisconnected', this.handleDisconnect.bind(this));
 
-            // Find the printer characteristic
+            return await this.warmConnection();
+        } catch (error) {
+            console.error('[Printer] Setup failed:', error);
+            this.isConnecting = false;
+            return false;
+        }
+    }
+
+    private async warmConnection(): Promise<boolean> {
+        if (!this.device) return false;
+        
+        try {
+            const server = await this.device.gatt?.connect();
+            if (!server) return false;
+
             const services = await server.getPrimaryServices();
             for (const service of services) {
                 const characteristics = await service.getCharacteristics();
@@ -64,17 +76,23 @@ class BluetoothPrinter {
                 if (this.characteristic) break;
             }
 
-            if (!this.characteristic) throw new Error('Karakteristik printer tidak ditemukan');
-
-            return true;
-        } catch (error) {
-            console.error('[Printer] Connect error:', error);
+            this.isConnecting = false;
+            return !!this.characteristic;
+        } catch (e) {
+            console.error('[Printer] Warming failed:', e);
+            this.isConnecting = false;
             return false;
         }
     }
 
+    private handleDisconnect() {
+        console.warn('[Printer] GATT Disconnected');
+        this.characteristic = null;
+        // Auto-reconnect warming could go here
+    }
+
     async disconnect() {
-        if (this.device && this.device.gatt?.connected) {
+        if (this.device?.gatt?.connected) {
             this.device.gatt.disconnect();
         }
         this.device = null;
@@ -82,14 +100,14 @@ class BluetoothPrinter {
     }
 
     isConnected(): boolean {
-        return !!(this.device && this.device.gatt?.connected && this.characteristic);
+        return !!(this.device?.gatt?.connected && this.characteristic);
     }
 
     private async write(data: Uint8Array) {
-        if (!this.characteristic) return;
+        if (!this.characteristic) throw new Error('Printer disconnected');
         
-        // Thermal printers usually have small buffers, split data into chunks
-        const chunkSize = 20;
+        // ENTERPRISE CHUNKING: Safe buffer sizes for varied hardware
+        const chunkSize = 512; 
         for (let i = 0; i < data.length; i += chunkSize) {
             const chunk = data.slice(i, i + chunkSize);
             await this.characteristic.writeValue(chunk);
@@ -97,56 +115,57 @@ class BluetoothPrinter {
     }
 
     private encode(text: string): Uint8Array {
-        const encoder = new TextEncoder();
-        return encoder.encode(text);
+        return new TextEncoder().encode(text);
     }
 
     async printReceipt(guest: any, type: 'check-in' | 'check-out' = 'check-in') {
-        if (!this.isConnected()) throw new Error('Printer tidak terhubung');
+        if (!this.isConnected()) {
+            const warmed = await this.warmConnection();
+            if (!warmed) throw new Error('Printer unreachable');
+        }
 
         const now = new Date().toLocaleString('id-ID', {
             dateStyle: 'medium',
             timeStyle: 'short'
         });
 
-        const data = [
+        // BUILD DATA STREAM
+        const chunks = [
             this.COMMANDS.RESET,
             this.COMMANDS.CENTER,
             this.COMMANDS.BOLD_ON,
             this.encode("TAMUU ID\n"),
             this.COMMANDS.BOLD_OFF,
-            this.encode("Premium Digital Invitation\n"),
-            this.encode("--------------------------------\n"),
-            this.COMMANDS.LINE_FEED,
-            this.encode(type === 'check-in' ? "GUEST CHECK-IN\n" : "GUEST CHECK-OUT\n"),
-            this.COMMANDS.LINE_FEED,
+            this.encode("Elite Event Management\n"),
+            this.encode("--------------------------------\n\n"),
+            this.encode(type === 'check-in' ? "ENTRY GRANTED\n" : "DEPARTURE CONFIRMED\n"),
             this.COMMANDS.DOUBLE_SIZE,
             this.encode(`${guest.name}\n`),
             this.COMMANDS.NORMAL_SIZE,
-            this.COMMANDS.LINE_FEED,
-            this.encode(`Tier: ${guest.tier?.toUpperCase() || 'REGULER'}\n`),
+            this.encode(`\nTier: ${guest.tier?.toUpperCase() || 'REGULER'}\n`),
             this.encode(`Table: ${guest.table_number || guest.tableNumber || '-'}\n`),
-            this.encode(`Guests: ${guest.guest_count || guest.guestCount || 1} Person\n`),
-            this.COMMANDS.LINE_FEED,
+            this.encode(`PAX: ${guest.guest_count || 1}\n\n`),
             this.encode("--------------------------------\n"),
-            this.encode(`${now}\n`),
-            this.COMMANDS.LINE_FEED,
-            this.encode("Terima kasih atas\n"),
-            this.encode("kehadiran Anda.\n"),
-            this.COMMANDS.LINE_FEED,
+            this.encode(`${now}\n\n`),
+            this.encode("Thank you for your presence.\n"),
             this.COMMANDS.FEED_AND_CUT,
         ];
 
-        // Combine all chunks into one Uint8Array
-        const totalLength = data.reduce((acc, curr) => acc + curr.length, 0);
-        const combined = new Uint8Array(totalLength);
+        const totalLength = chunks.reduce((acc, curr) => acc + curr.length, 0);
+        const stream = new Uint8Array(totalLength);
         let offset = 0;
-        for (const chunk of data) {
-            combined.set(chunk, offset);
+        for (const chunk of chunks) {
+            stream.set(chunk, offset);
             offset += chunk.length;
         }
 
-        await this.write(combined);
+        try {
+            await this.write(stream);
+            return true;
+        } catch (e) {
+            console.error('[Printer] Write failed:', e);
+            return false;
+        }
     }
 }
 

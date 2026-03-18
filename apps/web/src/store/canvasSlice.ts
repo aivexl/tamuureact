@@ -8,6 +8,7 @@ export interface GuestData {
     tier: string;
     table_number?: string;
     guest_count: number;
+    checked_in_at?: string | null;
 }
 
 export interface CanvasState {
