@@ -9,9 +9,6 @@ import {
     ArrowLeft,
     QrCode,
     RefreshCw,
-    Printer,
-    Bluetooth,
-    BluetoothOff,
     Download,
     ShieldCheck,
     ChevronRight,
@@ -20,7 +17,6 @@ import {
 } from 'lucide-react';
 import { PremiumLoader } from '../components/ui/PremiumLoader';
 import { guests as guestsApi, admin as adminApi } from '../lib/api';
-import { printer } from '../lib/printer';
 
 /**
  * GuestScannerPage - Enterprise-Grade Event Access Control
@@ -40,7 +36,6 @@ export const GuestScannerPage: React.FC = () => {
     const [lastGuest, setLastGuest] = useState<any>(null);
     const [permissionStatus, setPermissionStatus] = useState<'pending' | 'granted' | 'denied'>('pending');
     const [checkInStatus, setCheckInStatus] = useState<'idle' | 'success' | 'duplicate' | 'error' | 'checkout'>('idle');
-    const [isPrinterConnected, setIsPrinterConnected] = useState(false);
     
     const scannerRef = useRef<Html5Qrcode | null>(null);
     const ticketRef = useRef<HTMLDivElement>(null);
@@ -61,20 +56,6 @@ export const GuestScannerPage: React.FC = () => {
             oscillator.start();
             oscillator.stop(context.currentTime + 0.1);
         } catch (e) {}
-    };
-
-    useEffect(() => {
-        const check = setInterval(() => {
-            setIsPrinterConnected(printer.isConnected());
-        }, 2000);
-        return () => clearInterval(check);
-    }, []);
-
-    const handleConnectPrinter = async () => {
-        setIsLoading(true);
-        const success = await printer.connect();
-        setIsPrinterConnected(success);
-        setIsLoading(false);
     };
 
     useEffect(() => {
@@ -194,7 +175,6 @@ export const GuestScannerPage: React.FC = () => {
                     setLastGuest(response.guest);
                     setCheckInStatus('checkout');
                     playSound('success');
-                    if (isPrinterConnected) await printer.printReceipt(response.guest, 'check-out');
                     return;
                 }
             }
@@ -203,7 +183,6 @@ export const GuestScannerPage: React.FC = () => {
                 setLastGuest(response.guest);
                 setCheckInStatus('success');
                 playSound('success');
-                if (isPrinterConnected) await printer.printReceipt(response.guest, 'check-in');
                 await triggerBlast(response.guest.name, response.guest.tier);
             } else {
                 playSound('error');
@@ -264,18 +243,8 @@ export const GuestScannerPage: React.FC = () => {
                         <ArrowLeft className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-600" />
                     </button>
                     <div className="truncate">
-                        <p className="text-xs md:text-sm font-black text-[#001F3F] truncate">Scan Tamuu Undangan</p>
+                        <p className="text-xs md:text-sm font-black text-[#001F3F] truncate uppercase tracking-wider">Scan Tamuu Undangan</p>
                     </div>
-                </div>
-                
-                <div className="flex items-center gap-2 md:gap-3 shrink-0 ml-2">
-                    <div className={`px-2 py-0.5 md:px-2.5 md:py-1 rounded-full border text-[9px] md:text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 md:gap-1.5 transition-all ${isPrinterConnected ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-slate-50 border-slate-100 text-slate-400'}`}>
-                        <Printer className="w-2.5 h-2.5 md:w-3 md:h-3" />
-                        <span className="hidden xs:inline">{isPrinterConnected ? 'Aktif' : 'Mati'}</span>
-                    </div>
-                    <button onClick={handleConnectPrinter} className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-[#FFBF00] text-black flex items-center justify-center shadow-sm active:scale-90 transition-transform">
-                        {isPrinterConnected ? <Bluetooth className="w-3.5 h-3.5 md:w-4 md:h-4" /> : <BluetoothOff className="w-3.5 h-3.5 md:w-4 md:h-4" />}
-                    </button>
                 </div>
             </header>
 
@@ -302,8 +271,8 @@ export const GuestScannerPage: React.FC = () => {
                     </motion.div>
                 )}
 
-                <div className={`w-full max-w-sm aspect-square relative z-10 ${isScanning ? 'block' : 'hidden'}`}>
-                    <div id="reader" className="w-full h-full overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 shadow-sm" />
+                <div id="reader" className={`w-full max-w-sm aspect-square relative z-10 ${isScanning ? 'block' : 'hidden'}`}>
+                    <div className="w-full h-full overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 shadow-sm" />
                     
                     {/* Corner Accents - Apple Style */}
                     <div className="absolute top-4 left-4 w-10 h-10 border-t-2 border-l-2 border-[#FFBF00] rounded-tl-lg pointer-events-none z-20" />
@@ -340,30 +309,25 @@ export const GuestScannerPage: React.FC = () => {
                                     </div>
 
                                     <div className="w-full flex flex-col gap-3">
-                                        <div className="flex gap-2">
-                                            <button 
-                                                onClick={handleDownloadEPass} 
-                                                disabled={downloadState === 'loading'}
-                                                className="flex-1 h-14 bg-slate-50 border border-slate-100 text-[#001F3F] rounded-xl flex items-center justify-center transition-all active:scale-95"
-                                            >
-                                                {downloadState === 'loading' ? (
-                                                    <PremiumLoader variant="inline" size="sm" color="#001F3F" />
-                                                ) : downloadState === 'success' ? (
+                                        <button 
+                                            onClick={handleDownloadEPass} 
+                                            disabled={downloadState === 'loading'}
+                                            className="w-full h-14 bg-slate-50 border border-slate-100 text-[#001F3F] rounded-xl flex items-center justify-center gap-3 transition-all active:scale-95"
+                                        >
+                                            {downloadState === 'loading' ? (
+                                                <PremiumLoader variant="inline" size="sm" color="#001F3F" />
+                                            ) : downloadState === 'success' ? (
+                                                <>
                                                     <Check className="w-5 h-5 text-emerald-500" />
-                                                ) : (
+                                                    <span className="text-[11px] font-bold uppercase tracking-wider">Tersimpan</span>
+                                                </>
+                                            ) : (
+                                                <>
                                                     <Download className="w-5 h-5" />
-                                                )}
-                                            </button>
-                                            
-                                            {isPrinterConnected && (
-                                                <button 
-                                                    onClick={() => printer.printReceipt(lastGuest, checkInStatus === 'checkout' ? 'check-out' : 'check-in')} 
-                                                    className="w-14 h-14 bg-[#FFBF00] text-black rounded-xl flex items-center justify-center"
-                                                >
-                                                    <Printer className="w-5 h-5" />
-                                                </button>
+                                                    <span className="text-[11px] font-bold uppercase tracking-wider">Simpan Bukti</span>
+                                                </>
                                             )}
-                                        </div>
+                                        </button>
                                         
                                         <button onClick={() => startScanner()} className="w-full h-14 bg-[#001F3F] text-white font-bold uppercase tracking-[0.1em] text-[11px] rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all">
                                             Tutup <ChevronRight className="w-4 h-4 opacity-50" />
