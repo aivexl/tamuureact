@@ -34,17 +34,28 @@ class BluetoothPrinter {
             if (!navigator.bluetooth) throw new Error('Bluetooth not supported');
 
             console.log('[Printer] Requesting device...');
+            
+            // FAANG LEVEL RELIABILITY: Broadened discovery to handle varied thermal printer chipsets
             this.device = await navigator.bluetooth.requestDevice({
                 filters: [
                     { services: ['000018f0-0000-1000-8000-00805f9b34fb'] },
+                    { services: ['0000ff00-0000-1000-8000-00805f9b34fb'] },
+                    { services: ['49535343-fe7d-4ae5-8fa9-9fafd205e455'] },
                     { namePrefix: 'Inner' },
                     { namePrefix: 'RPP' },
                     { namePrefix: 'MPT' },
                     { namePrefix: 'MTP' },
                     { namePrefix: 'Printer' },
-                    { namePrefix: 'Thermal' }
+                    { namePrefix: 'Thermal' },
+                    { namePrefix: 'Blue' }
                 ],
-                optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2']
+                optionalServices: [
+                    '000018f0-0000-1000-8000-00805f9b34fb', 
+                    '0000ff00-0000-1000-8000-00805f9b34fb',
+                    '0000fee7-0000-1000-8000-00805f9b34fb',
+                    'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
+                    '49535343-fe7d-4ae5-8fa9-9fafd205e455'
+                ]
             });
 
             this.device.addEventListener('gattserverdisconnected', this.handleDisconnect.bind(this));

@@ -1,5 +1,17 @@
 # Tamuu Changelog
 
+## [0.9.14] - 2026-03-18
+### Added
+- **Clean Light Enterprise UI (Apple Standard)**: Redesigned the `GuestScannerPage` with a premium, minimalist visual language.
+    - **Total White Refactor**: Migrated from a dark theme to a pure white (`#FFFFFF`) background with Navy and Slate typography for an enterprise look.
+    - **Optimized Layout**: Moved the scanner and result card higher up the page for better ergonomics, using high-end spacing and a minimalist header.
+    - **Friendly Indonesian UX**: Translated all scanner UI elements into basic, friendly Indonesian (e.g., "Pindai QR", "Buka Kamera").
+    - **Refined Scan Box**: Redesigned the QR scan area with a cleaner rounded-2xl geometry and stylistic corner accents to prevent clipping.
+- **Enhanced Bluetooth Reliability**: Broadened the Bluetooth device discovery filters to support a wider range of thermal printer chipsets, improving discovery speed and connection stability.
+
+### Fixed
+- **TypeScript Type Safety**: Resolved parameter mismatch errors in the scanner's `onClick` handlers, ensuring robust build-time verification.
+
 ## [0.9.13] - 2026-03-17
 ### Added
 - **FAANG Standard E-Ticket (Smart Pass)**: Completely redesigned the QR element into a high-fidelity digital pass inspired by Apple Wallet.

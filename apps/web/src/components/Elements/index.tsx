@@ -14,6 +14,7 @@ import {
 import { useAudioController } from '@/hooks/useAudioController';
 import { AnimatedCopyIcon } from '@/components/ui/AnimatedCopyIcon';
 import { patchLegacyUrl } from '@/lib/utils';
+import { PremiumLoader } from '../ui/PremiumLoader';
 
 // ============================================
 // SMART PASS / QR CODE ELEMENT (FAANG STANDARD)
@@ -21,7 +22,7 @@ import { patchLegacyUrl } from '@/lib/utils';
 export const QRCodeElement: React.FC<{ layer: Layer, isEditor?: boolean, onContentLoad?: () => void }> = ({ layer, isEditor, onContentLoad }) => {
     const { triggerGlobalEffect } = useStore();
     const guestData = useStore(state => state.guestData);
-    const [isDownloading, setIsResolving] = useState(false);
+    const [downloadState, setDownloadState] = useState<'idle' | 'loading' | 'success'>('idle');
     const passRef = useRef<HTMLDivElement>(null);
     
     useEffect(() => { onContentLoad?.(); }, []);
@@ -32,10 +33,9 @@ export const QRCodeElement: React.FC<{ layer: Layer, isEditor?: boolean, onConte
         background: '#ffffff',
         interactiveEnabled: false,
         successEffect: 'confetti',
-        theme: 'luxury' // luxury | minimal | glass
+        theme: 'luxury'
     };
     
-    // CTO Identity Resolution
     const guestName = guestData?.name || 'TAMU UNDANGAN';
     const checkInCode = guestData?.check_in_code || 'T-XXXXXX';
     const isVIP = guestData?.tier === 'vip' || guestData?.tier === 'vvip';
@@ -43,7 +43,7 @@ export const QRCodeElement: React.FC<{ layer: Layer, isEditor?: boolean, onConte
 
     const handleDownloadPass = async () => {
         if (!passRef.current || isEditor) return;
-        setIsResolving(true);
+        setDownloadState('loading');
         try {
             const canvas = await html2canvas(passRef.current, {
                 scale: 3,
@@ -54,14 +54,13 @@ export const QRCodeElement: React.FC<{ layer: Layer, isEditor?: boolean, onConte
             link.download = `Pass_${guestName.replace(/\s+/g, '_')}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
+            setDownloadState('success');
+            setTimeout(() => setDownloadState('idle'), 3000);
         } catch (e) {
             console.error('Pass export failed', e);
-        } finally {
-            setIsResolving(false);
+            setDownloadState('idle');
         }
     };
-
-    const fg = config.foreground || (isVIP ? '#FFBF00' : '#000000');
 
     return (
         <div className="w-full h-full flex flex-col items-center justify-center p-2">
@@ -92,12 +91,12 @@ export const QRCodeElement: React.FC<{ layer: Layer, isEditor?: boolean, onConte
                 <div className={`p-6 flex justify-between items-start border-b border-dashed ${isVIP ? 'border-white/10' : 'border-black/5'}`}>
                     <div className="space-y-1">
                         <img 
-                            src={isVIP ? "/assets/tamuu-logo-header.png" : "/assets/tamuu-logo-dark.png"} 
-                            className="h-4 opacity-80" 
+                            src="/assets/tamuu-logo-header.png" 
+                            className="h-5 w-auto object-contain opacity-90 block" 
                             alt="Tamuu" 
                         />
                         <p className={`text-[8px] font-black uppercase tracking-[0.2em] ${isVIP ? 'text-[#FFBF00]' : 'text-slate-400'}`}>
-                            {isVIP ? 'Elite Identity Pass' : 'Official Guest Pass'}
+                            Kartu Akses Tamu
                         </p>
                     </div>
                     {isVIP && <Star className="w-4 h-4 text-[#FFBF00] fill-[#FFBF00] animate-pulse" />}
@@ -126,7 +125,7 @@ export const QRCodeElement: React.FC<{ layer: Layer, isEditor?: boolean, onConte
                                     animate={{ scale: 1, rotate: -15 }}
                                     className="px-4 py-2 bg-emerald-500 text-white font-black text-xs uppercase tracking-widest shadow-2xl rounded-lg"
                                 >
-                                    Used
+                                    Sudah Digunakan
                                 </m.div>
                             </div>
                         )}
@@ -145,15 +144,15 @@ export const QRCodeElement: React.FC<{ layer: Layer, isEditor?: boolean, onConte
                 {/* Bottom Section: Details */}
                 <div className={`p-6 mt-auto grid grid-cols-2 gap-4 border-t border-dashed ${isVIP ? 'border-white/10' : 'border-black/5'} bg-black/5`}>
                     <div className="space-y-1">
-                        <span className="text-[7px] font-black uppercase text-white/30 tracking-widest block">Access Level</span>
+                        <span className="text-[7px] font-black uppercase text-white/30 tracking-widest block">Tipe Tamu</span>
                         <span className={`text-[10px] font-bold uppercase ${isVIP ? 'text-[#FFBF00]' : 'text-slate-600'}`}>
-                            {isVIP ? 'Priority / VIP' : 'General Entry'}
+                            {isVIP ? 'VIP / VVIP' : 'Tamu Reguler'}
                         </span>
                     </div>
                     <div className="space-y-1 text-right">
-                        <span className="text-[7px] font-black uppercase text-white/30 tracking-widest block">Verification</span>
+                        <span className="text-[7px] font-black uppercase text-white/30 tracking-widest block">Verifikasi</span>
                         <span className="text-[10px] font-bold text-emerald-500 uppercase flex items-center justify-end gap-1">
-                            <ShieldCheck className="w-3 h-3" /> Encrypted
+                            <ShieldCheck className="w-3 h-3" /> Terverifikasi
                         </span>
                     </div>
                 </div>
@@ -168,15 +167,16 @@ export const QRCodeElement: React.FC<{ layer: Layer, isEditor?: boolean, onConte
                 <m.button
                     whileTap={{ scale: 0.95 }}
                     onClick={handleDownloadPass}
-                    disabled={isDownloading}
-                    className="mt-6 flex items-center gap-3 px-8 py-4 bg-white/5 border border-white/10 hover:bg-white/10 rounded-2xl transition-all group"
+                    disabled={downloadState === 'loading'}
+                    className="mt-6 flex items-center gap-3 px-8 h-14 bg-white/5 border border-white/10 hover:bg-white/10 rounded-2xl transition-all group min-w-[64px] justify-center"
                 >
-                    {isDownloading ? (
-                        <div className="w-4 h-4 border-2 border-[#FFBF00]/30 border-t-[#FFBF00] rounded-full animate-spin" />
+                    {downloadState === 'loading' ? (
+                        <PremiumLoader variant="inline" size="sm" color="#FFBF00" />
+                    ) : downloadState === 'success' ? (
+                        <CheckCircle2 className="w-5 h-5 text-emerald-500 animate-in zoom-in duration-300" />
                     ) : (
-                        <Download className="w-4 h-4 text-[#FFBF00] group-hover:scale-110 transition-transform" />
+                        <Download className="w-5 h-5 text-[#FFBF00] group-hover:scale-110 transition-transform" />
                     )}
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80">Save Digital Pass</span>
                 </m.button>
             )}
         </div>

@@ -39,7 +39,7 @@ interface PreviewViewProps {
 
 export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: propId, isTemplate: propIsTemplate }) => {
     const { sections, orbit, templateType, triggerGlobalEffect, triggerBatchInteractions,
-        resetInteractions
+        resetInteractions, guestData, greetingName, isTemplate
     } = useStore();
     const lastTriggerRef = useRef<{ effect: string, timestamp: number } | null>(null);
 
@@ -1267,8 +1267,9 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
                         <GuestQRModal
                             isOpen={isQRModalOpen}
                             onClose={() => setIsQRModalOpen(false)}
-                            guestName={useStore.getState().isTemplate ? "John Doe & Partner" : (useStore.getState().guestData?.name || useStore.getState().greetingName || "Guest Name")}
-                            checkInCode={useStore.getState().isTemplate ? "X9K2PJ" : (useStore.getState().guestData?.check_in_code || "UNKNOWN")}
+                            guestName={isTemplate ? "John Doe & Partner" : (guestData?.name || greetingName || "Guest Name")}
+                            checkInCode={isTemplate ? "X9K2PJ" : (guestData?.check_in_code || "UNKNOWN")}
+                            tier={guestData?.tier}
                         />
                     </>
                 )}
