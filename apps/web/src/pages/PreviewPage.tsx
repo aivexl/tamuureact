@@ -62,7 +62,7 @@ export const PreviewPage: React.FC = () => {
                     
                     if (target.length < 30) {
                         try {
-                            const res = await api.guests.getBySlug(target);
+                            const res = await api.guests.getBySlug(target, data.id);
                             if (res && res.id && !res.error) resGuest = res;
                         } catch (e) {}
                     }

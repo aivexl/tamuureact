@@ -390,8 +390,11 @@ export const guests = {
         return res.json();
     },
 
-    async getBySlug(slug: string) {
-        const res = await safeFetch(`${API_BASE}/api/guests/slug/${slug}`);
+    async getBySlug(slug: string, invitationId?: string) {
+        const url = invitationId 
+            ? `${API_BASE}/api/guests/slug/${slug}?invitationId=${invitationId}`
+            : `${API_BASE}/api/guests/slug/${slug}`;
+        const res = await safeFetch(url);
         return res.json();
     },
 

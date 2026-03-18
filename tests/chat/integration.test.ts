@@ -5,9 +5,9 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
-import { ChatRateLimiter } from '../apps/api/rate-limiter.js';
-import { InputSanitizer } from '../apps/api/input-sanitizer.ts';
-import { ExponentialBackoffRetry } from '../apps/api/exponential-backoff.ts';
+import { ChatRateLimiter } from '../../apps/api/rate-limiter.ts';
+import { InputSanitizer } from '../../apps/api/input-sanitizer.ts';
+import { ExponentialBackoffRetry } from '../../apps/api/exponential-backoff.ts';
 
 // ============================================
 // RATE LIMITER TESTS

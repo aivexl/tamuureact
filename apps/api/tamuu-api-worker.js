@@ -4119,7 +4119,16 @@ t.*,
             // [NEW] Resolve Guest by Slug (for Dynamic Injection)
             if ((path.startsWith('/api/guests/by-slug/') || path.startsWith('/api/guests/slug/')) && method === 'GET') {
                 const slug = path.split('/').pop();
-                const guest = await env.DB.prepare('SELECT * FROM guests WHERE slug = ?').bind(slug).first();
+                const reqUrl = new URL(request.url);
+                const invitationId = reqUrl.searchParams.get('invitationId') || reqUrl.searchParams.get('invitation_id');
+                
+                let guest;
+                if (invitationId) {
+                    guest = await env.DB.prepare('SELECT * FROM guests WHERE slug = ? AND invitation_id = ?').bind(slug, invitationId).first();
+                } else {
+                    guest = await env.DB.prepare('SELECT * FROM guests WHERE slug = ?').bind(slug).first();
+                }
+                
                 if (!guest) return json({ error: 'Guest not found' }, { ...corsHeaders, status: 404 });
                 return json(guest, corsHeaders);
             }
@@ -4229,168 +4238,71 @@ name = COALESCE(?, name),
             }
 
             // ============================================
-            // GUEST CHECK-IN ENDPOINT (Enterprise Feature)
-            // POST /api/guests/:id/checkin OR /api/guests/code/:code/checkin
+            // GUEST SMART TOGGLE (CHECK-IN/OUT)
+            // Handles Scan 1 (In), Scan 2 (Out), Scan 3+ (Stay Out)
             // ============================================
-            if ((path.match(/\/api\/guests\/[^/]+\/checkin/) || path === '/api/guests/check-in') && method === 'POST') {
-                let idOrCode;
-                let isCodeLookup = false;
+            if ((path.match(/\/api\/guests\/[^/]+\/(checkin|checkout)/) || path === '/api/guests/check-in' || path === '/api/guests/check-out') && method === 'POST') {
+                let idOrCodeOrSlug;
 
-                if (path === '/api/guests/check-in') {
+                if (path === '/api/guests/check-in' || path === '/api/guests/check-out') {
                     const body = await request.json();
-                    idOrCode = body.guest_id || body.id || body.check_in_code;
-                    isCodeLookup = !!body.check_in_code && !body.guest_id;
+                    idOrCodeOrSlug = body.guest_id || body.id || body.check_in_code || body.slug;
                 } else {
                     const parts = path.split('/');
-                    idOrCode = parts[3];
-                    isCodeLookup = parts[2] === 'code';
+                    idOrCodeOrSlug = parts[3];
                 }
 
-                if (!idOrCode) {
-                    return json({ error: 'Guest ID or Code required' }, { ...corsHeaders, status: 400 });
+                if (!idOrCodeOrSlug) {
+                    return json({ error: 'Guest ID, Code, or Slug required' }, { ...corsHeaders, status: 400 });
                 }
 
-                // Find guest by ID or check_in_code
-                let guest;
-                if (isCodeLookup || idOrCode.length < 20) {
-                    // Short code lookup (e.g., "ABC123")
-                    guest = await env.DB.prepare('SELECT * FROM guests WHERE check_in_code = ?').bind(idOrCode).first();
-                } else {
-                    // UUID lookup
-                    guest = await env.DB.prepare('SELECT * FROM guests WHERE id = ?').bind(idOrCode).first();
-                }
+                // Find guest by ID, check_in_code, or slug
+                let guest = await env.DB.prepare('SELECT * FROM guests WHERE id = ? OR check_in_code = ? OR slug = ?')
+                    .bind(idOrCodeOrSlug, idOrCodeOrSlug, idOrCodeOrSlug)
+                    .first();
 
                 if (!guest) {
                     return json({ success: false, error: 'Guest not found', code: 'NOT_FOUND' }, { ...corsHeaders, status: 404 });
                 }
 
-                // Perform check-in
-                const checkedInAt = new Date().toISOString();
-                await env.DB.prepare('UPDATE guests SET checked_in_at = ? WHERE id = ?').bind(checkedInAt, guest.id).run();
+                const now = new Date().toISOString();
 
-                // CTO UNIFIED SIGNAL: Just send the data, UI will handle the Admin-defined visuals
-                const timestamp = Date.now();
-                const triggerPayload = JSON.stringify({
-                    effect: 'confetti', // Default effect
-                    name: guest.name,
-                    tier: guest.tier, // Information for "Tamuu VIP" label
-                    style: 'cinematic',
-                    timestamp
-                });
-
-                // Update both invitation and associated display designs to show the name
-                ctx.waitUntil((async () => {
-                    try {
-                        // 1. Update the invitation record
-                        await env.DB.prepare(`
-                            UPDATE invitations 
-                            SET sections = json_set(COALESCE(sections, '[]'), '$[0].activeTrigger', json(?)),
-                                updated_at = datetime('now')
-                            WHERE id = ?
-                        `).bind(triggerPayload, guest.invitation_id).run();
-
-                        // 2. Find any user display designs linked to this invitation and update them too
-                        await env.DB.prepare(`
-                            UPDATE user_display_designs 
-                            SET content = json_set(COALESCE(content, '{}'), '$.activeTrigger', json(?)),
-                                updated_at = datetime('now')
-                            WHERE invitation_id = ?
-                        `).bind(triggerPayload, guest.invitation_id).run();
-                    } catch (broadcastError) {
-                        console.error('[Broadcast] Failed to signal TV:', broadcastError);
-                    }
-                })());
-
-                return json({
-                    success: true,
-                    code: 'CHECK_IN_SUCCESS',
-                    guest: {
-                        id: guest.id,
-                        name: guest.name,
-                        tier: guest.tier,
-                        check_in_code: guest.check_in_code,
-                        table_number: guest.table_number,
-                        guest_count: guest.guest_count,
-                        checked_in_at: checkedInAt
-                    }
-                }, corsHeaders);
-            }
-
-            // ============================================
-            // GUEST CHECK-OUT ENDPOINT (Enterprise Feature)
-            // POST /api/guests/:id/checkout OR /api/guests/check-out
-            // ============================================
-            if ((path.match(/\/api\/guests\/[^/]+\/checkout/) || path === '/api/guests/check-out') && method === 'POST') {
-                let idOrCode;
-
-                if (path === '/api/guests/check-out') {
-                    const body = await request.json();
-                    idOrCode = body.guest_id || body.id;
-                } else {
-                    const parts = path.split('/');
-                    idOrCode = parts[3];
-                }
-
-                if (!idOrCode) {
-                    return json({ error: 'Guest ID required' }, { ...corsHeaders, status: 400 });
-                }
-
-                // Find guest by ID or check_in_code
-                let guest;
-                if (idOrCode.length < 20) {
-                    guest = await env.DB.prepare('SELECT * FROM guests WHERE check_in_code = ?').bind(idOrCode).first();
-                } else {
-                    guest = await env.DB.prepare('SELECT * FROM guests WHERE id = ?').bind(idOrCode).first();
-                }
-
-                if (!guest) {
-                    return json({ success: false, error: 'Guest not found', code: 'NOT_FOUND' }, { ...corsHeaders, status: 404 });
-                }
-
-                // Must be checked in first
+                // SMART TOGGLE LOGIC: Scan 1 = In, Scan 2 = Out, Scan 3+ = Stay Out
                 if (!guest.checked_in_at) {
-                    return json({
-                        success: false,
-                        error: 'Guest has not checked in yet',
-                        code: 'NOT_CHECKED_IN',
-                        guest: { id: guest.id, name: guest.name }
-                    }, { ...corsHeaders, status: 400 });
-                }
+                    // 1. Perform Check-in
+                    await env.DB.prepare('UPDATE guests SET checked_in_at = ? WHERE id = ?').bind(now, guest.id).run();
+                    guest.checked_in_at = now;
 
-                // Already checked out prevention
-                if (guest.checked_out_at) {
-                    return json({
-                        success: false,
-                        error: 'Guest already checked out',
-                        code: 'ALREADY_CHECKED_OUT',
-                        guest: {
-                            id: guest.id,
-                            name: guest.name,
-                            checked_in_at: guest.checked_in_at,
-                            checked_out_at: guest.checked_out_at
-                        }
-                    }, { ...corsHeaders, status: 409 });
-                }
-
-                // Perform check-out
-                const checkedOutAt = new Date().toISOString();
-                await env.DB.prepare(`
-    UPDATE guests SET checked_out_at = ? WHERE id = ?
-    `).bind(checkedOutAt, guest.id).run();
-
-                return json({
-                    success: true,
-                    code: 'CHECK_OUT_SUCCESS',
-                    guest: {
-                        id: guest.id,
+                    // Trigger visuals for TV display
+                    const triggerPayload = JSON.stringify({
+                        effect: 'confetti',
                         name: guest.name,
                         tier: guest.tier,
-                        check_in_code: guest.check_in_code,
-                        table_number: guest.table_number,
-                        checked_in_at: guest.checked_in_at,
-                        checked_out_at: checkedOutAt
-                    }
-                }, corsHeaders);
+                        style: 'cinematic',
+                        timestamp: Date.now()
+                    });
+
+                    ctx.waitUntil((async () => {
+                        try {
+                            await env.DB.prepare(`UPDATE invitations SET sections = json_set(COALESCE(sections, '[]'), '$[0].activeTrigger', json(?)), updated_at = datetime('now') WHERE id = ?`)
+                                .bind(triggerPayload, guest.invitation_id).run();
+                            await env.DB.prepare(`UPDATE user_display_designs SET content = json_set(COALESCE(content, '{}'), '$.activeTrigger', json(?)), updated_at = datetime('now') WHERE invitation_id = ?`)
+                                .bind(triggerPayload, guest.invitation_id).run();
+                        } catch (broadcastError) {
+                            console.error('[Broadcast] Failed to signal TV:', broadcastError);
+                        }
+                    })());
+
+                    return json({ status: 'CHECK_IN_SUCCESS', data: guest }, corsHeaders);
+                } else if (!guest.checked_out_at) {
+                    // 2. Perform Check-out
+                    await env.DB.prepare('UPDATE guests SET checked_out_at = ? WHERE id = ?').bind(now, guest.id).run();
+                    guest.checked_out_at = now;
+                    return json({ status: 'CHECK_OUT_SUCCESS', data: guest }, corsHeaders);
+                } else {
+                    // 3. Already Checked-out (Idempotent)
+                    return json({ status: 'ALREADY_CHECKED_OUT', data: guest }, corsHeaders);
+                }
             }
 
             // ============================================

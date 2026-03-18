@@ -15,7 +15,7 @@
     "build:api": "turbo run build --filter=@tamuu/api",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
-    "test": "jest",
+    "test": "vitest run",
     "clean": "turbo run clean && rm -rf node_modules",
     "deploy": "turbo run deploy",
     "deploy:api": "turbo run deploy:api --filter=@tamuu/api",

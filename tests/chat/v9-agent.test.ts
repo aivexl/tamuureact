@@ -1,4 +1,5 @@
 // CTO FIX: Converted from Vitest to Jest for compatibility
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TamuuAIEngine } from '../../apps/api/ai-system-v8-enhanced';
 
 describe('V9 Agent Intelligence', () => {
@@ -9,10 +10,10 @@ describe('V9 Agent Intelligence', () => {
         const env = {
             GEMINI_API_KEY: 'test-key',
             DB: {
-                prepare: jest.fn().mockReturnThis(),
-                bind: jest.fn().mockReturnThis(),
-                first: jest.fn().mockResolvedValue({ role: 'admin', tier: 'elite' }),
-                all: jest.fn().mockResolvedValue({ results: [] })
+                prepare: vi.fn().mockReturnThis(),
+                bind: vi.fn().mockReturnThis(),
+                first: vi.fn().mockResolvedValue({ role: 'admin', tier: 'elite' }),
+                all: vi.fn().mockResolvedValue({ results: [] })
             }
         };
         engine = new TamuuAIEngine(env);

@@ -1,15 +1,18 @@
 /** @type {import("jest").Config} **/
 module.exports = {
-  testEnvironment: "node",
+  testEnvironment: "jsdom",
+  setupFilesAfterEnv: ["<rootDir>/apps/web/src/test/setup.ts"],
   transform: {
-    "^.+\\.(ts|tsx)$": "ts-jest",
+    "^.+\\.(ts|tsx)$": ["ts-jest", {
+      tsconfig: "apps/web/tsconfig.json"
+    }],
   },
-  // Abaikan folder chat karena fiturnya sedang tidak aktif
   testPathIgnorePatterns: [
     "/node_modules/",
     "/tests/chat/"
   ],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/apps/web/src/$1",
+    "\\.(css|less|scss|sass)$": "identity-obj-proxy"
   },
 };

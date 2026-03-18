@@ -28,6 +28,11 @@
                 "^typecheck"
             ]
         },
+        "test": {
+            "dependsOn": [
+                "^build"
+            ]
+        },
         "deploy": {
             "dependsOn": [
                 "build"
