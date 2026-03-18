@@ -50,6 +50,7 @@ export interface UIState {
 
     openImageCropModal: (imageSrc: string, layerId: string, slotIndex: number, aspectRatio?: number) => void;
     closeImageCropModal: () => void;
+    resetStore: () => void;
 }
 
 export const createUISlice: StateCreator<UIState> = (set) => ({
@@ -116,4 +117,10 @@ export const createUISlice: StateCreator<UIState> = (set) => ({
                 aspectRatio: 1
             }
         }),
+    resetStore: () => set({
+        hasHydrated: false,
+        isAnimationPlaying: false,
+        pathEditingId: null,
+        pickingAnchorForId: null
+    })
 });

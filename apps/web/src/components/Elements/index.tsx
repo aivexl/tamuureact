@@ -352,8 +352,8 @@ export const QRCodeElement: React.FC<{ layer: Layer, isEditor?: boolean, onConte
         successEffect: 'confetti'
     };
     
-    // UNIFIED IDENTITY: If guestData exists, the QR code value is their check-in code
-    const qrValue = guestData ? guestData.check_in_code : (config.value || 'https://tamuu.id');
+    // UNIFIED IDENTITY: Prioritize check_in_code for smart scanning, fallback to ID
+    const qrValue = guestData ? (guestData.check_in_code || guestData.id) : (config.value || 'https://tamuu.id');
     const fg = config.foreground || '#000000';
 
     const handleTrigger = () => {
@@ -386,12 +386,9 @@ export const QRCodeElement: React.FC<{ layer: Layer, isEditor?: boolean, onConte
                         <rect x="50" y="85" width="10" height="10" fill={fg} rx="1" />
                     </svg>
                     
-                    {/* Display the token text below the QR if guest is resolved */}
-                    {guestData && (
-                        <div className="text-[10px] font-mono font-black text-slate-900 tracking-widest uppercase">
-                            {guestData.check_in_code}
-                        </div>
-                    )}
+                    <div className="text-[10px] font-mono font-black text-slate-900 tracking-widest uppercase mt-1">
+                        {guestData?.check_in_code || (guestData ? 'PERSONALIZED' : 'Smart E-Ticket')}
+                    </div>
                 </div>
 
                 {/* Interaction Label (Preview only if enabled) */}
@@ -404,7 +401,7 @@ export const QRCodeElement: React.FC<{ layer: Layer, isEditor?: boolean, onConte
                 )}
             </div>
 
-            {/* Editor Simulation Button */}
+            {/* Editor Simulation Button */ }
             {isEditor && config.interactiveEnabled && (
                 <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
                     <button

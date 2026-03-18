@@ -55,7 +55,7 @@ async function handleCrawler(request, pathParts) {
         let guestName = 'Bapak/Ibu/Saudara/i';
         if (guestSlug) {
             try {
-                const gRes = await fetch(`${API_BASE}/api/guests/by-slug/${guestSlug}`);
+                const gRes = await fetch(`${API_BASE}/api/guests/slug/${guestSlug}`);
                 if (gRes.ok) {
                     const guest = await gRes.json();
                     guestName = guest.name || guestName;

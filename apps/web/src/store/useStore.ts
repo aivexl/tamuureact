@@ -16,6 +16,7 @@ import { sanitizeValue } from '@/lib/utils';
 type StoreState = CanvasState & LayersState & UIState & ModalState & SectionsState & AuthState & ClockState & {
     isDirty: boolean;
     setIsDirty: (val: boolean) => void;
+    resetAll: () => void;
 };
 
 // ============================================
@@ -34,6 +35,12 @@ export const useStore = create<StoreState>()(
                 ...createClockSlice(...a),
                 isDirty: false,
                 setIsDirty: (val) => a[0]({ isDirty: val }),
+                resetAll: () => {
+                    const state = a[1]() as StoreState;
+                    if (state.resetCanvas) state.resetCanvas();
+                    if (state.resetLayers) state.resetLayers();
+                    if (state.resetSections) state.resetSections();
+                }
             }),
             {
                 limit: 50,
@@ -54,11 +61,6 @@ export const useStore = create<StoreState>()(
         {
             name: 'tamuu-storage',
             partialize: (state) => ({
-                // CRITICAL: We NO LONGER persist sections, layers, or orbit to localStorage.
-                // These collections can exceed the 5MB quota (DOMException: quota exceeded)
-                // because they might contain large base64 image strings or thousands of nodes.
-                // Since EditorLayout.tsx handles hydration from the API, we only need to
-                // persist high-level metadata here for session continuity.
                 zoom: state.zoom,
                 pan: state.pan,
                 slug: state.slug,
@@ -66,16 +68,14 @@ export const useStore = create<StoreState>()(
                 id: state.id,
                 music: state.music,
                 isPublished: state.isPublished,
-                // NOTE: user and token are intentionally NOT persisted here.
-                // AuthProvider.tsx is the sole source of truth for auth state.
+                // CRITICAL CTO FIX: guestData MUST NEVER be persisted to localStorage.
+                // Persisting identity leads to "Flash of Previous Guest" and state pollution
+                // when navigating between different personal links.
             }),
             onRehydrateStorage: () => (state) => {
                 if (!state) return;
 
                 try {
-                    // CTO CRITICAL FIX: Enterprise-grade deep sanitization
-                    // Ensures all critical collections are valid arrays/objects
-
                     // 1. Sections Hardening
                     let sections = Array.isArray(state.sections)
                         ? state.sections
@@ -87,7 +87,6 @@ export const useStore = create<StoreState>()(
                             }))
                         : [];
 
-                    // Fallback to default section if none exist
                     if (sections.length === 0) {
                         sections = [{
                             id: 'section-opening-default',
@@ -139,10 +138,8 @@ export const useStore = create<StoreState>()(
                         Object.assign(state, sanitizedPayload);
                         state.setHasHydrated(true);
                     }
-                    console.log('[Store] Rehydration successful: structural integrity verified.');
                 } catch (e) {
-                    console.error('[Store] Rehydration failed catastrophically! Resetting to safe defaults.', e);
-                    // Critical fallback: If rehydration fails, we MUST still mark as hydrated to prevent loading loops
+                    console.error('[Store] Rehydration failed!', e);
                     if (state.setHasHydrated) {
                         state.setHasHydrated(true);
                     }
@@ -177,11 +174,7 @@ export type {
     ButtonConfig,
     ShapeConfig,
     MapsConfig,
-    MotionPathPoint,
-    MotionPathConfig,
-    LoveStoryMoment,
-    LoveStoryConfig,
-    LiveStreamingConfig,
+    MotionPathPoint, MotionPathConfig, LoveStoryMoment, LoveStoryConfig, LiveStreamingConfig,
     Section,
     PredefinedSectionType,
     ZoomPoint,
@@ -189,4 +182,3 @@ export type {
 };
 
 export { SECTION_ICONS, SECTION_LABELS, PREDEFINED_SECTION_TYPES };
-

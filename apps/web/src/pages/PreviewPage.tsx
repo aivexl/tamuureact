@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { PreviewView } from '@/components/Preview/PreviewView';
 import { useStore, type Layer } from '@/store/useStore';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
@@ -9,139 +9,153 @@ import { useSEO } from '@/hooks/useSEO';
 import api from '@/lib/api';
 
 export const PreviewPage: React.FC = () => {
-    const { slug, guestSlug } = useParams<{ slug: string; guestSlug?: string }>();
+    const { slug, guestSlug: pathGuestSlug } = useParams<{ slug: string; guestSlug?: string }>();
     const navigate = useNavigate();
+    const location = useLocation();
     const { data: previewResponse, isLoading: isQueryLoading, isError, error } = usePreviewData(slug);
     const [isGuestLoading, setIsGuestLoading] = useState(false);
 
+    // GHOST V5.1: ATOMIC HYDRATION NEXUS
     useEffect(() => {
-        // GHOST V4.0: UNICORN REDIRECT GUARD
-        if (isError && slug) {
-            console.error('[PreviewPage] Failed to resolve slug:', slug, {
-                error,
-                timestamp: new Date().toISOString()
-            });
+        const initializePreview = async () => {
+            // CTO MANDATE: Reset all states synchronously before any new operation
+            // This prevents "Flash of Previous Invitation" and state pollution.
+            console.log('[PreviewPage] Initializing new context for:', slug);
+            useStore.getState().resetAll();
 
-            const checkBlogPost = async () => {
-                try {
-                    const blogPost = await api.blog.getPost(slug);
-                    if (blogPost) {
-                        navigate(`/blog/${slug}`, { replace: true });
-                        return;
+            if (isError && slug) {
+                const checkBlogPost = async () => {
+                    try {
+                        const blogPost = await api.blog.getPost(slug);
+                        if (blogPost) {
+                            navigate(`/blog/${slug}`, { replace: true });
+                            return;
+                        }
+                    } catch { }
+                    if (import.meta.env.PROD) {
+                        setTimeout(() => navigate('/', { replace: true }), 3000);
                     }
-                } catch { }
+                };
+                checkBlogPost();
+                return;
+            }
 
-                if (import.meta.env.PROD) {
-                    const timer = setTimeout(() => {
-                        navigate('/', { replace: true });
-                    }, 3000);
-                    return () => clearTimeout(timer);
-                }
-            };
+            if (slug === 'draft' || !previewResponse) return;
 
-            checkBlogPost();
-            return;
-        }
+            const { data, source } = previewResponse;
+            if (data?.expired) {
+                navigate(`/inactive/${slug}`, { replace: true });
+                return;
+            }
+            if (!data) return;
 
-        if (slug === 'draft' || !previewResponse) return;
+            // 1. RESOLVE GUEST IDENTITY
+            const searchParams = new URLSearchParams(location.search);
+            const target = pathGuestSlug || searchParams.get('to');
+            let resolvedGuest = undefined;
 
-        const { data, source } = previewResponse;
-
-        if (data?.expired) {
-            navigate(`/inactive/${slug}`, { replace: true });
-            return;
-        }
-
-        if (!data) return;
-
-        // UNIFIED IDENTITY: Resolve Guest Data if guestSlug exists
-        const resolveGuest = async () => {
-            const searchParams = new URLSearchParams(window.location.search);
-            const toParam = searchParams.get('to');
-            const targetSlug = guestSlug || toParam;
-
-            if (targetSlug) {
+            if (target) {
                 setIsGuestLoading(true);
                 try {
-                    console.log('[PreviewPage] Resolving guest identity:', targetSlug);
-                    // Standardize lookup: try by ID if it looks like one, else by slug
-                    const guestData = targetSlug.length > 20 
-                        ? await api.guests.get(targetSlug)
-                        : await api.guests.getBySlug(targetSlug);
-                        
-                    if (guestData) {
-                        useStore.getState().setGuestData(guestData);
-                        console.log('[PreviewPage] Guest resolved:', guestData.name);
+                    console.log('[PreviewPage] Resolving Identity:', target);
+                    let resGuest = null;
+                    
+                    if (target.length < 30) {
+                        try {
+                            const res = await api.guests.getBySlug(target);
+                            if (res && res.id && !res.error) resGuest = res;
+                        } catch (e) {}
+                    }
+                    
+                    if (!resGuest) {
+                        try {
+                            const res = await api.guests.get(target);
+                            if (res && res.id && !res.error) resGuest = res;
+                        } catch (e) {}
+                    }
+
+                    if (resGuest) {
+                        console.log('[PreviewPage] Success: Identity resolved', resGuest.name);
+                        resolvedGuest = {
+                            ...resGuest,
+                            id: resGuest.id || resGuest.guest_id,
+                            name: resGuest.name,
+                            check_in_code: resGuest.check_in_code || resGuest.checkInCode || resGuest.code || '',
+                            slug: resGuest.slug,
+                            tier: resGuest.tier,
+                            table_number: resGuest.table_number || resGuest.tableNumber || '',
+                            guest_count: resGuest.guest_count || resGuest.guestCount || 1
+                        };
+                    } else {
+                        console.warn('[PreviewPage] Notice: Identity resolution returned 404/Empty');
                     }
                 } catch (e) {
-                    console.warn('[PreviewPage] Guest resolution failed or not found:', targetSlug);
+                    console.error('[PreviewPage] Failure: Identity resolution crashed', e);
                 } finally {
                     setIsGuestLoading(false);
                 }
-            } else {
-                useStore.getState().setGuestData(undefined);
             }
+
+            // 2. PREPARE CANVAS CONTEXT
+            const rawSections = Array.isArray(data.sections) ? (data.sections as any[]) : [];
+            const rawLayers = Array.isArray(data.layers) ? (data.layers as Layer[]) : [];
+
+            const validSections = rawSections.map(s => ({
+                ...s,
+                id: s.id || generateId('section'),
+                elements: s.elements || rawLayers.filter((l: any) => l.sectionId === s.id) || []
+            }));
+
+            const currentOrbit = useStore.getState().orbit;
+            const apiOrbit = data.orbit || data.orbit_layers;
+
+            const robustOrbit = {
+                left: {
+                    backgroundColor: apiOrbit?.left?.backgroundColor || currentOrbit.left.backgroundColor || 'transparent',
+                    backgroundUrl: apiOrbit?.left?.backgroundUrl || currentOrbit.left.backgroundUrl,
+                    isVisible: apiOrbit?.left?.isVisible ?? currentOrbit.left.isVisible,
+                    elements: Array.isArray(apiOrbit?.left?.elements) ? apiOrbit.left.elements : []
+                },
+                right: {
+                    backgroundColor: apiOrbit?.right?.backgroundColor || currentOrbit.right.backgroundColor || 'transparent',
+                    backgroundUrl: apiOrbit?.right?.backgroundUrl || currentOrbit.right.backgroundUrl,
+                    isVisible: apiOrbit?.right?.isVisible ?? currentOrbit.right.isVisible,
+                    elements: Array.isArray(apiOrbit?.right?.elements) ? apiOrbit.right.elements : []
+                }
+            };
+
+            // 3. ATOMIC STATE UPDATE
+            // Standard: We inject guestData AT THE SAME TIME as the invitation data
+            // to ensure UI components have access to all state during the first render pass.
+            useStore.setState(state => ({
+                ...state,
+                sections: validSections,
+                layers: rawLayers,
+                zoom: data.zoom || 1,
+                pan: data.pan || { x: 0, y: 0 },
+                slug: data.slug || '',
+                projectName: data.name || '',
+                activeSectionId: validSections[0]?.id || null,
+                orbit: robustOrbit,
+                music: data.music || null,
+                id: data.id,
+                guestData: resolvedGuest, // INJECTED ATOMICALLY
+                selectedLayerId: null,
+                hasHydrated: true,
+                isTemplate: source === 'templates',
+                templateType: data.type === 'display' ? 'display' : 'invitation'
+            }));
+
         };
 
-        resolveGuest();
-
-        console.log(`[PreviewPage] Hydrating from ${source}:`, data.id);
-
-        useStore.setState({ templateType: 'invitation' });
-
-        const rawSections = Array.isArray(data.sections) ? (data.sections as any[]) : [];
-        const rawLayers = Array.isArray(data.layers) ? (data.layers as Layer[]) : [];
-
-        const validSections = rawSections.map(s => ({
-            ...s,
-            id: s.id || generateId('section'),
-            elements: s.elements || rawLayers.filter((l: any) => l.sectionId === s.id) || []
-        }));
-
-        const currentOrbit = useStore.getState().orbit;
-        const hasOrbit = data.orbit?.left?.elements?.length > 0 || data.orbit?.right?.elements?.length > 0;
-        const hasOrbitLayers = data.orbit_layers?.left?.elements?.length > 0 || data.orbit_layers?.right?.elements?.length > 0;
-
-        const apiOrbit = hasOrbit ? data.orbit : (hasOrbitLayers ? data.orbit_layers : (data.orbit || data.orbit_layers));
-
-        const robustOrbit = {
-            left: {
-                backgroundColor: apiOrbit?.left?.backgroundColor || currentOrbit.left.backgroundColor || 'transparent',
-                backgroundUrl: apiOrbit?.left?.backgroundUrl || currentOrbit.left.backgroundUrl,
-                isVisible: apiOrbit?.left?.isVisible ?? currentOrbit.left.isVisible,
-                elements: Array.isArray(apiOrbit?.left?.elements) ? apiOrbit.left.elements : []
-            },
-            right: {
-                backgroundColor: apiOrbit?.right?.backgroundColor || currentOrbit.right.backgroundColor || 'transparent',
-                backgroundUrl: apiOrbit?.right?.backgroundUrl || currentOrbit.right.backgroundUrl,
-                isVisible: apiOrbit?.right?.isVisible ?? currentOrbit.right.isVisible,
-                elements: Array.isArray(apiOrbit?.right?.elements) ? apiOrbit.right.elements : []
-            }
-        };
-
-        useStore.setState({
-            sections: validSections,
-            layers: rawLayers,
-            zoom: data.zoom || 1,
-            pan: data.pan || { x: 0, y: 0 },
-            slug: data.slug || '',
-            projectName: data.name || '',
-            activeSectionId: validSections[0]?.id || null,
-            orbit: robustOrbit,
-            music: data.music || null,
-            id: data.id,
-            selectedLayerId: null,
-            hasHydrated: true,
-            isTemplate: source === 'templates',
-            templateType: data.type === 'display' ? 'display' : 'invitation'
-        });
-    }, [slug, guestSlug, previewResponse, isError, navigate]);
+        initializePreview();
+    }, [slug, previewResponse, isError, navigate, pathGuestSlug, location.search]);
 
     const isTemplate = previewResponse?.source === 'templates';
     const invitationData = previewResponse?.data;
     const guestData = useStore(state => state.guestData);
 
-    // GHOST V4.0: UNICORN OG ENGINE
+    // DYNAMIC SEO & OG IMAGE
     const ogSettings = invitationData?.og_settings ? (typeof invitationData.og_settings === 'string' ? JSON.parse(invitationData.og_settings) : invitationData.og_settings) : null;
     let dynamicOgImage = invitationData?.og_image || invitationData?.thumbnail_url;
 
@@ -154,33 +168,27 @@ export const PreviewPage: React.FC = () => {
             time: ogSettings.time || '',
             loc: ogSettings.loc || '',
             to: guestData?.name || 'Bapak/Ibu/Saudara/i',
-            qr: `https://tamuu.id/${slug}`
+            qr: pathGuestSlug ? `https://tamuu.id/${slug}/${pathGuestSlug}` : `https://tamuu.id/${slug}`
         });
         dynamicOgImage = `${baseUrl}?${params.toString()}`;
     }
 
-    // DYNAMIC SEO: Personalize social preview if guest exists
     const baseTitle = (invitationData?.seo_title || invitationData?.name || slug || 'Invitation').toString().toUpperCase();
     const seoTitle = guestData?.name ? `${baseTitle} - KHUSUS UNTUK ${guestData.name.toUpperCase()}` : baseTitle;
-    const seoDescription = invitationData?.seo_description || (isTemplate
-        ? 'Premium Wedding Invitation Templates by Tamuu'
-        : 'Exclusive Digital Invitation - Private Access');
-
+    
     useSEO({
         title: seoTitle,
-        description: seoDescription,
+        description: invitationData?.seo_description || 'Exclusive Digital Invitation',
         image: dynamicOgImage,
         noindex: !isTemplate
     });
 
     const isLoading = (slug !== 'draft' && isQueryLoading) || isGuestLoading;
 
-    if (isLoading) {
-        return <PremiumLoader />;
-    }
+    if (isLoading) return <PremiumLoader />;
 
     if (!previewResponse && slug !== 'draft') {
-        return <div className="min-h-screen bg-black flex items-center justify-center text-white/20 uppercase tracking-widest text-xs">Resolving Invitation...</div>;
+        return <div className="min-h-screen bg-black flex items-center justify-center text-white/20 uppercase tracking-widest text-xs">Synchronizing...</div>;
     }
 
     return (

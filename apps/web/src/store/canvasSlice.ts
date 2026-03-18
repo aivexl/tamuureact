@@ -54,7 +54,7 @@ export interface CanvasState {
     setGreetingName: (name: string | undefined) => void;
     setGreetingTier: (tier: string | undefined) => void;
     hydrateProject: (data: any) => void;
-    resetStore: () => void;
+    resetCanvas: () => void;
 }
 
 export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
@@ -104,7 +104,7 @@ export const createCanvasSlice: StateCreator<CanvasState> = (set) => ({
         isPublished: !!data.is_published,
         isTemplate: false
     }),
-    resetStore: () => set({
+    resetCanvas: () => set({
         zoom: 1,
         pan: { x: 0, y: 0 },
         slug: '',

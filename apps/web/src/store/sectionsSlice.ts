@@ -146,7 +146,6 @@ export interface SectionsState {
     setActiveSection: (id: string | null) => void;
     duplicateSection: (id: string) => void;
     updateSectionsBatch: (sections: Section[]) => void;
-    resetSections: () => void;
     updateSectionElementsBatch: (sectionId: string, elements: Layer[]) => void;
     copySectionElementsTo: (sourceSectionId: string, targetSectionId: string) => void;
     clearSectionContent: (sectionId: string) => void;
@@ -179,6 +178,7 @@ export interface SectionsState {
     // Bulk setters for API hydration
     setSections: (sections: Section[]) => void;
     setOrbitLayers: (orbit: OrbitState | Record<string, any>) => void;
+    resetSections: () => void;
 }
 
 
@@ -220,112 +220,10 @@ const createDefaultSections = (): Section[] => [
                     textAlign: 'center',
                     color: '#ffffff'
                 }
-            },
-            {
-                id: 'demo-countdown-1',
-                type: 'countdown',
-                name: 'Countdown Timer',
-                x: 57,
-                y: 280,
-                width: 300,
-                height: 80,
-                rotation: 0,
-                scale: 1,
-                opacity: 1,
-                zIndex: 11,
-                isLocked: false,
-                isVisible: true,
-                animation: { entrance: 'slide-up' },
-                countdownConfig: {
-                    targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                    variant: 'classic',
-                    showDays: true,
-                    showHours: true,
-                    showMinutes: true,
-                    showSeconds: true,
-                    showLabels: true,
-                    showSeparators: true,
-                    labels: { days: 'Hari', hours: 'Jam', minutes: 'Menit', seconds: 'Detik' },
-                    separatorStyle: 'colon',
-                    backgroundColor: 'transparent',
-                    textColor: '#ffffff',
-                    accentColor: '#BFA181',
-                    labelColor: '#999999',
-                    fontFamily: 'DM Serif Display',
-                    fontSize: 32,
-                    fontWeight: 'bold',
-                    borderRadius: 8,
-                    boxPadding: 12,
-                    boxGap: 12,
-                    boxShadow: 'none',
-                    borderStyle: 'none',
-                    animateOnChange: true,
-                    animationType: 'fade',
-                }
-            },
-            {
-                id: 'demo-button-1',
-                type: 'button',
-                name: 'Open Invitation',
-                x: 107,
-                y: 500,
-                width: 200,
-                height: 50,
-                rotation: 0,
-                scale: 1,
-                opacity: 1,
-                zIndex: 12,
-                isLocked: false,
-                isVisible: true,
-                animation: { entrance: 'pop-in', looping: 'pulse' },
-                buttonConfig: {
-                    buttonText: 'Buka Undangan',
-                    buttonColor: '#BFA181',
-                    textColor: '#1a1a1a',
-                    buttonStyle: 'elegant',
-                    buttonShape: 'pill',
-                    showIcon: true,
-                    iconName: 'MailOpen'
-                }
             }
         ]
-    },
-    {
-        id: 'section-couple',
-        key: 'couple',
-        title: 'Couple',
-        order: 1,
-        isVisible: true,
-        backgroundColor: '#0a0a0a',
-        overlayOpacity: 0,
-        animation: 'slide-up',
-        elements: []
-    },
-    {
-        id: 'section-event',
-        key: 'event',
-        title: 'Event',
-        order: 2,
-        isVisible: true,
-        backgroundColor: '#0a0a0a',
-        overlayOpacity: 0,
-        animation: 'slide-up',
-        elements: []
     }
 ];
-
-const createDefaultOrbit = (): OrbitState => ({
-    left: {
-        backgroundColor: 'transparent',
-        isVisible: true,
-        elements: []
-    },
-    right: {
-        backgroundColor: 'transparent',
-        isVisible: true,
-        elements: []
-    }
-});
 
 // ============================================
 // SLICE IMPLEMENTATION
@@ -333,15 +231,17 @@ const createDefaultOrbit = (): OrbitState => ({
 export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
     sections: createDefaultSections(),
     activeSectionId: 'section-opening',
-    orbit: createDefaultOrbit(),
     activeCanvas: 'main',
+    orbit: {
+        left: { backgroundColor: 'transparent', isVisible: true, elements: [] },
+        right: { backgroundColor: 'transparent', isVisible: true, elements: [] }
+    },
 
-    setActiveCanvas: (context) => set({ activeCanvas: context }),
+    setActiveCanvas: (activeCanvas) => set({ activeCanvas }),
 
-    // Bulk setters for API hydration
     setSections: (sections) => set({ sections }),
 
-    setOrbitLayers: (orbit) => set((state) => ({
+    setOrbitLayers: (orbit: any) => set((state) => ({
         orbit: {
             left: {
                 backgroundColor: orbit?.left?.backgroundColor || state.orbit.left.backgroundColor,
@@ -559,13 +459,11 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
     })),
 
     reorderSections: (startIndex, endIndex) => set((state) => {
-        // CTO FIX: Reordering must operate on the CURRENT SORTED sequence
         const sorted = [...state.sections].sort((a, b) => a.order - b.order);
         const result = Array.from(sorted);
         const [removed] = result.splice(startIndex, 1);
         result.splice(endIndex, 0, removed);
 
-        // Map back to global state with normalized orders
         const updatedSections = state.sections.map(s => {
             const newIndex = result.findIndex(res => res.id === s.id);
             return { ...s, order: newIndex };
@@ -600,8 +498,6 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
     }),
 
     updateSectionsBatch: (sections) => set({ sections }),
-
-    resetSections: () => set({ sections: [], activeSectionId: null }),
 
     updateSectionElementsBatch: (sectionId, elements) => set((state) => ({
         sections: state.sections.map((s) =>
@@ -660,7 +556,6 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
         sections: state.sections.map((s) => {
             if (s.id !== sectionId) return s;
 
-            // CTO AUTO-ORDER: Calculate next highest zIndex
             const maxZ = s.elements.length > 0
                 ? Math.max(...s.elements.map(el => el.zIndex || 0))
                 : 10;
@@ -727,20 +622,14 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
         const originalElement = section.elements[originalElementIdx];
         const seq = originalElement.sequence || { startTime: 0, duration: 2000 };
 
-        // Ensure split time is within the bounds of this element's sequence
         const elStart = seq.startTime || 0;
         const elDuration = seq.duration || 2000;
         const elEnd = elStart + elDuration;
 
-        if (splitTimeMs <= elStart || splitTimeMs >= elEnd) return state; // Invalid split point
+        if (splitTimeMs <= elStart || splitTimeMs >= elEnd) return state; 
 
-        // 1. Modify Original Element (A) => ends at splitTimeMs
         const newDurationA = splitTimeMs - elStart;
-
-        // Ensure original element has a trackId attached
         const originalTrackId = originalElement.trackId || originalElement.id;
-
-        // 2. Create Duplicate Element (B) => starts at splitTimeMs
         const newDurationB = elEnd - splitTimeMs;
         const secondElement = sanitizeLayer({
             ...originalElement,
@@ -754,9 +643,7 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
             }
         });
 
-        // 3. Assemble New Elements Array
         const newElements = [...section.elements];
-        // Modify A in place
         newElements[originalElementIdx] = {
             ...originalElement,
             trackId: originalTrackId,
@@ -765,7 +652,6 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
                 duration: newDurationA
             }
         };
-        // Insert B right after A
         newElements.splice(originalElementIdx + 1, 0, secondElement);
 
         return {
@@ -846,7 +732,6 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
         const elementsToAlign = section.elements.filter(el => elementIds.includes(el.id));
         if (elementsToAlign.length === 0) return state;
 
-        // CTO LOGIC: If only one element, align to canvas bounds. Otherwise, align relative to selection.
         const useCanvasBounds = elementIds.length === 1;
         const minX = useCanvasBounds ? 0 : Math.min(...elementsToAlign.map(el => el.x));
         const maxX = useCanvasBounds ? 414 : Math.max(...elementsToAlign.map(el => el.x + (el.width || 0)));
@@ -892,7 +777,6 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
             const totalGap = (endX + (sorted[sorted.length - 1].width || 0)) - startX - totalWidths;
             const gap = totalGap / (sorted.length - 1);
 
-            let currentX = startX;
             return {
                 sections: state.sections.map(s => {
                     if (s.id !== sectionId) return s;
@@ -900,11 +784,7 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
                         ...s,
                         elements: s.elements.map(el => {
                             const sortedIdx = sorted.findIndex(sEl => sEl.id === el.id);
-                            if (sortedIdx === -1) return el;
-                            if (sortedIdx === 0) return el; // Keep first
-                            if (sortedIdx === sorted.length - 1) return el; // Keep last
-
-                            // Calculate proper distribution
+                            if (sortedIdx === -1 || sortedIdx === 0 || sortedIdx === sorted.length - 1) return el;
                             const prevElementsWidth = sorted.slice(0, sortedIdx).reduce((sum, e) => sum + (e.width || 0), 0);
                             return { ...el, x: startX + prevElementsWidth + (gap * sortedIdx) };
                         })
@@ -926,10 +806,7 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
                         ...s,
                         elements: s.elements.map(el => {
                             const sortedIdx = sorted.findIndex(sEl => sEl.id === el.id);
-                            if (sortedIdx === -1) return el;
-                            if (sortedIdx === 0) return el;
-                            if (sortedIdx === sorted.length - 1) return el;
-
+                            if (sortedIdx === -1 || sortedIdx === 0 || sortedIdx === sorted.length - 1) return el;
                             const prevElementsHeight = sorted.slice(0, sortedIdx).reduce((sum, e) => sum + (e.height || 0), 0);
                             return { ...el, y: startY + prevElementsHeight + (gap * sortedIdx) };
                         })
@@ -972,7 +849,6 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
         const elementsToAlign = orbitCanvas.elements.filter(el => elementIds.includes(el.id));
         if (elementsToAlign.length === 0) return state;
 
-        // CTO LOGIC: If only one element, align to canvas bounds (800x896 for Orbit). 
         const useCanvasBounds = elementIds.length === 1;
         const minX = useCanvasBounds ? 0 : Math.min(...elementsToAlign.map(el => el.x));
         const maxX = useCanvasBounds ? 800 : Math.max(...elementsToAlign.map(el => el.x + (el.width || 0)));
@@ -1096,29 +972,21 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
         const current = section.elements.find(el => el.id === elementId);
         if (!current) return {};
 
-        // Spatial Heuristic: Find the best target above this element
         const candidates = section.elements.filter(el => {
             if (el.id === elementId) return false;
-
-            // Must be above the current element (bottom of candidate < top of current + small buffer)
             const isAbove = (el.y + (el.height || 0)) <= (current.y + 10);
             if (!isAbove) return false;
-
-            // Must have significant horizontal overlap
             const currentLeft = current.x;
             const currentRight = current.x + (current.width || 100);
             const elLeft = el.x;
             const elRight = el.x + (el.width || 100);
-
             const overlap = Math.min(currentRight, elRight) - Math.max(currentLeft, elLeft);
             const minWidth = Math.min(current.width || 100, el.width || 100);
-
-            return overlap > (minWidth * 0.2); // At least 20% overlap
+            return overlap > (minWidth * 0.2); 
         });
 
         if (candidates.length === 0) return {};
 
-        // Sort by visual distance (closeness of bottom of target to top of current)
         candidates.sort((a, b) => {
             const distA = current.y - (a.y + (a.height || 0));
             const distB = current.y - (b.y + (b.height || 0));
@@ -1137,10 +1005,9 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
                             el.id === elementId
                                 ? {
                                     ...el,
-                                    // AUTO-UX: Text should wrap to grow vertically for smart relative shifting
                                     ...(el.type === 'text' ? {
                                         width: 380,
-                                        x: 17, // (414 - 380) / 2 Center
+                                        x: 17, 
                                         ...(el.textStyle ? { textStyle: { ...el.textStyle, multiline: true } } : {})
                                     } : {}),
                                     anchoring: {
@@ -1156,5 +1023,14 @@ export const createSectionsSlice: StateCreator<SectionsState> = (set, get) => ({
                     : s
             )
         };
-    })
+    }),
+    resetSections: () => set(() => ({
+        sections: [],
+        activeSectionId: null,
+        activeCanvas: 'main',
+        orbit: {
+            left: { backgroundColor: 'transparent', isVisible: true, elements: [] },
+            right: { backgroundColor: 'transparent', isVisible: true, elements: [] }
+        }
+    }))
 });

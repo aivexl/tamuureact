@@ -4117,7 +4117,7 @@ t.*,
             }
 
             // [NEW] Resolve Guest by Slug (for Dynamic Injection)
-            if (path.startsWith('/api/guests/by-slug/') && method === 'GET') {
+            if ((path.startsWith('/api/guests/by-slug/') || path.startsWith('/api/guests/slug/')) && method === 'GET') {
                 const slug = path.split('/').pop();
                 const guest = await env.DB.prepare('SELECT * FROM guests WHERE slug = ?').bind(slug).first();
                 if (!guest) return json({ error: 'Guest not found' }, { ...corsHeaders, status: 404 });

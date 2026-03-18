@@ -1011,6 +1011,7 @@ export interface LayersState {
     updateElementDimensions: (id: string, width: number, height: number) => void;
 
     resetInteractions: () => void; // CTO: Clear all interaction states synchronously
+    resetLayers: () => void;
 }
 
 // ============================================
@@ -1414,6 +1415,19 @@ export const createLayersSlice: StateCreator<LayersState> = (set, get) => ({
         greetingName: '',
         activeEffect: 'none',
         activeEffects: [],
+        lastInteractionId: 0,
+        interactionNonce: 0
+    })),
+    resetLayers: () => set(() => ({
+        layers: [],
+        selectedLayerId: null,
+        selectedLayerIds: [],
+        clipboard: null,
+        elementDimensions: {},
+        activeEffect: 'none',
+        activeEffects: [],
+        greetingName: '',
+        greetingTier: undefined,
         lastInteractionId: 0,
         interactionNonce: 0
     }))
