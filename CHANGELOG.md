@@ -7,6 +7,8 @@
     - **Optimized Layout**: Moved the scanner and result card higher up the page for better ergonomics, using high-end spacing and a minimalist header.
     - **Friendly Indonesian UX**: Translated all scanner UI elements into basic, friendly Indonesian (e.g., "Pindai QR", "Buka Kamera").
     - **Refined Scan Box**: Redesigned the QR scan area with a cleaner rounded-2xl geometry and stylistic corner accents to prevent clipping.
+    - **Header Responsiveness**: Optimized the scanner header with fluid spacing and truncation to prevent element overlapping on mobile devices.
+    - **Visual Cleanup**: Removed redundant "Registry System" labels and the green status bar from the guest card for a cleaner, high-fidelity look.
 - **Enhanced Bluetooth Reliability**: Broadened the Bluetooth device discovery filters to support a wider range of thermal printer chipsets, improving discovery speed and connection stability.
 
 ### Fixed
