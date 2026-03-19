@@ -49,18 +49,13 @@ export const GuestScannerPage: React.FC = () => {
         } catch (e) {}
     };
 
-    // Auto-reset timer for receipt
-    useEffect(() => {
-        if (showReceipt) {
-            const timer = setTimeout(() => {
-                setShowReceipt(false);
-                setLastGuest(null);
-                setCheckInStatus(null);
-                startScanner(true);
-            }, 4000);
-            return () => clearTimeout(timer);
-        }
-    }, [showReceipt]);
+    // Manual reset for receipt
+    const closeReceipt = () => {
+        setShowReceipt(false);
+        setLastGuest(null);
+        setCheckInStatus(null);
+        startScanner(true);
+    };
 
     useEffect(() => {
         const autoInitialize = async () => {
@@ -267,6 +262,7 @@ export const GuestScannerPage: React.FC = () => {
                     isVisible={showReceipt} 
                     guest={lastGuest} 
                     status={checkInStatus as any} 
+                    onClose={closeReceipt}
                 />
 
                 {error && (

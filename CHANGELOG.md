@@ -1,5 +1,61 @@
 # Tamuu Changelog
 
+## [0.9.19] - 2026-03-18
+### Added
+- **Slug-Based Identity Protocol (v5.0)**: Transitioned all guest sharing and identification links to a professional, brand-aligned format.
+    - **URL Architecture**: All WhatsApp share links and QR codes now use `https://tamuu.id/{invitation_slug}/{guest_slug}-{short_code}`, enhancing trust and brand recognition.
+    - **Dynamic Domain Resolution**: Integrated `getPublicDomain()` to ensure link reliability across production, staging, and local environments.
+- **Enterprise Digital Card Rendering**: Redesigned the digital invitation card for high-fidelity information density.
+    - **Zero-Cutoff Typography**: Implemented `break-words` and `max-h-[3.6em]` for guest names, ensuring long names wrap elegantly across up to 3 lines without truncation.
+    - **Identity Verification**: Added the short guest code (`ID: {code}`) directly below the name with precisely synchronized monochrome typography.
+    - **Integrated Button Lifecycle**: Re-engineered the "Unduh Kartu Gambar" button with a cyclic state machine: `Idle` -> `Generating` (PremiumLoader) -> `Success` (✅ BERHASIL) -> `Auto-Reset`.
+
+## [0.9.18] - 2026-03-18
+### Added
+- **Thermal Receipt Precision (v4.0)**: Enhanced the digital receipt with deeper identification and improved interactive feedback.
+    - **Guest ID Inclusion**: Added "ID Tamu" clearly positioned below the Guest Name for absolute verification.
+    - **Cyclic Download UX**: The "Simpan Bukti" button now features an integrated lifecycle: `PremiumLoader` during processing -> `Success Checkmark` upon completion -> Automated reset to original state.
+    - **Header Branding**: Replaced the "Auto-Toggle" badge with the official Tamuu logo for a more cohesive, enterprise-standard header.
+- **Visual Polish**: Refined the monochrome receipt typography and spacing for better scannability.
+
+## [0.9.17] - 2026-03-18
+### Added
+- **Minimalist Thermal Receipt (Monochrome v3)**: Redesigned the digital receipt for professional clarity and compatibility with physical thermal printer aesthetics.
+    - **Monochrome Visuals**: Removed all UI colors in favor of a high-contrast black-on-white text-only design.
+    - **Indonesian Localization**: Translated all receipt labels to "Nama Tamu", "Tier", "Meja", "Jam Masuk", and "Jam Keluar".
+    - **Brand Integration**: Added the official Tamuu logo to the top of the receipt in a monochrome format.
+    - **Operational Clarity**: Added a standard size indicator ("Ukuran Standar Kertas Thermal 57mm") to guide operators.
+    - **UI Optimization**: Removed decorative background blocks and success overlays for a direct, information-first layout.
+    - **Atomic Saving**: Moved the saving state directly into the "Simpan Bukti" button, eliminating redundant loading overlays.
+
+## [0.9.16] - 2026-03-18
+### Added
+- **High-Fidelity Thermal Receipt (Enterprise v2)**: Completely redesigned the check-in/check-out feedback as a persistent digital receipt.
+    - **Dual Timestamp Tracking**: Added dedicated rows for "Entry Time" (Check-In) and "Exit Time" (Check-Out) with status-aware highlighting.
+    - **High-Res Export Engine**: Integrated a "Download Bukti" button using `html2canvas` at 3x scale for crystal-clear PNG receipts.
+    - **Premium UX Feedback**: Added `PremiumLoader` during receipt generation and a success checklist animation (✅) upon successful download.
+    - **Visual Polish**: Enhanced the "torn-edge" paper aesthetic with a decorative barcode and cleaner enterprise typography.
+- **Manual Operational Control**: Shifted the scanner feedback from automatic to manual for higher reliability in busy checkpoints.
+    - **Persistent Feedback**: The success receipt now remains visible until the operator manually chooses to "Kembali ke Scanner" or "Selesai".
+    - **Zero-Timeout Workflow**: Removed the 4-second auto-reset timer to ensure operators have sufficient time to verify guest data and download receipts.
+
+## [0.9.15] - 2026-03-18
+### Added
+- **Guest Smart Toggle System**: Re-engineered the attendance lifecycle with an automated state machine.
+    - **Intelligent API Pipeline**: Unified check-in and check-out into a single idempotent `/api/guests/check-in` endpoint.
+    - **Automated State Transitions**: Scan 1 automatically triggers "Check-In", Scan 2 triggers "Check-Out", and Scan 3+ remains persistent "Checked-Out".
+    - **Thermal Receipt Feedback**: Introduced a high-fidelity `ThermalReceipt` UI component that mimics physical printer output with a torn-edge aesthetic and success ✅ animations.
+- **Enterprise Scanner Automation**: Refactored `GuestScannerPage` for high-throughput checkpoint operations.
+    - **Zero-Touch Workflow**: Removed manual toggle buttons in favor of automated API-driven state detection.
+    - **Auto-Reset Loop**: Implemented a 4-second feedback window before automatically returning to active scanning mode.
+- **Universal Test Infrastructure**: Migrated the legacy test environment to a modern, high-performance stack.
+    - **Vitest & JSDOM Integration**: Configured a unified test runner with full React DOM support.
+    - **ResizeObserver Polyfill**: Patched JSDOM limitations to support modern responsive UI components during testing.
+
+### Fixed
+- **Invitation Identity Resolution**: Resolved "Broken Link" issues by updating `PreviewPage` to correctly resolve guest slugs scoped to their specific invitation ID.
+- **TypeScript Build Stability**: Corrected `globalThis` scope errors and import interop flags to ensure 100% build-time verification.
+
 ## [0.9.14] - 2026-03-18
 ### Added
 - **Clean Light Enterprise UI (Apple Standard)**: Redesigned the `GuestScannerPage` with a premium, minimalist visual language.
