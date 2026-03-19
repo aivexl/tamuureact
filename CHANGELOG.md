@@ -3,11 +3,11 @@
 ## [0.9.19] - 2026-03-18
 ### Added
 - **Slug-Based Identity Protocol (v5.0)**: Transitioned all guest sharing and identification links to a professional, brand-aligned format.
-    - **URL Architecture**: All WhatsApp share links and QR codes now use `https://tamuu.id/{invitation_slug}/{guest_slug}-{short_code}`, enhancing trust and brand recognition.
+    - **URL Architecture**: All WhatsApp share links and QR codes now use `https://tamuu.id/{invitation_slug}/{guest_slug}`, enhancing trust and brand recognition. Fixed a redundancy where the short code was being appended twice.
     - **Dynamic Domain Resolution**: Integrated `getPublicDomain()` to ensure link reliability across production, staging, and local environments.
 - **Enterprise Digital Card Rendering**: Redesigned the digital invitation card for high-fidelity information density.
     - **Zero-Cutoff Typography**: Implemented `break-words` and `max-h-[3.6em]` for guest names, ensuring long names wrap elegantly across up to 3 lines without truncation.
-    - **Identity Verification**: Added the short guest code (`ID: {code}`) directly below the name with precisely synchronized monochrome typography.
+    - **Identity Verification**: Added the short guest code (`ID: {code}`) directly below the name with precisely synchronized monochrome typography (matching "Tier" style).
     - **Integrated Button Lifecycle**: Re-engineered the "Unduh Kartu Gambar" button with a cyclic state machine: `Idle` -> `Generating` (PremiumLoader) -> `Success` (✅ BERHASIL) -> `Auto-Reset`.
 
 ## [0.9.18] - 2026-03-18
