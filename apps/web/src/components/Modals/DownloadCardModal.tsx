@@ -185,13 +185,13 @@ export const DownloadCardModal: React.FC<DownloadCardModalProps> = ({
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
                                             exit={{ opacity: 0 }}
-                                            className="absolute inset-0 bg-emerald-500/90 flex flex-col items-center justify-center text-white p-6 text-center"
+                                            className="absolute inset-0 bg-green-500/90 flex flex-col items-center justify-center text-white p-6 text-center"
                                         >
                                             <m.div
                                                 initial={{ scale: 0 }}
                                                 animate={{ scale: 1 }}
                                                 transition={{ type: "spring", damping: 12 }}
-                                                className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-emerald-500 mb-4 shadow-xl"
+                                                className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-green-500 mb-4 shadow-xl"
                                             >
                                                 <Check size={40} strokeWidth={4} />
                                             </m.div>
@@ -213,9 +213,9 @@ export const DownloadCardModal: React.FC<DownloadCardModalProps> = ({
                                 onClick={handleDownload}
                                 disabled={status !== 'idle'}
                                 className={`
-                                    w-full h-16 rounded-2xl flex items-center justify-center gap-3 transition-all duration-500 relative overflow-hidden
+                                    w-full h-16 rounded-2xl flex items-center justify-center gap-3 transition-all duration-500 relative overflow-hidden text-white
                                     ${status === 'downloading' ? 'bg-slate-900 cursor-wait' : ''}
-                                    ${status === 'success' ? 'bg-emerald-500 shadow-xl shadow-emerald-200' : 'bg-slate-900 hover:bg-black text-white shadow-2xl shadow-indigo-100'}
+                                    ${status === 'success' ? 'bg-green-500 shadow-xl shadow-green-100' : 'bg-slate-900 hover:bg-black shadow-2xl shadow-indigo-100'}
                                     disabled:opacity-100
                                 `}
                             >
@@ -233,7 +233,7 @@ export const DownloadCardModal: React.FC<DownloadCardModalProps> = ({
                                 {status === 'success' && (
                                     <>
                                         <Check size={20} />
-                                        <span className="text-xs font-black uppercase tracking-[0.2em]">Berhasil</span>
+                                        <span className="text-xs font-black uppercase tracking-[0.2em]">BERHASIL</span>
                                     </>
                                 )}
                             </button>
