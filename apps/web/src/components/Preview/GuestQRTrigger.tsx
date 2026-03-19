@@ -17,11 +17,11 @@ export const GuestQRTrigger: React.FC<GuestQRTriggerProps> = ({ onClick, isVisib
             className="fixed left-0 top-1/2 -translate-y-1/2 z-[90000] group"
         >
             <div className="relative flex items-center">
-                {/* Main Tab - Optimized for absolute clarity and "Zero-Blur" professional aesthetic */}
-                <div className="bg-[#111111] border-y border-r border-white/10 px-4 py-6 rounded-r-2xl transition-all duration-300 group-hover:px-6 active:scale-95">
+                {/* Main Tab - Restored original color/blur but optimized for "Zero-Blur" professional shadows */}
+                <div className="bg-white/10 backdrop-blur-xl border-y border-r border-white/20 px-4 py-6 rounded-r-2xl shadow-lg transition-all duration-300 group-hover:bg-white/20 group-hover:px-6 active:scale-95">
                     <div className="flex flex-col items-center gap-2">
                         <QrCode className="w-6 h-6 text-white" />
-                        <span className="[writing-mode:vertical-lr] text-[10px] tracking-[0.3em] uppercase text-white font-black">
+                        <span className="[writing-mode:vertical-lr] text-[10px] tracking-[0.3em] uppercase text-white/70 font-medium">
                             E-Ticket
                         </span>
                     </div>
