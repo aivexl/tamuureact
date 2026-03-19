@@ -10,7 +10,7 @@ interface SEOProps {
 export const useSEO = ({ title, description, image, noindex = false }: SEOProps) => {
     useEffect(() => {
         // Set document title
-        const fullTitle = `${title} | Tamuu`;
+        const fullTitle = `${title} | All-in-One Wedding Platform`;
         if (document.title !== fullTitle) {
             document.title = fullTitle;
         }

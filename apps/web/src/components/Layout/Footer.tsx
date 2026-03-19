@@ -13,7 +13,7 @@ export const Footer: React.FC = () => {
                             <img src="/images/logo-tamuu.webp" alt="Tamuu Logo" className="h-8 sm:h-10 w-auto brightness-0 invert" draggable="false" />
                         </div>
                         <p className="text-slate-300 text-sm leading-relaxed font-medium">
-                            Platform undangan digital tercanggih di Indonesia. Menghadirkan kemewahan dan kemudahan dalam setiap momen berharga Anda.
+                            Tamuu adalah platform all-in-one yang memudahkan Anda mencari vendor pernikahan terbaik sekaligus mengelola undangan digital premium dalam satu platform.
                         </p>
                         <div className="flex items-center gap-4">
                             <a href="#" className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-slate-400 hover:text-[#FFBF00] hover:bg-white/10 transition-all duration-300 border border-white/5" aria-label="Instagram Tamuu">
