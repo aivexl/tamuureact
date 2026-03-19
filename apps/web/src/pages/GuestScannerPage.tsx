@@ -214,8 +214,12 @@ export const GuestScannerPage: React.FC = () => {
                         <p className="text-xs md:text-sm font-black text-[#001F3F] truncate uppercase tracking-wider">Scan Undangan</p>
                     </div>
                 </div>
-                <div className="px-3 py-1 bg-[#FFBF00]/10 border border-[#FFBF00]/20 rounded-full">
-                    <span className="text-[10px] font-black text-[#001F3F] uppercase tracking-widest">Auto-Toggle</span>
+                <div className="flex items-center gap-3">
+                    <img 
+                        src="/images/logo-tamuu-vfinal-v1.webp" 
+                        alt="Tamuu" 
+                        className="h-6 w-auto" 
+                    />
                 </div>
             </header>
 
