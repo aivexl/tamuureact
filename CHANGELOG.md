@@ -1,5 +1,20 @@
 # Tamuu Changelog
 
+## [0.9.21] - 2026-03-18
+### Fixed
+- **PremiumLoader Consistency Engine**: Resolved animation jitter and inconsistency between initial and subsequent loads.
+    - **Stable Reference Architecture**: Moved animation variants and sequence mappings outside the component body to prevent re-renders from resetting the "snake" sequence.
+    - **Explicit State Initialization**: Added a mandatory `initial` state to all loader blocks to ensure smooth transitions on cold mounts.
+    - **Memory Optimization**: Pre-calculated the 4x4 snake grid mapping to reduce CPU overhead during high-frequency hydration events.
+
+## [0.9.20] - 2026-03-18
+### Added
+- **Unified E-Ticket Design (Apple Standard v6.0)**: Redesigned the guest-facing access pass for maximum consistency and enterprise-grade clarity.
+    - **Clean Monochrome Aesthetic**: Transitioned all guest tiers to a pure white, high-fidelity Apple-style card layout.
+    - **Explicit Tier Identification**: Added the guest's tier as a clean, plain text identifier in the top-right corner, opposite the Tamuu logo.
+    - **Zero-Visual-Noise Protocol**: Removed all shimmering effects, conditional backgrounds, and badges for a minimalist, professional look.
+    - **Indonesian Localization**: Synchronized labels to "Nama Tamu", "ID Tamu", "Akses Valid", and "Terverifikasi".
+
 ## [0.9.19] - 2026-03-18
 ### Added
 - **Slug-Based Identity Protocol (v5.0)**: Transitioned all guest sharing and identification links to a professional, brand-aligned format.

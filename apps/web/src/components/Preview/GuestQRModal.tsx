@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { X, User, Ticket, Star, ShieldCheck, Download, CheckCircle2 } from 'lucide-react';
+import { X, User, ShieldCheck, Download, CheckCircle2 } from 'lucide-react';
 import QRCode from 'react-qr-code';
 import html2canvas from 'html2canvas';
 import { PremiumLoader } from '../ui/PremiumLoader';
@@ -22,7 +22,6 @@ export const GuestQRModal: React.FC<GuestQRModalProps> = ({
 }) => {
     const [downloadState, setDownloadState] = useState<'idle' | 'loading' | 'success'>('idle');
     const passRef = useRef<HTMLDivElement>(null);
-    const isVIP = tier === 'vip' || tier === 'vvip';
 
     // RESET STATE ON CLOSE
     useEffect(() => {
@@ -39,7 +38,7 @@ export const GuestQRModal: React.FC<GuestQRModalProps> = ({
             const canvas = await html2canvas(passRef.current, {
                 scale: 3,
                 useCORS: true,
-                backgroundColor: null,
+                backgroundColor: '#FFFFFF',
                 logging: false
             });
             const link = document.createElement('a');
@@ -83,40 +82,32 @@ export const GuestQRModal: React.FC<GuestQRModalProps> = ({
                             <X className="w-6 h-6" />
                         </button>
 
-                        {/* Apple Wallet Style Pass */}
+                        {/* Apple Wallet Style Pass - Unified White Design */}
                         <div 
                             ref={passRef}
-                            className="relative w-full aspect-[3/4.3] flex flex-col overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.8)]"
+                            className="relative w-full aspect-[3/4.3] flex flex-col overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.8)] bg-white"
                             style={{ 
                                 borderRadius: 32,
-                                background: isVIP 
-                                    ? 'linear-gradient(135deg, #0A1128 0%, #1C2541 100%)' 
-                                    : '#FFFFFF',
-                                border: isVIP ? '1px solid rgba(255,191,0,0.4)' : '1px solid rgba(0,0,0,0.08)'
+                                border: '1px solid rgba(0,0,0,0.08)'
                             }}
                         >
-                            {/* VIP Shimmer */}
-                            {isVIP && (
-                                <m.div 
-                                    animate={{ x: ['-100%', '200%'] }}
-                                    transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-                                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12 pointer-events-none"
-                                />
-                            )}
-
                             {/* Pass Header */}
-                            <div className={`p-8 flex justify-between items-start border-b border-dashed ${isVIP ? 'border-white/10' : 'border-black/10'}`}>
-                                <div className="space-y-2">
+                            <div className="p-8 flex justify-between items-center border-b border-dashed border-black/10">
+                                <div className="space-y-1">
                                     <img 
                                         src="/assets/tamuu-logo-header.png" 
-                                        className="h-5 w-auto object-contain block" 
+                                        className="h-5 w-auto object-contain block grayscale brightness-0 opacity-80" 
                                         alt="Tamuu" 
                                     />
-                                    <p className={`text-[9px] font-black uppercase tracking-[0.3em] ${isVIP ? 'text-[#FFBF00]' : 'text-slate-400'}`}>
+                                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">
                                         Kartu Akses Tamu
                                     </p>
                                 </div>
-                                {isVIP && <Star className="w-5 h-5 text-[#FFBF00] fill-[#FFBF00] animate-pulse" />}
+                                
+                                {/* Clean Tier Text (No container/badge/star) */}
+                                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900 opacity-80">
+                                    {tier}
+                                </div>
                             </div>
 
                             {/* Pass Main Body */}
@@ -132,15 +123,15 @@ export const GuestQRModal: React.FC<GuestQRModalProps> = ({
                                 </div>
 
                                 <div className="text-center space-y-3">
-                                    <div className={`flex items-center justify-center gap-2 text-[10px] tracking-[0.25em] uppercase font-black ${isVIP ? 'text-white/40' : 'text-slate-400'}`}>
+                                    <div className="flex items-center justify-center gap-2 text-[10px] tracking-[0.25em] uppercase font-black text-slate-400">
                                         <User className="w-3 h-3" /> Nama Tamu
                                     </div>
-                                    <h3 className={`text-3xl font-black tracking-tighter leading-none ${isVIP ? 'text-white' : 'text-slate-900'}`}>
+                                    <h3 className="text-3xl font-black tracking-tighter leading-none text-slate-900">
                                         {guestName}
                                     </h3>
                                     <div className="flex flex-col items-center mt-6">
-                                        <div className={`text-[8px] font-black uppercase tracking-[0.4em] mb-2 ${isVIP ? 'text-white/20' : 'text-slate-300'}`}>ID Tamu</div>
-                                        <p className={`font-mono text-xs font-black tracking-[0.5em] px-5 py-1.5 rounded-full ${isVIP ? 'bg-white/5 text-[#FFBF00]' : 'bg-slate-100 text-slate-600'}`}>
+                                        <div className="text-[8px] font-black uppercase tracking-[0.4em] mb-2 text-slate-300">ID Tamu</div>
+                                        <p className="font-mono text-xs font-black tracking-[0.5em] px-5 py-1.5 rounded-full bg-slate-100 text-slate-600">
                                             {checkInCode}
                                         </p>
                                     </div>
@@ -148,15 +139,15 @@ export const GuestQRModal: React.FC<GuestQRModalProps> = ({
                             </div>
 
                             {/* Pass Bottom Section */}
-                            <div className={`p-8 mt-auto grid grid-cols-2 gap-4 border-t border-dashed ${isVIP ? 'border-white/10' : 'border-black/10'} bg-black/5`}>
+                            <div className="p-8 mt-auto grid grid-cols-2 gap-4 border-t border-dashed border-black/10 bg-black/5">
                                 <div className="space-y-1.5">
-                                    <span className="text-[8px] font-black uppercase text-white/30 tracking-[0.2em] block">Status</span>
-                                    <span className={`text-[11px] font-bold uppercase flex items-center gap-1.5 ${isVIP ? 'text-[#FFBF00]' : 'text-slate-600'}`}>
+                                    <span className="text-[8px] font-black uppercase text-black/30 tracking-[0.2em] block">Status</span>
+                                    <span className="text-[11px] font-bold uppercase flex items-center gap-1.5 text-slate-600">
                                         <CheckCircle2 className="w-3.5 h-3.5" /> Akses Valid
                                     </span>
                                 </div>
                                 <div className="space-y-1.5 text-right">
-                                    <span className="text-[8px] font-black uppercase text-white/30 tracking-[0.2em] block">Verifikasi</span>
+                                    <span className="text-[8px] font-black uppercase text-black/30 tracking-[0.2em] block">Verifikasi</span>
                                     <span className="text-[11px] font-bold text-emerald-500 uppercase flex items-center justify-end gap-1.5">
                                         <ShieldCheck className="w-3.5 h-3.5" /> Terverifikasi
                                     </span>
@@ -164,8 +155,8 @@ export const GuestQRModal: React.FC<GuestQRModalProps> = ({
                             </div>
 
                             {/* Visual Punch Holes */}
-                            <div className={`absolute left-0 top-[23%] -translate-x-1/2 w-8 h-8 rounded-full ${isVIP ? 'bg-black' : 'bg-black/95'}`} />
-                            <div className={`absolute right-0 top-[23%] translate-x-1/2 w-8 h-8 rounded-full ${isVIP ? 'bg-black' : 'bg-black/95'}`} />
+                            <div className="absolute left-0 top-[23%] -translate-x-1/2 w-8 h-8 rounded-full bg-black/95" />
+                            <div className="absolute right-0 top-[23%] translate-x-1/2 w-8 h-8 rounded-full bg-black/95" />
                         </div>
 
                         {/* Action Buttons */}
