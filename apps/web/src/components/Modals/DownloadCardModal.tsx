@@ -51,7 +51,7 @@ export const DownloadCardModal: React.FC<DownloadCardModalProps> = ({
             setStatus('success');
             setTimeout(() => {
                 setStatus('idle');
-            }, 3000);
+            }, 2000);
         } catch (error) {
             console.error('[Download] Failed:', error);
             setStatus('idle');
@@ -168,11 +168,11 @@ export const DownloadCardModal: React.FC<DownloadCardModalProps> = ({
 
                                     {/* Bottom Section */}
                                     <div className="mt-auto flex flex-col items-start w-full pt-4 border-t border-slate-50">
-                                        <div className="text-[7px] text-black font-bold uppercase tracking-[3px] mb-2 opacity-50">Kepada Yth:</div>
+                                        <div className="text-[7px] text-black font-bold uppercase tracking-[3px] mb-1 opacity-50">Kepada Yth:</div>
                                         <div className="text-[16px] font-black text-black break-words leading-tight max-h-[3.6em] overflow-hidden w-full pr-4 uppercase tracking-tighter">
                                             {guest.name || 'TAMU UNDANGAN'}
                                         </div>
-                                        <div className="text-[10px] font-black text-black uppercase tracking-widest mt-1">
+                                        <div className="text-[10px] font-black text-black uppercase mt-0.5">
                                             ID: {guest.checkInCode || guest.check_in_code}
                                         </div>
                                     </div>
@@ -195,7 +195,7 @@ export const DownloadCardModal: React.FC<DownloadCardModalProps> = ({
                                             >
                                                 <Check size={40} strokeWidth={4} />
                                             </m.div>
-                                            <h4 className="text-xl font-black uppercase tracking-tight">Berhasil!</h4>
+                                            <h4 className="text-xl font-black uppercase tracking-tight">BERHASIL!</h4>
                                             <p className="text-xs font-bold opacity-80 uppercase tracking-widest mt-1">Kartu telah disimpan</p>
                                         </m.div>
                                     )}
@@ -233,7 +233,7 @@ export const DownloadCardModal: React.FC<DownloadCardModalProps> = ({
                                 {status === 'success' && (
                                     <>
                                         <Check size={20} />
-                                        <span className="text-xs font-black uppercase tracking-[0.2em]">Tersimpan</span>
+                                        <span className="text-xs font-black uppercase tracking-[0.2em]">Berhasil</span>
                                     </>
                                 )}
                             </button>
