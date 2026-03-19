@@ -1099,10 +1099,10 @@ export default {
                     // Check if slug is already taken globally
                     const existingSlug = await env.DB.prepare('SELECT id FROM shop_vendors WHERE slug = ?').bind(slug).first();
                     if (existingSlug) {
-                        return json({ error: 'URL Toko sudah digunakan oleh merchant lain.' }, { ...corsHeaders, status: 409 });
+                        return json({ error: 'URL Toko sudah digunakan oleh vendor lain.' }, { ...corsHeaders, status: 409 });
                     }
 
-                    // Check if user is already a merchant
+                    // Check if user is already a vendor
                     const existingVendor = await env.DB.prepare('SELECT id FROM shop_vendors WHERE user_id = ?').bind(user_id).first();
                     if (existingVendor) {
                         return json({ error: 'User ini sudah memiliki toko.' }, { ...corsHeaders, status: 409 });
@@ -1128,7 +1128,7 @@ export default {
                     // CRITICAL: D1 silent failure prevention
                     // If foreign constraints fail, insertResult.changes will be 0 but won't throw exception
                     if (insertResult.meta?.changes === 0) {
-                        throw new Error(`Gagal menyimpan profil merchant ke database. Constraint violation: category_id=${category_id}`);
+                        throw new Error(`Gagal menyimpan profil vendor ke database. Constraint violation: category_id=${category_id}`);
                     }
 
                     // Seed Contact profile with location
@@ -1136,7 +1136,7 @@ export default {
                         `INSERT INTO shop_contacts (vendor_id, kota) VALUES (?, ?)`
                     ).bind(vendorId, kota || '').run();
 
-                    // Mark user global role as merchant if needed (optional syncing)
+                    // Mark user global role as vendor if needed (optional syncing)
                     try {
                         await env.DB.prepare('UPDATE users SET role = ? WHERE id = ?').bind('vendor', user_id).run();
                     } catch (e) { }
@@ -1154,28 +1154,28 @@ export default {
                 if (!userId) return json({ error: 'User ID required' }, { ...corsHeaders, status: 400 });
 
                 try {
-                    const merchant = await env.DB.prepare(
+                    const vendor = await env.DB.prepare(
                         `SELECT m.*, COALESCE(c.nama_kategori, m.category_id) as nama_kategori 
                          FROM shop_vendors m 
                          LEFT JOIN shop_category c ON m.category_id = c.id OR m.category_id = c.nama_kategori 
                          WHERE m.user_id = ?`
                     ).bind(userId).first();
 
-                    if (!merchant) {
+                    if (!vendor) {
                         return json({ isVendor: false }, corsHeaders);
                     }
 
                     // Fetch associated contacts
-                    const contacts = await env.DB.prepare('SELECT * FROM shop_contacts WHERE vendor_id = ?').bind(merchant.id).first();
+                    const contacts = await env.DB.prepare('SELECT * FROM shop_contacts WHERE vendor_id = ?').bind(vendor.id).first();
 
                     // Light analytics pull for the dashboard card
                     const analytics = await env.DB.prepare(
                         "SELECT COUNT(*) as views FROM shop_analytics WHERE vendor_id = ? AND action_type = 'VIEW_PROFILE'"
-                    ).bind(merchant.id).first();
+                    ).bind(vendor.id).first();
 
                     return new Response(JSON.stringify({
                         isVendor: true,
-                        merchant: merchant,
+                        vendor: vendor,
                         contacts: contacts || {},
                         stats: { views: analytics?.views || 0 }
                     }), {
@@ -1190,7 +1190,7 @@ export default {
 
                 } catch (error) {
                     console.error('[Shop] Fetch Vendor Error:', error);
-                    return json({ error: 'Failed to fetch merchant data', code: 'DB_ERROR' }, { ...corsHeaders, status: 500 });
+                    return json({ error: 'Failed to fetch vendor data', code: 'DB_ERROR' }, { ...corsHeaders, status: 500 });
                 }
             }
 
@@ -1224,7 +1224,7 @@ export default {
                     if (slug) {
                         const existingSlug = await env.DB.prepare('SELECT id FROM shop_vendors WHERE slug = ? AND id != ?').bind(slug, vendor_id).first();
                         if (existingSlug) {
-                            return json({ error: 'URL Toko sudah digunakan oleh merchant lain.' }, { ...corsHeaders, status: 409 });
+                            return json({ error: 'URL Toko sudah digunakan oleh vendor lain.' }, { ...corsHeaders, status: 409 });
                         }
                     }
 
@@ -1280,7 +1280,7 @@ export default {
                     if (!vendorId) return json({ error: 'Vendor ID required' }, { ...corsHeaders, status: 400 });
 
                     try {
-                        console.log(`[Shop] Fetching products for merchant: ${vendorId}`);
+                        console.log(`[Shop] Fetching products for vendor: ${vendorId}`);
                         const products = await env.DB.prepare(
                             'SELECT * FROM shop_products WHERE vendor_id = ? ORDER BY created_at DESC'
                         ).bind(vendorId).all();
@@ -1348,7 +1348,7 @@ export default {
                         let productSlug = generateSlug(nama_produk);
                         if (!productSlug) productSlug = productId.substring(0, 8);
 
-                        // Check slug uniqueness within merchant strictly
+                        // Check slug uniqueness within vendor strictly
                         const existingSlug = await env.DB.prepare('SELECT id FROM shop_products WHERE vendor_id = ? AND slug = ?').bind(vendor_id, productSlug).first();
                         if (existingSlug) {
                             return json({ error: `Produk dengan nama serupa "${nama_produk}" sudah ada.` }, { ...corsHeaders, status: 400 });
@@ -1640,7 +1640,7 @@ export default {
                         FROM shop_vendors m
                         LEFT JOIN shop_category c ON m.category_id = c.id
                         LEFT JOIN users u ON m.user_id = u.id
-                        WHERE (m.is_verified = 1 OR u.role = 'admin') AND m.id != 'admin-merchant'
+                        WHERE (m.is_verified = 1 OR u.role = 'admin') AND m.id != 'admin-vendor'
                     `;
 
                     let params = [];
@@ -1657,8 +1657,8 @@ export default {
                     // Priority: Sponsored first, then newest
                     query += ` ORDER BY m.is_sponsored DESC, m.created_at DESC LIMIT 50`;
 
-                    const merchantsRes = await env.DB.prepare(query).bind(...params).all();
-                    return json({ success: true, vendors: merchantsRes.results }, corsHeaders);
+                    const vendorsRes = await env.DB.prepare(query).bind(...params).all();
+                    return json({ success: true, vendors: vendorsRes.results }, corsHeaders);
                 } catch (error) {
                     return json({ error: 'Failed to fetch directory', details: error.message }, { ...corsHeaders, status: 500 });
                 }
@@ -2067,7 +2067,7 @@ export default {
 
                         return json({ success: true }, corsHeaders);
                     } catch (error) {
-                        return json({ error: 'Failed to update merchant', details: error.message }, { ...corsHeaders, status: 500 });
+                        return json({ error: 'Failed to update vendor', details: error.message }, { ...corsHeaders, status: 500 });
                     }
                 }
 
@@ -2083,7 +2083,7 @@ export default {
 
                         return json({ success: true }, corsHeaders);
                     } catch (error) {
-                        return json({ error: 'Failed to delete merchant', details: error.message }, { ...corsHeaders, status: 500 });
+                        return json({ error: 'Failed to delete vendor', details: error.message }, { ...corsHeaders, status: 500 });
                     }
                 }
 
@@ -2092,7 +2092,7 @@ export default {
                         const { id, is_approved, rejection_reason } = await request.json();
                         if (!id) return json({ error: 'ID required' }, { ...corsHeaders, status: 400 });
 
-                        // Get product and merchant info for notification
+                        // Get product and vendor info for notification
                         const product = await env.DB.prepare(`
                             SELECT p.nama_produk, m.user_id 
                             FROM shop_products p
@@ -2118,7 +2118,7 @@ export default {
                         await env.DB.prepare(`
                             INSERT INTO notifications (id, user_id, title, message, type, link)
                             VALUES (?, ?, ?, ?, ?, ?)
-                        `).bind(notifId, product.user_id, title, message, is_approved === 1 ? 'success' : 'error', `/merchant/products`).run();
+                        `).bind(notifId, product.user_id, title, message, is_approved === 1 ? 'success' : 'error', `/vendor/products`).run();
 
                         return json({ success: true }, corsHeaders);
                     } catch (error) {
@@ -2149,8 +2149,8 @@ export default {
                         }
 
                         const productId = crypto.randomUUID();
-                        // Use a dummy merchant ID for admin listings if not provided
-                        const vendorId = body.vendor_id || 'admin-merchant';
+                        // Use a dummy vendor ID for admin listings if not provided
+                        const vendorId = body.vendor_id || 'admin-vendor';
 
                         let slug = generateSlug(finalNama);
                         if (!slug) slug = productId.substring(0, 8);
@@ -2471,8 +2471,8 @@ export default {
                 const user = await verifyToken(authHeader.replace('Bearer ', '').trim(), env);
                 if (!user) return json({ error: 'Invalid token' }, { ...corsHeaders, status: 401 });
 
-                // Identify if user is also a merchant
-                const merchant = await env.DB.prepare('SELECT id FROM shop_vendors WHERE user_id = ?').bind(user.id).first();
+                // Identify if user is also a vendor
+                const vendor = await env.DB.prepare('SELECT id FROM shop_vendors WHERE user_id = ?').bind(user.id).first();
 
                 // GET CONVERSATIONS
                 if (path === '/api/shop/chat/conversations' && method === 'GET') {
@@ -2481,13 +2481,13 @@ export default {
                             SELECT 
                                 c.*, 
                                 u.name as customer_name, u.avatar_url as customer_avatar,
-                                m.nama_toko as merchant_name, m.logo_url as merchant_logo
+                                m.nama_toko as vendor_name, m.logo_url as vendor_logo
                             FROM shop_conversations c
                             JOIN users u ON c.user_id = u.id
                             JOIN shop_vendors m ON c.vendor_id = m.id
                             WHERE c.user_id = ? OR c.vendor_id = ?
                             ORDER BY c.updated_at DESC
-                        `).bind(user.id, merchant?.id || 'none').all();
+                        `).bind(user.id, vendor?.id || 'none').all();
                         
                         return json({ success: true, conversations: results.results }, corsHeaders);
                     } catch (error) {
@@ -2516,22 +2516,22 @@ export default {
                         const { recipient_id, content, type, vendor_id } = await request.json();
                         if (!content) return json({ error: 'Content required' }, { ...corsHeaders, status: 400 });
 
-                        // Recipient can be either a user or a merchant
+                        // Recipient can be either a user or a vendor
                         // Logic: If vendor_id is provided, it's a message to/from a store
                         let conversationId;
                         let targetVendorId = vendor_id;
                         let targetUserId = recipient_id;
 
                         // Auto-resolve conversation or create new
-                        // If caller is merchant, user_id is target. If caller is user, vendor_id is target.
-                        const isVendorSender = merchant && merchant.id === vendor_id;
+                        // If caller is vendor, user_id is target. If caller is user, vendor_id is target.
+                        const isVendorSender = vendor && vendor.id === vendor_id;
                         
                         if (!isVendorSender) {
-                            // User sending to merchant
+                            // User sending to vendor
                             targetUserId = user.id;
                         } else {
                             // Vendor sending to user
-                            targetVendorId = merchant.id;
+                            targetVendorId = vendor.id;
                         }
 
                         const existing = await env.DB.prepare(`
@@ -2579,7 +2579,7 @@ export default {
                 if (path.startsWith('/api/shop/chat/read/') && method === 'PATCH') {
                     const convId = path.split('/').pop();
                     try {
-                        const isVendor = merchant && (await env.DB.prepare('SELECT id FROM shop_conversations WHERE id = ? AND vendor_id = ?').bind(convId, merchant.id).first());
+                        const isVendor = vendor && (await env.DB.prepare('SELECT id FROM shop_conversations WHERE id = ? AND vendor_id = ?').bind(convId, vendor.id).first());
                         const unreadField = isVendor ? 'unread_count_vendor' : 'unread_count_user';
                         
                         await env.DB.prepare(`
@@ -2645,7 +2645,7 @@ export default {
                             SELECT 
                                 c.*, 
                                 u.name as customer_name, u.email as customer_email,
-                                m.nama_toko as merchant_name
+                                m.nama_toko as vendor_name
                             FROM shop_conversations c
                             JOIN users u ON c.user_id = u.id
                             JOIN shop_vendors m ON c.vendor_id = m.id
@@ -2725,7 +2725,7 @@ export default {
                 if (!slug) return json({ error: 'Slug required' }, { ...corsHeaders, status: 400 });
 
                 try {
-                    const merchant = await env.DB.prepare(`
+                    const vendor = await env.DB.prepare(`
                         SELECT m.*, c.nama_kategori, m.kontak_utama,
                         (SELECT AVG(rating) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.vendor_id = m.id) as avg_rating,
                         (SELECT COUNT(*) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.vendor_id = m.id) as review_count
@@ -2734,7 +2734,7 @@ export default {
                         WHERE m.slug = ?
                     `).bind(slug).first();
 
-                    if (!merchant) return json({ error: 'Store not found' }, { ...corsHeaders, status: 404 });
+                    if (!vendor) return json({ error: 'Store not found' }, { ...corsHeaders, status: 404 });
 
                     // Fetch published products
                     const productsRows = await env.DB.prepare(`
@@ -2744,7 +2744,7 @@ export default {
                         FROM shop_products p
                         WHERE p.vendor_id = ? AND p.status = "PUBLISHED" AND p.is_approved = 1 
                         ORDER BY p.created_at DESC
-                    `).bind(merchant.id).all();
+                    `).bind(vendor.id).all();
 
                     const products = productsRows.results;
 
@@ -2766,7 +2766,7 @@ export default {
                     // PRIVACY REDACTION: CURIOSITY GAP
                     // Check if request has a valid session (optional, but for enterprise we check headers)
                     const authHeader = request.headers.get('Authorization');
-                    const contacts = await env.DB.prepare('SELECT * FROM shop_contacts WHERE vendor_id = ?').bind(merchant.id).first();
+                    const contacts = await env.DB.prepare('SELECT * FROM shop_contacts WHERE vendor_id = ?').bind(vendor.id).first();
 
                     const isAuthorized = authHeader && authHeader.length > 20; // Basic check for JWT presence
 
@@ -2780,7 +2780,7 @@ export default {
 
                     return json({
                         success: true,
-                        merchant,
+                        vendor,
                         products: productsWithImages,
                         contacts: redactedContacts
                     }, corsHeaders);
@@ -3051,7 +3051,7 @@ export default {
                     const body = await request.json();
                     const { product_id, user_id, status } = body; // status: 'DRAFT' or 'PUBLISHED'
 
-                    // SECURITY: Verify user owns the product via merchant
+                    // SECURITY: Verify user owns the product via vendor
                     const prod = await env.DB.prepare(`
                         SELECT p.id FROM shop_products p 
                         JOIN shop_vendors m ON p.vendor_id = m.id 

@@ -6,6 +6,10 @@
     - **Rhythmic Continuity**: Integrated `performance.now()` to synchronize all loader instances (CSS and React) to a single absolute global phase.
     - **Zero-Latency Handover**: The transition from the `index.html` splash screen to the hydrated React application is now mathematically identical.
     - **Persistent Flow**: Animation state now persists across navigation events, creating a professional, always-on terminal aesthetic.
+- **Enterprise Data Layer Synchronization**: Finalized the Merchant-to-Vendor transition at the database level.
+    - **RBAC Alignment**: Synchronously updated all user roles from 'merchant' to 'vendor' to ensure seamless authorization.
+    - **Atomic ID Migration**: Performed a zero-downtime atomic rename of the system identifier 'admin-merchant' to 'admin-vendor' across all relational tables.
+    - **Zero-Remnant Standard**: Verified 100% data layer parity through comprehensive post-migration audits.
 
 ## [0.9.21] - 2026-03-18
 ### Fixed
