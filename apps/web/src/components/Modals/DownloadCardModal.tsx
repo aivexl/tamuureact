@@ -168,9 +168,12 @@ export const DownloadCardModal: React.FC<DownloadCardModalProps> = ({
 
                                     {/* Bottom Section */}
                                     <div className="mt-auto flex flex-col items-start w-full pt-4 border-t border-slate-50">
-                                        <div className="text-[7px] text-slate-400 font-bold uppercase tracking-[3px] mb-2 opacity-50">Kepada Yth:</div>
-                                        <div className="text-[16px] font-black text-slate-900 truncate w-full pr-4 uppercase tracking-tighter">
+                                        <div className="text-[7px] text-black font-bold uppercase tracking-[3px] mb-2 opacity-50">Kepada Yth:</div>
+                                        <div className="text-[16px] font-black text-black break-words leading-tight max-h-[3.6em] overflow-hidden w-full pr-4 uppercase tracking-tighter">
                                             {guest.name || 'TAMU UNDANGAN'}
+                                        </div>
+                                        <div className="text-[10px] font-black text-black uppercase tracking-widest mt-1">
+                                            ID: {guest.checkInCode || guest.check_in_code}
                                         </div>
                                     </div>
                                 </div>
