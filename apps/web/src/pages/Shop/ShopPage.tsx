@@ -72,13 +72,13 @@ export const ShopPage: React.FC = () => {
 
     // Queries
     const { data: products = [], isLoading: isLoadingProducts } = useProductDiscovery({
-        category: selectedCategory === 'All' ? undefined : selectedCategory,
+        category: (!selectedCategory || selectedCategory === 'All' || selectedCategory === 'undefined') ? undefined : selectedCategory,
         query: searchQuery,
-        city: selectedCity === 'All' ? undefined : selectedCity
+        city: (!selectedCity || selectedCity === 'All' || selectedCity === 'undefined') ? undefined : selectedCity
     });
 
     const { data: vendorsData, isLoading: isLoadingVendors } = useShopDirectory(
-        selectedCategory,
+        (!selectedCategory || selectedCategory === 'All' || selectedCategory === 'undefined') ? undefined : selectedCategory,
         searchQuery
     );
 

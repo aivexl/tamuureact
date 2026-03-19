@@ -95,6 +95,13 @@ export default {
             warn: (...args) => { if (!isProd) console.warn('[WARN]', ...args); }
         };
 
+        // CTO: Parameter Normalization Helper
+        const getParam = (name) => {
+            const val = url.searchParams.get(name);
+            if (val === 'undefined' || val === 'null' || val === '') return null;
+            return val;
+        };
+
         // Handle preflight
         if (method === 'OPTIONS') {
             return new Response(null, { headers: corsHeaders });
@@ -1629,8 +1636,8 @@ export default {
             // 6. PUBLIC DISCOVERY: Shop Directory (with Sponsored Ads)
             if (path === '/api/shop/directory' && method === 'GET') {
                 try {
-                    const category = url.searchParams.get('category');
-                    const search = url.searchParams.get('q');
+                    const category = getParam('category');
+                    const search = getParam('q');
 
                     let query = `
                         SELECT m.id, m.nama_toko, m.slug, m.logo_url, m.banner_url, m.is_sponsored, m.kota, m.is_landing_featured, m.kontak_utama, c.nama_kategori,
@@ -1658,7 +1665,7 @@ export default {
                     query += ` ORDER BY m.is_sponsored DESC, m.created_at DESC LIMIT 50`;
 
                     const vendorsRes = await env.DB.prepare(query).bind(...params).all();
-                    return json({ success: true, vendors: vendorsRes.results }, corsHeaders);
+                    return json({ success: true, vendors: vendorsRes.results || [] }, corsHeaders);
                 } catch (error) {
                     return json({ error: 'Failed to fetch directory', details: error.message }, { ...corsHeaders, status: 500 });
                 }
@@ -1667,9 +1674,9 @@ export default {
             // 5b. PUBLIC DISCOVERY: All Products (Product-First Discovery)
             if (path === '/api/shop/products/discovery' && method === 'GET') {
                 try {
-                    const category = url.searchParams.get('category');
-                    const search = url.searchParams.get('q');
-                    const city = url.searchParams.get('city');
+                    const category = getParam('category');
+                    const search = getParam('q');
+                    const city = getParam('city');
 
                     let query = `
                         SELECT p.*, m.nama_toko, m.slug as vendor_slug, m.logo_url,
@@ -1707,7 +1714,8 @@ export default {
                     query += ` ORDER BY p.created_at DESC LIMIT 100`;
 
                     const productsRes = await env.DB.prepare(query).bind(...params).all();
-                    const products = productsRes.results;
+                    const products = productsRes.results || [];
+
 
                     // Fetch images for these products
                     const productIds = products.map(p => p.id);
@@ -1715,7 +1723,7 @@ export default {
                     if (productIds.length > 0) {
                         const placeholders = productIds.map(() => '?').join(',');
                         const imagesRes = await env.DB.prepare(`SELECT * FROM shop_product_images WHERE product_id IN (${placeholders}) ORDER BY order_index ASC`).bind(...productIds).all();
-                        productImages = imagesRes.results;
+                        productImages = imagesRes.results || [];
                     }
 
                     const productsWithImages = products.map(p => ({
@@ -1765,7 +1773,7 @@ export default {
                     `;
 
                     let productsRes = await env.DB.prepare(query).all();
-                    let products = productsRes.results;
+                    let products = productsRes.results || [];
 
                     // Fallback for landing-featured if none exist
                     if (path.includes('landing-featured') && products.length === 0) {
@@ -1781,7 +1789,7 @@ export default {
                             ORDER BY RANDOM() LIMIT ${limit}
                         `;
                         productsRes = await env.DB.prepare(fallbackQuery).all();
-                        products = productsRes.results;
+                        products = productsRes.results || [];
                     }
 
                     // Fetch images for these products
@@ -1790,7 +1798,7 @@ export default {
                     if (productIds.length > 0) {
                         const placeholders = productIds.map(() => '?').join(',');
                         const imagesRes = await env.DB.prepare(`SELECT * FROM shop_product_images WHERE product_id IN (${placeholders}) ORDER BY order_index ASC`).bind(...productIds).all();
-                        productImages = imagesRes.results;
+                        productImages = imagesRes.results || [];
                     }
 
                     const productsWithImages = products.map(p => ({
@@ -1847,8 +1855,8 @@ export default {
             // 5e. PUBLIC DISCOVERY: Smart Recommendations
             if (path === '/api/shop/products/recommendations' && method === 'GET') {
                 try {
-                    const productId = url.searchParams.get('product_id');
-                    const category = url.searchParams.get('category');
+                    const productId = getParam('product_id');
+                    const category = getParam('category');
                     const limit = 8;
 
                     // Step 1: Try Same Category (Excluding current product)
