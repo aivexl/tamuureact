@@ -25,11 +25,11 @@ export const useChat = () => {
 
     // Send Message
     const sendMessageMutation = useMutation({
-        mutationFn: (data: { recipient_id?: string; merchant_id?: string; content: string; type?: string }) => 
+        mutationFn: (data: { recipient_id?: string; vendor_id?: string; content: string; type?: string }) => 
             shop.sendMessage(data, token || ''),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ['chat_conversations'] });
-            if (variables.recipient_id || variables.merchant_id) {
+            if (variables.recipient_id || variables.vendor_id) {
                 queryClient.invalidateQueries({ queryKey: ['chat_messages'] });
             }
         }

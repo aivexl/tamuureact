@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/useStore';
-import { useMerchantProfile } from '../../hooks/queries/useShop';
+import { useVendorProfile } from '../../hooks/queries/useShop';
 import { m, AnimatePresence } from 'framer-motion';
 
 // Icons (Lucide-like SVG)
@@ -37,25 +37,25 @@ const ZapIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14.71 12 2.5V11h8l-8 12.5V13H4Z" /></svg>
 );
 
-interface MerchantSidebarProps {
+interface VendorSidebarProps {
     isMobileMenuOpen: boolean;
     setMobileMenuOpen: (open: boolean) => void;
 }
 
-export const MerchantSidebar: React.FC<MerchantSidebarProps> = ({ isMobileMenuOpen, setMobileMenuOpen }) => {
+export const VendorSidebar: React.FC<VendorSidebarProps> = ({ isMobileMenuOpen, setMobileMenuOpen }) => {
     const user = useStore(s => s.user);
-    const { data: merchantData } = useMerchantProfile(user?.id);
+    const { data: vendorData } = useVendorProfile(user?.id);
     const navigate = useNavigate();
 
-    const merchant = merchantData?.merchant;
+    const vendor = vendorData?.vendor;
 
     const navItems = [
-        { label: 'Overview', icon: LayoutDashboardIcon, path: `/store/${merchant?.slug || 'dashboard'}/dashboard`, exact: true },
-        { label: 'Produk/Jasa', icon: PackageIcon, path: `/store/${merchant?.slug || 'dashboard'}/products` },
-        { label: 'Messages', icon: MessageSquareIcon, path: `/store/${merchant?.slug || 'dashboard'}/messages` },
-        { label: 'Ads & Growth', icon: ZapIcon, path: `/store/${merchant?.slug || 'dashboard'}/ads` },
-        { label: 'Analytics Hub', icon: BarChart2Icon, path: `/store/${merchant?.slug || 'dashboard'}/analytics` },
-        { label: 'Shop Settings', icon: SettingsIcon, path: `/store/${merchant?.slug || 'dashboard'}/settings` },
+        { label: 'Overview', icon: LayoutDashboardIcon, path: `/store/${vendor?.slug || 'dashboard'}/dashboard`, exact: true },
+        { label: 'Produk/Jasa', icon: PackageIcon, path: `/store/${vendor?.slug || 'dashboard'}/products` },
+        { label: 'Messages', icon: MessageSquareIcon, path: `/store/${vendor?.slug || 'dashboard'}/messages` },
+        { label: 'Ads & Growth', icon: ZapIcon, path: `/store/${vendor?.slug || 'dashboard'}/ads` },
+        { label: 'Analytics Hub', icon: BarChart2Icon, path: `/store/${vendor?.slug || 'dashboard'}/analytics` },
+        { label: 'Shop Settings', icon: SettingsIcon, path: `/store/${vendor?.slug || 'dashboard'}/settings` },
     ];
 
     const SidebarContent = () => (
@@ -65,14 +65,14 @@ export const MerchantSidebar: React.FC<MerchantSidebarProps> = ({ isMobileMenuOp
                 <div className="flex items-center gap-4 mb-6 relative group">
                     <div className="absolute -inset-1 bg-gradient-to-r from-[#FFBF00] to-amber-600 rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-500"></div>
                     <div className="relative w-14 h-14 rounded-2xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm">
-                        {merchant?.logo_url ? (
-                            <img src={merchant.logo_url} alt="Logo" className="w-full h-full object-cover" />
+                        {vendor?.logo_url ? (
+                            <img src={vendor.logo_url} alt="Logo" className="w-full h-full object-cover" />
                         ) : (
                             <StoreIcon className="w-7 h-7 text-[#0A1128]" />
                         )}
                     </div>
                     <div>
-                        <h2 className="text-base font-black text-[#0A1128] leading-tight break-words truncate max-w-[140px] tracking-tight">{merchant?.nama_toko || 'Merchant Portal'}</h2>
+                        <h2 className="text-base font-black text-[#0A1128] leading-tight break-words truncate max-w-[140px] tracking-tight">{vendor?.nama_toko || 'Vendor Portal'}</h2>
                     </div>
                 </div>
             </div>
@@ -115,7 +115,7 @@ export const MerchantSidebar: React.FC<MerchantSidebarProps> = ({ isMobileMenuOp
             {/* Bottom Actions */}
             <div className="px-4 mt-auto space-y-3">
                 <a
-                    href={`/shop/${merchant?.slug}`}
+                    href={`/shop/${vendor?.slug}`}
                     target="_blank"
                     rel="noreferrer"
                     className="flex items-center justify-between px-6 py-4 rounded-2xl text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:border-[#FFBF00]/30 hover:bg-[#FFBF00]/5 transition-all group"

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { m } from 'framer-motion';
 import { useStore } from '../../store/useStore';
-import { useMerchantProfile, useMerchantAnalytics, useMerchantProducts } from '../../hooks/queries/useShop';
+import { useVendorProfile, useVendorAnalytics, useVendorProducts } from '../../hooks/queries/useShop';
 
 // Icons
 const PackageIcon = ({ className }: { className?: string }) => (
@@ -23,21 +23,21 @@ const DownloadIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
 );
 
-export const MerchantAnalytics: React.FC = () => {
+export const VendorAnalytics: React.FC = () => {
     const user = useStore(s => s.user);
-    const { data: merchantData } = useMerchantProfile(user?.id);
-    const merchantId = merchantData?.merchant?.id;
+    const { data: vendorData } = useVendorProfile(user?.id);
+    const vendorId = vendorData?.vendor?.id;
 
-    const { data: analyticsRes, isLoading } = useMerchantAnalytics(merchantId);
+    const { data: analyticsRes, isLoading } = useVendorAnalytics(vendorId);
 
     const data = analyticsRes || {};
     const totals = data.totals || { profileViews: 0, contactClicks: 0, favorites: 0, productViews: 0 };
     const chartData = data.chartData || [];
 
-    const { data: productsData } = useMerchantProducts(merchantId);
+    const { data: productsData } = useVendorProducts(vendorId);
     const products = productsData?.products || [];
 
-    if (!merchantId) return null;
+    if (!vendorId) return null;
 
     if (isLoading) {
         return (

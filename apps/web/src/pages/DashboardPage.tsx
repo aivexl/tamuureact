@@ -10,7 +10,7 @@ import { useInvitations, Invitation } from '../hooks/queries';
 import { WelcomeDisplaysTab } from '../components/Dashboard/WelcomeDisplaysTab';
 import { BillingHistoryTab } from '../components/Dashboard/BillingHistoryTab';
 import { SubscriptionStatusWidget } from '../components/ui/SubscriptionStatusWidget';
-import { SmartMerchantCard } from '../components/Shop/SmartMerchantCard';
+import { SmartVendorCard } from '../components/Shop/SmartVendorCard';
 import { DashboardQuotaWidget } from '../components/Dashboard/DashboardQuotaWidget';
 import { FeedbackTab } from '../components/Dashboard/FeedbackTab';
 import { WishlistTab } from '../components/Dashboard/WishlistTab';
@@ -356,7 +356,7 @@ export const DashboardPage: React.FC = () => {
                                 </div>
                             </Link>
                             <Link
-                                to="/store/onboarding"
+                                to="/vendor/onboarding"
                                 className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 text-[#0A1128] hover:bg-slate-100 transition-colors"
                             >
                                 <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
@@ -602,9 +602,9 @@ export const DashboardPage: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        {/* TAMUU NEXUS: Shop Merchant Pipeline Entry */}
+                                        {/* TAMUU NEXUS: Shop Vendor Pipeline Entry */}
                                         <div className="pt-2 space-y-6">
-                                            <SmartMerchantCard />
+                                            <SmartVendorCard />
                                             <DashboardQuotaWidget />
                                         </div>
                                     </div>
@@ -701,7 +701,7 @@ export const DashboardPage: React.FC = () => {
                         {/* Messages Tab */}
                         {activeTab === 'messages' && (
                             <m.div key="messages" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
-                                <ChatInterface mode="user" initialMerchantId={searchParams.get('merchantId') || undefined} />
+                                <ChatInterface mode="user" initialVendorId={searchParams.get('vendorId') || undefined} />
                             </m.div>
                         )}
 

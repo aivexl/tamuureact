@@ -23,7 +23,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, navigate, isS
                         navigate(product.url);
                     }
                 } else {
-                    const mSlug = product.merchant_slug === 'admin' ? 'umum' : (product.merchant_slug || (product.is_admin_listing ? 'umum' : 'unknown'));
+                    const mSlug = product.vendor_slug === 'admin' ? 'umum' : (product.vendor_slug || (product.is_admin_listing ? 'umum' : 'unknown'));
                     const pSlug = product.slug || product.id;
                     navigate(`/shop/${mSlug}/${pSlug}`);
                 }

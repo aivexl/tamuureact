@@ -3,11 +3,11 @@ import { m, AnimatePresence } from 'framer-motion';
 import { INDONESIA_REGIONS } from '../../constants/regions';
 import { useStore } from '../../store/useStore';
 import {
-    useMerchantProfile,
-    useMerchantProducts,
-    useCreateMerchantProduct,
-    useUpdateMerchantProduct,
-    useDeleteMerchantProduct
+    useVendorProfile,
+    useVendorProducts,
+    useCreateVendorProduct,
+    useUpdateVendorProduct,
+    useDeleteVendorProduct
 } from '../../hooks/queries/useShop';
 import api from '../../lib/api';
 import { formatCurrency } from '../../lib/utils';
@@ -46,17 +46,17 @@ const ArrowLeftIcon = ({ className }: { className?: string }) => (
 );
 
 
-export const MerchantProducts: React.FC = () => {
+export const VendorProducts: React.FC = () => {
     const user = useStore(s => s.user);
-    const { data: merchantData } = useMerchantProfile(user?.id);
-    const merchantId = merchantData?.merchant?.id;
+    const { data: vendorData } = useVendorProfile(user?.id);
+    const vendorId = vendorData?.vendor?.id;
 
-    const { data: products = [], isLoading } = useMerchantProducts(merchantId);
+    const { data: products = [], isLoading } = useVendorProducts(vendorId);
 
     // Mutations
-    const { mutateAsync: createProduct, isPending: isCreating } = useCreateMerchantProduct();
-    const { mutateAsync: updateProduct, isPending: isUpdating } = useUpdateMerchantProduct();
-    const { mutateAsync: deleteProduct, isPending: isDeleting } = useDeleteMerchantProduct();
+    const { mutateAsync: createProduct, isPending: isCreating } = useCreateVendorProduct();
+    const { mutateAsync: updateProduct, isPending: isUpdating } = useUpdateVendorProduct();
+    const { mutateAsync: deleteProduct, isPending: isDeleting } = useDeleteVendorProduct();
 
     // Component State
     const [view, setView] = useState<'list' | 'add' | 'edit'>('list');
@@ -108,11 +108,11 @@ export const MerchantProducts: React.FC = () => {
     ];
     const [images, setImages] = useState<string[]>([]);
 
-    // Reactive Sync Logic: When toggle is ON, pull from merchantData
+    // Reactive Sync Logic: When toggle is ON, pull from vendorData
     React.useEffect(() => {
-        if (isSyncingStore && merchantData?.merchant) {
-            const m = merchantData.merchant;
-            const c = merchantData.contacts || {};
+        if (isSyncingStore && vendorData?.vendor) {
+            const m = vendorData.vendor;
+            const c = vendorData.contacts || {};
             setWhatsapp(c.whatsapp || '');
             setPhone(c.phone || '');
             setInstagram(c.instagram || '');
@@ -129,7 +129,7 @@ export const MerchantProducts: React.FC = () => {
             setKota(c.kota || m.kota || 'Kota Jakarta Selatan');
             setKontakUtama((m.kontak_utama as any) || 'whatsapp');
         }
-    }, [isSyncingStore, merchantData]);
+    }, [isSyncingStore, vendorData]);
 
     const [isProductUploading, setIsProductUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -233,7 +233,7 @@ export const MerchantProducts: React.FC = () => {
     };
 
     const handleSave = async (forceStatus?: string) => {
-        if (!merchantId) {
+        if (!vendorId) {
             alert('Identitas toko tidak ditemukan. Mohon refresh halaman.');
             return;
         }
@@ -268,7 +268,7 @@ export const MerchantProducts: React.FC = () => {
         setSaveType(finalStatus);
 
         const payload = {
-            merchant_id: merchantId,
+            vendor_id: vendorId,
             nama_produk: namaProduk,
             deskripsi: deskripsi,
             harga_estimasi: hargaEstimasi,
@@ -466,7 +466,7 @@ export const MerchantProducts: React.FC = () => {
                                                             Edit
                                                         </button>
                                                         <a 
-                                                            href={`/shop/${merchantData?.merchant?.slug || 'umum'}/${prod.slug || prod.id}`}
+                                                            href={`/shop/${vendorData?.vendor?.slug || 'umum'}/${prod.slug || prod.id}`}
                                                             target="_blank"
                                                             rel="noreferrer"
                                                             className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-slate-50 hover:bg-[#0A1128] text-slate-400 hover:text-white rounded-xl border border-slate-100 transition-all text-[9px] font-black uppercase tracking-widest shadow-sm"

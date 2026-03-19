@@ -392,7 +392,7 @@ export default {
                     const pro = await env.DB.prepare('SELECT COUNT(*) as count FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.tier = "pro"').first('count');
                     const ultimate = await env.DB.prepare('SELECT COUNT(*) as count FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.tier = "ultimate"').first('count');
                     const elite = await env.DB.prepare('SELECT COUNT(*) as count FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.tier = "elite"').first('count');
-                    const merchants = await env.DB.prepare('SELECT COUNT(*) as count FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.role = "merchant"').first('count');
+                    const vendors = await env.DB.prepare('SELECT COUNT(*) as count FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.role = "vendor"').first('count');
                     const resellers = await env.DB.prepare('SELECT COUNT(*) as count FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.role = "reseller"').first('count');
                     const admins = await env.DB.prepare('SELECT COUNT(*) as count FROM push_subscriptions s JOIN users u ON s.user_id = u.id WHERE s.is_active = 1 AND u.role = "admin"').first('count');
 
@@ -403,7 +403,7 @@ export default {
                             pro: pro || 0,
                             ultimate: ultimate || 0,
                             elite: elite || 0,
-                            merchants: merchants || 0,
+                            vendors: vendors || 0,
                             resellers: resellers || 0,
                             admins: admins || 0
                         } 
@@ -426,9 +426,9 @@ export default {
                 let params = [];
                 
                 if (audience && audience !== 'all') {
-                    if (audience === 'merchants') {
+                    if (audience === 'vendors') {
                         query += ' AND u.role = ?';
-                        params.push('merchant');
+                        params.push('vendor');
                     } else if (audience === 'resellers') {
                         query += ' AND u.role = ?';
                         params.push('reseller');
@@ -1067,21 +1067,21 @@ export default {
             // SHOP ECOSYSTEM (TAMUU NEXUS)
             // ============================================
 
-            // 0. Check Merchant Slug Availability
-            if (path === '/api/shop/merchant/check-slug' && method === 'GET') {
+            // 0. Check Vendor Slug Availability
+            if (path === '/api/shop/vendor/check-slug' && method === 'GET') {
                 const slug = url.searchParams.get('slug');
                 if (!slug) return json({ error: 'Slug is required' }, { ...corsHeaders, status: 400 });
 
                 try {
-                    const existing = await env.DB.prepare('SELECT id FROM shop_merchants WHERE slug = ?').bind(slug).first();
+                    const existing = await env.DB.prepare('SELECT id FROM shop_vendors WHERE slug = ?').bind(slug).first();
                     return json({ available: !existing, slug }, corsHeaders);
                 } catch (error) {
                     return json({ error: error.message }, { ...corsHeaders, status: 500 });
                 }
             }
 
-            // 1. Merchant Onboarding (Escalate User -> Merchant)
-            if (path === '/api/shop/merchant/onboard' && method === 'POST') {
+            // 1. Vendor Onboarding (Escalate User -> Vendor)
+            if (path === '/api/shop/vendor/onboard' && method === 'POST') {
                 try {
                     const body = await request.json();
                     const { user_id, nama_toko, slug, category_id, deskripsi, kota } = body;
@@ -1097,18 +1097,18 @@ export default {
                     }
 
                     // Check if slug is already taken globally
-                    const existingSlug = await env.DB.prepare('SELECT id FROM shop_merchants WHERE slug = ?').bind(slug).first();
+                    const existingSlug = await env.DB.prepare('SELECT id FROM shop_vendors WHERE slug = ?').bind(slug).first();
                     if (existingSlug) {
                         return json({ error: 'URL Toko sudah digunakan oleh merchant lain.' }, { ...corsHeaders, status: 409 });
                     }
 
                     // Check if user is already a merchant
-                    const existingMerchant = await env.DB.prepare('SELECT id FROM shop_merchants WHERE user_id = ?').bind(user_id).first();
-                    if (existingMerchant) {
+                    const existingVendor = await env.DB.prepare('SELECT id FROM shop_vendors WHERE user_id = ?').bind(user_id).first();
+                    if (existingVendor) {
                         return json({ error: 'User ini sudah memiliki toko.' }, { ...corsHeaders, status: 409 });
                     }
 
-                    const merchantId = crypto.randomUUID();
+                    const vendorId = crypto.randomUUID();
 
                     // CTO POLICY: Auto-verify if onboarding is done by Super Administrator
                     const authHeader = request.headers.get('Authorization');
@@ -1119,11 +1119,11 @@ export default {
                     const isSuperAdmin = user && (user.email === 'admin@tamuu.id' || user.role === 'admin');
                     const verificationStatus = isSuperAdmin ? 1 : 0;
 
-                    // Insert Merchant Profile
+                    // Insert Vendor Profile
                     const insertResult = await env.DB.prepare(
-                        `INSERT INTO shop_merchants (id, user_id, slug, nama_toko, deskripsi, category_id, is_verified, kontak_utama) 
+                        `INSERT INTO shop_vendors (id, user_id, slug, nama_toko, deskripsi, category_id, is_verified, kontak_utama) 
                          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-                    ).bind(merchantId, user_id, slug, nama_toko, deskripsi || null, category_id, verificationStatus, 'whatsapp').run();
+                    ).bind(vendorId, user_id, slug, nama_toko, deskripsi || null, category_id, verificationStatus, 'whatsapp').run();
 
                     // CRITICAL: D1 silent failure prevention
                     // If foreign constraints fail, insertResult.changes will be 0 but won't throw exception
@@ -1133,48 +1133,48 @@ export default {
 
                     // Seed Contact profile with location
                     await env.DB.prepare(
-                        `INSERT INTO shop_contacts (merchant_id, kota) VALUES (?, ?)`
-                    ).bind(merchantId, kota || '').run();
+                        `INSERT INTO shop_contacts (vendor_id, kota) VALUES (?, ?)`
+                    ).bind(vendorId, kota || '').run();
 
                     // Mark user global role as merchant if needed (optional syncing)
                     try {
-                        await env.DB.prepare('UPDATE users SET role = ? WHERE id = ?').bind('merchant', user_id).run();
+                        await env.DB.prepare('UPDATE users SET role = ? WHERE id = ?').bind('vendor', user_id).run();
                     } catch (e) { }
 
-                    return json({ success: true, merchantId: merchantId, slug: slug }, corsHeaders);
+                    return json({ success: true, vendorId: vendorId, slug: slug }, corsHeaders);
                 } catch (error) {
-                    console.error('[Shop] Merchant Onboard Error:', error);
+                    console.error('[Shop] Vendor Onboard Error:', error);
                     return json({ error: 'Gagal membuat toko', details: error.message }, { ...corsHeaders, status: 500 });
                 }
             }
 
-            // 2. Fetch User's Specific Merchant Data (For Smart Dashboard)
-            if (path === '/api/shop/merchant/me' && method === 'GET') {
+            // 2. Fetch User's Specific Vendor Data (For Smart Dashboard)
+            if (path === '/api/shop/vendor/me' && method === 'GET') {
                 const userId = url.searchParams.get('userId');
                 if (!userId) return json({ error: 'User ID required' }, { ...corsHeaders, status: 400 });
 
                 try {
                     const merchant = await env.DB.prepare(
                         `SELECT m.*, COALESCE(c.nama_kategori, m.category_id) as nama_kategori 
-                         FROM shop_merchants m 
+                         FROM shop_vendors m 
                          LEFT JOIN shop_category c ON m.category_id = c.id OR m.category_id = c.nama_kategori 
                          WHERE m.user_id = ?`
                     ).bind(userId).first();
 
                     if (!merchant) {
-                        return json({ isMerchant: false }, corsHeaders);
+                        return json({ isVendor: false }, corsHeaders);
                     }
 
                     // Fetch associated contacts
-                    const contacts = await env.DB.prepare('SELECT * FROM shop_contacts WHERE merchant_id = ?').bind(merchant.id).first();
+                    const contacts = await env.DB.prepare('SELECT * FROM shop_contacts WHERE vendor_id = ?').bind(merchant.id).first();
 
                     // Light analytics pull for the dashboard card
                     const analytics = await env.DB.prepare(
-                        "SELECT COUNT(*) as views FROM shop_analytics WHERE merchant_id = ? AND action_type = 'VIEW_PROFILE'"
+                        "SELECT COUNT(*) as views FROM shop_analytics WHERE vendor_id = ? AND action_type = 'VIEW_PROFILE'"
                     ).bind(merchant.id).first();
 
                     return new Response(JSON.stringify({
-                        isMerchant: true,
+                        isVendor: true,
                         merchant: merchant,
                         contacts: contacts || {},
                         stats: { views: analytics?.views || 0 }
@@ -1189,17 +1189,17 @@ export default {
                     });
 
                 } catch (error) {
-                    console.error('[Shop] Fetch Merchant Error:', error);
+                    console.error('[Shop] Fetch Vendor Error:', error);
                     return json({ error: 'Failed to fetch merchant data', code: 'DB_ERROR' }, { ...corsHeaders, status: 500 });
                 }
             }
 
-            // 3. Update Merchant Settings
-            if (path === '/api/shop/merchant/settings' && method === 'PUT') {
+            // 3. Update Vendor Settings
+            if (path === '/api/shop/vendor/settings' && method === 'PUT') {
                 try {
                     const body = await request.json();
                     const {
-                        merchant_id,
+                        vendor_id,
                         nama_toko,
                         slug,
                         deskripsi_panjang,
@@ -1213,7 +1213,7 @@ export default {
                         category_id
                     } = body;
 
-                    if (!merchant_id) return json({ error: 'Merchant ID required' }, { ...corsHeaders, status: 400 });
+                    if (!vendor_id) return json({ error: 'Vendor ID required' }, { ...corsHeaders, status: 400 });
 
                     // Strict slug validation
                     if (slug && !/^[a-z0-9-]+$/.test(slug)) {
@@ -1222,15 +1222,15 @@ export default {
 
                     // Check slug uniqueness if changed
                     if (slug) {
-                        const existingSlug = await env.DB.prepare('SELECT id FROM shop_merchants WHERE slug = ? AND id != ?').bind(slug, merchant_id).first();
+                        const existingSlug = await env.DB.prepare('SELECT id FROM shop_vendors WHERE slug = ? AND id != ?').bind(slug, vendor_id).first();
                         if (existingSlug) {
                             return json({ error: 'URL Toko sudah digunakan oleh merchant lain.' }, { ...corsHeaders, status: 409 });
                         }
                     }
 
-                    // 1. Update shop_merchants
+                    // 1. Update shop_vendors
                     await env.DB.prepare(`
-                        UPDATE shop_merchants 
+                        UPDATE shop_vendors 
                         SET nama_toko = COALESCE(?, nama_toko),
                             slug = COALESCE(?, slug),
                             deskripsi_panjang = COALESCE(?, deskripsi_panjang),
@@ -1240,7 +1240,7 @@ export default {
                             category_id = COALESCE(?, category_id),
                             updated_at = CURRENT_TIMESTAMP
                         WHERE id = ?
-                    `).bind(nama_toko, slug, deskripsi_panjang, logo_url, banner_url, kontak_utama, category_id, merchant_id).run();
+                    `).bind(nama_toko, slug, deskripsi_panjang, logo_url, banner_url, kontak_utama, category_id, vendor_id).run();
 
                     // Extract new social media fields
                     const { facebook, tiktok, website, youtube, x_url, tokopedia_url, shopee_url, tiktokshop_url, phone } = body;
@@ -1262,8 +1262,8 @@ export default {
                             alamat = COALESCE(?, alamat),
                             phone = COALESCE(?, phone),
                             updated_at = CURRENT_TIMESTAMP
-                        WHERE merchant_id = ?
-                    `).bind(whatsapp, instagram, facebook, tiktok, website, youtube, x_url, tokopedia_url, shopee_url, tiktokshop_url, email, alamat, phone, merchant_id).run();
+                        WHERE vendor_id = ?
+                    `).bind(whatsapp, instagram, facebook, tiktok, website, youtube, x_url, tokopedia_url, shopee_url, tiktokshop_url, email, alamat, phone, vendor_id).run();
 
                     return json({ success: true, message: 'Settings saved successfully' }, corsHeaders);
                 } catch (error) {
@@ -1273,17 +1273,17 @@ export default {
             }
 
             // 4. Product Management (CRUD)
-            if (path.startsWith('/api/shop/merchant/products')) {
+            if (path.startsWith('/api/shop/vendor/products')) {
                 // GET ALL PRODUCTS
                 if (method === 'GET') {
-                    const merchantId = url.searchParams.get('merchant_id');
-                    if (!merchantId) return json({ error: 'Merchant ID required' }, { ...corsHeaders, status: 400 });
+                    const vendorId = url.searchParams.get('vendor_id');
+                    if (!vendorId) return json({ error: 'Vendor ID required' }, { ...corsHeaders, status: 400 });
 
                     try {
-                        console.log(`[Shop] Fetching products for merchant: ${merchantId}`);
+                        console.log(`[Shop] Fetching products for merchant: ${vendorId}`);
                         const products = await env.DB.prepare(
-                            'SELECT * FROM shop_products WHERE merchant_id = ? ORDER BY created_at DESC'
-                        ).bind(merchantId).all();
+                            'SELECT * FROM shop_products WHERE vendor_id = ? ORDER BY created_at DESC'
+                        ).bind(vendorId).all();
 
                         // Fetch images for all products efficiently
                         const productIds = products.results.map(p => p.id);
@@ -1303,7 +1303,7 @@ export default {
 
                         return json({ 
                             products: productsWithImages,
-                            debug: { merchantId, count: productsWithImages.length }
+                            debug: { vendorId, count: productsWithImages.length }
                         }, { 
                             headers: {
                                 ...corsHeaders,
@@ -1323,14 +1323,14 @@ export default {
                     try {
                         const body = await request.json();
                         const { 
-                            merchant_id, nama_produk, deskripsi, harga_estimasi, status, images, 
+                            vendor_id, nama_produk, deskripsi, harga_estimasi, status, images, 
                             kategori_produk, kota, tiktok_url, youtube_url, x_url, website_url, 
                             tokopedia_url, shopee_url, tiktokshop_url, alamat_lengkap, google_maps_url,
                             whatsapp, phone, instagram, facebook, kontak_utama, hide_chat
                         } = body;
 
-                        if (!merchant_id || !nama_produk) {
-                            return json({ error: 'Missing required fields (merchant_id or nama_produk)' }, { ...corsHeaders, status: 400 });
+                        if (!vendor_id || !nama_produk) {
+                            return json({ error: 'Missing required fields (vendor_id or nama_produk)' }, { ...corsHeaders, status: 400 });
                         }
 
                         const productId = crypto.randomUUID();
@@ -1349,25 +1349,25 @@ export default {
                         if (!productSlug) productSlug = productId.substring(0, 8);
 
                         // Check slug uniqueness within merchant strictly
-                        const existingSlug = await env.DB.prepare('SELECT id FROM shop_products WHERE merchant_id = ? AND slug = ?').bind(merchant_id, productSlug).first();
+                        const existingSlug = await env.DB.prepare('SELECT id FROM shop_products WHERE vendor_id = ? AND slug = ?').bind(vendor_id, productSlug).first();
                         if (existingSlug) {
                             return json({ error: `Produk dengan nama serupa "${nama_produk}" sudah ada.` }, { ...corsHeaders, status: 400 });
                         }
 
-                        console.log(`[Shop] PERSISTENCE INITIATED: ${productId} | Merchant: ${merchant_id} | Status: ${finalStatus} | Slug: ${productSlug} | HideChat: ${hide_chat}`);
+                        console.log(`[Shop] PERSISTENCE INITIATED: ${productId} | Vendor: ${vendor_id} | Status: ${finalStatus} | Slug: ${productSlug} | HideChat: ${hide_chat}`);
 
                         // Atomic Transaction using Batch
                         const statements = [
                             env.DB.prepare(`
                                 INSERT INTO shop_products (
-                                    id, merchant_id, nama_produk, deskripsi, harga_estimasi, status, 
+                                    id, vendor_id, nama_produk, deskripsi, harga_estimasi, status, 
                                     kategori_produk, kota, tiktok_url, youtube_url, x_url, website_url, 
                                     tokopedia_url, shopee_url, tiktokshop_url, is_approved, slug, alamat_lengkap, google_maps_url,
                                     whatsapp, phone, instagram, facebook, kontak_utama, hide_chat
                                     )
                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                                     `).bind(
-                                    productId, merchant_id, nama_produk, deskripsi || '-', 
+                                    productId, vendor_id, nama_produk, deskripsi || '-', 
                                     harga_estimasi || null, finalStatus, kategori_produk || null, 
                                     kota || null, tiktok_url || null, youtube_url || null, 
                                     x_url || null, website_url || null, tokopedia_url || null, shopee_url || null, tiktokshop_url || null,
@@ -1402,7 +1402,7 @@ export default {
                             success: true, 
                             productId, 
                             integrity: verified ? 'committed' : 'verify_failed',
-                            debug: { merchant_id, status: finalStatus }
+                            debug: { vendor_id, status: finalStatus }
                         }, corsHeaders);
                     } catch (error) {
                         console.error('[Shop] Create Product Error:', error.message);
@@ -1429,10 +1429,10 @@ export default {
                         let newSlug = undefined;
                         if (nama_produk) {
                             newSlug = generateSlug(nama_produk);
-                            // Get merchant_id for uniqueness check
-                            const product = await env.DB.prepare('SELECT merchant_id FROM shop_products WHERE id = ?').bind(productId).first();
+                            // Get vendor_id for uniqueness check
+                            const product = await env.DB.prepare('SELECT vendor_id FROM shop_products WHERE id = ?').bind(productId).first();
                             if (product) {
-                                const existing = await env.DB.prepare('SELECT id FROM shop_products WHERE merchant_id = ? AND slug = ? AND id != ?').bind(product.merchant_id, newSlug, productId).first();
+                                const existing = await env.DB.prepare('SELECT id FROM shop_products WHERE vendor_id = ? AND slug = ? AND id != ?').bind(product.vendor_id, newSlug, productId).first();
                                 if (existing) {
                                     return json({ error: `Gagal update: Produk dengan nama serupa "${nama_produk}" sudah ada.` }, { ...corsHeaders, status: 400 });
                                 }
@@ -1496,7 +1496,7 @@ export default {
                             if (isSuperAdmin) {
                                 updateFields.push('is_approved = 1');
                             } else {
-                                // For regular merchants, keep existing status (don't reset to 0 if already 1 or 2)
+                                // For regular vendors, keep existing status (don't reset to 0 if already 1 or 2)
                                 updateFields.push('is_approved = COALESCE(is_approved, 0)');
                             }
                         }
@@ -1540,15 +1540,15 @@ export default {
                 if (method === 'DELETE') {
                     try {
                         const productId = url.searchParams.get('id');
-                        const merchantId = url.searchParams.get('merchant_id'); // Enforcement
+                        const vendorId = url.searchParams.get('vendor_id'); // Enforcement
                         
-                        if (!productId || !merchantId) {
-                            return json({ error: 'Product ID and Merchant ID required' }, { ...corsHeaders, status: 400 });
+                        if (!productId || !vendorId) {
+                            return json({ error: 'Product ID and Vendor ID required' }, { ...corsHeaders, status: 400 });
                         }
 
                         // CTO Hardening: Verify ownership before delete
-                        const result = await env.DB.prepare('DELETE FROM shop_products WHERE id = ? AND merchant_id = ?')
-                            .bind(productId, merchantId).run();
+                        const result = await env.DB.prepare('DELETE FROM shop_products WHERE id = ? AND vendor_id = ?')
+                            .bind(productId, vendorId).run();
 
                         if (result.meta?.changes === 0) {
                             return json({ error: 'Deletion failed or unauthorized' }, { ...corsHeaders, status: 403 });
@@ -1634,10 +1634,10 @@ export default {
 
                     let query = `
                         SELECT m.id, m.nama_toko, m.slug, m.logo_url, m.banner_url, m.is_sponsored, m.kota, m.is_landing_featured, m.kontak_utama, c.nama_kategori,
-                        (SELECT COUNT(*) FROM shop_wishlist sw JOIN shop_products sp ON sw.product_id = sp.id WHERE sp.merchant_id = m.id) as wishlist_count,
-                        (SELECT AVG(rating) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = m.id) as avg_rating,
-                        (SELECT COUNT(*) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = m.id) as review_count
-                        FROM shop_merchants m
+                        (SELECT COUNT(*) FROM shop_wishlist sw JOIN shop_products sp ON sw.product_id = sp.id WHERE sp.vendor_id = m.id) as wishlist_count,
+                        (SELECT AVG(rating) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.vendor_id = m.id) as avg_rating,
+                        (SELECT COUNT(*) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.vendor_id = m.id) as review_count
+                        FROM shop_vendors m
                         LEFT JOIN shop_category c ON m.category_id = c.id
                         LEFT JOIN users u ON m.user_id = u.id
                         WHERE (m.is_verified = 1 OR u.role = 'admin') AND m.id != 'admin-merchant'
@@ -1658,7 +1658,7 @@ export default {
                     query += ` ORDER BY m.is_sponsored DESC, m.created_at DESC LIMIT 50`;
 
                     const merchantsRes = await env.DB.prepare(query).bind(...params).all();
-                    return json({ success: true, merchants: merchantsRes.results }, corsHeaders);
+                    return json({ success: true, vendors: merchantsRes.results }, corsHeaders);
                 } catch (error) {
                     return json({ error: 'Failed to fetch directory', details: error.message }, { ...corsHeaders, status: 500 });
                 }
@@ -1672,13 +1672,13 @@ export default {
                     const city = url.searchParams.get('city');
 
                     let query = `
-                        SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url,
+                        SELECT p.*, m.nama_toko, m.slug as vendor_slug, m.logo_url,
                         p.is_admin_listing, p.custom_store_name,
                         (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count,
                         (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,
                         (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
                         FROM shop_products p 
-                        LEFT JOIN shop_merchants m ON p.merchant_id = m.id
+                        LEFT JOIN shop_vendors m ON p.vendor_id = m.id
                         LEFT JOIN users u ON m.user_id = u.id
                         WHERE p.status = 'PUBLISHED' AND p.is_approved = 1 
                         AND (m.is_verified = 1 OR p.is_admin_listing = 1 OR u.role = 'admin')
@@ -1750,13 +1750,13 @@ export default {
                     }
 
                     const query = `
-                        SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url,
+                        SELECT p.*, m.nama_toko, m.slug as vendor_slug, m.logo_url,
                         p.is_admin_listing, p.custom_store_name,
                         (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count,
                         (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,
                         (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
                         FROM shop_products p 
-                        LEFT JOIN shop_merchants m ON p.merchant_id = m.id 
+                        LEFT JOIN shop_vendors m ON p.vendor_id = m.id 
                         LEFT JOIN users u ON m.user_id = u.id
                         WHERE p.status = 'PUBLISHED' AND p.is_approved = 1 
                         AND (m.is_verified = 1 OR p.is_admin_listing = 1 OR u.role = 'admin')
@@ -1770,13 +1770,13 @@ export default {
                     // Fallback for landing-featured if none exist
                     if (path.includes('landing-featured') && products.length === 0) {
                         const fallbackQuery = `
-                            SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url,
+                            SELECT p.*, m.nama_toko, m.slug as vendor_slug, m.logo_url,
                             p.is_admin_listing, p.custom_store_name,
                             (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count,
                             (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,
                             (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
                             FROM shop_products p 
-                            LEFT JOIN shop_merchants m ON p.merchant_id = m.id 
+                            LEFT JOIN shop_vendors m ON p.vendor_id = m.id 
                             WHERE p.status = 'PUBLISHED' AND p.is_approved = 1 AND (m.is_verified = 1 OR p.is_admin_listing = 1)
                             ORDER BY RANDOM() LIMIT ${limit}
                         `;
@@ -1803,14 +1803,14 @@ export default {
                     return json({ error: 'Failed to fetch specific products', details: error.message }, { ...corsHeaders, status: 500 });
                 }
             }
-            // 5d. PUBLIC DISCOVERY: Merchant Stats (Products & Love Count)
-            if (path === '/api/shop/merchant/stats' && method === 'GET') {
+            // 5d. PUBLIC DISCOVERY: Vendor Stats (Products & Love Count)
+            if (path === '/api/shop/vendor/stats' && method === 'GET') {
                 try {
-                    const merchantId = url.searchParams.get('merchant_id');
-                    if (!merchantId) return json({ error: 'Missing merchant_id' }, { ...corsHeaders, status: 400 });
+                    const vendorId = url.searchParams.get('vendor_id');
+                    if (!vendorId) return json({ error: 'Missing vendor_id' }, { ...corsHeaders, status: 400 });
 
                     // Handle Admin fallback gracefully
-                    if (merchantId === 'admin') {
+                    if (vendorId === 'admin') {
                         return json({ 
                             success: true, 
                             stats: { 
@@ -1826,18 +1826,18 @@ export default {
 
                     const stats = await env.DB.prepare(`
                         SELECT
-                            (SELECT COUNT(*) FROM shop_products WHERE merchant_id = ? AND status = 'PUBLISHED') as total_products,
-                            (SELECT COUNT(*) FROM shop_wishlist sw JOIN shop_products sp ON sw.product_id = sp.id WHERE sp.merchant_id = ?) as total_wishlist,
-                            (SELECT AVG(rating) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = ?) as avg_rating,
-                            (SELECT COUNT(*) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = ?) as review_count,
+                            (SELECT COUNT(*) FROM shop_products WHERE vendor_id = ? AND status = 'PUBLISHED') as total_products,
+                            (SELECT COUNT(*) FROM shop_wishlist sw JOIN shop_products sp ON sw.product_id = sp.id WHERE sp.vendor_id = ?) as total_wishlist,
+                            (SELECT AVG(rating) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.vendor_id = ?) as avg_rating,
+                            (SELECT COUNT(*) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.vendor_id = ?) as review_count,
                             m.nama_toko,
                             m.logo_url,
                             m.kontak_utama,
                             c.whatsapp, c.phone, c.instagram, c.facebook, c.tiktok, c.website, c.x_url, c.youtube, c.shopee_url, c.tokopedia_url, c.tiktokshop_url, c.google_maps_url, c.alamat as alamat_lengkap
-                        FROM shop_merchants m
-                        LEFT JOIN shop_contacts c ON m.id = c.merchant_id
+                        FROM shop_vendors m
+                        LEFT JOIN shop_contacts c ON m.id = c.vendor_id
                         WHERE m.id = ?
-                    `).bind(merchantId, merchantId, merchantId, merchantId, merchantId).first();
+                    `).bind(vendorId, vendorId, vendorId, vendorId, vendorId).first();
                     return json({ success: true, stats }, corsHeaders);
                 } catch (error) {
                     console.error('[Shop] Stats Error:', error);
@@ -1853,11 +1853,11 @@ export default {
 
                     // Step 1: Try Same Category (Excluding current product)
                     let products = await env.DB.prepare(`
-                        SELECT p.*, m.nama_toko, m.slug as merchant_slug, p.is_admin_listing, p.custom_store_name,
+                        SELECT p.*, m.nama_toko, m.slug as vendor_slug, p.is_admin_listing, p.custom_store_name,
                         (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,
                         (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
                         FROM shop_products p
-                        LEFT JOIN shop_merchants m ON p.merchant_id = m.id
+                        LEFT JOIN shop_vendors m ON p.vendor_id = m.id
                         LEFT JOIN users u ON m.user_id = u.id
                         WHERE p.kategori_produk = ? AND p.id != ? AND p.status = 'PUBLISHED' AND p.is_approved = 1 
                         AND (m.is_verified = 1 OR p.is_admin_listing = 1 OR u.role = 'admin')
@@ -1868,11 +1868,11 @@ export default {
                     if (products.results.length < 4) {
                         const remaining = limit - products.results.length;
                         const fallback = await env.DB.prepare(`
-                            SELECT p.*, m.nama_toko, m.slug as merchant_slug, p.is_admin_listing, p.custom_store_name,
+                            SELECT p.*, m.nama_toko, m.slug as vendor_slug, p.is_admin_listing, p.custom_store_name,
                             (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,
                             (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
                             FROM shop_products p
-                            LEFT JOIN shop_merchants m ON p.merchant_id = m.id
+                            LEFT JOIN shop_vendors m ON p.vendor_id = m.id
                             LEFT JOIN users u ON m.user_id = u.id
                             WHERE p.id != ? AND p.kategori_produk != ? AND p.status = 'PUBLISHED' AND p.is_approved = 1 
                             AND (m.is_verified = 1 OR p.is_admin_listing = 1 OR u.role = 'admin')
@@ -1950,7 +1950,7 @@ export default {
                         
                         const products = await env.DB.prepare(`
                             SELECT 
-                                p.id, p.merchant_id, p.nama_produk, p.deskripsi, p.harga_estimasi, p.status, 
+                                p.id, p.vendor_id, p.nama_produk, p.deskripsi, p.harga_estimasi, p.status, 
                                 p.kategori_produk, p.kota, p.is_admin_listing, p.custom_store_name, 
                                 p.tiktok_url, p.youtube_url, p.x_url, p.website_url, p.tokopedia_url, p.shopee_url, p.tiktokshop_url,
                                 p.is_approved, p.slug, p.alamat_lengkap, p.google_maps_url, 
@@ -1960,9 +1960,9 @@ export default {
                                 p.id as product_id, 
                                 p.created_at as product_created_at,
                                 m.nama_toko, 
-                                m.slug as merchant_slug
+                                m.slug as vendor_slug
                             FROM shop_products p
-                            LEFT JOIN shop_merchants m ON p.merchant_id = m.id
+                            LEFT JOIN shop_vendors m ON p.vendor_id = m.id
                             ORDER BY p.created_at DESC
                         `).all();
 
@@ -2016,26 +2016,26 @@ export default {
                     }
                 }
 
-                // List All Merchants (Admin Control)
-                if (path === '/api/admin/shop/merchants' && method === 'GET') {
+                // List All Vendors (Admin Control)
+                if (path === '/api/admin/shop/vendors' && method === 'GET') {
                     try {
-                        const merchants = await env.DB.prepare(`
+                        const vendors = await env.DB.prepare(`
                             SELECT m.*, c.nama_kategori
-                            FROM shop_merchants m
+                            FROM shop_vendors m
                             LEFT JOIN shop_category c ON m.category_id = c.id
                             ORDER BY m.created_at DESC
                         `).all();
-                        return json({ success: true, merchants: merchants.results }, corsHeaders);
+                        return json({ success: true, vendors: vendors.results }, corsHeaders);
                     } catch (error) {
-                        return json({ error: 'Failed to fetch merchants', details: error.message }, { ...corsHeaders, status: 500 });
+                        return json({ error: 'Failed to fetch vendors', details: error.message }, { ...corsHeaders, status: 500 });
                     }
                 }
 
-                if (path.startsWith('/api/admin/shop/merchants/') && method === 'PATCH') {
+                if (path.startsWith('/api/admin/shop/vendors/') && method === 'PATCH') {
                     try {
                         const parts = path.split('/');
-                        const merchantIdFromPath = parts[parts.length - 1];
-                        if (!merchantIdFromPath) return json({ error: 'Merchant ID required' }, { ...corsHeaders, status: 400 });
+                        const vendorIdFromPath = parts[parts.length - 1];
+                        if (!vendorIdFromPath) return json({ error: 'Vendor ID required' }, { ...corsHeaders, status: 400 });
 
                         const body = await request.json();
                         const { is_verified, is_sponsored, is_landing_featured } = body;
@@ -2058,9 +2058,9 @@ export default {
 
                         if (updateFields.length === 0) return json({ error: 'No fields to update' }, { ...corsHeaders, status: 400 });
 
-                        params.push(merchantIdFromPath);
+                        params.push(vendorIdFromPath);
                         await env.DB.prepare(`
-                            UPDATE shop_merchants
+                            UPDATE shop_vendors
                             SET ${updateFields.join(', ')}, updated_at = CURRENT_TIMESTAMP
                             WHERE id = ?
                         `).bind(...params).run();
@@ -2071,15 +2071,15 @@ export default {
                     }
                 }
 
-                if (path.startsWith('/api/admin/shop/merchants/') && method === 'DELETE') {
+                if (path.startsWith('/api/admin/shop/vendors/') && method === 'DELETE') {
                     try {
                         const parts = path.split('/');
-                        const merchantIdFromPath = parts[parts.length - 1];
-                        if (!merchantIdFromPath) return json({ error: 'Merchant ID required' }, { ...corsHeaders, status: 400 });
+                        const vendorIdFromPath = parts[parts.length - 1];
+                        if (!vendorIdFromPath) return json({ error: 'Vendor ID required' }, { ...corsHeaders, status: 400 });
 
                         // CTO POLICY: Cascade delete is handled by D1 via FOREIGN KEY ON DELETE CASCADE
                         // but we will explicitly delete to ensure clean cleanup
-                        await env.DB.prepare('DELETE FROM shop_merchants WHERE id = ?').bind(merchantIdFromPath).run();
+                        await env.DB.prepare('DELETE FROM shop_vendors WHERE id = ?').bind(vendorIdFromPath).run();
 
                         return json({ success: true }, corsHeaders);
                     } catch (error) {
@@ -2096,7 +2096,7 @@ export default {
                         const product = await env.DB.prepare(`
                             SELECT p.nama_produk, m.user_id 
                             FROM shop_products p
-                            JOIN shop_merchants m ON p.merchant_id = m.id
+                            JOIN shop_vendors m ON p.vendor_id = m.id
                             WHERE p.id = ?
                         `).bind(id).first();
 
@@ -2150,13 +2150,13 @@ export default {
 
                         const productId = crypto.randomUUID();
                         // Use a dummy merchant ID for admin listings if not provided
-                        const merchantId = body.merchant_id || 'admin-merchant';
+                        const vendorId = body.vendor_id || 'admin-merchant';
 
                         let slug = generateSlug(finalNama);
                         if (!slug) slug = productId.substring(0, 8);
 
                         // Check slug uniqueness strictly
-                        const existingSlug = await env.DB.prepare('SELECT id FROM shop_products WHERE merchant_id = ? AND slug = ?').bind(merchantId, slug).first();
+                        const existingSlug = await env.DB.prepare('SELECT id FROM shop_products WHERE vendor_id = ? AND slug = ?').bind(vendorId, slug).first();
                         if (existingSlug) {
                             return json({ error: `Produk dengan nama serupa "${finalNama}" sudah ada. Silakan gunakan nama lain.` }, { ...corsHeaders, status: 400 });
                         }
@@ -2164,7 +2164,7 @@ export default {
                         const statements = [
                             env.DB.prepare(`
                                 INSERT INTO shop_products (
-                                    id, merchant_id, nama_produk, deskripsi, harga_estimasi, status, 
+                                    id, vendor_id, nama_produk, deskripsi, harga_estimasi, status, 
                                     kategori_produk, kota, is_admin_listing, custom_store_name,
                                     tiktok_url, youtube_url, x_url, website_url, tokopedia_url, shopee_url, tiktokshop_url,
                                     is_approved, slug, alamat_lengkap, google_maps_url, is_special, is_featured, is_landing_featured,
@@ -2172,7 +2172,7 @@ export default {
                                     )
                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                                     `).bind(
-                                    productId, merchantId, finalNama || '(Tanpa Nama)', deskripsi || '-',
+                                    productId, vendorId, finalNama || '(Tanpa Nama)', deskripsi || '-',
                                     harga_estimasi || null, finalStatus, kategori_produk || null,
                                     kota || null, is_admin_listing ? 1 : 0, custom_store_name || null,
                                     tiktok_url || null, youtube_url || null, x_url || null,
@@ -2383,11 +2383,11 @@ export default {
                 if (path === '/api/admin/shop/reports' && method === 'GET') {
                     try {
                         const reports = await env.DB.prepare(`
-                            SELECT r.*, p.nama_produk, m.nama_toko, m.slug as merchant_slug, p.slug as product_slug,
+                            SELECT r.*, p.nama_produk, m.nama_toko, m.slug as vendor_slug, p.slug as product_slug,
                             u.email as reporter_email
                             FROM shop_reports r
                             JOIN shop_products p ON r.product_id = p.id
-                            JOIN shop_merchants m ON p.merchant_id = m.id
+                            JOIN shop_vendors m ON p.vendor_id = m.id
                             LEFT JOIN users u ON r.reporter_id = u.id
                             ORDER BY r.created_at DESC
                         `).all();
@@ -2472,7 +2472,7 @@ export default {
                 if (!user) return json({ error: 'Invalid token' }, { ...corsHeaders, status: 401 });
 
                 // Identify if user is also a merchant
-                const merchant = await env.DB.prepare('SELECT id FROM shop_merchants WHERE user_id = ?').bind(user.id).first();
+                const merchant = await env.DB.prepare('SELECT id FROM shop_vendors WHERE user_id = ?').bind(user.id).first();
 
                 // GET CONVERSATIONS
                 if (path === '/api/shop/chat/conversations' && method === 'GET') {
@@ -2484,8 +2484,8 @@ export default {
                                 m.nama_toko as merchant_name, m.logo_url as merchant_logo
                             FROM shop_conversations c
                             JOIN users u ON c.user_id = u.id
-                            JOIN shop_merchants m ON c.merchant_id = m.id
-                            WHERE c.user_id = ? OR c.merchant_id = ?
+                            JOIN shop_vendors m ON c.vendor_id = m.id
+                            WHERE c.user_id = ? OR c.vendor_id = ?
                             ORDER BY c.updated_at DESC
                         `).bind(user.id, merchant?.id || 'none').all();
                         
@@ -2513,40 +2513,40 @@ export default {
                 // SEND MESSAGE
                 if (path === '/api/shop/chat/send' && method === 'POST') {
                     try {
-                        const { recipient_id, content, type, merchant_id } = await request.json();
+                        const { recipient_id, content, type, vendor_id } = await request.json();
                         if (!content) return json({ error: 'Content required' }, { ...corsHeaders, status: 400 });
 
                         // Recipient can be either a user or a merchant
-                        // Logic: If merchant_id is provided, it's a message to/from a store
+                        // Logic: If vendor_id is provided, it's a message to/from a store
                         let conversationId;
-                        let targetMerchantId = merchant_id;
+                        let targetVendorId = vendor_id;
                         let targetUserId = recipient_id;
 
                         // Auto-resolve conversation or create new
-                        // If caller is merchant, user_id is target. If caller is user, merchant_id is target.
-                        const isMerchantSender = merchant && merchant.id === merchant_id;
+                        // If caller is merchant, user_id is target. If caller is user, vendor_id is target.
+                        const isVendorSender = merchant && merchant.id === vendor_id;
                         
-                        if (!isMerchantSender) {
+                        if (!isVendorSender) {
                             // User sending to merchant
                             targetUserId = user.id;
                         } else {
-                            // Merchant sending to user
-                            targetMerchantId = merchant.id;
+                            // Vendor sending to user
+                            targetVendorId = merchant.id;
                         }
 
                         const existing = await env.DB.prepare(`
                             SELECT id FROM shop_conversations 
-                            WHERE user_id = ? AND merchant_id = ?
-                        `).bind(targetUserId, targetMerchantId).first();
+                            WHERE user_id = ? AND vendor_id = ?
+                        `).bind(targetUserId, targetVendorId).first();
 
                         if (existing) {
                             conversationId = existing.id;
                         } else {
                             conversationId = crypto.randomUUID();
                             await env.DB.prepare(`
-                                INSERT INTO shop_conversations (id, user_id, merchant_id)
+                                INSERT INTO shop_conversations (id, user_id, vendor_id)
                                 VALUES (?, ?, ?)
-                            `).bind(conversationId, targetUserId, targetMerchantId).run();
+                            `).bind(conversationId, targetUserId, targetVendorId).run();
                         }
 
                         const messageId = crypto.randomUUID();
@@ -2559,7 +2559,7 @@ export default {
                         `).bind(messageId, conversationId, user.id, content, finalType).run();
 
                         // Update conversation meta and unread counts
-                        const unreadField = isMerchantSender ? 'unread_count_user' : 'unread_count_vendor';
+                        const unreadField = isVendorSender ? 'unread_count_user' : 'unread_count_vendor';
                         await env.DB.prepare(`
                             UPDATE shop_conversations 
                             SET last_message = ?, 
@@ -2579,8 +2579,8 @@ export default {
                 if (path.startsWith('/api/shop/chat/read/') && method === 'PATCH') {
                     const convId = path.split('/').pop();
                     try {
-                        const isMerchant = merchant && (await env.DB.prepare('SELECT id FROM shop_conversations WHERE id = ? AND merchant_id = ?').bind(convId, merchant.id).first());
-                        const unreadField = isMerchant ? 'unread_count_vendor' : 'unread_count_user';
+                        const isVendor = merchant && (await env.DB.prepare('SELECT id FROM shop_conversations WHERE id = ? AND vendor_id = ?').bind(convId, merchant.id).first());
+                        const unreadField = isVendor ? 'unread_count_vendor' : 'unread_count_user';
                         
                         await env.DB.prepare(`
                             UPDATE shop_conversations SET ${unreadField} = 0 WHERE id = ?
@@ -2648,7 +2648,7 @@ export default {
                                 m.nama_toko as merchant_name
                             FROM shop_conversations c
                             JOIN users u ON c.user_id = u.id
-                            JOIN shop_merchants m ON c.merchant_id = m.id
+                            JOIN shop_vendors m ON c.vendor_id = m.id
                             ORDER BY c.updated_at DESC
                         `).all();
                         return json({ success: true, conversations: results.results }, corsHeaders);
@@ -2679,10 +2679,10 @@ export default {
 
                 try {
                     const results = await env.DB.prepare(`
-                        SELECT p.*, m.nama_toko, m.slug as merchant_slug
+                        SELECT p.*, m.nama_toko, m.slug as vendor_slug
                         FROM shop_wishlist w
                         JOIN shop_products p ON w.product_id = p.id
-                        JOIN shop_merchants m ON p.merchant_id = m.id
+                        JOIN shop_vendors m ON p.vendor_id = m.id
                         WHERE w.user_id = ?
                     `).bind(userId).all();
                     return json({ success: true, wishlist: results.results }, corsHeaders);
@@ -2706,10 +2706,10 @@ export default {
                             .bind(crypto.randomUUID(), user_id, product_id).run();
 
                         // Also track as FAVORITE_PRODUCT in analytics
-                        const prod = await env.DB.prepare('SELECT merchant_id FROM shop_products WHERE id = ?').bind(product_id).first();
+                        const prod = await env.DB.prepare('SELECT vendor_id FROM shop_products WHERE id = ?').bind(product_id).first();
                         if (prod) {
-                            await env.DB.prepare('INSERT INTO shop_analytics (id, merchant_id, action_type, product_id, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)')
-                                .bind(crypto.randomUUID(), prod.merchant_id, 'FAVORITE_PRODUCT', product_id).run();
+                            await env.DB.prepare('INSERT INTO shop_analytics (id, vendor_id, action_type, product_id, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)')
+                                .bind(crypto.randomUUID(), prod.vendor_id, 'FAVORITE_PRODUCT', product_id).run();
                         }
 
                         return json({ success: true, action: 'added' }, corsHeaders);
@@ -2727,9 +2727,9 @@ export default {
                 try {
                     const merchant = await env.DB.prepare(`
                         SELECT m.*, c.nama_kategori, m.kontak_utama,
-                        (SELECT AVG(rating) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = m.id) as avg_rating,
-                        (SELECT COUNT(*) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.merchant_id = m.id) as review_count
-                        FROM shop_merchants m 
+                        (SELECT AVG(rating) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.vendor_id = m.id) as avg_rating,
+                        (SELECT COUNT(*) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.vendor_id = m.id) as review_count
+                        FROM shop_vendors m 
                         LEFT JOIN shop_category c ON m.category_id = c.id 
                         WHERE m.slug = ?
                     `).bind(slug).first();
@@ -2742,7 +2742,7 @@ export default {
                         (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,
                         (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
                         FROM shop_products p
-                        WHERE p.merchant_id = ? AND p.status = "PUBLISHED" AND p.is_approved = 1 
+                        WHERE p.vendor_id = ? AND p.status = "PUBLISHED" AND p.is_approved = 1 
                         ORDER BY p.created_at DESC
                     `).bind(merchant.id).all();
 
@@ -2766,7 +2766,7 @@ export default {
                     // PRIVACY REDACTION: CURIOSITY GAP
                     // Check if request has a valid session (optional, but for enterprise we check headers)
                     const authHeader = request.headers.get('Authorization');
-                    const contacts = await env.DB.prepare('SELECT * FROM shop_contacts WHERE merchant_id = ?').bind(merchant.id).first();
+                    const contacts = await env.DB.prepare('SELECT * FROM shop_contacts WHERE vendor_id = ?').bind(merchant.id).first();
 
                     const isAuthorized = authHeader && authHeader.length > 20; // Basic check for JWT presence
 
@@ -2822,7 +2822,7 @@ export default {
                     let product;
                     if (isUUID) {
                         product = await env.DB.prepare(`
-                            SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url, m.kontak_utama as m_kontak_utama,
+                            SELECT p.*, m.nama_toko, m.slug as vendor_slug, m.logo_url, m.kontak_utama as m_kontak_utama,
                             c.whatsapp as m_whatsapp, c.phone as m_phone, c.instagram as m_instagram,
                             c.facebook as m_facebook, c.x_url as m_x_url, c.website as m_website,
                             c.shopee_url as m_shopee_url, c.tokopedia_url as m_tokopedia_url, c.tiktokshop_url as m_tiktokshop_url,
@@ -2832,14 +2832,14 @@ export default {
                             (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,
                             (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
                             FROM shop_products p 
-                            LEFT JOIN shop_merchants m ON p.merchant_id = m.id 
-                            LEFT JOIN shop_contacts c ON p.merchant_id = c.merchant_id
+                            LEFT JOIN shop_vendors m ON p.vendor_id = m.id 
+                            LEFT JOIN shop_contacts c ON p.vendor_id = c.vendor_id
                             WHERE p.id = ?
                         `).bind(idOrSlug).first();
                     } else {
                         // Try by slug
                         product = await env.DB.prepare(`
-                            SELECT p.*, m.nama_toko, m.slug as merchant_slug, m.logo_url, m.kontak_utama as m_kontak_utama,
+                            SELECT p.*, m.nama_toko, m.slug as vendor_slug, m.logo_url, m.kontak_utama as m_kontak_utama,
                             c.whatsapp as m_whatsapp, c.phone as m_phone, c.instagram as m_instagram,
                             c.facebook as m_facebook, c.x_url as m_x_url, c.website as m_website,
                             c.shopee_url as m_shopee_url, c.tokopedia_url as m_tokopedia_url, c.tiktokshop_url as m_tiktokshop_url,
@@ -2849,8 +2849,8 @@ export default {
                             (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,
                             (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
                             FROM shop_products p 
-                            LEFT JOIN shop_merchants m ON p.merchant_id = m.id 
-                            LEFT JOIN shop_contacts c ON p.merchant_id = c.merchant_id
+                            LEFT JOIN shop_vendors m ON p.vendor_id = m.id 
+                            LEFT JOIN shop_contacts c ON p.vendor_id = c.vendor_id
                             WHERE p.slug = ?
                         `).bind(idOrSlug).first();
                     }
@@ -2872,13 +2872,13 @@ export default {
             if (path === '/api/shop/analytics/track' && method === 'POST') {
                 try {
                     const body = await request.json();
-                    const { merchant_id, action_type, product_id } = body;
+                    const { vendor_id, action_type, product_id } = body;
 
-                    if (!merchant_id || !action_type) return json({ error: 'Invalid payload' }, { ...corsHeaders, status: 400 });
+                    if (!vendor_id || !action_type) return json({ error: 'Invalid payload' }, { ...corsHeaders, status: 400 });
 
                     await env.DB.prepare(
-                        'INSERT INTO shop_analytics (id, merchant_id, action_type, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)'
-                    ).bind(crypto.randomUUID(), merchant_id, action_type).run();
+                        'INSERT INTO shop_analytics (id, vendor_id, action_type, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)'
+                    ).bind(crypto.randomUUID(), vendor_id, action_type).run();
 
                     return json({ success: true }, corsHeaders);
                 } catch (error) {
@@ -2907,15 +2907,15 @@ export default {
             }
 
             // 9. Business Analytics (Aggregations)
-            if (path === '/api/shop/merchant/analytics' && method === 'GET') {
-                const merchantId = url.searchParams.get('merchant_id');
-                if (!merchantId) return json({ error: 'Merchant ID required' }, { ...corsHeaders, status: 400 });
+            if (path === '/api/shop/vendor/analytics' && method === 'GET') {
+                const vendorId = url.searchParams.get('vendor_id');
+                if (!vendorId) return json({ error: 'Vendor ID required' }, { ...corsHeaders, status: 400 });
 
                 try {
                     // Overall totals
                     const totalsRows = await env.DB.prepare(
-                        'SELECT action_type, COUNT(*) as count FROM shop_analytics WHERE merchant_id = ? GROUP BY action_type'
-                    ).bind(merchantId).all();
+                        'SELECT action_type, COUNT(*) as count FROM shop_analytics WHERE vendor_id = ? GROUP BY action_type'
+                    ).bind(vendorId).all();
 
                     const totals = {
                         profileViews: 0,
@@ -2935,18 +2935,18 @@ export default {
 
                     // Individual product impressions
                     const productImpressionsQuery = await env.DB.prepare(
-                        'SELECT json_extract(metadata, \'$.product_id\') as product_id, COUNT(*) as views FROM shop_analytics WHERE merchant_id = ? AND action_type = "VIEW_PRODUCT" AND json_extract(metadata, \'$.product_id\') IS NOT NULL GROUP BY json_extract(metadata, \'$.product_id\')'
-                    ).bind(merchantId).all();
+                        'SELECT json_extract(metadata, \'$.product_id\') as product_id, COUNT(*) as views FROM shop_analytics WHERE vendor_id = ? AND action_type = "VIEW_PRODUCT" AND json_extract(metadata, \'$.product_id\') IS NOT NULL GROUP BY json_extract(metadata, \'$.product_id\')'
+                    ).bind(vendorId).all();
                     const productImpressions = productImpressionsQuery.results;
 
                     // Activity over last 7 days (Daily aggregation based on created_at DATETIME)
                     const dailyRows = await env.DB.prepare(`
                         SELECT DATE(created_at) as date, action_type, COUNT(*) as count 
                         FROM shop_analytics 
-                        WHERE merchant_id = ? AND created_at >= date('now', '-7 days')
+                        WHERE vendor_id = ? AND created_at >= date('now', '-7 days')
                         GROUP BY DATE(created_at), action_type
                         ORDER BY date ASC
-                    `).bind(merchantId).all();
+                    `).bind(vendorId).all();
 
                     // Structure for charts
                     let chartData = [];
@@ -2976,46 +2976,46 @@ export default {
                 }
             }
 
-            // 11. MERCHANT: Update Profile (REBUILT FOR PERSISTENCE)
-            // 11. MERCHANT: Update Profile (ULTRA-ROBUST PERSISTENCE)
-            if (path === '/api/shop/merchant/profile' && method === 'PATCH') {
+            // 11. VENDOR: Update Profile (REBUILT FOR PERSISTENCE)
+            // 11. VENDOR: Update Profile (ULTRA-ROBUST PERSISTENCE)
+            if (path === '/api/shop/vendor/profile' && method === 'PATCH') {
                 const body = await request.json();
                 const { 
-                    merchant_id, user_id, nama_toko, deskripsi, logo_url, banner_url, 
+                    vendor_id, user_id, nama_toko, deskripsi, logo_url, banner_url, 
                     category_id, kota, whatsapp, phone, instagram, facebook, tiktok, 
                     website, email, alamat, google_maps_url, kontak_utama,
                     x_url, shopee_url, tokopedia_url, youtube
                 } = body;
 
-                if (!merchant_id || !user_id) return json({ error: 'Missing required IDs' }, { ...corsHeaders, status: 400 });
+                if (!vendor_id || !user_id) return json({ error: 'Missing required IDs' }, { ...corsHeaders, status: 400 });
 
                 try {
                     // 1. Verify Ownership
-                    const owner = await env.DB.prepare('SELECT user_id FROM shop_merchants WHERE id = ?').bind(merchant_id).first();
-                    if (!owner) return json({ error: 'Merchant not found in D1' }, { ...corsHeaders, status: 404 });
+                    const owner = await env.DB.prepare('SELECT user_id FROM shop_vendors WHERE id = ?').bind(vendor_id).first();
+                    if (!owner) return json({ error: 'Vendor not found in D1' }, { ...corsHeaders, status: 404 });
                     if (owner.user_id !== user_id) return json({ error: 'Unauthorized ownership' }, { ...corsHeaders, status: 403 });
 
                     // 2. ATOMIC EXECUTION (Forced Persistence with Hard Change Verification)
                                         const updateOp = await env.DB.prepare(`
-                                            UPDATE shop_merchants
+                                            UPDATE shop_vendors
                                             SET nama_toko = ?, deskripsi = ?, logo_url = ?, banner_url = ?, category_id = COALESCE(NULLIF(?, ''), category_id), kontak_utama = ?, updated_at = CURRENT_TIMESTAMP
                                             WHERE (id = ? OR slug = ?) AND user_id = ?
                                         `).bind(
                                             nama_toko || '', deskripsi || '', logo_url || null,
                                             banner_url || null, category_id || '', kontak_utama,
-                                            merchant_id, merchant_id, user_id
+                                            vendor_id, vendor_id, user_id
                                         ).run();
                     if (updateOp.meta.changes === 0) {
                         return json({ 
                             error: 'Persistence Refused: Unauthorized or Identity Mismatch', 
-                            debug: { merchant_id, user_id } 
+                            debug: { vendor_id, user_id } 
                         }, { ...corsHeaders, status: 403 });
                     }
 
                     await env.DB.prepare(`
-                        INSERT INTO shop_contacts (merchant_id, whatsapp, phone, instagram, facebook, tiktok, website, email, alamat, kota, x_url, shopee_url, tokopedia_url, youtube, google_maps_url)
-                        SELECT id, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? FROM shop_merchants WHERE id = ? OR slug = ?
-                        ON CONFLICT(merchant_id) DO UPDATE SET
+                        INSERT INTO shop_contacts (vendor_id, whatsapp, phone, instagram, facebook, tiktok, website, email, alamat, kota, x_url, shopee_url, tokopedia_url, youtube, google_maps_url)
+                        SELECT id, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? FROM shop_vendors WHERE id = ? OR slug = ?
+                        ON CONFLICT(vendor_id) DO UPDATE SET
                             whatsapp = EXCLUDED.whatsapp, phone = EXCLUDED.phone, instagram = EXCLUDED.instagram, facebook = EXCLUDED.facebook,
                             tiktok = EXCLUDED.tiktok, website = EXCLUDED.website, email = EXCLUDED.email,
                             alamat = EXCLUDED.alamat, kota = EXCLUDED.kota, x_url = EXCLUDED.x_url, 
@@ -3026,13 +3026,13 @@ export default {
                         website || '', email || '', alamat || '', kota || '',
                         body.x_url || '', body.shopee_url || '', body.tokopedia_url || '', body.tiktokshop_url || '', body.youtube || '',
                         google_maps_url || '',
-                        merchant_id, merchant_id
+                        vendor_id, vendor_id
                     ).run();
 
                     return json({ 
                         success: true, 
                         integrity: 'committed', 
-                        ref: merchant_id,
+                        ref: vendor_id,
                         timestamp: new Date().toISOString()
                     }, corsHeaders);
 
@@ -3045,7 +3045,7 @@ export default {
                     }, { ...corsHeaders, status: 500 });
                 }
             }
-            // 12. MERCHANT: Toggle Product Status
+            // 12. VENDOR: Toggle Product Status
             if (path === '/api/shop/product/status' && method === 'PATCH') {
                 try {
                     const body = await request.json();
@@ -3054,7 +3054,7 @@ export default {
                     // SECURITY: Verify user owns the product via merchant
                     const prod = await env.DB.prepare(`
                         SELECT p.id FROM shop_products p 
-                        JOIN shop_merchants m ON p.merchant_id = m.id 
+                        JOIN shop_vendors m ON p.vendor_id = m.id 
                         WHERE p.id = ? AND m.user_id = ?
                     `).bind(product_id, user_id).first();
 
@@ -3068,19 +3068,19 @@ export default {
                 }
             }
 
-            // 13. MERCHANT: Ads Boost (Placeholder for Payment Integration)
-            if (path === '/api/shop/merchant/ads/boost' && method === 'POST') {
+            // 13. VENDOR: Ads Boost (Placeholder for Payment Integration)
+            if (path === '/api/shop/vendor/ads/boost' && method === 'POST') {
                 try {
                     const body = await request.json();
-                    const { merchant_id, user_id, duration_days } = body;
+                    const { vendor_id, user_id, duration_days } = body;
 
                     // SECURITY: Verify owner
-                    const owner = await env.DB.prepare('SELECT user_id FROM shop_merchants WHERE id = ?').bind(merchant_id).first();
+                    const owner = await env.DB.prepare('SELECT user_id FROM shop_vendors WHERE id = ?').bind(vendor_id).first();
                     if (!owner || owner.user_id !== user_id) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 403 });
 
                     // In a real scenario, this would trigger a Midtrans transaction.
                     // For now, we'll simulate an instant upgrade for testing high-end features.
-                    await env.DB.prepare('UPDATE shop_merchants SET is_sponsored = 1 WHERE id = ?').bind(merchant_id).run();
+                    await env.DB.prepare('UPDATE shop_vendors SET is_sponsored = 1 WHERE id = ?').bind(vendor_id).run();
 
                     return json({
                         success: true,

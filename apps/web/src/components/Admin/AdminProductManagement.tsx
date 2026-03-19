@@ -199,7 +199,7 @@ export const AdminProductManagement: React.FC = () => {
                                             ) : (
                                                 <div className="flex flex-col">
                                                     <span className="text-[9px] font-black text-teal-400 uppercase tracking-widest flex items-center gap-1.5 mb-1">
-                                                        <div className="w-1 h-1 rounded-full bg-teal-400" /> Merchant Asset
+                                                        <div className="w-1 h-1 rounded-full bg-teal-400" /> Vendor Asset
                                                     </span>
                                                     <span className="font-bold text-slate-300 text-xs uppercase tracking-tight italic">{product.nama_toko}</span>
                                                 </div>
@@ -268,7 +268,7 @@ export const AdminProductManagement: React.FC = () => {
                                                 </button>
                                             )}
                                             <a 
-                                                href={`/shop/${product.merchant_slug === 'admin' ? 'umum' : (product.merchant_slug || 'umum')}/${product.slug || product.product_id}`} 
+                                                href={`/shop/${product.vendor_slug === 'admin' ? 'umum' : (product.vendor_slug || 'umum')}/${product.slug || product.product_id}`} 
                                                 target="_blank" 
                                                 rel="noreferrer"
                                                 className="p-3 bg-white/5 border border-white/10 rounded-xl text-slate-400 hover:text-[#FFBF00] hover:bg-[#FFBF00]/5 transition-all shadow-lg"
@@ -322,7 +322,7 @@ export const AdminProductManagement: React.FC = () => {
 
                             <div className="space-y-6">
                                 <p className="text-sm text-slate-400 leading-relaxed font-medium">
-                                    Optional: Provide a reason for rejecting this product. This will be sent to the merchant.
+                                    Optional: Provide a reason for rejecting this product. This will be sent to the vendor.
                                 </p>
 
                                 <div className="relative group">

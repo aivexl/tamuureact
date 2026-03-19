@@ -39,8 +39,8 @@ import {
     useTrackInteraction,
     useToggleWishlist,
     useWishlist,
-    useMerchantProducts,
-    useMerchantStats,
+    useVendorProducts,
+    useVendorStats,
     useSmartRecommendations
 } from '../../hooks/queries/useShop';
 import { shop, type Review } from '../../lib/api';
@@ -93,8 +93,8 @@ export const ProductDetailPage: React.FC = () => {
     // Data Fetching
     const { data: product, isLoading: isLoadingProduct, refetch: refetchProduct } = useProductDetails(productId || '');
     const { data: wishlist = [] } = useWishlist(user?.id);
-    const { data: merchantProducts = [] } = useMerchantProducts(product?.merchant_id);
-    const { data: merchantStats } = useMerchantStats(product?.merchant_id);
+    const { data: vendorProducts = [] } = useVendorProducts(product?.vendor_id);
+    const { data: vendorStats } = useVendorStats(product?.vendor_id);
     const { data: recommendations = [] } = useSmartRecommendations(productId, product?.kategori_produk);
     const [visibleRecs, setVisibleRecs] = useState(4);
 
@@ -156,7 +156,7 @@ export const ProductDetailPage: React.FC = () => {
             if (!isRevealed) {
                 toggleReveal(id);
                 if (product?.id) {
-                    track.mutate({ merchantId: product.merchant_id, actionType: 'CLICK_CONTACT', metadata: JSON.stringify({ contact_type: id, product_id: product.id }) } as any);
+                    track.mutate({ vendorId: product.vendor_id, actionType: 'CLICK_CONTACT', metadata: JSON.stringify({ contact_type: id, product_id: product.id }) } as any);
                 }
                 return;
             }
@@ -279,14 +279,14 @@ export const ProductDetailPage: React.FC = () => {
     };
 
     const otherProducts = useMemo(() => 
-        (merchantProducts || [])
+        (vendorProducts || [])
             .filter((p: any) => 
                 p.id !== productId && 
                 p.status === 'PUBLISHED' && 
                 p.is_approved === 1
             )
             .slice(0, 10),
-    [merchantProducts, productId]);
+    [vendorProducts, productId]);
 
     useSEO({
         title: product ? `${product.nama_produk} | Tamuu Shop` : 'Product Details - Tamuu Shop',
@@ -295,7 +295,7 @@ export const ProductDetailPage: React.FC = () => {
 
     useEffect(() => {
         if (product?.id) {
-            track.mutate({ merchantId: product.merchant_id, actionType: 'VIEW_PRODUCT', productId: product.id });
+            track.mutate({ vendorId: product.vendor_id, actionType: 'VIEW_PRODUCT', productId: product.id });
         }
     }, [product?.id]);
 
@@ -307,17 +307,17 @@ export const ProductDetailPage: React.FC = () => {
         const productChoice = product.kontak_utama || (product as any).product_kontak_utama;
         if (productChoice) return productChoice;
 
-        // Fallback 1: Merchant level setting
-        const merchantChoice = (product as any)?.m_kontak_utama || merchantStats?.kontak_utama;
-        if (merchantChoice) return merchantChoice;
+        // Fallback 1: Vendor level setting
+        const vendorChoice = (product as any)?.m_kontak_utama || vendorStats?.kontak_utama;
+        if (vendorChoice) return vendorChoice;
 
         // Fallback 2: Default
         return 'whatsapp';
-    }, [product, merchantStats]);
+    }, [product, vendorStats]);
 
     const handleWhatsApp = () => {
         const text = `Halo, saya tertarik dengan produk ${product?.nama_produk} di Tamuu Shop. Apakah masih tersedia?`;
-        const waNumber = product?.whatsapp || product?.m_whatsapp || merchantStats?.whatsapp || '';
+        const waNumber = product?.whatsapp || product?.m_whatsapp || vendorStats?.whatsapp || '';
         window.open(`https://wa.me/${waNumber.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`, '_blank');
     };
 
@@ -327,13 +327,13 @@ export const ProductDetailPage: React.FC = () => {
             navigate('/login');
             return;
         }
-        navigate(`/dashboard?tab=messages&merchantId=${product.merchant_id}`);
+        navigate(`/dashboard?tab=messages&vendorId=${product.vendor_id}`);
     };
 
     const handlePrimaryContact = () => {
         // Analytics
         if (product?.id) {
-            track.mutate({ merchantId: product.merchant_id, actionType: 'CLICK_CONTACT', productId: product.id });
+            track.mutate({ vendorId: product.vendor_id, actionType: 'CLICK_CONTACT', productId: product.id });
         }
 
         // Check global mode preference as a secondary override/fallback
@@ -365,69 +365,69 @@ export const ProductDetailPage: React.FC = () => {
                 return handleChat();
             
             case 'phone': {
-                const phone = product.phone || (product as any).m_phone || merchantStats?.phone;
+                const phone = product.phone || (product as any).m_phone || vendorStats?.phone;
                 if (phone) window.open(`tel:${phone}`, '_self');
                 else handleWhatsApp();
                 break;
             }
             
             case 'instagram': {
-                const url = getUrl(product.instagram || (product as any).m_instagram || merchantStats?.instagram, 'instagram');
+                const url = getUrl(product.instagram || (product as any).m_instagram || vendorStats?.instagram, 'instagram');
                 if (url) window.open(url, '_blank');
                 else handleWhatsApp();
                 break;
             }
             
             case 'facebook': {
-                const url = getUrl(product.facebook || (product as any).m_facebook || merchantStats?.facebook, 'facebook');
+                const url = getUrl(product.facebook || (product as any).m_facebook || vendorStats?.facebook, 'facebook');
                 if (url) window.open(url, '_blank');
                 else handleWhatsApp();
                 break;
             }
             
             case 'tiktok': {
-                const url = getUrl(product.tiktok_url || (product as any).m_tiktok_url || merchantStats?.tiktok, 'tiktok');
+                const url = getUrl(product.tiktok_url || (product as any).m_tiktok_url || vendorStats?.tiktok, 'tiktok');
                 if (url) window.open(url, '_blank');
                 else handleWhatsApp();
                 break;
             }
             
             case 'x': {
-                const url = getUrl(product.x_url || (product as any).m_x_url || merchantStats?.x_url, 'x');
+                const url = getUrl(product.x_url || (product as any).m_x_url || vendorStats?.x_url, 'x');
                 if (url) window.open(url, '_blank');
                 else handleWhatsApp();
                 break;
             }
             
             case 'youtube': {
-                const url = getUrl(product.youtube_url || (product as any).m_youtube_url || merchantStats?.youtube_url, 'youtube');
+                const url = getUrl(product.youtube_url || (product as any).m_youtube_url || vendorStats?.youtube_url, 'youtube');
                 if (url) window.open(url, '_blank');
                 else handleWhatsApp();
                 break;
             }
             
             case 'website': {
-                const url = getUrl(product.website_url || (product as any).m_website || merchantStats?.website, 'website');
+                const url = getUrl(product.website_url || (product as any).m_website || vendorStats?.website, 'website');
                 if (url) window.open(url, '_blank');
                 else handleWhatsApp();
                 break;
             }
             
             case 'tokopedia': {
-                const url = getUrl(product.tokopedia_url || (product as any).m_tokopedia_url || merchantStats?.tokopedia_url, 'tokopedia');
+                const url = getUrl(product.tokopedia_url || (product as any).m_tokopedia_url || vendorStats?.tokopedia_url, 'tokopedia');
                 if (url) window.open(url, '_blank');
                 else handleWhatsApp();
                 break;
             }
             
             case 'tiktokshop': {
-                const url = getUrl(product.tiktokshop_url || (product as any).m_tiktokshop_url || merchantStats?.tiktokshop_url, 'tiktokshop');
+                const url = getUrl(product.tiktokshop_url || (product as any).m_tiktokshop_url || vendorStats?.tiktokshop_url, 'tiktokshop');
                 if (url) window.open(url, '_blank');
                 else handleWhatsApp();
                 break;
             }
             case 'shopee': {
-                const url = getUrl(product.shopee_url || (product as any).m_shopee_url || merchantStats?.shopee_url, 'shopee');
+                const url = getUrl(product.shopee_url || (product as any).m_shopee_url || vendorStats?.shopee_url, 'shopee');
                 if (url) window.open(url, '_blank');
                 else handleWhatsApp();
                 break;
@@ -605,25 +605,25 @@ export const ProductDetailPage: React.FC = () => {
                                         count={product.review_count || 0} 
                                         size={18} 
                                     />
-                                    {(product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url || product.tiktokshop_url || product.m_tiktokshop_url || merchantStats?.tiktokshop_url || product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url) && (
+                                    {(product.tokopedia_url || product.m_tokopedia_url || vendorStats?.tokopedia_url || product.tiktokshop_url || product.m_tiktokshop_url || vendorStats?.tiktokshop_url || product.shopee_url || product.m_shopee_url || vendorStats?.shopee_url) && (
                                         <div className="flex items-center gap-4">
                                             <div className="w-10 h-10 flex items-center justify-center hover:scale-110 transition-all duration-300">
-                                                {product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url ? (
-                                                    <a href={product.shopee_url?.startsWith('http') ? product.shopee_url : `https://${product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url}`} target="_blank" rel="noreferrer">
+                                                {product.shopee_url || product.m_shopee_url || vendorStats?.shopee_url ? (
+                                                    <a href={product.shopee_url?.startsWith('http') ? product.shopee_url : `https://${product.shopee_url || product.m_shopee_url || vendorStats?.shopee_url}`} target="_blank" rel="noreferrer">
                                                         <img src="/images/logos/marketplace/logo_shopee.png" alt="Shopee" className="w-7 h-7 object-contain" />
                                                     </a>
                                                 ) : null}
                                             </div>
                                             <div className="w-10 h-10 flex items-center justify-center hover:scale-110 transition-all duration-300">
-                                                {product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url ? (
-                                                    <a href={product.tokopedia_url?.startsWith('http') ? product.tokopedia_url : `https://${product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url}`} target="_blank" rel="noreferrer">
+                                                {product.tokopedia_url || product.m_tokopedia_url || vendorStats?.tokopedia_url ? (
+                                                    <a href={product.tokopedia_url?.startsWith('http') ? product.tokopedia_url : `https://${product.tokopedia_url || product.m_tokopedia_url || vendorStats?.tokopedia_url}`} target="_blank" rel="noreferrer">
                                                         <img src="/images/logos/marketplace/logo_tokopedia.png" alt="Tokopedia" className="w-7 h-7 object-contain" />
                                                     </a>
                                                 ) : null}
                                             </div>
                                             <div className="w-10 h-10 flex items-center justify-center hover:scale-110 transition-all duration-300">
-                                                {product.tiktokshop_url || product.m_tiktokshop_url || merchantStats?.tiktokshop_url ? (
-                                                    <a href={product.tiktokshop_url?.startsWith('http') ? product.tiktokshop_url : `https://${product.tiktokshop_url || product.m_tiktokshop_url || merchantStats?.tiktokshop_url}`} target="_blank" rel="noreferrer">
+                                                {product.tiktokshop_url || product.m_tiktokshop_url || vendorStats?.tiktokshop_url ? (
+                                                    <a href={product.tiktokshop_url?.startsWith('http') ? product.tiktokshop_url : `https://${product.tiktokshop_url || product.m_tiktokshop_url || vendorStats?.tiktokshop_url}`} target="_blank" rel="noreferrer">
                                                         <img src="/images/logos/marketplace/logo-tiktokshop.png" alt="TikTok Shop" className="w-7 h-7 object-contain" />
                                                     </a>
                                                 ) : null}
@@ -642,7 +642,7 @@ export const ProductDetailPage: React.FC = () => {
                                 </p>
                             </div>
 
-                            {/* Merchant Section (Sidebar - Compact) */}
+                            {/* Vendor Section (Sidebar - Compact) */}
                             <div className="p-6 md:p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100">
                                 {/* Store Card */}
                                 <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
@@ -666,25 +666,25 @@ export const ProductDetailPage: React.FC = () => {
                                             <div className="flex items-center gap-1">
                                                 <ShoppingBag className="w-3 h-3 text-slate-400" />
                                                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">
-                                                    {(merchantStats?.total_products || 0)} Produk
+                                                    {(vendorStats?.total_products || 0)} Produk
                                                 </span>
                                             </div>
                                             <div className="flex items-center gap-1">
                                                 <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
                                                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">
-                                                    {(merchantStats?.avg_rating || product.avg_rating) ? Number(merchantStats?.avg_rating || product.avg_rating).toFixed(1) : "0.0"} ({(merchantStats?.review_count || product.review_count || 0)})
+                                                    {(vendorStats?.avg_rating || product.avg_rating) ? Number(vendorStats?.avg_rating || product.avg_rating).toFixed(1) : "0.0"} ({(vendorStats?.review_count || product.review_count || 0)})
                                                 </span>
                                             </div>
                                             <div className="flex items-center gap-1">
                                                 <Heart className="w-3 h-3 text-rose-400 fill-rose-400" />
                                                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">
-                                                    {(merchantStats?.total_wishlist || product.wishlist_count || 0)} Love
+                                                    {(vendorStats?.total_wishlist || product.wishlist_count || 0)} Love
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
                                     {!product.is_admin_listing && (
-                                        <Link to={`/shop/${product.merchant_slug === 'admin' ? 'umum' : (slug || 'umum')}`} className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center hover:bg-[#0A1128] hover:text-white transition-all shadow-sm">
+                                        <Link to={`/shop/${product.vendor_slug === 'admin' ? 'umum' : (slug || 'umum')}`} className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center hover:bg-[#0A1128] hover:text-white transition-all shadow-sm">
                                             <ChevronRight className="w-5 h-5" />
                                         </Link>
                                     )}
@@ -714,7 +714,7 @@ export const ProductDetailPage: React.FC = () => {
                                     <VendorContactItem 
                                         id="shopee" 
                                         label="Shopee" 
-                                        value={product.shopee_url || product.m_shopee_url || merchantStats?.shopee_url} 
+                                        value={product.shopee_url || product.m_shopee_url || vendorStats?.shopee_url} 
                                         imgSrc="/images/logos/marketplace/logo_shopee.png" 
                                         type="marketplace" 
                                         logoOnly
@@ -723,7 +723,7 @@ export const ProductDetailPage: React.FC = () => {
                                     <VendorContactItem 
                                         id="tokopedia" 
                                         label="Tokopedia" 
-                                        value={product.tokopedia_url || product.m_tokopedia_url || merchantStats?.tokopedia_url} 
+                                        value={product.tokopedia_url || product.m_tokopedia_url || vendorStats?.tokopedia_url} 
                                         imgSrc="/images/logos/marketplace/logo_tokopedia.png" 
                                         type="marketplace" 
                                         logoOnly
@@ -732,7 +732,7 @@ export const ProductDetailPage: React.FC = () => {
                                     <VendorContactItem 
                                         id="tiktokshop" 
                                         label="TikTok Shop" 
-                                        value={product.tiktokshop_url || product.m_tiktokshop_url || merchantStats?.tiktokshop_url} 
+                                        value={product.tiktokshop_url || product.m_tiktokshop_url || vendorStats?.tiktokshop_url} 
                                         imgSrc="/images/logos/marketplace/logo-tiktokshop.png" 
                                         type="marketplace" 
                                         logoOnly
@@ -754,7 +754,7 @@ export const ProductDetailPage: React.FC = () => {
                                     <VendorContactItem 
                                         id="ig" 
                                         label="Instagram" 
-                                        value={product.instagram || product.m_instagram || merchantStats?.instagram} 
+                                        value={product.instagram || product.m_instagram || vendorStats?.instagram} 
                                         icon={Instagram} 
                                         iconColor="text-[#E4405F]" 
                                         type="link" 
@@ -763,7 +763,7 @@ export const ProductDetailPage: React.FC = () => {
                                     <VendorContactItem 
                                         id="tiktok" 
                                         label="TikTok" 
-                                        value={product.tiktok_url || product.m_tiktok_url || merchantStats?.tiktok} 
+                                        value={product.tiktok_url || product.m_tiktok_url || vendorStats?.tiktok} 
                                         customIcon={<TikTokIcon className="w-4 h-4" />} 
                                         iconColor="text-black" 
                                         type="link" 
@@ -774,7 +774,7 @@ export const ProductDetailPage: React.FC = () => {
                                     <VendorContactItem 
                                         id="wa" 
                                         label="WhatsApp" 
-                                        value={product.whatsapp || product.m_whatsapp || merchantStats?.whatsapp} 
+                                        value={product.whatsapp || product.m_whatsapp || vendorStats?.whatsapp} 
                                         icon={MessageCircle} 
                                         iconColor="text-[#25D366]" 
                                         type="link" 
@@ -782,7 +782,7 @@ export const ProductDetailPage: React.FC = () => {
                                     <VendorContactItem 
                                         id="fb" 
                                         label="Facebook" 
-                                        value={product.facebook || (product as any).m_facebook || merchantStats?.facebook} 
+                                        value={product.facebook || (product as any).m_facebook || vendorStats?.facebook} 
                                         icon={Facebook} 
                                         iconColor="text-[#1877F2]" 
                                         type="link" 
@@ -791,7 +791,7 @@ export const ProductDetailPage: React.FC = () => {
                                     <VendorContactItem 
                                         id="x" 
                                         label="X (Twitter)" 
-                                        value={product.x_url || (product as any).m_x_url || merchantStats?.x_url} 
+                                        value={product.x_url || (product as any).m_x_url || vendorStats?.x_url} 
                                         customIcon={<XLogoIcon className="w-4 h-4" />} 
                                         iconColor="text-black" 
                                         type="link" 
@@ -802,7 +802,7 @@ export const ProductDetailPage: React.FC = () => {
                                     <VendorContactItem 
                                         id="phone" 
                                         label="Nomor Telepon" 
-                                        value={product.phone || product.m_phone || merchantStats?.phone} 
+                                        value={product.phone || product.m_phone || vendorStats?.phone} 
                                         icon={Phone} 
                                         iconColor="text-slate-600" 
                                         type="copy" 
@@ -810,7 +810,7 @@ export const ProductDetailPage: React.FC = () => {
                                     <VendorContactItem 
                                         id="yt" 
                                         label="YouTube" 
-                                        value={product.youtube_url || (product as any).m_youtube_url || merchantStats?.youtube_url} 
+                                        value={product.youtube_url || (product as any).m_youtube_url || vendorStats?.youtube_url} 
                                         icon={Youtube} 
                                         iconColor="text-[#FF0000]" 
                                         type="link" 
@@ -819,7 +819,7 @@ export const ProductDetailPage: React.FC = () => {
                                     <VendorContactItem 
                                         id="web" 
                                         label="Website" 
-                                        value={product.website_url || product.m_website || merchantStats?.website} 
+                                        value={product.website_url || product.m_website || vendorStats?.website} 
                                         icon={Globe} 
                                         iconColor="text-indigo-600" 
                                         type="link" 
@@ -1137,7 +1137,7 @@ export const ProductDetailPage: React.FC = () => {
                                 <m.div
                                     key={p.id}
                                     whileHover={{ y: -8 }}
-                                    onClick={() => navigate(`/shop/${product.merchant_slug === 'admin' ? 'umum' : product.merchant_slug}/${p.slug || p.id}`)}
+                                    onClick={() => navigate(`/shop/${product.vendor_slug === 'admin' ? 'umum' : product.vendor_slug}/${p.slug || p.id}`)}
                                     className="w-48 flex-shrink-0 cursor-pointer group bg-white p-3 rounded-[2rem] border border-slate-50 hover:shadow-2xl hover:shadow-slate-100 transition-all"
                                 >
                                     <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 mb-4 relative">
@@ -1165,7 +1165,7 @@ export const ProductDetailPage: React.FC = () => {
                                 <m.div
                                     key={p.id}
                                     whileHover={{ y: -8 }}
-                                    onClick={() => navigate(`/shop/${p.merchant_slug}/${p.slug || p.id}`)}
+                                    onClick={() => navigate(`/shop/${p.vendor_slug}/${p.slug || p.id}`)}
                                     className="group cursor-pointer bg-white border border-slate-100 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden hover:shadow-xl transition-all relative w-full md:w-[195px] h-[320px] md:h-[380px] flex-shrink-0 flex flex-col"
                                 >
                                     <div className="relative h-[140px] md:h-[180px] overflow-hidden flex-shrink-0">

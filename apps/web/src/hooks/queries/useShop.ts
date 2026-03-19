@@ -56,8 +56,8 @@ export const useProductDetails = (id: string) => {
 
 export const useTrackInteraction = () => {
     return useMutation({
-        mutationFn: ({ merchantId, actionType, productId }: { merchantId: string, actionType: string, productId?: string }) =>
-            shop.track(merchantId, actionType, productId)
+        mutationFn: ({ vendorId, actionType, productId }: { vendorId: string, actionType: string, productId?: string }) =>
+            shop.track(vendorId, actionType, productId)
     });
 };
 
@@ -80,89 +80,89 @@ export const useToggleWishlist = () => {
     });
 };
 
-export const useMerchantProfile = (userId?: string) => {
+export const useVendorProfile = (userId?: string) => {
     return useQuery({
-        queryKey: ['merchant_profile', userId],
-        queryFn: () => shop.getMerchantMe(userId!),
+        queryKey: ['vendor_profile', userId],
+        queryFn: () => shop.getVendorMe(userId!),
         enabled: !!userId,
         staleTime: 60 * 1000,      // 1 minute tolerance (prevents layout shift on tab switching)
         refetchOnWindowFocus: false // Don't refetch just because user alt-tabbed
     });
 };
 
-export const useOnboardMerchant = () => {
+export const useOnboardVendor = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (data: { user_id: string, nama_toko: string, slug: string, category_id: string, kota: string, deskripsi?: string }) =>
-            shop.onboardMerchant(data),
+            shop.onboardVendor(data),
         onSuccess: async (_, variables) => {
-            await queryClient.invalidateQueries({ queryKey: ['merchant_profile', variables.user_id] });
+            await queryClient.invalidateQueries({ queryKey: ['vendor_profile', variables.user_id] });
         }
     });
 };
 
-export const useUpdateMerchantSettings = () => {
+export const useUpdateVendorSettings = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (data: any) => shop.updateMerchantSettings(data),
+        mutationFn: (data: any) => shop.updateVendorSettings(data),
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: ['merchant_profile'] });
+            queryClient.invalidateQueries({ queryKey: ['vendor_profile'] });
         }
     });
 };
 
-export const useMerchantProducts = (merchantId?: string) => {
+export const useVendorProducts = (vendorId?: string) => {
     return useQuery({
-        queryKey: ['merchant_products', merchantId],
-        queryFn: () => shop.getMerchantProducts(merchantId!),
-        enabled: !!merchantId
+        queryKey: ['vendor_products', vendorId],
+        queryFn: () => shop.getVendorProducts(vendorId!),
+        enabled: !!vendorId
     });
 };
 
-export const useCreateMerchantProduct = () => {
+export const useCreateVendorProduct = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (data: any) => shop.createMerchantProduct(data),
+        mutationFn: (data: any) => shop.createVendorProduct(data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['merchant_products'] });
+            queryClient.invalidateQueries({ queryKey: ['vendor_products'] });
         }
     });
 };
 
-export const useUpdateMerchantProduct = () => {
+export const useUpdateVendorProduct = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ id, data }: { id: string, data: any }) => shop.updateMerchantProduct({ id, data }),
+        mutationFn: ({ id, data }: { id: string, data: any }) => shop.updateVendorProduct({ id, data }),
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: ['merchant_products'] });
+            queryClient.invalidateQueries({ queryKey: ['vendor_products'] });
             queryClient.invalidateQueries({ queryKey: ['shop_product', variables.id] });
             queryClient.invalidateQueries({ queryKey: ['shop_product'] });
         }
     });
 };
 
-export const useDeleteMerchantProduct = () => {
+export const useDeleteVendorProduct = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (id: string) => shop.deleteMerchantProduct(id),
+        mutationFn: (id: string) => shop.deleteVendorProduct(id),
         onSuccess: (_, id) => {
-            queryClient.invalidateQueries({ queryKey: ['merchant_products'] });
+            queryClient.invalidateQueries({ queryKey: ['vendor_products'] });
             queryClient.invalidateQueries({ queryKey: ['shop_product', id] });
             queryClient.invalidateQueries({ queryKey: ['shop_product'] });
         }
     });
 };
 
-export const useUpdateMerchantProfile = () => {
+export const useUpdateVendorProfile = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ merchantId, userId, data }: { merchantId: string, userId: string, data: any }) =>
-            shop.updateMerchantProfile(merchantId, userId, data),
+        mutationFn: ({ vendorId, userId, data }: { vendorId: string, userId: string, data: any }) =>
+            shop.updateVendorProfile(vendorId, userId, data),
         onSuccess: async (_, variables) => {
             // Force immediate synchronization
             console.log('[Query] Profile update success, invalidating cache...');
-            await queryClient.invalidateQueries({ queryKey: ['merchant_profile', variables.userId] });
-            await queryClient.refetchQueries({ queryKey: ['merchant_profile', variables.userId] });
+            await queryClient.invalidateQueries({ queryKey: ['vendor_profile', variables.userId] });
+            await queryClient.refetchQueries({ queryKey: ['vendor_profile', variables.userId] });
         }
     });
 };
@@ -173,7 +173,7 @@ export const useUpdateProductStatus = () => {
         mutationFn: ({ productId, userId, status }: { productId: string, userId: string, status: string }) =>
             shop.updateProductStatus(productId, userId, status),
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: ['merchant_products'] });
+            queryClient.invalidateQueries({ queryKey: ['vendor_products'] });
             queryClient.invalidateQueries({ queryKey: ['shop_product', variables.productId] });
             queryClient.invalidateQueries({ queryKey: ['shop_product'] });
             queryClient.invalidateQueries({ queryKey: ['storefront'] });
@@ -212,31 +212,31 @@ export const useAdminDeleteCarousel = () => {
     });
 };
 
-export const useBoostShop = () => {
+export const useBoostVendor = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ merchantId, userId }: { merchantId: string, userId: string }) =>
-            shop.boostShop(merchantId, userId),
+        mutationFn: ({ vendorId, userId }: { vendorId: string, userId: string }) =>
+            shop.boostVendor(vendorId, userId),
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: ['merchant_profile', variables.userId] });
+            queryClient.invalidateQueries({ queryKey: ['vendor_profile', variables.userId] });
         }
     });
 };
 
-export const useMerchantAnalytics = (merchantId?: string) => {
+export const useVendorAnalytics = (vendorId?: string) => {
     return useQuery({
-        queryKey: ['merchant_analytics', merchantId],
-        queryFn: () => shop.getMerchantAnalytics(merchantId!),
-        enabled: !!merchantId,
+        queryKey: ['vendor_analytics', vendorId],
+        queryFn: () => shop.getVendorAnalytics(vendorId!),
+        enabled: !!vendorId,
         refetchInterval: 60000 // Refetch every minute for "Live" feel
     });
 };
 
-export const useMerchantStats = (merchantId?: string) => {
+export const useVendorStats = (vendorId?: string) => {
     return useQuery({
-        queryKey: ['merchant_stats', merchantId],
-        queryFn: () => shop.getMerchantStats(merchantId!),
-        enabled: !!merchantId
+        queryKey: ['vendor_stats', vendorId],
+        queryFn: () => shop.getVendorStats(vendorId!),
+        enabled: !!vendorId
     });
 };
 
@@ -299,23 +299,23 @@ export const useAdminUpdateProduct = () => {
     });
 };
 
-export const useAdminUpdateMerchant = () => {
+export const useAdminUpdateVendor = () => {
     const { token } = useStore();
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ id, data }: { id: string, data: any }) => admin.updateMerchant(id, data, token || undefined),
+        mutationFn: ({ id, data }: { id: string, data: any }) => admin.updateVendor(id, data, token || undefined),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['shop_directory'] });
-            queryClient.invalidateQueries({ queryKey: ['admin_all_merchants'] });
+            queryClient.invalidateQueries({ queryKey: ['admin_all_vendors'] });
         }
     });
 };
 
-export const useAdminMerchants = () => {
+export const useAdminVendors = () => {
     const { token } = useStore();
     return useQuery({
-        queryKey: ['admin_all_merchants'],
-        queryFn: () => admin.adminListMerchants(token || undefined)
+        queryKey: ['admin_all_vendors'],
+        queryFn: () => admin.adminListVendors(token || undefined)
     });
 };
 

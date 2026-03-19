@@ -10,7 +10,7 @@ import { toast } from 'react-hot-toast';
 import { PremiumLoader } from '../ui/PremiumLoader';
 import { admin, shop, storage, safeFetch, API_BASE } from '../../lib/api';
 import { useStore } from '../../store/useStore';
-import { useAdminProducts, useAdminUpdateProduct, useAdminUpdateMerchant, useAdminMerchants } from '../../hooks/queries/useShop';
+import { useAdminProducts, useAdminUpdateProduct, useAdminUpdateVendor, useAdminVendors } from '../../hooks/queries/useShop';
 
 export const AdminShopSettings: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -23,10 +23,10 @@ export const AdminShopSettings: React.FC = () => {
     // Global Registry State
     const [globalSearch, setGlobalSearch] = useState('');
     const { data: productsData, isLoading: isLoadingProducts } = useAdminProducts();
-    const { data: merchantsData, isLoading: isLoadingMerchantsPlacement } = useAdminMerchants();
+    const { data: vendorsData, isLoading: isLoadingVendorsPlacement } = useAdminVendors();
     
     const updateProductMutation = useAdminUpdateProduct();
-    const updateMerchantMutation = useAdminUpdateMerchant();
+    const updateVendorMutation = useAdminUpdateVendor();
 
     // Carousel State
     const [slides, setSlides] = useState<any[]>([]);
@@ -194,7 +194,7 @@ export const AdminShopSettings: React.FC = () => {
     const specialProducts = adminProducts.filter((p: any) => p.is_special === 1);
     const featuredProducts = adminProducts.filter((p: any) => p.is_featured === 1);
     const landingProducts = adminProducts.filter((p: any) => p.is_landing_featured === 1);
-    const landingMerchants = (merchantsData as any)?.filter((m: any) => m.is_landing_featured === 1) || [];
+    const landingVendors = (vendorsData as any)?.filter((m: any) => m.is_landing_featured === 1) || [];
 
     const searchResults = globalSearch.length > 1 
         ? adminProducts.filter((p: any) => 
@@ -204,8 +204,8 @@ export const AdminShopSettings: React.FC = () => {
         )
         : [];
 
-    const merchantSearchResults = globalSearch.length > 1
-        ? (merchantsData as any)?.filter((m: any) => 
+    const vendorSearchResults = globalSearch.length > 1
+        ? (vendorsData as any)?.filter((m: any) => 
             m.nama_toko.toLowerCase().includes(globalSearch.toLowerCase()) ||
             m.id.toLowerCase() === globalSearch.toLowerCase() ||
             m.id.toLowerCase().includes(globalSearch.toLowerCase())
@@ -474,7 +474,7 @@ export const AdminShopSettings: React.FC = () => {
                                         Global Catalog Search
                                     </h2>
                                     <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-                                        Search and toggle placement for any product or merchant.
+                                        Search and toggle placement for any product or vendor.
                                     </p>
                                 </div>
                                 <div className="relative w-full md:w-[500px]">
@@ -499,8 +499,8 @@ export const AdminShopSettings: React.FC = () => {
                                         className="mt-6 border-t border-white/5 pt-6 max-h-[400px] overflow-y-auto no-scrollbar"
                                     >
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {/* Merchant Results */}
-                                            {merchantSearchResults.map((m: any) => (
+                                            {/* Vendor Results */}
+                                            {vendorSearchResults.map((m: any) => (
                                                 <div key={m.id} className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-4 group hover:border-[#FFBF00]/30 transition-all">
                                                     <div className="w-12 h-12 rounded-full overflow-hidden bg-black/50 border border-white/10">
                                                         <img src={m.logo_url} className="w-full h-full object-cover" alt="" />
@@ -508,13 +508,13 @@ export const AdminShopSettings: React.FC = () => {
                                                     <div className="flex-1 min-w-0">
                                                         <h4 className="text-[10px] font-black text-white uppercase tracking-tight truncate">{m.nama_toko}</h4>
                                                         <div className="flex items-center gap-2 mt-0.5">
-                                                            <p className="text-[8px] font-bold text-[#FFBF00] uppercase tracking-widest">Merchant</p>
+                                                            <p className="text-[8px] font-bold text-[#FFBF00] uppercase tracking-widest">Vendor</p>
                                                             <span className="text-[7px] font-mono text-slate-600 truncate">ID: {m.id}</span>
                                                         </div>
                                                     </div>
                                                     <div className="flex gap-2">
                                                         <button 
-                                                            onClick={() => updateMerchantMutation.mutate({ id: m.id, data: { is_landing_featured: m.is_landing_featured ? 0 : 1 } })}
+                                                            onClick={() => updateVendorMutation.mutate({ id: m.id, data: { is_landing_featured: m.is_landing_featured ? 0 : 1 } })}
                                                             className={`p-2 rounded-lg border transition-all ${m.is_landing_featured ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400' : 'bg-white/5 border-white/10 text-slate-500'}`}
                                                             title="Toggle Landing Page"
                                                         >
@@ -640,16 +640,16 @@ export const AdminShopSettings: React.FC = () => {
                                         <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500"><Store className="w-5 h-5" /></div>
                                         <div>
                                             <h3 className="text-sm font-black text-white uppercase tracking-tight leading-none">Tamuu Vendor (Landing)</h3>
-                                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Landing Page • Featured Merchants</p>
+                                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Landing Page • Featured Vendors</p>
                                         </div>
                                     </div>
-                                    <span className="px-3 py-1 bg-white/5 rounded-full text-[9px] font-black text-amber-400">{landingMerchants.length} Items</span>
+                                    <span className="px-3 py-1 bg-white/5 rounded-full text-[9px] font-black text-amber-400">{landingVendors.length} Items</span>
                                 </div>
                                 <div className="p-6 flex-1 max-h-[400px] overflow-y-auto custom-scrollbar space-y-3">
-                                    {landingMerchants.length === 0 ? (
+                                    {landingVendors.length === 0 ? (
                                         <EmptyState icon={<Store className="w-8 h-8 opacity-20" />} text="No landing vendors assigned" />
                                     ) : (
-                                        landingMerchants.map((m: any) => (
+                                        landingVendors.map((m: any) => (
                                             <div key={m.id} className="p-3 bg-white/5 border border-white/5 rounded-2xl flex items-center gap-4 group">
                                                 <div className="w-10 h-10 rounded-full overflow-hidden bg-black border border-white/10">
                                                     <img src={m.logo_url} className="w-full h-full object-cover" alt="" />
@@ -659,7 +659,7 @@ export const AdminShopSettings: React.FC = () => {
                                                     <p className="text-[8px] font-bold text-slate-500 uppercase">{m.nama_kategori || 'Vendor'}</p>
                                                 </div>
                                                 <button 
-                                                    onClick={() => updateMerchantMutation.mutate({ id: m.id, data: { is_landing_featured: 0 } })}
+                                                    onClick={() => updateVendorMutation.mutate({ id: m.id, data: { is_landing_featured: 0 } })}
                                                     className="p-2 text-slate-600 hover:text-rose-500 transition-colors"
                                                 >
                                                     <Trash2 className="w-4 h-4" />

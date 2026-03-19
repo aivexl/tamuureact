@@ -4,7 +4,7 @@ import { m, AnimatePresence } from 'framer-motion';
 import { Store, Link as LinkIcon, Briefcase, ArrowRight, Check, AlertCircle, X, ChevronDown, MapPin, Search as SearchIcon } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useStore } from '../../store/useStore';
-import { useOnboardMerchant, useMerchantProfile } from '../../hooks/queries/useShop';
+import { useOnboardVendor, useVendorProfile } from '../../hooks/queries/useShop';
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
 import { useSEO } from '../../hooks/useSEO';
 import { shop } from '../../lib/api';
@@ -34,16 +34,16 @@ const CATEGORY_UUID_MAP: Record<string, string> = {
     'Lainnya': 'cat-001'
 };
 
-export const MerchantOnboardingPage: React.FC = () => {
+export const VendorOnboardingPage: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useStore();
-    const { data: profile } = useMerchantProfile(user?.id);
-    const { mutateAsync: onboardMerchant, isPending } = useOnboardMerchant();
+    const { data: profile } = useVendorProfile(user?.id);
+    const { mutateAsync: onboardVendor, isPending } = useOnboardVendor();
 
-    // Auto-redirect if already a merchant
+    // Auto-redirect if already a vendor
     React.useEffect(() => {
-        if (profile?.isMerchant && profile?.merchant?.slug) {
-            window.location.href = `/store/${profile.merchant.slug}/dashboard`;
+        if (profile?.isVendor && profile?.vendor?.slug) {
+            window.location.href = `/vendor/${profile.vendor.slug}/dashboard`;
         }
     }, [profile]);
 
@@ -116,7 +116,7 @@ export const MerchantOnboardingPage: React.FC = () => {
         const timer = setTimeout(async () => {
             setIsCheckingSlug(true);
             try {
-                const { available } = await shop.checkMerchantSlug(slug);
+                const { available } = await shop.checkVendorSlug(slug);
                 setIsSlugAvailable(available);
                 if (!available) {
                     setError('URL / Username ini sudah digunakan oleh toko lain. Silakan cari yang lain.');
@@ -146,7 +146,7 @@ export const MerchantOnboardingPage: React.FC = () => {
             // Map the selected string category to its database ID
             const mappedCategoryId = CATEGORY_UUID_MAP[categoryId] || 'cat-001';
 
-            const result = await onboardMerchant({
+            const result = await onboardVendor({
                 user_id: user.id,
                 nama_toko: namaToko,
                 slug: slug,
@@ -159,7 +159,7 @@ export const MerchantOnboardingPage: React.FC = () => {
             const confirmedSlug = result?.slug || slug;
 
             // Hard navigate to force a full page reload
-            window.location.href = `/store/${confirmedSlug}/dashboard`;
+            window.location.href = `/vendor/${confirmedSlug}/dashboard`;
         } catch (err: any) {
             setError(err.message || 'Gagal membuat toko. Silakan coba slug atau nama lain.');
         }
@@ -431,4 +431,4 @@ export const MerchantOnboardingPage: React.FC = () => {
     );
 };
 
-export default MerchantOnboardingPage;
+export default VendorOnboardingPage;

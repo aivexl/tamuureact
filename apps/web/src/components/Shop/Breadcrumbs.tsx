@@ -9,32 +9,29 @@ interface BreadcrumbItem {
 
 export const Breadcrumbs: React.FC = () => {
     const location = useLocation();
+    
+    // SEO & UX: Jangan tampilkan breadcrumbs di homepage
+    if (location.pathname === '/') return null;
+
     const pathnames = location.pathname.split('/').filter((x) => x);
 
+    // Initialize with Home as the root
     const breadcrumbs: BreadcrumbItem[] = [
-        { label: 'Shop', path: '/' }
+        { label: 'Home', path: '/' }
     ];
 
     let currentPath = '';
 
-    pathnames.forEach((value, index) => {
-        // Skip prefixes that shouldn't be labels
-        if (value === 'c') {
-            currentPath += '/c';
-            return;
-        }
-        if (value === 'location') {
-            currentPath += '/location';
-            return;
-        }
-        if (value === 'shop') {
-            currentPath += '/shop';
+    pathnames.forEach((value) => {
+        // Skip technical prefixes that shouldn't be labels
+        if (['c', 'location', 'shop'].includes(value)) {
+            currentPath += `/${value}`;
             return;
         }
 
         currentPath += `/${value}`;
         
-        // Format label: ganti dash dengan spasi & capitalize
+        // Format label: dash to space & capitalize
         const label = value
             .replace(/-/g, ' ')
             .replace(/\b\w/g, (l) => l.toUpperCase());
@@ -50,7 +47,7 @@ export const Breadcrumbs: React.FC = () => {
             "@type": "ListItem",
             "position": index + 1,
             "name": crumb.label,
-            "item": `https://tamuu.id${crumb.path}`
+            "item": `https://tamuu.id${crumb.path === '/' ? '' : crumb.path}`
         }))
     };
 
@@ -60,22 +57,22 @@ export const Breadcrumbs: React.FC = () => {
                 {JSON.stringify(schemaData)}
             </script>
             
-            <Link to="/" className="hover:text-[#0A1128] transition-colors flex items-center gap-1">
-                <Home className="w-3 h-3" />
-            </Link>
-
             {breadcrumbs.map((crumb, index) => (
                 <React.Fragment key={crumb.path}>
-                    <ChevronRight className="w-2.5 h-2.5 text-slate-200 shrink-0" />
+                    {index > 0 && <ChevronRight className="w-2.5 h-2.5 text-slate-200 shrink-0" />}
                     <Link
                         to={crumb.path}
-                        className={`whitespace-nowrap transition-colors ${
+                        className={`whitespace-nowrap transition-colors flex items-center gap-1 ${
                             index === breadcrumbs.length - 1 
                             ? 'text-[#FFBF00]' 
                             : 'hover:text-[#0A1128]'
                         }`}
                     >
-                        {crumb.label}
+                        {index === 0 ? (
+                            <Home className="w-3 h-3" />
+                        ) : (
+                            crumb.label
+                        )}
                     </Link>
                 </React.Fragment>
             ))}

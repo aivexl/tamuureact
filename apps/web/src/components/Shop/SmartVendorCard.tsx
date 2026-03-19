@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/useStore';
-import { useMerchantProfile } from '../../hooks/queries/useShop';
+import { useVendorProfile } from '../../hooks/queries/useShop';
 import { getPublicDomain } from '../../lib/utils';
 import { m } from 'framer-motion';
 
@@ -29,10 +29,10 @@ const ArrowRightIcon = ({ className }: { className?: string }) => (
     </svg>
 );
 
-export const SmartMerchantCard: React.FC = () => {
+export const SmartVendorCard: React.FC = () => {
     const user = useStore(s => s.user);
     const navigate = useNavigate();
-    const { data: merchantData, isLoading } = useMerchantProfile(user?.id);
+    const { data: vendorData, isLoading } = useVendorProfile(user?.id);
 
     // Render loading skeleton
     if (isLoading) {
@@ -46,10 +46,10 @@ export const SmartMerchantCard: React.FC = () => {
         );
     }
 
-    // STATE 2: ACTIVE MERCHANT / MINI STORE MANAGER
-    if (merchantData?.isMerchant && merchantData.merchant) {
-        const { merchant, stats } = merchantData;
-        const storeUrl = `${getPublicDomain()}/shop/${merchant.slug}`;
+    // STATE 2: ACTIVE VENDOR / MINI STORE MANAGER
+    if (vendorData?.isVendor && vendorData.vendor) {
+        const { vendor, stats } = vendorData;
+        const storeUrl = `${getPublicDomain()}/shop/${vendor.slug}`;
 
         return (
             <m.div
@@ -63,16 +63,16 @@ export const SmartMerchantCard: React.FC = () => {
                     <div className="flex items-start justify-between mb-6">
                         <div className="flex gap-4 items-center">
                             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center text-white flex-shrink-0 shadow-lg shadow-slate-900/10">
-                                {merchant.logo_url ? (
-                                    <img src={merchant.logo_url} alt={merchant.nama_toko} className="w-full h-full object-cover rounded-2xl" />
+                                {vendor.logo_url ? (
+                                    <img src={vendor.logo_url} alt={vendor.nama_toko} className="w-full h-full object-cover rounded-2xl" />
                                 ) : (
                                     <StoreIcon className="w-7 h-7" />
                                 )}
                             </div>
                             <div>
-                                <h4 className="text-xl font-black text-slate-900 leading-tight">{merchant.nama_toko}</h4>
+                                <h4 className="text-xl font-black text-slate-900 leading-tight">{vendor.nama_toko}</h4>
                                 <span className="inline-block mt-0.5 px-2 py-0.5 bg-teal-50 text-teal-700 text-[10px] font-black uppercase tracking-widest rounded-md">
-                                    {merchant.nama_kategori || 'Merchant'}
+                                    {vendor.nama_kategori || 'Vendor'}
                                 </span>
                             </div>
                         </div>
@@ -81,7 +81,7 @@ export const SmartMerchantCard: React.FC = () => {
                     <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 mb-6 flex items-center justify-between">
                         <div>
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Store URL</p>
-                            <a href={`/shop/${merchant.slug}`} target="_blank" rel="noreferrer" className="text-sm font-bold text-teal-600 hover:text-teal-700 transition-colors flex items-center gap-1.5 truncate">
+                            <a href={`/shop/${vendor.slug}`} target="_blank" rel="noreferrer" className="text-sm font-bold text-teal-600 hover:text-teal-700 transition-colors flex items-center gap-1.5 truncate">
                                 {storeUrl} <ExternalLinkIcon className="w-3.5 h-3.5" />
                             </a>
                         </div>
@@ -94,7 +94,7 @@ export const SmartMerchantCard: React.FC = () => {
                     </div>
 
                     <button
-                        onClick={() => navigate(`/store/${merchant.slug}/dashboard`)}
+                        onClick={() => navigate(`/vendor/${vendor.slug}/dashboard`)}
                         className="w-full py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-slate-800 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 active:scale-95 text-sm"
                     >
                         Kelola Toko <ArrowRightIcon className="w-4 h-4" />
@@ -104,7 +104,7 @@ export const SmartMerchantCard: React.FC = () => {
         );
     }
 
-    // STATE 1: NON-MERCHANT (PROSPECT)
+    // STATE 1: NON-VENDOR (PROSPECT)
     return (
         <m.div
             initial={{ opacity: 0, scale: 0.98 }}
@@ -126,7 +126,7 @@ export const SmartMerchantCard: React.FC = () => {
                 </p>
 
                 <button
-                    onClick={() => navigate('/store/onboarding')}
+                    onClick={() => navigate('/vendor/onboarding')}
                     className="mt-auto w-full py-4 bg-teal-600 text-white font-black rounded-2xl hover:bg-teal-700 transition-all shadow-xl shadow-teal-600/20 active:scale-95 text-sm flex justify-center items-center gap-2"
                 >
                     Mulai Berjualan <ArrowRightIcon className="w-4 h-4" />

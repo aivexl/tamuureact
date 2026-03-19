@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from '../../store/useStore';
-import { useMerchantProfile, useMerchantAnalytics, useMerchantProducts } from '../../hooks/queries/useShop';
+import { useVendorProfile, useVendorAnalytics, useVendorProducts } from '../../hooks/queries/useShop';
 import { m } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
@@ -29,18 +29,18 @@ const ZapIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14.71 12 2.5V11h8l-8 12.5V13H4Z" /></svg>
 );
 
-export const MerchantOverview: React.FC<{ setTab?: (tab: string) => void }> = ({ setTab }) => {
+export const VendorOverview: React.FC<{ setTab?: (tab: string) => void }> = ({ setTab }) => {
     const navigate = useNavigate();
     const user = useStore(s => s.user);
-    const { data: merchantData, isLoading: profileLoading } = useMerchantProfile(user?.id);
-    const merchant = merchantData?.merchant;
+    const { data: vendorData, isLoading: profileLoading } = useVendorProfile(user?.id);
+    const vendor = vendorData?.vendor;
 
     // Fetch real metrics
-    const { data: analyticsRes, isLoading: analyticsLoading } = useMerchantAnalytics(merchant?.id);
+    const { data: analyticsRes, isLoading: analyticsLoading } = useVendorAnalytics(vendor?.id);
     const totals = analyticsRes?.totals || { profileViews: 0, productViews: 0, contactClicks: 0, favorites: 0 };
     const chartData = analyticsRes?.chartData || [];
 
-    const { data: productsData, isLoading: productsLoading } = useMerchantProducts(merchant?.id);
+    const { data: productsData, isLoading: productsLoading } = useVendorProducts(vendor?.id);
     const products = productsData?.products || [];
 
     if (profileLoading || analyticsLoading) {
@@ -85,8 +85,8 @@ export const MerchantOverview: React.FC<{ setTab?: (tab: string) => void }> = ({
                     initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                     className="text-4xl font-black text-[#0A1128] mb-3 tracking-tight flex items-center gap-4"
                 >
-                    Hello, <span className="text-[#FFBF00]">{merchant?.nama_toko || 'Merchant'}!</span>
-                    {!!merchant?.is_sponsored && (
+                    Hello, <span className="text-[#FFBF00]">{vendor?.nama_toko || 'Vendor'}!</span>
+                    {!!vendor?.is_sponsored && (
                         <m.div
                             initial={{ scale: 0 }} animate={{ scale: 1 }}
                             className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFBF00]/10 border border-[#FFBF00]/30 shadow-[0_4px_10px_rgba(255,191,0,0.1)]"
@@ -206,13 +206,13 @@ export const MerchantOverview: React.FC<{ setTab?: (tab: string) => void }> = ({
                         <div className="absolute top-0 right-0 p-2 opacity-5">
                             <TrendingUpIcon className="w-12 h-12 text-[#FFBF00]" />
                         </div>
-                        <h4 className="text-[10px] font-black text-[#FFBF00] uppercase tracking-widest mb-3">Merchant Tip</h4>
+                        <h4 className="text-[10px] font-black text-[#FFBF00] uppercase tracking-widest mb-3">Vendor Tip</h4>
                         <p className="text-xs text-slate-500 leading-relaxed font-medium mb-4">
-                            {merchant?.is_sponsored
+                            {vendor?.is_sponsored
                                 ? "Your shop is currently boosted! You're receiving 10x more visibility across the marketplace."
-                                : "Premium merchants who update their inventory weekly see 42% higher engagement rates. Keep your shop fresh!"}
+                                : "Premium vendors who update their inventory weekly see 42% higher engagement rates. Keep your shop fresh!"}
                         </p>
-                        {!merchant?.is_sponsored && (
+                        {!vendor?.is_sponsored && (
                             <button
                                 onClick={() => navigate('../ads')}
                                 className="text-[9px] font-black uppercase tracking-widest text-[#FFBF00] flex items-center gap-2 hover:gap-3 transition-all"

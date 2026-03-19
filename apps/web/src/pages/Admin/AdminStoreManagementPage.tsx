@@ -6,7 +6,7 @@ import { useSEO } from '../../hooks/useSEO';
 export const AdminStoreManagementPage: React.FC = () => {
     useSEO({
         title: 'Store Governance | Tamuu Admin',
-        description: 'Enterprise governance, moderation, and quality control for Tamuu merchants.'
+        description: 'Enterprise governance, moderation, and quality control for Tamuu vendors.'
     });
 
     return (

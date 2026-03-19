@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from '../../store/useStore';
-import { useMerchantProfile } from '../../hooks/queries/useShop';
+import { useVendorProfile } from '../../hooks/queries/useShop';
 import { useInvitations } from '../../hooks/queries/useInvitations';
 import { m } from 'framer-motion';
 
@@ -68,7 +68,7 @@ const DonutChart: React.FC<{
 
 export const DashboardQuotaWidget: React.FC = () => {
     const user = useStore(s => s.user);
-    const { data: merchantData } = useMerchantProfile(user?.id);
+    const { data: vendorData } = useVendorProfile(user?.id);
     const { data: invitations = [] } = useInvitations(user?.id);
 
     // ONLY admin@tamuu.id gets infinity display
@@ -80,7 +80,7 @@ export const DashboardQuotaWidget: React.FC = () => {
     const invMax = user?.maxInvitations || 1; 
 
     // Store Quota Logic
-    const storeCount = merchantData?.isMerchant ? 1 : 0;
+    const storeCount = vendorData?.isVendor ? 1 : 0;
     const storeMax = 1;
 
     return (

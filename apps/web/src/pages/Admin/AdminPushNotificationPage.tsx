@@ -27,7 +27,7 @@ interface PushStats {
     pro: number;
     ultimate: number;
     elite: number;
-    merchants: number;
+    vendors: number;
     resellers: number;
     admins: number;
 }
@@ -123,7 +123,7 @@ export const AdminPushNotificationPage: React.FC = () => {
         else if (audience === 'pro') count = stats.pro;
         else if (audience === 'ultimate') count = stats.ultimate;
         else if (audience === 'elite') count = stats.elite;
-        else if (audience === 'merchants') count = stats.merchants;
+        else if (audience === 'vendors') count = stats.vendors;
         else if (audience === 'resellers') count = stats.resellers;
         else if (audience === 'admins') count = stats.admins;
 
@@ -266,7 +266,7 @@ export const AdminPushNotificationPage: React.FC = () => {
                                                 <option value="pro">Pro Plan Only</option>
                                                 <option value="ultimate">Ultimate Plan Only</option>
                                                 <option value="elite">Elite Plan Only</option>
-                                                <option value="merchants">Semua Merchant</option>
+                                                <option value="vendors">Semua Vendor</option>
                                                 <option value="resellers">Semua Reseller</option>
                                                 <option value="admins">Admin Only</option>
                                             </select>

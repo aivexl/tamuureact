@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { useStore } from '../../store/useStore';
-import { useMerchantProfile, useUpdateMerchantProfile } from '../../hooks/queries/useShop';
+import { useVendorProfile, useUpdateVendorProfile } from '../../hooks/queries/useShop';
 import api from '../../lib/api';
 import { INDONESIA_REGIONS } from '../../constants/regions';
 import { MapPin, Search, ChevronDown, Check, X, Camera, Globe, Mail, Phone, Instagram, Facebook, Link as LinkIcon, ExternalLink, ShieldCheck, Youtube, Twitter, Store, ShoppingBag, MessageSquare, MessageCircle } from 'lucide-react';
@@ -21,10 +21,10 @@ const XLogoIcon = ({ className }: { className?: string }) => (
     </svg>
 );
 
-export const MerchantSettings: React.FC = () => {
+export const VendorSettings: React.FC = () => {
     const { user } = useStore();
-    const { data: merchantData, isLoading: isLoadingProfile } = useMerchantProfile(user?.id);
-    const { mutateAsync: updateProfile, isPending: isSaving } = useUpdateMerchantProfile();
+    const { data: vendorData, isLoading: isLoadingProfile } = useVendorProfile(user?.id);
+    const { mutateAsync: updateProfile, isPending: isSaving } = useUpdateVendorProfile();
 
     const bannerInputRef = useRef<HTMLInputElement>(null);
     const logoInputRef = useRef<HTMLInputElement>(null);
@@ -60,9 +60,9 @@ export const MerchantSettings: React.FC = () => {
     const hasHydrated = useRef(false);
 
     useEffect(() => {
-        if (merchantData?.merchant && !hasHydrated.current) {
-            const m = merchantData.merchant;
-            const c = merchantData.contacts || {};
+        if (vendorData?.vendor && !hasHydrated.current) {
+            const m = vendorData.vendor;
+            const c = vendorData.contacts || {};
             setNamaToko(m.nama_toko || '');
             setDeskripsi(m.deskripsi || '');
             setKota(c.kota || m.kota || '');
@@ -87,7 +87,7 @@ export const MerchantSettings: React.FC = () => {
             hasHydrated.current = true;
             setIsDirty(false);
         }
-    }, [merchantData]);
+    }, [vendorData]);
 
     const filteredCities = useMemo(() => {
         const query = citySearch.toLowerCase().trim();
@@ -114,16 +114,16 @@ export const MerchantSettings: React.FC = () => {
     };
 
     const handleSave = async () => {
-        if (!merchantData?.merchant?.id || !user?.id) {
+        if (!vendorData?.vendor?.id || !user?.id) {
             toast.error('Identitas toko tidak ditemukan.');
             return;
         }
 
         const loadingToast = toast.loading('Menyimpan perubahan ke Cloudflare...');
         try {
-            console.log('[Settings] Initiating save for ID:', merchantData.merchant.id);
+            console.log('[Settings] Initiating save for ID:', vendorData.vendor.id);
             await updateProfile({
-                merchantId: merchantData.merchant.id, // Use UUID ID
+                vendorId: vendorData.vendor.id, // Use UUID ID
                 userId: user.id,
                 data: {
                     nama_toko: namaToko,
@@ -290,7 +290,7 @@ export const MerchantSettings: React.FC = () => {
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tautan Toko</label>
                                 <div className="flex items-center bg-slate-100 rounded-2xl px-6 py-4 text-sm font-bold text-slate-400 cursor-not-allowed">
-                                    <Globe className="w-4 h-4 mr-3" /> tamuu.id/shop/{merchantData?.merchant?.slug}
+                                    <Globe className="w-4 h-4 mr-3" /> tamuu.id/shop/{vendorData?.vendor?.slug}
                                 </div>
                             </div>
                         </div>

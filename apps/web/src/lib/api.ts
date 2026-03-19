@@ -768,35 +768,35 @@ export const admin = {
         return await res.json();
     },
 
-    async adminListMerchants(token?: string) {
+    async adminListVendors(token?: string) {
         const headers: Record<string, string> = {};
         if (token) headers['Authorization'] = `Bearer ${token}`;
-        const res = await safeFetch(`${API_BASE}/api/admin/shop/merchants`, { headers });
-        if (!res.ok) throw new Error('Failed to fetch merchants');
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/vendors`, { headers });
+        if (!res.ok) throw new Error('Failed to fetch vendors');
         const data = await res.json();
-        return sanitizeValue(data.merchants || []);
+        return sanitizeValue(data.vendors || []);
     },
 
-    async updateMerchant(id: string, data: any, token?: string) {
+    async updateVendor(id: string, data: any, token?: string) {
         const headers: Record<string, string> = { 'Content-Type': 'application/json' };
         if (token) headers['Authorization'] = `Bearer ${token}`;
-        const res = await safeFetch(`${API_BASE}/api/admin/shop/merchants/${id}`, {
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/vendors/${id}`, {
             method: 'PATCH',
             headers,
             body: JSON.stringify(sanitizeValue(data))
         });
-        if (!res.ok) throw new Error('Failed to update merchant');
+        if (!res.ok) throw new Error('Failed to update vendor');
         return await res.json();
     },
 
-    async deleteMerchant(id: string, token?: string) {
+    async deleteVendor(id: string, token?: string) {
         const headers: Record<string, string> = {};
         if (token) headers['Authorization'] = `Bearer ${token}`;
-        const res = await safeFetch(`${API_BASE}/api/admin/shop/merchants/${id}`, {
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/vendors/${id}`, {
             method: 'DELETE',
             headers
         });
-        if (!res.ok) throw new Error('Failed to delete merchant');
+        if (!res.ok) throw new Error('Failed to delete vendor');
         return await res.json();
     }
 };
@@ -950,7 +950,7 @@ export interface Review {
 
 export interface Product {
     id: string;
-    merchant_id: string;
+    vendor_id: string;
     nama_produk: string;
     deskripsi: string;
     harga_estimasi: number;
@@ -960,7 +960,7 @@ export interface Product {
     slug: string;
     images?: { image_url: string }[];
     nama_toko?: string;
-    merchant_slug?: string;
+    vendor_slug?: string;
     logo_url?: string;
     wishlist_count?: number;
     avg_rating?: number;
@@ -981,7 +981,7 @@ export interface Product {
     kontak_utama?: 'whatsapp' | 'phone' | 'instagram' | 'facebook' | 'tiktok' | 'x' | 'youtube' | 'website' | 'tokopedia' | 'shopee' | 'chat' | 'tiktokshop';
 }
 
-export interface Merchant {
+export interface Vendor {
     id: string;
     user_id: string;
     slug: string;
@@ -1001,23 +1001,23 @@ export interface Merchant {
 }
 
 export const shop = {
-    async getMerchantMe(userId: string) {
-        const res = await safeFetch(`${API_BASE}/api/shop/merchant/me?userId=${userId}&_t=${Date.now()}`, {
+    async getVendorMe(userId: string) {
+        const res = await safeFetch(`${API_BASE}/api/shop/vendor/me?userId=${userId}&_t=${Date.now()}`, {
             cache: 'no-store'
         });
-        if (!res.ok) throw new Error('Failed to fetch merchant profile');
+        if (!res.ok) throw new Error('Failed to fetch vendor profile');
         const data = await res.json();
         return sanitizeValue(data);
     },
 
-    async checkMerchantSlug(slug: string) {
-        const res = await safeFetch(`${API_BASE}/api/shop/merchant/check-slug?slug=${slug}`);
-        if (!res.ok) throw new Error('Failed to check merchant slug availability');
+    async checkVendorSlug(slug: string) {
+        const res = await safeFetch(`${API_BASE}/api/shop/vendor/check-slug?slug=${slug}`);
+        if (!res.ok) throw new Error('Failed to check vendor slug availability');
         return res.json();
     },
 
-    async onboardMerchant(data: any) {
-        const res = await safeFetch(`${API_BASE}/api/shop/merchant/onboard`, {
+    async onboardVendor(data: any) {
+        const res = await safeFetch(`${API_BASE}/api/shop/vendor/onboard`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(sanitizeValue(data))
@@ -1025,8 +1025,8 @@ export const shop = {
         return res.json();
     },
 
-    async updateMerchantSettings(data: any) {
-        const res = await safeFetch(`${API_BASE}/api/shop/merchant/settings`, {
+    async updateVendorSettings(data: any) {
+        const res = await safeFetch(`${API_BASE}/api/shop/vendor/settings`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(sanitizeValue(data))
@@ -1034,16 +1034,16 @@ export const shop = {
         return res.json();
     },
 
-    async getMerchantProducts(merchantId: string) {
-        if (!merchantId) return [];
-        const res = await safeFetch(`${API_BASE}/api/shop/merchant/products?merchant_id=${merchantId}&_t=${Date.now()}`);
-        if (!res.ok) throw new Error('Failed to fetch merchant products');
+    async getVendorProducts(vendorId: string) {
+        if (!vendorId) return [];
+        const res = await safeFetch(`${API_BASE}/api/shop/vendor/products?vendor_id=${vendorId}&_t=${Date.now()}`);
+        if (!res.ok) throw new Error('Failed to fetch vendor products');
         const data = await res.json();
         return sanitizeValue(data.products || []);
     },
 
-    async createMerchantProduct(data: any) {
-        const res = await safeFetch(`${API_BASE}/api/shop/merchant/products`, {
+    async createVendorProduct(data: any) {
+        const res = await safeFetch(`${API_BASE}/api/shop/vendor/products`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(sanitizeValue(data))
@@ -1051,8 +1051,8 @@ export const shop = {
         return res.json();
     },
 
-    async updateMerchantProduct({ id, data }: any) {
-        const res = await safeFetch(`${API_BASE}/api/shop/merchant/products?id=${id}`, {
+    async updateVendorProduct({ id, data }: any) {
+        const res = await safeFetch(`${API_BASE}/api/shop/vendor/products?id=${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(sanitizeValue(data))
@@ -1060,8 +1060,8 @@ export const shop = {
         return res.json();
     },
 
-    async deleteMerchantProduct(productId: string) {
-        const res = await safeFetch(`${API_BASE}/api/shop/merchant/products?id=${productId}`, {
+    async deleteVendorProduct(productId: string) {
+        const res = await safeFetch(`${API_BASE}/api/shop/vendor/products?id=${productId}`, {
             method: 'DELETE'
         });
         return res.json();
@@ -1171,8 +1171,8 @@ export const shop = {
         return res.json();
     },
 
-    async getMerchantStats(merchantId: string) {
-        const res = await safeFetch(`${API_BASE}/api/shop/merchant/stats?merchant_id=${merchantId}`);
+    async getVendorStats(vendorId: string) {
+        const res = await safeFetch(`${API_BASE}/api/shop/vendor/stats?vendor_id=${vendorId}`);
         const data = await res.json();
         return sanitizeValue(data.stats);
     },
@@ -1183,9 +1183,9 @@ export const shop = {
         return sanitizeValue(data.products || []);
     },
 
-    async getMerchantAnalytics(merchantId: string) {
-        if (!merchantId) return null;
-        const res = await safeFetch(`${API_BASE}/api/shop/merchant/analytics?merchant_id=${merchantId}`);
+    async getVendorAnalytics(vendorId: string) {
+        if (!vendorId) return null;
+        const res = await safeFetch(`${API_BASE}/api/shop/vendor/analytics?vendor_id=${vendorId}`);
         return res.json();
     },
 
@@ -1195,7 +1195,7 @@ export const shop = {
         if (query) params.append('q', query);
         const res = await safeFetch(`${API_BASE}/api/shop/directory?${params.toString()}`);
         const data = await res.json();
-        return sanitizeValue(data.merchants || []);
+        return sanitizeValue(data.vendors || []);
     },
 
     async getDiscoverProducts(options: any) {
@@ -1242,12 +1242,12 @@ export const shop = {
         return sanitizeValue(data.ads || []);
     },
 
-    async track(merchantId: string, actionType: string, productId?: string) {
+    async track(vendorId: string, actionType: string, productId?: string) {
         try {
             await safeFetch(`${API_BASE}/api/shop/analytics/track`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ merchant_id: merchantId, action_type: actionType, product_id: productId })
+                body: JSON.stringify({ vendor_id: vendorId, action_type: actionType, product_id: productId })
             });
         } catch (e) {}
     },
@@ -1307,11 +1307,11 @@ export const shop = {
         return res.json();
     },
 
-    async boostShop(merchantId: string, userId: string) {
-        const res = await safeFetch(`${API_BASE}/api/shop/merchant/ads/boost`, {
+    async boostVendor(vendorId: string, userId: string) {
+        const res = await safeFetch(`${API_BASE}/api/shop/vendor/ads/boost`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ merchant_id: merchantId, user_id: userId })
+            body: JSON.stringify({ vendor_id: vendorId, user_id: userId })
         });
         return res.json();
     },
@@ -1325,11 +1325,11 @@ export const shop = {
         return res.json();
     },
 
-    async updateMerchantProfile(merchantId: string, userId: string, data: any) {
-        const res = await safeFetch(`${API_BASE}/api/shop/merchant/profile`, {
+    async updateVendorProfile(vendorId: string, userId: string, data: any) {
+        const res = await safeFetch(`${API_BASE}/api/shop/vendor/profile`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ merchant_id: merchantId, user_id: userId, ...data })
+            body: JSON.stringify({ vendor_id: vendorId, user_id: userId, ...data })
         });
         return res.json();
     },

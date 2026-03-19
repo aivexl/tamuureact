@@ -277,7 +277,7 @@ export const AdminProductListing: React.FC = () => {
                                                             <Edit3 className="w-4 h-4" />
                                                         </button>
                                                         <a 
-                                                            href={`/shop/${product.merchant_slug === 'admin' ? 'umum' : (product.merchant_slug || 'umum')}/${product.slug || product.product_id}`} 
+                                                            href={`/shop/${product.vendor_slug === 'admin' ? 'umum' : (product.vendor_slug || 'umum')}/${product.slug || product.product_id}`} 
                                                             target="_blank" 
                                                             rel="noreferrer"
                                                             className="p-3 bg-white/5 border border-white/10 rounded-xl text-slate-400 hover:text-[#FFBF00] hover:bg-[#FFBF00]/5 transition-all"

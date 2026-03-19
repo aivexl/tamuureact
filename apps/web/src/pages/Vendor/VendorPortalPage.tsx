@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
 import { useStore } from '../../store/useStore';
-import { useMerchantProfile } from '../../hooks/queries/useShop';
-import { MerchantSidebar } from '../../components/Merchant/MerchantSidebar';
-import { MerchantOverview } from '../../components/Merchant/MerchantOverview';
-import { MerchantProducts } from '../../components/Merchant/MerchantProducts';
-import { MerchantSettings } from '../../components/Merchant/MerchantSettings';
-import { MerchantAnalytics } from '../../components/Merchant/MerchantAnalytics';
-import { MerchantAds } from '../../components/Merchant/MerchantAds';
+import { useVendorProfile } from '../../hooks/queries/useShop';
+import { VendorSidebar } from '../../components/Vendor/VendorSidebar';
+import { VendorOverview } from '../../components/Vendor/VendorOverview';
+import { VendorProducts } from '../../components/Vendor/VendorProducts';
+import { VendorSettings } from '../../components/Vendor/VendorSettings';
+import { VendorAnalytics } from '../../components/Vendor/VendorAnalytics';
+import { VendorAds } from '../../components/Vendor/VendorAds';
 import { ChatInterface } from '../../components/Chat/ChatInterface';
 import { useSEO } from '../../hooks/useSEO';
 
@@ -18,21 +18,21 @@ const MenuIcon = ({ className }: { className?: string }) => (
 );
 
 
-export const MerchantPortalPage: React.FC = () => {
+export const VendorPortalPage: React.FC = () => {
     const user = useStore(s => s.user);
     const { storeSlug } = useParams<{ storeSlug: string }>();
     const navigate = useNavigate();
     const location = useLocation();
 
     // CTO Fix: Only trigger query when user ID is definitively available
-    const { data: merchantData, isLoading, isFetching, isError } = useMerchantProfile(user?.id);
+    const { data: vendorData, isLoading, isFetching, isError } = useVendorProfile(user?.id);
     
     const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
     // Tolerance buffer to prevent layout shift / premature bounce
     const [showContent, setShowContent] = useState(false);
 
     useSEO({
-        title: 'Merchant Portal - Tamuu Nexus',
+        title: 'Vendor Portal - Tamuu Nexus',
         description: 'Manage your Tamuu Storefront'
     });
 
@@ -55,32 +55,32 @@ export const MerchantPortalPage: React.FC = () => {
             }
 
             // 2. Definitive lack of profile -> User Dashboard / Onboarding
-            if (merchantData && merchantData.isMerchant === false) {
-                console.warn('[Enterprise Guard] User is not a merchant. Redirecting to user dashboard.');
+            if (vendorData && vendorData.isVendor === false) {
+                console.warn('[Enterprise Guard] User is not a vendor. Redirecting to user dashboard.');
                 navigate('/dashboard', { replace: true });
                 return;
             }
 
             // 3. Has profile, but URL slug is wrong or missing -> Auto Correct
-            if (merchantData?.merchant?.slug && storeSlug !== merchantData.merchant.slug) {
-                console.log(`[Enterprise Guard] Slug mismatch. Expected: ${merchantData.merchant.slug}, Got: ${storeSlug}. Correcting.`);
+            if (vendorData?.vendor?.slug && storeSlug !== vendorData.vendor.slug) {
+                console.log(`[Enterprise Guard] Slug mismatch. Expected: ${vendorData.vendor.slug}, Got: ${storeSlug}. Correcting.`);
                 const currentPath = location.pathname;
-                const subPathMatch = currentPath.split(`/store/${storeSlug}/`)[1];
+                const subPathMatch = currentPath.split(`/vendor/${storeSlug}/`)[1];
                 const subPath = subPathMatch || 'dashboard'; // Preserve where they were trying to go
-                navigate(`/store/${merchantData.merchant.slug}/${subPath}`, { replace: true });
+                navigate(`/vendor/${vendorData.vendor.slug}/${subPath}`, { replace: true });
                 return;
             }
 
             // 4. All checks passed -> Reveal UI
-            if (merchantData?.merchant) {
+            if (vendorData?.vendor) {
                 setShowContent(true);
             }
         }
-    }, [user, isLoading, isFetching, merchantData, storeSlug, navigate, location.pathname]);
+    }, [user, isLoading, isFetching, vendorData, storeSlug, navigate, location.pathname]);
 
 
     // Render Blocking State
-    if (!showContent || isLoading || (!merchantData && isFetching)) {
+    if (!showContent || isLoading || (!vendorData && isFetching)) {
         return (
             <div className="min-h-screen bg-white flex flex-col items-center justify-center">
                 <PremiumLoader color="#0A1128" />
@@ -105,7 +105,7 @@ export const MerchantPortalPage: React.FC = () => {
     return (
         <div className="min-h-screen bg-white text-slate-900 font-inter flex flex-col lg:flex-row overflow-hidden">
             {/* Unified Sidebar */}
-            <MerchantSidebar isMobileMenuOpen={isMobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
+            <VendorSidebar isMobileMenuOpen={isMobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
 
             {/* Main Content Area */}
             <main className="flex-1 flex flex-col min-h-screen min-w-0 lg:ml-72 bg-white relative overflow-y-auto pb-safe">
@@ -123,12 +123,12 @@ export const MerchantPortalPage: React.FC = () => {
                 {/* Routing Area */}
                 <div className="flex-1 overflow-x-hidden relative p-4 sm:p-6 lg:p-8">
                     <Routes>
-                        <Route path="dashboard" element={<MerchantOverview />} />
-                        <Route path="products" element={<MerchantProducts />} />
+                        <Route path="dashboard" element={<VendorOverview />} />
+                        <Route path="products" element={<VendorProducts />} />
                         <Route path="messages" element={<ChatInterface mode="vendor" />} />
-                        <Route path="ads" element={<MerchantAds />} />
-                        <Route path="settings" element={<MerchantSettings />} />
-                        <Route path="analytics" element={<MerchantAnalytics />} />
+                        <Route path="ads" element={<VendorAds />} />
+                        <Route path="settings" element={<VendorSettings />} />
+                        <Route path="analytics" element={<VendorAnalytics />} />
                         <Route path="*" element={<Navigate to="dashboard" replace />} />
                     </Routes>
                 </div>
@@ -137,4 +137,4 @@ export const MerchantPortalPage: React.FC = () => {
     );
 };
 
-export default MerchantPortalPage;
+export default VendorPortalPage;

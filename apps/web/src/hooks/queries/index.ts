@@ -71,4 +71,4 @@ export {
 export { queryKeys, STALE_TIMES } from '@/lib/queryClient';
 
 // Shop Ecosystem
-export { useMerchantProfile } from './useShop';
+export { useVendorProfile } from './useShop';

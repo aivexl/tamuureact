@@ -3,18 +3,18 @@ import { m, AnimatePresence } from 'framer-motion';
 import { Search, Store, UserCheck, ShieldOff, Image as ImageIcon, Plus, Trash2, Link as LinkIcon, UploadCloud, CheckCircle2, AlertTriangle, ShieldAlert, Ban, Power, Trash } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { PremiumLoader } from '../ui/PremiumLoader';
-import { useAdminShopCarousel, useAdminAddCarousel, useAdminDeleteCarousel, useAdminMerchants, useAdminUpdateMerchant } from '../../hooks/queries/useShop';
+import { useAdminShopCarousel, useAdminAddCarousel, useAdminDeleteCarousel, useAdminVendors, useAdminUpdateVendor } from '../../hooks/queries/useShop';
 import { useStore } from '../../store/useStore';
 import { storage, admin } from '../../lib/api';
 
 export const AdminStoreManagement: React.FC = () => {
     const { token } = useStore();
-    const [activeTab, setActiveTab] = useState<'merchants' | 'carousel'>('merchants');
+    const [activeTab, setActiveTab] = useState<'vendors' | 'carousel'>('vendors');
     const [searchQuery, setSearchQuery] = useState('');
     
     // Real Data Hooks
-    const { data: merchants = [], isLoading: isLoadingMerchants, refetch: refetchMerchants } = useAdminMerchants();
-    const updateMerchantMutation = useAdminUpdateMerchant();
+    const { data: vendors = [], isLoading: isLoadingVendors, refetch: refetchVendors } = useAdminVendors();
+    const updateVendorMutation = useAdminUpdateVendor();
 
     // Carousel State
     const { data: slides = [], isLoading: isLoadingCarousel } = useAdminShopCarousel(token || '');
@@ -44,20 +44,20 @@ export const AdminStoreManagement: React.FC = () => {
         }
     };
 
-    const filteredMerchants = Array.isArray(merchants) ? merchants.filter(merchant =>
-        (merchant.nama_toko || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (merchant.email || '').toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredVendors = Array.isArray(vendors) ? vendors.filter(vendor =>
+        (vendor.nama_toko || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (vendor.email || '').toLowerCase().includes(searchQuery.toLowerCase())
     ) : [];
 
-    const handleVerifyMerchant = (id: string, name: string, currentStatus: number) => {
+    const handleVerifyVendor = (id: string, name: string, currentStatus: number) => {
         const newStatus = currentStatus === 1 ? 0 : 1;
-        updateMerchantMutation.mutate({ 
+        updateVendorMutation.mutate({ 
             id, 
             data: { is_verified: newStatus } 
         }, {
             onSuccess: () => {
                 toast.success(`${name} ${newStatus === 1 ? 'Verified' : 'Unverified'} successfully`);
-                refetchMerchants();
+                refetchVendors();
             },
             onError: (err: any) => {
                 toast.error(err.message || 'Failed to update verification status');
@@ -65,15 +65,15 @@ export const AdminStoreManagement: React.FC = () => {
         });
     };
 
-    const handlePromoteMerchant = (id: string, name: string, field: string, currentValue: number) => {
+    const handlePromoteVendor = (id: string, name: string, field: string, currentValue: number) => {
         const newValue = currentValue === 1 ? 0 : 1;
-        updateMerchantMutation.mutate({ 
+        updateVendorMutation.mutate({ 
             id, 
             data: { [field]: newValue } 
         }, {
             onSuccess: () => {
                 toast.success(`${name} status updated successfully`);
-                refetchMerchants();
+                refetchVendors();
             },
             onError: (err: any) => {
                 toast.error(err.message || 'Failed to update status');
@@ -81,19 +81,19 @@ export const AdminStoreManagement: React.FC = () => {
         });
     };
 
-    const handleDeleteMerchant = async (id: string, name: string) => {
-        if (!confirm(`Are you sure you want to PERMANENTLY DELETE merchant "${name}"? This action cannot be undone.`)) return;
+    const handleDeleteVendor = async (id: string, name: string) => {
+        if (!confirm(`Are you sure you want to PERMANENTLY DELETE vendor "${name}"? This action cannot be undone.`)) return;
 
         try {
             // We use a generic delete endpoint if available or call admin API
-            // Let's check api.ts for deleteMerchant
-            const res = await admin.deleteMerchant(id, token || undefined);
+            // Let's check api.ts for deleteVendor
+            const res = await admin.deleteVendor(id, token || undefined);
             if (res.success) {
-                toast.success(`Merchant "${name}" deleted successfully.`);
-                refetchMerchants();
+                toast.success(`Vendor "${name}" deleted successfully.`);
+                refetchVendors();
             }
         } catch (error: any) {
-            toast.error(error.message || 'Failed to delete merchant');
+            toast.error(error.message || 'Failed to delete vendor');
         }
     };
 
@@ -118,8 +118,8 @@ export const AdminStoreManagement: React.FC = () => {
         }
     };
 
-    const getStatusBadge = (merchant: any) => {
-        if (merchant.is_verified === 1) {
+    const getStatusBadge = (vendor: any) => {
+        if (vendor.is_verified === 1) {
             return <span className="px-3 py-1 rounded-full bg-teal-500/10 text-teal-400 text-[9px] font-black uppercase tracking-widest border border-teal-500/20 flex items-center gap-1.5 w-fit"><CheckCircle2 className="w-2.5 h-2.5" /> Verified</span>;
         }
         return <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 text-[9px] font-black uppercase tracking-widest border border-amber-500/20 flex items-center gap-1.5 w-fit"><AlertTriangle className="w-2.5 h-2.5" /> Unverified</span>;
@@ -138,12 +138,12 @@ export const AdminStoreManagement: React.FC = () => {
 
                 <div className="flex bg-white/5 p-1 rounded-xl border border-white/5">
                     <button
-                        onClick={() => setActiveTab('merchants')}
+                        onClick={() => setActiveTab('vendors')}
                         className={`px-6 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-                            activeTab === 'merchants' ? 'bg-teal-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'
+                            activeTab === 'vendors' ? 'bg-teal-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'
                         }`}
                     >
-                        Merchants
+                        Vendors
                     </button>
                     <button
                         onClick={() => setActiveTab('carousel')}
@@ -156,9 +156,9 @@ export const AdminStoreManagement: React.FC = () => {
                 </div>
             </div>
 
-            {activeTab === 'merchants' ? (
+            {activeTab === 'vendors' ? (
                 <div className="bg-[#141414] border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
-                    {/* Merchant Toolbar */}
+                    {/* Vendor Toolbar */}
                     <div className="p-4 border-b border-white/5 flex flex-col md:flex-row gap-6 justify-between bg-[#1A1A1A]">
                         <div className="relative w-full md:w-[450px]">
                             <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-white/20">
@@ -166,7 +166,7 @@ export const AdminStoreManagement: React.FC = () => {
                             </div>
                             <input
                                 type="text"
-                                placeholder="Search merchants by name or email..."
+                                placeholder="Search vendors by name or email..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="w-full bg-white/[0.03] hover:bg-white/[0.05] border border-white/5 rounded-2xl pl-12 pr-6 py-4 text-sm text-white focus:ring-0 focus:bg-white/[0.08] transition-all duration-500 placeholder:text-white/20"
@@ -174,9 +174,9 @@ export const AdminStoreManagement: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Merchant Table */}
+                    {/* Vendor Table */}
                     <div className="overflow-x-auto">
-                        {isLoadingMerchants ? (
+                        {isLoadingVendors ? (
                             <div className="py-32 flex flex-col items-center justify-center gap-4">
                                 <PremiumLoader variant="inline" color="#14B8A6" />
                                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-teal-500/50">Synchronizing Ledger...</p>
@@ -185,46 +185,46 @@ export const AdminStoreManagement: React.FC = () => {
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="border-b border-white/5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 bg-black/40">
-                                        <th className="px-8 py-6">Merchant Profile</th>
+                                        <th className="px-8 py-6">Vendor Profile</th>
                                         <th className="px-8 py-6">Identity</th>
                                         <th className="px-8 py-6">Status</th>
                                         <th className="px-8 py-6 text-right">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
-                                    {filteredMerchants.length === 0 ? (
+                                    {filteredVendors.length === 0 ? (
                                         <tr>
-                                            <td colSpan={4} className="px-8 py-20 text-center text-slate-500 italic font-medium">No merchants found matching your criteria.</td>
+                                            <td colSpan={4} className="px-8 py-20 text-center text-slate-500 italic font-medium">No vendors found matching your criteria.</td>
                                         </tr>
-                                    ) : filteredMerchants.map((merchant) => (
-                                        <tr key={merchant.id} className="hover:bg-white/[0.02] transition-colors group">
+                                    ) : filteredVendors.map((vendor) => (
+                                        <tr key={vendor.id} className="hover:bg-white/[0.02] transition-colors group">
                                             <td className="px-8 py-6">
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
-                                                        {merchant.logo_url ? (
-                                                            <img src={merchant.logo_url} className="w-full h-full object-cover" alt="" />
+                                                        {vendor.logo_url ? (
+                                                            <img src={vendor.logo_url} className="w-full h-full object-cover" alt="" />
                                                         ) : (
                                                             <Store className="w-5 h-5 text-slate-700" />
                                                         )}
                                                     </div>
                                                     <div>
-                                                        <div className="font-black text-white text-base tracking-tight italic">{merchant.nama_toko}</div>
-                                                        <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Slug: {merchant.slug}</div>
+                                                        <div className="font-black text-white text-base tracking-tight italic">{vendor.nama_toko}</div>
+                                                        <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Slug: {vendor.slug}</div>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6">
-                                                <div className="text-sm font-black text-slate-300 tracking-tight">{merchant.email || 'N/A'}</div>
-                                                <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5 italic">ID: {merchant.id.substring(0, 8)}...</div>
+                                                <div className="text-sm font-black text-slate-300 tracking-tight">{vendor.email || 'N/A'}</div>
+                                                <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5 italic">ID: {vendor.id.substring(0, 8)}...</div>
                                             </td>
                                             <td className="px-8 py-6">
                                                 <div className="flex flex-col gap-2">
-                                                    {getStatusBadge(merchant)}
+                                                    {getStatusBadge(vendor)}
                                                     <div className="flex gap-1.5">
-                                                        {merchant.is_sponsored === 1 && (
+                                                        {vendor.is_sponsored === 1 && (
                                                             <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-400 text-[8px] font-black uppercase tracking-widest border border-purple-500/20">Sponsored</span>
                                                         )}
-                                                        {merchant.is_landing_featured === 1 && (
+                                                        {vendor.is_landing_featured === 1 && (
                                                             <span className="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-400 text-[8px] font-black uppercase tracking-widest border border-blue-500/20">Featured</span>
                                                         )}
                                                     </div>
@@ -234,23 +234,23 @@ export const AdminStoreManagement: React.FC = () => {
                                                 <div className="flex items-center justify-end gap-2">
                                                     {/* VERIFY / UNVERIFY */}
                                                     <button
-                                                        onClick={() => handleVerifyMerchant(merchant.id, merchant.nama_toko, merchant.is_verified)}
+                                                        onClick={() => handleVerifyVendor(vendor.id, vendor.nama_toko, vendor.is_verified)}
                                                         className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border ${
-                                                            merchant.is_verified === 1 
+                                                            vendor.is_verified === 1 
                                                             ? 'bg-rose-500/10 text-rose-500 border-rose-500/20 hover:bg-rose-500 hover:text-white' 
                                                             : 'bg-teal-500 text-white border-teal-500 hover:bg-teal-600 shadow-lg shadow-teal-500/20'
                                                         }`}
-                                                        title={merchant.is_verified === 1 ? 'Suspend / Unverify Merchant' : 'Verify Merchant'}
+                                                        title={vendor.is_verified === 1 ? 'Suspend / Unverify Vendor' : 'Verify Vendor'}
                                                     >
-                                                        {merchant.is_verified === 1 ? <Ban className="w-3.5 h-3.5" /> : <UserCheck className="w-3.5 h-3.5" />}
-                                                        {merchant.is_verified === 1 ? 'Suspend' : 'Verify'}
+                                                        {vendor.is_verified === 1 ? <Ban className="w-3.5 h-3.5" /> : <UserCheck className="w-3.5 h-3.5" />}
+                                                        {vendor.is_verified === 1 ? 'Suspend' : 'Verify'}
                                                     </button>
 
                                                     {/* SPONSOR TOGGLE */}
                                                     <button
-                                                        onClick={() => handlePromoteMerchant(merchant.id, merchant.nama_toko, 'is_sponsored', merchant.is_sponsored)}
+                                                        onClick={() => handlePromoteVendor(vendor.id, vendor.nama_toko, 'is_sponsored', vendor.is_sponsored)}
                                                         className={`p-2.5 rounded-xl border transition-all ${
-                                                            merchant.is_sponsored === 1
+                                                            vendor.is_sponsored === 1
                                                             ? 'bg-purple-500 text-white border-purple-500 shadow-lg shadow-purple-500/20'
                                                             : 'bg-white/5 text-slate-500 border-white/5 hover:border-purple-500/50 hover:text-purple-400'
                                                         }`}
@@ -261,9 +261,9 @@ export const AdminStoreManagement: React.FC = () => {
 
                                                     {/* FEATURE TOGGLE */}
                                                     <button
-                                                        onClick={() => handlePromoteMerchant(merchant.id, merchant.nama_toko, 'is_landing_featured', merchant.is_landing_featured)}
+                                                        onClick={() => handlePromoteVendor(vendor.id, vendor.nama_toko, 'is_landing_featured', vendor.is_landing_featured)}
                                                         className={`p-2.5 rounded-xl border transition-all ${
-                                                            merchant.is_landing_featured === 1
+                                                            vendor.is_landing_featured === 1
                                                             ? 'bg-blue-500 text-white border-blue-500 shadow-lg shadow-blue-500/20'
                                                             : 'bg-white/5 text-slate-500 border-white/5 hover:border-blue-500/50 hover:text-blue-400'
                                                         }`}
@@ -274,9 +274,9 @@ export const AdminStoreManagement: React.FC = () => {
 
                                                     {/* DELETE BUTTON */}
                                                     <button
-                                                        onClick={() => handleDeleteMerchant(merchant.id, merchant.nama_toko)}
+                                                        onClick={() => handleDeleteVendor(vendor.id, vendor.nama_toko)}
                                                         className="p-2.5 rounded-xl bg-white/5 text-slate-500 border border-white/5 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all group/del"
-                                                        title="Delete Merchant Permanently"
+                                                        title="Delete Vendor Permanently"
                                                     >
                                                         <Trash2 className="w-4 h-4 group-hover/del:scale-110 transition-transform" />
                                                     </button>

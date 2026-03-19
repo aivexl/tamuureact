@@ -11,7 +11,7 @@ interface SEOData {
     city: string;
     count: number;
     minPrice?: string;
-    merchantNames?: string[];
+    vendorNames?: string[];
 }
 
 /**
@@ -44,8 +44,8 @@ export const assembleSEOTemplate = (template: string, data: SEOData): string => 
     const formattedCategory = data.category.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     const formattedCity = data.city.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     const formattedMinPrice = data.minPrice || 'Tanya Harga';
-    const topMerchants = data.merchantNames && data.merchantNames.length > 0 
-        ? data.merchantNames.slice(0, 3).join(', ') 
+    const topVendors = data.vendorNames && data.vendorNames.length > 0 
+        ? data.vendorNames.slice(0, 3).join(', ') 
         : 'Vendor Pilihan';
 
     // Inject Time Variables (The "Chronos" Strategy)
@@ -57,7 +57,7 @@ export const assembleSEOTemplate = (template: string, data: SEOData): string => 
     assembledText = assembledText.replace(/\{City\}/g, formattedCity);
     assembledText = assembledText.replace(/\{Count\}/g, data.count.toString());
     assembledText = assembledText.replace(/\{MinPrice\}/g, formattedMinPrice);
-    assembledText = assembledText.replace(/\{MerchantNames\}/g, topMerchants);
+    assembledText = assembledText.replace(/\{VendorNames\}/g, topVendors);
 
     return assembledText;
 };

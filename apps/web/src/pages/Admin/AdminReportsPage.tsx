@@ -86,7 +86,7 @@ export const AdminReportsPage: React.FC = () => {
                                             <td className="px-10 py-8 text-right">
                                                 <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
                                                     <a 
-                                                        href={`/shop/${report.merchant_slug}/${report.product_slug || report.product_id}`} 
+                                                        href={`/shop/${report.vendor_slug}/${report.product_slug || report.product_id}`} 
                                                         target="_blank" 
                                                         rel="noreferrer"
                                                         className="p-3 bg-white/5 border border-white/10 rounded-xl text-slate-400 hover:text-[#FFBF00] hover:bg-[#FFBF00]/5 transition-all shadow-lg"

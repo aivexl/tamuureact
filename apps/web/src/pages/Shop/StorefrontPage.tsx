@@ -45,23 +45,23 @@ export const StorefrontPage: React.FC = () => {
     const { data, isLoading } = useStorefront(slug || '', token || undefined);
     const track = useTrackInteraction();
 
-    const merchant = data?.merchant;
+    const vendor = data?.vendor;
     const products = data?.products || [];
     const contacts = data?.contacts || {};
 
     useSEO({
-        title: merchant ? `${merchant.nama_toko} | Tamuu Shop` : 'Storefront - Tamuu Shop',
-        description: merchant?.deskripsi || 'Kunjungi toko vendor terbaik di Tamuu Shop.'
+        title: vendor ? `${vendor.nama_toko} | Tamuu Shop` : 'Storefront - Tamuu Shop',
+        description: vendor?.deskripsi || 'Kunjungi toko vendor terbaik di Tamuu Shop.'
     });
 
     useEffect(() => {
-        if (merchant?.id) {
-            track.mutate({ merchantId: merchant.id, actionType: 'VIEW_PROFILE' });
+        if (vendor?.id) {
+            track.mutate({ vendorId: vendor.id, actionType: 'VIEW_PROFILE' });
         }
-    }, [merchant?.id]);
+    }, [vendor?.id]);
 
     if (isLoading) return <div className="min-h-screen bg-white flex items-center justify-center"><PremiumLoader color="#0A1128" /></div>;
-    if (!merchant) return <div className="min-h-screen bg-white flex flex-col items-center justify-center text-[#0A1128]">
+    if (!vendor) return <div className="min-h-screen bg-white flex flex-col items-center justify-center text-[#0A1128]">
         <h2 className="text-2xl font-black mb-4">Toko Tidak Ditemukan</h2>
         <button onClick={() => navigate('/shop')} className="text-[#FFBF00] font-bold">Kembali ke Direktori</button>
     </div>;
@@ -74,9 +74,9 @@ export const StorefrontPage: React.FC = () => {
                 {/* COMPACT PREMIUM BANNER (Apple Inspired) */}
                 <div className="max-w-7xl mx-auto px-0 sm:px-6 pt-6">
                     <div className="relative h-48 md:h-72 w-full overflow-hidden sm:rounded-[2.5rem] bg-slate-100 border border-slate-100/50 group shadow-sm">
-                        {merchant.banner_url ? (
+                        {vendor.banner_url ? (
                             <img
-                                src={merchant.banner_url}
+                                src={vendor.banner_url}
                                 alt="Banner"
                                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                             />
@@ -94,7 +94,7 @@ export const StorefrontPage: React.FC = () => {
                         <div className="relative group">
                             <div className="w-32 h-32 md:w-40 md:h-40 rounded-[2.5rem] border-[6px] md:border-[10px] border-white overflow-hidden shadow-2xl bg-white transition-transform duration-500 group-hover:scale-[1.02]">
                                 <img
-                                    src={merchant.logo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${merchant.nama_toko}`}
+                                    src={vendor.logo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${vendor.nama_toko}`}
                                     alt="Logo"
                                     className="w-full h-full object-cover"
                                 />
@@ -104,19 +104,19 @@ export const StorefrontPage: React.FC = () => {
                         {/* Title & Info */}
                         <div className="space-y-4 text-center sm:text-left w-full">
                             <div className="flex flex-col sm:flex-row items-center gap-4">
-                                <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-[#0A1128] italic uppercase leading-none">{merchant.nama_toko}</h2>
+                                <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-[#0A1128] italic uppercase leading-none">{vendor.nama_toko}</h2>
                             </div>
                             
                             <div className="flex flex-col sm:flex-row items-center gap-6">
                                 <StarRating 
-                                    rating={merchant.avg_rating || 0} 
-                                    count={merchant.review_count || 0} 
+                                    rating={vendor.avg_rating || 0} 
+                                    count={vendor.review_count || 0} 
                                     size={22} 
                                 />
                                 <div className="hidden sm:block w-px h-4 bg-slate-200" />
                                 <div className="flex items-center gap-2 text-slate-400 font-bold uppercase tracking-widest text-[10px]">
                                     <MapPin className="w-4 h-4 text-[#FFBF00]" />
-                                    {merchant.kota || 'Nasional'}
+                                    {vendor.kota || 'Nasional'}
                                 </div>
                                 <div className="hidden sm:block w-px h-4 bg-slate-200" />
                                 <div className="flex items-center gap-2 text-slate-400 font-bold uppercase tracking-widest text-[10px]">
@@ -126,7 +126,7 @@ export const StorefrontPage: React.FC = () => {
                             </div>
 
                             <p className="text-slate-500 text-base md:text-lg leading-relaxed max-w-2xl font-medium mx-auto sm:mx-0 pt-2 text-center sm:text-left">
-                                {merchant.deskripsi}
+                                {vendor.deskripsi}
                             </p>
                         </div>
 
@@ -141,7 +141,7 @@ export const StorefrontPage: React.FC = () => {
                                     <Lock className={`w-7 h-7 ${contacts.isLocked ? 'text-[#FFBF00]' : 'text-emerald-500'}`} />
                                 </div>
                                 <div className="space-y-1.5 text-center sm:text-left">
-                                    <p className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-black">Secure Merchant Contact</p>
+                                    <p className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-black">Secure Vendor Contact</p>
                                     <p className="text-[#0A1128] font-mono text-xl tracking-tight font-black italic">
                                         {contacts.whatsapp}
                                     </p>
@@ -207,8 +207,8 @@ export const StorefrontPage: React.FC = () => {
                                         key={product.id} 
                                         product={{
                                             ...product,
-                                            merchant_slug: slug,
-                                            nama_toko: merchant.nama_toko
+                                            vendor_slug: slug,
+                                            nama_toko: vendor.nama_toko
                                         }} 
                                         navigate={navigate} 
                                     />
@@ -234,7 +234,7 @@ export const StorefrontPage: React.FC = () => {
             <ShareModal 
                 isOpen={isShareModalOpen}
                 onClose={() => setIsShareModalOpen(false)}
-                title={merchant.nama_toko}
+                title={vendor.nama_toko}
                 url={window.location.href}
                 type="store"
             />

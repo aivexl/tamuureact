@@ -1,7 +1,7 @@
 import React from 'react';
 import { m } from 'framer-motion';
 import { useStore } from '../../store/useStore';
-import { useMerchantProfile, useBoostShop, useMerchantAnalytics } from '../../hooks/queries/useShop';
+import { useVendorProfile, useBoostVendor, useVendorAnalytics } from '../../hooks/queries/useShop';
 
 // Icons
 const ZapIcon = ({ className }: { className?: string }) => (
@@ -20,21 +20,21 @@ const ShieldCheckIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" /><path d="m9 12 2 2 4-4" /></svg>
 );
 
-export const MerchantAds: React.FC = () => {
+export const VendorAds: React.FC = () => {
     const user = useStore(s => s.user);
-    const { data: merchantData, isLoading } = useMerchantProfile(user?.id);
-    const { mutateAsync: boostShop, isPending } = useBoostShop();
+    const { data: vendorData, isLoading } = useVendorProfile(user?.id);
+    const { mutateAsync: boostShop, isPending } = useBoostVendor();
 
-    const merchant = merchantData?.merchant;
-    const isBoosted = merchant?.is_sponsored;
+    const vendor = vendorData?.vendor;
+    const isBoosted = vendor?.is_sponsored;
 
-    const { data: analyticsRes } = useMerchantAnalytics(merchant?.id);
+    const { data: analyticsRes } = useVendorAnalytics(vendor?.id);
     const totals = analyticsRes?.totals || { profileViews: 0, contactClicks: 0, productViews: 0 };
 
     const handleBoost = async () => {
-        if (!merchant?.id || !user?.id) return;
+        if (!vendor?.id || !user?.id) return;
         try {
-            await boostShop({ merchantId: merchant.id, userId: user.id });
+            await boostShop({ vendorId: vendor.id, userId: user.id });
             alert('Your shop has been successfully boosted! (Mock Payment Complete)');
         } catch (error: any) {
             console.error('Boost failed:', error);

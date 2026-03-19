@@ -115,7 +115,7 @@
 - **Global Stability Pass**: Proactively applied similar safety patterns to `.toUpperCase()` and `.substring()` calls across high-traffic files:
     - `BillingPage.tsx` & `GuestManagementPage.tsx` (Tier & Transaction data).
     - `AdminProductListing.tsx` & `AdminProductManagement.tsx` (ID parsing).
-    - `MerchantProducts.tsx` & `ProductDetailPage.tsx` (Storefront logic).
+    - `VendorProducts.tsx` & `ProductDetailPage.tsx` (Storefront logic).
 - **ElementRenderer Refactor**: Hardened the canvas rendering engine with standardized property access from `layersSlice`.
     - Integrated fallback placeholders for `RiveElement` and `MapElement` to prevent build-time failures during component migrations.
     - Standardized `Layer` type imports to ensure 100% type safety across the design ecosystem.
@@ -228,11 +228,11 @@
     - Hardened the `isMe` logic to accurately differentiate between User, Vendor, and Admin modes, preventing bubble fragmentation.
 - **Authentication & Identity Sync**:
     - Refactored `AuthProvider` to prioritize the canonical Cloudflare D1 User ID during initial sync. This prevents identification mismatches between Supabase and the internal chat registry.
-    - Added an "Admin Stealth Mode" identity to the chat stats API, ensuring that administrators can engage in monitoring without requiring a merchant profile.
+    - Added an "Admin Stealth Mode" identity to the chat stats API, ensuring that administrators can engage in monitoring without requiring a vendor profile.
 - **API Performance & Metadata**:
-    - Optimized the merchant stats retrieval endpoint to include shop names and logo URLs, reducing frontend query waterfalls.
+    - Optimized the vendor stats retrieval endpoint to include shop names and logo URLs, reducing frontend query waterfalls.
 - **Dashboard UX**:
-    - Enhanced the dashboard to support `merchantId` deep-linking, allowing the chat interface to automatically open or initiate sessions based on URL parameters.
+    - Enhanced the dashboard to support `vendorId` deep-linking, allowing the chat interface to automatically open or initiate sessions based on URL parameters.
 
 ## [0.8.6] - 2026-03-15
 ### Added
@@ -260,16 +260,16 @@
 
 ## [0.8.4] - 2026-03-15
 ### Added
-- **TikTok Shop Integration**: Added "TikTok Shop" to the Primary Contact Method list across the entire product ecosystem, including API types, Admin Dashboard, and Merchant Portal.
+- **TikTok Shop Integration**: Added "TikTok Shop" to the Primary Contact Method list across the entire product ecosystem, including API types, Admin Dashboard, and Vendor Portal.
 - **Admin Registry Transparency**: Injected TikTok Shop icons and selection options into the Administrative Product Listing form and table for global registry items.
-- **Merchant Workflow Expansion**: Updated the Merchant Product Form to allow vendors to set TikTok Shop as their primary contact platform, enabling a dedicated "Beli di TikTok Shop" CTA on the public Product Detail Page.
+- **Vendor Workflow Expansion**: Updated the Vendor Product Form to allow vendors to set TikTok Shop as their primary contact platform, enabling a dedicated "Beli di TikTok Shop" CTA on the public Product Detail Page.
 - **Data Architecture Persistence**: Updated `api.ts` and backend union types to support `tiktokshop` as a first-class contact method, ensuring reliable persistence in Cloudflare D1.
 
 ### Fixed
 - **TikTok Shop Persistence**: Resolved a critical data omission bug where `tiktokshop_url` was missing from the Administrative Product Registry retrieval query.
-- **Atomic Creation Hardening**: Patched a column mismatch and binding error in both Admin and Merchant product creation endpoints that caused contact metadata to be lost or shifted during the initial save operation.
+- **Atomic Creation Hardening**: Patched a column mismatch and binding error in both Admin and Vendor product creation endpoints that caused contact metadata to be lost or shifted during the initial save operation.
 - **Database Schema Sync**: Verified and synchronized the Cloudflare D1 production schema to ensure `tiktokshop_url` columns are present in both `shop_products` and `shop_contacts` tables.
-- **Marketplace UI Refinement**: Removed grayscale filters and opacity reductions from Shopee and Tokopedia icons across all components (Admin, Merchant, and Public Storefront), ensuring official brand colors are persistently visible.
+- **Marketplace UI Refinement**: Removed grayscale filters and opacity reductions from Shopee and Tokopedia icons across all components (Admin, Vendor, and Public Storefront), ensuring official brand colors are persistently visible.
 
 ## [0.8.3] - 2026-03-14
 ### Fixed
@@ -288,32 +288,32 @@
 
 ## [0.8.0] - 2026-03-14
 ### Fixed
-- **Per-Product Contact Specificity**: Corrected a backend bug where Admin Dashboard edits were failing to save specific contact fields (`whatsapp`, `instagram`, etc.). Products now strictly maintain their individual contact preferences independent of the merchant profile.
-- **Sync Logic Reversion**: Removed bulk propagation logic that previously overwrote all a merchant's products, restoring full control over per-product contact methods.
-- **PDP "Intent First" Logic**: Optimized the Product Detail Page to strictly prioritize the product's individual contact setting, ensuring user intent is respected even when a merchant's global profile differs.
-- **Marketplace Branding Consistency**: Restored specific Tokopedia and Shopee brand logos across the PDP, Admin Registry, and Merchant Dashboard with optimized premium sizing.
+- **Per-Product Contact Specificity**: Corrected a backend bug where Admin Dashboard edits were failing to save specific contact fields (`whatsapp`, `instagram`, etc.). Products now strictly maintain their individual contact preferences independent of the vendor profile.
+- **Sync Logic Reversion**: Removed bulk propagation logic that previously overwrote all a vendor's products, restoring full control over per-product contact methods.
+- **PDP "Intent First" Logic**: Optimized the Product Detail Page to strictly prioritize the product's individual contact setting, ensuring user intent is respected even when a vendor's global profile differs.
+- **Marketplace Branding Consistency**: Restored specific Tokopedia and Shopee brand logos across the PDP, Admin Registry, and Vendor Dashboard with optimized premium sizing.
 
 ### Added
 - **Admin Registry Transparency**: Injected a new "Metode" column into the Administrative Product Listing table, providing instant visibility of the primary contact method for all global registry items.
-- **Merchant Insight Badge**: Added a dynamic "Metode Kontak" badge to product cards in the Merchant Dashboard for immediate visual confirmation of per-product settings.
+- **Vendor Insight Badge**: Added a dynamic "Metode Kontak" badge to product cards in the Vendor Dashboard for immediate visual confirmation of per-product settings.
 
 ## [0.7.9] - 2026-03-14
 ### Fixed
 - **Database Schema Integrity**: Manually provisioned missing `kontak_utama` column in `shop_products` table via remote D1 execution to unblock the migration pipeline.
-- **Merchant Contact Fallback Nexus**: Optimized `ProductDetailPage.tsx` to implement a multi-tier fallback for the primary contact button: Product Level -> Merchant Global Level -> Default (WhatsApp).
-- **Dashboard State Accuracy**: Patched the `kontakUtama` selector in the Merchant Product form to correctly trigger the `isDirty` state, ensuring changes are captured during save operations.
-- **Data Inheritance Refactor**: Removed hardcoded 'whatsapp' default in `handleEdit` to allow products to correctly inherit global merchant settings when specific data is absent.
+- **Vendor Contact Fallback Nexus**: Optimized `ProductDetailPage.tsx` to implement a multi-tier fallback for the primary contact button: Product Level -> Vendor Global Level -> Default (WhatsApp).
+- **Dashboard State Accuracy**: Patched the `kontakUtama` selector in the Vendor Product form to correctly trigger the `isDirty` state, ensuring changes are captured during save operations.
+- **Data Inheritance Refactor**: Removed hardcoded 'whatsapp' default in `handleEdit` to allow products to correctly inherit global vendor settings when specific data is absent.
 
 ## [0.7.8] - 2026-03-14
 ### Fixed
-- **Primary Contact Persistence**: Patched `PUT /api/shop/merchant/settings` and product update endpoints to correctly bind `kontak_utama`, ensuring merchant and product preferences persist in D1.
+- **Primary Contact Persistence**: Patched `PUT /api/shop/vendor/settings` and product update endpoints to correctly bind `kontak_utama`, ensuring vendor and product preferences persist in D1.
 - **Discovery Visibility Nexus**: Added `kontak_utama` to Shop Directory, Product Discovery, and Storefront APIs, ensuring the frontend Product Detail Page (PDP) receives the metadata required for dynamic CTA button rendering.
-- **Robust Approval Preservation**: Refactored the product update logic to preserve existing `is_approved` status for regular merchants, preventing approved products from reverting to "Pending" on update.
+- **Robust Approval Preservation**: Refactored the product update logic to preserve existing `is_approved` status for regular vendors, preventing approved products from reverting to "Pending" on update.
 - **PDP CTA Hardening**: Updated `ProductDetailPage.tsx` with robust fallback logic and support for all 11 contact platforms (Website, Tokopedia, Shopee included), ensuring a functional primary action button even when specific product data is sparse.
 
 ## [0.7.7] - 2026-03-14
 ### Changed
-- **Contact Selection Reversion**: Reverted "Metode Kontak Utama" from grid selection to a premium Apple-standard minimalist dropdown across Admin Product Listing, Merchant Products, and Merchant Settings for better usability.
+- **Contact Selection Reversion**: Reverted "Metode Kontak Utama" from grid selection to a premium Apple-standard minimalist dropdown across Admin Product Listing, Vendor Products, and Vendor Settings for better usability.
 - **Platform Parity**: Maintained full 11-platform support (WhatsApp, Chat, Phone, Instagram, Facebook, TikTok, X, YouTube, Website, Tokopedia, Shopee) within the new dropdown UI.
 
 ## [0.7.6] - 2026-03-14
@@ -323,7 +323,7 @@
 ### UI/UX: Premium Primary Contact Nexus (Apple Standard)
 - **Apple Standard Selection Grid**: Replaced all legacy dropdowns for "Metode Kontak Utama" with a high-fidelity, icon-driven selection grid. This applies to:
     - Admin Product Listing form.
-    - Merchant/User Product form.
+    - Vendor/User Product form.
     - Global Store Settings.
 - **Expanded Platform Support**: Both backend and frontend now fully support a wider range of primary contact actions: WhatsApp, Chat, Phone, Instagram, Facebook, TikTok, X (Twitter), YouTube, Website, Tokopedia, and Shopee.
 - **Action-Oriented Product Detail**: Updated the primary CTA button on the Product Detail Page to use descriptive, platform-specific labels (e.g., "Buka Instagram", "Buka Facebook", "Buka TikTok") instead of generic terms, driving higher user intent and clarity.
@@ -353,26 +353,26 @@
 
 ### Admin: Governance UX Overhaul
 - **Action Dashboard Migration**: Replaced the legacy "Sanctions" menu with an explicit "Actions" suite in Store Management.
-- **Immediate Controls**: Removed conditional toggles for merchant actions; Verify, Sponsor, and Feature buttons are now persistently visible for streamlined operations.
-- **Data Synchronization**: Switched from mock data to live D1 merchant stream in the Admin Store Management component.
-- **Real-time Verification**: Connected the Verify button to the `PATCH /api/admin/shop/merchants` endpoint for instant trust state toggling.
+- **Immediate Controls**: Removed conditional toggles for vendor actions; Verify, Sponsor, and Feature buttons are now persistently visible for streamlined operations.
+- **Data Synchronization**: Switched from mock data to live D1 vendor stream in the Admin Store Management component.
+- **Real-time Verification**: Connected the Verify button to the `PATCH /api/admin/shop/vendors` endpoint for instant trust state toggling.
 
 ## [0.7.2] - 2026-03-13
 **Status**: 🔵 In Development
 **Environment**: Staging/Production
 
 ### Shop: Super Admin Trust & Store Recovery
-- **Instant Merchant Verification**: Re-engineered onboarding API to automatically verify (`is_verified = 1`) new stores created by Super Administrators, ensuring immediate product visibility in discovery.
-- **Manual Store Recovery**: Performed database-level recovery for merchant `test3` (toko), correcting its verification status and ownership to the Super Admin account.
-- **Product Visibility Resolution**: Fixed the issue where product `aa31bcf0` (sewa mobil) was hidden due to its parent merchant being in an unverified state.
+- **Instant Vendor Verification**: Re-engineered onboarding API to automatically verify (`is_verified = 1`) new stores created by Super Administrators, ensuring immediate product visibility in discovery.
+- **Manual Store Recovery**: Performed database-level recovery for vendor `test3` (toko), correcting its verification status and ownership to the Super Admin account.
+- **Product Visibility Resolution**: Fixed the issue where product `aa31bcf0` (sewa mobil) was hidden due to its parent vendor being in an unverified state.
 
 ## [0.7.1] - 2026-03-13
 **Status**: 🔵 In Development
 **Environment**: Staging/Production
 
 ### Shop: Role-Based Governance & Visibility Restoration
-- **Super Admin Auto-Approval Restoration**: Re-implemented immediate auto-approval (`is_approved = 1`) exclusively for Super Administrators (verified by role or email) when posting via the merchant interface.
-- **Regular Admin & User Parity**: Standardized behavior for regular admins and standard users; products posted via the merchant portal now correctly default to `is_approved = 0` (Pending Review), requiring manual vetting via the Admin Registry.
+- **Super Admin Auto-Approval Restoration**: Re-implemented immediate auto-approval (`is_approved = 1`) exclusively for Super Administrators (verified by role or email) when posting via the vendor interface.
+- **Regular Admin & User Parity**: Standardized behavior for regular admins and standard users; products posted via the vendor portal now correctly default to `is_approved = 0` (Pending Review), requiring manual vetting via the Admin Registry.
 - **Backend Auth Hardening**: Enhanced `verifyToken` and product handlers to perform deep identity verification, ensuring administrative bypasses are only granted to the highest privilege level.
 - **Visibility Fix**: Resolved the issue where Super Admin products were not appearing due to the broad strict enforcement introduced in previous versions.
 
@@ -382,8 +382,8 @@
 
 ### Shop: Milestone - Unified Discovery & Privacy Standards
 - **Draft Privacy Hardening**: Fixed a bug where `DRAFT` products were appearing in the "Other Products from Store" section on the Product Detail Page. Added strict frontend filtering for `status === 'PUBLISHED'` and `is_approved === 1`.
-- **Admin Store Simulation**: Implemented auto-verification for administrators during merchant onboarding. This ensures that stores created by admins are immediately eligible for home page discovery (`is_verified = 1`) while still following the standard merchant workflow.
-- **Product Card UI Refactor**: Redesigned the product list in the merchant dashboard for better accessibility:
+- **Admin Store Simulation**: Implemented auto-verification for administrators during vendor onboarding. This ensures that stores created by admins are immediately eligible for home page discovery (`is_verified = 1`) while still following the standard vendor workflow.
+- **Product Card UI Refactor**: Redesigned the product list in the vendor dashboard for better accessibility:
     - Moved all action buttons (Edit, View, Delete) to a dedicated row below the title.
     - Removed hover-dependency; controls are now persistently visible.
     - Added a "View" button with an `ArrowUpRight` icon for seamless live previews.
@@ -394,27 +394,27 @@
 **Environment**: Production
 
 ### Shop: Strict Approval Enforcement
-- **Approval Logic Hardening**: Enforced a strict `is_approved = 0` default for all products created via the merchant interface (`/store/*/products`), including those in `DRAFT` status. This ensures that no administrative bypasses are possible and every product, regardless of the uploader's role, must be manually vetted and approved through the Admin Product Registry before it can satisfy discovery criteria.
+- **Approval Logic Hardening**: Enforced a strict `is_approved = 0` default for all products created via the vendor interface (`/store/*/products`), including those in `DRAFT` status. This ensures that no administrative bypasses are possible and every product, regardless of the uploader's role, must be manually vetted and approved through the Admin Product Registry before it can satisfy discovery criteria.
 
 ## [0.6.98] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production
 
 ### Shop: Consistency & Standardization
-- **Approval Logic Reversion**: Reverted the administrative auto-approval bypass for products uploaded via the merchant interface (`/store/*/products`). All users, including administrators, are now treated as standard merchants when using this route. Published products will default to `is_approved = 0` and require manual approval in the Admin Product Registry to appear in discovery.
+- **Approval Logic Reversion**: Reverted the administrative auto-approval bypass for products uploaded via the vendor interface (`/store/*/products`). All users, including administrators, are now treated as standard vendors when using this route. Published products will default to `is_approved = 0` and require manual approval in the Admin Product Registry to appear in discovery.
 - **Form UI Consistency**: Maintained the refactored product card UI with persistent action buttons and "View" links, while ensuring no hidden administrative flags are automatically applied.
 
 ## [0.6.97] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production
 
-### Shop: Merchant Experience & Administrative Flow
+### Shop: Vendor Experience & Administrative Flow
 - **Admin Auto-Approval**: Implemented an administrative bypass for product approval. When an admin uploads or updates a product via the `/store/*/products` user interface, the product is automatically set to `is_approved = 1`, ensuring immediate visibility on the home page/discovery while still preserving the "normal user" simulation (keeping `is_admin_listing = 0`).
-- **Product Card UI Refactor**: Enhanced the product list in the merchant dashboard:
+- **Product Card UI Refactor**: Enhanced the product list in the vendor dashboard:
     - Relocated **Edit** and **Delete** buttons from the image overlay to a dedicated action row below the product title for better accessibility.
     - Added a new **"View"** button with an `ArrowUpRight` icon for instant preview of live products.
     - Ensured all action buttons are persistently visible (removed hover dependency).
-- **Discovery Fix**: Resolved an issue where certain products (like `AA31BCF0`) were hidden from discovery due to lack of merchant verification or pending approval.
+- **Discovery Fix**: Resolved an issue where certain products (like `AA31BCF0`) were hidden from discovery due to lack of vendor verification or pending approval.
 
 ## [0.6.96] - 2026-03-13
 **Status**: 🟢 Deployed
@@ -434,7 +434,7 @@
 **Status**: 🟢 Deployed
 **Environment**: Production
 
-### Shop: Merchant Photo Gallery Refactor
+### Shop: Vendor Photo Gallery Refactor
 - **UX Optimization**: Relocated image upload and bulk delete controls to be persistently visible below the photo grid. This improves accessibility and prevents accidental interactions within the grid area.
 - **Improved Empty State**: Added consistent placeholder slots when the gallery is empty to maintain layout stability.
 - **Image Intelligence**: Confirmed the implementation of the Unicorn Standard image engine which automatically optimizes all uploads:
@@ -447,26 +447,26 @@
 **Status**: 🟢 Deployed
 **Environment**: Production
 
-### Shop: Merchant Form Completeness
-- **Social & Contact Links**: Expanded the "Tautan Eksternal" section in the Merchant Product Form to include WhatsApp, Phone, Instagram, and Facebook fields. This ensures that the user form is now as complete as the administrative listing form, allowing vendors full control over their transactional and social touchpoints.
+### Shop: Vendor Form Completeness
+- **Social & Contact Links**: Expanded the "Tautan Eksternal" section in the Vendor Product Form to include WhatsApp, Phone, Instagram, and Facebook fields. This ensures that the user form is now as complete as the administrative listing form, allowing vendors full control over their transactional and social touchpoints.
 
 ## [0.6.93] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production
 
 ### Shop: Form Layout Optimization
-- **UX Refinement**: Relocated the "Deskripsi Lengkap" card to be positioned immediately below the "Detail Produk" card in both Merchant and Admin product forms. This aligns the data entry flow with natural cognitive progression (Basic Identity -> Detailed Specs -> Location/Sync -> External Links).
+- **UX Refinement**: Relocated the "Deskripsi Lengkap" card to be positioned immediately below the "Detail Produk" card in both Vendor and Admin product forms. This aligns the data entry flow with natural cognitive progression (Basic Identity -> Detailed Specs -> Location/Sync -> External Links).
 
 ## [0.6.92] - 2026-03-13
 **Status**: 🟢 Deployed
 **Environment**: Production
 
 ### Shop: Unified Contact Synchronization
-- **New Feature**: Added "Sync with Store Settings" toggle in the Merchant Product Form. When active, it automatically synchronizes the product's contact and location data with the global store profile.
+- **New Feature**: Added "Sync with Store Settings" toggle in the Vendor Product Form. When active, it automatically synchronizes the product's contact and location data with the global store profile.
 - **New Feature**: Added "Sync Store History" toggle in the Admin Product Form. This allows administrators to pull the latest contact/location data for a specific brand from the existing registry entries.
-- **Store Settings Enhancement**: Added `google_maps_url` and `alamat_lengkap` support to the Store Profile. Merchants can now manage their global location link in one place.
+- **Store Settings Enhancement**: Added `google_maps_url` and `alamat_lengkap` support to the Store Profile. Vendors can now manage their global location link in one place.
 - **Database Architecture**: Added `google_maps_url` column to the `shop_contacts` table via migration `0056`.
-- **API Worker Update**: Enhanced the merchant profile update endpoint to handle persistent Google Maps URLs.
+- **API Worker Update**: Enhanced the vendor profile update endpoint to handle persistent Google Maps URLs.
 
 ## [0.6.91] - 2026-03-13
 **Status**: 🟢 Deployed
@@ -475,7 +475,7 @@
 ### Shop: Social Media Contact Expansion
 - **X (Twitter) Support**: Fixed missing X social media link in the vendor contact section of the Product Detail Page.
 - **YouTube Support**: Added YouTube channel link support to the vendor contact grid.
-- **Backend Single Product API**: Updated the `/api/shop/product` endpoint to include `youtube` and `x_url` fields from both product and merchant contact sources.
+- **Backend Single Product API**: Updated the `/api/shop/product` endpoint to include `youtube` and `x_url` fields from both product and vendor contact sources.
 
 ## [0.6.90] - 2026-03-13
 **Status**: 🟢 Deployed
@@ -493,7 +493,7 @@
 - **Persistence Refactor**: Rewrote the product update logic in `tamuu-api-worker.js` to use dynamic field updates instead of `COALESCE`. This allows users to correctly clear fields (like removing a marketplace link) which was previously blocked by the `COALESCE(?, field)` pattern.
 - **Admin Registry Expansion**: Fixed a critical data-omission bug in the admin product list query. Added all missing columns (`tokopedia_url`, `shopee_url`, `whatsapp`, `phone`, etc.) to the `SELECT` statement, enabling full administrative editing capabilities.
 - **Admin Promoted Flags Control**: Added a new "Governance & Visibility" control panel to the Admin Product form, allowing administrators to toggle `is_special`, `is_featured`, and `is_landing_featured` flags directly.
-- **Merchant Form Fix**: Resolved an issue where contact fields were being lost during product updates in the user dashboard due to missing keys in the `handleSave` payload.
+- **Vendor Form Fix**: Resolved an issue where contact fields were being lost during product updates in the user dashboard due to missing keys in the `handleSave` payload.
 - **Form State Fix**: Corrected a state initialization bug in `AdminProductListing.tsx` that caused certain promoted flags to be ignored during edits.
 
 ## [0.6.88] - 2026-03-13
@@ -537,10 +537,10 @@
 **Status**: 🟢 Deployed
 **Environment**: Production
 
-### Shop: Merchant Card Restoration & Marketplace Integration
-- **Fix & Restoration**: Restored the Merchant Card (Store Card) design on the Product Detail Page to its original high-fidelity state, ensuring statistics (Products, Rating, Love) are visible and accurate.
+### Shop: Vendor Card Restoration & Marketplace Integration
+- **Fix & Restoration**: Restored the Vendor Card (Store Card) design on the Product Detail Page to its original high-fidelity state, ensuring statistics (Products, Rating, Love) are visible and accurate.
 - **Marketplace Row**: Integrated a third row in the "Kontak Vendor" card for **Shopee** and **Tokopedia** with official logos.
-- **Robust Data Mapping**: Implemented a fallback mechanism for merchant statistics. If `merchantStats` is unavailable, the UI now seamlessly falls back to product-level aggregated data.
+- **Robust Data Mapping**: Implemented a fallback mechanism for vendor statistics. If `vendorStats` is unavailable, the UI now seamlessly falls back to product-level aggregated data.
 - **Structural Optimization**: Cleaned up duplicated code blocks in `ProductDetailPage.tsx` that caused rendering inconsistencies.
 
 ## [0.6.84] - 2026-03-13
@@ -630,7 +630,7 @@
 **Environment**: Production
 
 ### Shop: UI Standardization & Navigation Nexus
-- **Branding Cleanup**: Removed "Verified Premium Vendor" badges and verified icons from the store profile photo and merchant sidebar to simplify vendor branding.
+- **Branding Cleanup**: Removed "Verified Premium Vendor" badges and verified icons from the store profile photo and vendor sidebar to simplify vendor branding.
 - **Navigation Standardization**: Replaced custom headers in `StorefrontPage` and `ProductDetailPage` with the global `Navbar` component, ensuring a unified platform navigation.
 - **Layout Optimization**: Increased top padding (`pt-[140px] md:pt-40`) across standalone shop pages to prevent element collision with the multi-level global navbar.
 - **UI Consistency**: Eliminated redundant profile state management in shop pages by leveraging the centralized `Navbar` logic.
@@ -652,9 +652,9 @@
 **Status**: 🟢 Deployed
 **Environment**: Production
 
-### Shop: Merchant Rating Integration
-- **Merchant Stats Enhancement**: Updated API to include `avg_rating` and `review_count` in merchant statistics for better transparency.
-- **Product Detail Page Integration**: Added star ratings to the merchant card on the Product Detail Page, providing users with immediate vendor credibility.
+### Shop: Vendor Rating Integration
+- **Vendor Stats Enhancement**: Updated API to include `avg_rating` and `review_count` in vendor statistics for better transparency.
+- **Product Detail Page Integration**: Added star ratings to the vendor card on the Product Detail Page, providing users with immediate vendor credibility.
 - **UI Refinement**: Positioned the new rating element strategically between the product count and wishlist count for optimal visual balance.
 
 ## [0.6.68] - 2026-03-11
@@ -675,7 +675,7 @@
 
 ### Shop: Comprehensive Review & Rating System
 - **Database Architecture**: Provisioned `shop_product_reviews` in Cloudflare D1 with atomic integrity constraints.
-- **Unified Star Ratings**: Integrated `StarRating` UI component across all product and merchant interfaces.
+- **Unified Star Ratings**: Integrated `StarRating` UI component across all product and vendor interfaces.
 - **Dynamic Aggregation**: Implemented API subqueries to calculate real-time average ratings and review counts for products and vendors.
 - **Product Detail Page (PDP)**: Overhauled layout to include a full "Ulasan Produk" section with interactive star selection and authenticated text review submissions.
 - **Brand Storefront**: Added vendor-level rating summaries derived from cumulative product feedback.
@@ -687,10 +687,10 @@
 **Environment**: Production
 
 ### Admin: Landing Page Curation
-- **Merchant Placement**: Added ability to curate "Tamuu Vendor" section on the landing page via a new "Landing" toggle in Shop Settings.
+- **Vendor Placement**: Added ability to curate "Tamuu Vendor" section on the landing page via a new "Landing" toggle in Shop Settings.
 - **Product Placement Expansion**: Added "Landing" toggle for products to curate the "Tamuu Shop" section on the landing page.
 - **Unified Manager**: Centralized all storefront and landing page placement logic (Special, Featured, Landing, Verified) into the "Product Placement" tab.
-- **API**: Implemented new admin merchant management endpoints to support verification and placement updates.
+- **API**: Implemented new admin vendor management endpoints to support verification and placement updates.
 
 ## [0.6.65] - 2026-03-10
 **Status**: 🟢 Deployed
@@ -780,6 +780,6 @@
 ### Enterprise SEO Nexus & UI Redesign (Tamuu Super Plan v19.0)
 - **Programmatic SEO Engine**: Deployed dynamic "Chronos Engine" for automatic month/year metadata permutations across `/shop`, `/blog`, and `/invitations`.
 - **Intelligent Structured Data**: Injected `ItemList`, `FAQPage`, `BlogPosting`, and `ImageGallery` JSON-LD schemas to dominate AI search (SGE) and Google Rich Snippets.
-- **High-Fidelity Grid Refactor**: Completely rebuilt the `MerchantCard` and `ProductCard` components to match established aesthetics (`b3edcb0`).
+- **High-Fidelity Grid Refactor**: Completely rebuilt the `VendorCard` and `ProductCard` components to match established aesthetics (`b3edcb0`).
 - **Standardized UI Geometry**: Enforced platform-wide mobile padding (`pt-[140px]`) and premium shadow-depth protocols.
 - **Performance Protocol**: Reduced Largest Contentful Paint (LCP) by 40% through aggressive `framer-motion` layout orchestration.
