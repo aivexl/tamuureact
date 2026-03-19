@@ -4,6 +4,7 @@ import { m, AnimatePresence } from 'framer-motion';
 import { X, Download, Check, Image as ImageIcon } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { PremiumLoader } from '../ui/PremiumLoader';
+import { getPublicDomain } from '../../lib/utils';
 
 interface DownloadCardModalProps {
     isOpen: boolean;
@@ -66,7 +67,7 @@ export const DownloadCardModal: React.FC<DownloadCardModalProps> = ({
     const loc = og.loc || invitation.venue_name || 'LOCATION';
     
     // CEO DESIGN STANDARD: The QR code points to the slug-based route
-    const personalLink = `https://tamuu.id/${invitation.slug}/${guest.slug}-${guest.check_in_code}`;
+    const personalLink = `https://${getPublicDomain()}/${invitation?.slug || 'invitation'}/${guest.slug}-${guest.checkInCode || guest.check_in_code}`;
 
     return (
         <AnimatePresence>

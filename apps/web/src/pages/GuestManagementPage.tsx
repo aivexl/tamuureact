@@ -46,7 +46,6 @@ const QrCodeIcon = ({ className }: { className?: string }) => (
 interface Guest {
     id: string;
     checkInCode: string;
-    check_in_code: string;
     name: string;
     slug: string;
     phone: string | null;
@@ -124,7 +123,6 @@ export const GuestManagementPage: React.FC = () => {
                 guestCount: g.guest_count || g.guestCount || 1,
                 tableNumber: g.table_number || g.tableNumber || '',
                 checkInCode: g.check_in_code || g.checkInCode || '',
-                check_in_code: g.check_in_code || g.checkInCode || '',
                 slug: g.slug || '',
                 sharedAt: g.shared_at || g.sharedAt || null,
                 checkedInAt: g.checked_in_at || g.checkedInAt || null,
@@ -193,7 +191,7 @@ export const GuestManagementPage: React.FC = () => {
     const executeShareWhatsApp = async (guest: Guest) => {
         if (!invitation) return;
         const phone = guest.phone || '';
-        const personalLink = `https://tamuu.id/${invitation.slug}/${guest.slug}-${guest.check_in_code}`;
+        const personalLink = `https://${getPublicDomain()}/${invitation?.slug || 'invitation'}/${guest.slug}-${guest.checkInCode}`;
         const message = `${invitationMessage}\n\nLink Undangan: ${personalLink}`;
         window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
 
@@ -361,7 +359,7 @@ export const GuestManagementPage: React.FC = () => {
             'Tier': g.tier?.toUpperCase(),
             'Nama': g.name,
             'Slug URL': g.slug,
-            'Personal Link': `https://tamuu.id/${invitation?.slug}/${g.slug}-${g.check_in_code}`,
+            'Personal Link': `https://${publicDomain}/${invitation?.slug || 'invitation'}/${g.slug}-${g.checkInCode}`,
             'WhatsApp': g.phone ? `+${g.phone}` : '-',
             'Alamat': g.address,
             'Meja': g.tableNumber || '-',
@@ -425,7 +423,7 @@ export const GuestManagementPage: React.FC = () => {
                     <div className="flex items-center gap-3">
                         <div className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-700 hover:bg-slate-50 transition-all shadow-sm">
                             <AnimatedCopyIcon 
-                                text={`https://${publicDomain}/${invitation?.slug}`} 
+                                text={`https://${publicDomain}/${invitation?.slug || 'invitation'}`} 
                                 size={16} 
                                 successMessage="Link umum disalin!" 
                             />
@@ -624,7 +622,7 @@ export const GuestManagementPage: React.FC = () => {
                                                     </button>
                                                     <div className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-xl transition-all">
                                                         <AnimatedCopyIcon 
-                                                            text={`https://tamuu.id/${invitation?.slug}/${guest.slug}-${guest.check_in_code}`} 
+                                                            text={`https://${getPublicDomain()}/${invitation?.slug || 'invitation'}/${guest.slug}-${guest.checkInCode}`} 
                                                             size={16} 
                                                             successMessage={`Link untuk ${guest.name} disalin!`} 
                                                         />
@@ -788,7 +786,7 @@ export const GuestManagementPage: React.FC = () => {
                 isOpen={showQRModal}
                 onClose={() => setShowQRModal(false)}
                 guestName={selectedQRGuest?.name || 'Tamu'}
-                url={`https://tamuu.id/${invitation?.slug}/${selectedQRGuest?.slug}-${selectedQRGuest?.check_in_code || ''}`}
+                url={`https://${getPublicDomain()}/${invitation?.slug || 'invitation'}/${selectedQRGuest?.slug}-${selectedQRGuest?.checkInCode || ''}`}
                 tier={selectedQRGuest?.tier}
             />
 
@@ -919,7 +917,7 @@ export const GuestManagementPage: React.FC = () => {
                                             {invitationMessage}
                                             <div className="mt-4 pt-4 border-t border-slate-200/50 flex flex-col gap-1 not-italic">
                                                 <span className="text-indigo-600 font-bold">Link Undangan:</span>
-                                                <span className="text-slate-400 break-all">https://tamuu.id/{invitation?.slug}/{selectedShareGuest.slug}-{selectedShareGuest.check_in_code}</span>
+                                                <span className="text-slate-400 break-all">https://{getPublicDomain()}/{invitation?.slug || 'invitation'}/{selectedShareGuest.slug}-{selectedShareGuest.checkInCode}</span>
                                             </div>
                                         </div>
                                     </div>
