@@ -65,10 +65,8 @@ export const DownloadCardModal: React.FC<DownloadCardModalProps> = ({
     const dt = og.time || invitation.event_date || '';
     const loc = og.loc || invitation.venue_name || 'LOCATION';
     
-    // CEO DESIGN STANDARD: The QR code points to the /welcome route
-    // which is intercepted by Cloudflare Pages Functions to inject OG meta tags.
-    // This ensures that sharing the link result from the QR still generates a card.
-    const personalLink = `${window.location.origin}/welcome/${invitation.id}/${guest.id}`;
+    // CEO DESIGN STANDARD: The QR code points to the slug-based route
+    const personalLink = `https://tamuu.id/${invitation.slug}/${guest.slug}-${guest.check_in_code}`;
 
     return (
         <AnimatePresence>
