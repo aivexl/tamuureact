@@ -1,5 +1,12 @@
 # Tamuu Changelog
 
+## [0.9.22] - 2026-03-18
+### Added
+- **Smart Global Rhythm Engine (v4.5 Sync)**: Completely eliminated visual jumps during page transitions and hydration.
+    - **Rhythmic Continuity**: Integrated `performance.now()` to synchronize all loader instances (CSS and React) to a single absolute global phase.
+    - **Zero-Latency Handover**: The transition from the `index.html` splash screen to the hydrated React application is now mathematically identical.
+    - **Persistent Flow**: Animation state now persists across navigation events, creating a professional, always-on terminal aesthetic.
+
 ## [0.9.21] - 2026-03-18
 ### Fixed
 - **PremiumLoader Consistency Engine**: Resolved animation jitter and inconsistency between initial and subsequent loads.
@@ -8,7 +15,7 @@
     - **Memory Optimization**: Pre-calculated the 4x4 snake grid mapping to reduce CPU overhead during high-frequency hydration events.
 
 ## [0.9.20] - 2026-03-18
-### Added
+...
 - **Unified E-Ticket Design (Apple Standard v6.0)**: Redesigned the guest-facing access pass for maximum consistency and enterprise-grade clarity.
     - **Clean Monochrome Aesthetic**: Transitioned all guest tiers to a pure white, high-fidelity Apple-style card layout.
     - **Explicit Tier Identification**: Added the guest's tier as a clean, plain text identifier in the top-right corner, opposite the Tamuu logo.
