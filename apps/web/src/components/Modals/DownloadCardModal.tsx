@@ -31,7 +31,7 @@ export const DownloadCardModal: React.FC<DownloadCardModalProps> = ({
         
         try {
             // small delay to ensure rendering
-            await new Promise(resolve => setTimeout(resolve, 300));
+            await new Promise(resolve => setTimeout(resolve, 800));
 
             const canvas = await html2canvas(cardRef.current, {
                 useCORS: true,
@@ -67,7 +67,7 @@ export const DownloadCardModal: React.FC<DownloadCardModalProps> = ({
     const loc = og.loc || invitation.venue_name || 'LOCATION';
     
     // CEO DESIGN STANDARD: The QR code points to the slug-based route
-    const personalLink = `https://${getPublicDomain()}/${invitation?.slug || 'invitation'}/${guest.slug}-${guest.checkInCode || guest.check_in_code}`;
+    const personalLink = `https://${getPublicDomain()}/${invitation?.slug || 'invitation'}/${guest.slug}`;
 
     return (
         <AnimatePresence>
@@ -97,79 +97,69 @@ export const DownloadCardModal: React.FC<DownloadCardModalProps> = ({
                                 </div>
                                 <div>
                                     <h3 className="text-sm font-black text-slate-900 uppercase tracking-tighter">Kartu Undangan Digital</h3>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Preview & Download</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pratinjau & Unduh</p>
                                 </div>
                             </div>
-                            <button 
-                                onClick={onClose}
-                                className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all"
-                            >
-                                <X size={18} />
+                            <button onClick={onClose} className="p-2 hover:bg-slate-50 rounded-xl transition-colors">
+                                <X size={20} className="text-slate-300" />
                             </button>
                         </div>
 
-                        {/* Preview Area */}
-                        <div className="p-6 sm:p-10 flex flex-col items-center bg-slate-50/50">
-                            {/* The Card Template (1:1 Aspect Ratio) */}
-                            <div className="w-full max-w-[320px] aspect-square shadow-2xl rounded-2xl overflow-hidden relative group">
+                        {/* Card Container */}
+                        <div className="p-8 flex flex-col items-center gap-8">
+                            <div className="relative group">
+                                {/* THE CAPTURABLE CARD AREA */}
                                 <div 
                                     ref={cardRef}
-                                    className="w-full h-full bg-white flex flex-col p-[10%] relative leading-none select-none" 
+                                    className="bg-white rounded-3xl shadow-2xl overflow-hidden aspect-square w-full max-w-[320px] flex flex-col p-8 relative leading-none border border-slate-100"
                                     style={{ fontFamily: "'Inter', sans-serif" }}
                                 >
-                                    {/* Top Section */}
+                                    {/* Top Content */}
                                     <div className="flex justify-between items-start w-full">
                                         <div className="flex flex-col items-start w-[65%]">
-                                            <img src="/assets/tamuu-logo-header.png" alt="Tamuu" className="w-[25%] opacity-40 grayscale mb-[12%]" />
-                                            <div className="text-[7px] text-slate-400 uppercase tracking-[6px] font-bold mb-[6%] opacity-70 leading-none">
+                                            <img src="/assets/tamuu-logo-header.png" alt="Tamuu" className="w-[25%] grayscale opacity-40 mb-6" />
+                                            
+                                            <div className="text-[6px] text-slate-400 uppercase tracking-[8px] font-medium mb-3 opacity-80">
                                                 {(og.event || 'THE WEDDING OF').toUpperCase()}
                                             </div>
                                             
                                             <div className="flex flex-col items-start w-full">
-                                                <div className="text-[22px] font-black text-slate-900 leading-[1] tracking-tighter uppercase mb-1">
+                                                <div className="text-[20px] font-bold text-slate-900 leading-[1.1] tracking-tighter uppercase">
                                                     {og.n1 || names[0] || 'MEMPELAI 1'}
                                                 </div>
-                                                <div className="text-[14px] text-slate-300 font-light italic mb-1">&</div>
-                                                <div className="text-[22px] font-black text-slate-900 leading-[1] tracking-tighter uppercase">
+                                                <div className="text-[14px] text-slate-300 font-extralight my-1">&</div>
+                                                <div className="text-[20px] font-bold text-slate-900 leading-[1.1] tracking-tighter uppercase">
                                                     {og.n2 || names[1] || 'MEMPELAI 2'}
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {/* QR CONTAINER: MUST BE PURE WHITE FOR SCANNER DISCOVERY */}
-                                        <div className="w-[30%] aspect-square flex items-center justify-center bg-white rounded-xl p-2">
+                                        {/* QR Area */}
+                                        <div className="w-[30%] aspect-square bg-white flex items-center justify-center p-1 rounded-lg">
                                             <QRCode 
-                                                value={personalLink} 
-                                                size={512} 
-                                                style={{ height: "auto", maxWidth: "100%", width: "100%" }} 
-                                                viewBox={`0 0 256 256`} 
-                                                level="H" 
+                                                value={personalLink}
+                                                size={256}
+                                                style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                                                viewBox={`0 0 256 256`}
+                                                level="H"
                                             />
                                         </div>
                                     </div>
 
-                                    {/* Middle Section */}
-                                    <div className="flex flex-col items-start mt-[12%]">
-                                        <div className="flex flex-col gap-1.5">
-                                            {dt.includes(',') ? dt.split(',').map((part: string, i: number) => (
-                                                <div key={i} className={`uppercase tracking-[2px] ${i === 0 ? 'text-[9px] text-slate-700 font-black' : 'text-[8px] text-slate-400 font-bold opacity-80'}`}>
-                                                    {part.trim()}
-                                                </div>
-                                            )) : (
-                                                <div className="text-[9px] text-slate-700 font-black uppercase tracking-[2px]">
-                                                    {dt || 'EVENT DATE'}
-                                                </div>
-                                            )}
-                                            <div className="text-[8px] text-slate-400 font-medium mt-1 opacity-80 uppercase tracking-[1px] leading-snug max-w-[80%]">
-                                                {loc}
-                                            </div>
+                                    {/* Logistics */}
+                                    <div className="mt-6 flex flex-col gap-1.5">
+                                        <div className="text-[8px] text-slate-600 font-bold uppercase tracking-[2px]">
+                                            {dt || 'EVENT DATE'}
+                                        </div>
+                                        <div className="text-[7px] text-slate-400 font-normal opacity-70 uppercase tracking-[1px]">
+                                            {loc || 'LOCATION'}
                                         </div>
                                     </div>
 
-                                    {/* Bottom Section */}
+                                    {/* Guest Identity Row - ENTERPRISE ZERO-CUTOFF */}
                                     <div className="mt-auto flex flex-col items-start w-full pt-4 border-t border-slate-50">
                                         <div className="text-[7px] text-black font-bold uppercase tracking-[3px] mb-1 opacity-50">Kepada Yth:</div>
-                                        <div className="text-[16px] font-black text-black break-words leading-tight max-h-[3.6em] overflow-hidden w-full pr-4 uppercase tracking-tighter">
+                                        <div className="text-[16px] font-black text-black leading-tight break-words w-full uppercase tracking-tighter max-h-[3.6em] overflow-hidden">
                                             {guest.name || 'TAMU UNDANGAN'}
                                         </div>
                                         <div className="text-[10px] font-black text-black uppercase mt-0.5">
@@ -185,12 +175,11 @@ export const DownloadCardModal: React.FC<DownloadCardModalProps> = ({
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
                                             exit={{ opacity: 0 }}
-                                            className="absolute inset-0 bg-green-500/90 flex flex-col items-center justify-center text-white p-6 text-center"
+                                            className="absolute inset-0 bg-green-500/90 backdrop-blur-sm rounded-3xl z-20 flex flex-col items-center justify-center text-white"
                                         >
-                                            <m.div
+                                            <m.div 
                                                 initial={{ scale: 0 }}
                                                 animate={{ scale: 1 }}
-                                                transition={{ type: "spring", damping: 12 }}
                                                 className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-green-500 mb-4 shadow-xl"
                                             >
                                                 <Check size={40} strokeWidth={4} />

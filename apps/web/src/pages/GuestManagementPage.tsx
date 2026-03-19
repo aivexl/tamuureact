@@ -191,7 +191,7 @@ export const GuestManagementPage: React.FC = () => {
     const executeShareWhatsApp = async (guest: Guest) => {
         if (!invitation) return;
         const phone = guest.phone || '';
-        const personalLink = `https://${getPublicDomain()}/${invitation?.slug || 'invitation'}/${guest.slug}-${guest.checkInCode}`;
+        const personalLink = `https://${getPublicDomain()}/${invitation?.slug || 'invitation'}/${guest.slug}`;
         const message = `${invitationMessage}\n\nLink Undangan: ${personalLink}`;
         window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
 
@@ -359,7 +359,7 @@ export const GuestManagementPage: React.FC = () => {
             'Tier': g.tier?.toUpperCase(),
             'Nama': g.name,
             'Slug URL': g.slug,
-            'Personal Link': `https://${publicDomain}/${invitation?.slug || 'invitation'}/${g.slug}-${g.checkInCode}`,
+            'Personal Link': `https://${publicDomain}/${invitation?.slug || 'invitation'}/${g.slug}`,
             'WhatsApp': g.phone ? `+${g.phone}` : '-',
             'Alamat': g.address,
             'Meja': g.tableNumber || '-',
@@ -622,7 +622,7 @@ export const GuestManagementPage: React.FC = () => {
                                                     </button>
                                                     <div className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-xl transition-all">
                                                         <AnimatedCopyIcon 
-                                                            text={`https://${getPublicDomain()}/${invitation?.slug || 'invitation'}/${guest.slug}-${guest.checkInCode}`} 
+                                                            text={`https://${getPublicDomain()}/${invitation?.slug || 'invitation'}/${guest.slug}`} 
                                                             size={16} 
                                                             successMessage={`Link untuk ${guest.name} disalin!`} 
                                                         />
@@ -786,7 +786,7 @@ export const GuestManagementPage: React.FC = () => {
                 isOpen={showQRModal}
                 onClose={() => setShowQRModal(false)}
                 guestName={selectedQRGuest?.name || 'Tamu'}
-                url={`https://${getPublicDomain()}/${invitation?.slug || 'invitation'}/${selectedQRGuest?.slug}-${selectedQRGuest?.checkInCode || ''}`}
+                url={`https://${getPublicDomain()}/${invitation?.slug || 'invitation'}/${selectedQRGuest?.slug || ''}`}
                 tier={selectedQRGuest?.tier}
             />
 
@@ -917,7 +917,7 @@ export const GuestManagementPage: React.FC = () => {
                                             {invitationMessage}
                                             <div className="mt-4 pt-4 border-t border-slate-200/50 flex flex-col gap-1 not-italic">
                                                 <span className="text-indigo-600 font-bold">Link Undangan:</span>
-                                                <span className="text-slate-400 break-all">https://{getPublicDomain()}/{invitation?.slug || 'invitation'}/{selectedShareGuest.slug}-{selectedShareGuest.checkInCode}</span>
+                                                <span className="text-slate-400 break-all">https://{getPublicDomain()}/{invitation?.slug || 'invitation'}/{selectedShareGuest.slug}</span>
                                             </div>
                                         </div>
                                     </div>
