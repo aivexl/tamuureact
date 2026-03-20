@@ -21,6 +21,26 @@ import yoga_wasm from './yoga.wasm';
 let resvgInitialized = false;
 let satoriInitialized = false;
 
+function weightedRandom(items, limit) {
+    if (items.length <= limit) return items;
+    const selected = [];
+    const pool = [...items];
+    
+    for (let i = 0; i < Math.min(limit, pool.length); i++) {
+        const totalWeight = pool.reduce((sum, item) => sum + Math.max(item.bid_amount || 1, 1), 0);
+        let random = Math.random() * totalWeight;
+        
+        for (let j = 0; j < pool.length; j++) {
+            random -= Math.max(pool[j].bid_amount || 1, 1);
+            if (random <= 0) {
+                selected.push(pool.splice(j, 1)[0]);
+                break;
+            }
+        }
+    }
+    return selected;
+}
+
 export default {
     async fetch(request, env, ctx) {
         const url = new URL(request.url);
@@ -233,57 +253,87 @@ export default {
 
         // HELPER: Sync Midtrans Status with DB (Common Logic)
         const syncMidtransStatus = async (transactionId) => {
+            console.log(`[Midtrans/Sync] Initiating sync for ID: ${transactionId}`);
+            
+            if (!env.MIDTRANS_SERVER_KEY) {
+                console.error('[Midtrans/Sync] CRITICAL: MIDTRANS_SERVER_KEY missing in env');
+                return { success: false, error: 'env_not_configured' };
+            }
+
             const transaction = await env.DB.prepare('SELECT * FROM billing_transactions WHERE id = ?').bind(transactionId).first();
             if (!transaction) return { success: false, error: 'transaction_not_found' };
 
             const orderId = transaction.external_id;
-            const isSandbox = orderId.includes('sandbox') || env.MIDTRANS_SERVER_KEY.startsWith('SB-');
-            const baseUrl = isSandbox ? 'https://api.sandbox.midtrans.com/v2' : 'https://api.midtrans.com/v2';
+            const isProdEnv = env.MIDTRANS_IS_PRODUCTION === 'true' || env.MIDTRANS_IS_PRODUCTION === true;
+            const baseUrl = isProdEnv ? 'https://api.midtrans.com/v2' : 'https://api.sandbox.midtrans.com/v2';
+            
             const authHeader = `Basic ${btoa(env.MIDTRANS_SERVER_KEY + ':')}`;
 
-            const res = await fetch(`${baseUrl}/${orderId}/status`, { headers: { 'Authorization': authHeader, 'Accept': 'application/json' } });
+            try {
+                const res = await fetch(`${baseUrl}/${orderId}/status`, { 
+                    headers: { 
+                        'Authorization': authHeader, 
+                        'Accept': 'application/json' 
+                    } 
+                });
 
-            if (!res.ok) {
-                if (res.status === 404) return { success: false, error: 'midtrans_404', message: 'Not found in Midtrans' };
-                return { success: false, error: 'midtrans_error', details: await res.json() };
-            }
-
-            const data = await res.json();
-            const status = data.transaction_status;
-            const paymentType = data.payment_type;
-
-            let newStatus = transaction.status;
-            if (status === 'settlement' || status === 'capture') newStatus = 'PAID';
-            else if (status === 'pending') newStatus = 'PENDING';
-            else if (status === 'expire') newStatus = 'EXPIRED';
-            else if (status === 'cancel' || status === 'deny') newStatus = 'CANCELLED';
-
-            if (newStatus !== transaction.status) {
-                await env.DB.prepare('UPDATE billing_transactions SET status = ?, payment_channel = ?, updated_at = datetime("now") WHERE id = ?').bind(newStatus, paymentType || transaction.payment_channel, transactionId).run();
-
-                if (newStatus === 'PAID') {
-                    const userId = transaction.user_id;
-                    const tier = transaction.tier;
-                    // CTO POLICY: ALL packages are now limited to 1 invitation slot
-                    let maxInvitations = 1; 
-                    
-                    // NEW DURATION POLICY:
-                    // Pro: 90 days, Ultimate: 180 days, Elite: 365 days
-                    let durationDays = 30; // Default
-                    if (tier === 'pro' || tier === 'vip') durationDays = 90;
-                    else if (tier === 'ultimate' || tier === 'platinum') durationDays = 180;
-                    else if (tier === 'elite' || tier === 'vvip') durationDays = 365;
-
-                    const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
-
-                    await env.DB.prepare('UPDATE users SET tier = ?, max_invitations = ?, expires_at = ?, updated_at = datetime("now") WHERE id = ?').bind(tier, maxInvitations, expiresAt, userId).run();
-                    // Update all user's invitations expiry date
-                    await env.DB.prepare('UPDATE invitations SET expires_at = ?, updated_at = datetime("now") WHERE user_id = ?').bind(expiresAt, userId).run();
-                    await env.DB.prepare('UPDATE billing_transactions SET paid_at = datetime("now") WHERE id = ?').bind(transactionId).run();
+                if (!res.ok) {
+                    const errData = await res.json();
+                    console.error('[Midtrans/Sync] API Error:', errData);
+                    return { success: false, error: 'midtrans_api_error', details: errData };
                 }
-            }
 
-            return { success: true, status: newStatus, midtrans_status: status, updated: newStatus !== transaction.status };
+                const data = await res.json();
+                const status = data.transaction_status;
+                const paymentType = data.payment_type;
+
+                let newStatus = transaction.status;
+                if (status === 'settlement' || status === 'capture') newStatus = 'PAID';
+                else if (status === 'pending') newStatus = 'PENDING';
+                else if (status === 'expire') newStatus = 'EXPIRED';
+                else if (status === 'cancel' || status === 'deny') newStatus = 'CANCELLED';
+
+                if (newStatus !== transaction.status) {
+                    // Update Transaction
+                    await env.DB.prepare('UPDATE billing_transactions SET status = ?, payment_channel = ?, updated_at = datetime("now") WHERE id = ?').bind(newStatus, paymentType || transaction.payment_channel, transactionId).run();
+
+                    if (newStatus === 'PAID') {
+                        // 1. Check if it's an Ad Topup
+                        if (transaction.tier?.startsWith('AD_TOPUP:')) {
+                            const campaignId = transaction.tier.split(':')[1];
+                            const topupAmount = transaction.amount;
+                            
+                            const ad = await env.DB.prepare('SELECT vendor_id FROM shop_ads WHERE id = ?').bind(campaignId).first();
+                            if (ad) {
+                                await env.DB.prepare('UPDATE shop_vendors SET ad_balance = ad_balance + ? WHERE id = ?').bind(topupAmount, ad.vendor_id).run();
+                                console.log(`[Ads/Sync] Global Topup successful for Vendor: ${ad.vendor_id}`);
+                            }
+                        } else {
+                            // Standard Subscription
+                            const userId = transaction.user_id;
+                            const tier = transaction.tier;
+                            let maxInvitations = 1; 
+                            
+                            let durationDays = 30; 
+                            if (tier === 'pro' || tier === 'vip') durationDays = 90;
+                            else if (tier === 'ultimate' || tier === 'platinum') durationDays = 180;
+                            else if (tier === 'elite' || tier === 'vvip') durationDays = 365;
+
+                            const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
+
+                            await env.DB.prepare('UPDATE users SET tier = ?, max_invitations = ?, expires_at = ?, updated_at = datetime("now") WHERE id = ?').bind(tier, maxInvitations, expiresAt, userId).run();
+                            await env.DB.prepare('UPDATE invitations SET expires_at = ?, updated_at = datetime("now") WHERE user_id = ?').bind(expiresAt, userId).run();
+                        }
+                        
+                        await env.DB.prepare('UPDATE billing_transactions SET paid_at = datetime("now") WHERE id = ?').bind(transactionId).run();
+                    }
+                }
+
+                return { success: true, status: newStatus, midtrans_status: status, updated: newStatus !== transaction.status };
+            } catch (fetchErr) {
+                console.error('[Midtrans/Sync] Fetch failed:', fetchErr);
+                return { success: false, error: 'network_error', message: fetchErr.message };
+            }
         };
 
         try {
@@ -649,37 +699,55 @@ export default {
                     }
 
                     // Server-side Pricing Safeguard
-                    const pricing = { 'pro': 99000, 'ultimate': 149000, 'elite': 199000 };
-                    const expectedPrice = pricing[tier];
-                    if (expectedPrice && amount !== expectedPrice) {
-                        console.warn(`[Billing] Price mismatch detected for ${tier}. Expected ${expectedPrice}, got ${amount}. Overriding.`);
-                        amount = expectedPrice;
+                    if (!tier.startsWith('AD_TOPUP:')) {
+                        const pricing = { 'pro': 99000, 'ultimate': 149000, 'elite': 199000 };
+                        const expectedPrice = pricing[tier];
+                        if (expectedPrice && amount !== expectedPrice) {
+                            console.warn(`[Billing] Price mismatch detected for ${tier}. Expected ${expectedPrice}, got ${amount}. Overriding.`);
+                            amount = expectedPrice;
+                        }
                     }
 
                     // BLOCKING LOGIC: Check for existing PENDING transaction
-                    try {
-                        const { results: pendingResults } = await env.DB.prepare(
-                            'SELECT * FROM billing_transactions WHERE user_id = ? AND status = ?'
-                        ).bind(userId, 'PENDING').all();
+                    if (!tier.startsWith('AD_TOPUP:')) {
+                        try {
+                            const { results: pendingResults } = await env.DB.prepare(
+                                'SELECT * FROM billing_transactions WHERE user_id = ? AND status = ?'
+                            ).bind(userId, 'PENDING').all();
 
-                        if (pendingResults && pendingResults.length > 0) {
-                            console.log(`[Billing] User ${userId} has ${pendingResults.length} pending transactions. Auto-cancelling for new session.`);
-                            await env.DB.prepare(
-                                'UPDATE billing_transactions SET status = ? WHERE user_id = ? AND status = ?'
-                            ).bind('CANCELLED', userId, 'PENDING').run();
+                            if (pendingResults && pendingResults.length > 0) {
+                                console.log(`[Billing] User ${userId} has ${pendingResults.length} pending transactions. Auto-cancelling for new session.`);
+                                await env.DB.prepare(
+                                    'UPDATE billing_transactions SET status = ? WHERE user_id = ? AND status = ?'
+                                ).bind('CANCELLED', userId, 'PENDING').run();
+                            }
+                        } catch (dbErr) {
+                            console.error('DB Error checking pending:', dbErr);
                         }
-                    } catch (dbErr) {
-                        console.error('DB Error checking pending:', dbErr);
                     }
 
-                    if (!env.MIDTRANS_SERVER_KEY) {
-                        return json({ error: 'Midtrans Server Key is not configured in worker environment' }, { ...corsHeaders, status: 500 });
+                    // FORENSIC LOG: Verify environment without exposing secrets
+                    const rawKey = env.MIDTRANS_SERVER_KEY || "";
+                    console.log(`[Billing] Env Keys: ${Object.keys(env).join(', ')}`);
+                    console.log(`[Billing] Server Key Present: ${!!rawKey}, Length: ${rawKey.length}`);
+
+                    const serverKey = rawKey.trim();
+                    if (!serverKey) {
+                        return json({ 
+                            error: 'Midtrans Server Key is missing or empty in environment' 
+                        }, { ...corsHeaders, status: 500 });
                     }
 
                     const orderId = `order-${Date.now()}-${userId.substring(0, 8)}`;
-                    const authHeader = `Basic ${btoa(env.MIDTRANS_SERVER_KEY + ':')}`;
+                    // Midtrans Auth: Base64(ServerKey + ":")
+                    const authHeader = `Basic ${btoa(serverKey + ':')}`;
+                    
+                    const isProdEnv = env.MIDTRANS_IS_PRODUCTION === 'true' || env.MIDTRANS_IS_PRODUCTION === true;
+                    const midtransBaseUrl = isProdEnv ? 'https://app.midtrans.com/snap/v1/transactions' : 'https://app.sandbox.midtrans.com/snap/v1/transactions';
+                    
+                    console.log(`[Midtrans] Env: ${isProdEnv ? 'PROD' : 'SANDBOX'}, Target: ${midtransBaseUrl}`);
 
-                    const midtransResponse = await fetch('https://app.sandbox.midtrans.com/snap/v1/transactions', {
+                    const midtransResponse = await fetch(midtransBaseUrl, {
                         method: 'POST',
                         headers: {
                             'Authorization': authHeader,
@@ -689,13 +757,13 @@ export default {
                         body: JSON.stringify({
                             transaction_details: {
                                 order_id: orderId,
-                                gross_amount: amount
+                                gross_amount: Math.floor(Number(amount))
                             },
                             item_details: [{
                                 id: tier,
-                                price: amount,
+                                price: Math.floor(Number(amount)),
                                 quantity: 1,
-                                name: `Tamuu ${tier.toUpperCase()} Subscription`
+                                name: tier.startsWith('AD_TOPUP:') ? 'Tamuu Ads Budget Topup' : `Tamuu ${tier.toUpperCase()} Subscription`
                             }],
                             customer_details: {
                                 first_name: name || 'User',
@@ -705,6 +773,11 @@ export default {
                                 "bni_va", "cimb_va", "shopeepay", "permata_va",
                                 "bri_va", "qris", "bsi_va", "gopay", "echannel", "dana"
                             ],
+                            callbacks: {
+                                finish: "https://app.tamuu.id/billing?status=success",
+                                unfinish: "https://app.tamuu.id/billing?status=pending",
+                                error: "https://app.tamuu.id/billing?status=error"
+                            },
                             credit_card: {
                                 secure: true
                             }
@@ -841,32 +914,44 @@ export default {
                     ).bind(order_id).first();
 
                     if (transaction && transaction.status !== 'PAID') {
-                    const userId = transaction.user_id;
-                    const tier = transaction.tier;
-                    // CTO POLICY: ALL packages limited to 1 slot
-                    let maxInvitations = 1; 
+                        // 1. Check if it's an Ad Topup
+                        if (transaction.tier?.startsWith('AD_TOPUP:')) {
+                            // Extract campaignId just for tracking, but top up the VENDOR's global balance
+                            const topupAmount = transaction.amount;
+                            
+                            // Find vendor ID from any existing campaign or from the topup metadata if we had it
+                            // For now, we resolve vendor via the campaign ID in the tier
+                            const campaignId = transaction.tier.split(':')[1];
+                            const ad = await env.DB.prepare('SELECT vendor_id FROM shop_ads WHERE id = ?').bind(campaignId).first();
 
-                    let durationDays = 30;
-                    if (tier === 'pro' || tier === 'vip') durationDays = 90;
-                    else if (tier === 'ultimate' || tier === 'platinum') durationDays = 180;
-                    else if (tier === 'elite' || tier === 'vvip') durationDays = 365;
+                            if (ad) {
+                                await env.DB.batch([
+                                    env.DB.prepare('UPDATE billing_transactions SET status = "PAID", paid_at = datetime("now"), payment_channel = ? WHERE external_id = ?').bind(payment_type || 'midtrans', order_id),
+                                    env.DB.prepare('UPDATE shop_vendors SET ad_balance = ad_balance + ? WHERE id = ?').bind(topupAmount, ad.vendor_id),
+                                    // Mark campaign as active just in case
+                                    env.DB.prepare('UPDATE shop_ads SET status = "ACTIVE", is_active = 1 WHERE id = ?').bind(campaignId)
+                                ]);
+                                console.log(`[Ads] Global Topup successful for Vendor: ${ad.vendor_id}, Amount: ${topupAmount}`);
+                            }
+                        } else {
+                            // Standard Subscription Provisioning
+                            const userId = transaction.user_id;
+                            const tier = transaction.tier;
+                            let maxInvitations = 1; 
 
-                    const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
+                            let durationDays = 30;
+                            if (tier === 'pro' || tier === 'vip') durationDays = 90;
+                            else if (tier === 'ultimate' || tier === 'platinum') durationDays = 180;
+                            else if (tier === 'elite' || tier === 'vvip') durationDays = 365;
 
-                    // 1. Update Transaction
-                    await env.DB.prepare(
-                        'UPDATE billing_transactions SET status = ?, paid_at = datetime("now"), payment_channel = ? WHERE external_id = ?'
-                    ).bind('PAID', payment_type || 'midtrans', order_id).run();
+                            const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
 
-                    // 2. Provision User
-                    await env.DB.prepare(
-                        'UPDATE users SET tier = ?, max_invitations = ?, expires_at = ?, updated_at = datetime("now") WHERE id = ?'
-                    ).bind(tier, maxInvitations, expiresAt, userId).run();
-
-                    // 3. Update all user's invitations expiry date
-                    await env.DB.prepare(
-                        'UPDATE invitations SET expires_at = ?, updated_at = datetime("now") WHERE user_id = ?'
-                    ).bind(expiresAt, userId).run();
+                            await env.DB.batch([
+                                env.DB.prepare('UPDATE billing_transactions SET status = "PAID", paid_at = datetime("now"), payment_channel = ? WHERE external_id = ?').bind(payment_type || 'midtrans', order_id),
+                                env.DB.prepare('UPDATE users SET tier = ?, max_invitations = ?, expires_at = ?, updated_at = datetime("now") WHERE id = ?').bind(tier, maxInvitations, expiresAt, userId),
+                                env.DB.prepare('UPDATE invitations SET expires_at = ?, updated_at = datetime("now") WHERE user_id = ?').bind(expiresAt, userId)
+                            ]);
+                        }
                     }
 
                 } else if (transaction_status === 'expire') {
@@ -2439,12 +2524,12 @@ export default {
                                 UPDATE shop_ads 
                                 SET image_url = ?, link_url = ?, title = ?, position = ?, is_active = ?
                                 WHERE id = ?
-                            `).bind(image_url, link_url || null, title || null, position || 'PRODUCT_DETAIL_SIDEBAR', is_active ? 1 : 0, id).run();
+                            `).bind(image_url, link_url || null, title || null, position || 'PRODUCT_LIST_TOP', is_active ? 1 : 0, id).run();
                         } else {
                             await env.DB.prepare(`
                                 INSERT INTO shop_ads (id, image_url, link_url, title, position, is_active)
                                 VALUES (?, ?, ?, ?, ?, ?)
-                            `).bind(adId, image_url, link_url || null, title || null, position || 'PRODUCT_DETAIL_SIDEBAR', is_active ? 1 : 0).run();
+                            `).bind(adId, image_url, link_url || null, title || null, position || 'PRODUCT_LIST_TOP', is_active ? 1 : 0).run();
                         }
 
                         return json({ success: true, id: adId }, corsHeaders);
@@ -2701,19 +2786,50 @@ export default {
 
             if (path === '/api/shop/wishlist/toggle' && method === 'POST') {
                 try {
-                    const { user_id, product_id } = await request.json();
+                    const { user_id, product_id, email } = await request.json();
                     if (!user_id || !product_id) return json({ error: 'Missing fields' }, { ...corsHeaders, status: 400 });
 
-                    const existing = await env.DB.prepare('SELECT id FROM shop_wishlist WHERE user_id = ? AND product_id = ?').bind(user_id, product_id).first();
+                    // SILENT SELF-HEALING: Ensure user exists in D1
+                    let user = await env.DB.prepare('SELECT id FROM users WHERE id = ?').bind(user_id).first();
+                    let finalUserId = user_id;
+
+                    if (!user && email) {
+                        user = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
+                        if (user) finalUserId = user.id;
+                    }
+
+                    if (!user) {
+                        const shortId = user_id.substring(0, 4).toUpperCase();
+                        const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+                        const tamuuId = `TAMUU-USER-${shortId}-${randomSuffix}`;
+                        
+                        const trialEndDate = new Date();
+                        trialEndDate.setDate(trialEndDate.getDate() + 30);
+
+                        await env.DB.prepare(
+                            `INSERT INTO users (id, email, tamuu_id, tier, role, permissions, max_invitations, invitation_count, expires_at) 
+                             VALUES (?, ?, ?, ?, ?, ?, 1, 0, ?)`
+                        ).bind(
+                            user_id, 
+                            email || `user-${user_id.substring(0, 8)}@tamuu.id`, 
+                            tamuuId, 
+                            'free', 
+                            'user', 
+                            '[]', 
+                            trialEndDate.toISOString()
+                        ).run();
+                    }
+
+                    const existing = await env.DB.prepare('SELECT id FROM shop_wishlist WHERE user_id = ? AND product_id = ?').bind(finalUserId, product_id).first();
 
                     if (existing) {
-                        await env.DB.prepare('DELETE FROM shop_wishlist WHERE user_id = ? AND product_id = ?').bind(user_id, product_id).run();
+                        await env.DB.prepare('DELETE FROM shop_wishlist WHERE user_id = ? AND product_id = ?').bind(finalUserId, product_id).run();
                         return json({ success: true, action: 'removed' }, corsHeaders);
                     } else {
                         await env.DB.prepare('INSERT INTO shop_wishlist (id, user_id, product_id, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)')
-                            .bind(crypto.randomUUID(), user_id, product_id).run();
+                            .bind(crypto.randomUUID(), finalUserId, product_id).run();
 
-                        // Also track as FAVORITE_PRODUCT in analytics
+                        // Track as FAVORITE_PRODUCT in analytics
                         const prod = await env.DB.prepare('SELECT vendor_id FROM shop_products WHERE id = ?').bind(product_id).first();
                         if (prod) {
                             await env.DB.prepare('INSERT INTO shop_analytics (id, vendor_id, action_type, product_id, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)')
@@ -2723,7 +2839,8 @@ export default {
                         return json({ success: true, action: 'added' }, corsHeaders);
                     }
                 } catch (error) {
-                    return json({ error: 'Failed to toggle wishlist' }, { ...corsHeaders, status: 500 });
+                    console.error('[Wishlist Toggle] Error:', error);
+                    return json({ error: 'Failed to toggle wishlist', details: error.message }, { ...corsHeaders, status: 500 });
                 }
             }
 
@@ -2802,21 +2919,176 @@ export default {
             if (path === '/api/shop/ads' && method === 'GET') {
                 const position = url.searchParams.get('position');
                 try {
-                    let query = 'SELECT * FROM shop_ads WHERE is_active = 1';
+                    let query = `
+                        SELECT a.*, m.nama_toko, m.slug as vendor_slug, m.logo_url, m.ad_balance,
+                        p.nama_produk, p.harga_estimasi, p.slug as product_slug
+                        FROM shop_ads a
+                        LEFT JOIN shop_vendors m ON a.vendor_id = m.id
+                        LEFT JOIN shop_products p ON a.target_id = p.id AND a.target_type = 'PRODUCT'
+                        WHERE a.is_active = 1 AND a.is_approved = 1 AND m.ad_balance >= a.bid_amount
+                    `;
                     const params = [];
                     
                     if (position) {
-                        query += ' AND position = ?';
+                        query += ' AND a.position = ?';
                         params.push(position);
                     }
                     
-                    query += ' ORDER BY created_at DESC';
+                    query += ' ORDER BY a.created_at DESC';
                     
-                    const ads = await env.DB.prepare(query).bind(...params).all();
-                    return json({ success: true, ads: ads.results }, corsHeaders);
+                    const adsRes = await env.DB.prepare(query).bind(...params).all();
+                    const ads = adsRes.results || [];
+
+                    // Apply Weighted Random Selection for specific slots
+                    let finalAds = ads;
+                    if (position === 'PROMOTED_PRODUCT') {
+                        finalAds = weightedRandom(ads, 4);
+                    } else if (position === 'SPECIAL_FOR_YOU_HOME' || position === 'SPECIAL_FOR_YOU') {
+                        finalAds = weightedRandom(ads, 10);
+                    } else if (position === 'FEATURED_PRODUCT_DETAIL') {
+                        finalAds = weightedRandom(ads, 8);
+                    } else if (!position) {
+                        finalAds = weightedRandom(ads, 20);
+                    }
+
+                    // Track Impressions asynchronously (Background)
+                    if (finalAds.length > 0) {
+                        ctx.waitUntil((async () => {
+                            const adIds = finalAds.map(a => a.id);
+                            if (adIds.length === 0) return;
+                            const placeholders = adIds.map(() => '?').join(',');
+                            await env.DB.prepare(`UPDATE shop_ads SET total_impressions = total_impressions + 1 WHERE id IN (${placeholders})`).bind(...adIds).run();
+                        })());
+                    }
+
+                    return json({ success: true, ads: finalAds }, corsHeaders);
                 } catch (error) {
-                    return json({ error: 'Failed to fetch ads' }, { ...corsHeaders, status: 500 });
+                    return json({ error: 'Failed to fetch ads', details: error.message }, { ...corsHeaders, status: 500 });
                 }
+            }
+
+            // [NEW] TRACK AD CLICK & DEDUCT GLOBAL BUDGET
+            if (path.startsWith('/api/shop/ads/click/') && method === 'POST') {
+                const adId = path.split('/').pop();
+                try {
+                    const ad = await env.DB.prepare('SELECT vendor_id, bid_amount FROM shop_ads WHERE id = ?').bind(adId).first();
+                    if (!ad) return json({ error: 'Ad not found' }, { ...corsHeaders, status: 404 });
+
+                    const cost = Math.max(ad.bid_amount || 100, 100);
+
+                    // Atomic Deduction from Vendor Balance
+                    await env.DB.batch([
+                        env.DB.prepare('UPDATE shop_vendors SET ad_balance = MAX(ad_balance - ?, 0) WHERE id = ?').bind(cost, ad.vendor_id),
+                        env.DB.prepare('UPDATE shop_ads SET total_clicks = total_clicks + 1 WHERE id = ?').bind(adId)
+                    ]);
+
+                    return json({ success: true }, corsHeaders);
+                } catch (error) {
+                    return json({ error: 'Failed to track click' }, { ...corsHeaders, status: 500 });
+                }
+            }
+
+            // [NEW] CAMPAIGN MANAGEMENT (VENDOR SIDE)
+            if (path === '/api/shop/ads/my-campaigns' && method === 'GET') {
+                const vendorId = url.searchParams.get('vendor_id');
+                if (!vendorId) return json({ error: 'Vendor ID required' }, { ...corsHeaders, status: 400 });
+
+                const query = `
+                    SELECT a.*, 
+                    COALESCE(NULLIF(a.image_url, ''), (SELECT image_url FROM shop_product_images WHERE product_id = a.target_id ORDER BY order_index ASC LIMIT 1)) as thumbnail_url
+                    FROM shop_ads a
+                    WHERE a.vendor_id = ?
+                    ORDER BY a.created_at DESC
+                `;
+
+                const { results } = await env.DB.prepare(query).bind(vendorId).all();
+                return json({ success: true, campaigns: results }, corsHeaders);
+            }
+
+            if (path === '/api/shop/ads/campaigns' && method === 'POST') {
+                try {
+                    const body = await request.json();
+                    const { vendor_id, target_type, target_id, position, bid_amount, daily_budget, title, image_url, link_url } = body;
+
+                    if (!vendor_id || !target_id || !position || !bid_amount) {
+                        return json({ error: 'Missing required fields' }, { ...corsHeaders, status: 400 });
+                    }
+
+                    if (bid_amount < 100) return json({ error: 'Minimal bid adalah Rp 100' }, { ...corsHeaders, status: 400 });
+
+                    const id = crypto.randomUUID();
+                    const finalStatus = body.status || 'DRAFT';
+                    const isApproved = finalStatus === 'DRAFT' ? 0 : 0; // Always 0 initially for non-drafts
+
+                    await env.DB.prepare(`
+                        INSERT INTO shop_ads (
+                            id, vendor_id, target_type, target_id, position, bid_amount, daily_budget, 
+                            title, image_url, link_url, status, is_approved, is_active, budget_remaining
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0)
+                    `).bind(
+                        id, vendor_id, target_type, target_id, position, bid_amount, daily_budget || 0,
+                        title || '', image_url || '', link_url || '', finalStatus
+                    ).run();
+
+                    return json({ success: true, id }, corsHeaders);
+                } catch (error) {
+                    return json({ error: 'Failed to create campaign', details: error.message }, { ...corsHeaders, status: 500 });
+                }
+            }
+
+            if (path.startsWith('/api/shop/ads/campaigns/') && method === 'PATCH') {
+                const id = path.split('/').pop();
+                const body = await request.json();
+                const { status, bid_amount, daily_budget, is_active } = body;
+
+                const updates = [];
+                const params = [];
+
+                if (status) { updates.push('status = ?'); params.push(status); }
+                if (bid_amount) { updates.push('bid_amount = ?'); params.push(bid_amount); }
+                if (daily_budget !== undefined) { updates.push('daily_budget = ?'); params.push(daily_budget); }
+                if (is_active !== undefined) { updates.push('is_active = ?'); params.push(is_active); }
+
+                if (updates.length === 0) return json({ error: 'No fields to update' }, { ...corsHeaders, status: 400 });
+
+                params.push(id);
+                await env.DB.prepare(`UPDATE shop_ads SET ${updates.join(', ')} WHERE id = ?`).bind(...params).run();
+                return json({ success: true }, corsHeaders);
+            }
+
+            if (path.startsWith('/api/shop/ads/campaigns/') && method === 'DELETE') {
+                const id = path.split('/').pop();
+                try {
+                    await env.DB.prepare('DELETE FROM shop_ads WHERE id = ?').bind(id).run();
+                    return json({ success: true }, corsHeaders);
+                } catch (error) {
+                    return json({ error: 'Failed to delete campaign' }, { ...corsHeaders, status: 500 });
+                }
+            }
+
+            // [NEW] ADMIN: CAMPAIGN APPROVAL
+            if (path === '/api/admin/shop/ads/campaigns' && method === 'GET') {
+                const { results } = await env.DB.prepare(`
+                    SELECT a.*, m.nama_toko, u.email as vendor_email
+                    FROM shop_ads a
+                    JOIN shop_vendors m ON a.vendor_id = m.id
+                    JOIN users u ON m.user_id = u.id
+                    ORDER BY a.created_at DESC
+                `).all();
+                return json({ success: true, campaigns: results }, corsHeaders);
+            }
+
+            if (path.startsWith('/api/admin/shop/ads/campaigns/') && path.endsWith('/approve') && method === 'PATCH') {
+                const id = path.split('/')[5];
+                const { is_approved, rejection_reason } = await request.json();
+                const status = is_approved === 1 ? 'ACTIVE' : 'REJECTED';
+                const isActive = is_approved === 1 ? 1 : 0;
+
+                await env.DB.prepare(
+                    'UPDATE shop_ads SET is_approved = ?, rejection_reason = ?, status = ?, is_active = ? WHERE id = ?'
+                ).bind(is_approved, rejection_reason || null, status, isActive, id).run();
+
+                return json({ success: true }, corsHeaders);
             }
 
             if (path === '/api/shop/product' && method === 'GET') {
@@ -3849,118 +4121,10 @@ t.*,
                 return json(transactions.results, corsHeaders);
             }
 
-            // Helper function to sync Midtrans transaction status
-            const syncMidtransStatus = async (transactionId, env) => {
-                try {
-                    // 1. Fetch transaction from DB to get external_id (orderId)
-                    const transaction = await env.DB.prepare(
-                        'SELECT * FROM billing_transactions WHERE id = ?'
-                    ).bind(transactionId).first();
-
-                    if (!transaction) {
-                        return { success: false, error: 'transaction_not_found', message: 'Transaction not found' };
-                    }
-
-                    const orderId = transaction.external_id;
-                    const isSandbox = orderId.includes('sandbox') || env.MIDTRANS_SERVER_KEY.startsWith('SB-');
-                    const baseUrl = isSandbox
-                        ? 'https://api.sandbox.midtrans.com/v2'
-                        : 'https://api.midtrans.com/v2';
-
-                    const authHeader = `Basic ${btoa(env.MIDTRANS_SERVER_KEY + ':')} `;
-
-                    // 2. Fetch status from Midtrans
-                    const midtransRes = await fetch(`${baseUrl}/${orderId}/status`, {
-                        headers: {
-                            'Authorization': authHeader,
-                            'Accept': 'application/json'
-                        }
-                    });
-
-                    if (!midtransRes.ok) {
-                        const errorData = await midtransRes.json();
-                        // Special handling for 404 (Transaction not found in Midtrans)
-                        if (midtransRes.status === 404) {
-                            return {
-                                success: false,
-                                error: 'midtrans_404',
-                                message: 'Transaksi ini tidak ditemukan di data Midtrans (mungkin belum memilih metode pembayaran).',
-                                status_code: 404
-                            };
-                        }
-                        return { success: false, error: 'midtrans_api_error', message: 'Midtrans API error', details: errorData, status_code: midtransRes.status };
-                    }
-
-                    const data = await midtransRes.json();
-                    const status = data.transaction_status;
-                    const paymentType = data.payment_type;
-
-                    // 3. Map status to our DB status
-                    let newStatus = transaction.status;
-                    if (status === 'settlement' || status === 'capture') {
-                        newStatus = 'PAID';
-                    } else if (status === 'pending') {
-                        newStatus = 'PENDING';
-                    } else if (status === 'expire') {
-                        newStatus = 'EXPIRED';
-                    } else if (status === 'cancel' || status === 'deny') {
-                        newStatus = 'CANCELLED';
-                    }
-
-                    // 4. Update DB if status changed
-                    if (newStatus !== transaction.status) {
-                        await env.DB.prepare(
-                            'UPDATE billing_transactions SET status = ?, payment_channel = ?, updated_at = datetime("now") WHERE id = ?'
-                        ).bind(newStatus, paymentType || transaction.payment_channel, transactionId).run();
-
-                        // Provision if PAID
-                        if (newStatus === 'PAID') {
-                            const userId = transaction.user_id;
-                            const tier = transaction.tier;
-                            // CTO POLICY: ALL packages are now limited to 1 invitation slot
-                            let maxInvitations = 1; 
-                            
-                            // NEW DURATION POLICY:
-                            // Pro: 90 days, Ultimate: 180 days, Elite: 365 days
-                            let durationDays = 30; // Default
-                            if (tier === 'pro' || tier === 'vip') durationDays = 90;
-                            else if (tier === 'ultimate' || tier === 'platinum') durationDays = 180;
-                            else if (tier === 'elite' || tier === 'vvip') durationDays = 365;
-
-                            const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
-
-                            await env.DB.prepare(
-                                'UPDATE users SET tier = ?, max_invitations = ?, expires_at = ?, updated_at = datetime("now") WHERE id = ?'
-                            ).bind(tier, maxInvitations, expiresAt, userId).run();
-
-                            // Update all user's invitations expiry date
-                            await env.DB.prepare(
-                                'UPDATE invitations SET expires_at = ?, updated_at = datetime("now") WHERE user_id = ?'
-                            ).bind(expiresAt, userId).run();
-
-                            await env.DB.prepare(
-                                'UPDATE billing_transactions SET paid_at = datetime("now") WHERE id = ?'
-                            ).bind(transactionId).run();
-                        }
-                    }
-
-                    return {
-                        success: true,
-                        status: newStatus,
-                        midtrans_status: status,
-                        updated: newStatus !== transaction.status
-                    };
-
-                } catch (err) {
-                    console.error('[Admin/Sync] Error:', err);
-                    return { success: false, error: 'sync_failed', message: err.message };
-                }
-            };
-
             // ADMIN: Sync Midtrans Transaction Status
             if (path.startsWith('/api/admin/transactions/') && path.endsWith('/sync') && method === 'GET') {
                 const transactionId = path.split('/')[4];
-                const result = await syncMidtransStatus(transactionId, env);
+                const result = await syncMidtransStatus(transactionId);
                 if (!result.success) {
                     const statusCode = result.status_code || (result.error === 'transaction_not_found' || result.error === 'midtrans_404' ? 404 : 500);
                     return json({ error: result.error, message: result.message || 'Sync failed', details: result.details }, { ...corsHeaders, status: statusCode });

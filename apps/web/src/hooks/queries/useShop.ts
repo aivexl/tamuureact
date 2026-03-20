@@ -72,10 +72,14 @@ export const useWishlist = (userId?: string) => {
 export const useToggleWishlist = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ userId, productId }: { userId: string, productId: string }) =>
-            shop.toggleWishlist(userId, productId),
+        mutationFn: ({ userId, productId, email }: { userId: string, productId: string, email?: string }) =>
+            shop.toggleWishlist(userId, productId, email),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ['shop_wishlist', variables.userId] });
+            queryClient.invalidateQueries({ queryKey: ['shop_product', variables.productId] });
+            queryClient.invalidateQueries({ queryKey: ['shop_product'] });
+            queryClient.invalidateQueries({ queryKey: ['vendor_stats'] });
+            queryClient.invalidateQueries({ queryKey: ['storefront'] });
         }
     });
 };
@@ -248,6 +252,40 @@ export const useSmartRecommendations = (productId?: string, category?: string) =
     });
 };
 
+export const useAdCampaigns = (vendorId?: string) => {
+    return useQuery({
+        queryKey: ['ad_campaigns', vendorId],
+        queryFn: () => shop.getAdCampaigns(vendorId!),
+        enabled: !!vendorId
+    });
+};
+
+export const useCreateAdCampaign = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (payload: any) => shop.createAdCampaign(payload),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: ['ad_campaigns', variables.vendor_id] });
+        }
+    });
+};
+
+export const useUpdateAdCampaign = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, data }: { id: string, data: any }) => shop.updateAdCampaign(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['ad_campaigns'] });
+        }
+    });
+};
+
+export const useTrackAdClick = () => {
+    return useMutation({
+        mutationFn: (adId: string) => shop.trackAdClick(adId)
+    });
+};
+
 // ============================================
 // ADMIN SHOP MANAGEMENT HOOKS
 // ============================================
@@ -362,6 +400,28 @@ export const useUpdateReportStatus = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin_shop_reports'] });
             toast.success('Status laporan diperbarui');
+        }
+    });
+};
+
+export const useAdminAdCampaigns = () => {
+    const { token } = useStore();
+    return useQuery({
+        queryKey: ['admin_ad_campaigns'],
+        queryFn: () => admin.adminGetAdCampaigns(token || undefined),
+        enabled: !!token
+    });
+};
+
+export const useApproveAdCampaign = () => {
+    const { token } = useStore();
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (payload: { id: string, is_approved: number, rejection_reason?: string }) => 
+            admin.approveAdCampaign(payload.id, payload.is_approved, payload.rejection_reason, token || undefined),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin_ad_campaigns'] });
+            toast.success('Kampanye iklan diperbarui');
         }
     });
 };

@@ -66,6 +66,7 @@ const AdminStoreManagementPage = lazy(() => import('./pages/Admin/AdminStoreMana
 const AdminProductsPage = lazy(() => import('./pages/Admin/AdminProductsPage').then(m => ({ default: m.AdminProductsPage })));
 const AdminProductListingPage = lazy(() => import('./pages/Admin/AdminProductListingPage').then(m => ({ default: m.AdminProductListingPage })));
 const AdminReportsPage = lazy(() => import('./pages/Admin/AdminReportsPage').then(m => ({ default: m.AdminReportsPage })));
+const AdminAdsPage = lazy(() => import('./pages/Admin/AdminAdsPage').then(m => ({ default: m.AdminAdsPage })));
 const AdminFeedbackPage = lazy(() => import('./pages/AdminFeedbackPage').then(m => ({ default: m.AdminFeedbackPage })));
 const AdminPushNotificationPage = lazy(() => import('./pages/Admin/AdminPushNotificationPage').then(m => ({ default: m.AdminPushNotificationPage })));
 const AdminChatMonitoringPage = lazy(() => import('./pages/Admin/AdminChatMonitoringPage').then(m => ({ default: m.AdminChatMonitoringPage })));
@@ -212,6 +213,7 @@ const App: React.FC = () => {
                                                                  <Route path="/admin/product-listing" element={<ProtectedRoute requiredRole="admin"><AdminProductListingPage /></ProtectedRoute>} />
                                                                  <Route path="/admin/products" element={<ProtectedRoute requiredRole="admin"><AdminProductsPage /></ProtectedRoute>} />
                                                                  <Route path="/admin/reports" element={<ProtectedRoute requiredRole="admin"><AdminReportsPage /></ProtectedRoute>} />
+                                                                 <Route path="/admin/ads" element={<ProtectedRoute requiredRole="admin"><AdminAdsPage /></ProtectedRoute>} />
                                                                 {/* Admin Blog */}
                                 <Route path="/admin/blog" element={<ProtectedRoute requiredRole="admin"><AdminBlogListPage /></ProtectedRoute>} />
                                 <Route path="/admin/blog/new" element={<ProtectedRoute requiredRole="admin"><AdminBlogEditor /></ProtectedRoute>} />

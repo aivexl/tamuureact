@@ -7,6 +7,7 @@ import { shop } from '../../lib/api';
 import { formatCurrency, formatAbbreviatedNumber } from '../../lib/utils';
 import { ProductCard } from '../Shop/ProductCard';
 import { StarRating } from '../Shop/StarRating';
+import { SpecialAdsScroller } from '../Shop/SpecialAdsScroller';
 
 const ShopSection: React.FC = () => {
     const navigate = useNavigate();
@@ -52,108 +53,58 @@ const ShopSection: React.FC = () => {
     };
 
     return (
-        <section id="shop" className="max-w-7xl mx-auto px-6 py-24 my-12">
+        <section id="shop" className="max-w-7xl mx-auto py-12">
             
-            {/* FEATURED PRODUCTS SECTION */}
-            <div className="mb-24">
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
-                    <div className="space-y-4">
-                        <h2 className="text-4xl md:text-5xl font-black text-[#0A1128] tracking-tight">Tamuu Shop.</h2>
-                        <p className="text-slate-500 max-w-xl font-medium leading-relaxed">
-                            Pilihan produk terbaik dan eksklusif untuk melengkapi kebutuhan acara Anda.
-                        </p>
+            {/* DYNAMIC ADS SECTION: Special For You */}
+            <SpecialAdsScroller />
+
+            <div className="px-6 py-12">
+                {/* VENDOR SECTION */}
+                <div className="bg-[#FBFBFB] rounded-[48px] p-8 md:p-12 border border-slate-100 shadow-sm relative">
+                    <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+                        <div className="space-y-4">
+                            <h2 className="text-4xl md:text-5xl font-black text-[#0A1128] tracking-tight">Tamuu Vendor.</h2>
+                            <p className="text-slate-500 max-w-xl font-medium leading-relaxed">
+                                Temukan ribuan vendor pilihan dari MUA, Fotografer, hingga Venue terbaik untuk menyempurnakan momen spesial Anda.
+                            </p>
+                        </div>
+
+                        <Link
+                            to="/shop"
+                            className="group inline-flex items-center gap-2 px-6 py-3 bg-[#0A1128] text-white rounded-2xl font-bold hover:bg-[#152042] transition-all flex-shrink-0 z-20"
+                        >
+                            Lihat Semua
+                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </Link>
                     </div>
 
-                    <Link
-                        to="/shop"
-                        className="group inline-flex items-center gap-2 px-6 py-3 bg-[#0A1128] text-white rounded-2xl font-bold hover:bg-[#152042] transition-all flex-shrink-0 z-20"
-                    >
-                        Lihat Semua
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </Link>
-                </div>
+                    <div className="relative group">
+                        <button 
+                            onClick={() => scroll(vendorScrollRef, 'left')}
+                            className="absolute left-0 top-[40%] -translate-y-1/2 -translate-x-6 w-14 h-14 bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] hover:scale-110 transition-all z-10 opacity-0 group-hover:opacity-100"
+                        >
+                            <ChevronLeft className="w-6 h-6" />
+                        </button>
 
-                <div className="relative group">
-                    <button 
-                        onClick={() => scroll(productScrollRef, 'left')}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-12 h-12 bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center text-[#0A1128] hover:bg-[#0A1128] hover:text-white transition-all z-10 opacity-0 group-hover:opacity-100 disabled:opacity-0"
-                    >
-                        <ChevronLeft className="w-6 h-6" />
-                    </button>
-
-                    <div 
-                        ref={productScrollRef}
-                        className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-8"
-                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                    >
-                        {isLoadingAds || (featuredAds.length === 0 && isLoadingRandom) ? (
-                            [1, 2, 3, 4].map((i) => (
-                                <div key={i} className="min-w-[195px] h-[380px] bg-slate-100 animate-pulse rounded-3xl flex-shrink-0 snap-start" />
-                            ))
-                        ) : (
-                            displayedProducts.map((product: any, index: number) => (
-                                <div key={product.id || index} className="snap-start flex-shrink-0 flex items-stretch">
-                                    <ProductCard product={product} navigate={navigate} />
+                        <div 
+                            ref={vendorScrollRef}
+                            className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-8 pt-4"
+                            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                        >
+                            {displayedVendors.map((vendor: any) => (
+                                <div key={vendor.id} className="snap-start flex-shrink-0">
+                                    <VendorCard vendor={vendor} navigate={navigate} />
                                 </div>
-                            ))
-                        )}
+                            ))}
+                        </div>
+
+                        <button 
+                            onClick={() => scroll(vendorScrollRef, 'right')}
+                            className="absolute right-0 top-[40%] -translate-y-1/2 translate-x-6 w-14 h-14 bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] hover:scale-110 transition-all z-10 opacity-0 group-hover:opacity-100"
+                        >
+                            <ChevronRight className="w-6 h-6" />
+                        </button>
                     </div>
-
-                    <button 
-                        onClick={() => scroll(productScrollRef, 'right')}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-12 h-12 bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center text-[#0A1128] hover:bg-[#0A1128] hover:text-white transition-all z-10 opacity-0 group-hover:opacity-100"
-                    >
-                        <ChevronRight className="w-6 h-6" />
-                    </button>
-                </div>
-            </div>
-
-
-            {/* VENDOR SECTION */}
-            <div className="bg-[#FBFBFB] rounded-[48px] p-8 md:p-12 border border-slate-100 shadow-sm relative">
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
-                    <div className="space-y-4">
-                        <h2 className="text-4xl md:text-5xl font-black text-[#0A1128] tracking-tight">Tamuu Vendor.</h2>
-                        <p className="text-slate-500 max-w-xl font-medium leading-relaxed">
-                            Temukan ribuan vendor pilihan dari MUA, Fotografer, hingga Venue terbaik untuk menyempurnakan momen spesial Anda.
-                        </p>
-                    </div>
-
-                    <Link
-                        to="/shop"
-                        className="group inline-flex items-center gap-2 px-6 py-3 bg-[#0A1128] text-white rounded-2xl font-bold hover:bg-[#152042] transition-all flex-shrink-0 z-20"
-                    >
-                        Lihat Semua
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </Link>
-                </div>
-
-                <div className="relative group">
-                    <button 
-                        onClick={() => scroll(vendorScrollRef, 'left')}
-                        className="absolute left-0 top-[40%] -translate-y-1/2 -translate-x-6 w-14 h-14 bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] hover:scale-110 transition-all z-10 opacity-0 group-hover:opacity-100"
-                    >
-                        <ChevronLeft className="w-6 h-6" />
-                    </button>
-
-                    <div 
-                        ref={vendorScrollRef}
-                        className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-8 pt-4"
-                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                    >
-                        {displayedVendors.map((vendor: any) => (
-                            <div key={vendor.id} className="snap-start flex-shrink-0">
-                                <VendorCard vendor={vendor} navigate={navigate} />
-                            </div>
-                        ))}
-                    </div>
-
-                    <button 
-                        onClick={() => scroll(vendorScrollRef, 'right')}
-                        className="absolute right-0 top-[40%] -translate-y-1/2 translate-x-6 w-14 h-14 bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] hover:scale-110 transition-all z-10 opacity-0 group-hover:opacity-100"
-                    >
-                        <ChevronRight className="w-6 h-6" />
-                    </button>
                 </div>
             </div>
         </section>

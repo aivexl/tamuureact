@@ -43,6 +43,8 @@ import { assembleSEOTemplate } from '../../lib/seo-permutation';
 import { MultiCarousel } from '../../components/ui/MultiCarousel';
 import { ProductCard } from '../../components/Shop/ProductCard';
 import { StarRating } from '../../components/Shop/StarRating';
+import { PromotedAdsBar } from '../../components/Shop/PromotedAdsBar';
+import { SpecialAdsScroller } from '../../components/Shop/SpecialAdsScroller';
 
 export const ShopPage: React.FC = () => {
     const navigate = useNavigate();
@@ -109,16 +111,23 @@ export const ShopPage: React.FC = () => {
     const { data: randomProducts = [] } = useRandomProducts();
     
     const [specialBanner, setSpecialBanner] = useState<any>(null);
+    const [topBanner, setTopBanner] = useState<any>(null);
+
     useEffect(() => {
-        const fetchAd = async () => {
+        const fetchAds = async () => {
             try {
+                // Fetch Special Banner
                 const ads = await shop.getAds('SHOP_SPECIAL_FOR_YOU');
                 if (ads && ads.length > 0) setSpecialBanner(ads[0]);
+
+                // Fetch Top Product List Banner
+                const topAds = await shop.getAds('PRODUCT_LIST_TOP');
+                if (topAds && topAds.length > 0) setTopBanner(topAds[0]);
             } catch (err) {
-                console.error('Failed to fetch special banner:', err);
+                console.error('Failed to fetch ads:', err);
             }
         };
-        fetchAd();
+        fetchAds();
     }, []);
 
     const { data: blogData } = useQuery({
@@ -241,38 +250,8 @@ export const ShopPage: React.FC = () => {
                 {/* PRODUCT-ONLY SECTIONS (Hide when Stores tab is active or searching) */}
                 {activeTab === 'products' && !searchQuery && selectedCategory === 'All' && selectedCity === 'All' && (
                     <>
-                        {/* SECTION 1: Spesial Untuk Kamu */}
-                        <section className="mb-20">
-                            <div className="bg-[#0A1128] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-12 relative overflow-hidden">
-                                <div className="flex items-center justify-between mb-6 md:mb-8 relative z-10">
-                                    <h2 className="text-lg md:text-2xl font-black text-white uppercase tracking-tight">Spesial Untuk Kamu</h2>
-                                    <button className="text-[#FFBF00] text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">Lihat Semua</button>
-                                </div>
-                                <div className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar pb-4 relative z-10 snap-x">
-                                    <div 
-                                        onClick={() => specialBanner?.link_url && (window.location.href = specialBanner.link_url)}
-                                        className="w-[160px] md:w-[195px] h-[300px] md:h-[380px] rounded-[1.5rem] md:rounded-[2rem] bg-slate-800 flex-shrink-0 relative overflow-hidden snap-start cursor-pointer group"
-                                    >
-                                        {specialBanner?.image_url ? (
-                                            <img src={specialBanner.image_url} className="absolute inset-0 w-full h-full object-cover" alt="Promo Banner" />
-                                        ) : (
-                                            <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center p-4">
-                                                <p className="text-white/20 text-[8px] font-black uppercase tracking-widest text-center">Sponsorship Slot</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                    {specialProducts.length > 0 ? specialProducts.slice(0, 10).map((product: any) => (
-                                        <div key={product.id} className="snap-start flex-shrink-0">
-                                            <ProductCard product={product} navigate={navigate} isSmall={true} />
-                                        </div>
-                                    )) : (
-                                        <div className="flex items-center justify-center w-[160px] md:w-[195px] h-[300px] md:h-[380px] border border-white/10 rounded-[1.5rem] md:rounded-[2rem] bg-white/5">
-                                            <p className="text-white/50 font-bold uppercase tracking-widest text-[8px] md:text-[10px] text-center px-4">Produk Segera Hadir</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </section>
+                        {/* SECTION 1: Spesial Untuk Kamu (Dynamic Ads) */}
+                        <SpecialAdsScroller />
 
                         {/* SECTION 2: Produk Featured */}
                         {featuredProducts.length > 0 && (
@@ -338,6 +317,25 @@ export const ShopPage: React.FC = () => {
                 <m.div layout className="w-full">
                     {activeTab === 'products' ? (
                         <>
+                            {/* NEW: Rectangular Banner Ad above Products (Full Photo, No Text) */}
+                            {topBanner && (
+                                <section className="mb-12 px-2 md:px-4">
+                                    <div 
+                                        onClick={() => topBanner.link_url && (window.location.href = topBanner.link_url)}
+                                        className="w-full h-32 md:h-48 rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden cursor-pointer group shadow-xl shadow-slate-200/50 border border-slate-100"
+                                    >
+                                        <img 
+                                            src={topBanner.image_url} 
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                                            alt="Top Ad Banner" 
+                                        />
+                                    </div>
+                                </section>
+                            )}
+
+                            {/* NEW: Promoted Ads Selection */}
+                            <PromotedAdsBar />
+
                             <div className="w-full flex items-center justify-between mb-6 px-4">
                                 <h2 className="text-lg md:text-xl font-black text-[#0A1128] uppercase tracking-tight">
                                     {searchQuery ? 'Hasil Pencarian' : (selectedCategory !== 'All' || selectedCity !== 'All' ? 'Hasil Filter Produk' : 'Semua Produk')}

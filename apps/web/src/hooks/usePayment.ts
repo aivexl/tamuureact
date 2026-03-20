@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { billing as billingApi } from '../lib/api';
+import { toast } from 'react-hot-toast';
 
 export const usePayment = () => {
     const { user, showModal } = useStore();
@@ -113,6 +114,47 @@ export const usePayment = () => {
         }
     };
 
-    return { initiatePayment, processingTier };
+    const processAdPayment = async (data: { userId: string, email: string, name: string, tier: string, amount: number }) => {
+        console.log(`[usePayment] Ad Payment for tier: ${data.tier}, amount: ${data.amount}`);
+
+        // Ensure snap is loaded
+        if (!(window as any).snap) {
+            await new Promise((resolve, reject) => {
+                const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY;
+                const script = document.createElement('script');
+                const isProd = import.meta.env.VITE_MIDTRANS_IS_PRODUCTION === 'true';
+                script.src = isProd ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js';
+                script.setAttribute('data-client-key', clientKey);
+                script.onload = resolve;
+                script.onerror = reject;
+                document.body.appendChild(script);
+            });
+        }
+
+        try {
+            const res = await billingApi.getMidtransToken({
+                userId: data.userId,
+                tier: data.tier,
+                amount: data.amount,
+                email: data.email,
+                name: data.name
+            });
+
+            if (res.token) {
+                // @ts-ignore
+                window.snap.pay(res.token, {
+                    onSuccess: () => navigate('/billing?status=success'),
+                    onPending: () => navigate('/billing?status=pending'),
+                    onError: () => {
+                        showModal({ title: 'Gagal', message: 'Pembayaran gagal', type: 'error' });
+                    }
+                });
+            }
+        } catch (error: any) {
+            toast.error(error.message || 'Gagal memproses pembayaran');
+        }
+    };
+
+    return { initiatePayment, processAdPayment, processingTier };
 };
 

@@ -736,6 +736,25 @@ export const admin = {
         return res.json();
     },
 
+    async adminGetAdCampaigns(token?: string) {
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/ads/campaigns`, { headers });
+        return res.json();
+    },
+
+    async approveAdCampaign(id: string, is_approved: number, rejection_reason?: string, token?: string) {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/ads/campaigns/${id}/approve`, {
+            method: 'PATCH',
+            headers,
+            body: JSON.stringify({ is_approved, rejection_reason })
+        });
+        return res.json();
+    }
+,
+
     async listAds(token?: string) {
         const headers: Record<string, string> = {};
         if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -1264,11 +1283,11 @@ export const shop = {
         return res.json();
     },
 
-    async toggleWishlist(userId: string, productId: string) {
+    async toggleWishlist(userId: string, productId: string, email?: string) {
         const res = await safeFetch(`${API_BASE}/api/shop/wishlist/toggle`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: userId, product_id: productId })
+            body: JSON.stringify({ user_id: userId, product_id: productId, email })
         });
         return res.json();
     },
@@ -1339,6 +1358,43 @@ export const shop = {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ product_id: productId, user_id: userId, status })
+        });
+        return res.json();
+    },
+
+    async getAdCampaigns(vendorId: string) {
+        const res = await safeFetch(`${API_BASE}/api/shop/ads/my-campaigns?vendor_id=${vendorId}`);
+        return res.json();
+    },
+
+    async createAdCampaign(payload: any) {
+        const res = await safeFetch(`${API_BASE}/api/shop/ads/campaigns`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        return res.json();
+    },
+
+    async updateAdCampaign(id: string, data: any) {
+        const res = await safeFetch(`${API_BASE}/api/shop/ads/campaigns/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        return res.json();
+    },
+
+    async trackAdClick(adId: string) {
+        const res = await safeFetch(`${API_BASE}/api/shop/ads/click/${adId}`, {
+            method: 'POST'
+        });
+        return res.json();
+    },
+
+    async deleteAdCampaign(id: string) {
+        const res = await safeFetch(`${API_BASE}/api/shop/ads/campaigns/${id}`, {
+            method: 'DELETE'
         });
         return res.json();
     }

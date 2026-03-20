@@ -55,6 +55,7 @@ import { ShareModal } from '../../components/Modals/ShareModal';
 import { INDONESIA_REGIONS } from '../../constants/regions';
 import { AnimatedCopyIcon } from '../../components/ui/AnimatedCopyIcon';
 import { StarRating } from '../../components/Shop/StarRating';
+import { FeaturedAdsScroller } from '../../components/Shop/FeaturedAdsScroller';
 import { Navbar } from '../../components/Layout/Navbar';
 
 const XLogoIcon = ({ className }: { className?: string }) => (
@@ -494,9 +495,20 @@ export const ProductDetailPage: React.FC = () => {
             return;
         }
 
-        toggleWishlistMutation.mutate({ userId: user.id, productId: product?.id || '' });
-        toast.success(isWishlisted ? 'Dihapus dari wishlist' : 'Ditambahkan ke wishlist', {
-            icon: <Heart className={`w-4 h-4 ${!isWishlisted ? 'fill-rose-500 text-rose-500' : ''}`} />,
+        const wasWishlisted = isWishlisted;
+        toggleWishlistMutation.mutate({ 
+            userId: user.id, 
+            productId: product?.id || '',
+            email: user.email 
+        }, {
+            onSuccess: (data) => {
+                toast.success(data.action === 'added' ? 'Ditambahkan ke wishlist' : 'Dihapus dari wishlist', {
+                    icon: <Heart className={`w-4 h-4 ${data.action === 'added' ? 'fill-rose-500 text-rose-500' : ''}`} />,
+                });
+            },
+            onError: () => {
+                toast.error('Gagal memperbarui wishlist');
+            }
         });
     };
 
@@ -1152,6 +1164,9 @@ export const ProductDetailPage: React.FC = () => {
                         </div>
                     </div>
                 )}
+
+                {/* NEW: Featured Products Selection */}
+                <FeaturedAdsScroller />
 
                 <div className="max-w-7xl mx-auto px-6 mt-24 space-y-24">
                     <div className="space-y-10">

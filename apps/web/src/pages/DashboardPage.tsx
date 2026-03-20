@@ -26,6 +26,11 @@ const HeartIcon = ({ className }: { className?: string }) => (
         <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
     </svg>
 );
+const HomeIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
+    </svg>
+);
 const LayoutDashboardIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect width="7" height="9" x="3" y="3" rx="1" /><rect width="7" height="5" x="14" y="3" rx="1" /><rect width="7" height="9" x="14" y="12" rx="1" /><rect width="7" height="5" x="3" y="16" rx="1" />
@@ -145,11 +150,11 @@ const StoreIcon = ({ className }: { className?: string }) => (
 // ============================================
 // MENU ITEMS
 // ============================================
-// type TabId = 'dashboard' | 'invitations' | 'wishlist' | 'messages' | 'displays' | 'guests' | 'scan' | 'wishes' | 'invoice' | 'tutorial' | 'feedback';
-type TabId = 'dashboard' | 'invitations' | 'wishlist' | 'messages' | 'guests' | 'scan' | 'wishes' | 'invoice' | 'tutorial' | 'feedback';
+type TabId = 'home' | 'dashboard' | 'invitations' | 'wishlist' | 'messages' | 'guests' | 'scan' | 'wishes' | 'invoice' | 'tutorial' | 'feedback';
 
 const menuItems: { id: TabId; label: string; icon: React.FC<{ className?: string }> }[] = [
-    { id: 'dashboard', label: 'Home', icon: LayoutDashboardIcon },
+    { id: 'home', label: 'Home', icon: HomeIcon },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboardIcon },
     { id: 'invitations', label: 'Undangan', icon: MailIcon },
     { id: 'messages', label: 'Messages', icon: MessageSquareIcon },
     { id: 'wishlist', label: 'Wishlist', icon: HeartIcon },
@@ -173,7 +178,8 @@ export const DashboardPage: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     
     // Deriving activeTab directly from URL to ensure immediate reaction to global navigation
-    const activeTab = (searchParams.get('tab') as TabId) || 'dashboard';
+    const rawTab = searchParams.get('tab') as TabId;
+    const activeTab = (rawTab === 'home' || !rawTab) ? 'dashboard' : rawTab;
 
     const handleTabChange = (tabId: TabId) => {
         setSearchParams({ tab: tabId });
@@ -229,16 +235,29 @@ export const DashboardPage: React.FC = () => {
                 <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
                     {sidebarOpen && <p className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Menu Utama</p>}
                     {menuItems.map(item => (
-                        <Link
-                            key={item.id}
-                            to={item.id === 'wishes' ? '/wishes' : `/dashboard?tab=${item.id}`}
-                            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${activeTab === item.id ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
-                        >
-                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${activeTab === item.id ? 'bg-teal-50 text-slate-900' : 'bg-slate-100 text-slate-400'}`}>
-                                <item.icon className="w-4 h-4" />
-                            </div>
-                            {sidebarOpen && <span className="text-sm font-bold tracking-tight">{item.label}</span>}
-                        </Link>
+                        item.id === 'home' ? (
+                            <a
+                                key={item.id}
+                                href={`https://${publicDomain}`}
+                                className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all duration-300 group"
+                            >
+                                <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-slate-100 text-slate-400 group-hover:scale-110 transition-all duration-300">
+                                    <item.icon className="w-4 h-4" />
+                                </div>
+                                {sidebarOpen && <span className="text-sm font-bold tracking-tight">{item.label}</span>}
+                            </a>
+                        ) : (
+                            <Link
+                                key={item.id}
+                                to={item.id === 'wishes' ? '/wishes' : `/dashboard?tab=${item.id}`}
+                                className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${activeTab === item.id ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
+                            >
+                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${activeTab === item.id ? 'bg-teal-50 text-slate-900' : 'bg-slate-100 text-slate-400'}`}>
+                                    <item.icon className="w-4 h-4" />
+                                </div>
+                                {sidebarOpen && <span className="text-sm font-bold tracking-tight">{item.label}</span>}
+                            </Link>
+                        )
                     ))}
                 </nav>
 
@@ -265,15 +284,16 @@ export const DashboardPage: React.FC = () => {
             {/* Mobile Bottom Navigation (Floating Rectangular Design) */}
             <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-sm bg-white/95 backdrop-blur-2xl border border-slate-100 z-50 flex items-center justify-around px-2 py-2 rounded-[1.5rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)]">
                 
-                {/* 1. Home */}
-                <Link
-                    to="/dashboard?tab=dashboard"
+                {/* 1. Home (Direct to Root) */}
+                <a
+                    href={`https://${publicDomain}`}
                     onClick={() => { setIsMobileMoreOpen(false); setIsMobileCreateOpen(false); }}
-                    className={`flex flex-col items-center justify-center w-14 h-14 transition-all ${activeTab === 'dashboard' && !isMobileMoreOpen ? 'text-[#0A1128]' : 'text-slate-400 hover:text-slate-600'}`}
+                    className="flex flex-col items-center justify-center w-14 h-14 transition-all text-slate-400 hover:text-slate-600"
                 >
-                    <LayoutDashboardIcon className={`w-5 h-5 mb-1 ${activeTab === 'dashboard' && !isMobileMoreOpen ? 'text-[#0A1128]' : ''}`} />
+                    <HomeIcon className="w-5 h-5 mb-1" />
                     <span className="text-[8px] font-black uppercase tracking-widest">Home</span>
-                </Link>
+                </a>
+
 
                 {/* 2. Undangan */}
                 <Link
@@ -295,14 +315,14 @@ export const DashboardPage: React.FC = () => {
                     </button>
                 </div>
 
-                {/* 4. Messages */}
+                {/* 4. Wishlist (Swapped from Messages) */}
                 <Link
-                    to="/dashboard?tab=messages"
+                    to="/dashboard?tab=wishlist"
                     onClick={() => { setIsMobileMoreOpen(false); setIsMobileCreateOpen(false); }}
-                    className={`flex flex-col items-center justify-center w-14 h-14 transition-all ${activeTab === 'messages' && !isMobileMoreOpen ? 'text-[#0A1128]' : 'text-slate-400 hover:text-slate-600'}`}
+                    className={`flex flex-col items-center justify-center w-14 h-14 transition-all ${activeTab === 'wishlist' && !isMobileMoreOpen ? 'text-[#0A1128]' : 'text-slate-400 hover:text-slate-600'}`}
                 >
-                    <MessageSquareIcon className={`w-5 h-5 mb-1 ${activeTab === 'messages' && !isMobileMoreOpen ? 'text-[#0A1128]' : ''}`} />
-                    <span className="text-[8px] font-black uppercase tracking-widest">Messages</span>
+                    <HeartIcon className={`w-5 h-5 mb-1 ${activeTab === 'wishlist' && !isMobileMoreOpen ? 'text-[#0A1128]' : ''}`} />
+                    <span className="text-[8px] font-black uppercase tracking-widest">Wishlist</span>
                 </Link>
 
                 {/* 5. More Menu */}
@@ -400,20 +420,24 @@ export const DashboardPage: React.FC = () => {
                                 </button>
                             </div>
                             
-                            {/* Remaining Menu Items */}
-                            {menuItems.filter(item => !['dashboard', 'invitations', 'guests'].includes(item.id)).map(item => (
-                                <Link
-                                    key={item.id}
-                                    to={item.id === 'wishes' ? '/wishes' : `/dashboard?tab=${item.id}`}
-                                    onClick={() => setIsMobileMoreOpen(false)}
-                                    className={`flex items-center gap-4 p-3 rounded-2xl transition-colors ${activeTab === item.id ? 'bg-[#0A1128] text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}
-                                >
-                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm ${activeTab === item.id ? 'bg-white/10' : 'bg-white'}`}>
-                                        <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-white' : 'text-slate-600'}`} />
-                                    </div>
-                                    <span className="text-sm font-black tracking-tight">{item.label}</span>
-                                </Link>
-                            ))}
+                            {/* Dashboard & Messages first, then others */}
+                            {['dashboard', 'messages', 'guests', 'scan', 'wishes', 'invoice', 'tutorial', 'feedback'].map(tabId => {
+                                const item = menuItems.find(m => m.id === tabId);
+                                if (!item) return null;
+                                return (
+                                    <Link
+                                        key={item.id}
+                                        to={item.id === 'wishes' ? '/wishes' : `/dashboard?tab=${item.id}`}
+                                        onClick={() => setIsMobileMoreOpen(false)}
+                                        className={`flex items-center gap-4 p-3 rounded-2xl transition-colors ${activeTab === item.id ? 'bg-[#0A1128] text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}
+                                    >
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm ${activeTab === item.id ? 'bg-white/10' : 'bg-white'}`}>
+                                            <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-white' : 'text-slate-600'}`} />
+                                        </div>
+                                        <span className="text-sm font-black tracking-tight">{item.label}</span>
+                                    </Link>
+                                );
+                            })}
                             
                             <div className="h-px bg-slate-100 my-2" />
                             

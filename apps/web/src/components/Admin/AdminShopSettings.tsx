@@ -856,7 +856,9 @@ const AdEditorRow: React.FC<{
                                 onChange={(e) => onFileUpload(e, 'ad', (url) => updateField('image_url', url))}
                             />
                         </div>
-                        <p className="text-[8px] text-slate-600 font-bold uppercase tracking-tighter mb-2 ml-1">Ideal: 800x1000px | Max: 2MB</p>
+                        <p className="text-[8px] text-slate-600 font-bold uppercase tracking-tighter mb-2 ml-1">
+                            {localAd.position === 'PRODUCT_LIST_TOP' ? 'Ideal: 1600x400px (Cinematic)' : 'Ideal: 800x1000px | Max: 2MB'}
+                        </p>
                         <input
                             type="text"
                             value={localAd.image_url}
@@ -884,6 +886,7 @@ const AdEditorRow: React.FC<{
                                 className="w-full bg-[#0A0A0A] border border-white/5 rounded-xl px-4 py-3 text-xs text-white font-bold focus:outline-none appearance-none"
                             >
                                 <option value="SHOP_SPECIAL_FOR_YOU">Shop Special Banner</option>
+                                <option value="PRODUCT_LIST_TOP">All Products Top (Rectangular)</option>
                                 <option value="PRODUCT_DETAIL_SIDEBAR">Product Sidebar</option>
                                 <option value="SHOP_FOOTER">Shop Footer</option>
                                 <option value="FEATURED_PRODUCT_LANDING">Landing Page Products</option>

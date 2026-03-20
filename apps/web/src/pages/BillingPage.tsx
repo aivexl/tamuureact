@@ -26,7 +26,7 @@ export const BillingPage: React.FC = () => {
   const location = useLocation();
   const { user, isAuthenticated, setAuthSession, token, showModal } = useStore();
   const [transactions, setTransactions] = React.useState<any[]>([]);
-  const [isLoading, setIsLoading] = React.useState(true);
+  const [isLoading, setIsLoading] = React.useState(false);
   const [paymentStatus, setPaymentStatus] = React.useState<
     "success" | "pending" | null
   >(null);
@@ -50,12 +50,15 @@ export const BillingPage: React.FC = () => {
     try {
       const freshUser = await usersApi.getMe(user.email);
       if (freshUser) {
-        setAuthSession({ user: { ...user, ...freshUser }, token });
+        // Sync without causing infinite loop by checking if data is actually different
+        if (freshUser.tier !== user.tier || freshUser.invitationCount !== user.invitationCount) {
+          setAuthSession({ user: { ...user, ...freshUser }, token });
+        }
       }
     } catch (err) {
       console.error("[BillingPage] Profile sync error:", err);
     }
-  }, [user, token, setAuthSession]);
+  }, [user?.email, user?.tier, user?.invitationCount, token, setAuthSession]);
 
   const handleCancel = async (orderId: string) => {
     showModal({
@@ -243,12 +246,8 @@ export const BillingPage: React.FC = () => {
     }
   };
 
+  // Logic for handling payment status from URL
   React.useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
-
     const params = new URLSearchParams(location.search);
     const status = params.get("status");
     if (status === "success") {
@@ -257,15 +256,20 @@ export const BillingPage: React.FC = () => {
     } else if (status === "pending") {
       setPaymentStatus("pending");
     }
+  }, [location.search, syncUserData]);
 
-    fetchTransactions();
-  }, [
-    isAuthenticated,
-    navigate,
-    location.search,
-    fetchTransactions,
-    syncUserData,
-  ]);
+  // Logic for fetching transactions
+  React.useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+
+    if (user?.id) {
+      fetchTransactions();
+    }
+  }, [isAuthenticated, user?.id, fetchTransactions, navigate]);
+
 
   const tierLabels: Record<string, string> = {
     free: "FREE EXPLORER",

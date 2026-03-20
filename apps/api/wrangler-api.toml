@@ -3,6 +3,10 @@ main = "tamuu-api-worker.js"
 compatibility_date = "2024-01-27"
 workers_dev = false
 
+[vars]
+MIDTRANS_IS_PRODUCTION = false
+ENVIRONMENT = "production"
+
 [[routes]]
 pattern = "api.tamuu.id"
 custom_domain = true
@@ -20,4 +24,3 @@ bucket_name = "tamuu-assets"
 type = "CompiledWasm"
 globs = ["**/*.wasm"]
 fallthrough = true
-

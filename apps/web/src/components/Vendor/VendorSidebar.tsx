@@ -50,12 +50,12 @@ export const VendorSidebar: React.FC<VendorSidebarProps> = ({ isMobileMenuOpen, 
     const vendor = vendorData?.vendor;
 
     const navItems = [
-        { label: 'Overview', icon: LayoutDashboardIcon, path: `/store/${vendor?.slug || 'dashboard'}/dashboard`, exact: true },
-        { label: 'Produk/Jasa', icon: PackageIcon, path: `/store/${vendor?.slug || 'dashboard'}/products` },
-        { label: 'Messages', icon: MessageSquareIcon, path: `/store/${vendor?.slug || 'dashboard'}/messages` },
-        { label: 'Ads & Growth', icon: ZapIcon, path: `/store/${vendor?.slug || 'dashboard'}/ads` },
-        { label: 'Analytics Hub', icon: BarChart2Icon, path: `/store/${vendor?.slug || 'dashboard'}/analytics` },
-        { label: 'Shop Settings', icon: SettingsIcon, path: `/store/${vendor?.slug || 'dashboard'}/settings` },
+        { label: 'Overview', icon: LayoutDashboardIcon, path: `/vendor/${vendor?.slug || 'dashboard'}/dashboard`, exact: true },
+        { label: 'Produk/Jasa', icon: PackageIcon, path: `/vendor/${vendor?.slug || 'dashboard'}/products` },
+        { label: 'Messages', icon: MessageSquareIcon, path: `/vendor/${vendor?.slug || 'dashboard'}/messages` },
+        { label: 'Ads & Growth', icon: ZapIcon, path: `/vendor/${vendor?.slug || 'dashboard'}/ads` },
+        { label: 'Analytics Hub', icon: BarChart2Icon, path: `/vendor/${vendor?.slug || 'dashboard'}/analytics` },
+        { label: 'Shop Settings', icon: SettingsIcon, path: `/vendor/${vendor?.slug || 'dashboard'}/settings` },
     ];
 
     const SidebarContent = () => (

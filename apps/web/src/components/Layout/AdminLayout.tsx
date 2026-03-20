@@ -20,6 +20,7 @@ import {
     ShoppingBag,
     ShieldAlert,
     MessageSquare,
+    Zap,
     BellRing,
     ChevronLeft,
     ChevronRight
@@ -239,6 +240,13 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                                 icon={ShieldAlert}
                                 label="Product Reports"
                                 active={location.pathname === '/admin/reports'}
+                                sidebarOpen={sidebarOpen}
+                            />
+                            <SidebarItem
+                                href="/admin/ads"
+                                icon={Zap}
+                                label="Ads Management"
+                                active={location.pathname === '/admin/ads'}
                                 sidebarOpen={sidebarOpen}
                             />
                         </>
