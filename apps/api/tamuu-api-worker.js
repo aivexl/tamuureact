@@ -4472,7 +4472,12 @@ name = COALESCE(?, name),
 
                     if (!user) {
                         console.log(`[Wishlist/Heal] User ${user_id} not found in D1. Creating skeleton record...`);
-                        const tamuuId = `TAMUU-USER-${user_id.substring(0, 8).toUpperCase()}`;
+                        
+                        // CEO/CTO ROBUSTNESS: Ensure tamuu_id is truly unique by adding random suffix
+                        const shortId = user_id.substring(0, 4).toUpperCase();
+                        const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+                        const tamuuId = `TAMUU-USER-${shortId}-${randomSuffix}`;
+                        
                         const trialEndDate = new Date();
                         trialEndDate.setDate(trialEndDate.getDate() + 30); // 1 month trial default
 

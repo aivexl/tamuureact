@@ -1265,7 +1265,7 @@ export const shop = {
     },
 
     async toggleWishlist(userId: string, productId: string) {
-        const res = await safeFetch(`${API_BASE}/api/shop/wishlist`, {
+        const res = await safeFetch(`${API_BASE}/api/shop/wishlist/toggle`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_id: userId, product_id: productId })
