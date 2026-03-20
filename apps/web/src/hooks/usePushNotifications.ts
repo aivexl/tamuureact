@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useStore } from '../store/useStore';
 import { subscribePush, unsubscribePush } from '../lib/api';
-import toast from 'react-hot-toast';
 
 // VAPID Public Key (Generated for Tamuu Enterprise)
 const VAPID_PUBLIC_KEY = 'BEFQ-IB1eNJ7l6Qz5tK5zZ12ulaJWstJz5s8KXpJtQag1QxlSJ09OxXomGIjfuEfptDc-33YoF512VeFsrvY22s';
@@ -34,7 +33,6 @@ export const usePushNotifications = () => {
 
     const subscribe = useCallback(async (silent = false) => {
         if (!('serviceWorker' in navigator)) {
-            if (!silent) toast.error('Browser does not support push notifications');
             return;
         }
 
@@ -46,9 +44,6 @@ export const usePushNotifications = () => {
             const perm = await requestPermission();
             
             if (perm !== 'granted') {
-                if (perm === 'denied' && !silent) {
-                    toast.error('Permission for notifications was denied');
-                }
                 return;
             }
 
@@ -81,11 +76,9 @@ export const usePushNotifications = () => {
                 });
                 
                 setIsSubscribed(true);
-                if (!silent) toast.success('You are now subscribed to push notifications!');
             }
         } catch (error) {
             console.error('Push Subscription Error:', error);
-            if (!silent) toast.error('Failed to subscribe to push notifications');
         } finally {
             setIsSubscribing(false);
         }
@@ -119,11 +112,9 @@ export const usePushNotifications = () => {
                 await subscription.unsubscribe();
                 await unsubscribePush(subscription.endpoint);
                 setIsSubscribed(false);
-                toast.success('Unsubscribed from push notifications');
             }
         } catch (error) {
             console.error('Push Unsubscribe Error:', error);
-            toast.error('Failed to unsubscribe');
         }
     }, []);
 
