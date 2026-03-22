@@ -1,5 +1,13 @@
 # Tamuu Changelog
 
+## [0.9.23] - 2026-03-22
+### Fixed
+- **Refined NameBoard UI (Apple Enterprise Standard v7.0)**: Redesigned the guest welcome nameboard for maximum professional clarity and minimalist elegance.
+    - **Zero-Badge Protocol**: Eliminated all unprofessional capsule badges and background blurs for guest tiers.
+    - **Minimalist Typography**: Repositioned the guest tier below the name as clean, muted text with professional letter-spacing (`tracking-[0.2em]`).
+    - **Visual Hierarchy Optimization**: Re-balanced the component to ensure the guest's name remains the absolute primary focal point.
+    - **Enterprise Smoke Test Suite**: Added `NameBoardElement.test.tsx` to ensure 100% rendering reliability across all 28 design variants.
+
 ## [0.9.22] - 2026-03-18
 ### Added
 - **Smart Global Rhythm Engine (v4.5 Sync)**: Completely eliminated visual jumps during page transitions and hydration.
