@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { m, AnimatePresence } from 'framer-motion';
 import {
     MapPin,
-    ShoppingBag
+    ShoppingBag,
+    Map as MapIcon,
+    ChevronRight,
+    ArrowRight
 } from 'lucide-react';
 import { useStorefront, useTrackInteraction } from '../../hooks/queries/useShop';
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
@@ -15,11 +18,13 @@ import { Footer } from '../../components/Layout/Footer';
 import { Navbar } from '../../components/Layout/Navbar';
 import { ShareModal } from '../../components/Modals/ShareModal';
 import { VendorContactCard } from '../../components/Shop/VendorContactCard';
+import { AnimatedCopyIcon } from '../../components/ui/AnimatedCopyIcon';
 
 export const StorefrontPage: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [sortBy, setSortBy] = useState<'latest' | 'popular'>('latest');
     const { user, token, isAuthenticated, logout } = useStore();
 
     const { data, isLoading } = useStorefront(slug || '', token || undefined);
@@ -40,6 +45,17 @@ export const StorefrontPage: React.FC = () => {
         }
     }, [vendor?.id]);
 
+    const sortedProducts = useMemo(() => {
+        return [...products].sort((a, b) => {
+            if (sortBy === 'popular') {
+                const aPop = (a.wishlist_count || 0) + (a.review_count || 0);
+                const bPop = (b.wishlist_count || 0) + (b.review_count || 0);
+                return bPop - aPop;
+            }
+            return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+        });
+    }, [products, sortBy]);
+
     if (isLoading) return <div className="min-h-screen bg-white flex items-center justify-center"><PremiumLoader color="#0A1128" /></div>;
     if (!vendor) return <div className="min-h-screen bg-white flex flex-col items-center justify-center text-[#0A1128]">
         <h2 className="text-2xl font-black mb-4">Toko Tidak Ditemukan</h2>
@@ -51,7 +67,7 @@ export const StorefrontPage: React.FC = () => {
             <Navbar />
 
             <main className="pt-[140px] md:pt-40 pb-40">
-                {/* COMPACT PREMIUM BANNER (Apple Inspired) */}
+                {/* COMPACT PREMIUM BANNER */}
                 <div className="max-w-7xl mx-auto px-0 sm:px-6 pt-6">
                     <div className="relative h-48 md:h-72 w-full overflow-hidden sm:rounded-[2.5rem] bg-slate-100 border border-slate-100/50 group shadow-sm">
                         {vendor.banner_url ? (
@@ -66,10 +82,9 @@ export const StorefrontPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* PROFILE HUB: Centered on Mobile, Aligned on Desktop */}
+                {/* PROFILE HUB */}
                 <div className="max-w-7xl mx-auto px-6 -mt-16 md:-mt-20 relative z-10">
                     <div className="flex flex-col items-center sm:items-start gap-8">
-                        {/* Logo Card */}
                         <div className="relative group">
                             <div className="w-32 h-32 md:w-40 md:h-40 rounded-[2.5rem] border-[6px] md:border-[10px] border-white overflow-hidden shadow-2xl bg-white transition-transform duration-500 group-hover:scale-[1.02]">
                                 <img
@@ -80,7 +95,6 @@ export const StorefrontPage: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Title & Info */}
                         <div className="space-y-4 text-center sm:text-left w-full">
                             <div className="flex flex-col sm:flex-row items-center gap-4">
                                 <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-[#0A1128] italic uppercase leading-none">{vendor.nama_toko}</h2>
@@ -109,19 +123,75 @@ export const StorefrontPage: React.FC = () => {
                             </p>
                         </div>
 
-                        {/* UNIFIED VENDOR CONTACT CARD (Identical to Product Detail Page) */}
-                        <div className="w-full max-w-4xl">
-                            <VendorContactCard 
-                                vendor={vendor}
-                                contacts={contacts}
-                                isAuthenticated={isAuthenticated}
-                                navigate={navigate}
-                                track={track}
-                            />
+                        {/* BOTTOM GRID: Contact + Maps (Identical to Product Detail) */}
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 w-full mt-8">
+                            <div className="lg:col-span-7">
+                                <VendorContactCard 
+                                    vendor={vendor}
+                                    contacts={contacts}
+                                    isAuthenticated={isAuthenticated}
+                                    navigate={navigate}
+                                    track={track}
+                                />
+                            </div>
+                            <div className="lg:col-span-5 flex flex-col">
+                                <m.div 
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="p-8 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6 flex flex-col h-full"
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
+                                            <h2 className="text-xl font-black uppercase tracking-tighter text-[#0A1128]">Alamat Lengkap</h2>
+                                        </div>
+                                        {contacts.alamat && (
+                                            <div className="p-1 bg-slate-50 hover:bg-[#FFBF00]/10 rounded-2xl transition-all">
+                                                <AnimatedCopyIcon text={contacts.alamat} size={20} className="text-slate-400 hover:text-[#0A1128]" successMessage="Alamat disalin!" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    <div className="flex-1">
+                                        {contacts.alamat ? (
+                                            <div className="space-y-4">
+                                                <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                                                    <p className="text-slate-600 text-[11px] font-normal leading-relaxed uppercase tracking-tight">
+                                                        {contacts.alamat}
+                                                    </p>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                                    <MapPin className="w-4 h-4 text-[#FFBF00]" />
+                                                    {vendor.kota || "Lokasi Terverifikasi"}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="text-center py-6 space-y-4">
+                                                <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto">
+                                                    <MapPin className="w-6 h-6 text-slate-200" />
+                                                </div>
+                                                <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Alamat belum tersedia</p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {contacts.google_maps_url && (
+                                        <a 
+                                            href={contacts.google_maps_url} 
+                                            target="_blank" 
+                                            rel="noreferrer"
+                                            className="w-full h-14 bg-[#0A1128] text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 hover:bg-indigo-600 transition-all shadow-xl shadow-indigo-100"
+                                        >
+                                            <MapIcon className="w-4 h-4 text-[#FFBF00]" />
+                                            Buka Di Google Maps
+                                        </a>
+                                    )}
+                                </m.div>
+                            </div>
                         </div>
                     </div>
 
-                    {/* PRODUCT CATALOG: Integrated Unified Component */}
+                    {/* PRODUCT CATALOG */}
                     <div className="mt-32">
                         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
                             <div className="space-y-3 text-center md:text-left">
@@ -133,14 +203,24 @@ export const StorefrontPage: React.FC = () => {
                             </div>
                             
                             <div className="flex items-center gap-2 p-1.5 bg-slate-50 rounded-2xl border border-slate-100 w-fit mx-auto md:mx-0">
-                                <button className="px-6 py-2.5 bg-white shadow-sm rounded-xl text-[9px] font-black uppercase tracking-widest">Terbaru</button>
-                                <button className="px-6 py-2.5 text-slate-400 hover:text-[#0A1128] rounded-xl text-[9px] font-black uppercase tracking-widest transition-colors">Populer</button>
+                                <button 
+                                    onClick={() => setSortBy('latest')}
+                                    className={`px-6 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${sortBy === 'latest' ? 'bg-white shadow-sm text-[#0A1128]' : 'text-slate-400 hover:text-[#0A1128]'}`}
+                                >
+                                    Terbaru
+                                </button>
+                                <button 
+                                    onClick={() => setSortBy('popular')}
+                                    className={`px-6 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${sortBy === 'popular' ? 'bg-white shadow-sm text-[#0A1128]' : 'text-slate-400 hover:text-[#0A1128]'}`}
+                                >
+                                    Populer
+                                </button>
                             </div>
                         </div>
 
-                        {products.length > 0 ? (
+                        {sortedProducts.length > 0 ? (
                             <div className="grid grid-cols-2 md:flex md:flex-wrap md:justify-center gap-4 md:gap-8">
-                                {products.map((product: any) => (
+                                {sortedProducts.map((product: any) => (
                                     <ProductCard 
                                         key={product.id} 
                                         product={{
