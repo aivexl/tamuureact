@@ -8,9 +8,40 @@ import {
     Calendar, MoreVertical, ShieldCheck, ChevronRight,
     X
 } from 'lucide-react';
-import { useAdminAdCampaigns, useApproveAdCampaign } from '../../hooks/queries/useShop';
+import { useAdminAdCampaigns, useApproveAdCampaign, useProductDetails } from '../../hooks/queries/useShop';
 import { formatCurrency, formatDateFull } from '../../lib/utils';
 import { toast } from 'react-hot-toast';
+
+const AdProductPreview = ({ productId }: { productId: string }) => {
+    const { data: product, isLoading } = useProductDetails(productId);
+
+    if (isLoading) return <div className="animate-pulse text-[10px] font-bold text-slate-500 uppercase tracking-widest">Memuat Detail Produk...</div>;
+    if (!product) return <div className="text-[10px] font-bold text-rose-500 uppercase tracking-widest">Gagal Memuat Produk</div>;
+
+    const mainImage = product.images?.[0]?.image_url || product.logo_url;
+
+    return (
+        <div className="flex flex-col items-center justify-center p-6 text-center w-full">
+            <div className="w-24 h-24 rounded-2xl bg-white/5 border border-white/10 mb-4 overflow-hidden shadow-xl">
+                {mainImage ? (
+                    <img src={mainImage} alt={product.nama_produk} className="w-full h-full object-cover" />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                        <ShoppingBag className="w-8 h-8 text-slate-700" />
+                    </div>
+                )}
+            </div>
+            <div className="space-y-1 max-w-[280px]">
+                <div className="text-sm font-bold text-white truncate px-4">{product.nama_produk}</div>
+                <div className="text-xs font-bold text-teal-400">{formatCurrency(product.harga_estimasi)}</div>
+            </div>
+            <div className="mt-4 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[8px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                <AlertCircle className="w-3 h-3" />
+                Menggunakan Kartu Produk Standar
+            </div>
+        </div>
+    );
+};
 
 export const AdminAdsPage: React.FC = () => {
     const { data: campaignsRes, isLoading } = useAdminAdCampaigns();
@@ -171,9 +202,11 @@ export const AdminAdsPage: React.FC = () => {
                             <div className="p-8 space-y-8 overflow-y-auto max-h-[65vh] custom-scrollbar">
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Aset Visual</label>
-                                    <div className="w-full h-48 rounded-2xl bg-white/5 border border-white/10 overflow-hidden flex items-center justify-center relative group">
+                                    <div className="w-full min-h-[12rem] rounded-2xl bg-white/5 border border-white/10 overflow-hidden flex items-center justify-center relative group">
                                         {selectedCampaign.image_url ? (
                                             <img src={selectedCampaign.image_url} className="w-full h-full object-cover" />
+                                        ) : selectedCampaign.target_type === 'PRODUCT' && selectedCampaign.target_id ? (
+                                            <AdProductPreview productId={selectedCampaign.target_id} />
                                         ) : (
                                             <div className="text-center space-y-2 text-slate-600">
                                                 <ShoppingBag className="w-8 h-8 mx-auto" />

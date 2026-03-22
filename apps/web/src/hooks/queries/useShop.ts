@@ -419,8 +419,9 @@ export const useApproveAdCampaign = () => {
     return useMutation({
         mutationFn: (payload: { id: string, is_approved: number, rejection_reason?: string }) => 
             admin.approveAdCampaign(payload.id, payload.is_approved, payload.rejection_reason, token || undefined),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['admin_ad_campaigns'] });
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ['admin_ad_campaigns'] });
+            await queryClient.refetchQueries({ queryKey: ['admin_ad_campaigns'] });
             toast.success('Kampanye iklan diperbarui');
         }
     });
