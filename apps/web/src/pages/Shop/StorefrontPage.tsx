@@ -2,39 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { m, AnimatePresence } from 'framer-motion';
 import {
-    ArrowLeft,
-    Share2,
-    Verified,
-    Lock,
     MapPin,
-    MessageCircle,
-    Instagram,
-    Facebook,
-    Globe,
-    Music2,
-    ChevronRight,
-    ShoppingBag,
-    Tag,
-    Heart,
-    LayoutGrid,
-    Search,
-    ChevronDown,
-    User as UserIcon,
-    LayoutDashboard,
-    CreditCard,
-    LogOut,
-    ShieldAlert
+    ShoppingBag
 } from 'lucide-react';
 import { useStorefront, useTrackInteraction } from '../../hooks/queries/useShop';
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
 import { useStore } from '../../store/useStore';
 import { useSEO } from '../../hooks/useSEO';
-import { formatCurrency, formatAbbreviatedNumber } from '../../lib/utils';
 import { StarRating } from '../../components/Shop/StarRating';
 import { ProductCard } from '../../components/Shop/ProductCard';
 import { Footer } from '../../components/Layout/Footer';
 import { Navbar } from '../../components/Layout/Navbar';
 import { ShareModal } from '../../components/Modals/ShareModal';
+import { VendorContactCard } from '../../components/Shop/VendorContactCard';
 
 export const StorefrontPage: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
@@ -83,7 +63,6 @@ export const StorefrontPage: React.FC = () => {
                         ) : (
                             <div className="w-full h-full bg-[#0A1128]" />
                         )}
-                        {/* NO GRADIENT OVERLAY as requested */}
                     </div>
                 </div>
 
@@ -130,57 +109,16 @@ export const StorefrontPage: React.FC = () => {
                             </p>
                         </div>
 
-                        {/* SEAMLESS CONTACT CARD (Apple Glass Style) */}
-                        <m.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="w-full max-w-3xl bg-slate-50/50 border border-slate-100 rounded-[2.5rem] p-6 md:p-8 flex flex-col sm:flex-row items-center justify-between gap-8 shadow-sm transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-100"
-                        >
-                            <div className="flex items-center gap-6">
-                                <div className="w-16 h-16 rounded-[1.5rem] bg-white border border-slate-100 flex items-center justify-center shadow-sm">
-                                    <Lock className={`w-7 h-7 ${contacts.isLocked ? 'text-[#FFBF00]' : 'text-emerald-500'}`} />
-                                </div>
-                                <div className="space-y-1.5 text-center sm:text-left">
-                                    <p className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-black">Secure Vendor Contact</p>
-                                    <p className="text-[#0A1128] font-mono text-xl tracking-tight font-black italic">
-                                        {contacts.whatsapp}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {contacts.isLocked ? (
-                                <button
-                                    onClick={() => navigate('/login')}
-                                    className="w-full sm:w-auto bg-[#0A1128] text-white text-[10px] font-black uppercase tracking-widest py-5 px-12 rounded-[1.5rem] transition-all active:scale-95 shadow-2xl shadow-indigo-100 hover:bg-black"
-                                >
-                                    Login to access
-                                </button>
-                            ) : (
-                                <div className="flex flex-wrap justify-center sm:justify-end gap-3 w-full sm:w-auto">
-                                    {contacts.whatsapp && (
-                                        <a href={`https://wa.me/${contacts.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="w-14 h-14 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-emerald-500 hover:border-emerald-500/20 transition-all flex items-center justify-center shadow-sm">
-                                            <MessageCircle className="w-6 h-6" />
-                                        </a>
-                                    )}
-                                    {contacts.instagram && (
-                                        <a href={`https://instagram.com/${contacts.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="w-14 h-14 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-pink-500 hover:border-pink-500/20 transition-all flex items-center justify-center shadow-sm">
-                                            <Instagram className="w-6 h-6" />
-                                        </a>
-                                    )}
-                                    {contacts.website && (
-                                        <a href={contacts.website.startsWith('http') ? contacts.website : `https://${contacts.website}`} target="_blank" rel="noopener noreferrer" className="w-14 h-14 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-indigo-500 hover:border-indigo-500/20 transition-all flex items-center justify-center shadow-sm">
-                                            <Globe className="w-6 h-6" />
-                                        </a>
-                                    )}
-                                    <button 
-                                        onClick={() => setIsShareModalOpen(true)}
-                                        className="w-14 h-14 bg-white border border-slate-100 rounded-2xl text-[#FFBF00] hover:bg-[#0A1128] hover:text-white transition-all flex items-center justify-center shadow-sm"
-                                    >
-                                        <Share2 className="w-6 h-6" />
-                                    </button>
-                                </div>
-                            )}
-                        </m.div>
+                        {/* UNIFIED VENDOR CONTACT CARD (Identical to Product Detail Page) */}
+                        <div className="w-full max-w-4xl">
+                            <VendorContactCard 
+                                vendor={vendor}
+                                contacts={contacts}
+                                isAuthenticated={isAuthenticated}
+                                navigate={navigate}
+                                track={track}
+                            />
+                        </div>
                     </div>
 
                     {/* PRODUCT CATALOG: Integrated Unified Component */}

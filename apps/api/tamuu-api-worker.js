@@ -2896,10 +2896,20 @@ export default {
                     const isAuthorized = authHeader && authHeader.length > 20; // Basic check for JWT presence
 
                     const redactedContacts = {
-                        alamat: isAuthorized ? contacts?.alamat : "Login untuk melihat alamat",
-                        whatsapp: isAuthorized ? contacts?.whatsapp : "08xxxxxxxxxx",
-                        instagram: isAuthorized ? contacts?.instagram : "@xxxxxxxx",
-                        email: isAuthorized ? contacts?.email : "xxxxx@xxxxx.xxx",
+                        alamat: isAuthorized ? (contacts?.alamat || "") : "Login untuk melihat alamat",
+                        whatsapp: isAuthorized ? (contacts?.whatsapp || "") : "08xxxxxxxxxx",
+                        instagram: isAuthorized ? (contacts?.instagram || "") : "@xxxxxxxx",
+                        facebook: isAuthorized ? (contacts?.facebook || "") : "xxxxxx",
+                        tiktok: isAuthorized ? (contacts?.tiktok || "") : "xxxxxx",
+                        website: isAuthorized ? (contacts?.website || "") : "xxxxxx.xxx",
+                        email: isAuthorized ? (contacts?.email || "") : "xxxxx@xxxxx.xxx",
+                        phone: isAuthorized ? (contacts?.phone || "") : "08xxxxxxxxxx",
+                        shopee_url: isAuthorized ? (contacts?.shopee_url || "") : null,
+                        tokopedia_url: isAuthorized ? (contacts?.tokopedia_url || "") : null,
+                        tiktokshop_url: isAuthorized ? (contacts?.tiktokshop_url || "") : null,
+                        youtube: isAuthorized ? (contacts?.youtube || "") : null,
+                        x_url: isAuthorized ? (contacts?.x_url || "") : null,
+                        google_maps_url: isAuthorized ? (contacts?.google_maps_url || "") : null,
                         isLocked: !isAuthorized
                     };
 
