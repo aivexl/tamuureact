@@ -221,6 +221,22 @@ export const AdminAdsPage: React.FC = () => {
                                     <DetailItem label="Posisi Iklan" value={selectedCampaign.position?.replace(/_/g, ' ')} />
                                     <DetailItem label="Nilai Bid" value={`${formatCurrency(selectedCampaign.bid_amount)} / klik`} />
                                     <DetailItem label="Sisa Saldo" value={formatCurrency(selectedCampaign.budget_remaining)} />
+                                    {selectedCampaign.target_type === 'PRODUCT' && (
+                                        <>
+                                            <DetailItem label="ID Produk" value={selectedCampaign.target_id || '-'} />
+                                            <div className="space-y-1">
+                                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Link Produk</span>
+                                                <a 
+                                                    href={`/shop/product/${selectedCampaign.target_id}`} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="text-[10px] font-bold text-teal-400 flex items-center gap-1.5 hover:text-teal-300 transition-colors uppercase tracking-widest"
+                                                >
+                                                    Buka di Shop <ExternalLink className="w-3 h-3" />
+                                                </a>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
 
                                 <div className="p-5 rounded-2xl bg-teal-500/5 border border-teal-500/10 flex items-start gap-3">

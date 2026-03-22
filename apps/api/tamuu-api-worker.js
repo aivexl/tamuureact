@@ -3089,7 +3089,7 @@ export default {
             }
 
             if (path.startsWith('/api/admin/shop/ads/campaigns/') && path.endsWith('/approve') && method === 'PATCH') {
-                const id = path.split('/')[5];
+                const id = path.split('/')[6];
                 const { is_approved, rejection_reason } = await request.json();
                 const status = is_approved === 1 ? 'ACTIVE' : 'REJECTED';
                 const isActive = is_approved === 1 ? 1 : 0;
