@@ -10,7 +10,7 @@ import { useTrackAdClick } from '../../hooks/queries/useShop';
 export const SpecialAdsScroller: React.FC = () => {
     const { data: adsRes, isLoading } = useQuery({
         queryKey: ['active_special_ads'],
-        queryFn: () => shop.getAds('SPECIAL_FOR_YOU_HOME')
+        queryFn: () => shop.getAds('SHOP_SPECIAL_FOR_YOU')
     });
 
     const trackClick = useTrackAdClick();
@@ -31,7 +31,7 @@ export const SpecialAdsScroller: React.FC = () => {
                             <Sparkles className="w-6 h-6 fill-current" />
                         </div>
                         <div>
-                            <h2 className="text-2xl md:text-3xl font-black italic text-[#0A1128]">Special <span className="text-[#FFBF00]">For You</span></h2>
+                            <h2 className="text-2xl md:text-3xl font-black italic text-[#0A1128]">Spesial <span className="text-[#FFBF00]">Untuk Kamu</span></h2>
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mt-1">Handpicked market highlights</p>
                         </div>
                     </div>

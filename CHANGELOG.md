@@ -7,6 +7,10 @@
     - **Minimalist Typography**: Repositioned the guest tier below the name as clean, muted text with professional letter-spacing (`tracking-[0.2em]`).
     - **Visual Hierarchy Optimization**: Re-balanced the component to ensure the guest's name remains the absolute primary focal point.
     - **Enterprise Smoke Test Suite**: Added `NameBoardElement.test.tsx` to ensure 100% rendering reliability across all 28 design variants.
+- **Regression: Restored "Spesial Untuk Kamu" Section**: Resolved a critical UI omission on the Home Page where the highlighted market section was missing.
+    - **API Logic Alignment**: Synchronized API Worker ad-selection logic to support legacy `SHOP_SPECIAL_FOR_YOU` position keys.
+    - **Key Synchronization**: Re-mapped `SpecialAdsScroller` to the correct database key to ensure Handpicked Market Highlights are persistently visible.
+    - **Localization Recovery**: Restored the section title to "Spesial Untuk Kamu" for brand consistency.
 
 ## [0.9.22] - 2026-03-18
 ### Added

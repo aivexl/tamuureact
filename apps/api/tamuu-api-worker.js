@@ -2943,7 +2943,7 @@ export default {
                     let finalAds = ads;
                     if (position === 'PROMOTED_PRODUCT') {
                         finalAds = weightedRandom(ads, 4);
-                    } else if (position === 'SPECIAL_FOR_YOU_HOME' || position === 'SPECIAL_FOR_YOU') {
+                    } else if (position === 'SPECIAL_FOR_YOU_HOME' || position === 'SPECIAL_FOR_YOU' || position === 'SHOP_SPECIAL_FOR_YOU') {
                         finalAds = weightedRandom(ads, 10);
                     } else if (position === 'FEATURED_PRODUCT_DETAIL') {
                         finalAds = weightedRandom(ads, 8);
