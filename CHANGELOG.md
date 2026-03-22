@@ -1,5 +1,14 @@
 # Tamuu Changelog
 
+## [0.9.24] - 2026-03-22
+### Fixed
+- **Admin Ads Management Synchronization**: Resolved a critical data parity issue where approved ads would not immediately reflect their 'ACTIVE' status in the dashboard.
+    - **Backend Status Logic**: Synchronized `is_approved` and `status` columns in the `shop_ads` table to ensure atomic updates during the approval workflow.
+    - **Aggressive Cache Invalidation**: Enhanced the frontend query lifecycle with explicit `invalidateQueries` and `refetchQueries` to provide real-time status feedback without manual refreshes.
+- **Enhanced Ad Preview Capability**: Eliminated the "Standard Product Card" placeholder ambiguity for Admin reviewers.
+    - **Real-Time Product Fetching**: Integrated a dynamic `AdProductPreview` component that retrieves and renders the actual product thumbnail, name, and price when an ad uses the default product card.
+    - **Visual Verification Standard**: Provided Admins with 100% visual parity between the advertisement intent and the live shop product listing.
+
 ## [0.9.23] - 2026-03-22
 ### Fixed
 - **Refined NameBoard UI (Apple Enterprise Standard v7.0)**: Redesigned the guest welcome nameboard for maximum professional clarity and minimalist elegance.
