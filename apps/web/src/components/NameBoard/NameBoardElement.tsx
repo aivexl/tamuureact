@@ -184,16 +184,14 @@ export const NameBoardElement: React.FC<NameBoardElementProps> = ({ layer, isEdi
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -5 }}
-                    className="flex flex-col items-center gap-2 text-center"
+                    className="flex flex-col items-center text-center"
                 >
+                    <div style={getTextStyle()}>{displayedName}</div>
                     {displayedTier && (displayedTier === 'vip' || displayedTier === 'vvip') && (
-                        <div className="px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md mb-2">
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-premium-accent">
-                                Tamuu {displayedTier.toUpperCase()}
-                            </span>
+                        <div className="mt-1 opacity-60 tracking-[0.2em] text-[10px] uppercase font-medium">
+                            Tamuu {displayedTier.toUpperCase()}
                         </div>
                     )}
-                    <div style={getTextStyle()}>{displayedName}</div>
                 </m.div>
             </AnimatePresence>
         </m.div>
