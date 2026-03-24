@@ -1,7 +1,7 @@
 # Tamuu - Arsitektur Sistem
 
 Platform undangan digital dengan arsitektur multi-domain dan monorepo.
-Lihat juga [SKILL.md](file:///C:/Users/62896/Documents/tamuureact/SKILL.md) untuk panduan pengembangan AI Gemini.
+Lihat juga [SKILL.md](./SKILL.md) untuk panduan pengembangan AI Gemini.
 
 ---
 
@@ -29,10 +29,15 @@ Lihat juga [SKILL.md](file:///C:/Users/62896/Documents/tamuureact/SKILL.md) untu
 
 ### 🌐 Public & Shared Routes (`tamuu.id` & `app.tamuu.id`)
 - `/` - Landing Page (Premium design & animations)
+- `/shop` - Shop Home / Discovery (Featured & Special products)
+- `/c/:category` - Category-specific product discovery
+- `/c/:category/:city` - Location-aware product discovery
+- `/shop/:vendorSlug` - Vendor Storefront Profile
+- `/shop/:vendorSlug/:productId` - Product Detail Page (PDP)
 - `/invitations` - Template Store / Gallery
 - `/login` / `/signup` - Authentication (Supabase Auth)
 - `/onboarding` - Magic Form creation flow (Shared)
-- `/dashboard` - User Dashboard (Invitations, Displays, Profile)
+- `/dashboard` - User Dashboard (Invitations, Displays, Profile, Wishlist)
 - `/profile` - User Settings & Account Management
 - `/upgrade` - Pricing Plans & Tier Selection
 - `/billing` - Payment Status & History / Status
@@ -46,6 +51,9 @@ Lihat juga [SKILL.md](file:///C:/Users/62896/Documents/tamuureact/SKILL.md) untu
 - `/guests/:id` - Guest List Management, RSVP, & QR Generator
 - `/wishes` - Management of Guest Wishes/Comments
 - `/admin/dashboard` - System Metrics & Admin Overview
+- `/admin/ads` - Comprehensive Ad Campaign Management & Budget Monitoring
+- `/admin/shop/vendors` - Enterprise Vendor Governance (Verify/Suspend/Ban)
+- `/admin/shop/products` - Centralized Product Placement (Featured/Special toggle)
 - `/admin/templates/invitation` - Mobile Template Management
 - `/admin/templates/display` - TV Display Template Management
 - `/admin/editor/:slug` - Template Builder (System Level)
@@ -231,6 +239,12 @@ npm run build:web     # Build web only
     - **Fortune 500 Pure-Image Carousel**: Single-image, zero-overlay architecture with proportional height, Apple-grade hover arrows, and dynamic pagination dots.
     - **Shop Command Center**: Dedicated CMS tab in the Admin Dashboard to add, edit, and sequence Carousel slides on the fly.
     - **Enterprise Store Governance**: Advanced, customizable data grid in the Admin Dashboard enabling superset control (Suspend/Ban) over all vendors.
+- **Sprint 11: Horizontal Navigation & UI Standardization** [COMPLETED]
+  - **Objective**: Optimize product discovery speed and visual consistency across the entire shop ecosystem.
+  - **Key Deliverables**:
+    - **High-Fidelity Horizontal Navigation**: Implemented fluid, snap-enabled horizontal scrollers for "Produk Featured" and "Spesial Untuk Kamu" with vertically-centered chevron navigation for desktop power-users.
+    - **Core Product UI Standardization**: Replaced all manual display logic with the standardized `ProductCard` component across promotional sections, ensuring data parity (ratings, category, location) globally.
+    - **PDP Informational Hierarchy**: Decoupled "Other Products from Store" into a dedicated, clean, full-width section to separate vendor identity from product discovery.
 
 ---
 

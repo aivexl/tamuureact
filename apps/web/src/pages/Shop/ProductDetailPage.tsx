@@ -703,60 +703,61 @@ export const ProductDetailPage: React.FC = () => {
                                     )}
                                 </div>
                             </div>
+
+                            {/* CLEAN: Other Products from Store Section - Inside Right Column */}
+                            {otherProducts.length > 0 && !product.is_admin_listing && (
+                                <div className="pt-4">
+                                    <div className="flex items-center justify-between mb-5 px-1">
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-4 w-1 bg-[#FFBF00] rounded-full" />
+                                            <h2 className="text-[11px] font-black uppercase tracking-widest text-[#0A1128]">Produk Lain Dari Toko Ini</h2>
+                                        </div>
+                                        <Link to={`/shop/${product.vendor_slug}`} className="text-[9px] font-black uppercase tracking-widest text-[#FFBF00] hover:text-[#0A1128] transition-colors">Lihat Semua</Link>
+                                    </div>
+                                    
+                                    <div className="relative group/other">
+                                        <div 
+                                            id="other-products-scroll"
+                                            className="flex gap-4 overflow-x-auto no-scrollbar snap-x scroll-smooth pb-2"
+                                        >
+                                            {otherProducts.map((p: any) => (
+                                                <div key={p.id} className="w-[140px] md:w-[160px] flex-shrink-0 snap-start">
+                                                    <ProductCard
+                                                        product={p}
+                                                        navigate={navigate}
+                                                        isSmall={true}
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* Scroll Buttons - Compact & Vertically Centered */}
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                const el = document.getElementById('other-products-scroll');
+                                                if (el) el.scrollBy({ left: -200, behavior: 'smooth' });
+                                            }}
+                                            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur shadow-lg border border-slate-100 flex items-center justify-center text-slate-400 hover:text-[#0A1128] opacity-0 group-hover/other:opacity-100 transition-all z-10"
+                                        >
+                                            <ChevronLeft className="w-4 h-4" />
+                                        </button>
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                const el = document.getElementById('other-products-scroll');
+                                                if (el) el.scrollBy({ left: 200, behavior: 'smooth' });
+                                            }}
+                                            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur shadow-lg border border-slate-100 flex items-center justify-center text-slate-400 hover:text-[#0A1128] opacity-0 group-hover/other:opacity-100 transition-all z-10"
+                                        >
+                                            <ChevronRight className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
-
-                {/* NEW: Other Products from Store Section - Clean & Full Width */}
-                {otherProducts.length > 0 && !product.is_admin_listing && (
-                    <div className="max-w-7xl mx-auto px-6 mt-24">
-                        <div className="flex items-center justify-between mb-10">
-                            <div className="flex items-center gap-3">
-                                <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
-                                <h2 className="text-xl font-black uppercase tracking-tighter italic text-[#0A1128]">Produk Lain Dari Toko Ini</h2>
-                            </div>
-                            <Link to={`/shop/${product.vendor_slug}`} className="text-[10px] font-black uppercase tracking-widest text-[#FFBF00] hover:text-[#0A1128] transition-colors">Lihat Semua</Link>
-                        </div>
-                        
-                        <div className="relative group/nav">
-                            <div 
-                                id="other-products-scroll"
-                                className="flex gap-6 overflow-x-auto no-scrollbar snap-x scroll-smooth pb-4"
-                            >
-                                {otherProducts.map((p: any) => (
-                                    <div key={p.id} className="w-[180px] md:w-[220px] flex-shrink-0 snap-start">
-                                        <ProductCard
-                                            product={p}
-                                            navigate={navigate}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Scroll Buttons */}
-                            <button 
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    const el = document.getElementById('other-products-scroll');
-                                    if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
-                                }}
-                                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur shadow-xl border border-slate-100 flex items-center justify-center text-slate-400 hover:text-[#0A1128] opacity-0 group-hover/nav:opacity-100 transition-all z-10 hidden md:flex"
-                            >
-                                <ChevronLeft className="w-5 h-5" />
-                            </button>
-                            <button 
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    const el = document.getElementById('other-products-scroll');
-                                    if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
-                                }}
-                                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur shadow-xl border border-slate-100 flex items-center justify-center text-slate-400 hover:text-[#0A1128] opacity-0 group-hover/nav:opacity-100 transition-all z-10 hidden md:flex"
-                            >
-                                <ChevronRight className="w-5 h-5" />
-                            </button>
-                        </div>
-                    </div>
-                )}
 
                 {/* BOTTOM CONTENT SECTION */}
                 <div className="max-w-7xl mx-auto px-6 mt-20">

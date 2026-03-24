@@ -5,7 +5,8 @@
 - **Horizontal Product Navigation**: Implemented high-fidelity horizontal scrollers with vertically-centered chevron navigation for "Produk Featured" and "Spesial Untuk Kamu" on the home page.
 - **Enhanced Product Detail UI**: 
     - Standardized all promotional sections ("Other Products" and "Recommendations") using the core `ProductCard` component, ensuring consistent display of ratings, categories, and locations.
-    - Decoupled "Other Products from Store" from the vendor box into a clean, full-width section for improved visual clarity and informational hierarchy.
+    - Optimized "Other Products from Store" placement: Relocated to the right-hand column directly beneath the vendor card, ensuring geometric alignment and visual balance.
+    - Implemented `isSmall` card protocols for sidebar promotional items to maintain informational hierarchy.
 
 ## [0.9.26] - 2026-03-24
 ### Fixed
