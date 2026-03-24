@@ -3,7 +3,7 @@ import { m, AnimatePresence } from 'framer-motion';
 import { 
     X, Search, Zap, Star, Sparkles, Image as ImageIcon, 
     ChevronRight, ChevronLeft, ShoppingBag, 
-    Check, Wallet, Info, AlertCircle
+    Check, Wallet, Info, AlertCircle, TrendingUp
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { useVendorProducts, useCreateAdCampaign } from '../../hooks/queries/useShop';
@@ -19,36 +19,44 @@ interface AdCampaignWizardProps {
     initialData?: any;
 }
 
-const PLACEMENTS = [
+export const AD_POSITIONS = [
     { 
         id: 'PROMOTED_PRODUCT', 
         label: 'Promosi Produk', 
-        description: 'Tampil di bagian paling atas daftar produk.', 
+        description: 'Tampil di bagian paling atas daftar produk.',
         icon: Zap,
         color: '#007AFF'
     },
     { 
         id: 'SPECIAL_FOR_YOU_HOME', 
         label: 'Spesial Untuk Kamu', 
-        description: 'Tampil di halaman depan (Home) aplikasi.', 
+        description: 'Tampil di halaman depan (Home) aplikasi.',
         icon: Sparkles,
         color: '#5856D6'
+    },
+    {
+        id: 'FEATURED_PRODUCT_HOME',
+        label: 'Produk Featured (Home)',
+        description: 'Tampil di bagian "Produk Featured" di halaman depan.',
+        icon: Star,
+        color: '#FFBF00'
     },
     { 
         id: 'FEATURED_PRODUCT_DETAIL', 
         label: 'Produk Unggulan', 
-        description: 'Tampil di halaman detail produk lainnya.', 
-        icon: Star,
+        description: 'Tampil di halaman detail produk lainnya.',
+        icon: TrendingUp,
         color: '#FF2D55'
     },
     { 
         id: 'PRODUCT_LIST_BANNER', 
         label: 'Banner Visual', 
-        description: 'Iklan gambar lebar di atas semua produk.', 
+        description: 'Iklan gambar lebar di atas semua produk.',
         icon: ImageIcon,
         color: '#32ADE6'
     }
 ];
+
 
 export const AdCampaignWizard: React.FC<AdCampaignWizardProps> = ({ isOpen, onClose, vendorId, initialData }) => {
     const [step, setStep] = useState(1);
@@ -236,7 +244,7 @@ export const AdCampaignWizard: React.FC<AdCampaignWizardProps> = ({ isOpen, onCl
 
                         {step === 2 && (
                             <m.div key="step2" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="space-y-4">
-                                {PLACEMENTS.map((pl) => (
+                                {AD_POSITIONS.map((pl) => (
                                     <button
                                         key={pl.id}
                                         onClick={() => { setFormData({ ...formData, position: pl.id }); handleNext(); }}
@@ -303,7 +311,7 @@ export const AdCampaignWizard: React.FC<AdCampaignWizardProps> = ({ isOpen, onCl
                                     </div>
                                     <div className="flex justify-between items-center py-1">
                                         <span className="text-xs text-slate-400 font-medium">Posisi Iklan</span>
-                                        <span className="text-sm font-bold text-slate-900">{PLACEMENTS.find(p => p.id === formData.position)?.label}</span>
+                                        <span className="text-sm font-bold text-slate-900">{AD_POSITIONS.find(p => p.id === formData.position)?.label}</span>
                                     </div>
                                     <div className="flex justify-between items-center py-1">
                                         <span className="text-xs text-slate-400 font-medium">Nilai Bid</span>

@@ -30,7 +30,8 @@ import {
     useShopCarousel,
     useSpecialProducts,
     useFeaturedProducts,
-    useRandomProducts
+    useRandomProducts,
+    useTrackAdClick
 } from '../../hooks/queries/useShop';
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
 import { useSEO } from '../../hooks/useSEO';
@@ -107,7 +108,44 @@ export const ShopPage: React.FC = () => {
     }, [remoteSlides]);
 
     const { data: specialProducts = [] } = useSpecialProducts();
-    const { data: featuredProducts = [] } = useFeaturedProducts();
+    const { data: featuredProductsRes = [] } = useFeaturedProducts();
+    const { data: featuredAdsRes } = useQuery({
+        queryKey: ['featured_ads_home'],
+        queryFn: () => shop.getAds('FEATURED_PRODUCT_HOME')
+    });
+
+    const trackClick = useTrackAdClick();
+
+    const featuredProducts = useMemo(() => {
+        const ads = (featuredAdsRes?.ads || []).map((ad: any) => ({
+            id: ad.id,
+            productId: ad.target_id,
+            isAd: true,
+            nama_produk: ad.nama_produk || ad.title,
+            harga_estimasi: ad.harga_estimasi || 0,
+            images: [{ image_url: ad.image_url }],
+            nama_toko: ad.nama_toko,
+            logo_url: ad.logo_url,
+            vendor_slug: ad.vendor_slug,
+            slug: ad.product_slug,
+            avg_rating: ad.avg_rating,
+            review_count: ad.review_count,
+            wishlist_count: ad.wishlist_count,
+            kota: ad.kota
+        }));
+        
+        const products = Array.isArray(featuredProductsRes) ? featuredProductsRes : [];
+        
+        // Merge ads at the front, then unique products
+        const combined = [...ads];
+        products.forEach(p => {
+            if (!combined.some(item => item.productId === p.id || item.id === p.id)) {
+                combined.push(p);
+            }
+        });
+        return combined;
+    }, [featuredProductsRes, featuredAdsRes]);
+
     const { data: randomProducts = [] } = useRandomProducts();
     
     const [specialBanner, setSpecialBanner] = useState<any>(null);
@@ -262,7 +300,13 @@ export const ShopPage: React.FC = () => {
                                 <div className="bg-slate-50 border border-slate-100 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-12">
                                     <div className="flex flex-wrap justify-center gap-6">
                                         {featuredProducts.map((product: any) => (
-                                            <ProductCard key={product.id} product={product} navigate={navigate} isSmall={true} />
+                                            <ProductCard 
+                                                key={product.id} 
+                                                product={product} 
+                                                navigate={navigate} 
+                                                isSmall={true} 
+                                                onAdClick={(id) => trackClick.mutate(id)}
+                                            />
                                         ))}
                                     </div>
                                 </div>
@@ -321,7 +365,10 @@ export const ShopPage: React.FC = () => {
                             {topBanner && (
                                 <section className="mb-12 px-2 md:px-4">
                                     <div 
-                                        onClick={() => topBanner.link_url && (window.location.href = topBanner.link_url)}
+                                        onClick={() => {
+                                            if (topBanner.id) trackClick.mutate(topBanner.id);
+                                            topBanner.link_url && (window.location.href = topBanner.link_url);
+                                        }}
                                         className="w-full h-32 md:h-48 rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden cursor-pointer group shadow-xl shadow-slate-200/50 border border-slate-100"
                                     >
                                         <img 

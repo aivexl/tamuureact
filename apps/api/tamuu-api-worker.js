@@ -2929,8 +2929,15 @@ export default {
             if (path === '/api/shop/ads' && method === 'GET') {
                 let position = url.searchParams.get('position');
                 
-                // Naming Synonym Normalization
-                if (position === 'PRODUCT_LIST_TOP') position = 'PRODUCT_LIST_BANNER';
+                // Naming Synonym Normalization for filtering
+                let positions = [position];
+                if (position === 'PRODUCT_LIST_TOP' || position === 'PRODUCT_LIST_BANNER') {
+                    positions = ['PRODUCT_LIST_TOP', 'PRODUCT_LIST_BANNER'];
+                } else if (position === 'SPECIAL_FOR_YOU_HOME' || position === 'SPECIAL_FOR_YOU' || position === 'SHOP_SPECIAL_FOR_YOU') {
+                    positions = ['SPECIAL_FOR_YOU_HOME', 'SPECIAL_FOR_YOU', 'SHOP_SPECIAL_FOR_YOU'];
+                } else if (position === 'FEATURED_PRODUCT_HOME' || position === 'FEATURED_PRODUCT') {
+                    positions = ['FEATURED_PRODUCT_HOME', 'FEATURED_PRODUCT'];
+                }
 
                 try {
                     let query = `
@@ -2944,8 +2951,9 @@ export default {
                     const params = [];
                     
                     if (position) {
-                        query += ' AND a.position = ?';
-                        params.push(position);
+                        const placeholders = positions.map(() => '?').join(',');
+                        query += ` AND a.position IN (${placeholders})`;
+                        params.push(...positions);
                     }
                     
                     query += ' ORDER BY a.created_at DESC';
@@ -2955,15 +2963,16 @@ export default {
 
                     // Apply Weighted Random Selection for specific slots
                     let finalAds = ads;
-                    if (position === 'PROMOTED_PRODUCT') {
+                    const pos = position || '';
+                    if (pos === 'PROMOTED_PRODUCT') {
                         finalAds = weightedRandom(ads, 4);
-                    } else if (position === 'SPECIAL_FOR_YOU_HOME' || position === 'SPECIAL_FOR_YOU' || position === 'SHOP_SPECIAL_FOR_YOU') {
+                    } else if (pos === 'SPECIAL_FOR_YOU_HOME' || pos === 'SPECIAL_FOR_YOU' || pos === 'SHOP_SPECIAL_FOR_YOU') {
                         finalAds = weightedRandom(ads, 10);
-                    } else if (position === 'FEATURED_PRODUCT_DETAIL') {
+                    } else if (pos === 'FEATURED_PRODUCT_DETAIL') {
                         finalAds = weightedRandom(ads, 8);
-                    } else if (position === 'PRODUCT_LIST_BANNER' || position === 'PRODUCT_LIST_TOP') {
+                    } else if (pos === 'PRODUCT_LIST_BANNER' || pos === 'PRODUCT_LIST_TOP') {
                         finalAds = weightedRandom(ads, 1); // Only show one winner for the top banner
-                    } else if (!position) {
+                    } else if (!pos) {
                         finalAds = weightedRandom(ads, 20);
                     }
 

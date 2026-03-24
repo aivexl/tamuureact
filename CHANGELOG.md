@@ -1,5 +1,13 @@
 # Tamuu Changelog
 
+## [0.9.26] - 2026-03-24
+### Fixed
+- **Hybrid Ad-Product Discovery**: Implemented a robust merging and deduplication system for the "Spesial Untuk Kamu" and "Produk Featured" sections. Paid advertisements from `shop_ads` now take priority, followed by curated products with the `is_special` or `is_featured` flags, ensuring 100% slot occupancy with unique content.
+- **Product Visibility Fix (AA31BCF0)**: Resolved a visibility bottleneck for product `aa31bcf0` ("sewa mobil"). Manually synchronized database flags and approved pending ad campaigns to ensure persistent visibility across all promotional sections.
+- **Featured Detail Fixed**: Implemented hybrid discovery in `FeaturedAdsScroller` (Product Detail Page). The section now correctly falls back to `is_featured` products when no active paid ads exist for the `FEATURED_PRODUCT_DETAIL` position.
+- **Atomic Click Tracking & Budget Deduction**: Hardened the ad click tracking pipeline to perform atomic budget deductions from the global `ad_balance`. Verified end-to-end functionality where clicks correctly decrement vendor balances by the specified `bid_amount` (min. Rp 100).
+- **UI/UX Consistency**: Fixed a `useMemo` dependency issue in the `SpecialAdsScroller` and standardized the use of `productId` for cross-component deduplication, preventing duplicate entries when a product has both an active ad and a promotional flag.
+
 ## [0.9.25] - 2026-03-24
 ### Fixed
 - **Ad Visibility & Position Normalization**: Resolved a naming mismatch between `PRODUCT_LIST_TOP` (used in frontend) and `PRODUCT_LIST_BANNER` (used in vendor wizard), ensuring vendor ads correctly appear on the shop home page.

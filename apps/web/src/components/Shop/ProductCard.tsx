@@ -8,14 +8,19 @@ interface ProductCardProps {
     product: any;
     navigate: (path: string) => void;
     isSmall?: boolean;
+    onAdClick?: (adId: string) => void;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, navigate, isSmall = false }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ product, navigate, isSmall = false, onAdClick }) => {
     return (
         <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             onClick={() => {
+                if (product.isAd && onAdClick) {
+                    onAdClick(product.id);
+                }
+                
                 if (product.url) {
                     if (product.url.startsWith('http')) {
                         window.open(product.url, '_blank');

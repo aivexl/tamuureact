@@ -701,6 +701,65 @@ export const ProductDetailPage: React.FC = () => {
                                         </Link>
                                     )}
                                 </div>
+
+                                {/* Horizontal Grid: Other Products from Store - PROPORTIONAL & PROFESSIONAL */}
+                                {otherProducts.length > 0 && !product.is_admin_listing && (
+                                    <div className="mt-8 pt-8 border-t border-slate-100/50">
+                                        <div className="flex items-center justify-between mb-5">
+                                            <div className="flex items-center gap-2">
+                                                <div className="h-3 w-1 bg-[#FFBF00] rounded-full" />
+                                                <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Produk Lain Dari Toko Ini</h2>
+                                            </div>
+                                            <Link to={`/shop/${product.vendor_slug}`} className="text-[9px] font-black uppercase tracking-widest text-[#FFBF00] hover:text-[#0A1128] transition-colors">Lihat Semua</Link>
+                                        </div>
+                                        
+                                        <div className="relative group/nav">
+                                            <div 
+                                                id="other-products-scroll"
+                                                className="flex gap-4 overflow-x-auto no-scrollbar snap-x scroll-smooth pb-2"
+                                            >
+                                                {otherProducts.map((p: any) => (
+                                                    <m.div
+                                                        key={p.id}
+                                                        whileHover={{ y: -4 }}
+                                                        onClick={() => navigate(`/shop/${product.vendor_slug === 'admin' ? 'umum' : product.vendor_slug}/${p.slug || p.id}`)}
+                                                        className="w-32 md:w-36 flex-shrink-0 cursor-pointer group bg-white p-2 rounded-2xl border border-slate-100 hover:shadow-xl hover:shadow-slate-200/50 transition-all snap-start"
+                                                    >
+                                                        <div className="aspect-[4/5] rounded-xl overflow-hidden bg-slate-50 border border-slate-50 mb-2 relative">
+                                                            <img src={p.images?.[0]?.image_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={p.nama_produk} />
+                                                        </div>
+                                                        <div className="px-1 space-y-0.5">
+                                                            <p className="text-[9px] font-black text-[#0A1128] uppercase truncate leading-tight group-hover:text-[#FFBF00] transition-colors">{p.nama_produk}</p>
+                                                            <p className="text-[8px] font-bold text-[#FFBF00]">{p.harga_estimasi && !isNaN(Number(p.harga_estimasi)) ? formatCurrency(p.harga_estimasi) : p.harga_estimasi}</p>
+                                                        </div>
+                                                    </m.div>
+                                                ))}
+                                            </div>
+
+                                            {/* Scroll Buttons - Centered relative to cards */}
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    const el = document.getElementById('other-products-scroll');
+                                                    if (el) el.scrollBy({ left: -200, behavior: 'smooth' });
+                                                }}
+                                                className="absolute left-0 top-[40%] -translate-y-1/2 -translate-x-3 w-7 h-7 rounded-full bg-white/90 backdrop-blur shadow-lg border border-slate-100 flex items-center justify-center text-slate-400 hover:text-[#0A1128] opacity-0 group-hover/nav:opacity-100 transition-all z-10"
+                                            >
+                                                <ChevronLeft className="w-4 h-4" />
+                                            </button>
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    const el = document.getElementById('other-products-scroll');
+                                                    if (el) el.scrollBy({ left: 200, behavior: 'smooth' });
+                                                }}
+                                                className="absolute right-0 top-[40%] -translate-y-1/2 translate-x-3 w-7 h-7 rounded-full bg-white/90 backdrop-blur shadow-lg border border-slate-100 flex items-center justify-center text-slate-400 hover:text-[#0A1128] opacity-0 group-hover/nav:opacity-100 transition-all z-10"
+                                            >
+                                                <ChevronRight className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -1136,34 +1195,6 @@ export const ProductDetailPage: React.FC = () => {
                         </div>
                     </div>
                 </section>
-
-                {/* Horizontal Grid: Other Products from Store - MOVED BELOW REVIEWS */}
-                {otherProducts.length > 0 && !product.is_admin_listing && (
-                    <div className="max-w-7xl mx-auto px-6 mt-32 space-y-8">
-                        <div className="flex items-center gap-3">
-                            <div className="h-6 w-1.5 bg-[#FFBF00] rounded-full" />
-                            <h2 className="text-xl font-black uppercase tracking-widest text-[#0A1128] italic">Produk Lain Dari Toko Ini</h2>
-                        </div>
-                        <div className="flex gap-6 overflow-x-auto no-scrollbar pb-8 -mx-2 px-2">
-                            {otherProducts.map((p: any) => (
-                                <m.div
-                                    key={p.id}
-                                    whileHover={{ y: -8 }}
-                                    onClick={() => navigate(`/shop/${product.vendor_slug === 'admin' ? 'umum' : product.vendor_slug}/${p.slug || p.id}`)}
-                                    className="w-48 flex-shrink-0 cursor-pointer group bg-white p-3 rounded-[2rem] border border-slate-50 hover:shadow-2xl hover:shadow-slate-100 transition-all"
-                                >
-                                    <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 mb-4 relative">
-                                        <img src={p.images?.[0]?.image_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={p.nama_produk} />
-                                    </div>
-                                    <div className="px-1 space-y-1">
-                                        <p className="text-[11px] font-black text-[#0A1128] uppercase truncate leading-tight group-hover:text-[#FFBF00] transition-colors">{p.nama_produk}</p>
-                                        <p className="text-[10px] font-bold text-[#FFBF00]">{p.harga_estimasi && !isNaN(Number(p.harga_estimasi)) ? formatCurrency(p.harga_estimasi) : p.harga_estimasi}</p>
-                                    </div>
-                                </m.div>
-                            ))}
-                        </div>
-                    </div>
-                )}
 
                 {/* NEW: Featured Products Selection */}
                 <FeaturedAdsScroller />
