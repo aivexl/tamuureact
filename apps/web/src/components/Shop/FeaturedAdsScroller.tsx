@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { m } from 'framer-motion';
-import { Star, ChevronRight } from 'lucide-react';
+import { Star, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { shop } from '../../lib/api';
 import { formatCurrency } from '../../lib/utils';
@@ -67,22 +67,49 @@ export const FeaturedAdsScroller: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="flex gap-6 overflow-x-auto pb-8 custom-scrollbar snap-x">
-                    {items.map((item: any, idx: number) => (
-                        <m.div
-                            key={item.id}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: idx * 0.05 }}
-                            className="w-48 flex-shrink-0 snap-start"
-                        >
-                            <ProductCard 
-                                product={item}
-                                navigate={navigate}
-                                onAdClick={() => handleAdClick(item)}
-                            />
-                        </m.div>
-                    ))}
+                <div className="relative group/featured">
+                    <div 
+                        id="featured-ads-scroll"
+                        className="flex gap-6 overflow-x-auto pb-8 custom-scrollbar snap-x no-scrollbar scroll-smooth"
+                    >
+                        {items.map((item: any, idx: number) => (
+                            <m.div
+                                key={item.id}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: idx * 0.05 }}
+                                className="w-[160px] md:w-[195px] flex-shrink-0 snap-start"
+                            >
+                                <ProductCard 
+                                    product={item}
+                                    navigate={navigate}
+                                    onAdClick={() => handleAdClick(item)}
+                                />
+                            </m.div>
+                        ))}
+                    </div>
+
+                    {/* Scroll Buttons - Always Visible */}
+                    <button 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            const el = document.getElementById('featured-ads-scroll');
+                            if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
+                        }}
+                        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-10 h-10 rounded-full bg-white shadow-xl border border-slate-100 flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] transition-all z-20 hidden md:flex"
+                    >
+                        <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <button 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            const el = document.getElementById('featured-ads-scroll');
+                            if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
+                        }}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-10 h-10 rounded-full bg-white shadow-xl border border-slate-100 flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] transition-all z-20 hidden md:flex"
+                    >
+                        <ChevronRight className="w-5 h-5" />
+                    </button>
                 </div>
             </div>
         </section>

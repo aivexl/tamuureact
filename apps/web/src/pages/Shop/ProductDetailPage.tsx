@@ -715,16 +715,42 @@ export const ProductDetailPage: React.FC = () => {
                                         <Link to={`/shop/${product.vendor_slug}`} className="text-[9px] font-black uppercase tracking-widest text-[#FFBF00] hover:text-[#0A1128] transition-colors">Lihat Semua</Link>
                                     </div>
                                     
-                                    <div className="grid grid-cols-3 gap-3 pb-2">
-                                        {otherProducts.slice(0, 6).map((p: any) => (
-                                            <div key={p.id} className="w-full">
+                                    <div className="relative group/other-products">
+                                        <div 
+                                            id="other-products-scroll"
+                                            className="flex gap-2.5 overflow-x-auto no-scrollbar snap-x scroll-smooth pb-2"
+                                        >
+                                            {otherProducts.map((p: any) => (
                                                 <ProductCard
+                                                    key={p.id}
                                                     product={p}
                                                     navigate={navigate}
                                                     isSmall={true}
                                                 />
-                                            </div>
-                                        ))}
+                                            ))}
+                                        </div>
+
+                                        {/* Scroll Buttons - Always Visible */}
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                const el = document.getElementById('other-products-scroll');
+                                                if (el) el.scrollBy({ left: -260, behavior: 'smooth' });
+                                            }}
+                                            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 w-7 h-7 rounded-full bg-white shadow-lg border border-slate-100 flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] transition-all z-10"
+                                        >
+                                            <ChevronLeft className="w-4 h-4" />
+                                        </button>
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                const el = document.getElementById('other-products-scroll');
+                                                if (el) el.scrollBy({ left: 260, behavior: 'smooth' });
+                                            }}
+                                            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 w-7 h-7 rounded-full bg-white shadow-lg border border-slate-100 flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] transition-all z-10"
+                                        >
+                                            <ChevronRight className="w-4 h-4" />
+                                        </button>
                                     </div>
                                 </div>
                             )}

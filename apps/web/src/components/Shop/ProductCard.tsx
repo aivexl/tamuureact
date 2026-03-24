@@ -33,10 +33,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, navigate, isS
                     navigate(`/shop/${mSlug}/${pSlug}`);
                 }
             }}
-            className={`group bg-white border border-[#F1F5F9] rounded-[1rem] md:rounded-[1.5rem] overflow-hidden flex flex-col hover:shadow-2xl hover:border-[#FFBF00]/30 transition-all duration-500 cursor-pointer flex-shrink-0 relative w-full ${
+            className={`group bg-white border border-[#F1F5F9] rounded-[1rem] md:rounded-[1.5rem] overflow-hidden flex flex-col hover:shadow-2xl hover:border-[#FFBF00]/30 transition-all duration-500 cursor-pointer flex-shrink-0 relative ${
                 isSmall 
-                ? 'min-h-[220px] md:min-h-[320px]' 
-                : 'md:w-[195px] h-[320px] md:h-[380px]'
+                ? 'w-[110px] md:w-[130px] min-h-[200px] md:min-h-[280px]' 
+                : 'w-full md:w-[195px] h-[320px] md:h-[380px]'
             }`}
         >
             <div className={`relative overflow-hidden flex-shrink-0 ${isSmall ? 'h-[100px] md:h-[150px]' : 'h-[160px] md:h-[180px]'}`}>
