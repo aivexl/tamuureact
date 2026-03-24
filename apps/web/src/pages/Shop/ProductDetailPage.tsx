@@ -715,43 +715,16 @@ export const ProductDetailPage: React.FC = () => {
                                         <Link to={`/shop/${product.vendor_slug}`} className="text-[9px] font-black uppercase tracking-widest text-[#FFBF00] hover:text-[#0A1128] transition-colors">Lihat Semua</Link>
                                     </div>
                                     
-                                    <div className="relative group/other">
-                                        <div 
-                                            id="other-products-scroll"
-                                            className="flex gap-4 overflow-x-auto no-scrollbar snap-x scroll-smooth pb-2"
-                                        >
-                                            {otherProducts.map((p: any) => (
-                                                <div key={p.id} className="w-[140px] md:w-[160px] flex-shrink-0 snap-start">
-                                                    <ProductCard
-                                                        product={p}
-                                                        navigate={navigate}
-                                                        isSmall={true}
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        {/* Scroll Buttons - Compact & Vertically Centered */}
-                                        <button 
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                const el = document.getElementById('other-products-scroll');
-                                                if (el) el.scrollBy({ left: -200, behavior: 'smooth' });
-                                            }}
-                                            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur shadow-lg border border-slate-100 flex items-center justify-center text-slate-400 hover:text-[#0A1128] opacity-0 group-hover/other:opacity-100 transition-all z-10"
-                                        >
-                                            <ChevronLeft className="w-4 h-4" />
-                                        </button>
-                                        <button 
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                const el = document.getElementById('other-products-scroll');
-                                                if (el) el.scrollBy({ left: 200, behavior: 'smooth' });
-                                            }}
-                                            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur shadow-lg border border-slate-100 flex items-center justify-center text-slate-400 hover:text-[#0A1128] opacity-0 group-hover/other:opacity-100 transition-all z-10"
-                                        >
-                                            <ChevronRight className="w-4 h-4" />
-                                        </button>
+                                    <div className="grid grid-cols-3 gap-3 pb-2">
+                                        {otherProducts.slice(0, 6).map((p: any) => (
+                                            <div key={p.id} className="w-full">
+                                                <ProductCard
+                                                    product={p}
+                                                    navigate={navigate}
+                                                    isSmall={true}
+                                                />
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             )}
