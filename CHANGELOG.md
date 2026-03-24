@@ -1,5 +1,12 @@
 # Tamuu Changelog
 
+## [0.9.27] - 2026-03-24
+### Added
+- **Horizontal Product Navigation**: Implemented high-fidelity horizontal scrollers with vertically-centered chevron navigation for "Produk Featured" and "Spesial Untuk Kamu" on the home page.
+- **Enhanced Product Detail UI**: 
+    - Standardized all promotional sections ("Other Products" and "Recommendations") using the core `ProductCard` component, ensuring consistent display of ratings, categories, and locations.
+    - Decoupled "Other Products from Store" from the vendor box into a clean, full-width section for improved visual clarity and informational hierarchy.
+
 ## [0.9.26] - 2026-03-24
 ### Fixed
 - **Hybrid Ad-Product Discovery**: Implemented a robust merging and deduplication system for the "Spesial Untuk Kamu" and "Produk Featured" sections. Paid advertisements from `shop_ads` now take priority, followed by curated products with the `is_special` or `is_featured` flags, ensuring 100% slot occupancy with unique content.

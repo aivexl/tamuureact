@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { m } from 'framer-motion';
-import { Sparkles, ArrowRight, ShoppingBag } from 'lucide-react';
+import { Sparkles, ArrowRight, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { shop } from '../../lib/api';
 import { formatCurrency } from '../../lib/utils';
@@ -65,7 +65,7 @@ export const SpecialAdsScroller: React.FC = () => {
 
     return (
         <section className="mb-20">
-            <div className="bg-[#0A1128] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-12 relative overflow-hidden">
+            <div className="bg-[#0A1128] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-12 relative overflow-hidden group/special">
                 <div className="flex items-center justify-between mb-6 md:mb-8 relative z-10">
                     <h2 className="text-lg md:text-2xl font-black text-white uppercase tracking-tight">Spesial Untuk Kamu</h2>
                     <button 
@@ -76,42 +76,69 @@ export const SpecialAdsScroller: React.FC = () => {
                     </button>
                 </div>
 
-                <div className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar pb-4 relative z-10 snap-x">
-                    {/* THE BANNER CARD - EXACT DIMENSIONS FROM 3 DAYS AGO (731fb91) */}
+                <div className="relative">
                     <div 
-                        onClick={() => {
-                            if (specialBanner?.id) trackClick.mutate(specialBanner.id);
-                            specialBanner?.link_url && (window.location.href = specialBanner.link_url);
-                        }}
-                        className="w-[160px] md:w-[195px] h-[300px] md:h-[380px] rounded-[1.5rem] md:rounded-[2rem] bg-slate-800 flex-shrink-0 relative overflow-hidden snap-start cursor-pointer group"
+                        id="special-ads-scroll"
+                        className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar pb-4 relative z-10 snap-x scroll-smooth"
                     >
-                        {specialBanner?.image_url ? (
-                            <img src={specialBanner.image_url} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Promo Banner" />
-                        ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center p-4 text-center">
-                                <p className="text-white/20 text-[8px] font-black uppercase tracking-widest">Sponsorship Slot</p>
+                        {/* THE BANNER CARD - EXACT DIMENSIONS FROM 3 DAYS AGO (731fb91) */}
+                        <div 
+                            onClick={() => {
+                                if (specialBanner?.id) trackClick.mutate(specialBanner.id);
+                                specialBanner?.link_url && (window.location.href = specialBanner.link_url);
+                            }}
+                            className="w-[160px] md:w-[195px] h-[300px] md:h-[380px] rounded-[1.5rem] md:rounded-[2rem] bg-slate-800 flex-shrink-0 relative overflow-hidden snap-start cursor-pointer group"
+                        >
+                            {specialBanner?.image_url ? (
+                                <img src={specialBanner.image_url} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Promo Banner" />
+                            ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center p-4 text-center">
+                                    <p className="text-white/20 text-[8px] font-black uppercase tracking-widest">Sponsorship Slot</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* THE PRODUCT CARDS - EXACT COMPONENT & SMALL PROP FROM 3 DAYS AGO (731fb91) */}
+                        {scrollItems.slice(0, 10).map((product: any) => (
+                            <div key={product.id} className="snap-start flex-shrink-0">
+                                <ProductCard 
+                                    product={product} 
+                                    navigate={navigate} 
+                                    isSmall={true} 
+                                    onAdClick={(id) => trackClick.mutate(id)}
+                                />
+                            </div>
+                        ))}
+
+                        {/* FALLBACK PLACEHOLDER IF EMPTY */}
+                        {scrollItems.length === 0 && !isLoadingAds && (
+                            <div className="flex items-center justify-center w-[160px] md:w-[195px] h-[300px] md:h-[380px] border border-white/10 rounded-[1.5rem] md:rounded-[2rem] bg-white/5">
+                                <p className="text-white/50 font-bold uppercase tracking-widest text-[8px] md:text-[10px] text-center px-4">Produk Segera Hadir</p>
                             </div>
                         )}
                     </div>
 
-                    {/* THE PRODUCT CARDS - EXACT COMPONENT & SMALL PROP FROM 3 DAYS AGO (731fb91) */}
-                    {scrollItems.slice(0, 10).map((product: any) => (
-                        <div key={product.id} className="snap-start flex-shrink-0">
-                            <ProductCard 
-                                product={product} 
-                                navigate={navigate} 
-                                isSmall={true} 
-                                onAdClick={(id) => trackClick.mutate(id)}
-                            />
-                        </div>
-                    ))}
-
-                    {/* FALLBACK PLACEHOLDER IF EMPTY */}
-                    {scrollItems.length === 0 && !isLoadingAds && (
-                        <div className="flex items-center justify-center w-[160px] md:w-[195px] h-[300px] md:h-[380px] border border-white/10 rounded-[1.5rem] md:rounded-[2rem] bg-white/5">
-                            <p className="text-white/50 font-bold uppercase tracking-widest text-[8px] md:text-[10px] text-center px-4">Produk Segera Hadir</p>
-                        </div>
-                    )}
+                    {/* Scroll Buttons - Centered relative to cards */}
+                    <button 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            const el = document.getElementById('special-ads-scroll');
+                            if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
+                        }}
+                        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-[#FFBF00] hover:text-[#0A1128] transition-all shadow-2xl z-20 opacity-0 group-hover/special:opacity-100 hidden md:flex"
+                    >
+                        <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
+                    </button>
+                    <button 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            const el = document.getElementById('special-ads-scroll');
+                            if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
+                        }}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-[#FFBF00] hover:text-[#0A1128] transition-all shadow-2xl z-20 opacity-0 group-hover/special:opacity-100 hidden md:flex"
+                    >
+                        <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+                    </button>
                 </div>
             </div>
         </section>

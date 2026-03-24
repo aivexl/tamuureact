@@ -57,6 +57,7 @@ import { AnimatedCopyIcon } from '../../components/ui/AnimatedCopyIcon';
 import { StarRating } from '../../components/Shop/StarRating';
 import { FeaturedAdsScroller } from '../../components/Shop/FeaturedAdsScroller';
 import { Navbar } from '../../components/Layout/Navbar';
+import { ProductCard } from '../../components/Shop/ProductCard';
 
 const XLogoIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -701,69 +702,61 @@ export const ProductDetailPage: React.FC = () => {
                                         </Link>
                                     )}
                                 </div>
-
-                                {/* Horizontal Grid: Other Products from Store - PROPORTIONAL & PROFESSIONAL */}
-                                {otherProducts.length > 0 && !product.is_admin_listing && (
-                                    <div className="mt-8 pt-8 border-t border-slate-100/50">
-                                        <div className="flex items-center justify-between mb-5">
-                                            <div className="flex items-center gap-2">
-                                                <div className="h-3 w-1 bg-[#FFBF00] rounded-full" />
-                                                <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Produk Lain Dari Toko Ini</h2>
-                                            </div>
-                                            <Link to={`/shop/${product.vendor_slug}`} className="text-[9px] font-black uppercase tracking-widest text-[#FFBF00] hover:text-[#0A1128] transition-colors">Lihat Semua</Link>
-                                        </div>
-                                        
-                                        <div className="relative group/nav">
-                                            <div 
-                                                id="other-products-scroll"
-                                                className="flex gap-4 overflow-x-auto no-scrollbar snap-x scroll-smooth pb-2"
-                                            >
-                                                {otherProducts.map((p: any) => (
-                                                    <m.div
-                                                        key={p.id}
-                                                        whileHover={{ y: -4 }}
-                                                        onClick={() => navigate(`/shop/${product.vendor_slug === 'admin' ? 'umum' : product.vendor_slug}/${p.slug || p.id}`)}
-                                                        className="w-32 md:w-36 flex-shrink-0 cursor-pointer group bg-white p-2 rounded-2xl border border-slate-100 hover:shadow-xl hover:shadow-slate-200/50 transition-all snap-start"
-                                                    >
-                                                        <div className="aspect-[4/5] rounded-xl overflow-hidden bg-slate-50 border border-slate-50 mb-2 relative">
-                                                            <img src={p.images?.[0]?.image_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={p.nama_produk} />
-                                                        </div>
-                                                        <div className="px-1 space-y-0.5">
-                                                            <p className="text-[9px] font-black text-[#0A1128] uppercase truncate leading-tight group-hover:text-[#FFBF00] transition-colors">{p.nama_produk}</p>
-                                                            <p className="text-[8px] font-bold text-[#FFBF00]">{p.harga_estimasi && !isNaN(Number(p.harga_estimasi)) ? formatCurrency(p.harga_estimasi) : p.harga_estimasi}</p>
-                                                        </div>
-                                                    </m.div>
-                                                ))}
-                                            </div>
-
-                                            {/* Scroll Buttons - Centered relative to cards */}
-                                            <button 
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    const el = document.getElementById('other-products-scroll');
-                                                    if (el) el.scrollBy({ left: -200, behavior: 'smooth' });
-                                                }}
-                                                className="absolute left-0 top-[40%] -translate-y-1/2 -translate-x-3 w-7 h-7 rounded-full bg-white/90 backdrop-blur shadow-lg border border-slate-100 flex items-center justify-center text-slate-400 hover:text-[#0A1128] opacity-0 group-hover/nav:opacity-100 transition-all z-10"
-                                            >
-                                                <ChevronLeft className="w-4 h-4" />
-                                            </button>
-                                            <button 
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    const el = document.getElementById('other-products-scroll');
-                                                    if (el) el.scrollBy({ left: 200, behavior: 'smooth' });
-                                                }}
-                                                className="absolute right-0 top-[40%] -translate-y-1/2 translate-x-3 w-7 h-7 rounded-full bg-white/90 backdrop-blur shadow-lg border border-slate-100 flex items-center justify-center text-slate-400 hover:text-[#0A1128] opacity-0 group-hover/nav:opacity-100 transition-all z-10"
-                                            >
-                                                <ChevronRight className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         </div>
                     </div>
                 </div>
+
+                {/* NEW: Other Products from Store Section - Clean & Full Width */}
+                {otherProducts.length > 0 && !product.is_admin_listing && (
+                    <div className="max-w-7xl mx-auto px-6 mt-24">
+                        <div className="flex items-center justify-between mb-10">
+                            <div className="flex items-center gap-3">
+                                <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
+                                <h2 className="text-xl font-black uppercase tracking-tighter italic text-[#0A1128]">Produk Lain Dari Toko Ini</h2>
+                            </div>
+                            <Link to={`/shop/${product.vendor_slug}`} className="text-[10px] font-black uppercase tracking-widest text-[#FFBF00] hover:text-[#0A1128] transition-colors">Lihat Semua</Link>
+                        </div>
+                        
+                        <div className="relative group/nav">
+                            <div 
+                                id="other-products-scroll"
+                                className="flex gap-6 overflow-x-auto no-scrollbar snap-x scroll-smooth pb-4"
+                            >
+                                {otherProducts.map((p: any) => (
+                                    <div key={p.id} className="w-[180px] md:w-[220px] flex-shrink-0 snap-start">
+                                        <ProductCard
+                                            product={p}
+                                            navigate={navigate}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Scroll Buttons */}
+                            <button 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    const el = document.getElementById('other-products-scroll');
+                                    if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
+                                }}
+                                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur shadow-xl border border-slate-100 flex items-center justify-center text-slate-400 hover:text-[#0A1128] opacity-0 group-hover/nav:opacity-100 transition-all z-10 hidden md:flex"
+                            >
+                                <ChevronLeft className="w-5 h-5" />
+                            </button>
+                            <button 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    const el = document.getElementById('other-products-scroll');
+                                    if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
+                                }}
+                                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur shadow-xl border border-slate-100 flex items-center justify-center text-slate-400 hover:text-[#0A1128] opacity-0 group-hover/nav:opacity-100 transition-all z-10 hidden md:flex"
+                            >
+                                <ChevronRight className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* BOTTOM CONTENT SECTION */}
                 <div className="max-w-7xl mx-auto px-6 mt-20">
@@ -1208,43 +1201,11 @@ export const ProductDetailPage: React.FC = () => {
                         
                         <div className="grid grid-cols-2 md:flex md:flex-wrap md:justify-center gap-4 md:gap-8">
                             {recommendations.slice(0, visibleRecs).map((p: any) => (
-                                <m.div
+                                <ProductCard 
                                     key={p.id}
-                                    whileHover={{ y: -8 }}
-                                    onClick={() => navigate(`/shop/${p.vendor_slug}/${p.slug || p.id}`)}
-                                    className="group cursor-pointer bg-white border border-slate-100 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden hover:shadow-xl transition-all relative w-full md:w-[195px] h-[320px] md:h-[380px] flex-shrink-0 flex flex-col"
-                                >
-                                    <div className="relative h-[140px] md:h-[180px] overflow-hidden flex-shrink-0">
-                                        <img src={p.images?.[0]?.image_url || 'https://images.unsplash.com/photo-1540553016722-983e48a2cd10?auto=format&fit=crop&q=80'} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={p.nama_produk} />
-                                    </div>
-
-                                    <div className="p-3 md:p-4 flex flex-col flex-1 min-w-0">
-                                        <h4 className="text-[10px] md:text-xs font-black text-[#0A1128] uppercase line-clamp-3 group-hover:text-[#FFBF00] transition-colors leading-tight min-h-[2.2rem] md:min-h-[2.8rem] mb-1.5 md:mb-2 pb-1">
-                                            {p.nama_produk}
-                                        </h4>
-                                        <StarRating rating={p.avg_rating || 0} count={p.review_count || 0} size={10} className="mb-2" />
-                                        <div className="mt-auto space-y-2">
-                                            <div className="pt-2 border-t border-slate-50">
-                                                <p className="text-[11px] md:text-sm font-black text-[#0A1128] tracking-tight truncate">
-                                                    {p.harga_estimasi && !isNaN(Number(p.harga_estimasi)) ? formatCurrency(p.harga_estimasi) : p.harga_estimasi}
-                                                </p>
-                                                <p className="text-[8px] md:text-[9px] font-black text-[#FFBF00] uppercase tracking-widest truncate mt-1">
-                                                    {p.nama_toko}
-                                                </p>
-                                            </div>
-                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                                                <span className="flex items-center gap-1 text-[7px] md:text-[8px] font-bold text-slate-400 uppercase tracking-widest truncate">
-                                                    <MapPin className="w-2 h-2" />
-                                                    {p.kota?.replace(/^(kota|kab\.)\s+/gi, '') || 'Nasional'}
-                                                </span>
-                                                <span className="flex items-center gap-1 text-[7px] md:text-[8px] font-bold text-slate-400 uppercase tracking-widest truncate">
-                                                    <Tag className="w-2 h-2" />
-                                                    {p.kategori_produk || 'Umum'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </m.div>
+                                    product={p}
+                                    navigate={navigate}
+                                />
                             ))}
                         </div>
 

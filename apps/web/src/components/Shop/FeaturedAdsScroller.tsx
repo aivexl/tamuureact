@@ -4,10 +4,12 @@ import { Star, ChevronRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { shop } from '../../lib/api';
 import { formatCurrency } from '../../lib/utils';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTrackAdClick, useFeaturedProducts } from '../../hooks/queries/useShop';
+import { ProductCard } from './ProductCard';
 
 export const FeaturedAdsScroller: React.FC = () => {
+    const navigate = useNavigate();
     const { data: adsRes, isLoading: isLoadingAds } = useQuery({
         queryKey: ['active_featured_ads_detail'],
         queryFn: () => shop.getAds('FEATURED_PRODUCT_DETAIL')
@@ -24,7 +26,7 @@ export const FeaturedAdsScroller: React.FC = () => {
             isAd: true,
             nama_produk: ad.nama_produk || ad.title,
             harga_estimasi: ad.harga_estimasi || 0,
-            image_url: ad.image_url,
+            images: [{ image_url: ad.image_url }],
             nama_toko: ad.nama_toko,
             logo_url: ad.logo_url,
             vendor_slug: ad.vendor_slug,
@@ -74,36 +76,11 @@ export const FeaturedAdsScroller: React.FC = () => {
                             transition={{ delay: idx * 0.05 }}
                             className="w-48 flex-shrink-0 snap-start"
                         >
-                            <Link 
-                                to={`/shop/${item.vendor_slug}/${item.slug || item.id}`}
-                                onClick={() => handleAdClick(item)}
-                                className="group block bg-white p-3 rounded-[2rem] border border-slate-50 hover:shadow-2xl hover:shadow-slate-100 transition-all"
-                            >
-                                <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 mb-4 relative">
-                                    <img 
-                                        src={item.image_url || '/placeholder-product.png'} 
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                                        alt={item.nama_produk} 
-                                    />
-                                    <div className="absolute top-2 right-2 px-2 py-0.5 rounded-lg bg-white/90 backdrop-blur shadow-sm text-[7px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
-                                        {item.isAd ? 'Ad' : 'Featured'}
-                                    </div>
-                                </div>
-                                <div className="px-1 space-y-1">
-                                    <h3 className="text-[11px] font-black text-[#0A1128] uppercase truncate leading-tight group-hover:text-[#FFBF00] transition-colors">
-                                        {item.nama_produk}
-                                    </h3>
-                                    <p className="text-[10px] font-bold text-[#FFBF00]">
-                                        {item.harga_estimasi && !isNaN(Number(item.harga_estimasi)) ? formatCurrency(item.harga_estimasi) : (item.harga_estimasi || 'Tanya Harga')}
-                                    </p>
-                                    <div className="flex items-center gap-1.5 pt-1">
-                                        <div className="w-3.5 h-3.5 rounded-full bg-slate-100 overflow-hidden">
-                                            <img src={item.logo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${item.nama_toko}`} className="w-full h-full object-cover" />
-                                        </div>
-                                        <span className="text-[8px] font-bold text-slate-400 uppercase truncate">{item.nama_toko}</span>
-                                    </div>
-                                </div>
-                            </Link>
+                            <ProductCard 
+                                product={item}
+                                navigate={navigate}
+                                onAdClick={() => handleAdClick(item)}
+                            />
                         </m.div>
                     ))}
                 </div>

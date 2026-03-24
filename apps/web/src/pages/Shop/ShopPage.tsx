@@ -295,18 +295,44 @@ export const ShopPage: React.FC = () => {
                         {featuredProducts.length > 0 && (
                             <section className="mb-20">
                                 <div className="flex items-center justify-between mb-8 px-2">
-                                    <h2 className="text-lg md:text-2xl font-black text-[#0A1128] uppercase tracking-tight">Produk Featured</h2>
+                                    <div className="flex items-center gap-3">
+                                        <h2 className="text-lg md:text-2xl font-black text-[#0A1128] uppercase tracking-tight">Produk Featured</h2>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button 
+                                            onClick={() => {
+                                                const el = document.getElementById('featured-products-scroll');
+                                                if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
+                                            }}
+                                            className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] transition-all shadow-sm"
+                                        >
+                                            <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
+                                        </button>
+                                        <button 
+                                            onClick={() => {
+                                                const el = document.getElementById('featured-products-scroll');
+                                                if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
+                                            }}
+                                            className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] transition-all shadow-sm"
+                                        >
+                                            <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className="bg-slate-50 border border-slate-100 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-12">
-                                    <div className="flex flex-wrap justify-center gap-6">
+                                <div className="relative group/featured">
+                                    <div 
+                                        id="featured-products-scroll"
+                                        className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar pb-6 snap-x snap-mandatory scroll-smooth px-2"
+                                    >
                                         {featuredProducts.map((product: any) => (
-                                            <ProductCard 
-                                                key={product.id} 
-                                                product={product} 
-                                                navigate={navigate} 
-                                                isSmall={true} 
-                                                onAdClick={(id) => trackClick.mutate(id)}
-                                            />
+                                            <div key={product.id} className="snap-start flex-shrink-0">
+                                                <ProductCard 
+                                                    product={product} 
+                                                    navigate={navigate} 
+                                                    isSmall={true} 
+                                                    onAdClick={(id) => trackClick.mutate(id)}
+                                                />
+                                            </div>
                                         ))}
                                     </div>
                                 </div>
