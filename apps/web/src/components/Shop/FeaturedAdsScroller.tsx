@@ -78,11 +78,12 @@ export const FeaturedAdsScroller: React.FC = () => {
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: idx * 0.05 }}
-                                className="w-[160px] md:w-[195px] flex-shrink-0 snap-start"
+                                className="snap-start"
                             >
                                 <ProductCard 
                                     product={item}
                                     navigate={navigate}
+                                    isSmall={true}
                                     onAdClick={() => handleAdClick(item)}
                                 />
                             </m.div>
