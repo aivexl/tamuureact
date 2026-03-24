@@ -1,5 +1,12 @@
 # Tamuu Changelog
 
+## [0.9.25] - 2026-03-24
+### Fixed
+- **Ad Visibility & Position Normalization**: Resolved a naming mismatch between `PRODUCT_LIST_TOP` (used in frontend) and `PRODUCT_LIST_BANNER` (used in vendor wizard), ensuring vendor ads correctly appear on the shop home page.
+- **Admin Ads Transparency**: Enhanced the `/admin/ads` page to display the **Global Vendor Balance** (`ad_balance`). This helps administrators diagnose why ads might be hidden (e.g., zero balance) even if they have high bids.
+- **Weighted Random Ad Selection**: Refined the ad rotation logic to prioritize highest-bidding ads for the top banner slot while maintaining a fair rotation system.
+- **Product ID Standardization**: Standardized the display of Product IDs in the Admin Ads modal to use the official `tamuu-shop-XXXXXXXX` format for improved scannability.
+
 ## [0.9.24] - 2026-03-22
 ### Fixed
 - **Admin Ads Management Synchronization**: Resolved a critical data parity issue where approved ads would not immediately reflect their 'ACTIVE' status in the dashboard.

@@ -156,7 +156,10 @@ export const AdminAdsPage: React.FC = () => {
                                         </td>
                                         <td className="px-8 py-6 text-right">
                                             <div className="text-sm font-bold text-white">{formatCurrency(c.bid_amount)} / klik</div>
-                                            <div className="text-[10px] font-bold text-teal-400 uppercase tracking-tighter">Sisa: {formatCurrency(c.budget_remaining)}</div>
+                                            <div className="flex flex-col items-end gap-0.5">
+                                                <div className="text-[9px] font-bold text-teal-400 uppercase tracking-tighter">Sisa Ad: {formatCurrency(c.budget_remaining)}</div>
+                                                <div className="text-[9px] font-bold text-amber-400 uppercase tracking-tighter">Saldo Vendor: {formatCurrency(c.ad_balance)}</div>
+                                            </div>
                                         </td>
                                         <td className="px-8 py-6 text-center">
                                             <StatusBadge status={c.status} />
@@ -220,10 +223,14 @@ export const AdminAdsPage: React.FC = () => {
                                     <DetailItem label="Vendor" value={selectedCampaign.nama_toko} />
                                     <DetailItem label="Posisi Iklan" value={selectedCampaign.position?.replace(/_/g, ' ')} />
                                     <DetailItem label="Nilai Bid" value={`${formatCurrency(selectedCampaign.bid_amount)} / klik`} />
-                                    <DetailItem label="Sisa Saldo" value={formatCurrency(selectedCampaign.budget_remaining)} />
+                                    <DetailItem label="Sisa Saldo Ad" value={formatCurrency(selectedCampaign.budget_remaining)} />
+                                    <DetailItem label="Saldo Global Vendor" value={formatCurrency(selectedCampaign.ad_balance)} />
                                     {selectedCampaign.target_type === 'PRODUCT' && (
                                         <>
-                                            <DetailItem label="ID Produk" value={selectedCampaign.target_id || '-'} />
+                                            <DetailItem 
+                                                label="ID Produk" 
+                                                value={selectedCampaign.target_id ? `tamuu-shop-${selectedCampaign.target_id.substring(0, 8).toUpperCase()}` : '-'} 
+                                            />
                                             <div className="space-y-1">
                                                 <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Link Produk</span>
                                                 <a 

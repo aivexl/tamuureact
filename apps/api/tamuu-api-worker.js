@@ -2927,7 +2927,11 @@ export default {
             // 7. PUBLIC DISCOVERY: Product Details (PDP)
             // 11. PUBLIC ADS: Fetch active banners
             if (path === '/api/shop/ads' && method === 'GET') {
-                const position = url.searchParams.get('position');
+                let position = url.searchParams.get('position');
+                
+                // Naming Synonym Normalization
+                if (position === 'PRODUCT_LIST_TOP') position = 'PRODUCT_LIST_BANNER';
+
                 try {
                     let query = `
                         SELECT a.*, m.nama_toko, m.slug as vendor_slug, m.logo_url, m.ad_balance,
@@ -2957,6 +2961,8 @@ export default {
                         finalAds = weightedRandom(ads, 10);
                     } else if (position === 'FEATURED_PRODUCT_DETAIL') {
                         finalAds = weightedRandom(ads, 8);
+                    } else if (position === 'PRODUCT_LIST_BANNER' || position === 'PRODUCT_LIST_TOP') {
+                        finalAds = weightedRandom(ads, 1); // Only show one winner for the top banner
                     } else if (!position) {
                         finalAds = weightedRandom(ads, 20);
                     }
@@ -3079,7 +3085,7 @@ export default {
             // [NEW] ADMIN: CAMPAIGN APPROVAL
             if (path === '/api/admin/shop/ads/campaigns' && method === 'GET') {
                 const { results } = await env.DB.prepare(`
-                    SELECT a.*, m.nama_toko, u.email as vendor_email
+                    SELECT a.*, m.nama_toko, m.ad_balance, u.email as vendor_email
                     FROM shop_ads a
                     JOIN shop_vendors m ON a.vendor_id = m.id
                     JOIN users u ON m.user_id = u.id
