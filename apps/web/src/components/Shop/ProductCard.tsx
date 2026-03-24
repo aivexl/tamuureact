@@ -50,9 +50,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, navigate, isS
                         Promoted
                     </div>
                 )}
+                {isSmall && product.wishlist_count > 0 && (
+                    <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-white/90 backdrop-blur-sm rounded-full flex items-center gap-0.5 text-rose-500 shadow-sm z-10">
+                        <Heart className="w-1.5 h-1.5 fill-current" />
+                        <span className="text-[7px] font-black">{formatAbbreviatedNumber(product.wishlist_count)}</span>
+                    </div>
+                )}
             </div>
-            <div className={`${isSmall ? 'p-2 md:p-3' : 'p-3 md:p-4'} flex flex-col flex-1 min-w-0`}>
-                <h4 className={`${isSmall ? 'text-[8px] md:text-[10px] mb-1 line-clamp-2 min-h-[1.8rem] md:min-h-[2.4rem]' : 'text-[10px] md:text-xs mb-1 md:mb-2 line-clamp-3 min-h-[2.2rem] md:min-h-[2.8rem]'} font-black text-[#0A1128] uppercase group-hover:text-[#FFBF00] transition-colors leading-tight pb-1`}>
+            <div className={`${isSmall ? 'p-2 md:p-3' : 'p-3 md:p-4'} flex flex-col flex-1 min-w-0 overflow-hidden`}>
+                <h4 className={`${isSmall ? 'text-[8px] md:text-[10px] mb-1 line-clamp-2 min-h-[1.8rem] md:min-h-[2.2rem]' : 'text-[10px] md:text-xs mb-1 md:mb-2 line-clamp-3 min-h-[2.2rem] md:min-h-[2.8rem]'} font-black text-[#0A1128] uppercase group-hover:text-[#FFBF00] transition-colors leading-tight pb-1`}>
                     {product.nama_produk}
                 </h4>
                 
@@ -60,12 +66,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, navigate, isS
                     rating={product.avg_rating || 0} 
                     count={product.review_count || 0} 
                     size={isSmall ? 8 : 10} 
-                    className="mb-1.5"
+                    className={isSmall ? 'mb-1' : 'mb-1.5'}
                 />
                 
-                <div className={`${isSmall ? 'space-y-1' : 'space-y-1.5 md:space-y-3'} mt-auto`}>
-                    <div className={`${isSmall ? 'pt-1' : 'pt-1.5 md:pt-3'} border-t border-slate-50`}>
-                        {product.wishlist_count > 0 && (
+                <div className={`${isSmall ? 'space-y-0.5 md:space-y-1' : 'space-y-1.5 md:space-y-3'} mt-auto`}>
+                    <div className={`${isSmall ? 'pt-0.5' : 'pt-1.5 md:pt-3'} border-t border-slate-50`}>
+                        {!isSmall && product.wishlist_count > 0 && (
                             <div className="flex items-center gap-0.5 text-rose-500 mb-0.5">
                                 <Heart className={`${isSmall ? 'w-1.5 h-1.5' : 'w-2 md:w-2.5 h-2 md:h-2.5'} fill-current`} />
                                 <span className={`${isSmall ? 'text-[7px]' : 'text-[8px] md:text-[9px]'} font-black`}>{formatAbbreviatedNumber(product.wishlist_count)}</span>
