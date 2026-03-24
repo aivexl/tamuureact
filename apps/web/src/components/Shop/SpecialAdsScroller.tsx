@@ -112,7 +112,7 @@ export const SpecialAdsScroller: React.FC = () => {
 
                         {/* FALLBACK PLACEHOLDER IF EMPTY */}
                         {scrollItems.length === 0 && !isLoadingAds && (
-                            <div className="flex items-center justify-center w-[160px] md:w-[195px] h-[300px] md:h-[380px] border border-white/10 rounded-[1.5rem] md:rounded-[2rem] bg-white/5">
+                            <div className="flex items-center justify-center w-[160px] md:w-[195px] h-[300px] md:h-[380px] border border-white/10 rounded-[1.5rem] md:rounded-[2rem] bg-white/5 flex-shrink-0">
                                 <p className="text-white/50 font-bold uppercase tracking-widest text-[8px] md:text-[10px] text-center px-4">Produk Segera Hadir</p>
                             </div>
                         )}

@@ -1,5 +1,12 @@
 # Tamuu Changelog
 
+## [0.9.28] - 2026-03-24
+
+### Added
+- **Standardized Horizontal Navigation**: Implemented high-fidelity horizontal scrollers for "Produk Lain Dari Toko Ini", "Produk Featured", and "Spesial Untuk Kamu" with persistent, high-contrast chevron navigation.
+- **High-Density Product Cards**: Optimized `ProductCard` with `isSmall` variant support (130px width) for better informational hierarchy in sidebars and promotional tracks.
+- **Improved UX Consistency**: Unified navigation patterns across discovery and product detail pages to ensure a seamless, high-fidelity experience.
+
 ## [0.9.27] - 2026-03-24
 ### Added
 - **Horizontal Product Navigation**: Implemented high-fidelity horizontal scrollers with vertically-centered chevron navigation for "Produk Featured" and "Spesial Untuk Kamu" on the home page.

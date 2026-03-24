@@ -78,7 +78,7 @@ export const FeaturedAdsScroller: React.FC = () => {
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: idx * 0.05 }}
-                                className="snap-start"
+                                className="snap-start flex-shrink-0"
                             >
                                 <ProductCard 
                                     product={item}

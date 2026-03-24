@@ -35,7 +35,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, navigate, isS
             }}
             className={`group bg-white border border-[#F1F5F9] rounded-[1rem] md:rounded-[1.5rem] overflow-hidden flex flex-col hover:shadow-2xl hover:border-[#FFBF00]/30 transition-all duration-500 cursor-pointer flex-shrink-0 relative ${
                 isSmall 
-                ? 'w-[110px] md:w-[130px] min-h-[200px] md:min-h-[280px]' 
+                ? 'w-[110px] md:w-[130px] h-[220px] md:h-[280px]' 
                 : 'w-full md:w-[195px] h-[320px] md:h-[380px]'
             }`}
         >
