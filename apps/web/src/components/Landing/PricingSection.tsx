@@ -107,20 +107,19 @@ const PricingSection: React.FC = () => {
                     return (
                         <m.div
                             key={index}
-                            whileHover={{ y: -5 }}
                             className={`relative p-8 rounded-3xl border transition-all duration-300 ${plan.popular
-                                ? 'bg-white border-[#FFBF00] shadow-[0_20px_50px_rgba(255,191,0,0.15)] z-10'
+                                ? 'bg-white border-[#FFBF00] z-10'
                                 : 'bg-white/50 border-white/20 backdrop-blur-xl border-slate-200'
                                 } ${isCurrent ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}`}
                         >
                             {plan.popular && (
-                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#FFBF00] text-[#0A1128] px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg whitespace-nowrap">
+                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#FFBF00] text-[#0A1128] px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
                                     Recommended
                                 </div>
                             )}
 
                             {isCurrent && (
-                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg whitespace-nowrap">
+                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
                                     Current Plan
                                 </div>
                             )}
@@ -153,7 +152,7 @@ const PricingSection: React.FC = () => {
                                 className={`w-full py-4 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-2 ${isCurrent
                                     ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                                     : plan.popular
-                                        ? 'bg-[#FFBF00] text-[#0A1128] hover:shadow-[0_10px_20px_rgba(255,191,0,0.3)]'
+                                        ? 'bg-[#FFBF00] text-[#0A1128]'
                                         : 'bg-[#0A1128] text-white hover:bg-[#152042]'
                                     } ${isLoading ? 'opacity-70 cursor-wait' : ''}`}
                             >

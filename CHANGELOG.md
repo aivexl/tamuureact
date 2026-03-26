@@ -1,5 +1,14 @@
 # Tamuu Changelog
 
+## [0.9.30] - 2026-03-26
+
+### Added
+- **Flat Design Migration (v10.0)**: Transitioned the entire homepage and core components to a modern flat design style for a cleaner, more modern aesthetic.
+- **Shadow Elimination**: Removed depth-inducing shadows (`shadow-2xl`, `shadow-xl`, `shadow-md`) from `MultiCarousel`, `ProductCard`, `VendorCard`, `BlogCard`, and `FeaturesSection`.
+- **Motion & Depth Reduction**: Eliminated hover zoom effects (`scale-110`, `scale-105`) and vertical translation ("timbul") across all card components to create a more stable and "silent" interface.
+- **Enhanced Border Definition**: Replaced heavy shadows with subtle borders (`border-slate-200`, `hover:border-primary/30`) to maintain structural hierarchy without relying on artificial depth.
+- **Unified Interaction Design**: Standardized hover states to focus on font color changes and border highlights, ensuring accessibility and visual consistency across the platform.
+
 ## [0.9.29] - 2026-03-26
 
 ### Added

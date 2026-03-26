@@ -131,10 +131,9 @@ const FeaturesSection: React.FC = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.5, delay: index * 0.02 }}
-                        whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                        className="relative p-10 bg-[#FBFBFB] rounded-apple border border-[#EDEDED] flex flex-col items-start h-full group transition-all duration-300 hover:bg-white hover:shadow-[0_20px_40px_rgba(0,0,0,0.04)]"
+                        className="relative p-10 bg-[#FBFBFB] rounded-apple border border-[#EDEDED] flex flex-col items-start h-full group transition-all duration-300 hover:bg-white hover:border-[#0A1128]/10"
                     >
-                        <div className="w-14 h-14 rounded-2xl bg-white shadow-sm border border-[#EDEDED] flex items-center justify-center mb-8 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3">
+                        <div className="w-14 h-14 rounded-2xl bg-white border border-[#EDEDED] flex items-center justify-center mb-8 transition-transform duration-500">
                             <feature.icon className="w-7 h-7 text-[#0A1128]" />
                         </div>
 

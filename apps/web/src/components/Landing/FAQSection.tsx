@@ -99,7 +99,7 @@ const FAQSection: React.FC = () => {
                 </div>
 
                 {/* Accordion */}
-                <div className="bg-white rounded-3xl shadow-xl shadow-slate-100 border border-slate-100 p-6 md:p-10">
+                <div className="bg-white rounded-3xl border border-slate-100 p-6 md:p-10">
                     {FAQ_ITEMS.map((item, index) => (
                         <AccordionItem
                             key={index}

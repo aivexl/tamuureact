@@ -81,7 +81,7 @@ const ShopSection: React.FC = () => {
                     <div className="relative group">
                         <button 
                             onClick={() => scroll(vendorScrollRef, 'left')}
-                            className="absolute left-0 top-[40%] -translate-y-1/2 -translate-x-6 w-14 h-14 bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] hover:scale-110 transition-all z-10 opacity-0 group-hover:opacity-100"
+                            className="absolute left-0 top-[40%] -translate-y-1/2 -translate-x-6 w-14 h-14 bg-white rounded-full border border-slate-200 flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] hover:scale-110 transition-all z-10 opacity-0 group-hover:opacity-100"
                         >
                             <ChevronLeft className="w-6 h-6" />
                         </button>
@@ -100,7 +100,7 @@ const ShopSection: React.FC = () => {
 
                         <button 
                             onClick={() => scroll(vendorScrollRef, 'right')}
-                            className="absolute right-0 top-[40%] -translate-y-1/2 translate-x-6 w-14 h-14 bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] hover:scale-110 transition-all z-10 opacity-0 group-hover:opacity-100"
+                            className="absolute right-0 top-[40%] -translate-y-1/2 translate-x-6 w-14 h-14 bg-white rounded-full border border-slate-200 flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] hover:scale-110 transition-all z-10 opacity-0 group-hover:opacity-100"
                         >
                             <ChevronRight className="w-6 h-6" />
                         </button>
@@ -121,11 +121,11 @@ const VendorCard: React.FC<{ vendor: any, navigate: any }> = ({ vendor, navigate
                 const targetSlug = vendor.slug === 'admin' ? 'official' : vendor.slug;
                 navigate(`/shop/${targetSlug}`);
             }}
-            className="group bg-white border border-slate-50 rounded-[2rem] overflow-hidden flex flex-col hover:shadow-2xl transition-all cursor-pointer hover:border-[#0A1128]/20 relative w-full min-w-[280px]"
+            className="group bg-white border border-slate-50 rounded-[2rem] overflow-hidden flex flex-col transition-all cursor-pointer hover:border-[#0A1128]/20 relative w-full min-w-[280px]"
         >
             <div className="h-32 md:h-36 bg-slate-100 relative overflow-hidden">
                 {vendor.banner_url ? (
-                    <img src={vendor.banner_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Banner" />
+                    <img src={vendor.banner_url} className="w-full h-full object-cover transition-transform duration-700" alt="Banner" />
                 ) : (
                     <div className="w-full h-full bg-gradient-to-tr from-slate-200 to-slate-100" />
                 )}
@@ -133,7 +133,7 @@ const VendorCard: React.FC<{ vendor: any, navigate: any }> = ({ vendor, navigate
             </div>
             
             {/* Vendor Logo */}
-            <div className="absolute top-20 md:top-24 left-6 md:left-8 w-16 h-16 md:w-20 md:h-20 rounded-full border-4 border-white overflow-hidden bg-white shadow-lg z-10 transition-transform duration-500 group-hover:scale-105">
+            <div className="absolute top-20 md:top-24 left-6 md:left-8 w-16 h-16 md:w-20 md:h-20 rounded-full border-4 border-white overflow-hidden bg-white z-10 transition-transform duration-500">
                 <img 
                     src={vendor.logo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${vendor.nama_toko}`} 
                     className="w-full h-full object-cover" 

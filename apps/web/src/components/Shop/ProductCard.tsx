@@ -33,7 +33,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, navigate, isS
                     navigate(`/shop/${mSlug}/${pSlug}`);
                 }
             }}
-            className={`group bg-white border border-[#F1F5F9] rounded-[1rem] md:rounded-[1.5rem] overflow-hidden flex flex-col hover:shadow-2xl hover:border-[#FFBF00]/30 transition-all duration-500 cursor-pointer flex-shrink-0 relative ${
+            className={`group bg-white border border-[#F1F5F9] rounded-[1rem] md:rounded-[1.5rem] overflow-hidden flex flex-col hover:border-[#FFBF00]/30 transition-all duration-500 cursor-pointer flex-shrink-0 relative ${
                 isSmall 
                 ? 'w-[110px] md:w-[130px] h-[240px] md:h-[310px]' 
                 : 'w-full md:w-[195px] h-[320px] md:h-[380px]'
@@ -43,7 +43,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, navigate, isS
                 <img
                     src={product.images?.[0]?.image_url || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80'}
                     alt={product.nama_produk}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-700"
                 />
                 {product.isAd && (
                     <div className={`${isSmall ? 'top-2 left-2 px-1.5 py-0.5 text-[7px]' : 'top-4 left-4 px-3 py-1 text-[10px]'} absolute bg-[#FFBF00] text-[#0A1128] font-black uppercase tracking-widest rounded-full z-10 shadow-md`}>

@@ -87,7 +87,6 @@ const TestimonialsSection: React.FC = () => {
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.1 }}
-                        whileHover={{ y: -5 }}
                         className="bg-white/5 p-10 rounded-[2.5rem] border border-white/10 flex flex-col hover:bg-white/[0.08] transition-all group"
                     >
                         <div className="flex gap-1 mb-6">

@@ -46,11 +46,11 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, featured = false }) =>
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl shadow-2xl border border-slate-100"
+                    className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl border border-slate-200"
                 >
                     <img
                         alt={post.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        className="w-full h-full object-cover transition-transform duration-700"
                         src={post.featured_image || 'https://placehold.co/1200x630/0A1128/white?text=Tamuu+Journal'}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0A1128]/90 via-[#0A1128]/30 to-transparent" />
@@ -78,16 +78,15 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, featured = false }) =>
             <motion.article
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                whileHover={{ y: -4 }}
                 transition={{ duration: 0.3 }}
-                className="bg-white border border-slate-100 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col h-full"
+                className="bg-white border border-slate-100 rounded-2xl overflow-hidden transition-all duration-300 flex flex-col h-full hover:border-[#0A1128]/10"
             >
                 {/* Image */}
                 <div className="p-3 pb-0">
                     <div className="aspect-[16/10] overflow-hidden rounded-xl border border-slate-100">
                         <img
                             alt={post.title}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            className="w-full h-full object-cover transition-transform duration-500"
                             src={post.featured_image || 'https://placehold.co/600x375/0A1128/white?text=Tamuu'}
                         />
                     </div>
