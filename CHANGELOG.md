@@ -1,5 +1,14 @@
 # Tamuu Changelog
 
+## [0.9.31] - 2026-03-26
+
+### Added
+- **Enterprise-Grade Zero-Jank Architecture (v11.0)**: Completely eliminated layout flashes and "blank scroll" artifacts during page navigation and exploration.
+- **Content-Visibility & Containment**: Implemented CSS `content-visibility: auto` and `contain-intrinsic-size` for all major sections to preserve scrolling geometry and improve compositor performance.
+- **Eager Hydration Core**: Migrated critical below-the-fold components (`Pricing`, `Shop`, `CTA`) from lazy to static imports, ensuring they are rendered instantly without network or CPU bottlenecks.
+- **Section-Specific Suspense Skeletons**: Replaced the global section loader with granular, height-preserving skeletons for `Blog`, `Testimonials`, and `FAQ` sections to eliminate layout shifts (CLS).
+- **GPU-Accelerated Card Lifecycle**: Optimized `ProductCard`, `VendorCard`, and `BlogCard` with `React.memo` and hardware-accelerated `contain: content` styles to offload layout work from the main thread.
+
 ## [0.9.30] - 2026-03-26
 
 ### Added

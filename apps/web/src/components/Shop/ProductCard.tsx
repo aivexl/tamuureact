@@ -11,11 +11,13 @@ interface ProductCardProps {
     onAdClick?: (adId: string) => void;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, navigate, isSmall = false, onAdClick }) => {
+export const ProductCard = React.memo(({ product, navigate, isSmall = false, onAdClick }: ProductCardProps) => {
     return (
         <m.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-20px" }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
             onClick={() => {
                 if (product.isAd && onAdClick) {
                     onAdClick(product.id);
@@ -33,6 +35,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, navigate, isS
                     navigate(`/shop/${mSlug}/${pSlug}`);
                 }
             }}
+            style={{ contain: 'content' }}
             className={`group bg-white border border-[#F1F5F9] rounded-[1rem] md:rounded-[1.5rem] overflow-hidden flex flex-col hover:border-[#FFBF00]/30 transition-all duration-500 cursor-pointer flex-shrink-0 relative ${
                 isSmall 
                 ? 'w-[110px] md:w-[130px] h-[240px] md:h-[310px]' 
@@ -100,4 +103,4 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, navigate, isS
             </div>
         </m.div>
     );
-};
+});

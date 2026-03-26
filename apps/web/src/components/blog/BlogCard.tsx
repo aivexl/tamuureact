@@ -27,7 +27,7 @@ interface BlogCardProps {
     featured?: boolean;
 }
 
-export const BlogCard: React.FC<BlogCardProps> = ({ post, featured = false }) => {
+export const BlogCard = React.memo(({ post, featured = false }: BlogCardProps) => {
     const formattedDate = (post.published_at || post.created_at)
         ? new Date(post.published_at || post.created_at).toLocaleDateString('id-ID', {
             year: 'numeric',
@@ -44,8 +44,10 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, featured = false }) =>
             <Link to={`/blog/${post.slug}`} className="block group">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
                     transition={{ duration: 0.5 }}
+                    style={{ contain: 'content' }}
                     className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl border border-slate-200"
                 >
                     <img
@@ -77,8 +79,10 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, featured = false }) =>
         <Link to={`/blog/${post.slug}`} className="block group">
             <motion.article
                 initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
                 transition={{ duration: 0.3 }}
+                style={{ contain: 'content' }}
                 className="bg-white border border-slate-100 rounded-2xl overflow-hidden transition-all duration-300 flex flex-col h-full hover:border-[#0A1128]/10"
             >
                 {/* Image */}
@@ -126,4 +130,4 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, featured = false }) =>
             </motion.article>
         </Link>
     );
-};
+});

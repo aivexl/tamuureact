@@ -111,16 +111,19 @@ const ShopSection: React.FC = () => {
     );
 };
 
-// FULLY RESTORED VENDOR CARD FROM b3edcb0
-const VendorCard: React.FC<{ vendor: any, navigate: any }> = ({ vendor, navigate }) => {
+// FULLY RESTORED VENDOR CARD FROM b3edcb0 (Optimized for Zero-Jank)
+const VendorCard: React.FC<{ vendor: any, navigate: any }> = React.memo(({ vendor, navigate }) => {
     return (
         <m.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-20px" }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
             onClick={() => {
                 const targetSlug = vendor.slug === 'admin' ? 'official' : vendor.slug;
                 navigate(`/shop/${targetSlug}`);
             }}
+            style={{ contain: 'content' }}
             className="group bg-white border border-slate-50 rounded-[2rem] overflow-hidden flex flex-col transition-all cursor-pointer hover:border-[#0A1128]/20 relative w-full min-w-[280px]"
         >
             <div className="h-32 md:h-36 bg-slate-100 relative overflow-hidden">
@@ -173,6 +176,6 @@ const VendorCard: React.FC<{ vendor: any, navigate: any }> = ({ vendor, navigate
             </div>
         </m.div>
     );
-};
+});
 
 export default ShopSection;

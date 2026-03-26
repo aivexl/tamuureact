@@ -5,21 +5,37 @@ import { useSEO } from '../hooks/useSEO';
 import { useStore } from '../store/useStore';
 import { PremiumLoader } from '../components/ui/PremiumLoader';
 
-// Lazy load non-critical sections to improve TBT and FCP
-// Eagerly load the first section below the fold to improve Speed Index
+// Eagerly load critical sections below the fold to improve Speed Index and eliminate blank flashes
 import FeaturesSection from '../components/Landing/FeaturesSection';
+import PricingSection from '../components/Landing/PricingSection';
+import ShopSection from '../components/Landing/ShopSection';
+import CTASection from '../components/Landing/CTASection';
 
-// Lazy load non-critical sections further down
-const PricingSection = lazy(() => import('../components/Landing/PricingSection'));
+// Lazy load non-critical sections further down with individual Suspense boundaries
 const BlogSection = lazy(() => import('../components/Landing/BlogSection'));
 const TestimonialsSection = lazy(() => import('../components/Landing/TestimonialsSection'));
 const FAQSection = lazy(() => import('../components/Landing/FAQSection'));
-const CTASection = lazy(() => import('../components/Landing/CTASection'));
-const ShopSection = lazy(() => import('../components/Landing/ShopSection'));
 
-const SectionLoader = () => (
-    <div className="py-20 flex justify-center items-center bg-white">
-        <PremiumLoader variant="inline" color="#0A1128" showLabel label="Loading Section..." />
+// Section Wrapper for smooth scroll performance (Zero-Jank Architecture)
+const SectionWrapper: React.FC<{ children: React.ReactNode; id?: string; minHeight?: string }> = ({ children, id, minHeight = '400px' }) => (
+    <div 
+        id={id} 
+        style={{ 
+            contentVisibility: 'auto', 
+            containIntrinsicSize: `auto ${minHeight}` 
+        }} 
+        className="will-change-transform"
+    >
+        {children}
+    </div>
+);
+
+const SectionSkeleton: React.FC<{ height: string }> = ({ height }) => (
+    <div 
+        style={{ height }} 
+        className="w-full flex justify-center items-center bg-white animate-pulse"
+    >
+        <div className="w-10 h-10 border-2 border-slate-100 border-t-[#0A1128] rounded-full animate-spin" />
     </div>
 );
 
@@ -191,17 +207,42 @@ export const LandingPage: React.FC = () => {
                 </div>
             </section>
 
-            {/* Suspense wrapped lazy sections */}
+            {/* 
+                ZERO-JANK ARCHITECTURE: 
+                Eagerly loading critical sections and using Individual Suspense with Skeletons
+            */}
             <FeaturesSection />
 
-            <Suspense fallback={<SectionLoader />}>
+            <SectionWrapper id="pricing" minHeight="600px">
                 <PricingSection />
+            </SectionWrapper>
+
+            <SectionWrapper id="shop" minHeight="800px">
                 <ShopSection />
-                <TestimonialsSection />
-                <FAQSection />
-                <BlogSection />
+            </SectionWrapper>
+
+            <SectionWrapper id="testimonials" minHeight="600px">
+                <Suspense fallback={<SectionSkeleton height="600px" />}>
+                    <TestimonialsSection />
+                </Suspense>
+            </SectionWrapper>
+
+            <SectionWrapper id="faq" minHeight="500px">
+                <Suspense fallback={<SectionSkeleton height="500px" />}>
+                    <FAQSection />
+                </Suspense>
+            </SectionWrapper>
+
+            <SectionWrapper id="blog" minHeight="700px">
+                <Suspense fallback={<SectionSkeleton height="700px" />}>
+                    <BlogSection />
+                </Suspense>
+            </SectionWrapper>
+
+            <SectionWrapper id="cta" minHeight="400px">
                 <CTASection />
-            </Suspense>
+            </SectionWrapper>
+
 
         </div>
     );
