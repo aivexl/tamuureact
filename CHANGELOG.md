@@ -1,5 +1,14 @@
 # Tamuu Changelog
 
+## [0.9.29] - 2026-03-26
+
+### Added
+- **Zero-Jank Grid Architecture (v9.0)**: Completely re-engineered the Shop Page discovery system to eliminate remounting and layout flickering.
+- **Stateless Product Cards**: Rewrote `ProductCard` as a pure, stateless component with layout isolation (`contain: content`), ensuring maximum reconciliation speed.
+- **Hardware-Accelerated Scrolling**: Implemented `will-change: transform` and fixed-geometry enforcement to offload list rendering to the browser's GPU compositor.
+- **Aggressive Image Pre-loading**: Optimized `LazyImage` with a 400px `rootMargin` and a high-performance **Shimmer Skeleton** to eliminate "white blank" squares during fast scrolling.
+- **Edge-Aggregated Discovery**: Integrated the new `/api/shop/homepage/content` endpoint with KV caching for sub-100ms discovery response times.
+
 ## [0.9.28] - 2026-03-24
 
 ### Added
