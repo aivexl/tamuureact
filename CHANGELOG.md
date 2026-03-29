@@ -1,5 +1,13 @@
 # Tamuu Changelog
 
+## [0.9.32] - 2026-03-26
+
+### Optimized
+- **Homepage (ShopPage) Performance**: Applied Zero-Jank Architecture using `SectionWrapper` and `content-visibility: auto` to eliminate blank screens during fast scrolling.
+- **Motion Reduction**: Removed heavy `layout` prop from main motion containers in `ShopPage` to prevent unnecessary CPU-intensive layout calculations.
+- **Viewport Animation Tuning**: Adjusted `ProductCard` viewport margin to `100px` for proactive rendering, ensuring elements are ready before they enter the screen.
+- **Rendering Isolation**: Enhanced `VendorCard` and `ProductCard` with `React.memo` and `contain` CSS styles to isolate rendering work and improve frame stability.
+
 ## [0.9.31] - 2026-03-26
 
 ### Added

@@ -16,7 +16,7 @@ export const ProductCard = React.memo(({ product, navigate, isSmall = false, onA
         <m.div
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-20px" }}
+            viewport={{ once: true, margin: "100px" }}
             transition={{ duration: 0.4, ease: "easeOut" }}
             onClick={() => {
                 if (product.isAd && onAdClick) {
@@ -35,7 +35,7 @@ export const ProductCard = React.memo(({ product, navigate, isSmall = false, onA
                     navigate(`/shop/${mSlug}/${pSlug}`);
                 }
             }}
-            style={{ contain: 'content' }}
+            style={{ contain: 'layout' }}
             className={`group bg-white border border-[#F1F5F9] rounded-[1rem] md:rounded-[1.5rem] overflow-hidden flex flex-col hover:border-[#FFBF00]/30 transition-all duration-500 cursor-pointer flex-shrink-0 relative ${
                 isSmall 
                 ? 'w-[110px] md:w-[130px] h-[240px] md:h-[310px]' 

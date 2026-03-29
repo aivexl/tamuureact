@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import {
@@ -35,7 +35,7 @@ import {
 } from '../../hooks/queries/useShop';
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
 import { useSEO } from '../../hooks/useSEO';
-import { formatCurrency, formatAbbreviatedNumber, parseUTCDate } from '../../lib/utils';
+import { formatCurrency, formatAbbreviatedNumber, parseUTCDate, cn } from '../../lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { blog, shop } from '../../lib/api';
 import { Breadcrumbs } from '../../components/Shop/Breadcrumbs';
@@ -46,6 +46,26 @@ import { ProductCard } from '../../components/Shop/ProductCard';
 import { StarRating } from '../../components/Shop/StarRating';
 import { PromotedAdsBar } from '../../components/Shop/PromotedAdsBar';
 import { SpecialAdsScroller } from '../../components/Shop/SpecialAdsScroller';
+
+// shadcn/ui imports
+import { Button } from '../../components/ui/shadcn/Button';
+import { Tabs, TabsList, TabsTrigger } from '../../components/ui/shadcn/Tabs';
+import { Input } from '../../components/ui/shadcn/Input';
+import { Card } from '../../components/ui/shadcn/Card';
+
+// Section Wrapper for smooth scroll performance (Zero-Jank Architecture)
+const SectionWrapper = React.memo(({ children, id, minHeight = '400px' }: { children: React.ReactNode; id?: string; minHeight?: string }) => (
+    <div 
+        id={id} 
+        style={{ 
+            contentVisibility: 'auto', 
+            containIntrinsicSize: `auto ${minHeight}` 
+        }} 
+        className="will-change-transform"
+    >
+        {children}
+    </div>
+));
 
 export const ShopPage: React.FC = () => {
     const navigate = useNavigate();
@@ -223,6 +243,16 @@ export const ShopPage: React.FC = () => {
         { name: 'Venue', icon: Building2, slug: 'venue' },
     ], []);
 
+    const handleCategoryClick = useCallback((cat: any) => {
+        const citySlug = selectedCity === 'All' ? '' : `/${selectedCity.toLowerCase().replace(/\s+/g, '-')}`;
+        navigate(`/c/${cat.slug}${citySlug}`);
+    }, [selectedCity, navigate]);
+
+    const handleScroll = useCallback((id: string, distance: number) => {
+        const el = document.getElementById(id);
+        if (el) el.scrollBy({ left: distance, behavior: 'smooth' });
+    }, []);
+
     return (
         <div className="min-h-screen bg-white text-[#0A1128] font-sans selection:bg-[#FFBF00] selection:text-[#0A1128]">
             <main className="max-w-7xl mx-auto px-6 pb-32">
@@ -232,53 +262,62 @@ export const ShopPage: React.FC = () => {
                 </section>
 
                 {/* Multi Carousel Section */}
-                <section className="pb-12">
-                    {slides.length > 0 && <MultiCarousel items={slides} />}
-                </section>
+                <SectionWrapper minHeight="300px">
+                    <section className="pb-12">
+                        {slides.length > 0 && <MultiCarousel items={slides} />}
+                    </section>
+                </SectionWrapper>
 
                 {/* Search & Filter */}
                 <section className="max-w-5xl mx-auto mb-16 px-4">
                     <div className="flex flex-col gap-8">
-                        <div className="flex items-center justify-center gap-2 p-1.5 bg-slate-50 rounded-2xl w-fit mx-auto border border-slate-100">
-                            <button
-                                onClick={() => setActiveTab('products')}
-                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                                    activeTab === 'products' ? 'bg-[#0A1128] text-white shadow-lg' : 'text-slate-400 hover:text-[#0A1128]'
-                                }`}
-                            >
-                                <ShoppingBag className="w-3.5 h-3.5" />
-                                Products
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('stores')}
-                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                                    activeTab === 'stores' ? 'bg-[#0A1128] text-white shadow-lg' : 'text-slate-400 hover:text-[#0A1128]'
-                                }`}
-                            >
-                                <Store className="w-3.5 h-3.5" />
-                                Stores
-                            </button>
-                        </div>
+                        {/* shadcn/ui Tabs for Products/Stores Switcher */}
+                        <Tabs 
+                            value={activeTab} 
+                            onValueChange={(val) => setActiveTab(val as 'products' | 'stores')}
+                            className="w-fit mx-auto"
+                        >
+                            <TabsList className="flex items-center justify-center gap-2 p-1.5 bg-slate-50 rounded-2xl border border-slate-100 h-auto">
+                                <TabsTrigger 
+                                    value="products"
+                                    className={cn(
+                                        "flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-none shadow-none",
+                                        "data-[state=active]:bg-[#0A1128] data-[state=active]:text-white data-[state=active]:shadow-lg",
+                                        "data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:text-[#0A1128]"
+                                    )}
+                                >
+                                    <ShoppingBag className="w-3.5 h-3.5" />
+                                    Products
+                                </TabsTrigger>
+                                <TabsTrigger 
+                                    value="stores"
+                                    className={cn(
+                                        "flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-none shadow-none",
+                                        "data-[state=active]:bg-[#0A1128] data-[state=active]:text-white data-[state=active]:shadow-lg",
+                                        "data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:text-[#0A1128]"
+                                    )}
+                                >
+                                    <Store className="w-3.5 h-3.5" />
+                                    Stores
+                                </TabsTrigger>
+                            </TabsList>
+                        </Tabs>
 
+                        {/* Category Filter using shadcn/ui Buttons */}
                         <div className="flex overflow-x-auto gap-3 pb-2 no-scrollbar">
                             {categoryConfig.map((cat) => {
                                 const Icon = cat.icon;
                                 const isActive = selectedCategory === cat.name;
                                 return (
-                                    <button
+                                    <Button
                                         key={cat.name}
-                                        onClick={() => {
-                                            const citySlug = selectedCity === 'All' ? '' : `/${selectedCity.toLowerCase().replace(/\s+/g, '-')}`;
-                                            navigate(`/c/${cat.slug}${citySlug}`);
-                                        }}
-                                        className={`flex items-center gap-2.5 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border ${isActive
-                                            ? 'bg-[#0A1128] text-white border-[#0A1128] shadow-lg'
-                                            : 'bg-white text-slate-400 border-slate-100 hover:border-[#FFBF00] hover:text-[#0A1128]'
-                                        }`}
+                                        variant={isActive ? "filterActive" : "filter"}
+                                        size="filter"
+                                        onClick={() => handleCategoryClick(cat)}
                                     >
-                                        <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#FFBF00]' : 'text-slate-300'}`} />
+                                        <Icon className={cn("w-3.5 h-3.5", isActive ? "text-[#FFBF00]" : "text-slate-300")} />
                                         {cat.name}
-                                    </button>
+                                    </Button>
                                 );
                             })}
                         </div>
@@ -289,125 +328,131 @@ export const ShopPage: React.FC = () => {
                 {activeTab === 'products' && !searchQuery && selectedCategory === 'All' && selectedCity === 'All' && (
                     <>
                         {/* SECTION 1: Spesial Untuk Kamu (Dynamic Ads) */}
-                        <SpecialAdsScroller />
+                        <SectionWrapper minHeight="300px">
+                            <SpecialAdsScroller />
+                        </SectionWrapper>
 
                         {/* SECTION 2: Produk Featured */}
                         {featuredProducts.length > 0 && (
-                            <section className="mb-20">
-                                <div className="flex items-center justify-between mb-8 px-2">
-                                    <div className="flex items-center gap-3">
-                                        <h2 className="text-lg md:text-2xl font-black text-[#0A1128] uppercase tracking-tight">Produk Featured</h2>
+                            <SectionWrapper minHeight="400px">
+                                <section className="mb-20">
+                                    <div className="flex items-center justify-between mb-8 px-2">
+                                        <div className="flex items-center gap-3">
+                                            <h2 className="text-lg md:text-2xl font-black text-[#0A1128] uppercase tracking-tight">Produk Featured</h2>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Button 
+                                                variant="outline" 
+                                                size="icon"
+                                                onClick={() => handleScroll('featured-products-scroll', -300)}
+                                                className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-50 border border-slate-100 text-[#0A1128] hover:bg-[#FFBF00] transition-all shadow-sm"
+                                            >
+                                                <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
+                                            </Button>
+                                            <Button 
+                                                variant="outline" 
+                                                size="icon"
+                                                onClick={() => handleScroll('featured-products-scroll', 300)}
+                                                className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-50 border border-slate-100 text-[#0A1128] hover:bg-[#FFBF00] transition-all shadow-sm"
+                                            >
+                                                <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+                                            </Button>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <button 
-                                            onClick={() => {
-                                                const el = document.getElementById('featured-products-scroll');
-                                                if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
-                                            }}
-                                            className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] transition-all shadow-sm"
+                                    <div className="relative group/featured">
+                                        <div 
+                                            id="featured-products-scroll"
+                                            className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar pb-6 snap-x snap-mandatory scroll-smooth px-2"
                                         >
-                                            <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
-                                        </button>
-                                        <button 
-                                            onClick={() => {
-                                                const el = document.getElementById('featured-products-scroll');
-                                                if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
-                                            }}
-                                            className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] transition-all shadow-sm"
-                                        >
-                                            <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
-                                        </button>
+                                            {featuredProducts.map((product: any) => (
+                                                <div key={product.id} className="snap-start flex-shrink-0">
+                                                    <ProductCard 
+                                                        product={product} 
+                                                        navigate={navigate} 
+                                                        isSmall={true} 
+                                                        onAdClick={(id) => trackClick.mutate(id)}
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="relative group/featured">
-                                    <div 
-                                        id="featured-products-scroll"
-                                        className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar pb-6 snap-x snap-mandatory scroll-smooth px-2"
-                                    >
-                                        {featuredProducts.map((product: any) => (
-                                            <div key={product.id} className="snap-start flex-shrink-0">
-                                                <ProductCard 
-                                                    product={product} 
-                                                    navigate={navigate} 
-                                                    isSmall={true} 
-                                                    onAdClick={(id) => trackClick.mutate(id)}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </section>
+                                </section>
+                            </SectionWrapper>
                         )}
 
                         {/* SECTION 3: Rekomendasi Untukmu */}
                         {randomProducts.length > 0 && (
-                            <section className="mb-20">
-                                <div className="flex items-center justify-between mb-8 px-2">
-                                    <div className="flex items-center gap-3">
-                                        <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-[#FFBF00]" />
-                                        <h2 className="text-lg md:text-2xl font-black text-[#0A1128] uppercase tracking-tight">Rekomendasi Untukmu</h2>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <button 
-                                            onClick={() => {
-                                                const el = document.getElementById('recommendations-scroll');
-                                                if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
-                                            }}
-                                            className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] transition-all shadow-sm"
-                                        >
-                                            <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
-                                        </button>
-                                        <button 
-                                            onClick={() => {
-                                                const el = document.getElementById('recommendations-scroll');
-                                                if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
-                                            }}
-                                            className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] transition-all shadow-sm"
-                                        >
-                                            <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
-                                        </button>
-                                    </div>
-                                </div>
-                                <div 
-                                    id="recommendations-scroll"
-                                    className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar pb-6 snap-x snap-mandatory scroll-smooth px-2"
-                                >
-                                    {randomProducts.map((product: any) => (
-                                        <div key={product.id} className="snap-start flex-shrink-0">
-                                            <ProductCard product={product} navigate={navigate} isSmall={true} />
+                            <SectionWrapper minHeight="400px">
+                                <section className="mb-20">
+                                    <div className="flex items-center justify-between mb-8 px-2">
+                                        <div className="flex items-center gap-3">
+                                            <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-[#FFBF00]" />
+                                            <h2 className="text-lg md:text-2xl font-black text-[#0A1128] uppercase tracking-tight">Rekomendasi Untukmu</h2>
                                         </div>
-                                    ))}
-                                </div>
-                            </section>
+                                        <div className="flex items-center gap-2">
+                                            <Button 
+                                                variant="outline" 
+                                                size="icon"
+                                                onClick={() => handleScroll('recommendations-scroll', -300)}
+                                                className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-50 border border-slate-100 text-[#0A1128] hover:bg-[#FFBF00] transition-all shadow-sm"
+                                            >
+                                                <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
+                                            </Button>
+                                            <Button 
+                                                variant="outline" 
+                                                size="icon"
+                                                onClick={() => handleScroll('recommendations-scroll', 300)}
+                                                className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-50 border border-slate-100 text-[#0A1128] hover:bg-[#FFBF00] transition-all shadow-sm"
+                                            >
+                                                <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                    <div 
+                                        id="recommendations-scroll"
+                                        className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar pb-6 snap-x snap-mandatory scroll-smooth px-2"
+                                    >
+                                        {randomProducts.map((product: any) => (
+                                            <div key={product.id} className="snap-start flex-shrink-0">
+                                                <ProductCard product={product} navigate={navigate} isSmall={true} />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
+                            </SectionWrapper>
                         )}
                     </>
                 )}
 
                 {/* MAIN GRID CONTENT */}
-                <m.div layout className="w-full">
+                <div className="w-full">
                     {activeTab === 'products' ? (
                         <>
-                            {/* NEW: Rectangular Banner Ad above Products (Full Photo, No Text) */}
+                            {/* Rectangular Banner Ad above Products */}
                             {topBanner && (
-                                <section className="mb-12 px-2 md:px-4">
-                                    <div 
-                                        onClick={() => {
-                                            if (topBanner.id) trackClick.mutate(topBanner.id);
-                                            topBanner.link_url && (window.location.href = topBanner.link_url);
-                                        }}
-                                        className="w-full h-32 md:h-48 rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden cursor-pointer group shadow-xl shadow-slate-200/50 border border-slate-100"
-                                    >
-                                        <img 
-                                            src={topBanner.image_url} 
-                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                                            alt="Top Ad Banner" 
-                                        />
-                                    </div>
-                                </section>
+                                <SectionWrapper minHeight="200px">
+                                    <section className="mb-12 px-2 md:px-4">
+                                        <div 
+                                            onClick={() => {
+                                                if (topBanner.id) trackClick.mutate(topBanner.id);
+                                                topBanner.link_url && (window.location.href = topBanner.link_url);
+                                            }}
+                                            className="w-full h-32 md:h-48 rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden cursor-pointer group shadow-xl shadow-slate-200/50 border border-slate-100"
+                                        >
+                                            <img 
+                                                src={topBanner.image_url} 
+                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                                                alt="Top Ad Banner" 
+                                            />
+                                        </div>
+                                    </section>
+                                </SectionWrapper>
                             )}
 
-                            {/* NEW: Promoted Ads Selection */}
-                            <PromotedAdsBar />
+                            {/* Promoted Ads Selection */}
+                            <SectionWrapper minHeight="100px">
+                                <PromotedAdsBar />
+                            </SectionWrapper>
 
                             <div className="w-full flex items-center justify-between mb-6 px-4">
                                 <h2 className="text-lg md:text-xl font-black text-[#0A1128] uppercase tracking-tight">
@@ -417,27 +462,30 @@ export const ShopPage: React.FC = () => {
                             
                             {/* SEARCH RESULTS: Toko Identik Section */}
                             {searchQuery && !isLoadingVendors && vendors.length > 0 && (
-                                <div className="mb-12 border-b border-slate-100 pb-12 px-2">
-                                    <div className="flex items-center justify-between mb-6 px-2">
-                                        <h3 className="text-sm md:text-base font-black text-[#0A1128] uppercase tracking-widest flex items-center gap-2">
-                                            <Store className="w-4 h-4 text-[#FFBF00]" />
-                                            Toko yang Paling Identik
-                                        </h3>
-                                        {vendors.length > 2 && (
-                                            <button 
-                                                onClick={() => setActiveTab('stores')}
-                                                className="text-[10px] font-black uppercase tracking-widest text-[#FFBF00] hover:text-[#0A1128] transition-colors flex items-center gap-1"
-                                            >
-                                                Lihat Semua Toko <ArrowRight className="w-3 h-3" />
-                                            </button>
-                                        )}
+                                <SectionWrapper minHeight="300px">
+                                    <div className="mb-12 border-b border-slate-100 pb-12 px-2">
+                                        <div className="flex items-center justify-between mb-6 px-2">
+                                            <h3 className="text-sm md:text-base font-black text-[#0A1128] uppercase tracking-widest flex items-center gap-2">
+                                                <Store className="w-4 h-4 text-[#FFBF00]" />
+                                                Toko yang Paling Identik
+                                            </h3>
+                                            {vendors.length > 2 && (
+                                                <Button 
+                                                    variant="link"
+                                                    onClick={() => setActiveTab('stores')}
+                                                    className="text-[10px] font-black uppercase tracking-widest text-[#FFBF00] hover:text-[#0A1128] transition-colors flex items-center gap-1 p-0 h-auto"
+                                                >
+                                                    Lihat Semua Toko <ArrowRight className="w-3 h-3" />
+                                                </Button>
+                                            )}
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                            {vendors.slice(0, 2).map((vendor: any) => (
+                                                <VendorCard key={vendor.id} vendor={vendor} navigate={navigate} />
+                                            ))}
+                                        </div>
                                     </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {vendors.slice(0, 2).map((vendor: any) => (
-                                            <VendorCard key={vendor.id} vendor={vendor} navigate={navigate} />
-                                        ))}
-                                    </div>
-                                </div>
+                                </SectionWrapper>
                             )}
 
                             {/* SEARCH RESULTS: Produk Identik Section */}
@@ -464,17 +512,14 @@ export const ShopPage: React.FC = () => {
                                         <div className="py-32 text-center text-slate-300 font-bold uppercase tracking-widest w-full">No products found</div>
                                     )}
                                     <div className="w-full flex justify-center mt-12 mb-4">
-                                        <button
+                                        <Button
+                                            variant="tamuu"
+                                            size="tamuu"
                                             onClick={() => setVisibleCount(prev => prev + 10)}
                                             disabled={products.length === 0 || visibleCount >= products.length}
-                                            className={`px-8 md:px-12 py-3.5 md:py-4 rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${
-                                                products.length === 0 || visibleCount >= products.length
-                                                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                                : 'bg-[#0A1128] text-white shadow-xl hover:bg-indigo-900 hover:-translate-y-1'
-                                            }`}
                                         >
                                             {products.length === 0 ? 'Load More' : (visibleCount >= products.length ? 'Semua Produk Ditampilkan' : 'Tampilkan Lebih Banyak')}
-                                        </button>
+                                        </Button>
                                     </div>
                                 </div>
                             )}
@@ -501,81 +546,88 @@ export const ShopPage: React.FC = () => {
                             </div>
                         </>
                     )}
-                </m.div>
+                </div>
 
                 {/* SECTION 4: Tamuu Blog */}
                 {latestBlogs.length > 0 && !searchQuery && selectedCategory === 'All' && selectedCity === 'All' && (
-                    <section className="mt-20 pt-20 border-t border-slate-100">
-                        <div className="flex items-center justify-between mb-8 px-4">
-                            <div className="flex items-center gap-3">
-                                <div className="w-1.5 h-6 bg-[#FFBF00] rounded-full" />
-                                <h2 className="text-lg md:text-2xl font-black text-[#0A1128] uppercase tracking-tight">Tamuu Blog</h2>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <button onClick={() => navigate('/blog')} className="hidden md:block text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-[#0A1128] transition-colors">Lihat Semua Blog</button>
-                                <div className="flex items-center gap-2">
-                                    <button 
-                                        onClick={() => {
-                                            const el = document.getElementById('blog-scroll');
-                                            if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
-                                        }}
-                                        className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] transition-all shadow-sm"
+                    <SectionWrapper minHeight="600px">
+                        <section className="mt-20 pt-20 border-t border-slate-100">
+                            <div className="flex items-center justify-between mb-8 px-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-1.5 h-6 bg-[#FFBF00] rounded-full" />
+                                    <h2 className="text-lg md:text-2xl font-black text-[#0A1128] uppercase tracking-tight">Tamuu Blog</h2>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <Button 
+                                        variant="link" 
+                                        onClick={() => navigate('/blog')} 
+                                        className="hidden md:block text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-[#0A1128] transition-colors p-0 h-auto"
                                     >
-                                        <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
-                                    </button>
-                                    <button 
-                                        onClick={() => {
-                                            const el = document.getElementById('blog-scroll');
-                                            if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
-                                        }}
-                                        className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] transition-all shadow-sm"
-                                    >
-                                        <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
-                                    </button>
+                                        Lihat Semua Blog
+                                    </Button>
+                                    <div className="flex items-center gap-2">
+                                        <Button 
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={() => handleScroll('blog-scroll', -300)}
+                                            className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-50 border border-slate-100 text-[#0A1128] hover:bg-[#FFBF00] transition-all shadow-sm"
+                                        >
+                                            <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
+                                        </Button>
+                                        <Button 
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={() => handleScroll('blog-scroll', 300)}
+                                            className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-50 border border-slate-100 text-[#0A1128] hover:bg-[#FFBF00] transition-all shadow-sm"
+                                        >
+                                            <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div 
-                            id="blog-scroll"
-                            className="flex md:grid md:grid-cols-4 gap-6 overflow-x-auto no-scrollbar pb-6 md:pb-0 snap-x"
-                        >
-                            {latestBlogs.map((post: any) => (
-                                <div key={post.id} onClick={() => navigate(`/blog/${post.slug}`)} className="group cursor-pointer min-w-[280px] md:min-w-0 snap-start">
-                                    <div className="aspect-[4/3] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden mb-4 bg-slate-50 border border-slate-100 relative">
-                                        <img src={post.featured_image || 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={post.title} />
-                                        <div className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-lg text-[8px] font-black text-[#0A1128] uppercase tracking-widest">
-                                            {post.category || post.category?.name || 'Inspirasi'}
+                            <div 
+                                id="blog-scroll"
+                                className="flex md:grid md:grid-cols-4 gap-6 overflow-x-auto no-scrollbar pb-6 md:pb-0 snap-x"
+                            >
+                                {latestBlogs.map((post: any) => (
+                                    <div key={post.id} onClick={() => navigate(`/blog/${post.slug}`)} className="group cursor-pointer min-w-[280px] md:min-w-0 snap-start">
+                                        <div className="aspect-[4/3] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden mb-4 bg-slate-50 border border-slate-100 relative">
+                                            <img src={post.featured_image || 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={post.title} />
+                                            <div className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-lg text-[8px] font-black text-[#0A1128] uppercase tracking-widest">
+                                                {post.category || post.category?.name || 'Inspirasi'}
+                                            </div>
+                                        </div>
+                                        <div className="px-2">
+                                            <h3 className="text-sm md:text-base font-black text-[#0A1128] line-clamp-2 leading-tight group-hover:text-[#FFBF00] transition-colors">{post.title}</h3>
+                                            <p className="text-[9px] md:text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">
+                                                {parseUTCDate(post.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                            </p>
                                         </div>
                                     </div>
-                                    <div className="px-2">
-                                        <h3 className="text-sm md:text-base font-black text-[#0A1128] line-clamp-2 leading-tight group-hover:text-[#FFBF00] transition-colors">{post.title}</h3>
-                                        <p className="text-[9px] md:text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">
-                                            {parseUTCDate(post.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
+                                ))}
+                            </div>
+                        </section>
+                    </SectionWrapper>
                 )}
 
-                <SEOListingFooter />
+                <SectionWrapper minHeight="400px">
+                    <SEOListingFooter />
+                </SectionWrapper>
             </main>
         </div>
     );
 };
 
-// FULLY RESTORED VENDOR CARD FROM b3edcb0
-const VendorCard: React.FC<{ vendor: any, navigate: any }> = ({ vendor, navigate }) => {
+// FULLY RESTORED VENDOR CARD (Optimized with shadcn Card base but exact design preserved)
+const VendorCard = React.memo(({ vendor, navigate }: { vendor: any, navigate: any }) => {
     return (
-        <m.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+        <Card
             onClick={() => {
                 const targetSlug = vendor.slug === 'admin' ? 'official' : vendor.slug;
                 navigate(`/shop/${targetSlug}`);
             }}
-            className="group bg-white border border-slate-50 rounded-[2rem] overflow-hidden flex flex-col hover:shadow-2xl transition-all cursor-pointer hover:border-[#0A1128]/20 relative w-full"
+            style={{ contain: 'content' }}
+            className="group bg-white border border-slate-50 rounded-[2rem] overflow-hidden flex flex-col hover:shadow-2xl transition-all cursor-pointer hover:border-[#0A1128]/20 relative w-full shadow-none"
         >
             <div className="h-32 md:h-36 bg-slate-100 relative overflow-hidden">
                 {vendor.banner_url ? (
@@ -625,8 +677,8 @@ const VendorCard: React.FC<{ vendor: any, navigate: any }> = ({ vendor, navigate
                     </div>
                 </div>
             </div>
-        </m.div>
+        </Card>
     );
-};
+});
 
 export default ShopPage;

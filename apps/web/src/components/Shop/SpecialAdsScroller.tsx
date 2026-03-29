@@ -1,14 +1,14 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { m } from 'framer-motion';
-import { Sparkles, ArrowRight, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { shop } from '../../lib/api';
-import { formatCurrency } from '../../lib/utils';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTrackAdClick, useSpecialProducts } from '../../hooks/queries/useShop';
 import { ProductCard } from './ProductCard';
+import { Button } from '../ui/shadcn/Button';
 
-export const SpecialAdsScroller: React.FC = () => {
+export const SpecialAdsScroller = React.memo(() => {
     const navigate = useNavigate();
     
     // 1. Fetch Bidding Ads (New System) - For the Main Scroller
@@ -61,6 +61,11 @@ export const SpecialAdsScroller: React.FC = () => {
         return combined;
     }, [biddingAds, specialProducts]);
 
+    const handleScroll = useCallback((distance: number) => {
+        const el = document.getElementById('special-ads-scroll');
+        if (el) el.scrollBy({ left: distance, behavior: 'smooth' });
+    }, []);
+
     if ((isLoadingAds && isLoadingProducts) || (scrollItems.length === 0 && !specialBanner)) return null;
 
     return (
@@ -68,12 +73,13 @@ export const SpecialAdsScroller: React.FC = () => {
             <div className="bg-[#0A1128] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-12 relative overflow-hidden group/special">
                 <div className="flex items-center justify-between mb-6 md:mb-8 relative z-10">
                     <h2 className="text-lg md:text-2xl font-black text-white uppercase tracking-tight">Spesial Untuk Kamu</h2>
-                    <button 
+                    <Button 
+                        variant="link"
                         onClick={() => navigate('/shop/discovery')}
-                        className="text-[#FFBF00] text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors"
+                        className="text-[#FFBF00] text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors p-0 h-auto"
                     >
                         Lihat Semua
-                    </button>
+                    </Button>
                 </div>
 
                 <div className="relative">
@@ -81,7 +87,7 @@ export const SpecialAdsScroller: React.FC = () => {
                         id="special-ads-scroll"
                         className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar pb-4 relative z-10 snap-x scroll-smooth"
                     >
-                        {/* THE BANNER CARD - EXACT DIMENSIONS FROM 3 DAYS AGO (731fb91) */}
+                        {/* THE BANNER CARD */}
                         <div 
                             onClick={() => {
                                 if (specialBanner?.id) trackClick.mutate(specialBanner.id);
@@ -98,7 +104,7 @@ export const SpecialAdsScroller: React.FC = () => {
                             )}
                         </div>
 
-                        {/* THE PRODUCT CARDS - EXACT COMPONENT & SMALL PROP FROM 3 DAYS AGO (731fb91) */}
+                        {/* THE PRODUCT CARDS */}
                         {scrollItems.slice(0, 10).map((product: any) => (
                             <div key={product.id} className="snap-start flex-shrink-0">
                                 <ProductCard 
@@ -118,29 +124,25 @@ export const SpecialAdsScroller: React.FC = () => {
                         )}
                     </div>
 
-                    {/* Scroll Buttons - Centered relative to cards */}
-                    <button 
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            const el = document.getElementById('special-ads-scroll');
-                            if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
-                        }}
+                    {/* Scroll Buttons */}
+                    <Button 
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleScroll(-300)}
                         className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-[#FFBF00] hover:text-[#0A1128] transition-all shadow-2xl z-20 hidden md:flex"
                     >
                         <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
-                    </button>
-                    <button 
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            const el = document.getElementById('special-ads-scroll');
-                            if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
-                        }}
+                    </Button>
+                    <Button 
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleScroll(300)}
                         className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-[#FFBF00] hover:text-[#0A1128] transition-all shadow-2xl z-20 hidden md:flex"
                     >
                         <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
-                    </button>
+                    </Button>
                 </div>
             </div>
         </section>
     );
-};
+});

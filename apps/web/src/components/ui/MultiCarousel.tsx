@@ -5,7 +5,7 @@ interface MultiCarouselProps {
     items: { id: string; image_url: string; link_url?: string }[];
 }
 
-export const MultiCarousel: React.FC<MultiCarouselProps> = ({ items }) => {
+export const MultiCarousel = React.memo(({ items }: MultiCarouselProps) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -125,4 +125,4 @@ export const MultiCarousel: React.FC<MultiCarouselProps> = ({ items }) => {
             )}
         </div>
     );
-};
+});
