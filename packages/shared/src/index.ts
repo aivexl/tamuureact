@@ -1,1 +1,1 @@
-export * from './constants/regions';
+export * from './store';

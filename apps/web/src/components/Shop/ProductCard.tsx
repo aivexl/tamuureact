@@ -2,34 +2,37 @@ import React from 'react';
 import { MapPin, Tag, Heart } from 'lucide-react';
 import { formatCurrency, formatAbbreviatedNumber } from '../../lib/utils';
 import { StarRating } from './StarRating';
+import { Product } from '../../constants/types';
 
 interface ProductCardProps {
-    product: any;
+    product: Product;
     navigate: (path: string) => void;
     isSmall?: boolean;
     onAdClick?: (adId: string) => void;
 }
 
 export const ProductCard = React.memo(({ product, navigate, isSmall = false, onAdClick }: ProductCardProps) => {
+    const handleProductClick = () => {
+        if (product.isAd && onAdClick && product.id) {
+            onAdClick(product.id);
+        }
+        
+        if (product.url) {
+            if (product.url.startsWith('http')) {
+                window.open(product.url, '_blank');
+            } else {
+                navigate(product.url);
+            }
+        } else {
+            const mSlug = product.vendor_slug === 'admin' ? 'umum' : (product.vendor_slug || (product.is_admin_listing ? 'umum' : 'unknown'));
+            const pSlug = product.slug || product.id;
+            navigate(`/shop/${mSlug}/${pSlug}`);
+        }
+    };
+
     return (
         <div
-            onClick={() => {
-                if (product.isAd && onAdClick) {
-                    onAdClick(product.id);
-                }
-                
-                if (product.url) {
-                    if (product.url.startsWith('http')) {
-                        window.open(product.url, '_blank');
-                    } else {
-                        navigate(product.url);
-                    }
-                } else {
-                    const mSlug = product.vendor_slug === 'admin' ? 'umum' : (product.vendor_slug || (product.is_admin_listing ? 'umum' : 'unknown'));
-                    const pSlug = product.slug || product.id;
-                    navigate(`/shop/${mSlug}/${pSlug}`);
-                }
-            }}
+            onClick={handleProductClick}
             style={{ contain: 'layout' }}
             className={`group bg-white border border-[#F1F5F9] rounded-[1rem] md:rounded-[1.5rem] overflow-hidden flex flex-col hover:border-[#FFBF00]/30 transition-all duration-500 cursor-pointer flex-shrink-0 relative ${
                 isSmall 
@@ -63,12 +66,11 @@ export const ProductCard = React.memo(({ product, navigate, isSmall = false, onA
                 
                 <div className={`${isSmall ? 'space-y-1' : 'space-y-1.5 md:space-y-3'} mt-auto`}>
                     <div className={`${isSmall ? 'pt-1' : 'pt-1.5 md:pt-3'} border-t border-slate-50`}>
-                        {/* Wishlist Placeholder to keep vertical alignment consistent */}
                         <div className={`${isSmall ? 'h-3' : 'h-4'} flex items-center mb-0.5`}>
-                            {product.wishlist_count > 0 ? (
+                            {(product.wishlist_count ?? 0) > 0 ? (
                                 <div className="flex items-center gap-0.5 text-rose-500">
                                     <Heart className={`${isSmall ? 'w-1.5 h-1.5' : 'w-2 md:w-2.5 h-2 md:h-2.5'} fill-current`} />
-                                    <span className={`${isSmall ? 'text-[7px]' : 'text-[8px] md:text-[9px]'} font-black`}>{formatAbbreviatedNumber(product.wishlist_count)}</span>
+                                    <span className={`${isSmall ? 'text-[7px]' : 'text-[8px] md:text-[9px]'} font-black`}>{formatAbbreviatedNumber(product.wishlist_count || 0)}</span>
                                 </div>
                             ) : null}
                         </div>

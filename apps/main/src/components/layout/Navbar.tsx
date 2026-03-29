@@ -1,0 +1,349 @@
+"use client";
+
+import React, { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    User,
+    LayoutDashboard,
+    LogOut,
+    ChevronDown,
+    Menu,
+    X,
+    CreditCard,
+    ShieldAlert,
+    Search,
+    MapPin,
+    Heart,
+    MessageSquare
+} from 'lucide-react';
+
+import { useStore } from '@tamuu/shared';
+// Note: We'll need to refactor useChat later, for now we keep it simple
+// import { useChat } from '@/hooks/useChat';
+// import { NotificationBell } from './NotificationBell';
+
+const INDONESIA_REGIONS = [
+    'Jakarta', 'Surabaya', 'Bandung', 'Medan', 'Semarang', 'Makassar', 'Palembang', 'Tangerang', 'Depok', 'South Tangerang'
+];
+
+export const Navbar = () => {
+    const { isAuthenticated, user, logout } = useStore();
+    const isLoggedIn = isAuthenticated;
+
+    const [isScrolled, setIsScrolled] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+    // Search State
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedCity, setSelectedCity] = useState('All');
+    const [isLocationOpen, setIsLocationOpen] = useState(false);
+    const [citySearchQuery, setCitySearchQuery] = useState('');
+
+    const pathname = usePathname();
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    // Mock totalUnread for now
+    const totalUnread = 0;
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const pos = window.scrollY || document.documentElement.scrollTop;
+            setIsScrolled(pos > 10);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    useEffect(() => {
+        const q = searchParams.get('q');
+        const city = searchParams.get('city');
+        if (q) setSearchQuery(q);
+        if (city) setSelectedCity(city);
+    }, [searchParams]);
+
+    useEffect(() => {
+        setIsMobileMenuOpen(false);
+        setIsProfileOpen(false);
+        setIsLocationOpen(false);
+    }, [pathname]);
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            if (isProfileOpen && !target.closest('.profile-dropdown-container')) {
+                setIsProfileOpen(false);
+            }
+            if (isLocationOpen && !target.closest('.location-dropdown-container')) {
+                setIsLocationOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isProfileOpen, isLocationOpen]);
+
+    const isAppRoute = pathname.startsWith('/dashboard') ||
+        pathname.startsWith('/admin') ||
+        pathname.startsWith('/user') ||
+        pathname.startsWith('/profile') ||
+        pathname.startsWith('/guests') ||
+        pathname.startsWith('/onboarding') ||
+        pathname.startsWith('/store') ||
+        pathname.startsWith('/tools');
+
+    const navLinks = isLoggedIn ? [
+        { name: 'Home', path: '/' },
+        { name: 'Undangan Digital', path: '/undangan-digital' },
+        { name: 'Invitations', path: '/invitations' },
+        { name: 'Blog', path: '/blog' },
+        { name: 'Dashboard', path: '/dashboard' },
+        { name: 'Event Saya', path: '/dashboard' },
+        { name: 'Bantuan', path: '/support' },
+    ] : [
+        { name: 'Home', path: '/' },
+        { name: 'Undangan Digital', path: '/undangan-digital' },
+        { name: 'Invitations', path: '/invitations' },
+        { name: 'Blog', path: '/blog' },
+        { name: 'Fitur', path: '/undangan-digital#features' },
+        { name: 'Harga', path: '/undangan-digital#pricing' },
+    ];
+
+    const handleSearchSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const params = new URLSearchParams();
+        if (searchQuery) params.append('q', searchQuery);
+        if (selectedCity !== 'All') params.append('city', selectedCity);
+        router.push(`/?${params.toString()}`);
+    };
+
+    const filteredCities = useMemo(() => {
+        const cleanQuery = citySearchQuery.trim().toLowerCase();
+        const baseCities = ['All', ...INDONESIA_REGIONS];
+        if (!cleanQuery) return baseCities;
+        return baseCities.filter(city => city.toLowerCase().includes(cleanQuery));
+    }, [citySearchQuery]);
+
+    return (
+        <>
+            <header className="fixed top-0 left-0 right-0 z-[100] w-full transition-all duration-500">
+                <div className={`w-full bg-white/95 backdrop-blur-xl border-b border-slate-200/50 shadow-sm ${isAppRoute ? 'py-2' : ''}`}>
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                        <div className="flex items-center justify-between h-16 gap-4">
+                            <div className="flex items-center shrink-0">
+                                <Link href="/" className="flex items-center gap-3 group" aria-label="Tamuu - Halaman Utama">
+                                    <img
+                                        src="/images/logo-tamuu-vfinal-v1.webp"
+                                        alt="Tamuu"
+                                        className="h-7 md:h-9 w-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity"
+                                    />
+                                </Link>
+                            </div>
+
+                            <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-2xl mx-auto items-center bg-slate-100/80 border border-slate-200 rounded-full px-2 py-1.5 focus-within:bg-white focus-within:ring-2 focus-within:ring-[#FFBF00]/20 focus-within:border-[#FFBF00]/30 transition-all">
+                                <div className="relative location-dropdown-container">
+                                    <div 
+                                        onClick={() => setIsLocationOpen(!isLocationOpen)}
+                                        className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-200/50 rounded-full cursor-pointer transition-all"
+                                    >
+                                        <MapPin className="w-3.5 h-3.5 text-[#FFBF00]" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-[#0A1128] whitespace-nowrap max-w-[100px] truncate">
+                                            {selectedCity === 'All' ? 'Indonesia' : selectedCity}
+                                        </span>
+                                        <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${isLocationOpen ? 'rotate-180' : ''}`} />
+                                    </div>
+
+                                    <AnimatePresence>
+                                        {isLocationOpen && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: 10 }}
+                                                className="absolute top-full left-0 mt-3 w-64 bg-white border border-slate-100 shadow-2xl rounded-2xl z-[120] overflow-hidden flex flex-col max-h-[350px]"
+                                            >
+                                                <div className="p-3 border-b border-slate-50">
+                                                    <input 
+                                                        type="text"
+                                                        placeholder="Cari wilayah..."
+                                                        value={citySearchQuery}
+                                                        onChange={(e) => setCitySearchQuery(e.target.value)}
+                                                        className="w-full bg-slate-50 border-none rounded-lg px-3 py-2 text-xs font-bold focus:ring-0"
+                                                    />
+                                                </div>
+                                                <div className="flex-1 overflow-y-auto p-1 custom-scrollbar">
+                                                    {filteredCities.map((city) => (
+                                                        <button
+                                                            key={city}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setSelectedCity(city);
+                                                                setIsLocationOpen(false);
+                                                            }}
+                                                            className="w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:text-[#0A1128]"
+                                                        >
+                                                            {city === 'All' ? 'Seluruh Indonesia' : city}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+
+                                <div className="w-px h-5 bg-slate-300 mx-1" />
+
+                                <div className="flex-1 flex items-center px-2">
+                                    <input 
+                                        type="text"
+                                        value={searchQuery}
+                                        onChange={e => setSearchQuery(e.target.value)}
+                                        placeholder="Cari vendor, catering, atau paket..."
+                                        className="w-full bg-transparent border-none focus:ring-0 text-xs font-bold text-[#0A1128] py-1 px-2 placeholder:text-slate-400"
+                                    />
+                                </div>
+                                
+                                <button type="submit" className="w-8 h-8 rounded-full bg-[#FFBF00] flex items-center justify-center text-[#0A1128] hover:bg-[#e5ac00] transition-colors shrink-0">
+                                    <Search className="w-3.5 h-3.5" />
+                                </button>
+                            </form>
+
+                            <div className="flex items-center gap-3 shrink-0 ml-auto md:ml-0">
+                                {!isLoggedIn ? (
+                                    <div className="hidden md:flex items-center gap-2">
+                                        <Link
+                                            href="/login"
+                                            className="px-5 py-2 text-xs font-bold text-slate-600 hover:text-black transition-colors"
+                                        >
+                                            Masuk
+                                        </Link>
+                                        <button
+                                            onClick={() => router.push('/signup')}
+                                            className="bg-[#0A1128] text-white px-5 py-2 rounded-full text-xs font-bold hover:bg-slate-800 hover:shadow-lg transition-all duration-300"
+                                        >
+                                            Buat Undangan
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-2">
+                                        <Link
+                                            href="/dashboard?tab=wishlist"
+                                            className="p-2.5 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-rose-500 transition-all"
+                                        >
+                                            <Heart className="w-5 h-5" />
+                                        </Link>
+                                        
+                                        <div className="relative profile-dropdown-container">
+                                            <button
+                                                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                                                className={`flex items-center gap-2 pl-2 pr-1.5 py-1 rounded-full border transition-all duration-200 ${isProfileOpen
+                                                    ? 'bg-slate-100 border-slate-200'
+                                                    : 'bg-transparent border-transparent hover:bg-slate-50 hover:border-slate-100'
+                                                    }`}
+                                            >
+                                                <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-rose-500 to-orange-500 flex items-center justify-center text-white text-[10px] font-bold shadow-sm">
+                                                    {user?.name?.charAt(0) || 'U'}
+                                                </div>
+                                                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''}`} />
+                                            </button>
+
+                                            <AnimatePresence>
+                                                {isProfileOpen && (
+                                                    <motion.div
+                                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                        className="absolute right-0 mt-3 w-64 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/50 shadow-2xl overflow-hidden z-[110]"
+                                                    >
+                                                        <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+                                                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Signed in as</p>
+                                                            <p className="text-sm font-semibold text-slate-900 truncate">{user?.email || ''}</p>
+                                                        </div>
+
+                                                        <div className="p-2 space-y-0.5">
+                                                            <Link href="/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+                                                                <User className="w-4 h-4" />
+                                                                <span>Profil Saya</span>
+                                                            </Link>
+                                                            <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+                                                                <LayoutDashboard className="w-4 h-4" />
+                                                                <span>Dashboard</span>
+                                                            </Link>
+                                                            <Link href="/billing" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+                                                                <CreditCard className="w-4 h-4" />
+                                                                <span>Billing</span>
+                                                            </Link>
+                                                        </div>
+
+                                                        <div className="mx-2 h-px bg-slate-100" />
+
+                                                        <div className="p-2">
+                                                            <button
+                                                                onClick={() => {
+                                                                    logout(async () => {});
+                                                                    router.push('/');
+                                                                }}
+                                                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors text-left"
+                                                            >
+                                                                <LogOut className="w-4 h-4" />
+                                                                <span>Sign Out</span>
+                                                            </button>
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <button
+                                    className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+                                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                                >
+                                    {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="hidden md:flex items-center justify-center gap-6 py-2 border-t border-slate-100">
+                            {navLinks.map((link) => (
+                                <Link
+                                    key={link.name}
+                                    href={link.path}
+                                    className="text-[11px] font-black uppercase tracking-widest text-slate-500 hover:text-[#0A1128] transition-colors"
+                                >
+                                    {link.name}
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <AnimatePresence>
+                {isMobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="fixed inset-0 z-[90] bg-white/95 backdrop-blur-2xl pt-[140px] px-6 pb-6 overflow-y-auto"
+                    >
+                        <div className="flex flex-col gap-6">
+                            {navLinks.map((link) => (
+                                <Link
+                                    key={link.name}
+                                    href={link.path}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="text-2xl font-black text-slate-800"
+                                >
+                                    {link.name}
+                                </Link>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </>
+    );
+};

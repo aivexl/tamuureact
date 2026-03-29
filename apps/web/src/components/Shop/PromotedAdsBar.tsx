@@ -6,9 +6,10 @@ import { formatCurrency } from '../../lib/utils';
 import { Link } from 'react-router-dom';
 import { useTrackAdClick } from '../../hooks/queries/useShop';
 import { Card } from '../ui/shadcn/Card';
+import { Ad } from '../../constants/types';
 
 export const PromotedAdsBar = React.memo(() => {
-    const { data: adsRes, isLoading } = useQuery({
+    const { data: adsRes, isLoading } = useQuery<{ ads: Ad[] }>({
         queryKey: ['active_promoted_ads'],
         queryFn: () => shop.getAds('PROMOTED_PRODUCT')
     });
@@ -18,8 +19,8 @@ export const PromotedAdsBar = React.memo(() => {
 
     if (isLoading || ads.length === 0) return null;
 
-    const handleAdClick = (ad: any) => {
-        trackClick.mutate(ad.id);
+    const handleAdClick = (adId: string) => {
+        trackClick.mutate(adId);
     };
 
     return (
@@ -37,14 +38,14 @@ export const PromotedAdsBar = React.memo(() => {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 px-2">
-                {ads.map((ad: any) => (
+                {ads.map((ad) => (
                     <div key={ad.id}>
                         <Card
                             className="group relative bg-white rounded-[2rem] border-2 border-slate-100 hover:border-[#FFBF00] transition-all p-3 shadow-sm hover:shadow-xl hover:shadow-slate-200/50"
                         >
                             <Link 
                                 to={ad.product_slug ? `/shop/${ad.vendor_slug}/${ad.product_slug}` : `/shop/${ad.vendor_slug}`}
-                                onClick={() => handleAdClick(ad)}
+                                onClick={() => handleAdClick(ad.id)}
                                 className="block space-y-3"
                             >
                                 <div className="aspect-square rounded-[1.5rem] overflow-hidden bg-slate-100 relative">
@@ -63,7 +64,7 @@ export const PromotedAdsBar = React.memo(() => {
                                     <p className="text-[10px] font-black text-[#FFBF00] italic">{formatCurrency(ad.harga_estimasi || 0)}</p>
                                     <div className="flex items-center gap-1.5 pt-1">
                                         <div className="w-4 h-4 rounded-full bg-slate-100 overflow-hidden">
-                                            <img src={ad.logo_url} className="w-full h-full object-cover" />
+                                            {ad.logo_url && <img src={ad.logo_url} className="w-full h-full object-cover" alt="Logo" />}
                                         </div>
                                         <span className="text-[8px] font-bold text-slate-400 uppercase truncate">{ad.nama_toko}</span>
                                     </div>
