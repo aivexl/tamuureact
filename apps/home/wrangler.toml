@@ -1,0 +1,9 @@
+name = "tamuu-home"
+main = ".open-next/worker.js"
+compatibility_date = "2024-09-23"
+
+[site]
+bucket = ".open-next/assets"
+
+[vars]
+NEXTJS_ENV = "production"
