@@ -1,5 +1,4 @@
 import React from 'react';
-import { m } from 'framer-motion';
 import { MapPin, Tag, Heart } from 'lucide-react';
 import { formatCurrency, formatAbbreviatedNumber } from '../../lib/utils';
 import { StarRating } from './StarRating';
@@ -13,11 +12,7 @@ interface ProductCardProps {
 
 export const ProductCard = React.memo(({ product, navigate, isSmall = false, onAdClick }: ProductCardProps) => {
     return (
-        <m.div
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "100px" }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
+        <div
             onClick={() => {
                 if (product.isAd && onAdClick) {
                     onAdClick(product.id);
@@ -101,6 +96,6 @@ export const ProductCard = React.memo(({ product, navigate, isSmall = false, onA
                     </div>
                 </div>
             </div>
-        </m.div>
+        </div>
     );
 });

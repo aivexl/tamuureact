@@ -6,6 +6,7 @@
 - **shadcn/ui Integration**: Successfully integrated core shadcn/ui components (`Button`, `Tabs`, `Card`, `Input`, `Carousel`, `Skeleton`) with custom variants to match legacy design tokens.
 
 ### Optimized
+- **Motion Optimization**: Completely removed `framer-motion` from the homepage to reduce bundle size and improve TTI (Time to Interactive). Replaced animations with standard HTML/CSS for a more stable and high-performance experience.
 - **Homepage (ShopPage) Performance**: Applied Zero-Jank Architecture using `SectionWrapper` and `content-visibility: auto` to eliminate blank screens during fast scrolling.
 - **Motion Reduction**: Removed heavy `layout` prop from main motion containers in `ShopPage` to prevent unnecessary CPU-intensive layout calculations.
 - **Viewport Animation Tuning**: Adjusted `ProductCard` viewport margin to `100px` for proactive rendering, ensuring elements are ready before they enter the screen.

@@ -1,5 +1,4 @@
 import React from 'react';
-import { m } from 'framer-motion';
 import { Zap } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { shop } from '../../lib/api';
@@ -38,13 +37,8 @@ export const PromotedAdsBar = React.memo(() => {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 px-2">
-                {ads.map((ad: any, idx: number) => (
-                    <m.div
-                        key={ad.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.1 }}
-                    >
+                {ads.map((ad: any) => (
+                    <div key={ad.id}>
                         <Card
                             className="group relative bg-white rounded-[2rem] border-2 border-slate-100 hover:border-[#FFBF00] transition-all p-3 shadow-sm hover:shadow-xl hover:shadow-slate-200/50"
                         >
@@ -76,7 +70,7 @@ export const PromotedAdsBar = React.memo(() => {
                                 </div>
                             </Link>
                         </Card>
-                    </m.div>
+                    </div>
                 ))}
             </div>
         </section>
