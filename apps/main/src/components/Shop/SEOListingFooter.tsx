@@ -32,6 +32,7 @@ export const SEOListingFooter = () => {
                             <li key={city}>
                                 <Link 
                                     href={`/location/${city.toLowerCase()}`}
+                                    prefetch={false}
                                     className="text-[9px] font-bold text-slate-400 hover:text-[#0A1128] transition-colors uppercase tracking-tight"
                                 >
                                     Vendor {city}
@@ -52,6 +53,7 @@ export const SEOListingFooter = () => {
                             <li key={cat.slug}>
                                 <Link 
                                     href={`/c/${cat.slug}`}
+                                    prefetch={false}
                                     className="text-[9px] font-bold text-slate-400 hover:text-[#0A1128] transition-colors uppercase tracking-tight"
                                 >
                                     {cat.label} Terbaik
@@ -71,6 +73,7 @@ export const SEOListingFooter = () => {
                                     <Link 
                                         key={`${intent}-${city}`}
                                         href={`/c/wedding-organizer/${city.toLowerCase()}/${intent.toLowerCase()}`}
+                                        prefetch={false}
                                         className="px-4 py-2 bg-white border border-slate-100 rounded-xl text-[8px] font-black text-slate-400 hover:text-[#0A1128] hover:border-[#FFBF00] transition-all uppercase tracking-widest"
                                     >
                                         WO {city} {intent}

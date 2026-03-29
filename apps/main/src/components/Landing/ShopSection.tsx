@@ -19,18 +19,19 @@ const mockProducts = [
     { id: '3', name: 'Pre-wedding Session', price: 3500000, image_url: null, store_name: 'Capture Moment', rating: 5.0 },
 ];
 
-export const ShopSection = () => {
+export const ShopSection = ({ initialProducts = [], initialSlides = [] }: { initialProducts?: any[], initialSlides?: any[] }) => {
     const router = useRouter();
     const vendorScrollRef = useRef<HTMLDivElement | null>(null);
-    const productScrollRef = useRef<HTMLDivElement | null>(null);
 
-    const scroll = (ref: React.RefObject<HTMLDivElement | null>, direction: 'left' | 'right') => {
-        if (ref.current) {
-            const { scrollLeft, clientWidth } = ref.current;
-            const scrollTo = direction === 'left' ? scrollLeft - clientWidth / 2 : scrollLeft + clientWidth / 2;
-            ref.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
+    // Filter vendor unik dari produk jika data vendor tidak ada di API terpisah
+    const vendors = initialProducts.reduce((acc: any[], current: any) => {
+        const x = acc.find(item => item.store_name === current.store_name);
+        if (!x) {
+            return acc.concat([current]);
+        } else {
+            return acc;
         }
-    };
+    }, []).slice(0, 6);
 
     return (
         <section id="shop" className="max-w-7xl mx-auto py-12">
@@ -59,29 +60,35 @@ export const ShopSection = () => {
                             ref={vendorScrollRef}
                             className="flex gap-6 overflow-x-auto pb-8 scrollbar-hide snap-x"
                         >
-                            {mockVendors.map((vendor) => (
+                            {vendors.length > 0 ? vendors.map((vendor) => (
                                 <div key={vendor.id} className="min-w-[280px] sm:min-w-[320px] snap-start bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300">
                                     <div className="flex items-center gap-4 mb-4">
-                                        <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100">
-                                            <Store className="w-6 h-6 text-slate-300" />
+                                        <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 overflow-hidden">
+                                            {vendor.logo_url ? (
+                                                <img src={vendor.logo_url} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <Store className="w-6 h-6 text-slate-300" />
+                                            )}
                                         </div>
                                         <div>
-                                            <h3 className="font-black text-[#0A1128] leading-tight">{vendor.store_name}</h3>
+                                            <h3 className="font-black text-[#0A1128] leading-tight uppercase tracking-tight">{vendor.store_name}</h3>
                                             <div className="flex items-center gap-1.5 mt-1">
                                                 <MapPin className="w-3 h-3 text-slate-400" />
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{vendor.kota}</span>
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{vendor.kota || 'Nasional'}</span>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <div className="flex items-center gap-1">
                                             <Star className="w-3.5 h-3.5 text-[#FFBF00] fill-[#FFBF00]" />
-                                            <span className="text-sm font-black text-[#0A1128]">{vendor.rating}</span>
+                                            <span className="text-sm font-black text-[#0A1128]">{vendor.avg_rating || 5.0}</span>
                                         </div>
-                                        <span className="text-xs font-bold text-slate-400">({vendor.review_count} reviews)</span>
+                                        <span className="text-xs font-bold text-slate-400">({vendor.review_count || 0} reviews)</span>
                                     </div>
                                 </div>
-                            ))}
+                            )) : (
+                                <div className="w-full py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">Belum ada vendor terpilih</div>
+                            )}
                         </div>
                     </div>
                 </div>

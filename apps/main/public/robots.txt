@@ -1,0 +1,36 @@
+# TAMUU OMNI-PLATFORM ROBOTS.TXT
+# Optimized for Google, Bing, and AI Search Engines (OpenAI, Claude, Perplexity)
+
+User-agent: *
+Allow: /
+Allow: /shop/
+Allow: /blog/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /editor/
+Disallow: /billing/
+
+# Specialized AI Bots - Full Access to Public Data for SGE/ChatGPT
+User-agent: GPTBot
+Allow: /shop/
+Allow: /blog/
+
+User-agent: ChatGPT-User
+Allow: /shop/
+Allow: /blog/
+
+User-agent: Claude-Web
+Allow: /shop/
+Allow: /blog/
+
+User-agent: PerplexityBot
+Allow: /shop/
+Allow: /blog/
+
+User-agent: CCBot
+Allow: /shop/
+Allow: /blog/
+
+# Sitemap Discovery
+Sitemap: https://tamuu.id/api/sitemap/shop
+Sitemap: https://tamuu.id/sitemap.xml

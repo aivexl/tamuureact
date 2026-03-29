@@ -60,3 +60,5 @@ walkthrough.md
 implementation_plan.md
 task.md
 .worktrees/
+.open-next/
+apps/main/.open-next/

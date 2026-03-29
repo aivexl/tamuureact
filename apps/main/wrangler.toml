@@ -2,14 +2,15 @@ name = "tamuu-worker"
 main = ".open-next/worker.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = [ "nodejs_compat" ]
+account_id = "5b4da9b18bdae9d8b11058dc33db411e"
 
 routes = [
     { pattern = "tamuu.id/*", zone_id = "892dbe6c5414762f7d6b25f5f2a87c97" },
     { pattern = "www.tamuu.id/*", zone_id = "892dbe6c5414762f7d6b25f5f2a87c97" }
 ]
 
-[site]
-bucket = ".open-next/assets"
+# Assets configuration for Workers
+assets = { directory = ".open-next/assets", binding = "ASSETS" }
 
 [vars]
 NEXTJS_ENV = "production"
