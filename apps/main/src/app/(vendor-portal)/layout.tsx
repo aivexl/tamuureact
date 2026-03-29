@@ -89,7 +89,7 @@ export default function VendorPortalLayout({
             </aside>
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <div className="flex-1 flex flex-col min-w-0">
                 <header className="h-20 bg-white border-b border-slate-50 flex items-center justify-between px-4 md:px-8 sticky top-0 z-30">
                     <button 
                         onClick={() => setSidebarOpen(!isSidebarOpen)}
@@ -108,7 +108,7 @@ export default function VendorPortalLayout({
                     </div>
                 </header>
 
-                <main className="flex-1 overflow-y-auto p-4 md:p-8">
+                <main className="flex-1 p-4 md:p-8">
                     {children}
                 </main>
             </div>

@@ -3232,47 +3232,47 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/apps/main/.next/server/app/page_client-reference-manifest.js": {
-      "bytes": 10881,
+      "bytes": 9482,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/apps/main/.next/server/app/undangan-digital/page_client-reference-manifest.js": {
-      "bytes": 11216,
+      "bytes": 9817,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/apps/main/.next/server/app/_not-found/page_client-reference-manifest.js": {
-      "bytes": 10953,
+      "bytes": 9554,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/apps/main/.next/server/app/shop/[vendor]/page_client-reference-manifest.js": {
-      "bytes": 11027,
+      "bytes": 9674,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/apps/main/.next/server/app/(dashboard)/dashboard/page_client-reference-manifest.js": {
-      "bytes": 11139,
+      "bytes": 9740,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/apps/main/.next/server/app/shop/[vendor]/[product]/page_client-reference-manifest.js": {
-      "bytes": 11193,
+      "bytes": 9840,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/apps/main/.next/server/app/(vendor-portal)/vendor/[slug]/page_client-reference-manifest.js": {
-      "bytes": 11121,
+      "bytes": 9722,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/apps/main/.next/server/app/(editor)/editor/[id]/page_client-reference-manifest.js": {
-      "bytes": 11094,
+      "bytes": 9695,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/node_modules/next/dist/server/load-manifest.external.js": {
-      "bytes": 28804,
+      "bytes": 27943,
       "imports": [
         {
           "path": "path",
@@ -3353,9 +3353,20 @@
       ],
       "format": "cjs"
     },
-    ".open-next/server-functions/default/apps/main/.next/server/chunks/355.js": {
-      "bytes": 21115,
+    ".open-next/server-functions/default/apps/main/.next/server/chunks/162.js": {
+      "bytes": 4220,
       "imports": [],
+      "format": "cjs"
+    },
+    ".open-next/server-functions/default/apps/main/.next/server/chunks/329.js": {
+      "bytes": 109318,
+      "imports": [
+        {
+          "path": "@emotion/is-prop-valid",
+          "kind": "require-call",
+          "external": true
+        }
+      ],
       "format": "cjs"
     },
     ".open-next/server-functions/default/apps/main/.next/server/chunks/383.js": {
@@ -3369,24 +3380,28 @@
       ],
       "format": "cjs"
     },
-    ".open-next/server-functions/default/apps/main/.next/server/chunks/776.js": {
-      "bytes": 543640,
-      "imports": [
-        {
-          "path": "@emotion/is-prop-valid",
-          "kind": "require-call",
-          "external": true
-        }
-      ],
+    ".open-next/server-functions/default/apps/main/.next/server/chunks/54.js": {
+      "bytes": 425248,
+      "imports": [],
+      "format": "cjs"
+    },
+    ".open-next/server-functions/default/apps/main/.next/server/chunks/76.js": {
+      "bytes": 9353,
+      "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/apps/main/.next/server/webpack-runtime.js": {
-      "bytes": 1708,
+      "bytes": 1814,
       "imports": [
         {
-          "path": ".open-next/server-functions/default/apps/main/.next/server/chunks/355.js",
+          "path": ".open-next/server-functions/default/apps/main/.next/server/chunks/162.js",
           "kind": "require-call",
-          "original": "./chunks/355.js"
+          "original": "./chunks/162.js"
+        },
+        {
+          "path": ".open-next/server-functions/default/apps/main/.next/server/chunks/329.js",
+          "kind": "require-call",
+          "original": "./chunks/329.js"
         },
         {
           "path": ".open-next/server-functions/default/apps/main/.next/server/chunks/383.js",
@@ -3394,9 +3409,14 @@
           "original": "./chunks/383.js"
         },
         {
-          "path": ".open-next/server-functions/default/apps/main/.next/server/chunks/776.js",
+          "path": ".open-next/server-functions/default/apps/main/.next/server/chunks/54.js",
           "kind": "require-call",
-          "original": "./chunks/776.js"
+          "original": "./chunks/54.js"
+        },
+        {
+          "path": ".open-next/server-functions/default/apps/main/.next/server/chunks/76.js",
+          "kind": "require-call",
+          "original": "./chunks/76.js"
         }
       ],
       "format": "cjs"
@@ -4079,7 +4099,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/apps/main/.next/server/app/_not-found/page.js": {
-      "bytes": 14969,
+      "bytes": 14967,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/shared/lib/router/utils/app-paths.js",
@@ -4145,7 +4165,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/apps/main/.next/server/app/page.js": {
-      "bytes": 36389,
+      "bytes": 55387,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/shared/lib/router/utils/app-paths.js",
@@ -4211,7 +4231,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/apps/main/.next/server/app/shop/[vendor]/[product]/page.js": {
-      "bytes": 21603,
+      "bytes": 23256,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/shared/lib/router/utils/app-paths.js",
@@ -4277,7 +4297,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/apps/main/.next/server/app/shop/[vendor]/page.js": {
-      "bytes": 22820,
+      "bytes": 23359,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/shared/lib/router/utils/app-paths.js",
@@ -4343,7 +4363,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/apps/main/.next/server/app/undangan-digital/page.js": {
-      "bytes": 52004,
+      "bytes": 55116,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/shared/lib/router/utils/app-paths.js",
@@ -4409,7 +4429,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/apps/main/.next/server/app/(dashboard)/dashboard/page.js": {
-      "bytes": 29111,
+      "bytes": 33024,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/shared/lib/router/utils/app-paths.js",
@@ -4475,7 +4495,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/apps/main/.next/server/app/(editor)/editor/[id]/page.js": {
-      "bytes": 26298,
+      "bytes": 31428,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/shared/lib/router/utils/app-paths.js",
@@ -4541,7 +4561,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/apps/main/.next/server/app/(vendor-portal)/vendor/[slug]/page.js": {
-      "bytes": 28319,
+      "bytes": 31783,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/shared/lib/router/utils/app-paths.js",
@@ -4607,7 +4627,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/node_modules/next/dist/server/require.js": {
-      "bytes": 34668,
+      "bytes": 40340,
       "imports": [
         {
           "path": "path",
@@ -5625,7 +5645,7 @@
       "format": "esm"
     },
     ".open-next/server-functions/default/apps/main/index.mjs": {
-      "bytes": 85667,
+      "bytes": 85232,
       "imports": [
         {
           "path": "node:module",
@@ -5775,12 +5795,12 @@
           "external": true
         },
         {
-          "path": "@builder.io/partytown/integration",
+          "path": "@emotion/is-prop-valid",
           "kind": "require-call",
           "external": true
         },
         {
-          "path": "@emotion/is-prop-valid",
+          "path": "@builder.io/partytown/integration",
           "kind": "require-call",
           "external": true
         },
@@ -6752,31 +6772,31 @@
           "bytesInOutput": 586
         },
         ".open-next/server-functions/default/apps/main/.next/server/app/page_client-reference-manifest.js": {
-          "bytesInOutput": 9877
+          "bytesInOutput": 8552
         },
         ".open-next/server-functions/default/apps/main/.next/server/app/undangan-digital/page_client-reference-manifest.js": {
-          "bytesInOutput": 10230
+          "bytesInOutput": 8905
         },
         ".open-next/server-functions/default/apps/main/.next/server/app/_not-found/page_client-reference-manifest.js": {
-          "bytesInOutput": 9961
+          "bytesInOutput": 8636
         },
         ".open-next/server-functions/default/apps/main/.next/server/app/shop/[vendor]/page_client-reference-manifest.js": {
-          "bytesInOutput": 10038
+          "bytesInOutput": 8759
         },
         ".open-next/server-functions/default/apps/main/.next/server/app/(dashboard)/dashboard/page_client-reference-manifest.js": {
-          "bytesInOutput": 10158
+          "bytesInOutput": 8833
         },
         ".open-next/server-functions/default/apps/main/.next/server/app/shop/[vendor]/[product]/page_client-reference-manifest.js": {
-          "bytesInOutput": 10214
+          "bytesInOutput": 8935
         },
         ".open-next/server-functions/default/apps/main/.next/server/app/(vendor-portal)/vendor/[slug]/page_client-reference-manifest.js": {
-          "bytesInOutput": 10148
+          "bytesInOutput": 8823
         },
         ".open-next/server-functions/default/apps/main/.next/server/app/(editor)/editor/[id]/page_client-reference-manifest.js": {
-          "bytesInOutput": 10112
+          "bytesInOutput": 8787
         },
         ".open-next/server-functions/default/node_modules/next/dist/server/load-manifest.external.js": {
-          "bytesInOutput": 20133
+          "bytesInOutput": 19553
         },
         ".open-next/server-functions/default/node_modules/react/cjs/react-jsx-runtime.production.js": {
           "bytesInOutput": 740
@@ -6784,17 +6804,23 @@
         ".open-next/server-functions/default/node_modules/react/jsx-runtime.js": {
           "bytesInOutput": 194
         },
-        ".open-next/server-functions/default/apps/main/.next/server/chunks/355.js": {
-          "bytesInOutput": 21438
+        ".open-next/server-functions/default/apps/main/.next/server/chunks/162.js": {
+          "bytesInOutput": 4535
+        },
+        ".open-next/server-functions/default/apps/main/.next/server/chunks/329.js": {
+          "bytesInOutput": 122225
         },
         ".open-next/server-functions/default/apps/main/.next/server/chunks/383.js": {
           "bytesInOutput": 71748
         },
-        ".open-next/server-functions/default/apps/main/.next/server/chunks/776.js": {
-          "bytesInOutput": 573225
+        ".open-next/server-functions/default/apps/main/.next/server/chunks/54.js": {
+          "bytesInOutput": 441714
+        },
+        ".open-next/server-functions/default/apps/main/.next/server/chunks/76.js": {
+          "bytesInOutput": 9485
         },
         ".open-next/server-functions/default/apps/main/.next/server/webpack-runtime.js": {
-          "bytesInOutput": 1796
+          "bytesInOutput": 1858
         },
         ".open-next/server-functions/default/apps/main/.next/server/pages/_app.js": {
           "bytesInOutput": 3595
@@ -6896,31 +6922,31 @@
           "bytesInOutput": 516
         },
         ".open-next/server-functions/default/apps/main/.next/server/app/_not-found/page.js": {
-          "bytesInOutput": 15089
+          "bytesInOutput": 15087
         },
         ".open-next/server-functions/default/apps/main/.next/server/app/page.js": {
-          "bytesInOutput": 36912
+          "bytesInOutput": 56617
         },
         ".open-next/server-functions/default/apps/main/.next/server/app/shop/[vendor]/[product]/page.js": {
-          "bytesInOutput": 21832
+          "bytesInOutput": 23552
         },
         ".open-next/server-functions/default/apps/main/.next/server/app/shop/[vendor]/page.js": {
-          "bytesInOutput": 23074
+          "bytesInOutput": 23655
         },
         ".open-next/server-functions/default/apps/main/.next/server/app/undangan-digital/page.js": {
-          "bytesInOutput": 52926
+          "bytesInOutput": 56187
         },
         ".open-next/server-functions/default/apps/main/.next/server/app/(dashboard)/dashboard/page.js": {
-          "bytesInOutput": 29412
+          "bytesInOutput": 33492
         },
         ".open-next/server-functions/default/apps/main/.next/server/app/(editor)/editor/[id]/page.js": {
-          "bytesInOutput": 26607
+          "bytesInOutput": 31899
         },
         ".open-next/server-functions/default/apps/main/.next/server/app/(vendor-portal)/vendor/[slug]/page.js": {
-          "bytesInOutput": 28626
+          "bytesInOutput": 32245
         },
         ".open-next/server-functions/default/node_modules/next/dist/server/require.js": {
-          "bytesInOutput": 30007
+          "bytesInOutput": 35155
         },
         ".open-next/server-functions/default/node_modules/next/dist/lib/wait.js": {
           "bytesInOutput": 341
@@ -7031,10 +7057,10 @@
           "bytesInOutput": 5084
         },
         ".open-next/server-functions/default/apps/main/index.mjs": {
-          "bytesInOutput": 58423
+          "bytesInOutput": 58043
         }
       },
-      "bytes": 2861893
+      "bytes": 2877187
     }
   }
 }

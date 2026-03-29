@@ -1,0 +1,7 @@
+name = "tamuu-worker"
+main = "src/index.js"
+compatibility_date = "2024-02-22"
+account_id = "5b4da9b18bdae9d8b11058dc33db411e"
+
+# RUTE DIKOSONGKAN UNTUK MELEPASKAN DOMAIN
+routes = []
