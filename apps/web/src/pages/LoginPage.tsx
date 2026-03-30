@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { AuthLayout } from '../components/Layout/AuthLayout';
 import { AuthForm } from '../components/Auth/AuthForm';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { useSEO } from '../hooks/useSEO';
 import { m, AnimatePresence } from 'framer-motion';
@@ -10,6 +10,7 @@ import { AlertCircle } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const { signIn, isLoading } = useAuth();
     const [loginError, setLoginError] = useState<string | null>(null);
 
@@ -32,12 +33,15 @@ export const LoginPage: React.FC = () => {
         } else {
             // Handle redirect based on role or search params
             const userRole = data?.user?.user_metadata?.role;
-            
+            const redirect = searchParams.get('redirect') || '/dashboard';
+            const tier = searchParams.get('tier');
+
             if (userRole === 'admin') {
                 navigate('/admin/dashboard');
+            } else if (tier) {
+                // If there's a tier param, redirect back to the page with tier to trigger payment
+                navigate(`${redirect}?tier=${tier}`);
             } else {
-                const searchParams = new URLSearchParams(window.location.search);
-                const redirect = searchParams.get('redirect') || '/dashboard';
                 navigate(redirect);
             }
         }

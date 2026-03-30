@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useSEO } from '../hooks/useSEO';
 import { useStore } from '../store/useStore';
 import { PremiumLoader } from '../components/ui/PremiumLoader';
@@ -18,12 +18,12 @@ const FAQSection = lazy(() => import('../components/Landing/FAQSection'));
 
 // Section Wrapper for smooth scroll performance (Zero-Jank Architecture)
 const SectionWrapper: React.FC<{ children: React.ReactNode; id?: string; minHeight?: string }> = ({ children, id, minHeight = '400px' }) => (
-    <div 
-        id={id} 
-        style={{ 
-            contentVisibility: 'auto', 
-            containIntrinsicSize: `auto ${minHeight}` 
-        }} 
+    <div
+        id={id}
+        style={{
+            contentVisibility: 'auto',
+            containIntrinsicSize: `auto ${minHeight}`
+        }}
         className="will-change-transform"
     >
         {children}

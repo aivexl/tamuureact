@@ -254,6 +254,9 @@ export const ShopPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-white text-[#0A1128] font-sans selection:bg-[#FFBF00] selection:text-[#0A1128]">
+            {isLoadingProducts && isLoadingVendors ? (
+                <PremiumLoader variant="full" showLabel label="Loading Tamuu..." />
+            ) : null}
             <main className="max-w-7xl mx-auto px-6 pb-32">
                 {/* Breadcrumbs & Header */}
                 <section className="pt-[140px] md:pt-40">
@@ -498,7 +501,7 @@ export const ShopPage: React.FC = () => {
                             )}
 
                             {isLoadingProducts ? (
-                                <div className="py-20 text-center w-full"><PremiumLoader variant="inline" /></div>
+                                <div className="py-20 text-center w-full"><PremiumLoader variant="inline" showLabel label="Loading" /></div>
                             ) : (
                                 <div className="px-2">
                                     {products.length > 0 ? (

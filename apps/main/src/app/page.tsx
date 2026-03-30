@@ -2,15 +2,15 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { 
-    Store, 
-    ShoppingBag, 
-    LayoutGrid, 
-    Sparkles, 
-    Heart, 
-    Utensils, 
-    Camera, 
-    Palette, 
+import {
+    Store,
+    ShoppingBag,
+    LayoutGrid,
+    Sparkles,
+    Heart,
+    Utensils,
+    Camera,
+    Palette,
     Building2,
     ChevronLeft,
     ChevronRight
@@ -22,6 +22,7 @@ import { ProductGrid } from '@/components/Shop/ProductGrid';
 import { SpecialAdsScroller } from '@/components/Shop/SpecialAdsScroller';
 import { SEOListingFooter } from '@/components/Shop/SEOListingFooter';
 import { Breadcrumbs } from '@/components/Shop/Breadcrumbs';
+import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import Link from 'next/link';
 
 const categoryConfig = [
@@ -96,7 +97,7 @@ function HomeContent() {
     };
 
     if (isLoading) {
-        return <div className="min-h-screen flex items-center justify-center text-slate-400 font-black uppercase tracking-widest text-xs">Loading Tamuu...</div>;
+        return <PremiumLoader variant="full" showLabel label="Loading Tamuu..." />;
     }
 
     return (
@@ -230,7 +231,7 @@ function HomeContent() {
 
 export default function HomePage() {
     return (
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading Tamuu...</div>}>
+        <Suspense fallback={<PremiumLoader variant="full" showLabel label="Loading Tamuu..." />}>
             <HomeContent />
         </Suspense>
     );

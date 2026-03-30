@@ -1,0 +1,102 @@
+"use client";
+
+import React from 'react';
+import { motion, useScroll, useSpring } from 'framer-motion';
+import Link from 'next/link';
+import { Sparkles } from 'lucide-react';
+
+import { BlogCard, BlogPost } from './BlogCard';
+import { AnimatedCopyIcon } from '../ui/AnimatedCopyIcon';
+
+interface BlogPostLayoutProps {
+    post: BlogPost;
+    relatedPosts: BlogPost[];
+}
+
+const ShareBar = ({ title, slug }: { title: string; slug: string }) => {
+    const url = `https://tamuu.id/blog/${slug}`;
+
+    return (
+        <div className="flex flex-wrap items-center gap-3 mt-12 pt-8 border-t border-slate-100">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mr-2">Share</span>
+            <div className="flex gap-2 sm:gap-3">
+                <a href={`https://wa.me/?text=${encodeURIComponent(title + ' ' + url)}`} target="_blank" rel="noreferrer" className="w-10 h-10 bg-white border border-slate-100 rounded-full shadow-sm flex items-center justify-center text-slate-500 hover:text-emerald-500 hover:border-emerald-200 transition-all">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z" /></svg>
+                </a>
+                <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`} target="_blank" rel="noreferrer" className="w-10 h-10 bg-white border border-slate-100 rounded-full shadow-sm flex items-center justify-center text-slate-500 hover:text-sky-500 hover:border-sky-200 transition-all">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                </a>
+                <div className="w-10 h-10 bg-white border border-slate-100 rounded-full shadow-sm flex items-center justify-center text-slate-500 hover:text-teal-500 transition-all">
+                    <AnimatedCopyIcon text={url} size={16} successMessage="Link blog disalin!" />
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const PromoBanner = () => (
+    <div className="my-16 p-6 sm:p-8 rounded-3xl bg-white border border-slate-100 flex flex-col md:flex-row items-center gap-6 sm:gap-8 shadow-xl">
+        <div className="w-14 h-14 bg-[#0A1128] rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0">
+            <Sparkles className="w-6 h-6" />
+        </div>
+        <div className="flex-1 text-center md:text-left">
+            <h4 className="text-lg font-black text-[#0A1128] mb-1">Upgrade Your Event</h4>
+            <p className="text-slate-500 text-sm font-medium">Buka fitur premium, RSVP tanpa batas, dan desain eksklusif.</p>
+        </div>
+        <Link href="/pricing" className="w-full md:w-auto text-center px-8 py-3.5 bg-[#0A1128] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-slate-800 transition-all">Lihat Paket</Link>
+    </div>
+);
+
+const SubscribeCard = () => (
+    <div className="mt-20 sm:mt-24 bg-[#0A1128] rounded-[2.5rem] p-8 sm:p-16 text-center relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle, #e2e8f0 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+        <div className="relative z-10 max-w-xl mx-auto space-y-6">
+            <h3 className="text-3xl sm:text-4xl font-black text-white leading-tight uppercase tracking-tight">Stay Inspired</h3>
+            <p className="text-slate-400 font-medium text-sm sm:text-base">Dapatkan tips pernikahan dan inspirasi desain langsung di email Anda.</p>
+            <form className="flex flex-col sm:flex-row gap-3 pt-4" onSubmit={e => e.preventDefault()}>
+                <input type="email" placeholder="Alamat Email" className="flex-1 px-6 py-4 rounded-full bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:ring-2 focus:ring-teal-500 transition-all font-medium text-sm" />
+                <button className="px-10 py-4 bg-teal-500 text-slate-900 font-black uppercase tracking-widest text-[10px] rounded-full hover:bg-teal-400 transition-all">Subscribe</button>
+            </form>
+        </div>
+    </div>
+);
+
+export const BlogPostLayout: React.FC<BlogPostLayoutProps> = ({ post, relatedPosts }) => {
+    const { scrollYProgress } = useScroll();
+    const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
+    const readingTime = Math.max(1, Math.ceil((post.content?.length || 0) / 1200));
+
+    return (
+        <div className="min-h-screen bg-white font-inter text-[#0A1128]">
+            <motion.div className="fixed top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-teal-500 to-teal-400 origin-left z-50" style={{ scaleX }} />
+            <main className="max-w-4xl mx-auto px-6 py-16 md:py-24">
+                <header className="mb-12 sm:mb-16">
+                    <div className="mb-8 sm:mb-10 rounded-2xl sm:rounded-3xl overflow-hidden aspect-[16/9] sm:aspect-[2/1] bg-slate-50 relative group shadow-2xl">
+                        <img src={post.featured_image || 'https://placehold.co/1200x630/0A1128/white?text=Tamuu+Blog'} alt={post.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                        <div className="absolute bottom-0 left-0 p-6 sm:p-10 flex flex-wrap items-center gap-3 sm:gap-4 text-xs">
+                            <span className="px-3 py-1 rounded-full bg-teal-500 text-slate-900 text-[10px] font-black uppercase tracking-widest">{post.category || 'Article'}</span>
+                            <span className="text-white/70 font-bold">{post.published_at ? new Date(post.published_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Draft'}</span>
+                            <span className="text-white/30 hidden sm:inline">·</span>
+                            <span className="text-white/70 font-bold">{readingTime} min read</span>
+                        </div>
+                    </div>
+                    <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-3xl sm:text-5xl lg:text-6xl font-black text-[#0A1128] leading-[1.1] mb-6 sm:mb-8 tracking-tighter uppercase">{post.title}</motion.h1>
+                    <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-lg sm:text-xl md:text-2xl text-slate-500 leading-relaxed font-medium">{post.excerpt}</motion.p>
+                </header>
+                <article className="prose prose-base sm:prose-lg md:prose-xl max-w-none prose-slate prose-headings:text-[#0A1128] prose-headings:font-black prose-headings:tracking-tighter prose-headings:uppercase prose-blockquote:border-l-teal-500 prose-img:rounded-3xl shadow-none" dangerouslySetInnerHTML={{ __html: post.content }} />
+                <ShareBar title={post.title} slug={post.slug} />
+                <PromoBanner />
+                {relatedPosts.length > 0 && (
+                    <section className="mt-16 pt-12 border-t border-slate-100">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 mb-8">Artikel Terkait</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
+                            {relatedPosts.slice(0, 3).map(p => (<BlogCard key={p.id} post={p} />))}
+                        </div>
+                    </section>
+                )}
+                <SubscribeCard />
+            </main>
+        </div>
+    );
+};

@@ -1,7 +1,6 @@
 "use client";
 
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Star } from 'lucide-react';
 
 const testimonials = [
@@ -9,95 +8,118 @@ const testimonials = [
         name: "Rina Santika",
         role: "Pasangan Pengantin",
         content: "Undangan digital dari Tamuu benar-benar memukau! Tamu-tamu kami kagum dengan desainnya yang elegan. Fitur RSVP sangat membantu kami menghitung jumlah tamu dengan akurat.",
+        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=96&h=96&auto=format&fit=crop&crop=face&q=60",
         rating: 5
     },
     {
         name: "Dewi Anggraini",
         role: "Calon Pengantin Wanita",
-        content: "Awalnya ragu pakai undangan digital, tapi setelah lihat hasilnya, saya sangat puas! Tamu-tamu langsung bisa konfirmasi kehadiran and kirim ucapan. Praktis sekali!",
+        content: "Awalnya ragu pakai undangan digital, tapi setelah lihat hasilnya, saya sangat puas! Tamu-tamu langsung bisa konfirmasi kehadiran dan kirim ucapan. Praktis sekali!",
+        avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=96&h=96&auto=format&fit=crop&crop=face&q=60",
         rating: 5
     },
     {
         name: "Budi Santoso",
         role: "Calon Pengantin Pria",
         content: "Proses pembuatan undangan sangat mudah, cukup dari HP saja. Tema-temanya premium dan modern. Sangat membantu untuk persiapan pernikahan kami yang mendadak.",
+        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=96&h=96&auto=format&fit=crop&crop=face&q=60",
         rating: 5
     },
     {
         name: "Siti Aminah",
         role: "Ibu Mempelai",
         content: "Fitur WhatsApp broadcast sangat membantu! Saya bisa kirim undangan ke keluarga besar dalam sekali klik. Hemat waktu dan tidak perlu repot antar undangan fisik.",
+        avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=96&h=96&auto=format&fit=crop&crop=face&q=60",
         rating: 5
     },
     {
         name: "Hendra Wijaya",
         role: "Ayah Mempelai",
         content: "Untuk acara syukuran keluarga, Tamuu memberikan solusi undangan yang modern. Musik latar dan animasinya membuat undangan terasa hidup dan sangat eksklusif.",
+        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=96&h=96&auto=format&fit=crop&crop=face&q=60",
         rating: 5
     },
     {
         name: "Maya Putri",
         role: "Calon Pengantin Wanita",
         content: "Dashboard analitik tamu sangat membantu koordinasi dengan vendor catering. Kami tahu persis berapa tamu yang akan hadir. Acara jadi lebih terorganisir!",
+        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=96&h=96&auto=format&fit=crop&crop=face&q=60",
         rating: 5
     }
 ];
 
-export const TestimonialsSection = () => {
+const fadeAnimation = `
+    @keyframes fade-in-up {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .testimonial-card {
+        animation: fade-in-up 0.6s ease-out forwards;
+    }
+`;
+
+const TestimonialsSection: React.FC = () => {
     return (
-        <section id="testimonials" className="py-32 px-6 overflow-hidden relative" style={{ backgroundColor: '#0A1128' }}>
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
-                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/10 blur-[120px] rounded-full animate-pulse" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-500/10 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '2s' }} />
-            </div>
+        <>
+            <style>{fadeAnimation}</style>
+            <section id="testimonials" className="py-32 px-6 overflow-hidden relative" style={{ backgroundColor: '#0A1128' }}>
+                {/* Decorative Glows */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
+                    <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/20 blur-[120px] rounded-full animate-pulse" />
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-500/20 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '2s' }} />
+                    <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-purple-500/20 blur-[100px] rounded-full animate-pulse" style={{ animationDelay: '4s' }} />
+                </div>
 
-            <div className="max-w-7xl mx-auto text-center mb-24 relative z-10">
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 text-[#FFBF00] text-xs font-bold tracking-[0.2em] uppercase mb-10 border border-white/10"
-                >
-                    <Star className="w-3 h-3 fill-[#FFBF00]" />
-                    <span>Kesan Pelanggan</span>
-                </motion.div>
+                <div className="max-w-7xl mx-auto text-center mb-24 relative z-10">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 text-[#FFBF00] text-xs font-bold tracking-wider uppercase mb-8 border border-[#FFBF00]/20">
+                        <Star className="w-3 h-3 fill-[#FFBF00]" />
+                        <span>Kesan Pelanggan</span>
+                    </div>
+                    <h2 className="text-5xl md:text-7xl font-black mb-6 tracking-tight text-white leading-tight">Apa Kata <br /><span className="text-[#FFBF00]">Mempelai Tamuu</span></h2>
+                    <p className="text-white/70 max-w-xl mx-auto font-medium text-lg">Dengarkan kebahagiaan mereka yang telah mempercayakan momen spesial kepada layanan kami.</p>
+                </div>
 
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="max-w-6xl mx-auto px-4"
-                >
-                    <h2 className="text-xl md:text-3xl font-bold text-white tracking-tight leading-tight text-center">
-                        Dengarkan kebahagiaan mereka yang telah mempercayakan momen spesial kepada layanan Tamuu.
-                    </h2>
-                </motion.div>
-            </div>
-
-            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
-                {testimonials.map((t, i) => (
-                    <motion.div
-                        key={i}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: i * 0.1 }}
-                        className="p-8 rounded-[2.5rem] bg-white/5 border border-white/5 backdrop-blur-sm flex flex-col justify-between group hover:bg-white/10 transition-all duration-500"
-                    >
-                        <div className="space-y-6">
-                            <div className="flex gap-1">
-                                {[...Array(t.rating)].map((_, idx) => (
-                                    <Star key={idx} className="w-4 h-4 text-[#FFBF00] fill-[#FFBF00]" />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto relative z-10">
+                    {testimonials.map((t, i) => (
+                        <div
+                            key={i}
+                            className="testimonial-card bg-white/5 p-10 rounded-[2.5rem] border border-white/10 flex flex-col hover:bg-white/[0.08] transition-all group"
+                            style={{ animationDelay: `${i * 0.1}s` }}
+                        >
+                            <div className="flex gap-1 mb-6">
+                                {[...Array(t.rating)].map((_, starI) => (
+                                    <Star key={starI} className="w-4 h-4 fill-[#FFBF00] text-[#FFBF00]" />
                                 ))}
                             </div>
-                            <p className="text-slate-300 leading-relaxed font-medium italic">"{t.content}"</p>
+                            <blockquote className="text-white/80 font-medium leading-relaxed mb-10 flex-1 italic text-lg">
+                                "{t.content}"
+                            </blockquote>
+                            <div className="flex items-center gap-4 border-t border-white/10 pt-8 mt-auto">
+                                <img
+                                    src={t.avatar}
+                                    alt={t.name}
+                                    width={48}
+                                    height={48}
+                                    loading="lazy"
+                                    className="w-12 h-12 rounded-full ring-2 ring-[#FFBF00]/30"
+                                />
+                                <div className="text-left">
+                                    <p className="text-white font-bold">{t.name}</p>
+                                    <p className="text-white/50 text-sm">{t.role}</p>
+                                </div>
+                            </div>
                         </div>
-                        <div className="mt-8 pt-6 border-t border-white/5">
-                            <h4 className="text-white font-bold">{t.name}</h4>
-                            <p className="text-slate-500 text-xs font-medium uppercase tracking-widest mt-1">{t.role}</p>
-                        </div>
-                    </motion.div>
-                ))}
-            </div>
-        </section>
+                    ))}
+                </div>
+            </section>
+        </>
     );
 };
+
+export default TestimonialsSection;

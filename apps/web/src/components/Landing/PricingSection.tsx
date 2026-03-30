@@ -1,8 +1,9 @@
 import { m } from 'framer-motion';
 import { Check, Zap, Crown, Star, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '../../store/useStore';
 import { usePayment } from '../../hooks/usePayment';
+import { useEffect } from 'react';
 
 const pricingPlans = [
     {
@@ -75,17 +76,39 @@ const pricingPlans = [
 
 const PricingSection: React.FC = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const { user } = useStore();
     const { initiatePayment, processingTier } = usePayment();
 
+    // Auto-trigger payment if user returns from login with tier param
+    useEffect(() => {
+        const tier = searchParams.get('tier');
+        if (tier && user && !processingTier) {
+            const validTiers = ['pro', 'ultimate', 'elite'];
+            if (validTiers.includes(tier)) {
+                // Small delay to ensure UI is ready
+                setTimeout(() => {
+                    initiatePayment(tier);
+                    // Clean up query param
+                    navigate(window.location.pathname, { replace: true });
+                }, 500);
+            }
+        }
+    }, [searchParams, user, processingTier, initiatePayment, navigate]);
+
     const handleAction = (tier: string) => {
-        if (!user) {
-            navigate('/signup');
+        if (tier === 'free') {
+            if (!user) {
+                navigate('/signup');
+            } else {
+                navigate('/dashboard');
+            }
             return;
         }
 
-        if (tier === 'free') {
-            navigate('/dashboard');
+        // For paid tiers: must login first, then initiate payment directly
+        if (!user) {
+            navigate(`/login?redirect=${encodeURIComponent(window.location.pathname)}&tier=${tier}`);
         } else {
             initiatePayment(tier);
         }

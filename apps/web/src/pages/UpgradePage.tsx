@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Zap, Crown, Star, ArrowRight } from 'lucide-react';
 import { useStore } from '../store/useStore';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { usePayment } from '../hooks/usePayment';
 
 interface TierCardProps {
@@ -95,7 +95,23 @@ const TierCard: React.FC<TierCardProps> = ({
 export const UpgradePage: React.FC = () => {
     const { user } = useStore();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const { initiatePayment, processingTier } = usePayment();
+
+    // Auto-trigger payment if tier is specified in query params
+    useEffect(() => {
+        const tier = searchParams.get('tier');
+        if (tier && user && !processingTier) {
+            const validTiers = ['pro', 'ultimate', 'elite'];
+            if (validTiers.includes(tier)) {
+                setTimeout(() => {
+                    initiatePayment(tier);
+                    // Clean up query param
+                    navigate('/upgrade', { replace: true });
+                }, 500);
+            }
+        }
+    }, [searchParams, user, processingTier, initiatePayment, navigate]);
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] py-20 px-4">

@@ -19,28 +19,12 @@ const nextConfig: NextConfig = {
         destination: 'https://tamuu-app.pages.dev/signup',
       },
       {
-        source: '/blog/:path*',
-        destination: 'https://tamuu-app.pages.dev/blog/:path*',
-      },
-      {
         source: '/c/:path*',
         destination: 'https://tamuu-app.pages.dev/c/:path*',
       },
       {
         source: '/location/:path*',
         destination: 'https://tamuu-app.pages.dev/location/:path*',
-      },
-      {
-        source: '/about',
-        destination: 'https://tamuu-app.pages.dev/about',
-      },
-      {
-        source: '/privacy',
-        destination: 'https://tamuu-app.pages.dev/privacy',
-      },
-      {
-        source: '/terms',
-        destination: 'https://tamuu-app.pages.dev/terms',
       },
       {
         source: '/shop',
@@ -53,10 +37,6 @@ const nextConfig: NextConfig = {
       {
         source: '/assets/:path*',
         destination: 'https://tamuu-app.pages.dev/assets/:path*',
-      },
-      {
-        source: '/support/:path*',
-        destination: 'https://tamuu-app.pages.dev/support/:path*',
       }
     ];
   },
@@ -69,7 +49,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'api.tamuu.id' },
-      { protocol: 'https', hostname: 'tamuu.id' }
+      { protocol: 'https', hostname: 'tamuu.id' },
+      { protocol: 'https', hostname: 'placehold.co' }
     ],
   },
 };
