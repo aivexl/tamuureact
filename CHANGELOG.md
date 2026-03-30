@@ -1,5 +1,22 @@
 # Tamuu Changelog
 
+## [1.0.0] - 2026-03-29
+
+### Major Changes
+- **Unified Next.js 15 Core (`apps/main`)**: Complete refactor from Vite to Next.js 15 App Router for the entire consumer-facing ecosystem (Homepage, Shop, Dashboard, Vendor Portal, Editor).
+- **Enterprise Hybrid Architecture**: Implemented Master Worker strategy on Cloudflare Workers using **OpenNext**, while maintaining Admin and Preview pages on legacy Vite Pages for stability.
+- **Shared logic layer (`packages/shared`)**: Centralized Zustand store and utilities to ensure data consistency between Next.js and Vite applications.
+
+### Added
+- **Zero-Pixel Restoration**: Perfectly replicated yesterday's stable design (Commit `313ce3e`) including "Total White" aesthetic and exact star rating logic.
+- **Image Optimization**: Migrated all images to `next/image` with automated Cloudflare compression and proportional logo fallbacks.
+- **SEO Route Rewrites**: Integrated proxy routing for legacy assets and unrefactored routes to eliminate 404 RSC errors.
+
+### Fixed
+- **404 Asset Loading**: Resolved missing JS/CSS errors on legacy pages via worker-level rewrites.
+- **Flickering & Prerender Errors**: Wrapped client hooks in Suspense boundaries and disabled aggressive prefetching for legacy routes.
+- **Blog Section Restoration**: Fixed data mapping for direct API arrays and restored horizontal scroller layout.
+
 ## [0.9.32] - 2026-03-29
 
 ### Added

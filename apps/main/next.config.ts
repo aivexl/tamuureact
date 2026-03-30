@@ -35,6 +35,14 @@ const nextConfig: NextConfig = {
         destination: 'https://tamuu-app.pages.dev/about',
       },
       {
+        source: '/privacy',
+        destination: 'https://tamuu-app.pages.dev/privacy',
+      },
+      {
+        source: '/terms',
+        destination: 'https://tamuu-app.pages.dev/terms',
+      },
+      {
         source: '/shop',
         destination: 'https://tamuu-app.pages.dev/shop',
       },

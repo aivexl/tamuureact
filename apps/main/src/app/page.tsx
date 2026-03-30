@@ -49,12 +49,13 @@ function HomeContent() {
             setIsLoading(true);
             try {
                 const API_BASE = 'https://api.tamuu.id';
-                const [slidesRes, productsRes, blogRes, adsSpecialRes, adsBannerRes] = await Promise.all([
+                const [slidesRes, productsRes, blogRes, adsBannerRes, specialProductsRes, featuredProductsRes] = await Promise.all([
                     fetch(`${API_BASE}/api/shop/carousel`).then(res => res.json()),
                     fetch(`${API_BASE}/api/shop/products/discovery`).then(res => res.json()),
                     fetch(`${API_BASE}/api/blog?limit=6`).then(res => res.json()),
-                    fetch(`${API_BASE}/api/shop/ads?position=SPECIAL_FOR_YOU_HOME`).then(res => res.json()),
-                    fetch(`${API_BASE}/api/shop/ads?position=SHOP_SPECIAL_FOR_YOU`).then(res => res.json())
+                    fetch(`${API_BASE}/api/shop/ads?position=SHOP_SPECIAL_FOR_YOU`).then(res => res.json()),
+                    fetch(`${API_BASE}/api/shop/products/special`).then(res => res.json()),
+                    fetch(`${API_BASE}/api/shop/products/featured`).then(res => res.json())
                 ]);
                 
                 const products = productsRes.products || productsRes.items || [];
@@ -63,10 +64,11 @@ function HomeContent() {
                 setData({ 
                     slides: (slidesRes.slides || []).slice(0, 6), 
                     products: products, 
-                    featured: products.slice(0, 10),
+                    featured: featuredProductsRes.products || featuredProductsRes || [],
                     blog: blogArray,
-                    specialAds: adsSpecialRes.ads || [],
-                    specialBanner: adsBannerRes.ads?.[0] || null
+                    specialAds: [],
+                    specialBanner: adsBannerRes.ads?.[0] || null,
+                    specialProducts: specialProductsRes.products || specialProductsRes || []
                 });
             } catch (err) {
                 console.error("[Fetch Error]", err);
@@ -145,20 +147,29 @@ function HomeContent() {
                 </section>
 
                 <div className="space-y-24">
-                    <SpecialAdsScroller biddingAds={data.specialAds} specialBanner={data.specialBanner} />
+                    <SpecialAdsScroller 
+                        biddingAds={data.specialAds} 
+                        specialBanner={data.specialBanner} 
+                        specialProducts={data.specialProducts} 
+                    />
                     
-                    {/* Featured Products */}
+                    {/* Featured Products (Restored 1:1) */}
                     <div className="space-y-8">
                         <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-6 px-2">
                             <h2 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-[#0A1128]">Produk Featured</h2>
                             <div className="flex gap-2">
-                                <button onClick={() => handleScroll('featured-scroll', -300)} className="p-2 rounded-full bg-slate-50 border border-slate-100 hover:bg-[#FFBF00] transition-all"><ChevronLeft className="w-4 h-4" /></button>
-                                <button onClick={() => handleScroll('featured-scroll', 300)} className="p-2 rounded-full bg-slate-50 border border-slate-100 hover:bg-[#FFBF00] transition-all"><ChevronRight className="w-4 h-4" /></button>
+                                <button onClick={() => handleScroll('featured-products-scroll', -300)} className="p-2 rounded-full bg-slate-50 border border-[#F1F5F9] hover:bg-[#FFBF00] transition-all shadow-sm"><ChevronLeft className="w-4 h-4 md:w-5 md:h-5" /></button>
+                                <button onClick={() => handleScroll('featured-products-scroll', 300)} className="p-2 rounded-full bg-slate-50 border border-[#F1F5F9] hover:bg-[#FFBF00] transition-all shadow-sm"><ChevronRight className="w-4 h-4 md:w-5 md:h-5" /></button>
                             </div>
                         </div>
-                        <div id="featured-scroll" className="flex gap-4 md:gap-8 overflow-x-auto no-scrollbar pb-4 snap-x px-2 scroll-smooth">
+                        <div 
+                            id="featured-products-scroll" 
+                            className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar pb-6 snap-x snap-mandatory scroll-smooth px-2"
+                        >
                             {data.featured.map((p: any) => (
-                                <ProductCard key={p.id} product={p} isSmall={true} />
+                                <div key={p.id} className="snap-start flex-shrink-0">
+                                    <ProductCard key={p.id} product={p} isSmall={true} />
+                                </div>
                             ))}
                         </div>
                     </div>
@@ -185,20 +196,27 @@ function HomeContent() {
                                 id="blog-scroll"
                                 className="flex gap-6 overflow-x-auto no-scrollbar pb-6 px-4 snap-x scroll-smooth"
                             >
-                                {data.blog.map((post: any) => (
-                                    <Link key={post.id} href={`/blog/${post.slug}`} prefetch={false} className="group cursor-pointer min-w-[280px] md:min-w-[320px] snap-start">
-                                        <div className="aspect-[4/3] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden mb-4 bg-slate-50 border border-[#F1F5F9] relative shadow-sm">
-                                            <img src={post.featured_image || '/images/logo-tamuu-vfinal-v1.webp'} className="w-full h-full object-cover transition-transform duration-700" alt={post.title} />
-                                            <div className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-lg text-[8px] font-black text-[#0A1128] uppercase tracking-widest">
-                                                Inspirasi
+                                {data.blog.map((post: any) => {
+                                    const isLogo = !post.featured_image || post.featured_image.includes('logo-tamuu');
+                                    return (
+                                        <Link key={post.id} href={`/blog/${post.slug}`} prefetch={false} className="group cursor-pointer min-w-[280px] md:min-w-[320px] snap-start">
+                                            <div className="aspect-[4/3] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden mb-4 bg-slate-50 border border-[#F1F5F9] relative shadow-sm">
+                                                <img 
+                                                    src={post.featured_image || '/images/logo-tamuu-vfinal-v1.webp'} 
+                                                    className={`w-full h-full transition-transform duration-700 ${isLogo ? 'object-contain p-12 opacity-20' : 'object-cover group-hover:scale-105'}`} 
+                                                    alt={post.title} 
+                                                />
+                                                <div className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-lg text-[8px] font-black text-[#0A1128] uppercase tracking-widest">
+                                                    Inspirasi
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="px-2">
-                                            <h3 className="text-sm md:text-base font-black leading-tight uppercase tracking-tight text-[#0A1128] group-hover:text-[#FFBF00] transition-colors line-clamp-2">{post.title}</h3>
-                                            <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Read Article</p>
-                                        </div>
-                                    </Link>
-                                ))}
+                                            <div className="px-2">
+                                                <h3 className="text-sm md:text-base font-black leading-tight uppercase tracking-tight text-[#0A1128] group-hover:text-[#FFBF00] transition-colors line-clamp-2">{post.title}</h3>
+                                                <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Read Article</p>
+                                            </div>
+                                        </Link>
+                                    );
+                                })}
                             </div>
                         </section>
                     )}

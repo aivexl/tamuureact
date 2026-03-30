@@ -89,8 +89,8 @@ export const Footer = () => {
                         © 2026 Tamuu Indonesia. All rights reserved.
                     </p>
                     <div className="flex items-center gap-8">
-                        <Link href="/privacy" className="text-slate-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">Privacy Policy</Link>
-                        <Link href="/terms" className="text-slate-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">Terms of Service</Link>
+                        <Link href="/privacy" prefetch={false} className="text-slate-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">Privacy Policy</Link>
+                        <Link href="/terms" prefetch={false} className="text-slate-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">Terms of Service</Link>
                     </div>
                 </div>
             </div>

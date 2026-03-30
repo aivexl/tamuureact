@@ -33,15 +33,16 @@ export const MultiCarousel = ({ items }: MultiCarouselProps) => {
         return () => observer.disconnect();
     }, []);
 
-    const maxIndex = items.length - 1;
+    const carouselItems = items && items.length > 0 ? items : [{ id: 'dummy-1', image_url: '/images/logo-tamuu-vfinal-v1.webp', link_url: '#' }];
+    const maxIndex = carouselItems.length - 1;
 
     useEffect(() => {
-        if (isPaused || items.length <= 1) return;
+        if (isPaused || carouselItems.length <= 1) return;
         const timer = setInterval(() => {
             setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
         }, 5000);
         return () => clearInterval(timer);
-    }, [isPaused, items.length, maxIndex]);
+    }, [isPaused, carouselItems.length, maxIndex]);
 
     const next = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -52,8 +53,6 @@ export const MultiCarousel = ({ items }: MultiCarouselProps) => {
         e.stopPropagation();
         setCurrentIndex((prev) => (prev <= 0 ? maxIndex : prev - 1));
     };
-
-    if (!items || items.length === 0) return null;
 
     const itemWidthPercent = isMobile ? 85 : 75; 
     const itemWidthPx = containerWidth > 0 
@@ -77,7 +76,7 @@ export const MultiCarousel = ({ items }: MultiCarouselProps) => {
                 className="flex transition-transform duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)]"
                 style={{ transform: `translateX(${translateX}px)`, gap: `${gapPx}px` }}
             >
-                {items.map((item, idx) => {
+                {carouselItems.map((item, idx) => {
                     // Use logo if image is unsplash or missing
                     const displayImage = (!item.image_url || item.image_url.includes('unsplash.com')) 
                         ? '/images/logo-tamuu-vfinal-v1.webp' 
@@ -107,7 +106,7 @@ export const MultiCarousel = ({ items }: MultiCarouselProps) => {
                 })}
             </div>
 
-            {items.length > 1 && (
+            {carouselItems.length > 1 && (
                 <>
                     <button onClick={prev} className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-10 h-10 md:w-14 md:h-14 rounded-full bg-white/90 backdrop-blur-md border border-slate-200 flex items-center justify-center text-[#0A1128] opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white z-10">
                         <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
@@ -118,9 +117,9 @@ export const MultiCarousel = ({ items }: MultiCarouselProps) => {
                 </>
             )}
 
-            {items.length > 1 && (
+            {carouselItems.length > 1 && (
                 <div className="absolute bottom-1 md:bottom-2 left-0 right-0 flex justify-center gap-2 z-10">
-                    {items.map((_, i) => (
+                    {carouselItems.map((_, i) => (
                         <button
                             key={i}
                             onClick={(e) => { e.stopPropagation(); setCurrentIndex(i); }}
