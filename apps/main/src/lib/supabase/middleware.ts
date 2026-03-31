@@ -34,7 +34,7 @@ export async function updateSession(request: NextRequest) {
   )
 
   // This will refresh session if expired - essential for SSR
-  await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  return response
+  return { user, response }
 }
