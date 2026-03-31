@@ -1,7 +1,10 @@
 import React, { createContext, useContext, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useStore } from '../store/useStore';
-import { User, SubscriptionTier } from '../store/authSlice';
+import { User } from '../store/authSlice';
+
+// 1. Define PRIVATE_PATHS for forced redirection to central auth hub (Next.js)
+const PRIVATE_PATHS = ['/dashboard', '/onboarding', '/editor', '/profile', '/admin', '/vendor'];
 
 interface AuthContextType {
     // Add any specific helper methods here if needed
@@ -15,14 +18,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     useEffect(() => {
         // 1. Check current session on load
+        // Vite acts as a passive consumer: it reads cookies set by Next.js
         const initAuth = async () => {
             setLoading(true);
-            const { data: { session } } = await supabase.auth.getSession();
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
 
-            if (session) {
-                // Non-blocking sync to allow immediate access to basic auth state
-                syncUserProfile(session.user, session.access_token, session);
-            } else {
+                if (session) {
+                    // Non-blocking sync to allow immediate access to basic auth state
+                    syncUserProfile(session.user, session.access_token, session);
+                } else {
+                    // Handle passive redirect for unauthenticated users on private paths
+                    const isPrivatePath = PRIVATE_PATHS.some(path => window.location.pathname.startsWith(path));
+                    if (isPrivatePath) {
+                        console.log('[Auth Guard] No session found on private path. Redirecting to central login hub...');
+                        window.location.href = `https://tamuu.id/login?return_to=${encodeURIComponent(window.location.href)}`;
+                        return; // Prevent further execution
+                    }
+                    setLoading(false);
+                }
+            } catch (error) {
+                console.error('[Auth Init] Failed to initialize session:', error);
                 setLoading(false);
             }
         };
@@ -30,6 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         initAuth();
 
         // 2. Listen for auth state changes
+        // Passive Listener: Only updates local state and never triggers a refresh
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             console.log(`[Auth Event] ${event}`);
 
@@ -40,13 +57,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setUser(null);
                 setToken(null);
                 setLoading(false);
+
+                // Handle redirect if session is lost while on a private path
+                const isPrivatePath = PRIVATE_PATHS.some(path => window.location.pathname.startsWith(path));
+                if (isPrivatePath && (event === 'SIGNED_OUT' || event === 'USER_UPDATED')) {
+                    console.log('[Auth Guard] Session lost on private path. Redirecting...');
+                    window.location.href = `https://tamuu.id/login?return_to=${encodeURIComponent(window.location.href)}`;
+                }
             }
         });
 
         return () => {
             subscription.unsubscribe();
         };
-    }, [setUser, setToken, setLoading]);
+    }, [setUser, setToken, setLoading, setAuthSession]);
 
     /**
      * Syncs Supabase Auth user with our Zustand store

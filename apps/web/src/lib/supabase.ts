@@ -9,7 +9,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 /**
  * Enterprise-grade Supabase client singleton
- * Configured for cross-subdomain authentication (tamuu.id <-> app.tamuu.id)
+ * Configured as a PASSIVE session consumer (reads cookies set by Next.js)
  * Replicates EXACT legacy logic from 7 days ago.
  */
 const isProduction = typeof window !== 'undefined' &&
@@ -20,8 +20,8 @@ export const supabase = createClient(
     supabaseAnonKey || 'placeholder-key',
     {
         auth: {
-            persistSession: false,
-            autoRefreshToken: false,
+            persistSession: false, // PASSIVE: Does not persist its own session, reads from Next.js cookies
+            autoRefreshToken: false, // PASSIVE: Does not refresh tokens, relies on Next.js
             detectSessionInUrl: true,
             // CRITICAL: Robust Cross-Subdomain Cookie Logic
             ...(isProduction && {
