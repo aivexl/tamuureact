@@ -1,26 +1,47 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { AuthForm } from '@/components/auth/AuthForm';
 import Link from 'next/link';
 import { motion as m, AnimatePresence } from 'framer-motion';
 import { AlertCircle } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { login } from '@/app/auth/actions';
 
-export default function LoginPage() {
+function LoginContent() {
     const [loginError, setLoginError] = useState<string | null>(null);
-    const isLoading = false; // Dummy for UI porting
+    const [isLoading, setIsLoading] = useState(false);
+    const searchParams = useSearchParams();
+    const returnTo = searchParams.get('return_to');
 
     const handleLogin = async (loginData: any) => {
-        console.log('Login attempt with:', loginData);
-        // Logic to be implemented in Task 3
+        setIsLoading(true);
+        setLoginError(null);
+        
+        try {
+            const result = await login({ 
+                email: loginData.email, 
+                password: loginData.password, 
+                return_to: returnTo 
+            });
+            
+            if (result?.error) {
+                setLoginError(result.error);
+            }
+        } catch (err: any) {
+            // Next.js redirect "error" is caught here sometimes if not handled by Next.js
+            // but usually it works fine.
+            if (err.message !== 'NEXT_REDIRECT') {
+                setLoginError(err.message || 'Terjadi kesalahan yang tidak terduga');
+            }
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
-        <AuthLayout
-            title="Selamat Datang Kembali"
-            subtitle="Masuk untuk melanjutkan perjalanan eksklusif Anda bersama Tamuu."
-        >
+        <>
             <AnimatePresence mode="wait">
                 {loginError && (
                     <m.div
@@ -48,6 +69,19 @@ export default function LoginPage() {
                     Daftar di sini
                 </Link>
             </p>
+        </>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <AuthLayout
+            title="Selamat Datang Kembali"
+            subtitle="Masuk untuk melanjutkan perjalanan eksklusif Anda bersama Tamuu."
+        >
+            <Suspense fallback={<div>Loading...</div>}>
+                <LoginContent />
+            </Suspense>
         </AuthLayout>
     );
 }
