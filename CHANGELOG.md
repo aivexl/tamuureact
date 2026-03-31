@@ -1,5 +1,13 @@
 # Tamuu Changelog
 
+## [1.0.1] - 2026-03-31
+
+### Deployment
+- **Unified Deployment**: Completed full deployment of API, Unified Main App (Next.js 15), and Legacy Admin (Vite) to Cloudflare.
+- **Auto-Fixed Duplicate Routes**: Removed legacy `src/app/login` and `src/app/signup` redirects to resolve Next.js build conflicts.
+- **Supabase Integration**: Configured environment variables for production build using unified SSR auth architecture.
+- **Cross-Domain Sync**: Verified middleware for session persistence across `tamuu.id` and `app.tamuu.id`.
+
 ## [1.0.0] - 2026-03-29
 
 ### Major Changes
