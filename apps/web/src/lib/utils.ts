@@ -101,6 +101,31 @@ export const getPublicDomain = (): string => {
 };
 
 /**
+ * Determines if the current environment is the Application domain (dashboard, editor).
+ * This is used for domain-aware routing and auth logic.
+ */
+export const getIsAppDomain = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    const host = window.location.hostname;
+    
+    // 1. Production Subdomain Check
+    if (host.startsWith('app.')) return true;
+    
+    // 2. Development Environment Check
+    if (host === 'localhost' || host === '127.0.0.1') return true;
+    
+    // 3. Cloudflare Pages Preview Check
+    // We only treat it as app domain if it specifically targets the app worker/pages
+    if (host.includes('tamuu-app') || host.includes('tamuu-admin')) return true;
+    
+    // CRITICAL FIX: Pages.dev without tamuu-app prefix is treated as Public domain (tamuu.id)
+    // This prevents the landing page preview from incorrectly acting like a dashboard.
+    if (host.endsWith('pages.dev')) return false;
+
+    return false;
+};
+
+/**
  * Patches legacy or unresolvable domains in URLs.
  * Optimized for high-frequency calling.
  */

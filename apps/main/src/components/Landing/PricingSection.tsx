@@ -94,16 +94,15 @@ const PricingSection: React.FC = () => {
     // Auto-trigger payment if user returns from login with tier param
     useEffect(() => {
         if (!isClient) return;
-        
+
         const tier = searchParams.get('tier');
         if (tier) {
             const validTiers = ['pro', 'ultimate', 'elite'];
             if (validTiers.includes(tier)) {
                 // Small delay to ensure UI is ready
                 setTimeout(() => {
-                    // Redirect to app domain for payment
-                    const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || 'https://app.tamuu.id';
-                    window.location.href = `${appDomain}/upgrade?tier=${tier}`;
+                    // Redirect to upgrade page with tier param
+                    router.push(`/upgrade?tier=${tier}`);
                 }, 500);
             }
         }
@@ -111,16 +110,14 @@ const PricingSection: React.FC = () => {
 
     const handleAction = (tier: string) => {
         if (tier === 'free') {
-            // Redirect to app domain for onboarding
-            const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || 'https://app.tamuu.id';
-            window.location.href = `${appDomain}/onboarding`;
+            // Redirect to onboarding page directly
+            router.push('/onboarding');
             return;
         }
 
-        // For paid tiers: redirect to app domain for login and payment
-        const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || 'https://app.tamuu.id';
+        // For paid tiers: redirect to login with tier param
         const currentPath = window.location.pathname;
-        window.location.href = `${appDomain}/login?redirect=${encodeURIComponent(currentPath)}&tier=${tier}`;
+        router.push(`/login?redirect=${encodeURIComponent(currentPath)}&tier=${tier}`);
     };
 
     return (

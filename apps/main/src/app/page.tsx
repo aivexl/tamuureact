@@ -44,15 +44,20 @@ function HomeContent() {
     const [isLoading, setIsLoading] = useState(true);
 
     const currentCategory = (searchParams.get('category') || 'all').toLowerCase();
+    const currentCity = (searchParams.get('city') || 'all').toLowerCase();
 
     useEffect(() => {
         const fetchAll = async () => {
             setIsLoading(true);
             try {
                 const API_BASE = 'https://api.tamuu.id';
+                const discoveryUrl = new URL(`${API_BASE}/api/shop/products/discovery`);
+                if (currentCategory !== 'all') discoveryUrl.searchParams.append('category', currentCategory);
+                if (currentCity !== 'all') discoveryUrl.searchParams.append('city', currentCity);
+
                 const [slidesRes, productsRes, blogRes, adsBannerRes, specialProductsRes, featuredProductsRes] = await Promise.all([
                     fetch(`${API_BASE}/api/shop/carousel`).then(res => res.json()),
-                    fetch(`${API_BASE}/api/shop/products/discovery`).then(res => res.json()),
+                    fetch(discoveryUrl.toString()).then(res => res.json()),
                     fetch(`${API_BASE}/api/blog?limit=6`).then(res => res.json()),
                     fetch(`${API_BASE}/api/shop/ads?position=SHOP_SPECIAL_FOR_YOU`).then(res => res.json()),
                     fetch(`${API_BASE}/api/shop/products/special`).then(res => res.json()),
@@ -80,9 +85,11 @@ function HomeContent() {
         fetchAll();
     }, []);
 
-    const filteredProducts = currentCategory === 'all' 
-        ? data.products 
-        : data.products.filter((p: any) => p.kategori_produk?.toLowerCase().includes(currentCategory));
+    const filteredProducts = data.products.filter((p: any) => {
+        const matchesCategory = currentCategory === 'all' || p.kategori_produk?.toLowerCase().includes(currentCategory);
+        const matchesCity = currentCity === 'all' || (p.kota || '').toLowerCase().includes(currentCity);
+        return matchesCategory && matchesCity;
+    });
 
     const handleCategoryClick = (slug: string) => {
         const params = new URLSearchParams(searchParams.toString());

@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",
+    "@supabase/ssr": "^0.10.0",
+    "@supabase/supabase-js": "^2.101.0",
     "@tamuu/shared": "*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

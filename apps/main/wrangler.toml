@@ -6,7 +6,8 @@ account_id = "5b4da9b18bdae9d8b11058dc33db411e"
 
 routes = [
     { pattern = "tamuu.id/*", zone_id = "892dbe6c5414762f7d6b25f5f2a87c97" },
-    { pattern = "www.tamuu.id/*", zone_id = "892dbe6c5414762f7d6b25f5f2a87c97" }
+    { pattern = "www.tamuu.id/*", zone_id = "892dbe6c5414762f7d6b25f5f2a87c97" },
+    { pattern = "app.tamuu.id/*", zone_id = "892dbe6c5414762f7d6b25f5f2a87c97" }
 ]
 
 # Assets configuration for Workers
@@ -14,3 +15,8 @@ assets = { directory = ".open-next/assets", binding = "ASSETS" }
 
 [vars]
 NEXTJS_ENV = "production"
+NEXT_PUBLIC_MIDTRANS_CLIENT_KEY = "Mid-client-aVS390dhMuLvPXMa"
+NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION = "true"
+NEXT_PUBLIC_API_URL = "https://api.tamuu.id"
+NEXT_PUBLIC_SUPABASE_URL = "https://mqbgpulironhtvzfpzfp.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xYmdwdWxpcm9uaHR2emZwemZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MzcwNDksImV4cCI6MjA4MjMxMzA0OX0.wFmTRftjHuBj-vQ2gcZ_pJzVNkcJCAPbWl7fnfWUniU"

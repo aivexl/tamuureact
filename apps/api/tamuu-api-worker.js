@@ -303,10 +303,26 @@ export default {
                             const campaignId = transaction.tier.split(':')[1];
                             const topupAmount = transaction.amount;
                             
-                            const ad = await env.DB.prepare('SELECT vendor_id FROM shop_ads WHERE id = ?').bind(campaignId).first();
-                            if (ad) {
-                                await env.DB.prepare('UPDATE shop_vendors SET ad_balance = ad_balance + ? WHERE id = ?').bind(topupAmount, ad.vendor_id).run();
-                                console.log(`[Ads/Sync] Global Topup successful for Vendor: ${ad.vendor_id}`);
+                            let vendorId = null;
+                            if (campaignId && campaignId !== 'global') {
+                                const ad = await env.DB.prepare('SELECT vendor_id FROM shop_ads WHERE id = ?').bind(campaignId).first();
+                                if (ad) vendorId = ad.vendor_id;
+                            }
+                            
+                            // CEO ROBUSTNESS: Fallback to finding vendor by userId if campaign not found or is global
+                            if (!vendorId) {
+                                const vendor = await env.DB.prepare('SELECT id FROM shop_vendors WHERE user_id = ?').bind(transaction.user_id).first();
+                                if (vendor) vendorId = vendor.id;
+                            }
+
+                            if (vendorId) {
+                                await env.DB.prepare('UPDATE shop_vendors SET ad_balance = ad_balance + ? WHERE id = ?').bind(topupAmount, vendorId).run();
+                                if (campaignId && campaignId !== 'global') {
+                                    await env.DB.prepare('UPDATE shop_ads SET status = "ACTIVE", is_active = 1 WHERE id = ?').bind(campaignId).run();
+                                }
+                                console.log(`[Ads/Sync] Topup successful for Vendor: ${vendorId}, Amount: ${topupAmount}`);
+                            } else {
+                                console.warn(`[Ads/Sync] Topup failed: Vendor not found for user ${transaction.user_id}`);
                             }
                         } else {
                             // Standard Subscription
@@ -517,9 +533,13 @@ export default {
             // AUTH & USER ENDPOINTS
             // ============================================
             if (path === '/api/auth/me' && method === 'GET') {
+                // Extract query parameters
                 const email = url.searchParams.get('email');
                 const providedUid = url.searchParams.get('uid');
-                if (!email) return json({ error: 'Email required' }, { headers: corsHeaders, status: 400 });
+
+                if (!email) {
+                    return json({ error: 'Email parameter required' }, { headers: corsHeaders, status: 400 });
+                }
 
                 try {
                     const { results } = await env.DB.prepare(
@@ -727,7 +747,7 @@ export default {
                     }
 
                     // FORENSIC LOG: Verify environment without exposing secrets
-                    const rawKey = env.MIDTRANS_SERVER_KEY || "";
+                    const rawKey = env.MIDTRANS_SERVER_KEY;
                     console.log(`[Billing] Env Keys: ${Object.keys(env).join(', ')}`);
                     console.log(`[Billing] Server Key Present: ${!!rawKey}, Length: ${rawKey.length}`);
 
@@ -742,7 +762,7 @@ export default {
                     // Midtrans Auth: Base64(ServerKey + ":")
                     const authHeader = `Basic ${btoa(serverKey + ':')}`;
                     
-                    const isProdEnv = env.MIDTRANS_IS_PRODUCTION === 'true' || env.MIDTRANS_IS_PRODUCTION === true;
+                    const isProdEnv = env.MIDTRANS_IS_PRODUCTION === 'true' || env.MIDTRANS_IS_PRODUCTION === true || !serverKey.startsWith('SB-');
                     const midtransBaseUrl = isProdEnv ? 'https://app.midtrans.com/snap/v1/transactions' : 'https://app.sandbox.midtrans.com/snap/v1/transactions';
                     
                     console.log(`[Midtrans] Env: ${isProdEnv ? 'PROD' : 'SANDBOX'}, Target: ${midtransBaseUrl}`);
@@ -922,16 +942,34 @@ export default {
                             // Find vendor ID from any existing campaign or from the topup metadata if we had it
                             // For now, we resolve vendor via the campaign ID in the tier
                             const campaignId = transaction.tier.split(':')[1];
-                            const ad = await env.DB.prepare('SELECT vendor_id FROM shop_ads WHERE id = ?').bind(campaignId).first();
+                            let vendorId = null;
+                            
+                            if (campaignId && campaignId !== 'global') {
+                                const ad = await env.DB.prepare('SELECT vendor_id FROM shop_ads WHERE id = ?').bind(campaignId).first();
+                                if (ad) vendorId = ad.vendor_id;
+                            }
+                            
+                            // CEO ROBUSTNESS: Fallback to finding vendor by userId if campaign not found or is global
+                            if (!vendorId) {
+                                const vendor = await env.DB.prepare('SELECT id FROM shop_vendors WHERE user_id = ?').bind(transaction.user_id).first();
+                                if (vendor) vendorId = vendor.id;
+                            }
 
-                            if (ad) {
-                                await env.DB.batch([
+                            if (vendorId) {
+                                const batch = [
                                     env.DB.prepare('UPDATE billing_transactions SET status = "PAID", paid_at = datetime("now"), payment_channel = ? WHERE external_id = ?').bind(payment_type || 'midtrans', order_id),
-                                    env.DB.prepare('UPDATE shop_vendors SET ad_balance = ad_balance + ? WHERE id = ?').bind(topupAmount, ad.vendor_id),
-                                    // Mark campaign as active just in case
-                                    env.DB.prepare('UPDATE shop_ads SET status = "ACTIVE", is_active = 1 WHERE id = ?').bind(campaignId)
-                                ]);
-                                console.log(`[Ads] Global Topup successful for Vendor: ${ad.vendor_id}, Amount: ${topupAmount}`);
+                                    env.DB.prepare('UPDATE shop_vendors SET ad_balance = ad_balance + ? WHERE id = ?').bind(topupAmount, vendorId)
+                                ];
+                                
+                                // Mark campaign as active just in case if it's not a global topup
+                                if (campaignId && campaignId !== 'global') {
+                                    batch.push(env.DB.prepare('UPDATE shop_ads SET status = "ACTIVE", is_active = 1 WHERE id = ?').bind(campaignId));
+                                }
+                                
+                                await env.DB.batch(batch);
+                                console.log(`[Ads] Topup successful via Webhook for Vendor: ${vendorId}, Amount: ${topupAmount}`);
+                            } else {
+                                console.warn(`[Ads] Webhook Topup failed: Vendor not found for user ${transaction.user_id}`);
                             }
                         } else {
                             // Standard Subscription Provisioning

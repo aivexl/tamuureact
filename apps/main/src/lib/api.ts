@@ -1,4 +1,4 @@
-const API_BASE = 'https://api.tamuu.id';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.tamuu.id';
 
 export async function getShopData() {
   try {

@@ -8,41 +8,58 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  async rewrites() {
+  async redirects() {
     return [
       {
         source: '/login',
-        destination: 'https://tamuu-app.pages.dev/login',
+        destination: 'https://app.tamuu.id/login',
+        permanent: false,
       },
       {
         source: '/signup',
-        destination: 'https://tamuu-app.pages.dev/signup',
+        destination: 'https://app.tamuu.id/signup',
+        permanent: false,
       },
       {
-        source: '/c/:path*',
-        destination: 'https://tamuu-app.pages.dev/c/:path*',
+        source: '/dashboard/:path*',
+        destination: 'https://app.tamuu.id/dashboard/:path*',
+        permanent: false,
       },
       {
-        source: '/location/:path*',
-        destination: 'https://tamuu-app.pages.dev/location/:path*',
+        source: '/onboarding',
+        destination: 'https://app.tamuu.id/onboarding',
+        permanent: false,
       },
       {
-        source: '/shop',
-        destination: 'https://tamuu-app.pages.dev/shop',
+        source: '/profile',
+        destination: 'https://app.tamuu.id/profile',
+        permanent: false,
       },
       {
-        source: '/invitations/:path*',
-        destination: 'https://tamuu-app.pages.dev/invitations/:path*',
+        source: '/billing',
+        destination: 'https://app.tamuu.id/billing',
+        permanent: false,
       },
       {
-        source: '/assets/:path*',
-        destination: 'https://tamuu-app.pages.dev/assets/:path*',
+        source: '/upgrade',
+        destination: 'https://app.tamuu.id/upgrade',
+        permanent: false,
+      },
+      {
+        source: '/editor/:path*',
+        destination: 'https://app.tamuu.id/editor/:path*',
+        permanent: false,
+      },
+      {
+        source: '/admin/:path*',
+        destination: 'https://app.tamuu.id/admin/:path*',
+        permanent: false,
       }
     ];
   },
   experimental: {
     serverActions: {
-      allowedOrigins: ["localhost:3000", "tamuu.id"],
+      allowedOrigins: ["localhost:3000", "tamuu.id", "app.tamuu.id"],
     },
   },
   images: {

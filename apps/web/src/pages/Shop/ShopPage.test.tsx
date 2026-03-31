@@ -19,6 +19,8 @@ vi.mock('../../hooks/queries/useShop', () => ({
   useSpecialProducts: () => ({ data: [], isLoading: false }),
   useFeaturedProducts: () => ({ data: [], isLoading: false }),
   useRandomProducts: () => ({ data: [], isLoading: false }),
+  useFeaturedVendors: () => ({ data: [], isLoading: false }),
+  useTrackAdClick: () => vi.fn()
 }));
 
 vi.mock('../../hooks/queries', () => ({

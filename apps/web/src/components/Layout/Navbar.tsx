@@ -20,6 +20,7 @@ import { useStore } from '../../store/useStore';
 import { useChat } from '../../hooks/useChat';
 import { NotificationBell } from './NotificationBell';
 import { INDONESIA_REGIONS } from '../../constants/regions';
+import { getIsAppDomain } from '../../lib/utils';
 
 export const Navbar: React.FC = () => {
     const { isAuthenticated, user, logout } = useStore();
@@ -86,8 +87,7 @@ export const Navbar: React.FC = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isProfileOpen, isLocationOpen]);
 
-    const isAppDomain = window.location.hostname.startsWith('app.') ||
-        window.location.hostname.includes('tamuu-app');
+    const isAppDomain = useMemo(() => getIsAppDomain(), []);
 
     const isAppRoute = isAppDomain ||
         location.pathname.startsWith('/dashboard') ||

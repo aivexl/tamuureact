@@ -21,12 +21,13 @@
     "clean": "turbo run clean && rm -rf node_modules",
     "deploy": "turbo run deploy",
     "deploy:api": "turbo run deploy:api --filter=@tamuu/api",
-    "deploy:main": "cd apps/main && npm run build:worker && npx wrangler deploy",
-    "deploy:web:landing": "turbo run build --filter=@tamuu/web && npx wrangler pages deploy apps/web/dist --project-name tamuu",
+    "deploy:main": "cd apps/main && npm run build:worker && npx wrangler deploy && npx wrangler pages deploy .open-next/assets --project-name tamuu",
+    "deploy:web:landing": "turbo run build:worker --filter=@tamuu/main && npx wrangler pages deploy apps/main/.open-next/assets --project-name tamuu",
     "deploy:web:app": "turbo run build --filter=@tamuu/web && npx wrangler pages deploy apps/web/dist --project-name tamuu-app"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
+    "@testing-library/dom": "^10.4.1",
     "@types/jest": "^30.0.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",

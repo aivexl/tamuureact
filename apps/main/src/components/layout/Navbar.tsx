@@ -20,9 +20,7 @@ import {
 } from 'lucide-react';
 
 import { useStore } from '@tamuu/shared';
-// Note: We'll need to refactor useChat later, for now we keep it simple
-// import { useChat } from '@/hooks/useChat';
-// import { NotificationBell } from './NotificationBell';
+import { useAuth } from '@/providers/AuthProvider';
 
 const INDONESIA_REGIONS = [
     'Jakarta', 'Surabaya', 'Bandung', 'Medan', 'Semarang', 'Makassar', 'Palembang', 'Tangerang', 'Depok', 'South Tangerang'
@@ -30,6 +28,7 @@ const INDONESIA_REGIONS = [
 
 export const Navbar = () => {
     const { isAuthenticated, user, logout } = useStore();
+    const { signOut } = useAuth();
     const isLoggedIn = isAuthenticated;
 
     const [isScrolled, setIsScrolled] = useState(false);
@@ -45,9 +44,6 @@ export const Navbar = () => {
     const pathname = usePathname();
     const router = useRouter();
     const searchParams = useSearchParams();
-
-    // Mock totalUnread for now
-    const totalUnread = 0;
 
     useEffect(() => {
         const handleScroll = () => {
@@ -99,8 +95,8 @@ export const Navbar = () => {
         { name: 'Undangan Digital', path: '/undangan-digital', prefetch: false },
         { name: 'Invitations', path: '/invitations', prefetch: false },
         { name: 'Blog', path: '/blog', prefetch: false },
-        { name: 'Dashboard', path: '/dashboard', prefetch: false },
-        { name: 'Event Saya', path: '/dashboard', prefetch: false },
+        { name: 'Dashboard', path: 'https://app.tamuu.id/dashboard', prefetch: false },
+        { name: 'Event Saya', path: 'https://app.tamuu.id/dashboard', prefetch: false },
         { name: 'Bantuan', path: '/support', prefetch: false },
     ] : [
         { name: 'Home', path: '/', prefetch: false },
@@ -212,27 +208,27 @@ export const Navbar = () => {
                             <div className="flex items-center gap-3 shrink-0 ml-auto md:ml-0">
                                 {!isLoggedIn ? (
                                     <div className="hidden md:flex items-center gap-2">
-                                        <Link
-                                            href="/login"
+                                        <a
+                                            href="https://app.tamuu.id/login"
                                             className="px-5 py-2 text-xs font-bold text-slate-600 hover:text-black transition-colors"
                                         >
                                             Masuk
-                                        </Link>
-                                        <button
-                                            onClick={() => router.push('/signup')}
+                                        </a>
+                                        <a
+                                            href="https://app.tamuu.id/signup"
                                             className="bg-[#0A1128] text-white px-5 py-2 rounded-full text-xs font-bold hover:bg-slate-800 hover:shadow-lg transition-all duration-300"
                                         >
                                             Buat Undangan
-                                        </button>
+                                        </a>
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-2">
-                                        <Link
-                                            href="/dashboard?tab=wishlist"
+                                        <a
+                                            href="https://app.tamuu.id/dashboard?tab=wishlist"
                                             className="p-2.5 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-rose-500 transition-all"
                                         >
                                             <Heart className="w-5 h-5" />
-                                        </Link>
+                                        </a>
                                         
                                         <div className="relative profile-dropdown-container">
                                             <button
@@ -262,27 +258,26 @@ export const Navbar = () => {
                                                         </div>
 
                                                         <div className="p-2 space-y-0.5">
-                                                            <Link href="/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+                                                            <a href="https://app.tamuu.id/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
                                                                 <User className="w-4 h-4" />
                                                                 <span>Profil Saya</span>
-                                                            </Link>
-                                                            <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+                                                            </a>
+                                                            <a href="https://app.tamuu.id/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
                                                                 <LayoutDashboard className="w-4 h-4" />
                                                                 <span>Dashboard</span>
-                                                            </Link>
-                                                            <Link href="/billing" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+                                                            </a>
+                                                            <a href="https://app.tamuu.id/billing" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
                                                                 <CreditCard className="w-4 h-4" />
                                                                 <span>Billing</span>
-                                                            </Link>
+                                                            </a>
                                                         </div>
 
                                                         <div className="mx-2 h-px bg-slate-100" />
 
                                                         <div className="p-2">
                                                             <button
-                                                                onClick={() => {
-                                                                    logout(async () => {});
-                                                                    router.push('/');
+                                                                onClick={async () => {
+                                                                    await signOut();
                                                                 }}
                                                                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors text-left"
                                                             >

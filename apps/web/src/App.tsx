@@ -8,16 +8,8 @@ import { LazyMotion, domMax } from 'framer-motion';
 import { PremiumLoader } from './components/ui/PremiumLoader';
 import GlobalModal from './components/Shared/GlobalModal';
 import { Toaster } from 'react-hot-toast';
-
-// ============================================
-// DOMAIN DETECTION
-// ============================================
-// Determines if we're on the app subdomain (app.tamuu.id)
-// localhost is treated as app domain for development
-const getIsAppDomain = (): boolean => {
-    const host = window.location.hostname;
-    return host.startsWith('app.') || host.includes('tamuu-app') || host.includes('pages.dev') || host === 'localhost' || host === '127.0.0.1';
-};
+import { getIsAppDomain } from './lib/utils';
+import { useStore } from './store/useStore';
 
 // ============================================
 // PAGE IMPORTS
@@ -85,6 +77,7 @@ import { usePushNotifications } from './hooks/usePushNotifications';
 const App: React.FC = () => {
     // Memoize domain check to avoid recalculation
     const isAppDomain = useMemo(() => getIsAppDomain(), []);
+    const { isAuthenticated } = useStore();
     const { subscribe, permission } = usePushNotifications();
 
     useEffect(() => {

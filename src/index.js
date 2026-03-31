@@ -1,39 +1,63 @@
 /**
  * Tamuu SEO & Social Proxy Worker
  * Intercepts requests from crawlers (WhatsApp, Telegram, etc.) to inject dynamic OG meta tags.
- * For regular users, it serves the standard index.html from Pages.
+ * For regular users, it proxies to the correct Pages project (Landing vs App).
+ * EXACT LEGACY BEHAVIOR: Invitations (/slug) stay on tamuu.id but are served by tamuu-app.pages.dev.
  */
 
 const API_BASE = 'https://api.tamuu.id';
-const PAGES_DOMAIN = 'tamuu.pages.dev'; // Base Pages domain
+const LANDING_PAGES_DOMAIN = 'tamuu.pages.dev'; // Next.js Landing Page
+const APP_PAGES_DOMAIN = 'tamuu-app.pages.dev'; // Vite App & Editor
 
 export default {
     async fetch(request, env, ctx) {
         const url = new URL(request.url);
         const userAgent = request.headers.get('User-Agent') || '';
         
-        // CRAWLER DETECTION: Identify social media and search bots
+        // 1. CRAWLER DETECTION
         const isCrawler = /bot|facebook|whatsapp|telegram|slack|twitter|linkedin|discord|bing|google/i.test(userAgent);
         
-        // Only intercept path-based invitation links (e.g., /wedding-slug or /wedding-slug/guest-slug)
+        // 2. ROUTE CLASSIFICATION
         const pathParts = url.pathname.split('/').filter(p => p);
+        
+        // Next.js internal requests should ALWAYS go to Next.js App
+        const isNextInternal = url.searchParams.has('_rsc') || url.pathname.startsWith('/_next') || url.pathname.startsWith('/api/_next');
+
+        // Legacy Admin should go to Vite App
+        const isLegacyAdmin = pathParts[0] === 'admin';
+
+        // Define known Public/App routes that are handled by Next.js (apps/main)
+        // These include the new homepage (shop), landing (undangan-digital), auth, dashboard, etc.
+        const isNextRoute = isNextInternal || 
+                           url.pathname === '/' || 
+                           ['login', 'signup', 'forgot-password', 'dashboard', 'onboarding', 'upgrade', 'billing', 'blog', 'undangan-digital', 'invitations', 'terms', 'privacy', 'about', 'contact', 'support', 'vendor', 'editor', 'user', 'shop', 'c'].includes(pathParts[0]);
+
+        // An invitation link is a top-level slug that isn't a known Next.js route or legacy admin
         const isInvitationLink = pathParts.length >= 1 && 
                                 !url.pathname.includes('.') && 
                                 !url.pathname.startsWith('/api') &&
                                 !url.pathname.startsWith('/assets') &&
-                                !['dashboard', 'login', 'signup', 'onboarding', 'upgrade', 'billing', 'admin'].includes(pathParts[0]);
+                                !isNextRoute && 
+                                !isLegacyAdmin;
 
+        // 3. SEO INTERCEPTION FOR INVITATIONS
         if (isCrawler && isInvitationLink) {
             console.log(`[SEO Proxy] Crawler detected: ${userAgent} for path: ${url.pathname}`);
             return await handleCrawler(request, pathParts);
         }
 
-        // For regular users or non-invitation paths, forward to the Pages site
-        // We fetch from the Pages domain but keep the original request URL details
-        const pagesUrl = new URL(request.url);
-        pagesUrl.hostname = PAGES_DOMAIN;
+        // 4. PROXY ROUTING
+        const targetUrl = new URL(request.url);
         
-        return fetch(pagesUrl, request);
+        if (isInvitationLink || isLegacyAdmin) {
+            // Serve Invitations and Legacy Admin from the Vite App project
+            targetUrl.hostname = APP_PAGES_DOMAIN;
+        } else {
+            // Default: Serve everything else from the Next.js App
+            targetUrl.hostname = LANDING_PAGES_DOMAIN;
+        }
+        
+        return fetch(targetUrl, request);
     },
 };
 

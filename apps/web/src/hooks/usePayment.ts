@@ -21,14 +21,14 @@ export const usePayment = () => {
         // Dynamically load Snap Script if not present
         if (!(window as any).snap) {
             try {
-                const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY;
+                const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY || 'Mid-client-aVS390dhMuLvPXMa';
                 if (!clientKey) {
                     throw new Error("Sistem pembayaran belum dikonfigurasi (Client Key Missing)");
                 }
 
                 await new Promise((resolve, reject) => {
                     const script = document.createElement('script');
-                    const isProd = import.meta.env.VITE_MIDTRANS_IS_PRODUCTION === 'true';
+                    const isProd = import.meta.env.VITE_MIDTRANS_IS_PRODUCTION === 'true' || !clientKey.startsWith('SB-');
                     script.src = isProd
                         ? 'https://app.midtrans.com/snap/snap.js'
                         : 'https://app.sandbox.midtrans.com/snap/snap.js';

@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { 
     ShoppingBag, 
     Users, 
@@ -14,6 +14,7 @@ import { motion } from 'framer-motion';
 
 export default function VendorOverviewPage() {
     const params = useParams();
+    const router = useRouter();
     const slug = params.slug;
 
     const stats = [
@@ -100,7 +101,10 @@ export default function VendorOverviewPage() {
                             <p className="text-white/50 text-sm font-medium leading-relaxed">
                                 Tingkatkan visibilitas toko Anda dengan kampanye iklan tertarget.
                             </p>
-                            <button className="w-full py-4 bg-[#FFBF00] text-[#0A1128] font-black rounded-2xl text-[10px] uppercase tracking-widest hover:scale-105 transition-all">
+                            <button 
+                                onClick={() => router.push(`/vendor/${slug}/ads`)}
+                                className="w-full py-4 bg-[#FFBF00] text-[#0A1128] font-black rounded-2xl text-[10px] uppercase tracking-widest hover:scale-105 transition-all"
+                            >
                                 Mulai Kampanye
                             </button>
                         </div>
