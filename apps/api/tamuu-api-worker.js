@@ -1065,13 +1065,13 @@ export default {
                 if (!userId) return json({ error: 'User ID required' }, { ...corsHeaders, status: 400 });
 
                 try {
-                    // ENTERPRISE HARDENING: Auto-expire pending transactions older than 24 hours
+                    // ENTERPRISE HARDENING: Auto-expire ALL pending transactions older than 24 hours (Global Cleanup)
                     await env.DB.prepare(`
                         UPDATE billing_transactions 
                         SET status = 'CANCELLED', updated_at = datetime('now')
-                        WHERE user_id = ? AND status = 'PENDING' 
+                        WHERE status = 'PENDING' 
                         AND datetime(created_at) < datetime('now', '-24 hours')
-                    `).bind(userId).run();
+                    `).run();
 
                     const { results } = await env.DB.prepare(
                         'SELECT * FROM billing_transactions WHERE user_id = ? ORDER BY created_at DESC'
