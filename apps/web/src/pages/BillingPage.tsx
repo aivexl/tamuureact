@@ -305,7 +305,7 @@ export const BillingPage: React.FC = () => {
   return (
     <>
       <div className="min-h-screen bg-[#F8FAFC] pt-[140px] md:pt-[130px] pb-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="mb-10">
             <h1 className="text-3xl font-black text-[#0A1128] mb-2">
               Tagihan & Langganan
@@ -456,12 +456,12 @@ export const BillingPage: React.FC = () => {
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-slate-50 text-[10px] uppercase tracking-widest font-black text-slate-400">
-                        <th className="px-4 py-4 sm:px-8">ID Transaksi</th>
-                        <th className="px-4 py-4">Tanggal</th>
-                        <th className="px-4 py-4">Paket</th>
-                        <th className="px-4 py-4">Jumlah</th>
-                        <th className="px-4 py-4">Status</th>
-                        <th className="px-4 py-4 text-right">Pembayaran</th>
+                        <th className="px-6 py-4 sm:px-8">ID Transaksi</th>
+                        <th className="px-6 py-4">Tanggal</th>
+                        <th className="px-6 py-4">Paket</th>
+                        <th className="px-6 py-4">Jumlah</th>
+                        <th className="px-6 py-4">Status</th>
+                        <th className="px-6 py-4 text-right">Pembayaran</th>
                         <th className="px-4 py-4"></th>
                       </tr>
                     </thead>
@@ -471,21 +471,21 @@ export const BillingPage: React.FC = () => {
                           key={tx.id}
                           className="hover:bg-slate-50 transition-colors"
                         >
-                          <td className="px-4 py-5 sm:px-8">
+                          <td className="px-6 py-5 sm:px-8">
                             <div className="flex items-center gap-2">
-                              <span className="text-xs text-slate-400 font-mono">#{tx.external_id?.substring(0, 12)}...</span>
+                              <span className="text-xs text-slate-400 font-mono italic">#{tx.external_id}</span>
                               <AnimatedCopyIcon text={tx.external_id} size={14} className="text-slate-300 hover:text-indigo-600" successMessage="ID disalin!" />
                             </div>
                           </td>
-                          <td className="px-4 py-5 text-[11px] text-slate-600 leading-tight whitespace-nowrap">
+                          <td className="px-6 py-5 text-[11px] text-slate-600 leading-tight whitespace-nowrap">
                             {formatDateFull(tx.created_at)}
                           </td>
-                          <td className="px-4 py-5">
-                            <span className="text-[10px] font-bold uppercase text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md whitespace-nowrap">
+                          <td className="px-6 py-5">
+                            <span className="text-xs font-bold uppercase text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md whitespace-nowrap">
                               {tx.tier?.replace('AD_TOPUP:', 'ADS ')}
                             </span>
                           </td>
-                          <td className="px-4 py-5 text-sm font-bold text-slate-900 whitespace-nowrap">
+                          <td className="px-6 py-5 text-sm font-bold text-slate-900 whitespace-nowrap">
                             Rp {tx.amount?.toLocaleString("id-ID")}
                           </td>
                           <td className="px-6 py-5">
@@ -501,7 +501,7 @@ export const BillingPage: React.FC = () => {
                                   }`}
                               />
                               <span
-                                className={`text-[10px] font-black uppercase tracking-tighter ${tx.status === "PAID"
+                                className={`text-[10px] font-black uppercase tracking-tighter whitespace-nowrap ${tx.status === "PAID"
                                   ? "text-emerald-600"
                                   : tx.status === "PENDING"
                                     ? "text-amber-600"
@@ -520,8 +520,8 @@ export const BillingPage: React.FC = () => {
                               </span>
                             </div>
                           </td>
-                          <td className="px-4 py-5 text-right">
-                            <div className="flex items-center justify-end gap-1 sm:gap-2">
+                          <td className="px-6 py-5 text-right">
+                            <div className="flex items-center justify-end gap-2">
                               {tx.status === "PENDING" && (
                                 <>
                                   {/* Enterprise Hardening: Only show Pay if within 24h window */}
@@ -531,14 +531,14 @@ export const BillingPage: React.FC = () => {
                                         href={tx.payment_url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="bg-[#FFBF00] text-[#0A1128] px-2 py-1.5 sm:px-3 rounded-lg text-[9px] sm:text-[10px] font-black hover:shadow-md transition-all flex items-center gap-1 whitespace-nowrap"
+                                        className="bg-[#FFBF00] text-[#0A1128] px-3 py-1.5 rounded-lg text-[10px] font-black hover:shadow-md transition-all flex items-center gap-1 whitespace-nowrap"
                                       >
                                         PAY
                                         <ExternalLink className="w-2.5 h-2.5" />
                                       </a>
                                       <button
                                         onClick={() => handleCancel(tx.external_id)}
-                                        className="bg-rose-50 text-rose-500 px-2 py-1.5 sm:px-3 rounded-lg text-[9px] sm:text-[10px] font-black hover:bg-rose-100 transition-all whitespace-nowrap"
+                                        className="bg-rose-50 text-rose-500 px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-rose-100 transition-all whitespace-nowrap"
                                       >
                                         CANCEL
                                       </button>
