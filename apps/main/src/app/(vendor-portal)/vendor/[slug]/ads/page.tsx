@@ -13,7 +13,7 @@ import { useStore } from '@tamuu/shared';
 // MIDTRANS CONFIG
 // ============================================
 const MIDTRANS_CLIENT_KEY = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || 'Mid-client-aVS390dhMuLvPXMa';
-const MIDTRANS_IS_PRODUCTION = process.env.NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION === 'true' || !MIDTRANS_CLIENT_KEY.startsWith('SB-');
+const MIDTRANS_IS_PRODUCTION = process.env.NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION === 'true';
 const SNAP_URL = MIDTRANS_IS_PRODUCTION
     ? 'https://app.midtrans.com/snap/snap.js'
     : 'https://app.sandbox.midtrans.com/snap/snap.js';
@@ -214,7 +214,7 @@ export default function VendorAdsPage() {
                             )}
 
                             <div className="grid grid-cols-2 gap-3">
-                                {[50000, 100000, 250000, 500000].map(amount => (
+                                {[20000, 50000, 100000, 250000].map(amount => (
                                     <button
                                         key={amount}
                                         onClick={() => setTopupAmount(amount)}
@@ -236,12 +236,17 @@ export default function VendorAdsPage() {
                                     value={topupAmount}
                                     onChange={(e) => setTopupAmount(parseInt(e.target.value) || 0)}
                                     className="w-full pl-12 pr-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-xl focus:outline-none focus:ring-2 focus:ring-[#FFBF00]/20 text-[#0A1128]"
+                                    placeholder="Min. 20.000"
                                 />
                             </div>
 
+                            {topupAmount > 0 && topupAmount < 20000 && (
+                                <p className="text-[10px] text-rose-500 font-bold">Minimum top up saldo iklan adalah Rp 20.000</p>
+                            )}
+
                             <button
                                 onClick={handleTopup}
-                                disabled={isProcessing}
+                                disabled={isProcessing || topupAmount < 20000}
                                 className="w-full py-5 bg-[#FFBF00] text-[#0A1128] font-black rounded-2xl text-sm uppercase tracking-widest hover:shadow-xl hover:shadow-amber-500/20 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
                             >
                                 {isProcessing ? (

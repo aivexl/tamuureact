@@ -243,7 +243,7 @@ export const VendorAds: React.FC = () => {
 
                             <div className="space-y-6">
                                 <div className="grid grid-cols-2 gap-2">
-                                    {[10000, 50000, 100000, 250000].map(amt => (
+                                    {[20000, 50000, 100000, 250000].map(amt => (
                                         <button 
                                             key={amt} 
                                             onClick={() => setTopupAmount(amt)}
@@ -261,12 +261,18 @@ export const VendorAds: React.FC = () => {
                                         value={topupAmount}
                                         onChange={(e) => setTopupAmount(parseInt(e.target.value) || 0)}
                                         className="w-full pl-11 pr-4 py-4 rounded-xl bg-slate-50 border border-slate-100 font-bold text-lg focus:outline-none focus:ring-2 focus:ring-slate-900/5 transition-all text-slate-900"
+                                        placeholder="Min. 20.000"
                                     />
                                 </div>
 
+                                {topupAmount > 0 && topupAmount < 20000 && (
+                                    <p className="text-[10px] text-rose-500 font-bold">Minimum top up saldo iklan adalah Rp 20.000</p>
+                                )}
+
                                 <button
                                     onClick={handleTopup}
-                                    className="w-full py-4 rounded-xl bg-slate-900 text-white text-sm font-bold shadow-lg shadow-slate-900/10 transition-all active:scale-95 hover:bg-black"
+                                    disabled={topupAmount < 20000}
+                                    className="w-full py-4 rounded-xl bg-slate-900 text-white text-sm font-bold shadow-lg shadow-slate-900/10 transition-all active:scale-95 hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     Bayar Sekarang
                                 </button>

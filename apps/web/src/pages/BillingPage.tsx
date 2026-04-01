@@ -524,21 +524,30 @@ export const BillingPage: React.FC = () => {
                             <div className="flex items-center justify-end gap-2">
                               {tx.status === "PENDING" && (
                                 <>
-                                  <a
-                                    href={tx.payment_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="bg-[#FFBF00] text-[#0A1128] px-3 py-1.5 rounded-lg text-[10px] font-black hover:shadow-md transition-all flex items-center gap-1"
-                                  >
-                                    PAY
-                                    <ExternalLink className="w-2.5 h-2.5" />
-                                  </a>
-                                  <button
-                                    onClick={() => handleCancel(tx.external_id)}
-                                    className="bg-rose-50 text-rose-500 px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-rose-100 transition-all"
-                                  >
-                                    CANCEL
-                                  </button>
+                                  {/* Enterprise Hardening: Only show Pay if within 24h window */}
+                                  {new Date().getTime() - new Date(tx.created_at).getTime() < 24 * 60 * 60 * 1000 ? (
+                                    <>
+                                      <a
+                                        href={tx.payment_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="bg-[#FFBF00] text-[#0A1128] px-3 py-1.5 rounded-lg text-[10px] font-black hover:shadow-md transition-all flex items-center gap-1"
+                                      >
+                                        PAY
+                                        <ExternalLink className="w-2.5 h-2.5" />
+                                      </a>
+                                      <button
+                                        onClick={() => handleCancel(tx.external_id)}
+                                        className="bg-rose-50 text-rose-500 px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-rose-100 transition-all"
+                                      >
+                                        CANCEL
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                      Expired
+                                    </span>
+                                  )}
                                 </>
                               )}
                               {tx.status === "PAID" && (

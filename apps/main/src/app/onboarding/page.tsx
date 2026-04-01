@@ -70,7 +70,8 @@ function OnboardingContent() {
             setIsCheckingSlug(true);
             try {
                 // Check slug availability via API
-                const response = await fetch(`https://api.tamuu.id/api/invitations/check-slug?slug=${encodeURIComponent(slug)}`, {
+                const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.tamuu.id';
+                const response = await fetch(`${API_BASE}/api/invitations/check-slug?slug=${encodeURIComponent(slug)}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
                 });

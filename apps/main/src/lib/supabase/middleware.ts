@@ -17,15 +17,17 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
+          const host = request.headers.get('host') || '';
+          const isProd = host.endsWith('tamuu.id');
+          const domain = isProd ? '.tamuu.id' : undefined;
+
           cookiesToSet.forEach(({ name, value, options }) => {
-            const domain = process.env.NODE_ENV === 'production' ? '.tamuu.id' : undefined;
             request.cookies.set({ name, value, ...options, domain, sameSite: 'lax', secure: true });
           })
           response = NextResponse.next({
             request,
           })
           cookiesToSet.forEach(({ name, value, options }) => {
-            const domain = process.env.NODE_ENV === 'production' ? '.tamuu.id' : undefined;
             response.cookies.set({ name, value, ...options, domain, sameSite: 'lax', secure: true });
           })
         },

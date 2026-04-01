@@ -1,27 +1,19 @@
-import React, { useEffect, Suspense, lazy, useMemo } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './components/Auth/ProtectedRoute';
-import { ExternalRedirect } from './components/Auth/ExternalRedirect';
-import { CORE_FONTS, getGoogleFontsUrl } from './lib/fonts';
 import { MainLayout } from './components/Layout/MainLayout';
 import { LazyMotion, domMax } from 'framer-motion';
 import { PremiumLoader } from './components/ui/PremiumLoader';
 import GlobalModal from './components/Shared/GlobalModal';
 import { Toaster } from 'react-hot-toast';
-import { getIsAppDomain } from './lib/utils';
-import { useStore } from './store/useStore';
 
 // ============================================
 // PAGE IMPORTS
 // ============================================
-// Eagerly load public pages for instant rendering and better PSI scores
-import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 const InvitationsStorePage = lazy(() => import('./pages/InvitationsStorePage').then(m => ({ default: m.InvitationsStorePage })));
-
-// Lazy load heavy admin/editor pages (app.tamuu.id only)
 const EditorPage = lazy(() => import('./pages/EditorPage').then(m => ({ default: m.EditorPage })));
 const AdminTemplatesPage = lazy(() => import('./pages/AdminTemplatesPage').then(m => ({ default: m.AdminTemplatesPage })));
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ default: m.DashboardPage })));
@@ -31,16 +23,12 @@ const GuestManagementPage = lazy(() => import('./pages/GuestManagementPage').the
 const OnboardingPage = lazy(() => import('./pages/OnboardingPage').then(m => ({ default: m.OnboardingPage })));
 const UserEditorPage = lazy(() => import('./pages/UserEditorPage').then(m => ({ default: m.UserEditorPage })));
 const GuestWishesPage = lazy(() => import('./pages/GuestWishesPage').then(m => ({ default: m.GuestWishesPage })));
-const GuestWelcomePage = lazy(() => import('./pages/GuestWelcomePage').then(m => ({ default: m.GuestWelcomePage })));
-const GuestWelcomeDisplay = lazy(() => import('./pages/GuestWelcomeDisplay').then(m => ({ default: m.GuestWelcomeDisplay })));
 const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage').then(m => ({ default: m.AdminUsersPage })));
 const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })));
 const AdminTransactionsPage = lazy(() => import('./pages/AdminTransactionsPage').then(m => ({ default: m.AdminTransactionsPage })));
 const AdminActivityPage = lazy(() => import('./pages/AdminActivityPage').then(m => ({ default: m.AdminActivityPage })));
 const AdminMusicPage = lazy(() => import('./pages/AdminMusicPage').then(m => ({ default: m.AdminMusicPage })));
-const DisplayEditorPage = lazy(() => import('./pages/DisplayEditorPage').then(m => ({ default: m.DisplayEditorPage })));
 const RemoteTriggerPage = lazy(() => import('./pages/RemoteTriggerPage').then(m => ({ default: m.RemoteTriggerPage })));
-const AdminDisplayPreviewPage = lazy(() => import('./pages/AdminDisplayPreviewPage').then(m => ({ default: m.AdminDisplayPreviewPage })));
 const GuestScannerPage = lazy(() => import('./pages/GuestScannerPage').then(m => ({ default: m.GuestScannerPage })));
 const UpgradePage = lazy(() => import('./pages/UpgradePage').then(m => ({ default: m.UpgradePage })));
 const BillingPage = lazy(() => import('./pages/BillingPage').then(m => ({ default: m.BillingPage })));
@@ -69,32 +57,21 @@ const VendorOnboardingPage = lazy(() => import('./pages/Vendor/VendorOnboardingP
 const ShopPage = lazy(() => import('./pages/Shop/ShopPage'));
 const StorefrontPage = lazy(() => import('./pages/Shop/StorefrontPage'));
 const ProductDetailPage = lazy(() => import('./pages/Shop/ProductDetailPage'));
-
-
+const GuestWelcomeDisplay = lazy(() => import('./pages/GuestWelcomeDisplay').then(m => ({ default: m.GuestWelcomeDisplay })));
+const GuestWelcomePage = lazy(() => import('./pages/GuestWelcomePage').then(m => ({ default: m.GuestWelcomePage })));
 
 import { usePushNotifications } from './hooks/usePushNotifications';
 
 const App: React.FC = () => {
-    // Memoize domain check to avoid recalculation
-    const isAppDomain = useMemo(() => getIsAppDomain(), []);
-    const { isAuthenticated } = useStore();
     const { subscribe, permission } = usePushNotifications();
 
     useEffect(() => {
-        console.log("Tamuu v2.0.4");
-        
-        // Automatically request push notification permission on load
+        console.log("Tamuu v2.0.4-passive");
         if (permission === 'default') {
-            // Small delay to ensure browser is ready and doesn't block UI
-            const timer = setTimeout(() => {
-                subscribe();
-            }, 2000);
+            const timer = setTimeout(() => { subscribe(); }, 2000);
             return () => clearTimeout(timer);
         }
     }, [permission, subscribe]);
-
-    // Optimization: Fonts are now handled via index.html with display=swap for best performance (PSI 100).
-    // The previous dynamic injection logic was redundant as index.html already includes CORE_FONTS.
 
     return (
         <BrowserRouter>
@@ -115,155 +92,66 @@ const App: React.FC = () => {
                         }}
                     />
                     <Routes>
-                        {/* ============================================ */}
-                        {/* DOMAIN-AWARE ROOT PATH */}
-                        {/* ============================================ */}
-                        {isAppDomain ? (
-                            // App domain: Root redirects to dashboard with query params preserved
-                            <Route path="/" element={<Navigate to={`/dashboard${window.location.search}`} replace />} />
-                        ) : (
-                            // Public domain: Show ShopPage as the new landing page
-                            <Route path="/" element={<MainLayout><ShopPage /></MainLayout>} />
-                        )}
+                        {/* 
+                            PASSIVE ROUTING:
+                            The Next.js Worker on app.tamuu.id and tamuu.id handles the primary routing.
+                            This Vite app is served as a fallback or for specific legacy paths.
+                        */}
+                        
+                        {/* Auth Pages (Passive) */}
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/signup" element={<SignupPage />} />
+                        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-                        {/* ============================================ */}
-                        {/* PUBLIC ROUTES - Available on both domains */}
-                        {/* ============================================ */}
-
-                        {/* Undangan Digital (Old Home Page) */}
-                        <Route path="/undangan-digital" element={<MainLayout><LandingPage /></MainLayout>} />
-
-                        {/* Public Store */}
+                        {/* Public Shop & Content */}
                         <Route path="/invitations" element={<MainLayout><InvitationsStorePage /></MainLayout>} />
-
-                        {/* Public Blog */}
                         <Route path="/blog/*" element={<MainLayout><BlogRouter /></MainLayout>} />
-
-                        {/* New Clean Shop Routes */}
-                        {/* 1. SEO Filters (using /c/ prefix) */}
-                        <Route path="/c/:category" element={<MainLayout><ShopPage /></MainLayout>} />
-                        <Route path="/c/:category/:city" element={<MainLayout><ShopPage /></MainLayout>} />
-                        <Route path="/c/:category/:city/:intent" element={<MainLayout><ShopPage /></MainLayout>} />
-                        <Route path="/location/:city" element={<MainLayout><ShopPage /></MainLayout>} />
-
-                        {/* 2. Vendor & Product (using /shop/ prefix for clean isolation) */}
                         <Route path="/shop/:slug" element={<StorefrontPage />} />
                         <Route path="/shop/:slug/:productId" element={<ProductDetailPage />} />
                         
-                        {/* Legacy Redirect for /shop root */}
-                        <Route path="/shop" element={<Navigate to="/" replace />} />
-
-
-                        {/* Preview Routes - Public for sharing */}
+                        {/* Preview Routes */}
                         <Route path="/preview/:slug" element={<PreviewPage />} />
                         <Route path="/v/:slug" element={<PreviewPage />} />
 
-                        {/* Help / Legal (Public) */}
+                        {/* App Core (Passive) */}
+                        <Route path="/dashboard" element={<ProtectedRoute><MainLayout><DashboardPage /></MainLayout></ProtectedRoute>} />
+                        <Route path="/onboarding" element={<ProtectedRoute><MainLayout><OnboardingPage /></MainLayout></ProtectedRoute>} />
+                        <Route path="/profile" element={<ProtectedRoute><MainLayout><ProfilePage /></MainLayout></ProtectedRoute>} />
+                        <Route path="/billing" element={<ProtectedRoute><MainLayout><BillingPage /></MainLayout></ProtectedRoute>} />
+                        <Route path="/upgrade" element={<ProtectedRoute><MainLayout><UpgradePage /></MainLayout></ProtectedRoute>} />
+                        <Route path="/guests" element={<ProtectedRoute><MainLayout><GuestManagementPage /></MainLayout></ProtectedRoute>} />
+                        <Route path="/wishes" element={<ProtectedRoute><MainLayout><GuestWishesPage /></MainLayout></ProtectedRoute>} />
+
+                        {/* Admin Routes */}
+                        <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="admin"><AdminDashboardPage /></ProtectedRoute>} />
+                        <Route path="/admin/music" element={<ProtectedRoute requiredRole="admin"><AdminMusicPage /></ProtectedRoute>} />
+                        <Route path="/admin/admins" element={<ProtectedRoute requiredRole="admin"><AdminUsersPage role="admin" /></ProtectedRoute>} />
+                        <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsersPage role="user" /></ProtectedRoute>} />
+                        <Route path="/admin/transactions" element={<ProtectedRoute requiredRole="admin"><AdminTransactionsPage /></ProtectedRoute>} />
+                        <Route path="/admin/activity" element={<ProtectedRoute requiredRole="admin"><AdminActivityPage /></ProtectedRoute>} />
+                        <Route path="/admin/templates" element={<ProtectedRoute requiredRole="admin"><AdminTemplatesPage /></ProtectedRoute>} />
+                        <Route path="/admin/stores" element={<ProtectedRoute requiredRole="admin"><AdminStoreManagementPage /></ProtectedRoute>} />
+                        <Route path="/admin/products" element={<ProtectedRoute requiredRole="admin"><AdminProductsPage /></ProtectedRoute>} />
+                        <Route path="/admin/blog" element={<ProtectedRoute requiredRole="admin"><AdminBlogListPage /></ProtectedRoute>} />
+
+                        {/* Editor Routes */}
+                        <Route path="/editor" element={<ProtectedRoute><EditorPage /></ProtectedRoute>} />
+                        <Route path="/editor/:id" element={<ProtectedRoute><EditorPage /></ProtectedRoute>} />
+                        <Route path="/user/editor/:id" element={<ProtectedRoute><UserEditorPage /></ProtectedRoute>} />
+
+                        {/* Vendor Portal */}
+                        <Route path="/vendor/onboarding" element={<ProtectedRoute><VendorOnboardingPage /></ProtectedRoute>} />
+                        <Route path="/vendor/:storeSlug/*" element={<ProtectedRoute><VendorPortalPage /></ProtectedRoute>} />
+
+                        {/* Legal & Static */}
                         <Route path="/terms" element={<MainLayout><TermsPage /></MainLayout>} />
                         <Route path="/privacy" element={<MainLayout><PrivacyPage /></MainLayout>} />
-                        <Route path="/refund" element={<MainLayout><RefundPage /></MainLayout>} />
                         <Route path="/about" element={<MainLayout><AboutPage /></MainLayout>} />
-                        <Route path="/contact" element={<MainLayout><ContactPage /></MainLayout>} />
 
-                        {/* Inactive State (Public) */}
-                        <Route path="/inactive/:slug" element={<InactivePage />} />
-
-                        {/* ============================================ */}
-                        {/* APP ROUTES - Domain Aware Routing */}
-                        {/* ============================================ */}
-                        {isAppDomain ? (
-                            <>
-                                {/* Auth Pages (App Domain Only) */}
-                                <Route path="/login" element={<LoginPage />} />
-                                <Route path="/store" element={<InvitationsStorePage />} />
-                                <Route path="/signup" element={<SignupPage />} />
-                                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-
-                                {/* App Core Pages */}
-                                <Route path="/onboarding" element={<ProtectedRoute><MainLayout><OnboardingPage /></MainLayout></ProtectedRoute>} />
-                                <Route path="/dashboard" element={<ProtectedRoute><MainLayout><DashboardPage /></MainLayout></ProtectedRoute>} />
-                                <Route path="/profile" element={<ProtectedRoute><MainLayout><ProfilePage /></MainLayout></ProtectedRoute>} />
-                                <Route path="/billing" element={<ProtectedRoute><MainLayout><BillingPage /></MainLayout></ProtectedRoute>} />
-                                <Route path="/upgrade" element={<ProtectedRoute><MainLayout><UpgradePage /></MainLayout></ProtectedRoute>} />
-                                <Route path="/guests" element={<ProtectedRoute><MainLayout><GuestManagementPage /></MainLayout></ProtectedRoute>} />
-                                <Route path="/guests/:invitationId" element={<ProtectedRoute><MainLayout><GuestManagementPage /></MainLayout></ProtectedRoute>} />
-                                <Route path="/wishes" element={<ProtectedRoute><MainLayout><GuestWishesPage /></MainLayout></ProtectedRoute>} />
-
-                                {/* Admin Routes */}
-                                <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="admin"><AdminDashboardPage /></ProtectedRoute>} />
-                                <Route path="/admin/music" element={<ProtectedRoute requiredRole="admin"><AdminMusicPage /></ProtectedRoute>} />
-                                <Route path="/admin/admins" element={<ProtectedRoute requiredRole="admin"><AdminUsersPage role="admin" /></ProtectedRoute>} />
-                                <Route path="/admin/resellers" element={<ProtectedRoute requiredRole="admin"><AdminUsersPage role="reseller" /></ProtectedRoute>} />
-                                <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsersPage role="user" /></ProtectedRoute>} />
-                                <Route path="/admin/chat-monitoring" element={<ProtectedRoute requiredRole="admin"><AdminChatMonitoringPage /></ProtectedRoute>} />
-                                <Route path="/admin/transactions" element={<ProtectedRoute requiredRole="admin"><AdminTransactionsPage /></ProtectedRoute>} />                                <Route path="/admin/activity" element={<ProtectedRoute requiredRole="admin"><AdminActivityPage /></ProtectedRoute>} />
-                                <Route path="/admin/feedback" element={<ProtectedRoute requiredRole="admin"><AdminFeedbackPage /></ProtectedRoute>} />
-                                <Route path="/admin/push-notifications" element={<ProtectedRoute requiredRole="admin"><AdminPushNotificationPage /></ProtectedRoute>} />
-                                <Route path="/admin/templates" element={<ProtectedRoute requiredRole="admin"><AdminTemplatesPage /></ProtectedRoute>} />
-                                <Route path="/admin/templates/shop" element={<ProtectedRoute requiredRole="admin"><AdminShopSettingsPage /></ProtectedRoute>} />
-                                                                 <Route path="/admin/templates/:type" element={<ProtectedRoute requiredRole="admin"><AdminTemplatesPage /></ProtectedRoute>} />
-                                                                 <Route path="/admin/stores" element={<ProtectedRoute requiredRole="admin"><AdminStoreManagementPage /></ProtectedRoute>} />
-                                                                 <Route path="/admin/product-listing" element={<ProtectedRoute requiredRole="admin"><AdminProductListingPage /></ProtectedRoute>} />
-                                                                 <Route path="/admin/products" element={<ProtectedRoute requiredRole="admin"><AdminProductsPage /></ProtectedRoute>} />
-                                                                 <Route path="/admin/reports" element={<ProtectedRoute requiredRole="admin"><AdminReportsPage /></ProtectedRoute>} />
-                                                                 <Route path="/admin/ads" element={<ProtectedRoute requiredRole="admin"><AdminAdsPage /></ProtectedRoute>} />
-                                                                {/* Admin Blog */}
-                                <Route path="/admin/blog" element={<ProtectedRoute requiredRole="admin"><AdminBlogListPage /></ProtectedRoute>} />
-                                <Route path="/admin/blog/new" element={<ProtectedRoute requiredRole="admin"><AdminBlogEditor /></ProtectedRoute>} />
-                                <Route path="/admin/blog/:id" element={<ProtectedRoute requiredRole="admin"><AdminBlogEditor /></ProtectedRoute>} />
-
-                                {/* Vendor Portal (Seller Center) */}
-                                <Route path="/vendor/onboarding" element={<ProtectedRoute><VendorOnboardingPage /></ProtectedRoute>} />
-                                <Route path="/vendor/:storeSlug/*" element={<ProtectedRoute><VendorPortalPage /></ProtectedRoute>} />
-
-
-                                {/* Editor Routes */}
-                                <Route path="/editor" element={<ProtectedRoute><EditorPage /></ProtectedRoute>} />
-                                <Route path="/editor/:id" element={<ProtectedRoute><EditorPage /></ProtectedRoute>} />
-                                <Route path="/admin/editor/:slug" element={<ProtectedRoute requiredRole="admin"><EditorPage isTemplate={true} /></ProtectedRoute>} />
-                                {/* <Route path="/admin/display-editor/:slug" element={<ProtectedRoute requiredRole="admin"><DisplayEditorPage /></ProtectedRoute>} /> */}
-                                {/* <Route path="/admin/display/:slug" element={<ProtectedRoute requiredRole="admin"><AdminDisplayPreviewPage /></ProtectedRoute>} /> */}
-                                <Route path="/user/editor/:id" element={<ProtectedRoute><UserEditorPage /></ProtectedRoute>} />
-                                {/* <Route path="/user/display-editor/:id" element={<ProtectedRoute><UserEditorPage mode="welcome" /></ProtectedRoute>} /> */}
-
-                                {/* Guest Experience */}
-                                <Route path="/welcome/:invitationId/:guestId" element={<GuestWelcomePage />} />
-                                {/* <Route path="/display/:slug" element={<GuestWelcomeDisplay />} /> */}
-                                <Route path="/guests/scan/:id" element={<GuestScannerPage />} />
-                            </>
-                        ) : (
-                            // Public domain (tamuu.id): Redirect all app paths to app.tamuu.id
-                            <>
-                                {/* Auth Redirects */}
-                                <Route path="/login" element={<ExternalRedirect to="https://app.tamuu.id/login" />} />
-                                <Route path="/signup" element={<ExternalRedirect to="https://app.tamuu.id/signup" />} />
-                                <Route path="/forgot-password" element={<ExternalRedirect to="https://app.tamuu.id/forgot-password" />} />
-
-                                {/* App Page Redirects */}
-                                <Route path="/dashboard" element={<ExternalRedirect to="https://app.tamuu.id/dashboard" />} />
-                                <Route path="/onboarding" element={<ExternalRedirect to="https://app.tamuu.id/onboarding" />} />
-                                <Route path="/profile" element={<ExternalRedirect to="https://app.tamuu.id/profile" />} />
-                                <Route path="/billing" element={<ExternalRedirect to="https://app.tamuu.id/billing" />} />
-                                <Route path="/upgrade" element={<ExternalRedirect to="https://app.tamuu.id/upgrade" />} />
-                                <Route path="/guests/*" element={<ExternalRedirect to="https://app.tamuu.id/guests" />} />
-                                <Route path="/admin/*" element={<ExternalRedirect to="https://app.tamuu.id/admin/dashboard" />} />
-                                <Route path="/vendor/onboarding" element={<ExternalRedirect to="https://app.tamuu.id/vendor/onboarding" />} />
-                                <Route path="/vendor/*" element={<ExternalRedirect to="https://app.tamuu.id/dashboard" />} />
-                                <Route path="/editor/*" element={<ExternalRedirect to="https://app.tamuu.id/dashboard" />} />
-                                <Route path="/user/*" element={<ExternalRedirect to="https://app.tamuu.id/dashboard" />} />
-                            </>
-                        )}
-
-                        {/* 
-                            GHOST V4.0: Catch-all Slug Route 
-                            MUST be after specific routes to avoid collisions.
-                        */}
+                        {/* Dynamic Slugs (Lowest Priority) */}
                         <Route path="/:slug" element={<PreviewPage />} />
                         <Route path="/:slug/:guestSlug" element={<PreviewPage />} />
-
-                        <Route path="/display/:slug" element={<GuestWelcomeDisplay />} />
-                        <Route path="/remote/:id" element={<RemoteTriggerPage />} />
-
+                        
                         {/* Fallback */}
                         <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>

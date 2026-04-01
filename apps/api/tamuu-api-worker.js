@@ -267,7 +267,8 @@ export default {
             const isProdEnv = env.MIDTRANS_IS_PRODUCTION === 'true' || env.MIDTRANS_IS_PRODUCTION === true;
             const baseUrl = isProdEnv ? 'https://api.midtrans.com/v2' : 'https://api.sandbox.midtrans.com/v2';
             
-            const authHeader = `Basic ${btoa(env.MIDTRANS_SERVER_KEY + ':')}`;
+            const serverKey = env.MIDTRANS_SERVER_KEY.trim();
+            const authHeader = `Basic ${btoa(serverKey + ':')}`;
 
             try {
                 const res = await fetch(`${baseUrl}/${orderId}/status`, { 
@@ -726,6 +727,12 @@ export default {
                             console.warn(`[Billing] Price mismatch detected for ${tier}. Expected ${expectedPrice}, got ${amount}. Overriding.`);
                             amount = expectedPrice;
                         }
+                    } else {
+                        // ADS TOPUP ENFORCEMENT: Minimum Rp 20.000 (updated from 10k)
+                        const minAmount = 20000;
+                        if (amount < minAmount) {
+                            return json({ error: `Minimum topup iklan adalah Rp ${minAmount.toLocaleString('id-ID')}` }, { ...corsHeaders, status: 400 });
+                        }
                     }
 
                     // BLOCKING LOGIC: Check for existing PENDING transaction
@@ -738,7 +745,7 @@ export default {
                             if (pendingResults && pendingResults.length > 0) {
                                 console.log(`[Billing] User ${userId} has ${pendingResults.length} pending transactions. Auto-cancelling for new session.`);
                                 await env.DB.prepare(
-                                    'UPDATE billing_transactions SET status = ? WHERE user_id = ? AND status = ?'
+                                    'UPDATE billing_transactions SET status = ?, updated_at = datetime("now") WHERE user_id = ? AND status = ?'
                                 ).bind('CANCELLED', userId, 'PENDING').run();
                             }
                         } catch (dbErr) {
@@ -746,26 +753,28 @@ export default {
                         }
                     }
 
-                    // FORENSIC LOG: Verify environment without exposing secrets
-                    const rawKey = env.MIDTRANS_SERVER_KEY;
-                    console.log(`[Billing] Env Keys: ${Object.keys(env).join(', ')}`);
-                    console.log(`[Billing] Server Key Present: ${!!rawKey}, Length: ${rawKey.length}`);
-
+                    // FORENSIC LOG: Verify environment
+                    const rawKey = env.MIDTRANS_SERVER_KEY || "";
                     const serverKey = rawKey.trim();
+                    
                     if (!serverKey) {
                         return json({ 
-                            error: 'Midtrans Server Key is missing or empty in environment' 
+                            error: 'Midtrans Server Key is missing in environment' 
                         }, { ...corsHeaders, status: 500 });
                     }
 
-                    const orderId = `order-${Date.now()}-${userId.substring(0, 8)}`;
-                    // Midtrans Auth: Base64(ServerKey + ":")
-                    const authHeader = `Basic ${btoa(serverKey + ':')}`;
+                    // Reference ID format: A1 + YYYYMMDD + HHMMSS + ShortUserID
+                    const now = new Date();
+                    const timestamp = now.toISOString().replace(/[-:T]/g, '').split('.')[0]; 
+                    const orderId = `A1${timestamp}${userId.substring(0, 5).toUpperCase()}`;
                     
-                    const isProdEnv = env.MIDTRANS_IS_PRODUCTION === 'true' || env.MIDTRANS_IS_PRODUCTION === true || !serverKey.startsWith('SB-');
+                    const authHeader = `Basic ${btoa(serverKey + ':')}`;
+
+                    // Force Sandbox if not explicitly set to true in production
+                    const isProdEnv = env.MIDTRANS_IS_PRODUCTION === 'true' || env.MIDTRANS_IS_PRODUCTION === true;
                     const midtransBaseUrl = isProdEnv ? 'https://app.midtrans.com/snap/v1/transactions' : 'https://app.sandbox.midtrans.com/snap/v1/transactions';
                     
-                    console.log(`[Midtrans] Env: ${isProdEnv ? 'PROD' : 'SANDBOX'}, Target: ${midtransBaseUrl}`);
+                    console.log(`[Midtrans] SNAP_INIT: Env=${isProdEnv ? 'PROD' : 'SANDBOX'}, URL=${midtransBaseUrl}`);
 
                     const midtransResponse = await fetch(midtransBaseUrl, {
                         method: 'POST',
@@ -787,7 +796,7 @@ export default {
                             }],
                             customer_details: {
                                 first_name: name || 'User',
-                                email: email
+                                email: email || 'user@tamuu.id'
                             },
                             enabled_payments: [
                                 "bni_va", "cimb_va", "shopeepay", "permata_va",
@@ -797,52 +806,42 @@ export default {
                                 finish: "https://app.tamuu.id/billing?status=success",
                                 unfinish: "https://app.tamuu.id/billing?status=pending",
                                 error: "https://app.tamuu.id/billing?status=error"
-                            },
-                            credit_card: {
-                                secure: true
                             }
                         })
                     });
 
-                    const data = await midtransResponse.json();
-
+                    const snapResult = await midtransResponse.json();
+                    
                     if (!midtransResponse.ok) {
-                        console.error('Midtrans API Error:', data);
-                        return json({
-                            error: 'Midtrans API rejected the request',
-                            details: data.error_messages || data.message || data
+                        console.error('[Midtrans] Error Response:', snapResult);
+                        return json({ 
+                            error: 'Midtrans API Error', 
+                            details: snapResult.error_messages || snapResult 
                         }, { ...corsHeaders, status: midtransResponse.status });
                     }
 
-                    if (data.token) {
-                        try {
-                            // Log transaction in DB
-                            await env.DB.prepare(
-                                `INSERT INTO billing_transactions (user_id, external_id, amount, status, tier, payment_method, payment_url) 
-                                 VALUES (?, ?, ?, ?, ?, ?, ?)`
-                            ).bind(userId, orderId, amount, 'PENDING', tier, 'MIDTRANS', data.redirect_url).run();
-                            console.log(`[Billing/Token] Transaction logged successfully: ${orderId}`);
-                        } catch (dbError) {
-                            console.error('[Billing/Token] CRITICAL: Database Error logging transaction:', dbError);
-                            // Return the token WITH a warning so frontend knows there's an issue
-                            return json({
-                                ...data,
-                                warning: 'Transaction created but DB logging failed. Please contact support if issues persist.',
-                                orderId: orderId
-                            }, corsHeaders);
-                        }
-                    }
+                    // Save transaction to DB (Aligned with D1 Schema)
+                    await env.DB.prepare(`
+                        INSERT INTO billing_transactions 
+                        (id, user_id, external_id, amount, status, tier, payment_method, payment_url)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    `).bind(
+                        crypto.randomUUID(), 
+                        userId, 
+                        orderId, 
+                        amount, 
+                        'PENDING', 
+                        tier, 
+                        'MIDTRANS', 
+                        snapResult.redirect_url
+                    ).run();
 
-                    return json({ ...data, orderId: orderId }, corsHeaders);
-                } catch (err) {
-                    console.error('Server Side Error:', err);
-                    return json({
-                        error: 'Failed to generate payment session',
-                        details: err.message
-                    }, { ...corsHeaders, status: 500 });
+                    return json({ token: snapResult.token, redirect_url: snapResult.redirect_url, orderId }, corsHeaders);
+                } catch (error) {
+                    console.error('[Midtrans] Token Generation Error:', error);
+                    return json({ error: 'Internal Server Error', details: error.message }, { ...corsHeaders, status: 500 });
                 }
             }
-
             if (path === '/api/billing/midtrans/cancel' && method === 'POST') {
                 const { orderId, userId } = await request.json();
 
@@ -916,7 +915,15 @@ export default {
                 } = body;
 
                 // Verify Signature using SHA-512
-                const payload = order_id + status_code + gross_amount + env.MIDTRANS_SERVER_KEY;
+                const serverKey = (env.MIDTRANS_SERVER_KEY || "").trim();
+                if (!serverKey) {
+                    return json({ error: 'Server configuration error' }, { ...corsHeaders, status: 500 });
+                }
+                
+                // MIDTRANS CTO HARDENING: gross_amount in signature must be a string with .00 if it was sent as integer, 
+                // or exactly as received. Midtrans standard: order_id + status_code + gross_amount + server_key
+                // We use the raw string from the body to be safe.
+                const payload = order_id + status_code + gross_amount + serverKey;
                 const msgUint8 = new TextEncoder().encode(payload);
                 const hashBuffer = await crypto.subtle.digest('SHA-512', msgUint8);
                 const hashArray = Array.from(new Uint8Array(hashBuffer));
@@ -1058,6 +1065,14 @@ export default {
                 if (!userId) return json({ error: 'User ID required' }, { ...corsHeaders, status: 400 });
 
                 try {
+                    // ENTERPRISE HARDENING: Auto-expire pending transactions older than 24 hours
+                    await env.DB.prepare(`
+                        UPDATE billing_transactions 
+                        SET status = 'CANCELLED', updated_at = datetime('now')
+                        WHERE user_id = ? AND status = 'PENDING' 
+                        AND datetime(created_at) < datetime('now', '-24 hours')
+                    `).bind(userId).run();
+
                     const { results } = await env.DB.prepare(
                         'SELECT * FROM billing_transactions WHERE user_id = ? ORDER BY created_at DESC'
                     ).bind(userId).all();
@@ -1466,14 +1481,18 @@ export default {
                         const productId = crypto.randomUUID();
                         const finalStatus = (status === 'PUBLISHED' || status === 'DRAFT') ? status : 'DRAFT';
 
-                        // CTO POLICY: Automatic Approval only for Super Administrator
+                        // CTO POLICY: Automatic Approval for Super Admins and Verified Merchants
                         const authHeader = request.headers.get('Authorization');
                         const token = authHeader ? authHeader.replace('Bearer ', '').trim() : null;
                         const user = await verifyToken(token, env);
                         
-                        // Distinction: Super Admin (Immediate) vs Regular Admin/User (Pending)
+                        // Fetch vendor verification status
+                        const vendor = await env.DB.prepare('SELECT is_verified FROM shop_vendors WHERE id = ?').bind(vendor_id).first();
+                        const isVerifiedMerchant = vendor && vendor.is_verified === 1;
                         const isSuperAdmin = user && (user.email === 'admin@tamuu.id' || user.role === 'admin');
-                        const approvalStatus = isSuperAdmin ? 1 : 0;
+                        
+                        // RESTORED AUTO-APPROVAL (v0.7.1 memory)
+                        const approvalStatus = (isSuperAdmin || isVerifiedMerchant) ? 1 : 0;
 
                         let productSlug = generateSlug(nama_produk);
                         if (!productSlug) productSlug = productId.substring(0, 8);
@@ -1620,10 +1639,16 @@ export default {
                             const authHeader = request.headers.get('Authorization');
                             const token = authHeader ? authHeader.replace('Bearer ', '').trim() : null;
                             const user = await verifyToken(token, env);
+                            
+                            // Fetch product's vendor to check verification
+                            const product = await env.DB.prepare('SELECT vendor_id, is_approved FROM shop_products WHERE id = ?').bind(productId).first();
+                            const vendor = product ? await env.DB.prepare('SELECT is_verified FROM shop_vendors WHERE id = ?').bind(product.vendor_id).first() : null;
+                            
+                            const isVerifiedMerchant = vendor && vendor.is_verified === 1;
                             const isSuperAdmin = user && (user.email === 'admin@tamuu.id' || user.role === 'admin');
 
-                            // CTO FIX: Maintain approval status if already approved, only force 1 for Super Admin
-                            if (isSuperAdmin) {
+                            // RESTORED AUTO-APPROVAL (v0.7.1 memory) - Maintain if already approved or bypass if admin/verified
+                            if (isSuperAdmin || isVerifiedMerchant) {
                                 updateFields.push('is_approved = 1');
                             } else {
                                 // For regular vendors, keep existing status (don't reset to 0 if already 1 or 2)

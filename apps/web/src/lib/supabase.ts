@@ -15,31 +15,38 @@ if (!supabaseUrl || !supabaseAnonKey) {
 const isProduction = typeof window !== 'undefined' &&
     (window.location.hostname.endsWith('tamuu.id') || window.location.hostname === 'tamuu.id');
 
+// EXACT Cookie Name from @supabase/ssr (Next.js)
+const COOKIE_NAME = 'sb-mqbgpulironhtvzfpzfp-auth-token';
+
 export const supabase = createClient(
     supabaseUrl || 'https://placeholder.supabase.co',
     supabaseAnonKey || 'placeholder-key',
     {
         auth: {
-            persistSession: false, // PASSIVE: Does not persist its own session, reads from Next.js cookies
+            persistSession: isProduction, // Enable persistence in prod to read from storage
             autoRefreshToken: false, // PASSIVE: Does not refresh tokens, relies on Next.js
             detectSessionInUrl: true,
+            storageKey: COOKIE_NAME, // USE THE SAME KEY AS NEXT.JS
             // CRITICAL: Robust Cross-Subdomain Cookie Logic
             ...(isProduction && {
                 storage: {
                     getItem: (key: string) => {
                         if (typeof document === 'undefined') return null;
                         
+                        // Use our COOKIE_NAME instead of whatever key is passed, 
+                        // or ensure we respect the passed key if it's the right one.
+                        const targetKey = key === 'supabase.auth.token' ? COOKIE_NAME : key;
+                        
                         // 1. Try to read as a single cookie first
-                        const match = document.cookie.match(new RegExp('(^| )' + key + '=([^;]+)'));
+                        const match = document.cookie.match(new RegExp('(^| )' + targetKey + '=([^;]+)'));
                         let value = match ? decodeURIComponent(match[2]) : null;
                         
-                        // 2. If not found, try to read as chunked cookies (key.0, key.1, ...)
-                        // This ensures compatibility with @supabase/ssr used in Next.js
+                        // 2. If not found, try to read as chunked cookies (targetKey.0, targetKey.1, ...)
                         if (!value) {
                             let chunkedValue = '';
                             let i = 0;
                             while (true) {
-                                const chunkMatch = document.cookie.match(new RegExp('(^| )' + key + '\\.' + i + '=([^;]+)'));
+                                const chunkMatch = document.cookie.match(new RegExp('(^| )' + targetKey + '\\.' + i + '=([^;]+)'));
                                 if (chunkMatch) {
                                     chunkedValue += decodeURIComponent(chunkMatch[2]);
                                     i++;
@@ -66,16 +73,15 @@ export const supabase = createClient(
                     },
                     setItem: (key: string, value: string) => {
                         if (typeof document === 'undefined') return;
-                        // Set cookie with .tamuu.id domain for cross-subdomain sharing
-                        // Note: Standard supabase-js doesn't auto-chunk, but browser has 4KB limit
-                        document.cookie = `${key}=${encodeURIComponent(value)}; path=/; domain=.tamuu.id; max-age=31536000; SameSite=Lax; Secure`;
+                        const targetKey = key === 'supabase.auth.token' ? COOKIE_NAME : key;
+                        document.cookie = `${targetKey}=${encodeURIComponent(value)}; path=/; domain=.tamuu.id; max-age=31536000; SameSite=Lax; Secure`;
                     },
                     removeItem: (key: string) => {
                         if (typeof document === 'undefined') return;
-                        // Remove all possible chunks just in case
-                        document.cookie = `${key}=; path=/; domain=.tamuu.id; max-age=0`;
+                        const targetKey = key === 'supabase.auth.token' ? COOKIE_NAME : key;
+                        document.cookie = `${targetKey}=; path=/; domain=.tamuu.id; max-age=0`;
                         for (let i = 0; i < 10; i++) {
-                            document.cookie = `${key}.${i}=; path=/; domain=.tamuu.id; max-age=0`;
+                            document.cookie = `${targetKey}.${i}=; path=/; domain=.tamuu.id; max-age=0`;
                         }
                     },
                 },

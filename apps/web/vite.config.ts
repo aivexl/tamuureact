@@ -17,7 +17,7 @@ export default defineConfig({
     proxy: {
       // Proxy /api requests to production API to bypass CORS during development
       '/api': {
-        target: 'https://tamuu-api.shafania57.workers.dev',
+        target: 'https://api.tamuu.id',
         changeOrigin: true,
         secure: true,
       },
@@ -70,5 +70,10 @@ export default defineConfig({
         },
       },
     },
+  },
+  // Define environment variables for client-side access
+  define: {
+    'import.meta.env.VITE_MIDTRANS_CLIENT_KEY': JSON.stringify(process.env.VITE_MIDTRANS_CLIENT_KEY || 'Mid-client-aVS390dhMuLvPXMa'),
+    'import.meta.env.VITE_MIDTRANS_IS_PRODUCTION': JSON.stringify(process.env.VITE_MIDTRANS_IS_PRODUCTION || 'false'),
   },
 })

@@ -3,10 +3,9 @@
  * Replaces Supabase client with Cloudflare-based API
  */
 import { patchLegacyUrl, sanitizeValue } from './utils';
+import { supabase } from './supabase';
 
-export const API_BASE = import.meta.env.PROD
-    ? 'https://api.tamuu.id'
-    : ''; // Vite proxy handles this in dev
+export const API_BASE = 'https://api.tamuu.id';
 
 /**
  * Enhanced Fetch Wrapper with timeout and error handling
@@ -329,9 +328,15 @@ export const users = {
 // ============================================
 export const billing = {
     async createTransaction(data: any) {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+
         const res = await safeFetch(`${API_BASE}/api/billing/midtrans/token`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                ...(token && { 'Authorization': `Bearer ${token}` })
+            },
             body: JSON.stringify(sanitizeValue(data))
         });
         const responseData = await res.json();

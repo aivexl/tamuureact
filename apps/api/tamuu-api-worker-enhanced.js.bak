@@ -780,6 +780,54 @@ CONTEXT:
                 return json({ content: "Maaf, terjadi kendala teknis. Mohon coba lagi. 🙏" }, corsHeaders);
             }
 
+            // BILLING: Midtrans Webhook (Secure Implementation)
+            if (path === '/api/billing/midtrans/webhook' && method === 'POST') {
+                try {
+                    const body = await request.json();
+                    const {
+                        transaction_status,
+                        order_id,
+                        status_code,
+                        gross_amount,
+                        signature_key
+                    } = body;
+
+                    // 1. Verify Signature
+                    const serverKey = (env.MIDTRANS_SERVER_KEY || "").trim();
+                    if (!serverKey) return error('Configuration Error', 500);
+
+                    const payload = order_id + status_code + gross_amount + serverKey;
+                    const msgUint8 = new TextEncoder().encode(payload);
+                    const hashBuffer = await crypto.subtle.digest('SHA-512', msgUint8);
+                    const hashArray = Array.from(new Uint8Array(hashBuffer));
+                    const hashedPayload = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+                    if (hashedPayload !== signature_key) {
+                        return error('Invalid Signature', 403);
+                    }
+
+                    // 2. Process Status
+                    if (transaction_status === 'settlement' || transaction_status === 'capture') {
+                        // Update transaction and user tier
+                        const tx = await env.DB.prepare('SELECT user_id, tier, amount FROM billing_transactions WHERE external_id = ?').bind(order_id).first();
+                        
+                        if (tx) {
+                            await env.DB.batch([
+                                env.DB.prepare('UPDATE billing_transactions SET status = "PAID", updated_at = CURRENT_TIMESTAMP WHERE external_id = ?').bind(order_id),
+                                env.DB.prepare('UPDATE users SET tier = ?, expires_at = datetime("now", "+1 year") WHERE id = ?').bind(tx.tier, tx.user_id)
+                            ]);
+                        }
+                    } else if (transaction_status === 'cancel' || transaction_status === 'deny' || transaction_status === 'expire') {
+                        await env.DB.prepare('UPDATE billing_transactions SET status = "CANCELLED", updated_at = CURRENT_TIMESTAMP WHERE external_id = ?').bind(order_id).run();
+                    }
+
+                    return json({ success: true }, corsHeaders);
+                } catch (err) {
+                    console.error('[Billing] Webhook error:', err);
+                    return error('Webhook processing failed', 500);
+                }
+            }
+
             // BILLING: Get User Transactions
             if (path === '/api/billing/transactions' && method === 'GET') {
                 try {
@@ -806,21 +854,32 @@ CONTEXT:
                         return json({ error: 'Missing required fields' }, { ...corsHeaders, status: 400 });
                     }
 
-                    // 1. Server-Side Price Validation (Security Fix)
-                    const TIER_PRICES = {
-                        'pro': 99000,
-                        'ultimate': 149000,
-                        'elite': 199000,
-                        'vip': 99000, // Legacy support
-                        'platinum': 149000,
-                        'vvip': 199000
-                    };
-
                     const normalizedTier = tier.toLowerCase();
-                    const amount = TIER_PRICES[normalizedTier];
+                    let integerAmount = Math.floor(Number(amount));
 
-                    if (!amount) {
-                         return json({ error: 'Invalid tier selected' }, { ...corsHeaders, status: 400 });
+                    // Server-side Pricing Safeguard
+                    if (!normalizedTier.startsWith('ad_topup:')) {
+                        const TIER_PRICES = {
+                            'pro': 99000,
+                            'ultimate': 149000,
+                            'elite': 199000,
+                            'vip': 99000, // Legacy support
+                            'platinum': 149000,
+                            'vvip': 199000
+                        };
+                        const expectedPrice = TIER_PRICES[normalizedTier];
+                        if (expectedPrice && integerAmount !== expectedPrice) {
+                            integerAmount = expectedPrice;
+                        }
+                    } else {
+                        // ADS TOPUP ENFORCEMENT: Minimum Rp 20.000
+                        if (integerAmount < 20000) {
+                            return json({ error: 'Minimum topup iklan adalah Rp 20.000' }, { ...corsHeaders, status: 400 });
+                        }
+                    }
+
+                    if (!integerAmount) {
+                         return json({ error: 'Invalid amount or tier' }, { ...corsHeaders, status: 400 });
                     }
 
                     // 2. Create Order ID
@@ -831,16 +890,16 @@ CONTEXT:
                     try {
                         await env.DB.prepare(
                             'INSERT INTO billing_transactions (user_id, tier, amount, status, external_id, created_at, payment_channel) VALUES (?, ?, ?, ?, ?, ?, ?)'
-                        ).bind(userId, normalizedTier, amount, 'PENDING', orderId, new Date().toISOString(), 'midtrans').run();
+                        ).bind(userId, normalizedTier, integerAmount, 'PENDING', orderId, new Date().toISOString(), 'midtrans').run();
                     } catch (dbErr) {
                          // Fallback if payment_channel column is missing
                          await env.DB.prepare(
                             'INSERT INTO billing_transactions (user_id, tier, amount, status, external_id, created_at) VALUES (?, ?, ?, ?, ?, ?)'
-                        ).bind(userId, normalizedTier, amount, 'PENDING', orderId, new Date().toISOString()).run();
+                        ).bind(userId, normalizedTier, integerAmount, 'PENDING', orderId, new Date().toISOString()).run();
                     }
 
                     // 4. Call Midtrans Snap API
-                    const serverKey = env.MIDTRANS_SERVER_KEY;
+                    const serverKey = (env.MIDTRANS_SERVER_KEY || "").trim();
 
                     // SECURITY: If key is missing, DO NOT return a fake token in production.
                     // However, to prevent the app from crashing during this audit if the user hasn't set it yet:
@@ -867,7 +926,7 @@ CONTEXT:
                         body: JSON.stringify({
                             transaction_details: {
                                 order_id: orderId,
-                                gross_amount: amount
+                                gross_amount: integerAmount
                             },
                             customer_details: {
                                 first_name: name || 'User',
@@ -875,7 +934,7 @@ CONTEXT:
                             },
                             item_details: [{
                                 id: normalizedTier,
-                                price: amount,
+                                price: integerAmount,
                                 quantity: 1,
                                 name: `Tamuu ${normalizedTier.toUpperCase()} Package`
                             }]

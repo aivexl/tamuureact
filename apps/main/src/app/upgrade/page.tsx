@@ -11,7 +11,7 @@ import { PremiumLoader } from '@/components/ui/PremiumLoader';
 // MIDTRANS CONFIG
 // ============================================
 const MIDTRANS_CLIENT_KEY = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || 'Mid-client-aVS390dhMuLvPXMa';
-const MIDTRANS_IS_PRODUCTION = process.env.NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION === 'true' || !MIDTRANS_CLIENT_KEY.startsWith('SB-');
+const MIDTRANS_IS_PRODUCTION = process.env.NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION === 'true';
 const SNAP_URL = MIDTRANS_IS_PRODUCTION
     ? 'https://app.midtrans.com/snap/snap.js'
     : 'https://app.sandbox.midtrans.com/snap/snap.js';
@@ -195,7 +195,8 @@ function UpgradeContent() {
             };
             const amount = pricing[tier] || 99000;
 
-            const response = await fetch('https://api.tamuu.id/api/billing/midtrans/token', {
+            const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.tamuu.id';
+            const response = await fetch(`${API_BASE}/api/billing/midtrans/token`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

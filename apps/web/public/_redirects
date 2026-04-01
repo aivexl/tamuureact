@@ -1,2 +1,9 @@
-# SPA Fallback - route all other requests to index.html
-/*  /index.html  200
+# Proxy Admin routes to Legacy Vite
+/admin/*  /admin/:splat  200
+
+# Proxy Catch-all Slug routes to Legacy Vite (Preview pages)
+# This will be handled as fallback if Next.js doesn't match
+# However, Next.js Worker has higher priority in Cloudflare than Pages Custom Domain
+# unless Pages is configured as origin for the Worker.
+/:slug    /:slug         200
+/:slug/*  /:slug/:splat  200

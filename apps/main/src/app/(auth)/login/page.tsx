@@ -62,6 +62,10 @@ function LoginContent() {
             </AnimatePresence>
 
             <AuthForm mode="login" onSubmit={handleLogin} isLoading={isLoading} />
+            
+            <div className="mt-4 text-center">
+                <span className="text-[10px] text-white/20 font-mono uppercase tracking-[0.2em]">Next.js Unified v2.1.0</span>
+            </div>
 
             <p className="mt-8 text-center text-sm text-white/40 font-medium">
                 Belum punya akun?{' '}

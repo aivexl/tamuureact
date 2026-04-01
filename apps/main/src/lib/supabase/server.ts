@@ -14,10 +14,14 @@ export async function createClient() {
         },
         setAll(cookiesToSet) {
           try {
+            const host = cookieStore.get('host')?.value || '';
+            const isProd = host.endsWith('tamuu.id') || true; // Server-side usually implies prod or proxy
+            const domain = isProd ? '.tamuu.id' : undefined;
+
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, {
                 ...options,
-                domain: '.tamuu.id', // Crucial for cross-subdomain
+                domain,
                 path: '/'
               })
             )

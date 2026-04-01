@@ -9,6 +9,51 @@ export const usePayment = () => {
     const [processingTier, setProcessingTier] = useState<string | null>(null);
     const navigate = useNavigate();
 
+    const loadSnapScript = async (): Promise<boolean> => {
+        // Check if Snap is already loaded
+        if ((window as any).snap) {
+            console.log('[usePayment] Snap.js already loaded');
+            return true;
+        }
+
+        const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY;
+        
+        if (!clientKey) {
+            console.error('[usePayment] VITE_MIDTRANS_CLIENT_KEY is not configured');
+            return false;
+        }
+
+        try {
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                const isProd = import.meta.env.VITE_MIDTRANS_IS_PRODUCTION === 'true';
+                
+                // Use SANDBOX by default unless explicitly set to production
+                script.src = isProd
+                    ? 'https://app.midtrans.com/snap/snap.js'
+                    : 'https://app.sandbox.midtrans.com/snap/snap.js';
+                script.setAttribute('data-client-key', clientKey);
+                script.crossOrigin = 'anonymous';
+                
+                script.onload = () => {
+                    console.log('[usePayment] Snap.js loaded successfully from:', script.src);
+                    resolve(true);
+                };
+                
+                script.onerror = (err) => {
+                    console.error('[usePayment] Failed to load Snap.js:', err);
+                    reject(new Error('Gagal memuat sistem pembayaran Midtrans'));
+                };
+                
+                document.body.appendChild(script);
+            });
+            return true;
+        } catch (err: any) {
+            console.error('[usePayment] Snap.js load error:', err);
+            return false;
+        }
+    };
+
     const initiatePayment = async (tier: string) => {
         console.log(`[usePayment] Initiating for tier: ${tier}`);
 
@@ -18,34 +63,15 @@ export const usePayment = () => {
             return;
         }
 
-        // Dynamically load Snap Script if not present
-        if (!(window as any).snap) {
-            try {
-                const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY || 'Mid-client-aVS390dhMuLvPXMa';
-                if (!clientKey) {
-                    throw new Error("Sistem pembayaran belum dikonfigurasi (Client Key Missing)");
-                }
-
-                await new Promise((resolve, reject) => {
-                    const script = document.createElement('script');
-                    const isProd = import.meta.env.VITE_MIDTRANS_IS_PRODUCTION === 'true' || !clientKey.startsWith('SB-');
-                    script.src = isProd
-                        ? 'https://app.midtrans.com/snap/snap.js'
-                        : 'https://app.sandbox.midtrans.com/snap/snap.js';
-                    script.setAttribute('data-client-key', clientKey);
-                    script.onload = resolve;
-                    script.onerror = () => reject(new Error("Gagal memuat sistem pembayaran"));
-                    document.body.appendChild(script);
-                });
-            } catch (err) {
-                console.error('[usePayment] Failed to load Snap:', err);
-                showModal({
-                    title: 'Konfigurasi Error',
-                    message: 'Sistem pembayaran tidak dapat dimuat. Hubungi admin.',
-                    type: 'error'
-                });
-                return;
-            }
+        // Load Snap Script
+        const snapLoaded = await loadSnapScript();
+        if (!snapLoaded) {
+            showModal({
+                title: 'Konfigurasi Error',
+                message: 'Sistem pembayaran tidak dapat dimuat. Pastikan VITE_MIDTRANS_CLIENT_KEY sudah dikonfigurasi dengan benar.',
+                type: 'error'
+            });
+            return;
         }
 
         // Normalize legacy tiers
@@ -71,18 +97,26 @@ export const usePayment = () => {
 
             console.log('[usePayment] API response received:', data);
 
-
             if (data.token) {
                 console.log('[usePayment] Launching Snap modal with token:', data.token);
+                
+                // Ensure snap is available before calling
+                if (!(window as any).snap) {
+                    throw new Error('Snap.js tidak termuat dengan benar');
+                }
+                
                 // @ts-ignore
                 window.snap.pay(data.token, {
                     onSuccess: (result: any) => {
                         console.log('[usePayment] Success:', result);
+                        // Sync user data before navigating
                         navigate('/billing?status=success');
+                        setProcessingTier(null);
                     },
                     onPending: (result: any) => {
                         console.log('[usePayment] Pending:', result);
                         navigate('/billing?status=pending');
+                        setProcessingTier(null);
                     },
                     onError: (result: any) => {
                         console.error('[usePayment] Error:', result);
@@ -96,6 +130,9 @@ export const usePayment = () => {
                     onClose: () => {
                         console.log('[usePayment] Modal closed by user');
                         setProcessingTier(null);
+                        // ENTERPRISE UX: If they close the modal, the transaction is technically PENDING 
+                        // until expired or paid. Redirect to billing to show status.
+                        navigate('/billing?status=pending');
                     }
                 });
             } else {
