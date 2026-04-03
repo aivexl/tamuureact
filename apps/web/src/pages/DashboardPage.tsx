@@ -239,7 +239,7 @@ export const DashboardPage: React.FC = () => {
                             <a
                                 key={item.id}
                                 href={`https://${publicDomain}`}
-                                className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all duration-300 group"
+                                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all duration-300 group"
                             >
                                 <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-slate-100 text-slate-400 group-hover:scale-110 transition-all duration-300">
                                     <item.icon className="w-4 h-4" />
@@ -250,7 +250,7 @@ export const DashboardPage: React.FC = () => {
                             <Link
                                 key={item.id}
                                 to={item.id === 'wishes' ? '/wishes' : `/dashboard?tab=${item.id}`}
-                                className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${activeTab === item.id ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
+                                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl transition-all duration-300 group ${activeTab === item.id ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/10' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
                             >
                                 <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${activeTab === item.id ? 'bg-teal-50 text-slate-900' : 'bg-slate-100 text-slate-400'}`}>
                                     <item.icon className="w-4 h-4" />
