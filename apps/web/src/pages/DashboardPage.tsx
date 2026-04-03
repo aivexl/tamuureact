@@ -215,7 +215,7 @@ export const DashboardPage: React.FC = () => {
     return (
         <div className="min-h-screen bg-white md:bg-slate-50 flex flex-col md:flex-row pt-[140px] md:pt-[130px] pb-24 md:pb-0">
             {/* Sidebar (Desktop Only) */}
-            <aside className={`hidden md:flex fixed md:sticky top-[140px] md:top-[130px] left-0 z-40 flex-col bg-white border-r border-slate-200 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'} h-[calc(100vh-130px)] overflow-hidden`}>
+            <aside className={`hidden md:flex fixed md:sticky top-[140px] md:top-[130px] left-0 z-40 flex-col bg-white border-r border-slate-200 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'} h-[calc(100vh-130px)] overflow-y-auto scrollbar-thin`}>
                 {/* User Profile Card */}
                 {sidebarOpen && (
                     <div className="pt-6 px-4 pb-4">
@@ -232,7 +232,7 @@ export const DashboardPage: React.FC = () => {
                 )}
 
                 {/* Navigation */}
-                <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+                <nav className="px-4 py-2 space-y-1">
                     {sidebarOpen && <p className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Menu Utama</p>}
                     {menuItems.map(item => (
                         item.id === 'home' ? (
