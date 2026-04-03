@@ -22,13 +22,29 @@ export async function updateSession(request: NextRequest) {
           const domain = isProd ? '.tamuu.id' : undefined;
 
           cookiesToSet.forEach(({ name, value, options }) => {
-            request.cookies.set({ name, value, ...options, domain, sameSite: 'lax', secure: true });
+            request.cookies.set({ 
+              name, 
+              value, 
+              ...options, 
+              domain, 
+              path: '/',
+              sameSite: 'lax', 
+              secure: true 
+            });
           })
           response = NextResponse.next({
             request,
           })
           cookiesToSet.forEach(({ name, value, options }) => {
-            response.cookies.set({ name, value, ...options, domain, sameSite: 'lax', secure: true });
+            response.cookies.set({ 
+              name, 
+              value, 
+              ...options, 
+              domain, 
+              path: '/',
+              sameSite: 'lax', 
+              secure: true 
+            });
           })
         },
       },

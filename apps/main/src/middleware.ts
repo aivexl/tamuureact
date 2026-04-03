@@ -27,13 +27,25 @@ export async function middleware(request: NextRequest) {
                      pathname.startsWith('/billing') ||
                      pathname.startsWith('/upgrade') ||
                      pathname.startsWith('/guests') ||
+                     pathname.startsWith('/invitations') ||
                      pathname.startsWith('/wishes');
 
   // STRATEGY: Proxy complex app routes to Legacy Vite (tamuu-app.pages.dev)
   // This restores the rich "7-day-ago" UI immediately while maintaining Next.js 15 Auth Shell.
+  // CRITICAL: Next.js only routes must NEVER be proxied to Legacy Vite.
+  // /billing and /upgrade stay in Vite as requested.
   const isAsset = pathname.startsWith('/assets/');
+  const isNextOnlyRoute = pathname === '/' || 
+                         pathname.startsWith('/undangan-digital') ||
+                         pathname.startsWith('/support') ||
+                         pathname.startsWith('/about') ||
+                         pathname.startsWith('/blog') ||
+                         pathname.startsWith('/terms') ||
+                         pathname.startsWith('/privacy');
+
+  const shouldProxyToLegacy = (isAppRoute || isAsset) && isAppDomain && !isNextOnlyRoute;
   
-  if ((isAppRoute || isAsset) && isAppDomain) {
+  if (shouldProxyToLegacy) {
     console.log(`[Middleware] Proxying ${pathname} to Legacy Vite`);
     const legacyUrl = new URL(pathname + url.search, 'https://tamuu-app.pages.dev');
     const proxyResponse = NextResponse.rewrite(legacyUrl);

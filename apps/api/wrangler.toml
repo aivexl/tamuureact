@@ -79,6 +79,7 @@ ENVIRONMENT = "production"
 DEBUG = "false"
 LOG_LEVEL = "info"
 VAPID_PUBLIC_KEY = "BEFQ-IB1eNJ7l6Qz5tK5zZ12ulaJWstJz5s8KXpJtQag1QxlSJ09OxXomGIjfuEfptDc-33YoF512VeFsrvY22s"
+MIDTRANS_IS_PRODUCTION = "false"
 
 [env.development.vars]
 ENVIRONMENT = "development"

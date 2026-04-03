@@ -1,0 +1,215 @@
+"use client";
+
+import React, { useRef, useState, useEffect } from 'react';
+import { motion as m } from 'framer-motion';
+import { ArrowRight, MapPin, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { getShopData } from '@/lib/api';
+import { formatAbbreviatedNumber } from '@/lib/utils';
+import { ProductCard } from '@/components/Shop/ProductCard';
+import { StarRating } from '@/components/Shop/StarRating';
+
+const ShopSection: React.FC = () => {
+    const router = useRouter();
+    const [data, setData] = useState<any>({ merchants: [], products: [], featuredAds: [] });
+    const [loading, setLoading] = useState(true);
+
+    const vendorScrollRef = useRef<HTMLDivElement | null>(null);
+    const productScrollRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        const fetchShop = async () => {
+            try {
+                const shopData = await getShopData();
+                setData({
+                    merchants: shopData.products.slice(0, 12), // Placeholder for vendors
+                    products: shopData.products.slice(0, 10),
+                    featuredAds: shopData.specialAds || []
+                });
+            } catch (error) {
+                console.error('Failed to fetch shop data', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchShop();
+    }, []);
+
+    const scroll = (ref: React.RefObject<HTMLDivElement | null>, direction: 'left' | 'right') => {
+        if (ref.current) {
+            const { scrollLeft, clientWidth } = ref.current;
+            const scrollTo = direction === 'left' ? scrollLeft - clientWidth / 2 : scrollLeft + clientWidth / 2;
+            ref.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
+        }
+    };
+
+    return (
+        <section id="shop" className="max-w-7xl mx-auto px-6 py-24 my-12">
+            <div className="mb-24">
+                <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+                    <div className="space-y-4">
+                        <h2 className="text-4xl md:text-5xl font-black text-[#0A1128] tracking-tight">Tamuu Shop.</h2>
+                        <p className="text-slate-500 max-w-xl font-medium leading-relaxed">
+                            Pilihan produk terbaik dan eksklusif untuk melengkapi kebutuhan acara Anda.
+                        </p>
+                    </div>
+
+                    <Link
+                        href="/shop"
+                        className="group inline-flex items-center gap-2 px-6 py-3 bg-[#0A1128] text-white rounded-2xl font-bold hover:bg-[#152042] transition-all flex-shrink-0 z-20"
+                    >
+                        Lihat Semua
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                </div>
+
+                <div className="relative group">
+                    <button 
+                        onClick={() => scroll(productScrollRef, 'left')}
+                        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-12 h-12 bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center text-[#0A1128] hover:bg-[#0A1128] hover:text-white transition-all z-10 opacity-0 group-hover:opacity-100"
+                    >
+                        <ChevronLeft className="w-6 h-6" />
+                    </button>
+
+                    <div 
+                        ref={productScrollRef}
+                        className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-8"
+                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    >
+                        {loading ? (
+                            [1, 2, 3, 4].map((i) => (
+                                <div key={i} className="min-w-[195px] h-[380px] bg-slate-100 animate-pulse rounded-3xl flex-shrink-0 snap-start" />
+                            ))
+                        ) : (
+                            data.products.map((product: any, index: number) => (
+                                <div key={product.id || index} className="snap-start flex-shrink-0 flex items-stretch">
+                                    <ProductCard product={product} />
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    <button 
+                        onClick={() => scroll(productScrollRef, 'right')}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-12 h-12 bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center text-[#0A1128] hover:bg-[#0A1128] hover:text-white transition-all z-10 opacity-0 group-hover:opacity-100"
+                    >
+                        <ChevronRight className="w-6 h-6" />
+                    </button>
+                </div>
+            </div>
+
+            <div className="bg-[#FBFBFB] rounded-[48px] p-8 md:p-12 border border-slate-100 shadow-sm relative">
+                <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+                    <div className="space-y-4">
+                        <h2 className="text-4xl md:text-5xl font-black text-[#0A1128] tracking-tight">Tamuu Vendor.</h2>
+                        <p className="text-slate-500 max-w-xl font-medium leading-relaxed">
+                            Temukan ribuan vendor pilihan dari MUA, Fotografer, hingga Venue terbaik untuk menyempurnakan momen spesial Anda.
+                        </p>
+                    </div>
+
+                    <Link
+                        href="/shop"
+                        className="group inline-flex items-center gap-2 px-6 py-3 bg-[#0A1128] text-white rounded-2xl font-bold hover:bg-[#152042] transition-all flex-shrink-0 z-20"
+                    >
+                        Lihat Semua
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                </div>
+
+                <div className="relative group">
+                    <button 
+                        onClick={() => scroll(vendorScrollRef, 'left')}
+                        className="absolute left-0 top-[40%] -translate-y-1/2 -translate-x-6 w-14 h-14 bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] hover:scale-110 transition-all z-10 opacity-0 group-hover:opacity-100"
+                    >
+                        <ChevronLeft className="w-6 h-6" />
+                    </button>
+
+                    <div 
+                        ref={vendorScrollRef}
+                        className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-8 pt-4"
+                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    >
+                        {data.merchants.map((merchant: any) => (
+                            <div key={merchant.id} className="snap-start flex-shrink-0">
+                                <MerchantCard merchant={merchant} router={router} />
+                            </div>
+                        ))}
+                    </div>
+
+                    <button 
+                        onClick={() => scroll(vendorScrollRef, 'right')}
+                        className="absolute right-0 top-[40%] -translate-y-1/2 translate-x-6 w-14 h-14 bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center text-[#0A1128] hover:bg-[#FFBF00] hover:scale-110 transition-all z-10 opacity-0 group-hover:opacity-100"
+                    >
+                        <ChevronRight className="w-6 h-6" />
+                    </button>
+                </div>
+            </div>
+        </section>
+    );
+};
+
+const MerchantCard: React.FC<{ merchant: any, router: any }> = ({ merchant, router }) => {
+    const displayName = merchant.nama_toko || merchant.nama_produk || 'Professional Vendor';
+    return (
+        <m.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            onClick={() => {
+                const targetSlug = merchant.slug === 'admin' ? 'official' : merchant.slug;
+                router.push(`/shop/${targetSlug}`);
+            }}
+            className="group bg-white border border-slate-50 rounded-[2rem] overflow-hidden flex flex-col hover:shadow-2xl transition-all cursor-pointer hover:border-[#0A1128]/20 relative w-full min-w-[280px]"
+        >
+            <div className="h-32 md:h-36 bg-slate-100 relative overflow-hidden">
+                {merchant.banner_url ? (
+                    <img src={merchant.banner_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Banner" />
+                ) : (
+                    <div className="w-full h-full bg-gradient-to-tr from-slate-200 to-slate-100" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A1128]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            </div>
+            
+            <div className="absolute top-20 md:top-24 left-6 md:left-8 w-16 h-16 md:w-20 md:h-20 rounded-full border-4 border-white overflow-hidden bg-white shadow-lg z-10 transition-transform duration-500 group-hover:scale-105">
+                <img 
+                    src={merchant.logo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${displayName}`} 
+                    className="w-full h-full object-cover" 
+                    alt="Logo"
+                />
+            </div>
+
+            <div className="px-6 md:px-8 pt-12 md:pt-14 pb-6 md:pb-8 flex flex-col flex-1 bg-white">
+                <div className="flex items-start justify-between gap-3 mb-1">
+                    <h3 className="text-base md:text-xl font-black text-[#0A1128] truncate flex-1 min-w-0 tracking-tight leading-none">{displayName}</h3>
+                    {merchant.wishlist_count > 0 && (
+                        <div className="flex items-center gap-1 text-[#FFBF00] flex-shrink-0 bg-[#FFBF00]/10 px-2.5 py-1 rounded-lg border border-[#FFBF00]/20">
+                            <Heart className="w-3 h-3 fill-current" />
+                            <span className="text-[9px] md:text-[10px] font-black">{formatAbbreviatedNumber(merchant.wishlist_count)}</span>
+                        </div>
+                    )}
+                </div>
+
+                <StarRating 
+                    rating={merchant.avg_rating || 0} 
+                    count={merchant.review_count || 0} 
+                    size={12} 
+                    className="mb-3"
+                />
+
+                <div className="flex flex-col gap-3">
+                    <p className="text-[10px] md:text-[11px] font-bold text-[#FFBF00] uppercase tracking-[0.2em]">{merchant.nama_kategori || 'Professional Vendor'}</p>
+                    <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-slate-50 flex items-center justify-center shrink-0">
+                            <MapPin className="w-2.5 h-2.5 md:w-3 md:h-3 text-slate-400" />
+                        </div>
+                        <p className="text-[10px] md:text-[11px] font-bold text-slate-500 uppercase tracking-widest truncate">
+                            {merchant.kota ? merchant.kota.replace(/^(kota|kab\.)\s+/gi, '') : 'Nasional'}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </m.div>
+    );
+};
+
+export default ShopSection;

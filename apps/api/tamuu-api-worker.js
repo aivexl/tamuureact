@@ -2062,8 +2062,8 @@ export default {
             if (path === '/api/shop/carousel' && method === 'GET') {
                 try {
                     const slides = await env.DB.prepare(`
-                        SELECT * FROM shop_carousel 
-                        WHERE is_active = 1 
+                        SELECT * FROM shop_carousel
+                        WHERE is_active = 1
                         ORDER BY order_index ASC
                     `).all();
                     return json({ success: true, slides: slides.results }, corsHeaders);
@@ -2072,6 +2072,19 @@ export default {
                 }
             }
 
+            // [NEW] PUBLIC DISCOVERY: Invitations Carousel
+            if (path === '/api/invitations/carousel' && method === 'GET') {
+                try {
+                    const slides = await env.DB.prepare(`
+                        SELECT * FROM invitations_carousel
+                        WHERE is_active = 1
+                        ORDER BY order_index ASC
+                    `).all();
+                    return json({ success: true, slides: slides.results }, corsHeaders);
+                } catch (error) {
+                    return json({ error: 'Failed to fetch invitations carousel' }, { ...corsHeaders, status: 500 });
+                }
+            }
             // ============================================
             // ADMIN: SHOP MANAGEMENT
             // ============================================
@@ -2533,6 +2546,36 @@ export default {
                     const id = path.split('/').pop();
                     await env.DB.prepare('DELETE FROM shop_carousel WHERE id = ?').bind(id).run();
                     return json({ success: true }, corsHeaders);
+                }
+
+                // ============================================
+                // ADMIN: INVITATIONS CAROUSEL MANAGEMENT
+                // ============================================
+                if (path === '/api/admin/invitations/carousel' && method === 'GET') {
+                    const slides = await env.DB.prepare('SELECT * FROM invitations_carousel ORDER BY order_index ASC').all();
+                    return json({ success: true, slides: slides.results }, corsHeaders);
+                }
+
+                if (path === '/api/admin/invitations/carousel' && method === 'POST') {
+                    const { action, item } = await request.json();
+                    if (!action || !item) return json({ error: 'Action and item required' }, { ...corsHeaders, status: 400 });
+
+                    if (action === 'create') {
+                        const newId = crypto.randomUUID();
+                        await env.DB.prepare(
+                            'INSERT INTO invitations_carousel (id, image_url, link_url, order_index, is_active) VALUES (?, ?, ?, ?, ?)'
+                        ).bind(newId, item.image_url, item.link_url || null, item.order_index || 0, item.is_active !== undefined ? item.is_active : 1).run();
+                        return json({ success: true, id: newId }, corsHeaders);
+                    } else if (action === 'update') {
+                        await env.DB.prepare(
+                            'UPDATE invitations_carousel SET image_url = ?, link_url = ?, order_index = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+                        ).bind(item.image_url, item.link_url, item.order_index, item.is_active, item.id).run();
+                        return json({ success: true }, corsHeaders);
+                    } else if (action === 'delete') {
+                        await env.DB.prepare('DELETE FROM invitations_carousel WHERE id = ?').bind(item.id).run();
+                        return json({ success: true }, corsHeaders);
+                    }
+                    return json({ error: 'Invalid action' }, { ...corsHeaders, status: 400 });
                 }
 
                 // 4c. ADMIN REPORTS: Fetch and manage reports
@@ -3071,11 +3114,21 @@ export default {
                     ]);
 
                     return json({ success: true }, corsHeaders);
-                } catch (error) {
+                    } catch (error) {
                     return json({ error: 'Failed to track click' }, { ...corsHeaders, status: 500 });
-                }
-            }
+                    }
+                    }
 
+                    // [NEW] TRACK AD VIEW
+                    if (path.startsWith('/api/shop/ads/view/') && method === 'POST') {
+                    const adId = path.split('/').pop();
+                    try {
+                    await env.DB.prepare('UPDATE shop_ads SET total_views = total_views + 1 WHERE id = ?').bind(adId).run();
+                    return json({ success: true }, corsHeaders);
+                    } catch (error) {
+                    return json({ error: 'Failed to track view' }, { ...corsHeaders, status: 500 });
+                    }
+                    }
             // [NEW] CAMPAIGN MANAGEMENT (VENDOR SIDE)
             if (path === '/api/shop/ads/my-campaigns' && method === 'GET') {
                 const vendorId = url.searchParams.get('vendor_id');
@@ -3856,6 +3909,13 @@ CONTEXT:
             // PUBLIC: Get Single Post by Slug
             if (path.startsWith('/api/blog/post/') && method === 'GET') {
                 const slug = path.split('/').pop();
+
+                // RESERVED ROUTES: Prevent noise for /undangan-digital and other core routes
+                const reservedSlugs = ['undangan-digital', 'invitations', 'shop', 'blog', 'onboarding', 'dashboard', 'upgrade', 'billing', 'support', 'terms', 'privacy', 'about', 'contact', 'login', 'signup'];
+                if (reservedSlugs.includes(slug.toLowerCase())) {
+                    return json({ success: false, error: 'Reserved route - handled by /undangan-digital or core app', is_reserved: true }, { ...corsHeaders, status: 404 });
+                }
+
                 // Edge Cache Control: 5 minutes
                 const cacheControl = { ...corsHeaders, 'Cache-Control': 'public, max-age=300, s-maxage=300' };
 
@@ -5121,14 +5181,20 @@ name = COALESCE(?, name),
                 return json({ triggered: true, effect, name: guestName }, corsHeaders);
             }
 
-            // ============================================
             // SMART PREVIEW RESOLVER (Universal)
             // Tries template first, then invitation (with Expiry Check)
             // ============================================
             if (path.startsWith('/api/preview/') && method === 'GET') {
+                const slug = path.split('/')[3];
+                if (!slug) return null;
+
+                // RESERVED ROUTES: Prevent noise for /undangan-digital and other core routes
+                const reservedSlugs = ['undangan-digital', 'invitations', 'shop', 'blog', 'onboarding', 'dashboard', 'upgrade', 'billing', 'support', 'terms', 'privacy', 'about', 'contact', 'login', 'signup'];
+                if (reservedSlugs.includes(slug.toLowerCase())) {
+                    return json({ success: false, error: 'Reserved route - handled by /undangan-digital or core app', is_reserved: true }, { ...corsHeaders, status: 404 });
+                }
+
                 return await smart_cache(request, 60, async () => {
-                    const slug = path.split('/')[3];
-                    if (!slug) return null;
 
                     // 1. Try Template (Templates never expire)
                     let { results: templateResults } = await env.DB.prepare(

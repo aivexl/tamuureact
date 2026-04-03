@@ -18,6 +18,17 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body className="bg-white min-h-screen selection:bg-amber-100 flex flex-col">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.addEventListener('error', (e) => {
+                if (e.message && (e.message.includes('ChunkLoadError') || e.message.includes('Loading chunk'))) {
+                  window.location.reload();
+                }
+              }, true);
+            `,
+          }}
+        />
         <AuthProvider>
           <Suspense fallback={<div className="h-16 bg-white border-b border-slate-100" />}>
             <Navbar />

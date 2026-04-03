@@ -61,6 +61,34 @@ const GuestWelcomeDisplay = lazy(() => import('./pages/GuestWelcomeDisplay').the
 const GuestWelcomePage = lazy(() => import('./pages/GuestWelcomePage').then(m => ({ default: m.GuestWelcomePage })));
 
 import { usePushNotifications } from './hooks/usePushNotifications';
+import { useStore } from './store/useStore';
+
+// ============================================
+// AUTH SYNC COMPONENT (Next.js -> Vite)
+// ============================================
+const AuthSync: React.FC = () => {
+    const { setAuthSession, isAuthenticated, isLoading } = useStore();
+
+    useEffect(() => {
+        // Only sync if not already authenticated and not loading
+        if (!isAuthenticated) {
+            try {
+                const userData = localStorage.getItem('tamuu_user');
+                const token = localStorage.getItem('tamuu_token');
+
+                if (userData && token) {
+                    const user = JSON.parse(userData);
+                    console.log('[Auth Sync] Found Next.js session in localStorage, syncing to Vite store:', user.email);
+                    setAuthSession({ user, token });
+                }
+            } catch (err) {
+                console.error('[Auth Sync] Failed to parse Next.js session:', err);
+            }
+        }
+    }, [isAuthenticated, setAuthSession]);
+
+    return null;
+};
 
 const App: React.FC = () => {
     const { subscribe, permission } = usePushNotifications();
@@ -75,6 +103,7 @@ const App: React.FC = () => {
 
     return (
         <BrowserRouter>
+            <AuthSync />
             <LazyMotion features={domMax} strict>
                 <Suspense fallback={<PremiumLoader />}>
                     <GlobalModal />

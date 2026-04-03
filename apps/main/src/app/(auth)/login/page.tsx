@@ -14,6 +14,7 @@ function LoginContent() {
     const [isLoading, setIsLoading] = useState(false);
     const searchParams = useSearchParams();
     const returnTo = searchParams.get('return_to');
+    const tier = searchParams.get('tier');
 
     const handleLogin = async (loginData: any) => {
         setIsLoading(true);
@@ -23,7 +24,8 @@ function LoginContent() {
             const result = await login({ 
                 email: loginData.email, 
                 password: loginData.password, 
-                return_to: returnTo 
+                return_to: returnTo,
+                tier: tier
             });
             
             if (result?.error) {

@@ -15,7 +15,7 @@ const CTASection: React.FC = () => {
                     <h2 className="text-4xl md:text-6xl font-black text-white mb-8 leading-[1.1]">Siap Untuk Membuat Momen Tak Terlupakan?</h2>
                     <p className="text-white/50 text-lg mb-12 max-w-xl mx-auto font-medium">Buat undangan premium Anda hari ini. Mulai gratis, tanpa kartu kredit.</p>
                     <Link
-                        href="/onboarding"
+                        href="/editor"
                         className="inline-flex items-center gap-2 px-10 py-5 rounded-2xl bg-[#FFBF00] text-[#0A1128] font-black text-lg hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[#FFBF00]/20"
                     >
                         Daftar Sekarang <ArrowRight className="w-5 h-5" />

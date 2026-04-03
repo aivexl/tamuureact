@@ -8,6 +8,7 @@ import { useStore } from '@tamuu/shared';
 interface AuthContextType {
     user: any;
     session: any;
+    isAuthenticated: boolean;
     isLoading: boolean;
     signOut: () => Promise<void>;
 }
@@ -19,6 +20,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [user, setUser] = useState<any>(null);
     const [session, setSession] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const isAuthenticated = !!user || !!session;
     const lastSyncedSession = useRef<string | null>(null);
     const isLoggingOut = useRef<boolean>(false);
     const router = useRouter();
@@ -167,7 +169,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     return (
-        <AuthContext.Provider value={{ user, session, isLoading, signOut }}>
+        <AuthContext.Provider value={{ user, session, isAuthenticated, isLoading, signOut }}>
             {children}
         </AuthContext.Provider>
     );

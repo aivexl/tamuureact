@@ -4,10 +4,10 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
-export async function login(data: { email: string; password: string; return_to?: string | null }) {
+export async function login(data: { email: string; password: string; return_to?: string | null; tier?: string | null }) {
   const supabase = await createClient()
 
-  const { email, password, return_to } = data
+  const { email, password, return_to, tier } = data
 
   const { data: authData, error } = await supabase.auth.signInWithPassword({
     email,
@@ -32,6 +32,14 @@ export async function login(data: { email: string; password: string; return_to?:
 
   revalidatePath('/', 'layout')
 
+  // PRIORITY 1: Redirect to Upgrade with Tier if provided
+  if (tier) {
+    const isProd = process.env.NODE_ENV === 'production';
+    const baseUrl = isProd ? 'https://app.tamuu.id' : '';
+    redirect(`${baseUrl}/upgrade?tier=${tier}`);
+  }
+
+  // PRIORITY 2: Redirect to specific return URL
   if (return_to) {
     redirect(return_to)
   }
