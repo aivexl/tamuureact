@@ -263,14 +263,14 @@ export const DashboardPage: React.FC = () => {
 
 
                 {/* Account Section */}
-                <div className="p-4 border-t border-slate-100 mt-auto space-y-4">
+                <div className="px-4 py-4 border-t border-slate-100 space-y-2 pb-10">
                     <div>
                         {sidebarOpen && <p className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Layanan</p>}
-                        <Link to="/profile" className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all group">
+                        <Link to="/profile" className="w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all group">
                             <UserIcon className="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110" />
                             {sidebarOpen && <span className="text-sm font-bold tracking-tight">Edit Profil</span>}
                         </Link>
-                        <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-rose-600 hover:bg-rose-50 transition-all">
+                        <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-rose-600 hover:bg-rose-50 transition-all">
                             <LogOutIcon className="w-5 h-5 flex-shrink-0" />
                             {sidebarOpen && <span className="text-sm font-bold tracking-tight">Log Out</span>}
                         </button>
