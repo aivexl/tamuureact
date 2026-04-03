@@ -218,8 +218,8 @@ export const DashboardPage: React.FC = () => {
             <aside className={`hidden md:flex fixed md:sticky top-[140px] md:top-[130px] left-0 z-40 flex-col bg-white border-r border-slate-200 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'} h-[calc(100vh-130px)] overflow-hidden`}>
                 {/* User Profile Card */}
                 {sidebarOpen && (
-                    <div className="pt-10 px-6 pb-6">
-                        <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:border-teal-200 transition-all cursor-pointer">
+                    <div className="pt-6 px-4 pb-4">
+                        <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-100 group hover:border-teal-200 transition-all cursor-pointer">
                             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-teal-500/20 group-hover:scale-105 transition-transform">
                                 {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
                             </div>
