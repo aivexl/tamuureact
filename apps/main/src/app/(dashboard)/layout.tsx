@@ -19,6 +19,7 @@ import {
     Scan
 } from 'lucide-react';
 import { useStore } from '@tamuu/shared';
+import { getPublicDomain } from '@/lib/utils';
 
 const sidebarLinks = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
@@ -39,14 +40,16 @@ export default function DashboardLayout({
     const router = useRouter();
     const [isSidebarOpen, setSidebarOpen] = useState(true);
 
+    const publicBase = process.env.NODE_ENV === 'production' ? `https://${getPublicDomain()}` : '';
+
     return (
         <div className="flex min-h-screen bg-slate-50">
             {/* Sidebar - Desktop */}
             <aside className={`hidden md:flex flex-col w-72 bg-white border-r border-slate-200 transition-all duration-300 ${isSidebarOpen ? '' : '-ml-72'}`}>
                 <div className="p-8">
-                    <Link href="/" className="block">
+                    <a href={`${publicBase}/`} className="block">
                         <img src="/images/logo-tamuu-vfinal-v1.webp" alt="Tamuu" className="h-8 w-auto" />
-                    </Link>
+                    </a>
                 </div>
 
                 <nav className="flex-1 px-4 space-y-1">

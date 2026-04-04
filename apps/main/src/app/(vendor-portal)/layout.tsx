@@ -16,6 +16,7 @@ import {
     Store
 } from 'lucide-react';
 import { useStore } from '@tamuu/shared';
+import { getPublicDomain } from '@/lib/utils';
 
 export default function VendorPortalLayout({
     children,
@@ -29,6 +30,7 @@ export default function VendorPortalLayout({
     const [isSidebarOpen, setSidebarOpen] = useState(true);
 
     const vendorSlug = params.slug || 'dashboard';
+    const publicBase = process.env.NODE_ENV === 'production' ? `https://${getPublicDomain()}` : '';
 
     const sidebarLinks = [
         { id: 'overview', label: 'Overview', icon: LayoutDashboard, path: `/vendor/${vendorSlug}` },
@@ -44,10 +46,10 @@ export default function VendorPortalLayout({
             {/* Sidebar */}
             <aside className={`hidden md:flex flex-col w-72 bg-white border-r border-slate-100 transition-all duration-300 ${isSidebarOpen ? '' : '-ml-72'}`}>
                 <div className="p-8">
-                    <Link href="/" className="flex items-center gap-3">
+                    <a href={`${publicBase}/`} className="flex items-center gap-3">
                         <img src="/images/logo-tamuu-vfinal-v1.webp" alt="Tamuu" className="h-8 w-auto" />
                         <span className="bg-amber-100 text-[#FFBF00] text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">Vendor</span>
-                    </Link>
+                    </a>
                 </div>
 
                 <nav className="flex-1 px-4 space-y-1">

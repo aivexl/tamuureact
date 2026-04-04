@@ -21,13 +21,14 @@ import {
 
 import { useStore } from '@tamuu/shared';
 import { useAuth } from '@/providers/AuthProvider';
+import { getAbsoluteUrl, getIsCrossDomain } from '@/lib/utils';
 
 const INDONESIA_REGIONS = [
     'Jakarta', 'Surabaya', 'Bandung', 'Medan', 'Semarang', 'Makassar', 'Palembang', 'Tangerang', 'Depok', 'South Tangerang'
 ];
 
 export const Navbar = () => {
-    const { isAuthenticated, user, logout } = useStore();
+    const { isAuthenticated, user } = useStore();
     const { signOut } = useAuth();
     const isLoggedIn = isAuthenticated;
 
@@ -90,21 +91,32 @@ export const Navbar = () => {
         pathname.startsWith('/store') ||
         pathname.startsWith('/tools');
 
+    const SmartLink = ({ href, className, children, onClick, prefetch = false }: { href: string, className?: string, children: React.ReactNode, onClick?: () => void, prefetch?: boolean }) => {
+        const absoluteUrl = getAbsoluteUrl(href);
+        const isCrossDomain = getIsCrossDomain(absoluteUrl);
+
+        if (isCrossDomain) {
+            return <a href={absoluteUrl} className={className} onClick={onClick}>{children}</a>;
+        }
+        // If it's the same domain, strip the domain part so Next.js Link handles it as a relative path
+        const relativePath = absoluteUrl.replace(/^https?:\/\/[^\/]+/, '');
+        return <Link href={relativePath || '/'} prefetch={prefetch} className={className} onClick={onClick}>{children}</Link>;
+    };
+
     const navLinks = isLoggedIn ? [
-        { name: 'Home', path: '/', prefetch: false },
-        { name: 'Undangan Digital', path: '/undangan-digital', prefetch: false },
-        { name: 'Invitations', path: '/invitations', prefetch: false },
-        { name: 'Blog', path: '/blog', prefetch: false },
-        { name: 'Dashboard', path: 'https://app.tamuu.id/dashboard', prefetch: false },
-        { name: 'Event Saya', path: 'https://app.tamuu.id/dashboard', prefetch: false },
-        { name: 'Bantuan', path: '/support', prefetch: false },
+        { name: 'Home', path: `/` },
+        { name: 'Undangan Digital', path: `/undangan-digital` },
+        { name: 'Invitations', path: `/invitations` },
+        { name: 'Blog', path: `/blog` },
+        { name: 'Dashboard', path: `/dashboard` },
+        { name: 'Bantuan', path: `/support` },
     ] : [
-        { name: 'Home', path: '/', prefetch: false },
-        { name: 'Undangan Digital', path: '/undangan-digital', prefetch: false },
-        { name: 'Invitations', path: '/invitations', prefetch: false },
-        { name: 'Blog', path: '/blog', prefetch: false },
-        { name: 'Fitur', path: '/undangan-digital#features', prefetch: false },
-        { name: 'Harga', path: '/undangan-digital#pricing', prefetch: false },
+        { name: 'Home', path: `/` },
+        { name: 'Undangan Digital', path: `/undangan-digital` },
+        { name: 'Invitations', path: `/invitations` },
+        { name: 'Blog', path: `/blog` },
+        { name: 'Fitur', path: `/undangan-digital#features` },
+        { name: 'Harga', path: `/undangan-digital#pricing` },
     ];
 
     const handleSearchSubmit = (e: React.FormEvent) => {
@@ -112,7 +124,13 @@ export const Navbar = () => {
         const params = new URLSearchParams();
         if (searchQuery) params.append('q', searchQuery);
         if (selectedCity !== 'All') params.append('city', selectedCity);
-        router.push(`/?${params.toString()}`);
+        
+        const targetUrl = getAbsoluteUrl(`/?${params.toString()}`);
+        if (getIsCrossDomain(targetUrl)) {
+            window.location.href = targetUrl;
+        } else {
+            router.push(`/?${params.toString()}`);
+        }
     };
 
     const filteredCities = useMemo(() => {
@@ -129,13 +147,14 @@ export const Navbar = () => {
                     <div className="max-w-7xl mx-auto px-4 sm:px-6">
                         <div className="flex items-center justify-between h-16 gap-4">
                             <div className="flex items-center shrink-0">
-                                <Link href="/" className="flex items-center gap-3 group" aria-label="Tamuu - Halaman Utama">
+                                {/* ALWAYS use <a> for logo to ensure clean cross-domain root landing */}
+                                <a href={getAbsoluteUrl('/')} className="flex items-center gap-3 group" aria-label="Tamuu - Halaman Utama">
                                     <img
                                         src="/images/logo-tamuu-vfinal-v1.webp"
                                         alt="Tamuu"
                                         className="h-7 md:h-9 w-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity"
                                     />
-                                </Link>
+                                </a>
                             </div>
 
                             <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-2xl mx-auto items-center bg-slate-100/80 border border-slate-200 rounded-full px-2 py-1.5 focus-within:bg-white focus-within:ring-2 focus-within:ring-[#FFBF00]/20 focus-within:border-[#FFBF00]/30 transition-all">
@@ -209,13 +228,13 @@ export const Navbar = () => {
                                 {!isLoggedIn ? (
                                     <div className="hidden md:flex items-center gap-2">
                                         <a
-                                            href="https://app.tamuu.id/login"
+                                            href={getAbsoluteUrl('/login')}
                                             className="px-5 py-2 text-xs font-bold text-slate-600 hover:text-black transition-colors"
                                         >
                                             Masuk
                                         </a>
                                         <a
-                                            href="https://app.tamuu.id/signup"
+                                            href={getAbsoluteUrl('/signup')}
                                             className="bg-[#0A1128] text-white px-5 py-2 rounded-full text-xs font-bold hover:bg-slate-800 hover:shadow-lg transition-all duration-300"
                                         >
                                             Buat Undangan
@@ -223,12 +242,12 @@ export const Navbar = () => {
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-2">
-                                        <a
-                                            href="https://app.tamuu.id/dashboard?tab=wishlist"
+                                        <SmartLink
+                                            href="/dashboard?tab=wishlist"
                                             className="p-2.5 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-rose-500 transition-all"
                                         >
                                             <Heart className="w-5 h-5" />
-                                        </a>
+                                        </SmartLink>
                                         
                                         <div className="relative profile-dropdown-container">
                                             <button
@@ -258,18 +277,18 @@ export const Navbar = () => {
                                                         </div>
 
                                                         <div className="p-2 space-y-0.5">
-                                                            <a href="https://app.tamuu.id/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+                                                            <SmartLink href="/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
                                                                 <User className="w-4 h-4" />
                                                                 <span>Profil Saya</span>
-                                                            </a>
-                                                            <a href="https://app.tamuu.id/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+                                                            </SmartLink>
+                                                            <SmartLink href="/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
                                                                 <LayoutDashboard className="w-4 h-4" />
                                                                 <span>Dashboard</span>
-                                                            </a>
-                                                            <a href="https://app.tamuu.id/billing" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+                                                            </SmartLink>
+                                                            <SmartLink href="/billing" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
                                                                 <CreditCard className="w-4 h-4" />
                                                                 <span>Billing</span>
-                                                            </a>
+                                                            </SmartLink>
                                                         </div>
 
                                                         <div className="mx-2 h-px bg-slate-100" />
@@ -278,6 +297,7 @@ export const Navbar = () => {
                                                             <button
                                                                 onClick={async () => {
                                                                     await signOut();
+                                                                    window.location.href = getAbsoluteUrl('/');
                                                                 }}
                                                                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors text-left"
                                                             >
@@ -303,14 +323,13 @@ export const Navbar = () => {
 
                         <div className="hidden md:flex items-center justify-center gap-6 py-2 border-t border-slate-100">
                             {navLinks.map((link) => (
-                                <Link
+                                <SmartLink
                                     key={link.name}
                                     href={link.path}
-                                    prefetch={link.prefetch}
                                     className="text-[11px] font-black uppercase tracking-widest text-slate-500 hover:text-[#0A1128] transition-colors"
                                 >
                                     {link.name}
-                                </Link>
+                                </SmartLink>
                             ))}
                         </div>
                     </div>
@@ -327,14 +346,14 @@ export const Navbar = () => {
                     >
                         <div className="flex flex-col gap-6">
                             {navLinks.map((link) => (
-                                <Link
+                                <SmartLink
                                     key={link.name}
                                     href={link.path}
                                     onClick={() => setIsMobileMenuOpen(false)}
                                     className="text-2xl font-black text-slate-800"
                                 >
                                     {link.name}
-                                </Link>
+                                </SmartLink>
                             ))}
                         </div>
                     </motion.div>

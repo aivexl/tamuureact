@@ -1,8 +1,18 @@
 import React from 'react';
 import Link from 'next/link';
 import { Sparkles, Instagram, Facebook, Youtube, Mail, MapPin } from 'lucide-react';
+import { getAbsoluteUrl, getIsCrossDomain } from '@/lib/utils';
 
 export const Footer = () => {
+    const SmartLink = ({ href, className, children, prefetch = false }: { href: string, className?: string, children: React.ReactNode, prefetch?: boolean }) => {
+        const absoluteUrl = getAbsoluteUrl(href);
+        if (getIsCrossDomain(absoluteUrl)) {
+            return <a href={absoluteUrl} className={className}>{children}</a>;
+        }
+        const relativePath = absoluteUrl.replace(/^https?:\/\/[^\/]+/, '');
+        return <Link href={relativePath || '/'} prefetch={prefetch} className={className}>{children}</Link>;
+    };
+
     return (
         <footer className="bg-[#0A1128] pt-20 pb-10 px-6 border-t border-white/5">
             <div className="max-w-7xl mx-auto">
@@ -10,7 +20,9 @@ export const Footer = () => {
                     {/* Brand */}
                     <div className="space-y-6">
                         <div className="flex items-center gap-3">
-                            <img src="/images/logo-tamuu-vfinal-v1.webp" alt="Tamuu Logo" className="h-8 sm:h-10 w-auto brightness-0 invert" draggable="false" />
+                            <a href={getAbsoluteUrl('/')}>
+                                <img src="/images/logo-tamuu-vfinal-v1.webp" alt="Tamuu Logo" className="h-8 sm:h-10 w-auto brightness-0 invert cursor-pointer" draggable="false" />
+                            </a>
                         </div>
                         <p className="text-slate-300 text-sm leading-relaxed font-medium">
                             Tamuu adalah platform all-in-one yang memudahkan Anda mencari vendor pernikahan terbaik sekaligus mengelola undangan digital premium dalam satu platform.
@@ -37,11 +49,11 @@ export const Footer = () => {
                     <div>
                         <h2 className="text-[#FFBF00] font-black uppercase tracking-widest text-xs mb-8">Platform</h2>
                         <ul className="space-y-4">
-                            <li><Link href="/about" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">About Us</Link></li>
-                            <li><Link href="/undangan-digital" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Undangan Digital</Link></li>
-                            <li><Link href="/invitations" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Templates</Link></li>
-                            <li><Link href="/blog" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Blog & Artikel</Link></li>
-                            <li><Link href="/support" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Support Center</Link></li>
+                            <li><SmartLink href="/about" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">About Us</SmartLink></li>
+                            <li><SmartLink href="/undangan-digital" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Undangan Digital</SmartLink></li>
+                            <li><SmartLink href="/invitations" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Templates</SmartLink></li>
+                            <li><SmartLink href="/blog" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Blog & Artikel</SmartLink></li>
+                            <li><SmartLink href="/support" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Support Center</SmartLink></li>
                         </ul>
                     </div>
 
@@ -49,11 +61,11 @@ export const Footer = () => {
                     <div>
                         <h2 className="text-[#FFBF00] font-black uppercase tracking-widest text-xs mb-8">Discovery</h2>
                         <ul className="space-y-4">
-                            <li><Link href="/shop" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Vendor Discovery</Link></li>
-                            <li><Link href="/c/mua" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Makeup Artist</Link></li>
-                            <li><Link href="/c/catering" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Catering & Food</Link></li>
-                            <li><Link href="/c/venue" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Wedding Venues</Link></li>
-                            <li><Link href="/c/photography" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Photography</Link></li>
+                            <li><SmartLink href="/shop" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Vendor Discovery</SmartLink></li>
+                            <li><SmartLink href="/c/mua" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Makeup Artist</SmartLink></li>
+                            <li><SmartLink href="/c/catering" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Catering & Food</SmartLink></li>
+                            <li><SmartLink href="/c/venue" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Wedding Venues</SmartLink></li>
+                            <li><SmartLink href="/c/photography" className="text-slate-300 hover:text-white transition-colors text-sm font-bold">Photography</SmartLink></li>
                         </ul>
                     </div>
 
@@ -89,8 +101,8 @@ export const Footer = () => {
                         © 2026 Tamuu Indonesia. All rights reserved.
                     </p>
                     <div className="flex items-center gap-8">
-                        <Link href="/privacy" prefetch={false} className="text-slate-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">Privacy Policy</Link>
-                        <Link href="/terms" prefetch={false} className="text-slate-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">Terms of Service</Link>
+                        <SmartLink href="/privacy" prefetch={false} className="text-slate-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">Privacy Policy</SmartLink>
+                        <SmartLink href="/terms" prefetch={false} className="text-slate-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">Terms of Service</SmartLink>
                     </div>
                 </div>
             </div>

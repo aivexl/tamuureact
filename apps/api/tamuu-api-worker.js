@@ -51,36 +51,6 @@ export default {
         const method = request.method;
         const cache = caches.default;
 
-        /**
-         * Smart Caching Helper for Edge Caching
-         * Wraps a fetcher function and caches the result using Cloudflare Cache API
-         */
-        const smart_cache = async (req, ttl, fetcher) => {
-            const cacheKey = new Request(req.url, req);
-            let response = await cache.match(cacheKey);
-
-            if (!response) {
-                // Cache MISS - Fetch fresh data
-                const freshData = await fetcher();
-                if (!freshData) return notFound(corsHeaders);
-
-                // Create cacheable response
-                response = json(freshData, {
-                    headers: {
-                        ...corsHeaders,
-                        'Cache-Control': `public, max-age=${ttl}`,
-                        'CF-Cache-Status': 'MISS',
-                        'X-Tamuu-Cache': 'MISS'
-                    }
-                });
-
-                // Store in cache asynchronously
-                ctx.waitUntil(cache.put(cacheKey, response.clone()));
-            }
-            return response;
-        };
-
-
         // CTO SECURITY ENFORCEMENT: Enhanced Origin Whitelisting
         const origin = request.headers.get('Origin');
         const isAllowedOrigin = (origin) => {
@@ -90,14 +60,29 @@ export default {
             if (origin.endsWith('.pages.dev') || origin.includes('tamuu-app')) return true;
             return false;
         };
-        
+
         const corsOrigin = isAllowedOrigin(origin) ? origin : 'https://tamuu.id';
+
+        // 1. GLOBAL PREFLIGHT INTERCEPTOR
+        if (method === 'OPTIONS') {
+            return new Response(null, {
+                status: 204,
+                headers: {
+                    'Access-Control-Allow-Origin': corsOrigin,
+                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+                    'Access-Control-Allow-Credentials': 'true',
+                    'Access-Control-Max-Age': '86400'
+                }
+            });
+        }
 
         const corsHeaders = {
             'Access-Control-Allow-Origin': corsOrigin,
             'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
             'Access-Control-Allow-Credentials': 'true',
+            'Vary': 'Origin',
             'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
             // CTO SECURITY: Enterprise Hardening Headers
             'X-Frame-Options': 'DENY',
@@ -107,25 +92,56 @@ export default {
             'Permissions-Policy': 'camera=(), microphone=(), geolocation=()'
         };
 
-        // CTO SECURITY ENFORCEMENT: Production Log Silencer
-        const isProd = env.ENVIRONMENT === 'production';
-        const logger = {
-            log: (...args) => { if (!isProd) console.log('[LOG]', ...args); },
-            error: (...args) => { if (isProd) console.error('[CRITICAL]', ...args); else console.error('[ERR]', ...args); },
-            warn: (...args) => { if (!isProd) console.warn('[WARN]', ...args); }
-        };
+        // 2. GLOBAL RESPONSE ORCHESTRATOR
+        // This wraps the main logic to ensure CORS headers are NEVER stale
+        const handleRequest = async () => {
+            /**
+             * Smart Caching Helper for Edge Caching
+             * Wraps a fetcher function and caches the result using Cloudflare Cache API
+             * CTO POLICY: Headers are handled by the outer orchestrator
+             */
+            const smart_cache = async (req, ttl, fetcher) => {
+                const cacheUrl = new URL(req.url);
+                // CTO: Include origin in cache key to avoid CORS cross-talk across domains
+                const effectiveOrigin = req.headers.get('Origin') || 'no-origin';
+                cacheUrl.searchParams.set('__cors_origin', effectiveOrigin);
+                
+                const cacheKey = new Request(cacheUrl.toString(), req);
+                let response = await cache.match(cacheKey);
 
-        // CTO: Parameter Normalization Helper
-        const getParam = (name) => {
-            const val = url.searchParams.get(name);
-            if (val === 'undefined' || val === 'null' || val === '') return null;
-            return val;
-        };
+                if (!response) {
+                    const freshData = await fetcher();
+                    if (!freshData) return notFound(corsHeaders);
 
-        // Handle preflight
-        if (method === 'OPTIONS') {
-            return new Response(null, { headers: corsHeaders });
-        }
+                    response = json(freshData, {
+                        headers: {
+                            ...corsHeaders,
+                            'Cache-Control': `public, max-age=${ttl}`,
+                            'CF-Cache-Status': 'MISS',
+                            'X-Tamuu-Cache': 'MISS'
+                        }
+                    });
+
+                    ctx.waitUntil(cache.put(cacheKey, response.clone()));
+                }
+                return response;
+            };
+
+            try {
+                // CTO SECURITY ENFORCEMENT: Production Log Silencer
+            const isProd = env.ENVIRONMENT === 'production';
+            const logger = {
+                log: (...args) => { if (!isProd) console.log('[LOG]', ...args); },
+                error: (...args) => { if (isProd) console.error('[CRITICAL]', ...args); else console.error('[ERR]', ...args); },
+                warn: (...args) => { if (!isProd) console.warn('[WARN]', ...args); }
+            };
+
+            // CTO: Parameter Normalization Helper
+            const getParam = (name) => {
+                const val = url.searchParams.get(name);
+                if (val === 'undefined' || val === 'null' || val === '') return null;
+                return val;
+            };
 
         const generateSlug = (text) => {
             return text
@@ -353,10 +369,9 @@ export default {
             }
         };
 
-        try {
-            // ============================================
-            // AI CHAT ENDPOINTS (System v8.0)
-            // ============================================
+        // ============================================
+        // AI CHAT ENDPOINTS (System v8.0)
+        // ============================================
 
             // ENHANCED: AI Chat Support v8.0 - Enterprise Grade
             if ((path === '/api/chat' || path === '/api/enhanced-chat') && method === 'POST') {
@@ -6170,33 +6185,52 @@ name = COALESCE(?, name),
 
             return notFound(corsHeaders);
 
-        } catch (error) {
-            console.error('API Error:', error);
-            return new Response(JSON.stringify({ error: error.message }), {
-                status: 500,
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            });
+            } catch (error) {
+                console.error('API Error:', error);
+                return new Response(JSON.stringify({ error: error.message }), {
+                    status: 500,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                });
+            }
+        };
+
+        // 3. EXECUTE & POST-PROCESS (The CORS Firewall)
+        const finalResponse = await handleRequest();
+        
+        // CTO Hardening: Create a fresh set of headers to avoid cache pollution
+        // We clone the headers from the response and explicitly set CORS requirements
+        const finalHeaders = new Headers(finalResponse.headers);
+        finalHeaders.set('Access-Control-Allow-Origin', corsOrigin);
+        finalHeaders.set('Access-Control-Allow-Credentials', 'true');
+        
+        // Ensure browser and CDN caches vary by origin
+        const existingVary = finalHeaders.get('Vary');
+        if (!existingVary) {
+            finalHeaders.set('Vary', 'Origin');
+        } else if (!existingVary.includes('Origin')) {
+            finalHeaders.set('Vary', `${existingVary}, Origin`);
         }
+        
+        return new Response(finalResponse.body, {
+            status: finalResponse.status,
+            statusText: finalResponse.statusText,
+            headers: finalHeaders
+        });
     }
 }
 
 function json(data, options = {}) {
-    // Handle both json(data, corsHeaders) and json(data, { headers: corsHeaders, status: 200 })
     let headers = {};
     let status = 200;
 
-    if (options['Access-Control-Allow-Origin']) {
-        // corsHeaders was passed directly
+    if (options['Access-Control-Allow-Origin'] || options['Access-Control-Allow-Methods']) {
         headers = { ...options };
         status = options.status || 200;
     } else {
-        // Options object was passed
         headers = { ...(options.headers || {}) };
         status = options.status || 200;
     }
 
-    // CTO Security & Protocol Enforcement: 
-    // Remove 'status' from headers if it accidentally leaked in from options spread
     delete headers.status;
 
     return new Response(JSON.stringify(data), {
@@ -6206,6 +6240,7 @@ function json(data, options = {}) {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+            'Access-Control-Allow-Credentials': 'true',
             ...headers
         }
     });
