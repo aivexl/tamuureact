@@ -101,7 +101,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/upgrade') ||
     pathname.startsWith('/guests') ||
     pathname.startsWith('/wishes') ||
-    pathname.startsWith('/admin');
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/vendor');
 
   if (isViteRoute) {
     const legacyUrl = new URL(pathname + url.search, 'https://tamuu-app.pages.dev');

@@ -1,10 +1,9 @@
-name = "tamuu-api"
+name = "tamuu-api-prod"
 main = "tamuu-api-worker.js"
 compatibility_date = "2024-01-27"
 workers_dev = false
 
 [vars]
-MIDTRANS_SERVER_KEY = "" # Set via 'wrangler secret put MIDTRANS_SERVER_KEY'
 MIDTRANS_IS_PRODUCTION = false
 ENVIRONMENT = "production"
 

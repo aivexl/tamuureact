@@ -772,16 +772,22 @@ export default {
                     const rawKey = env.MIDTRANS_SERVER_KEY || "";
                     const serverKey = rawKey.trim();
                     
+                    console.log(`[Midtrans] Server Key Present: ${!!serverKey}, Length: ${serverKey.length}`);
+                    if (serverKey) {
+                        console.log(`[Midtrans] Server Key Prefix: ${serverKey.substring(0, 4)}...`);
+                    }
+                    
                     if (!serverKey) {
                         return json({ 
                             error: 'Midtrans Server Key is missing in environment' 
                         }, { ...corsHeaders, status: 500 });
                     }
 
-                    // Reference ID format: A1 + YYYYMMDD + HHMMSS + ShortUserID
+                    // Reference ID format: A1 + YYYYMMDD + HHMMSS + MS + ShortUserID
                     const now = new Date();
                     const timestamp = now.toISOString().replace(/[-:T]/g, '').split('.')[0]; 
-                    const orderId = `A1${timestamp}${userId.substring(0, 5).toUpperCase()}`;
+                    const ms = now.getMilliseconds().toString().padStart(3, '0');
+                    const orderId = `A1${timestamp}${ms}${userId.substring(0, 5).toUpperCase()}`;
                     
                     const authHeader = `Basic ${btoa(serverKey + ':')}`;
 
@@ -789,7 +795,8 @@ export default {
                     const isProdEnv = env.MIDTRANS_IS_PRODUCTION === 'true' || env.MIDTRANS_IS_PRODUCTION === true;
                     const midtransBaseUrl = isProdEnv ? 'https://app.midtrans.com/snap/v1/transactions' : 'https://app.sandbox.midtrans.com/snap/v1/transactions';
                     
-                    console.log(`[Midtrans] SNAP_INIT: Env=${isProdEnv ? 'PROD' : 'SANDBOX'}, URL=${midtransBaseUrl}`);
+                    const integerAmount = Math.floor(Number(amount));
+                    console.log(`[Midtrans] SNAP_INIT: Env=${isProdEnv ? 'PROD' : 'SANDBOX'}, OrderID=${orderId}, Amount=${integerAmount}`);
 
                     const midtransResponse = await fetch(midtransBaseUrl, {
                         method: 'POST',
@@ -801,11 +808,11 @@ export default {
                         body: JSON.stringify({
                             transaction_details: {
                                 order_id: orderId,
-                                gross_amount: Math.floor(Number(amount))
+                                gross_amount: integerAmount
                             },
                             item_details: [{
                                 id: tier,
-                                price: Math.floor(Number(amount)),
+                                price: integerAmount,
                                 quantity: 1,
                                 name: tier.startsWith('AD_TOPUP:') ? 'Tamuu Ads Budget Topup' : `Tamuu ${tier.toUpperCase()} Subscription`
                             }],
@@ -838,13 +845,12 @@ export default {
                     // Save transaction to DB (Aligned with D1 Schema)
                     await env.DB.prepare(`
                         INSERT INTO billing_transactions 
-                        (id, user_id, external_id, amount, status, tier, payment_method, payment_url)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        (user_id, external_id, amount, status, tier, payment_method, payment_url)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
                     `).bind(
-                        crypto.randomUUID(), 
                         userId, 
                         orderId, 
-                        amount, 
+                        integerAmount, 
                         'PENDING', 
                         tier, 
                         'MIDTRANS', 

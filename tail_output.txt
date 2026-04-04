@@ -1,0 +1,2723 @@
+{
+    "wallTime": 282,
+    "cpuTime": 14,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775323823253,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/shop/ads/my-campaigns?vendor_id=REDACTED",
+            "method": "GET",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "en-US,en;q=0.9",
+                "cf-connecting-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437",
+                "cf-ipcountry": "ID",
+                "cf-ray": "9e720a6748cf260c",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "origin": "https://app.tamuu.id",
+                "priority": "u=1",
+                "referer": "https://app.tamuu.id/",
+                "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Brave\";v=\"109\", \"Chromium\";v=\"109\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-site",
+                "sec-gpc": "1",
+                "user-agent": "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/3",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 0,
+                "clientQuicRtt": 381,
+                "colo": "SIN",
+                "asn": 23693,
+                "asOrganization": "PT. Telekomunikasi Selular (Telkomsel) Indonesia",
+                "country": "ID",
+                "isEUCountry": false,
+                "city": "Indramayu",
+                "continent": "AS",
+                "region": "West Java",
+                "regionCode": "JB",
+                "timezone": "Asia/Jakarta",
+                "longitude": "108.32",
+                "latitude": "-6.32639",
+                "postalCode": "45211",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-CHACHA20-POLY1305-SHA256",
+                "tlsClientRandom": "qdfsdpzyazc9jQwCJvYWnIdyHcQByKWIvcy8A76lSl8=",
+                "tlsClientCiphersSha1": "RhjkQuQj/ohEpxswaK1oMPsH15w=",
+                "tlsClientExtensionsSha1": "DEbDEgZ0AR38Onxf5Awf73cz3SQ=",
+                "tlsClientExtensionsSha1Le": "bL4DlF8ylZRPQ9JWzsQXoB9kcpo=",
+                "tlsClientHelloLength": "294",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 5979
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 293,
+    "cpuTime": 1,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [
+        {
+            "message": [
+                "[Shop] Fetching products for vendor: 9d77adac-2c7a-4fb2-95df-d0d4678b8345"
+            ],
+            "level": "log",
+            "timestamp": 1775323823268
+        }
+    ],
+    "eventTimestamp": 1775323823253,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/shop/vendor/products?vendor_id=REDACTED&_t=1775323813628",
+            "method": "GET",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "en-US,en;q=0.9",
+                "cf-connecting-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437",
+                "cf-ipcountry": "ID",
+                "cf-ray": "9e720a6748ce260c",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "origin": "https://app.tamuu.id",
+                "priority": "u=1",
+                "referer": "https://app.tamuu.id/",
+                "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Brave\";v=\"109\", \"Chromium\";v=\"109\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-site",
+                "sec-gpc": "1",
+                "user-agent": "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/3",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 0,
+                "clientQuicRtt": 381,
+                "colo": "SIN",
+                "asn": 23693,
+                "asOrganization": "PT. Telekomunikasi Selular (Telkomsel) Indonesia",
+                "country": "ID",
+                "isEUCountry": false,
+                "city": "Indramayu",
+                "continent": "AS",
+                "region": "West Java",
+                "regionCode": "JB",
+                "timezone": "Asia/Jakarta",
+                "longitude": "108.32",
+                "latitude": "-6.32639",
+                "postalCode": "45211",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-CHACHA20-POLY1305-SHA256",
+                "tlsClientRandom": "qdfsdpzyazc9jQwCJvYWnIdyHcQByKWIvcy8A76lSl8=",
+                "tlsClientCiphersSha1": "RhjkQuQj/ohEpxswaK1oMPsH15w=",
+                "tlsClientExtensionsSha1": "DEbDEgZ0AR38Onxf5Awf73cz3SQ=",
+                "tlsClientExtensionsSha1Le": "bL4DlF8ylZRPQ9JWzsQXoB9kcpo=",
+                "tlsClientHelloLength": "294",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 5979
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 274,
+    "cpuTime": 2,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [
+        {
+            "message": [
+                "[Silent Heal] Running sync for User 0d02db19-3217-4f4c-aee3-126af7af1697..."
+            ],
+            "level": "log",
+            "timestamp": 1775323831340
+        },
+        {
+            "message": [
+                "[Midtrans/Sync] Initiating sync for ID: f2301c51-b587-428a-8b39-5ff94c9533bf"
+            ],
+            "level": "log",
+            "timestamp": 1775323831340
+        }
+    ],
+    "eventTimestamp": 1775323831321,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/auth/me?email=user%40tamuu.id&uid=REDACTED&name=Test+User&gender=&birthDate=",
+            "method": "GET",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "en-US,en;q=0.9",
+                "cf-connecting-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437",
+                "cf-ipcountry": "ID",
+                "cf-ray": "9e720a99b917260c",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "origin": "https://app.tamuu.id",
+                "priority": "u=1",
+                "referer": "https://app.tamuu.id/",
+                "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Brave\";v=\"109\", \"Chromium\";v=\"109\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-site",
+                "sec-gpc": "1",
+                "user-agent": "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/3",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 0,
+                "clientQuicRtt": 383,
+                "colo": "SIN",
+                "asn": 23693,
+                "asOrganization": "PT. Telekomunikasi Selular (Telkomsel) Indonesia",
+                "country": "ID",
+                "isEUCountry": false,
+                "city": "Indramayu",
+                "continent": "AS",
+                "region": "West Java",
+                "regionCode": "JB",
+                "timezone": "Asia/Jakarta",
+                "longitude": "108.32",
+                "latitude": "-6.32639",
+                "postalCode": "45211",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-CHACHA20-POLY1305-SHA256",
+                "tlsClientRandom": "qdfsdpzyazc9jQwCJvYWnIdyHcQByKWIvcy8A76lSl8=",
+                "tlsClientCiphersSha1": "RhjkQuQj/ohEpxswaK1oMPsH15w=",
+                "tlsClientExtensionsSha1": "DEbDEgZ0AR38Onxf5Awf73cz3SQ=",
+                "tlsClientExtensionsSha1Le": "bL4DlF8ylZRPQ9JWzsQXoB9kcpo=",
+                "tlsClientHelloLength": "294",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 8448
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 32,
+    "cpuTime": 1,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775323836555,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/shop/vendor/me?userId=REDACTED&_t=1775323827514",
+            "method": "GET",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "en-US,en;q=0.9",
+                "cf-connecting-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437",
+                "cf-ipcountry": "ID",
+                "cf-ray": "9e720aba7c13260c",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "origin": "https://app.tamuu.id",
+                "priority": "u=1",
+                "referer": "https://app.tamuu.id/",
+                "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Brave\";v=\"109\", \"Chromium\";v=\"109\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-site",
+                "sec-gpc": "1",
+                "user-agent": "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/3",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 0,
+                "clientQuicRtt": 383,
+                "colo": "SIN",
+                "asn": 23693,
+                "asOrganization": "PT. Telekomunikasi Selular (Telkomsel) Indonesia",
+                "country": "ID",
+                "isEUCountry": false,
+                "city": "Indramayu",
+                "continent": "AS",
+                "region": "West Java",
+                "regionCode": "JB",
+                "timezone": "Asia/Jakarta",
+                "longitude": "108.32",
+                "latitude": "-6.32639",
+                "postalCode": "45211",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-CHACHA20-POLY1305-SHA256",
+                "tlsClientRandom": "qdfsdpzyazc9jQwCJvYWnIdyHcQByKWIvcy8A76lSl8=",
+                "tlsClientCiphersSha1": "RhjkQuQj/ohEpxswaK1oMPsH15w=",
+                "tlsClientExtensionsSha1": "DEbDEgZ0AR38Onxf5Awf73cz3SQ=",
+                "tlsClientExtensionsSha1Le": "bL4DlF8ylZRPQ9JWzsQXoB9kcpo=",
+                "tlsClientHelloLength": "294",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 8448
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 12,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775323837189,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/shop/ads/my-campaigns?vendor_id=REDACTED",
+            "method": "GET",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "en-US,en;q=0.9",
+                "cf-connecting-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437",
+                "cf-ipcountry": "ID",
+                "cf-ray": "9e720abe6f59260c",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "origin": "https://app.tamuu.id",
+                "priority": "u=1",
+                "referer": "https://app.tamuu.id/",
+                "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Brave\";v=\"109\", \"Chromium\";v=\"109\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-site",
+                "sec-gpc": "1",
+                "user-agent": "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/3",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 0,
+                "clientQuicRtt": 384,
+                "colo": "SIN",
+                "asn": 23693,
+                "asOrganization": "PT. Telekomunikasi Selular (Telkomsel) Indonesia",
+                "country": "ID",
+                "isEUCountry": false,
+                "city": "Indramayu",
+                "continent": "AS",
+                "region": "West Java",
+                "regionCode": "JB",
+                "timezone": "Asia/Jakarta",
+                "longitude": "108.32",
+                "latitude": "-6.32639",
+                "postalCode": "45211",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-CHACHA20-POLY1305-SHA256",
+                "tlsClientRandom": "qdfsdpzyazc9jQwCJvYWnIdyHcQByKWIvcy8A76lSl8=",
+                "tlsClientCiphersSha1": "RhjkQuQj/ohEpxswaK1oMPsH15w=",
+                "tlsClientExtensionsSha1": "DEbDEgZ0AR38Onxf5Awf73cz3SQ=",
+                "tlsClientExtensionsSha1Le": "bL4DlF8ylZRPQ9JWzsQXoB9kcpo=",
+                "tlsClientHelloLength": "294",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 8448
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 24,
+    "cpuTime": 2,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [
+        {
+            "message": [
+                "[Shop] Fetching products for vendor: 9d77adac-2c7a-4fb2-95df-d0d4678b8345"
+            ],
+            "level": "log",
+            "timestamp": 1775323837724
+        }
+    ],
+    "eventTimestamp": 1775323837724,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/shop/vendor/products?vendor_id=REDACTED&_t=1775323828621",
+            "method": "GET",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "en-US,en;q=0.9",
+                "cf-connecting-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437",
+                "cf-ipcountry": "ID",
+                "cf-ray": "9e720ac1c95c260c",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "origin": "https://app.tamuu.id",
+                "priority": "u=1",
+                "referer": "https://app.tamuu.id/",
+                "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Brave\";v=\"109\", \"Chromium\";v=\"109\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-site",
+                "sec-gpc": "1",
+                "user-agent": "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/3",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 0,
+                "clientQuicRtt": 388,
+                "colo": "SIN",
+                "asn": 23693,
+                "asOrganization": "PT. Telekomunikasi Selular (Telkomsel) Indonesia",
+                "country": "ID",
+                "isEUCountry": false,
+                "city": "Indramayu",
+                "continent": "AS",
+                "region": "West Java",
+                "regionCode": "JB",
+                "timezone": "Asia/Jakarta",
+                "longitude": "108.32",
+                "latitude": "-6.32639",
+                "postalCode": "45211",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-CHACHA20-POLY1305-SHA256",
+                "tlsClientRandom": "qdfsdpzyazc9jQwCJvYWnIdyHcQByKWIvcy8A76lSl8=",
+                "tlsClientCiphersSha1": "RhjkQuQj/ohEpxswaK1oMPsH15w=",
+                "tlsClientExtensionsSha1": "DEbDEgZ0AR38Onxf5Awf73cz3SQ=",
+                "tlsClientExtensionsSha1Le": "bL4DlF8ylZRPQ9JWzsQXoB9kcpo=",
+                "tlsClientHelloLength": "294",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 8448
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 504,
+    "cpuTime": 1,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [
+        {
+            "message": [
+                "[Midtrans] Server Key Present: true, Length: 35"
+            ],
+            "level": "log",
+            "timestamp": 1775323841428
+        },
+        {
+            "message": [
+                "[Midtrans] Server Key Prefix: Mid-..."
+            ],
+            "level": "log",
+            "timestamp": 1775323841428
+        },
+        {
+            "message": [
+                "[Midtrans] SNAP_INIT: Env=SANDBOX, OrderID=A1202604041730414280D02D, Amount=50000"
+            ],
+            "level": "log",
+            "timestamp": 1775323841428
+        }
+    ],
+    "eventTimestamp": 1775323841428,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/billing/midtrans/token",
+            "method": "POST",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "en-US,en;q=0.9",
+                "authorization": "REDACTED",
+                "cf-connecting-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437",
+                "cf-ipcountry": "ID",
+                "cf-ray": "9e720ad8effb260c",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "content-length": "162",
+                "content-type": "application/json",
+                "host": "api.tamuu.id",
+                "origin": "https://app.tamuu.id",
+                "priority": "u=1",
+                "referer": "https://app.tamuu.id/",
+                "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Brave\";v=\"109\", \"Chromium\";v=\"109\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-site",
+                "sec-gpc": "1",
+                "user-agent": "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/3",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 0,
+                "clientQuicRtt": 390,
+                "colo": "SIN",
+                "asn": 23693,
+                "asOrganization": "PT. Telekomunikasi Selular (Telkomsel) Indonesia",
+                "country": "ID",
+                "isEUCountry": false,
+                "city": "Indramayu",
+                "continent": "AS",
+                "region": "West Java",
+                "regionCode": "JB",
+                "timezone": "Asia/Jakarta",
+                "longitude": "108.32",
+                "latitude": "-6.32639",
+                "postalCode": "45211",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-CHACHA20-POLY1305-SHA256",
+                "tlsClientRandom": "qdfsdpzyazc9jQwCJvYWnIdyHcQByKWIvcy8A76lSl8=",
+                "tlsClientCiphersSha1": "RhjkQuQj/ohEpxswaK1oMPsH15w=",
+                "tlsClientExtensionsSha1": "DEbDEgZ0AR38Onxf5Awf73cz3SQ=",
+                "tlsClientExtensionsSha1Le": "bL4DlF8ylZRPQ9JWzsQXoB9kcpo=",
+                "tlsClientHelloLength": "294",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 8448
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 1,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775323850299,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/billing/midtrans/webhook",
+            "method": "POST",
+            "headers": {
+                "accept": "application/json",
+                "accept-encoding": "gzip, br",
+                "cf-connecting-ip": "147.139.213.108",
+                "cf-ipcountry": "ID",
+                "cf-ray": "9e720b1059a332e2",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "content-length": "596",
+                "content-type": "application/json",
+                "host": "api.tamuu.id",
+                "user-agent": "ReactorNetty/1.1.14",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "147.139.213.108",
+                "x-request-id": "2a1600df-626f-4641-a03b-187b8f7a2d71"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 14,
+                "clientQuicRtt": 0,
+                "colo": "SIN",
+                "asn": 45102,
+                "asOrganization": "Alibaba Cloud - ID",
+                "country": "ID",
+                "isEUCountry": false,
+                "city": "Jakarta",
+                "continent": "AS",
+                "region": "Jakarta",
+                "regionCode": "JK",
+                "timezone": "Asia/Jakarta",
+                "longitude": "106.84513",
+                "latitude": "-6.21462",
+                "postalCode": "12850",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-AES128-GCM-SHA256",
+                "tlsClientRandom": "G0+Tf/0AJaox28aOUR1FpoGQGz7S+huWft7Brm6D8J4=",
+                "tlsClientCiphersSha1": "9OyGmYBt3gd3R4TCoqk6Or+1uGk=",
+                "tlsClientExtensionsSha1": "4O8R50ad/OYr0XEqMo2lHUntg/c=",
+                "tlsClientExtensionsSha1Le": "2F3DGGGITl4a33Vl1fo2nLkbR3E=",
+                "tlsExportedAuthenticator": {
+                    "clientHandshake": "67f9233fa481cb4d3030f968436d8119a9f32bca424b1b4c9686d9e02bab987b",
+                    "serverHandshake": "55c31eab531a8cf530951a4db49ae33637b864d92a2cea92a38d2c34cc93cdc4",
+                    "clientFinished": "011110897e4a4ff7ab4c0d37fb038f1be8b1ed5d163bf77567aedc911a6935dc",
+                    "serverFinished": "5f07d196203f0478e88418b8079ad4f88e30eebf7e9f5bb471a657f3250b1e07"
+                },
+                "tlsClientHelloLength": "393",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 309005
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 46,
+    "cpuTime": 2,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [
+        {
+            "message": [
+                "[Ads] Topup successful via Webhook for Vendor: 9d77adac-2c7a-4fb2-95df-d0d4678b8345, Amount: 50000"
+            ],
+            "level": "log",
+            "timestamp": 1775323855005
+        }
+    ],
+    "eventTimestamp": 1775323854969,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/billing/midtrans/webhook",
+            "method": "POST",
+            "headers": {
+                "accept": "application/json",
+                "accept-encoding": "gzip, br",
+                "cf-connecting-ip": "147.139.213.108",
+                "cf-ipcountry": "ID",
+                "cf-ray": "9e720b2d8f3332e2",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "content-length": "639",
+                "content-type": "application/json",
+                "host": "api.tamuu.id",
+                "user-agent": "ReactorNetty/1.1.14",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "147.139.213.108",
+                "x-request-id": "2c69af66-70d9-46e7-a947-1298e3899473"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 14,
+                "clientQuicRtt": 0,
+                "colo": "SIN",
+                "asn": 45102,
+                "asOrganization": "Alibaba Cloud - ID",
+                "country": "ID",
+                "isEUCountry": false,
+                "city": "Jakarta",
+                "continent": "AS",
+                "region": "Jakarta",
+                "regionCode": "JK",
+                "timezone": "Asia/Jakarta",
+                "longitude": "106.84513",
+                "latitude": "-6.21462",
+                "postalCode": "12850",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-AES128-GCM-SHA256",
+                "tlsClientRandom": "G0+Tf/0AJaox28aOUR1FpoGQGz7S+huWft7Brm6D8J4=",
+                "tlsClientCiphersSha1": "9OyGmYBt3gd3R4TCoqk6Or+1uGk=",
+                "tlsClientExtensionsSha1": "4O8R50ad/OYr0XEqMo2lHUntg/c=",
+                "tlsClientExtensionsSha1Le": "2F3DGGGITl4a33Vl1fo2nLkbR3E=",
+                "tlsExportedAuthenticator": {
+                    "clientHandshake": "67f9233fa481cb4d3030f968436d8119a9f32bca424b1b4c9686d9e02bab987b",
+                    "serverHandshake": "55c31eab531a8cf530951a4db49ae33637b864d92a2cea92a38d2c34cc93cdc4",
+                    "clientFinished": "011110897e4a4ff7ab4c0d37fb038f1be8b1ed5d163bf77567aedc911a6935dc",
+                    "serverFinished": "5f07d196203f0478e88418b8079ad4f88e30eebf7e9f5bb471a657f3250b1e07"
+                },
+                "tlsClientHelloLength": "393",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 309005
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 108,
+    "cpuTime": 1,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [
+        {
+            "message": [
+                "[Silent Heal] Running sync for User 0d02db19-3217-4f4c-aee3-126af7af1697..."
+            ],
+            "level": "log",
+            "timestamp": 1775323862198
+        },
+        {
+            "message": [
+                "[Midtrans/Sync] Initiating sync for ID: f2301c51-b587-428a-8b39-5ff94c9533bf"
+            ],
+            "level": "log",
+            "timestamp": 1775323862198
+        }
+    ],
+    "eventTimestamp": 1775323862179,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/auth/me?email=user%40tamuu.id&uid=REDACTED&name=Test+User&gender=&birthDate=",
+            "method": "GET",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "en-US,en;q=0.9",
+                "cf-connecting-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437",
+                "cf-ipcountry": "ID",
+                "cf-ray": "9e720b5a9922260c",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "origin": "https://app.tamuu.id",
+                "priority": "u=1",
+                "referer": "https://app.tamuu.id/",
+                "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Brave\";v=\"109\", \"Chromium\";v=\"109\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-site",
+                "sec-gpc": "1",
+                "user-agent": "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/3",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 0,
+                "clientQuicRtt": 392,
+                "colo": "SIN",
+                "asn": 23693,
+                "asOrganization": "PT. Telekomunikasi Selular (Telkomsel) Indonesia",
+                "country": "ID",
+                "isEUCountry": false,
+                "city": "Indramayu",
+                "continent": "AS",
+                "region": "West Java",
+                "regionCode": "JB",
+                "timezone": "Asia/Jakarta",
+                "longitude": "108.32",
+                "latitude": "-6.32639",
+                "postalCode": "45211",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-CHACHA20-POLY1305-SHA256",
+                "tlsClientRandom": "qdfsdpzyazc9jQwCJvYWnIdyHcQByKWIvcy8A76lSl8=",
+                "tlsClientCiphersSha1": "RhjkQuQj/ohEpxswaK1oMPsH15w=",
+                "tlsClientExtensionsSha1": "DEbDEgZ0AR38Onxf5Awf73cz3SQ=",
+                "tlsClientExtensionsSha1Le": "bL4DlF8ylZRPQ9JWzsQXoB9kcpo=",
+                "tlsClientHelloLength": "294",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 8448
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 0,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775323864898,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/shop/chat/conversations",
+            "method": "OPTIONS",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "en-US,en;q=0.9",
+                "access-control-request-headers": "authorization",
+                "access-control-request-method": "GET",
+                "cf-connecting-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437",
+                "cf-ipcountry": "ID",
+                "cf-ray": "9e720b6b99c8260c",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "origin": "https://app.tamuu.id",
+                "priority": "u=1",
+                "referer": "https://app.tamuu.id/",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-site",
+                "transfer-encoding": "chunked",
+                "user-agent": "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/3",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 0,
+                "clientQuicRtt": 390,
+                "colo": "SIN",
+                "asn": 23693,
+                "asOrganization": "PT. Telekomunikasi Selular (Telkomsel) Indonesia",
+                "country": "ID",
+                "isEUCountry": false,
+                "city": "Indramayu",
+                "continent": "AS",
+                "region": "West Java",
+                "regionCode": "JB",
+                "timezone": "Asia/Jakarta",
+                "longitude": "108.32",
+                "latitude": "-6.32639",
+                "postalCode": "45211",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-CHACHA20-POLY1305-SHA256",
+                "tlsClientRandom": "qdfsdpzyazc9jQwCJvYWnIdyHcQByKWIvcy8A76lSl8=",
+                "tlsClientCiphersSha1": "RhjkQuQj/ohEpxswaK1oMPsH15w=",
+                "tlsClientExtensionsSha1": "DEbDEgZ0AR38Onxf5Awf73cz3SQ=",
+                "tlsClientExtensionsSha1Le": "bL4DlF8ylZRPQ9JWzsQXoB9kcpo=",
+                "tlsClientHelloLength": "294",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 8448
+                }
+            }
+        },
+        "response": {
+            "status": 204
+        }
+    }
+}
+{
+    "wallTime": 20,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775323864923,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/admin/transactions?userId=REDACTED",
+            "method": "GET",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "en-US,en;q=0.9",
+                "cf-connecting-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437",
+                "cf-ipcountry": "ID",
+                "cf-ray": "9e720b6bc9dd260c",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "origin": "https://app.tamuu.id",
+                "priority": "u=1",
+                "referer": "https://app.tamuu.id/",
+                "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Brave\";v=\"109\", \"Chromium\";v=\"109\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-site",
+                "sec-gpc": "1",
+                "user-agent": "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/3",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 0,
+                "clientQuicRtt": 390,
+                "colo": "SIN",
+                "asn": 23693,
+                "asOrganization": "PT. Telekomunikasi Selular (Telkomsel) Indonesia",
+                "country": "ID",
+                "isEUCountry": false,
+                "city": "Indramayu",
+                "continent": "AS",
+                "region": "West Java",
+                "regionCode": "JB",
+                "timezone": "Asia/Jakarta",
+                "longitude": "108.32",
+                "latitude": "-6.32639",
+                "postalCode": "45211",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-CHACHA20-POLY1305-SHA256",
+                "tlsClientRandom": "qdfsdpzyazc9jQwCJvYWnIdyHcQByKWIvcy8A76lSl8=",
+                "tlsClientCiphersSha1": "RhjkQuQj/ohEpxswaK1oMPsH15w=",
+                "tlsClientExtensionsSha1": "DEbDEgZ0AR38Onxf5Awf73cz3SQ=",
+                "tlsClientExtensionsSha1Le": "bL4DlF8ylZRPQ9JWzsQXoB9kcpo=",
+                "tlsClientHelloLength": "294",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 8448
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 26,
+    "cpuTime": 1,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775323864918,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/notifications?userId=REDACTED",
+            "method": "GET",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "en-US,en;q=0.9",
+                "cf-connecting-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437",
+                "cf-ipcountry": "ID",
+                "cf-ray": "9e720b6bb9d6260c",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "origin": "https://app.tamuu.id",
+                "priority": "u=1",
+                "referer": "https://app.tamuu.id/",
+                "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Brave\";v=\"109\", \"Chromium\";v=\"109\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-site",
+                "sec-gpc": "1",
+                "user-agent": "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/3",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 0,
+                "clientQuicRtt": 390,
+                "colo": "SIN",
+                "asn": 23693,
+                "asOrganization": "PT. Telekomunikasi Selular (Telkomsel) Indonesia",
+                "country": "ID",
+                "isEUCountry": false,
+                "city": "Indramayu",
+                "continent": "AS",
+                "region": "West Java",
+                "regionCode": "JB",
+                "timezone": "Asia/Jakarta",
+                "longitude": "108.32",
+                "latitude": "-6.32639",
+                "postalCode": "45211",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-CHACHA20-POLY1305-SHA256",
+                "tlsClientRandom": "qdfsdpzyazc9jQwCJvYWnIdyHcQByKWIvcy8A76lSl8=",
+                "tlsClientCiphersSha1": "RhjkQuQj/ohEpxswaK1oMPsH15w=",
+                "tlsClientExtensionsSha1": "DEbDEgZ0AR38Onxf5Awf73cz3SQ=",
+                "tlsClientExtensionsSha1Le": "bL4DlF8ylZRPQ9JWzsQXoB9kcpo=",
+                "tlsClientHelloLength": "294",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 8448
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 108,
+    "cpuTime": 1,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [
+        {
+            "message": [
+                "[Silent Heal] Running sync for User 0d02db19-3217-4f4c-aee3-126af7af1697..."
+            ],
+            "level": "log",
+            "timestamp": 1775323864949
+        },
+        {
+            "message": [
+                "[Midtrans/Sync] Initiating sync for ID: f2301c51-b587-428a-8b39-5ff94c9533bf"
+            ],
+            "level": "log",
+            "timestamp": 1775323864949
+        }
+    ],
+    "eventTimestamp": 1775323864921,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/auth/me?email=user%40tamuu.id",
+            "method": "GET",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "en-US,en;q=0.9",
+                "cf-connecting-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437",
+                "cf-ipcountry": "ID",
+                "cf-ray": "9e720b6bb9db260c",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "origin": "https://app.tamuu.id",
+                "priority": "u=1",
+                "referer": "https://app.tamuu.id/",
+                "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Brave\";v=\"109\", \"Chromium\";v=\"109\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-site",
+                "sec-gpc": "1",
+                "user-agent": "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/3",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 0,
+                "clientQuicRtt": 390,
+                "colo": "SIN",
+                "asn": 23693,
+                "asOrganization": "PT. Telekomunikasi Selular (Telkomsel) Indonesia",
+                "country": "ID",
+                "isEUCountry": false,
+                "city": "Indramayu",
+                "continent": "AS",
+                "region": "West Java",
+                "regionCode": "JB",
+                "timezone": "Asia/Jakarta",
+                "longitude": "108.32",
+                "latitude": "-6.32639",
+                "postalCode": "45211",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-CHACHA20-POLY1305-SHA256",
+                "tlsClientRandom": "qdfsdpzyazc9jQwCJvYWnIdyHcQByKWIvcy8A76lSl8=",
+                "tlsClientCiphersSha1": "RhjkQuQj/ohEpxswaK1oMPsH15w=",
+                "tlsClientExtensionsSha1": "DEbDEgZ0AR38Onxf5Awf73cz3SQ=",
+                "tlsClientExtensionsSha1Le": "bL4DlF8ylZRPQ9JWzsQXoB9kcpo=",
+                "tlsClientHelloLength": "294",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 8448
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 33,
+    "cpuTime": 1,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775323865508,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/shop/chat/conversations",
+            "method": "GET",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "en-US,en;q=0.9",
+                "authorization": "REDACTED",
+                "cf-connecting-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437",
+                "cf-ipcountry": "ID",
+                "cf-ray": "9e720b6f6c5d260c",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "origin": "https://app.tamuu.id",
+                "priority": "u=1",
+                "referer": "https://app.tamuu.id/",
+                "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Brave\";v=\"109\", \"Chromium\";v=\"109\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-site",
+                "sec-gpc": "1",
+                "user-agent": "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/3",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 0,
+                "clientQuicRtt": 391,
+                "colo": "SIN",
+                "asn": 23693,
+                "asOrganization": "PT. Telekomunikasi Selular (Telkomsel) Indonesia",
+                "country": "ID",
+                "isEUCountry": false,
+                "city": "Indramayu",
+                "continent": "AS",
+                "region": "West Java",
+                "regionCode": "JB",
+                "timezone": "Asia/Jakarta",
+                "longitude": "108.32",
+                "latitude": "-6.32639",
+                "postalCode": "45211",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-CHACHA20-POLY1305-SHA256",
+                "tlsClientRandom": "qdfsdpzyazc9jQwCJvYWnIdyHcQByKWIvcy8A76lSl8=",
+                "tlsClientCiphersSha1": "RhjkQuQj/ohEpxswaK1oMPsH15w=",
+                "tlsClientExtensionsSha1": "DEbDEgZ0AR38Onxf5Awf73cz3SQ=",
+                "tlsClientExtensionsSha1Le": "bL4DlF8ylZRPQ9JWzsQXoB9kcpo=",
+                "tlsClientHelloLength": "294",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 12002
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 36,
+    "cpuTime": 1,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775323875973,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/shop/chat/conversations",
+            "method": "GET",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "en-US,en;q=0.9",
+                "authorization": "REDACTED",
+                "cf-connecting-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437",
+                "cf-ipcountry": "ID",
+                "cf-ray": "9e720bb0dfde260c",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "origin": "https://app.tamuu.id",
+                "priority": "u=1",
+                "referer": "https://app.tamuu.id/",
+                "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Brave\";v=\"109\", \"Chromium\";v=\"109\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-site",
+                "sec-gpc": "1",
+                "user-agent": "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/3",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 0,
+                "clientQuicRtt": 386,
+                "colo": "SIN",
+                "asn": 23693,
+                "asOrganization": "PT. Telekomunikasi Selular (Telkomsel) Indonesia",
+                "country": "ID",
+                "isEUCountry": false,
+                "city": "Indramayu",
+                "continent": "AS",
+                "region": "West Java",
+                "regionCode": "JB",
+                "timezone": "Asia/Jakarta",
+                "longitude": "108.32",
+                "latitude": "-6.32639",
+                "postalCode": "45211",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-CHACHA20-POLY1305-SHA256",
+                "tlsClientRandom": "qdfsdpzyazc9jQwCJvYWnIdyHcQByKWIvcy8A76lSl8=",
+                "tlsClientCiphersSha1": "RhjkQuQj/ohEpxswaK1oMPsH15w=",
+                "tlsClientExtensionsSha1": "DEbDEgZ0AR38Onxf5Awf73cz3SQ=",
+                "tlsClientExtensionsSha1Le": "bL4DlF8ylZRPQ9JWzsQXoB9kcpo=",
+                "tlsClientHelloLength": "294",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 12002
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 18,
+    "cpuTime": 1,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775324210960,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/blog/carousel",
+            "method": "GET",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "*",
+                "cf-connecting-ip": "35.229.137.109",
+                "cf-ipcountry": "TW",
+                "cf-ray": "9e7213de7a10b856",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "sec-fetch-mode": "cors",
+                "user-agent": "node",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "35.229.137.109"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 3,
+                "clientQuicRtt": 0,
+                "colo": "TPE",
+                "asn": 396982,
+                "asOrganization": "Google LLC",
+                "country": "TW",
+                "isEUCountry": false,
+                "city": "Taipei",
+                "continent": "AS",
+                "region": "Taiwan",
+                "regionCode": "04",
+                "timezone": "Asia/Taipei",
+                "longitude": "121.52639",
+                "latitude": "25.05306",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-AES256-GCM-SHA384",
+                "tlsClientRandom": "X+4poDm2dOzV44NES/Fd5G1dllT9tI3pbm7wCIq3gdk=",
+                "tlsClientCiphersSha1": "tm1g/wTJQf1exw5qqTkJYxb5TZE=",
+                "tlsClientExtensionsSha1": "Y7DIC8A6G0/aXviZ8ie/xDbJb7g=",
+                "tlsClientExtensionsSha1Le": "6e+q3vPm88rSgMTN/h7WTTxQ2wQ=",
+                "tlsExportedAuthenticator": {
+                    "clientHandshake": "9d2d2b643c70fb69cb4bc5971ffe4ffd710346a5a6e071d37e995a463d6a788f74bda2ddd18eef3b75261d7f913d5261",
+                    "serverHandshake": "67bff13a92144467bfb24c63e84a09ebfe797d843dbdc38014e1321ce6379b6689f151931df659c7dd9a92b8e1eca608",
+                    "clientFinished": "82459ead801430958f597cd0a51a56cfb70d80cc3ee754b6c3fda8ead01d66e5c2e0a59b50bd42911a98592fca8f2151",
+                    "serverFinished": "8b15e007eedcbf2adde519c30cb0ef64614298acd159c6927bb331703a52133350d1e6b774dc8e98353a6abeb2cebd4c"
+                },
+                "tlsClientHelloLength": "370",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 1045285
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 341,
+    "cpuTime": 17,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775324210991,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/blog?limit=9",
+            "method": "GET",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "*",
+                "cf-connecting-ip": "35.229.137.109",
+                "cf-ipcountry": "TW",
+                "cf-ray": "9e7213dea8313138",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "sec-fetch-mode": "cors",
+                "user-agent": "node",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "35.229.137.109"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 3,
+                "clientQuicRtt": 0,
+                "colo": "TPE",
+                "asn": 396982,
+                "asOrganization": "Google LLC",
+                "country": "TW",
+                "isEUCountry": false,
+                "city": "Taipei",
+                "continent": "AS",
+                "region": "Taiwan",
+                "regionCode": "04",
+                "timezone": "Asia/Taipei",
+                "longitude": "121.52639",
+                "latitude": "25.05306",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-AES256-GCM-SHA384",
+                "tlsClientRandom": "aoBX9zXrtvVFer1DhNrvKiGzrejyAhzLlNgV4kknm9w=",
+                "tlsClientCiphersSha1": "tm1g/wTJQf1exw5qqTkJYxb5TZE=",
+                "tlsClientExtensionsSha1": "Y7DIC8A6G0/aXviZ8ie/xDbJb7g=",
+                "tlsClientExtensionsSha1Le": "6e+q3vPm88rSgMTN/h7WTTxQ2wQ=",
+                "tlsExportedAuthenticator": {
+                    "clientHandshake": "264c7bc2cfdbbc83acc4cc0662cc8fc84a2023a46caa1ef1cab8c42853be38303991c7dcf65a3cf1c7bff0818d38a85a",
+                    "serverHandshake": "9cb0eecd936fda6362b7a2c011673799d78527a94fc948e70a7708ac3b17f74d158dcff5c42d74b226b820313bb927fe",
+                    "clientFinished": "443f1876db9f75fca43d24ffc03d473f4f486e19dcbb17164469052915072adaa040963a515c2a882c406a55480dab47",
+                    "serverFinished": "bde21f30267e5fb2c2069888447246eae9bca469100d1e7501c33d90f1fb2df3e22790068e13cb4320e06e9d8a0c794d"
+                },
+                "tlsClientHelloLength": "370",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 1057057
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 1,
+    "cpuTime": 1,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775324629106,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/blog/carousel",
+            "method": "GET",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "*",
+                "cf-connecting-ip": "35.229.137.109",
+                "cf-ipcountry": "TW",
+                "cf-ray": "9e721e13eca66b74",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "sec-fetch-mode": "cors",
+                "user-agent": "node",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "35.229.137.109"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 3,
+                "clientQuicRtt": 0,
+                "colo": "TPE",
+                "asn": 396982,
+                "asOrganization": "Google LLC",
+                "country": "TW",
+                "isEUCountry": false,
+                "city": "Taipei",
+                "continent": "AS",
+                "region": "Taiwan",
+                "regionCode": "04",
+                "timezone": "Asia/Taipei",
+                "longitude": "121.52639",
+                "latitude": "25.05306",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-AES256-GCM-SHA384",
+                "tlsClientRandom": "MayVuL0afpokkk5lgwpzmUWL+f7BCsRatD1wBM+eK20=",
+                "tlsClientCiphersSha1": "tm1g/wTJQf1exw5qqTkJYxb5TZE=",
+                "tlsClientExtensionsSha1": "Y7DIC8A6G0/aXviZ8ie/xDbJb7g=",
+                "tlsClientExtensionsSha1Le": "6e+q3vPm88rSgMTN/h7WTTxQ2wQ=",
+                "tlsExportedAuthenticator": {
+                    "clientHandshake": "eb644fed6112beb01ba88891f0d648da8d4813030ff090afb4552e97711ff90fa5128f35ca4845a17c894c9c57388922",
+                    "serverHandshake": "a28a5c1cdf8313c144d5bf64514f05db062e634787b59b22d4bd6ce789adeb92a5117a5aa52a6ce41dd613328edd8028",
+                    "clientFinished": "cec8afd065efa16be5f5dc4260f848b40202971f451df92da908a07cd2d1337cfc0137ebbbd723f0bccb5d08e97f0bb1",
+                    "serverFinished": "e78cb60019697825b771d4ddc2ac885f59f55577243678faf6c8dc16e3fafda39a76995713c87de1cf7b459fae15bd08"
+                },
+                "tlsClientHelloLength": "370",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 1131832
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 759,
+    "cpuTime": 17,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [
+        {
+            "message": [
+                "[Silent Heal] Running sync for User 0d02db19-3217-4f4c-aee3-126af7af1697..."
+            ],
+            "level": "log",
+            "timestamp": 1775325312529
+        },
+        {
+            "message": [
+                "[Midtrans/Sync] Initiating sync for ID: f2301c51-b587-428a-8b39-5ff94c9533bf"
+            ],
+            "level": "log",
+            "timestamp": 1775325312529
+        }
+    ],
+    "eventTimestamp": 1775325312247,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/auth/me?email=user%40tamuu.id&uid=REDACTED&name=Test+User&gender=&birthDate=",
+            "method": "GET",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "en-US,en;q=0.9",
+                "cf-connecting-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437",
+                "cf-ipcountry": "ID",
+                "cf-ray": "9e722ec18c77fdf8",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "origin": "https://app.tamuu.id",
+                "priority": "u=1",
+                "referer": "https://app.tamuu.id/",
+                "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Brave\";v=\"109\", \"Chromium\";v=\"109\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-site",
+                "sec-gpc": "1",
+                "user-agent": "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/3",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 0,
+                "clientQuicRtt": 367,
+                "colo": "SIN",
+                "asn": 23693,
+                "asOrganization": "PT. Telekomunikasi Selular (Telkomsel) Indonesia",
+                "country": "ID",
+                "isEUCountry": false,
+                "city": "Indramayu",
+                "continent": "AS",
+                "region": "West Java",
+                "regionCode": "JB",
+                "timezone": "Asia/Jakarta",
+                "longitude": "108.32",
+                "latitude": "-6.32639",
+                "postalCode": "45211",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-CHACHA20-POLY1305-SHA256",
+                "tlsClientRandom": "tdF6C43tqPz8cNczBSZv440fDwtJuOkl4WgjUprjLYI=",
+                "tlsClientCiphersSha1": "RhjkQuQj/ohEpxswaK1oMPsH15w=",
+                "tlsClientExtensionsSha1": "zUVgKVFPcQrhcmSQZI+j2lPbM2w=",
+                "tlsClientExtensionsSha1Le": "EXDNPJ8ZigJC2uHG4eXqYwazJLA=",
+                "tlsClientHelloLength": "295",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 6207
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 20,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775325313264,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/notifications?userId=REDACTED",
+            "method": "GET",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "en-US,en;q=0.9",
+                "cf-connecting-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437",
+                "cf-ipcountry": "ID",
+                "cf-ray": "9e722ec7ef92fdf8",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "origin": "https://app.tamuu.id",
+                "priority": "u=1",
+                "referer": "https://app.tamuu.id/",
+                "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Brave\";v=\"109\", \"Chromium\";v=\"109\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-site",
+                "sec-gpc": "1",
+                "user-agent": "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/3",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 0,
+                "clientQuicRtt": 385,
+                "colo": "SIN",
+                "asn": 23693,
+                "asOrganization": "PT. Telekomunikasi Selular (Telkomsel) Indonesia",
+                "country": "ID",
+                "isEUCountry": false,
+                "city": "Indramayu",
+                "continent": "AS",
+                "region": "West Java",
+                "regionCode": "JB",
+                "timezone": "Asia/Jakarta",
+                "longitude": "108.32",
+                "latitude": "-6.32639",
+                "postalCode": "45211",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-CHACHA20-POLY1305-SHA256",
+                "tlsClientRandom": "tdF6C43tqPz8cNczBSZv440fDwtJuOkl4WgjUprjLYI=",
+                "tlsClientCiphersSha1": "RhjkQuQj/ohEpxswaK1oMPsH15w=",
+                "tlsClientExtensionsSha1": "zUVgKVFPcQrhcmSQZI+j2lPbM2w=",
+                "tlsClientExtensionsSha1Le": "EXDNPJ8ZigJC2uHG4eXqYwazJLA=",
+                "tlsClientHelloLength": "295",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 6207
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 48,
+    "cpuTime": 2,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775325313265,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/shop/chat/conversations",
+            "method": "GET",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "en-US,en;q=0.9",
+                "authorization": "REDACTED",
+                "cf-connecting-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437",
+                "cf-ipcountry": "ID",
+                "cf-ray": "9e722ec7ef94fdf8",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "origin": "https://app.tamuu.id",
+                "priority": "u=1",
+                "referer": "https://app.tamuu.id/",
+                "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Brave\";v=\"109\", \"Chromium\";v=\"109\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-site",
+                "sec-gpc": "1",
+                "user-agent": "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/3",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 0,
+                "clientQuicRtt": 385,
+                "colo": "SIN",
+                "asn": 23693,
+                "asOrganization": "PT. Telekomunikasi Selular (Telkomsel) Indonesia",
+                "country": "ID",
+                "isEUCountry": false,
+                "city": "Indramayu",
+                "continent": "AS",
+                "region": "West Java",
+                "regionCode": "JB",
+                "timezone": "Asia/Jakarta",
+                "longitude": "108.32",
+                "latitude": "-6.32639",
+                "postalCode": "45211",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-CHACHA20-POLY1305-SHA256",
+                "tlsClientRandom": "tdF6C43tqPz8cNczBSZv440fDwtJuOkl4WgjUprjLYI=",
+                "tlsClientCiphersSha1": "RhjkQuQj/ohEpxswaK1oMPsH15w=",
+                "tlsClientExtensionsSha1": "zUVgKVFPcQrhcmSQZI+j2lPbM2w=",
+                "tlsClientExtensionsSha1Le": "EXDNPJ8ZigJC2uHG4eXqYwazJLA=",
+                "tlsClientHelloLength": "295",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 6207
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 151,
+    "cpuTime": 1,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [
+        {
+            "message": [
+                "[Silent Heal] Running sync for User 0d02db19-3217-4f4c-aee3-126af7af1697..."
+            ],
+            "level": "log",
+            "timestamp": 1775325313302
+        },
+        {
+            "message": [
+                "[Midtrans/Sync] Initiating sync for ID: f2301c51-b587-428a-8b39-5ff94c9533bf"
+            ],
+            "level": "log",
+            "timestamp": 1775325313302
+        }
+    ],
+    "eventTimestamp": 1775325313264,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/auth/me?email=user%40tamuu.id",
+            "method": "GET",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "en-US,en;q=0.9",
+                "cf-connecting-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437",
+                "cf-ipcountry": "ID",
+                "cf-ray": "9e722ec7ef95fdf8",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "origin": "https://app.tamuu.id",
+                "priority": "u=1",
+                "referer": "https://app.tamuu.id/",
+                "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Brave\";v=\"109\", \"Chromium\";v=\"109\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-site",
+                "sec-gpc": "1",
+                "user-agent": "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/3",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 0,
+                "clientQuicRtt": 385,
+                "colo": "SIN",
+                "asn": 23693,
+                "asOrganization": "PT. Telekomunikasi Selular (Telkomsel) Indonesia",
+                "country": "ID",
+                "isEUCountry": false,
+                "city": "Indramayu",
+                "continent": "AS",
+                "region": "West Java",
+                "regionCode": "JB",
+                "timezone": "Asia/Jakarta",
+                "longitude": "108.32",
+                "latitude": "-6.32639",
+                "postalCode": "45211",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-CHACHA20-POLY1305-SHA256",
+                "tlsClientRandom": "tdF6C43tqPz8cNczBSZv440fDwtJuOkl4WgjUprjLYI=",
+                "tlsClientCiphersSha1": "RhjkQuQj/ohEpxswaK1oMPsH15w=",
+                "tlsClientExtensionsSha1": "zUVgKVFPcQrhcmSQZI+j2lPbM2w=",
+                "tlsClientExtensionsSha1Le": "EXDNPJ8ZigJC2uHG4eXqYwazJLA=",
+                "tlsClientHelloLength": "295",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 6207
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 24,
+    "cpuTime": 1,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775325313264,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/admin/transactions?userId=REDACTED",
+            "method": "GET",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "en-US,en;q=0.9",
+                "cf-connecting-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437",
+                "cf-ipcountry": "ID",
+                "cf-ray": "9e722ec7ef93fdf8",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "origin": "https://app.tamuu.id",
+                "priority": "u=1",
+                "referer": "https://app.tamuu.id/",
+                "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Brave\";v=\"109\", \"Chromium\";v=\"109\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-site",
+                "sec-gpc": "1",
+                "user-agent": "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/3",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 0,
+                "clientQuicRtt": 385,
+                "colo": "SIN",
+                "asn": 23693,
+                "asOrganization": "PT. Telekomunikasi Selular (Telkomsel) Indonesia",
+                "country": "ID",
+                "isEUCountry": false,
+                "city": "Indramayu",
+                "continent": "AS",
+                "region": "West Java",
+                "regionCode": "JB",
+                "timezone": "Asia/Jakarta",
+                "longitude": "108.32",
+                "latitude": "-6.32639",
+                "postalCode": "45211",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-CHACHA20-POLY1305-SHA256",
+                "tlsClientRandom": "tdF6C43tqPz8cNczBSZv440fDwtJuOkl4WgjUprjLYI=",
+                "tlsClientCiphersSha1": "RhjkQuQj/ohEpxswaK1oMPsH15w=",
+                "tlsClientExtensionsSha1": "zUVgKVFPcQrhcmSQZI+j2lPbM2w=",
+                "tlsClientExtensionsSha1Le": "EXDNPJ8ZigJC2uHG4eXqYwazJLA=",
+                "tlsClientHelloLength": "295",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 6207
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 109,
+    "cpuTime": 2,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [
+        {
+            "message": [
+                "[Silent Heal] Running sync for User 0d02db19-3217-4f4c-aee3-126af7af1697..."
+            ],
+            "level": "log",
+            "timestamp": 1775325313775
+        },
+        {
+            "message": [
+                "[Midtrans/Sync] Initiating sync for ID: f2301c51-b587-428a-8b39-5ff94c9533bf"
+            ],
+            "level": "log",
+            "timestamp": 1775325313775
+        }
+    ],
+    "eventTimestamp": 1775325313748,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/api/auth/me?email=user%40tamuu.id",
+            "method": "GET",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "en-US,en;q=0.9",
+                "cf-connecting-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437",
+                "cf-ipcountry": "ID",
+                "cf-ray": "9e722ecae93ffdf8",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "origin": "https://app.tamuu.id",
+                "priority": "u=1",
+                "referer": "https://app.tamuu.id/",
+                "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Brave\";v=\"109\", \"Chromium\";v=\"109\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-site",
+                "sec-gpc": "1",
+                "user-agent": "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "2404:c0:ab01:40f6:ad2b:3e9a:420d:6437"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/3",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 0,
+                "clientQuicRtt": 406,
+                "colo": "SIN",
+                "asn": 23693,
+                "asOrganization": "PT. Telekomunikasi Selular (Telkomsel) Indonesia",
+                "country": "ID",
+                "isEUCountry": false,
+                "city": "Indramayu",
+                "continent": "AS",
+                "region": "West Java",
+                "regionCode": "JB",
+                "timezone": "Asia/Jakarta",
+                "longitude": "108.32",
+                "latitude": "-6.32639",
+                "postalCode": "45211",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-CHACHA20-POLY1305-SHA256",
+                "tlsClientRandom": "tdF6C43tqPz8cNczBSZv440fDwtJuOkl4WgjUprjLYI=",
+                "tlsClientCiphersSha1": "RhjkQuQj/ohEpxswaK1oMPsH15w=",
+                "tlsClientExtensionsSha1": "zUVgKVFPcQrhcmSQZI+j2lPbM2w=",
+                "tlsClientExtensionsSha1Le": "EXDNPJ8ZigJC2uHG4eXqYwazJLA=",
+                "tlsClientHelloLength": "295",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 7329
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}

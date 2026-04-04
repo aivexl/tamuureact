@@ -32,9 +32,12 @@ export const VendorAds: React.FC = () => {
     const [editingCampaign, setEditingCampaign] = useState<any>(null);
     const [topupTarget, setTopupModal] = useState<{ id: string, title: string } | null>(null);
     const [topupAmount, setTopupAmount] = useState(50000);
+    const [isTopupLoading, setIsTopupLoading] = useState(false);
 
     const handleTopup = async () => {
-        if (!topupTarget || !user) return;
+        if (!topupTarget || !user || isTopupLoading) return;
+        
+        setIsTopupLoading(true);
         try {
             await processAdPayment({
                 userId: user.id,
@@ -46,6 +49,8 @@ export const VendorAds: React.FC = () => {
             setTopupModal(null);
         } catch (err: any) {
             toast.error(err.message || 'Gagal memproses pembayaran');
+        } finally {
+            setIsTopupLoading(false);
         }
     };
 
@@ -271,10 +276,15 @@ export const VendorAds: React.FC = () => {
 
                                 <button
                                     onClick={handleTopup}
-                                    disabled={topupAmount < 20000}
-                                    className="w-full py-4 rounded-xl bg-slate-900 text-white text-sm font-bold shadow-lg shadow-slate-900/10 transition-all active:scale-95 hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={topupAmount < 20000 || isTopupLoading}
+                                    className="w-full py-4 rounded-xl bg-slate-900 text-white text-sm font-bold shadow-lg shadow-slate-900/10 transition-all active:scale-95 hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
-                                    Bayar Sekarang
+                                    {isTopupLoading ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                            Memproses...
+                                        </>
+                                    ) : 'Bayar Sekarang'}
                                 </button>
                             </div>
                         </m.div>
