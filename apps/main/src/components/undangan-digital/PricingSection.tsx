@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion as m } from 'framer-motion';
-import { Check, Zap, Crown, Star, AlertCircle } from 'lucide-react';
+import { Check, AlertCircle } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
@@ -49,7 +49,6 @@ const pricingPlans = [
         price: "Rp 49k",
         originalPrice: "Rp 99k",
         duration: "30 hari",
-        icon: Zap,
         features: [
             "1 Undangan Aktif",
             "Masa Aktif 30 Hari",
@@ -66,7 +65,6 @@ const pricingPlans = [
         price: "Rp 149k",
         originalPrice: "Rp 199k",
         duration: "90 hari",
-        icon: Crown,
         features: [
             "1 Undangan Aktif",
             "Masa Aktif 90 Hari",
@@ -83,7 +81,6 @@ const pricingPlans = [
         price: "Rp 199k",
         originalPrice: "Rp 399k",
         duration: "365 hari",
-        icon: Star,
         popular: true,
         features: [
             "1 Undangan Aktif",
@@ -101,7 +98,6 @@ const pricingPlans = [
         price: "Rp 999k",
         originalPrice: "Rp 1.499rb",
         duration: "selamanya",
-        icon: Crown,
         features: [
             "1 Undangan Aktif",
             "Masa Aktif Selamanya",
@@ -286,7 +282,6 @@ const PricingSection: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-stretch max-w-lg md:max-w-none mx-auto">
                 {pricingPlans.map((plan, index) => {
-                    const Icon = plan.icon;
                     const isProcessing = processingTier === plan.tier;
                     
                     // Normalize tiers for comparison (handling legacy names if any)
@@ -320,18 +315,13 @@ const PricingSection: React.FC = () => {
                                 </div>
                             )}
 
-                            <div className="flex items-center gap-4 mb-8">
-                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${isCurrent ? 'bg-emerald-100 text-emerald-600' : plan.popular ? 'bg-[#FFBF00] text-white' : 'bg-slate-50 text-slate-400'}`}>
-                                    <Icon className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-black text-[#0A1128] uppercase tracking-wider">{plan.name}</h3>
-                                    <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">{plan.duration}</p>
-                                </div>
+                            <div className="text-center mb-8 space-y-1">
+                                <h3 className="text-lg font-black text-[#0A1128] uppercase tracking-wider">{plan.name}</h3>
+                                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">{plan.duration}</p>
                             </div>
 
-                            <div className="mb-4">
-                                <div className="flex items-baseline gap-2">
+                            <div className="mb-4 text-center">
+                                <div className="flex items-baseline justify-center gap-2">
                                     <span className="text-3xl font-black text-[#0A1128] tracking-tighter">{plan.price}</span>
                                     {plan.originalPrice && (
                                         <span className="text-sm text-slate-400 line-through font-medium tracking-tight">{plan.originalPrice}</span>
