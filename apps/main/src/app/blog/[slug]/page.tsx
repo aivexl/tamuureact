@@ -10,8 +10,6 @@ interface Props {
     params: Promise<{ slug: string }>;
 }
 
-import { enforceDomain } from '@/lib/domain-enforcer';
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
     const post = await getBlogPost(slug);
