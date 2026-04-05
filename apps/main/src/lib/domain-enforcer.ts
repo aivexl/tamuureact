@@ -13,10 +13,10 @@ export async function enforceDomain(type: 'public' | 'app') {
     const headersList = await headers();
     const host = (headersList.get('host') || '').toLowerCase().split(':')[0];
     const xForwardedHost = headersList.get('x-forwarded-host');
-    
+
     // Normalize hostname
     const hostname = (xForwardedHost || host).toLowerCase().split(':')[0];
-    
+
     const isDev = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.includes('pages.dev');
     if (isDev) return;
 
@@ -27,16 +27,18 @@ export async function enforceDomain(type: 'public' | 'app') {
     console.log(`[Domain Enforcer] Host: ${hostname}, Type: ${type}, isApp: ${isAppHost}, isPublic: ${isPublicHost}`);
 
     if (type === 'public' && isAppHost) {
-        const path = headersList.get('x-invoke-path') || '/';
-        const query = headersList.get('x-invoke-query') || '';
-        console.log(`[Domain Enforcer] Ejecting PUBLIC route to tamuu.id: ${path}`);
-        redirect(`https://tamuu.id${path}${query ? `?${query}` : ''}`);
+        const pathname = headersList.get('x-invoke-path') || headersList.get('x-next-url') || '/';
+        const search = headersList.get('x-invoke-query') || '';
+        const redirectUrl = `https://tamuu.id${pathname}${search ? `?${search}` : ''}`;
+        console.log(`[Domain Enforcer] Ejecting PUBLIC route to tamuu.id: ${redirectUrl}`);
+        redirect(redirectUrl);
     }
 
     if (type === 'app' && isPublicHost) {
-        const path = headersList.get('x-invoke-path') || '/dashboard';
-        const query = headersList.get('x-invoke-query') || '';
-        console.log(`[Domain Enforcer] Ejecting APP route to app.tamuu.id: ${path}`);
-        redirect(`https://app.tamuu.id${path}${query ? `?${query}` : ''}`);
+        const pathname = headersList.get('x-invoke-path') || headersList.get('x-next-url') || '/dashboard';
+        const search = headersList.get('x-invoke-query') || '';
+        const redirectUrl = `https://app.tamuu.id${pathname}${search ? `?${search}` : ''}`;
+        console.log(`[Domain Enforcer] Ejecting APP route to app.tamuu.id: ${redirectUrl}`);
+        redirect(redirectUrl);
     }
 }
