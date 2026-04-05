@@ -4,6 +4,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Suspense } from "react";
 import { AuthProvider } from "@/providers/AuthProvider";
+import { SmartDomainRedirect } from "@/components/layout/SmartDomainRedirect";
 
 export const metadata: Metadata = {
   title: "Tamuu - Platform Undangan Digital & Vendor Pernikahan Premium",
@@ -30,6 +31,7 @@ export default function RootLayout({
           }}
         />
         <AuthProvider>
+          <SmartDomainRedirect />
           <Suspense fallback={<div className="h-16 bg-white border-b border-slate-100" />}>
             <Navbar />
           </Suspense>
