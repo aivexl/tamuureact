@@ -18,6 +18,8 @@ interface TierCardProps {
     buttonText: string;
     onSelect: () => void;
     isLoading?: boolean;
+    slotsLeft?: number;
+    totalSlots?: number;
 }
 
 const TierCard: React.FC<TierCardProps> = ({
@@ -32,7 +34,9 @@ const TierCard: React.FC<TierCardProps> = ({
     color,
     buttonText,
     onSelect,
-    isLoading
+    isLoading,
+    slotsLeft,
+    totalSlots
 }) => (
     <motion.div
         whileHover={{ y: -5 }}
@@ -63,6 +67,24 @@ const TierCard: React.FC<TierCardProps> = ({
             <span className="text-slate-400 line-through text-sm font-medium mb-6 block">
                 Regular {originalPrice}
             </span>
+        )}
+
+        {/* Step 2: Visual Urgency Bar (Apple-style) */}
+        {slotsLeft !== undefined && totalSlots !== undefined && (
+            <div className="mb-6 mt-4">
+                <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-[10px] font-black text-[#EF4444] uppercase tracking-widest">Hampir Habis</span>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{slotsLeft}/{totalSlots} Slot</span>
+                </div>
+                <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <motion.div
+                        initial={{ width: "100%" }}
+                        animate={{ width: `${(slotsLeft / totalSlots) * 100}%` }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className="h-full bg-[#EF4444]"
+                    />
+                </div>
+            </div>
         )}
 
         <div className="space-y-4 mb-8 mt-6">
@@ -97,6 +119,14 @@ export const UpgradePage: React.FC = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const { initiatePayment, processingTier } = usePayment();
+
+    // Step 2: Randomized slots for Visual Urgency (Apple-style)
+    const urgencyData = React.useMemo(() => ({
+        basic: { left: Math.floor(Math.random() * (18 - 12 + 1)) + 12, total: 20 },
+        pro: { left: Math.floor(Math.random() * (12 - 8 + 1)) + 8, total: 15 },
+        ultimate: { left: Math.floor(Math.random() * (9 - 5 + 1)) + 5, total: 10 },
+        elite: { left: Math.floor(Math.random() * (4 - 2 + 1)) + 2, total: 5 }
+    }), []);
 
     // Auto-trigger payment if tier is specified in query params
     useEffect(() => {
@@ -139,14 +169,17 @@ export const UpgradePage: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start relative">
-                    {/* Free Tier */}
+                    {/* Basic Tier */}
                     <TierCard
-                        name="FREE"
-                        price="Rp 0"
-                        duration="selamanya"
+                        name="BASIC"
+                        price="Rp 49rb"
+                        originalPrice="Rp 99rb"
+                        duration="30 hari"
                         icon={Zap}
                         color="bg-slate-400"
                         isCurrent={user?.tier === 'free'}
+                        slotsLeft={urgencyData.basic.left}
+                        totalSlots={urgencyData.basic.total}
                         features={[
                             "1 Undangan Aktif",
                             "Masa Aktif 30 Hari",
@@ -163,12 +196,14 @@ export const UpgradePage: React.FC = () => {
                     {/* Pro Tier */}
                     <TierCard
                         name="PRO"
-                        price="Rp 99k"
-                        originalPrice="Rp 149k"
+                        price="Rp 149rb"
+                        originalPrice="Rp 199rb"
                         duration="90 hari"
                         icon={Crown}
                         color="bg-indigo-600"
                         isCurrent={user?.tier === 'pro'}
+                        slotsLeft={urgencyData.pro.left}
+                        totalSlots={urgencyData.pro.total}
                         features={[
                             "1 Undangan Aktif",
                             "Masa Aktif 90 Hari",
@@ -186,16 +221,18 @@ export const UpgradePage: React.FC = () => {
                     {/* Ultimate Tier */}
                     <TierCard
                         name="ULTIMATE"
-                        price="Rp 149k"
-                        originalPrice="Rp 249k"
-                        duration="180 hari"
+                        price="Rp 199rb"
+                        originalPrice="Rp 399rb"
+                        duration="365 hari"
                         icon={Star}
                         color="bg-emerald-600"
                         isPopular={true}
                         isCurrent={user?.tier === 'ultimate'}
+                        slotsLeft={urgencyData.ultimate.left}
+                        totalSlots={urgencyData.ultimate.total}
                         features={[
                             "1 Undangan Aktif",
-                            "Masa Aktif 180 Hari",
+                            "Masa Aktif 365 Hari",
                             "Semua Fitur Pro",
                             "Sistem Check-in & Out",
                             "QR Code per Tamu",
@@ -211,16 +248,19 @@ export const UpgradePage: React.FC = () => {
                     {/* Elite Tier */}
                     <TierCard
                         name="ELITE"
-                        price="Rp 199k"
-                        originalPrice="Rp 299k"
-                        duration="per tahun"
+                        price="Rp 999rb"
+                        originalPrice="Rp 1.499rb"
+                        duration="Selamanya"
                         icon={Crown}
                         color="bg-[#FFBF00]"
                         isCurrent={user?.tier === 'elite'}
+                        slotsLeft={urgencyData.elite.left}
+                        totalSlots={urgencyData.elite.total}
                         features={[
                             "1 Undangan Aktif",
-                            "Masa Aktif 365 Hari",
+                            "Masa Aktif Selamanya",
                             "Semua Fitur Ultimate",
+                            "Custom Domain Pribadi",
                             "Advanced Import/Export",
                             "Eksklusivitas Layanan",
                         ]}

@@ -2721,3 +2721,2055 @@
         }
     }
 }
+{
+    "wallTime": 0,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775327655117,
+    "event": {
+        "request": {
+            "url": "http://api.tamuu.id/xmlrpc.php?rsd",
+            "method": "GET",
+            "headers": {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "accept-encoding": "gzip",
+                "accept-language": "en-US,en;q=0.5",
+                "cf-connecting-ip": "45.94.31.119",
+                "cf-ipcountry": "NL",
+                "cf-ray": "9e7267f3af92b660",
+                "cf-visitor": "{\"scheme\":\"http\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+                "x-forwarded-proto": "http",
+                "x-real-ip": "45.94.31.119"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 98,
+                "clientQuicRtt": 0,
+                "colo": "AMS",
+                "asn": 210558,
+                "asOrganization": "1337 Services GmbH",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Lelystad",
+                "continent": "EU",
+                "region": "Flevoland",
+                "regionCode": "FL",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "5.475",
+                "latitude": "52.50833",
+                "postalCode": "8224",
+                "tlsVersion": "",
+                "tlsCipher": "",
+                "tlsClientRandom": "",
+                "tlsClientCiphersSha1": "",
+                "tlsClientExtensionsSha1": "",
+                "tlsClientExtensionsSha1Le": "",
+                "tlsClientHelloLength": "0",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 18297
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 0,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775327655217,
+    "event": {
+        "request": {
+            "url": "http://api.tamuu.id/",
+            "method": "GET",
+            "headers": {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "accept-encoding": "gzip",
+                "accept-language": "en-US,en;q=0.5",
+                "cf-connecting-ip": "45.94.31.119",
+                "cf-ipcountry": "NL",
+                "cf-ray": "9e7267f4794db660",
+                "cf-visitor": "{\"scheme\":\"http\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+                "x-forwarded-proto": "http",
+                "x-real-ip": "45.94.31.119"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 97,
+                "clientQuicRtt": 0,
+                "colo": "AMS",
+                "asn": 210558,
+                "asOrganization": "1337 Services GmbH",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Lelystad",
+                "continent": "EU",
+                "region": "Flevoland",
+                "regionCode": "FL",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "5.475",
+                "latitude": "52.50833",
+                "postalCode": "8224",
+                "tlsVersion": "",
+                "tlsCipher": "",
+                "tlsClientRandom": "",
+                "tlsClientCiphersSha1": "",
+                "tlsClientExtensionsSha1": "",
+                "tlsClientExtensionsSha1Le": "",
+                "tlsClientHelloLength": "0",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 18297
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 14,
+    "cpuTime": 13,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775327654675,
+    "event": {
+        "request": {
+            "url": "http://api.tamuu.id/",
+            "method": "GET",
+            "headers": {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "accept-encoding": "gzip",
+                "accept-language": "en-US,en;q=0.5",
+                "cf-connecting-ip": "45.94.31.119",
+                "cf-ipcountry": "NL",
+                "cf-ray": "9e7267f1a962b660",
+                "cf-visitor": "{\"scheme\":\"http\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+                "x-forwarded-proto": "http",
+                "x-real-ip": "45.94.31.119"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 0,
+                "clientQuicRtt": 0,
+                "colo": "AMS",
+                "asn": 210558,
+                "asOrganization": "1337 Services GmbH",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Lelystad",
+                "continent": "EU",
+                "region": "Flevoland",
+                "regionCode": "FL",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "5.475",
+                "latitude": "52.50833",
+                "postalCode": "8224",
+                "tlsVersion": "",
+                "tlsCipher": "",
+                "tlsClientRandom": "",
+                "tlsClientCiphersSha1": "",
+                "tlsClientExtensionsSha1": "",
+                "tlsClientExtensionsSha1Le": "",
+                "tlsClientHelloLength": "0",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 0
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 0,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775327654899,
+    "event": {
+        "request": {
+            "url": "http://api.tamuu.id/",
+            "method": "GET",
+            "headers": {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "accept-encoding": "gzip",
+                "accept-language": "en-US,en;q=0.5",
+                "cf-connecting-ip": "45.94.31.119",
+                "cf-ipcountry": "NL",
+                "cf-ray": "9e7267f27ca1b660",
+                "cf-visitor": "{\"scheme\":\"http\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+                "x-forwarded-proto": "http",
+                "x-real-ip": "45.94.31.119"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 96,
+                "clientQuicRtt": 0,
+                "colo": "AMS",
+                "asn": 210558,
+                "asOrganization": "1337 Services GmbH",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Lelystad",
+                "continent": "EU",
+                "region": "Flevoland",
+                "regionCode": "FL",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "5.475",
+                "latitude": "52.50833",
+                "postalCode": "8224",
+                "tlsVersion": "",
+                "tlsCipher": "",
+                "tlsClientRandom": "",
+                "tlsClientCiphersSha1": "",
+                "tlsClientExtensionsSha1": "",
+                "tlsClientExtensionsSha1Le": "",
+                "tlsClientHelloLength": "0",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 15178
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 0,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775327655392,
+    "event": {
+        "request": {
+            "url": "http://api.tamuu.id/web/wp-includes/wlwmanifest.xml",
+            "method": "GET",
+            "headers": {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "accept-encoding": "gzip",
+                "accept-language": "en-US,en;q=0.5",
+                "cf-connecting-ip": "45.94.31.119",
+                "cf-ipcountry": "NL",
+                "cf-ray": "9e7267f5ab79b660",
+                "cf-visitor": "{\"scheme\":\"http\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+                "x-forwarded-proto": "http",
+                "x-real-ip": "45.94.31.119"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 94,
+                "clientQuicRtt": 0,
+                "colo": "AMS",
+                "asn": 210558,
+                "asOrganization": "1337 Services GmbH",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Lelystad",
+                "continent": "EU",
+                "region": "Flevoland",
+                "regionCode": "FL",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "5.475",
+                "latitude": "52.50833",
+                "postalCode": "8224",
+                "tlsVersion": "",
+                "tlsCipher": "",
+                "tlsClientRandom": "",
+                "tlsClientCiphersSha1": "",
+                "tlsClientExtensionsSha1": "",
+                "tlsClientExtensionsSha1Le": "",
+                "tlsClientHelloLength": "0",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 18297
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 0,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775327654985,
+    "event": {
+        "request": {
+            "url": "http://api.tamuu.id/wp-includes/wlwmanifest.xml",
+            "method": "GET",
+            "headers": {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "accept-encoding": "gzip",
+                "accept-language": "en-US,en;q=0.5",
+                "cf-connecting-ip": "45.94.31.119",
+                "cf-ipcountry": "NL",
+                "cf-ray": "9e7267f32dd9b660",
+                "cf-visitor": "{\"scheme\":\"http\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+                "x-forwarded-proto": "http",
+                "x-real-ip": "45.94.31.119"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 94,
+                "clientQuicRtt": 0,
+                "colo": "AMS",
+                "asn": 210558,
+                "asOrganization": "1337 Services GmbH",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Lelystad",
+                "continent": "EU",
+                "region": "Flevoland",
+                "regionCode": "FL",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "5.475",
+                "latitude": "52.50833",
+                "postalCode": "8224",
+                "tlsVersion": "",
+                "tlsCipher": "",
+                "tlsClientRandom": "",
+                "tlsClientCiphersSha1": "",
+                "tlsClientExtensionsSha1": "",
+                "tlsClientExtensionsSha1Le": "",
+                "tlsClientHelloLength": "0",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 18297
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 0,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775327655304,
+    "event": {
+        "request": {
+            "url": "http://api.tamuu.id/blog/wp-includes/wlwmanifest.xml",
+            "method": "GET",
+            "headers": {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "accept-encoding": "gzip",
+                "accept-language": "en-US,en;q=0.5",
+                "cf-connecting-ip": "45.94.31.119",
+                "cf-ipcountry": "NL",
+                "cf-ray": "9e7267f51a53b660",
+                "cf-visitor": "{\"scheme\":\"http\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+                "x-forwarded-proto": "http",
+                "x-real-ip": "45.94.31.119"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 95,
+                "clientQuicRtt": 0,
+                "colo": "AMS",
+                "asn": 210558,
+                "asOrganization": "1337 Services GmbH",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Lelystad",
+                "continent": "EU",
+                "region": "Flevoland",
+                "regionCode": "FL",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "5.475",
+                "latitude": "52.50833",
+                "postalCode": "8224",
+                "tlsVersion": "",
+                "tlsCipher": "",
+                "tlsClientRandom": "",
+                "tlsClientCiphersSha1": "",
+                "tlsClientExtensionsSha1": "",
+                "tlsClientExtensionsSha1Le": "",
+                "tlsClientHelloLength": "0",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 18297
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 0,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775327655462,
+    "event": {
+        "request": {
+            "url": "http://api.tamuu.id/wordpress/wp-includes/wlwmanifest.xml",
+            "method": "GET",
+            "headers": {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "accept-encoding": "gzip",
+                "accept-language": "en-US,en;q=0.5",
+                "cf-connecting-ip": "45.94.31.119",
+                "cf-ipcountry": "NL",
+                "cf-ray": "9e7267f63cc3b660",
+                "cf-visitor": "{\"scheme\":\"http\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+                "x-forwarded-proto": "http",
+                "x-real-ip": "45.94.31.119"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 90,
+                "clientQuicRtt": 0,
+                "colo": "AMS",
+                "asn": 210558,
+                "asOrganization": "1337 Services GmbH",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Lelystad",
+                "continent": "EU",
+                "region": "Flevoland",
+                "regionCode": "FL",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "5.475",
+                "latitude": "52.50833",
+                "postalCode": "8224",
+                "tlsVersion": "",
+                "tlsCipher": "",
+                "tlsClientRandom": "",
+                "tlsClientCiphersSha1": "",
+                "tlsClientExtensionsSha1": "",
+                "tlsClientExtensionsSha1Le": "",
+                "tlsClientHelloLength": "0",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 23141
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 4,
+    "cpuTime": 3,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775327655658,
+    "event": {
+        "request": {
+            "url": "http://api.tamuu.id/website/wp-includes/wlwmanifest.xml",
+            "method": "GET",
+            "headers": {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "accept-encoding": "gzip",
+                "accept-language": "en-US,en;q=0.5",
+                "cf-connecting-ip": "45.94.31.119",
+                "cf-ipcountry": "NL",
+                "cf-ray": "9e7267f6a833b660",
+                "cf-visitor": "{\"scheme\":\"http\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+                "x-forwarded-proto": "http",
+                "x-real-ip": "45.94.31.119"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 99,
+                "clientQuicRtt": 0,
+                "colo": "AMS",
+                "asn": 210558,
+                "asOrganization": "1337 Services GmbH",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Lelystad",
+                "continent": "EU",
+                "region": "Flevoland",
+                "regionCode": "FL",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "5.475",
+                "latitude": "52.50833",
+                "postalCode": "8224",
+                "tlsVersion": "",
+                "tlsCipher": "",
+                "tlsClientRandom": "",
+                "tlsClientCiphersSha1": "",
+                "tlsClientExtensionsSha1": "",
+                "tlsClientExtensionsSha1Le": "",
+                "tlsClientHelloLength": "0",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 23141
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 1,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775327655797,
+    "event": {
+        "request": {
+            "url": "http://api.tamuu.id/wp/wp-includes/wlwmanifest.xml",
+            "method": "GET",
+            "headers": {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "accept-encoding": "gzip",
+                "accept-language": "en-US,en;q=0.5",
+                "cf-connecting-ip": "45.94.31.119",
+                "cf-ipcountry": "NL",
+                "cf-ray": "9e7267f7ea44b660",
+                "cf-visitor": "{\"scheme\":\"http\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+                "x-forwarded-proto": "http",
+                "x-real-ip": "45.94.31.119"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 103,
+                "clientQuicRtt": 0,
+                "colo": "AMS",
+                "asn": 210558,
+                "asOrganization": "1337 Services GmbH",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Lelystad",
+                "continent": "EU",
+                "region": "Flevoland",
+                "regionCode": "FL",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "5.475",
+                "latitude": "52.50833",
+                "postalCode": "8224",
+                "tlsVersion": "",
+                "tlsCipher": "",
+                "tlsClientRandom": "",
+                "tlsClientCiphersSha1": "",
+                "tlsClientExtensionsSha1": "",
+                "tlsClientExtensionsSha1Le": "",
+                "tlsClientHelloLength": "0",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 23141
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 0,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775327656115,
+    "event": {
+        "request": {
+            "url": "http://api.tamuu.id/news/wp-includes/wlwmanifest.xml",
+            "method": "GET",
+            "headers": {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "accept-encoding": "gzip",
+                "accept-language": "en-US,en;q=0.5",
+                "cf-connecting-ip": "45.94.31.119",
+                "cf-ipcountry": "NL",
+                "cf-ray": "9e7267f8cf22b660",
+                "cf-visitor": "{\"scheme\":\"http\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+                "x-forwarded-proto": "http",
+                "x-real-ip": "45.94.31.119"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 103,
+                "clientQuicRtt": 0,
+                "colo": "AMS",
+                "asn": 210558,
+                "asOrganization": "1337 Services GmbH",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Lelystad",
+                "continent": "EU",
+                "region": "Flevoland",
+                "regionCode": "FL",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "5.475",
+                "latitude": "52.50833",
+                "postalCode": "8224",
+                "tlsVersion": "",
+                "tlsCipher": "",
+                "tlsClientRandom": "",
+                "tlsClientCiphersSha1": "",
+                "tlsClientExtensionsSha1": "",
+                "tlsClientExtensionsSha1Le": "",
+                "tlsClientHelloLength": "0",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 23141
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 0,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775327656142,
+    "event": {
+        "request": {
+            "url": "http://api.tamuu.id/2018/wp-includes/wlwmanifest.xml",
+            "method": "GET",
+            "headers": {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "accept-encoding": "gzip",
+                "accept-language": "en-US,en;q=0.5",
+                "cf-connecting-ip": "45.94.31.119",
+                "cf-ipcountry": "NL",
+                "cf-ray": "9e7267fabfb0b660",
+                "cf-visitor": "{\"scheme\":\"http\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+                "x-forwarded-proto": "http",
+                "x-real-ip": "45.94.31.119"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 92,
+                "clientQuicRtt": 0,
+                "colo": "AMS",
+                "asn": 210558,
+                "asOrganization": "1337 Services GmbH",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Lelystad",
+                "continent": "EU",
+                "region": "Flevoland",
+                "regionCode": "FL",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "5.475",
+                "latitude": "52.50833",
+                "postalCode": "8224",
+                "tlsVersion": "",
+                "tlsCipher": "",
+                "tlsClientRandom": "",
+                "tlsClientCiphersSha1": "",
+                "tlsClientExtensionsSha1": "",
+                "tlsClientExtensionsSha1Le": "",
+                "tlsClientHelloLength": "0",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 68936
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 0,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775327656284,
+    "event": {
+        "request": {
+            "url": "http://api.tamuu.id/2019/wp-includes/wlwmanifest.xml",
+            "method": "GET",
+            "headers": {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "accept-encoding": "gzip",
+                "accept-language": "en-US,en;q=0.5",
+                "cf-connecting-ip": "45.94.31.119",
+                "cf-ipcountry": "NL",
+                "cf-ray": "9e7267fae9c1b660",
+                "cf-visitor": "{\"scheme\":\"http\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+                "x-forwarded-proto": "http",
+                "x-real-ip": "45.94.31.119"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 98,
+                "clientQuicRtt": 0,
+                "colo": "AMS",
+                "asn": 210558,
+                "asOrganization": "1337 Services GmbH",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Lelystad",
+                "continent": "EU",
+                "region": "Flevoland",
+                "regionCode": "FL",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "5.475",
+                "latitude": "52.50833",
+                "postalCode": "8224",
+                "tlsVersion": "",
+                "tlsCipher": "",
+                "tlsClientRandom": "",
+                "tlsClientCiphersSha1": "",
+                "tlsClientExtensionsSha1": "",
+                "tlsClientExtensionsSha1Le": "",
+                "tlsClientHelloLength": "0",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 68936
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 0,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775327656378,
+    "event": {
+        "request": {
+            "url": "http://api.tamuu.id/shop/wp-includes/wlwmanifest.xml",
+            "method": "GET",
+            "headers": {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "accept-encoding": "gzip",
+                "accept-language": "en-US,en;q=0.5",
+                "cf-connecting-ip": "45.94.31.119",
+                "cf-ipcountry": "NL",
+                "cf-ray": "9e7267fbcb19b660",
+                "cf-visitor": "{\"scheme\":\"http\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+                "x-forwarded-proto": "http",
+                "x-real-ip": "45.94.31.119"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 97,
+                "clientQuicRtt": 0,
+                "colo": "AMS",
+                "asn": 210558,
+                "asOrganization": "1337 Services GmbH",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Lelystad",
+                "continent": "EU",
+                "region": "Flevoland",
+                "regionCode": "FL",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "5.475",
+                "latitude": "52.50833",
+                "postalCode": "8224",
+                "tlsVersion": "",
+                "tlsCipher": "",
+                "tlsClientRandom": "",
+                "tlsClientCiphersSha1": "",
+                "tlsClientExtensionsSha1": "",
+                "tlsClientExtensionsSha1Le": "",
+                "tlsClientHelloLength": "0",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 68936
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 0,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775327656461,
+    "event": {
+        "request": {
+            "url": "http://api.tamuu.id/wp1/wp-includes/wlwmanifest.xml",
+            "method": "GET",
+            "headers": {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "accept-encoding": "gzip",
+                "accept-language": "en-US,en;q=0.5",
+                "cf-connecting-ip": "45.94.31.119",
+                "cf-ipcountry": "NL",
+                "cf-ray": "9e7267fc6c57b660",
+                "cf-visitor": "{\"scheme\":\"http\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+                "x-forwarded-proto": "http",
+                "x-real-ip": "45.94.31.119"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 94,
+                "clientQuicRtt": 0,
+                "colo": "AMS",
+                "asn": 210558,
+                "asOrganization": "1337 Services GmbH",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Lelystad",
+                "continent": "EU",
+                "region": "Flevoland",
+                "regionCode": "FL",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "5.475",
+                "latitude": "52.50833",
+                "postalCode": "8224",
+                "tlsVersion": "",
+                "tlsCipher": "",
+                "tlsClientRandom": "",
+                "tlsClientCiphersSha1": "",
+                "tlsClientExtensionsSha1": "",
+                "tlsClientExtensionsSha1Le": "",
+                "tlsClientHelloLength": "0",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 68936
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 0,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775327656675,
+    "event": {
+        "request": {
+            "url": "http://api.tamuu.id/test/wp-includes/wlwmanifest.xml",
+            "method": "GET",
+            "headers": {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "accept-encoding": "gzip",
+                "accept-language": "en-US,en;q=0.5",
+                "cf-connecting-ip": "45.94.31.119",
+                "cf-ipcountry": "NL",
+                "cf-ray": "9e7267fcef59b660",
+                "cf-visitor": "{\"scheme\":\"http\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+                "x-forwarded-proto": "http",
+                "x-real-ip": "45.94.31.119"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 103,
+                "clientQuicRtt": 0,
+                "colo": "AMS",
+                "asn": 210558,
+                "asOrganization": "1337 Services GmbH",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Lelystad",
+                "continent": "EU",
+                "region": "Flevoland",
+                "regionCode": "FL",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "5.475",
+                "latitude": "52.50833",
+                "postalCode": "8224",
+                "tlsVersion": "",
+                "tlsCipher": "",
+                "tlsClientRandom": "",
+                "tlsClientCiphersSha1": "",
+                "tlsClientExtensionsSha1": "",
+                "tlsClientExtensionsSha1Le": "",
+                "tlsClientHelloLength": "0",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 68936
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 3,
+    "cpuTime": 2,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775327657061,
+    "event": {
+        "request": {
+            "url": "http://api.tamuu.id/media/wp-includes/wlwmanifest.xml",
+            "method": "GET",
+            "headers": {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "accept-encoding": "gzip",
+                "accept-language": "en-US,en;q=0.5",
+                "cf-connecting-ip": "45.94.31.119",
+                "cf-ipcountry": "NL",
+                "cf-ray": "9e7267fe3ca0b660",
+                "cf-visitor": "{\"scheme\":\"http\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+                "x-forwarded-proto": "http",
+                "x-real-ip": "45.94.31.119"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 109,
+                "clientQuicRtt": 0,
+                "colo": "AMS",
+                "asn": 210558,
+                "asOrganization": "1337 Services GmbH",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Lelystad",
+                "continent": "EU",
+                "region": "Flevoland",
+                "regionCode": "FL",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "5.475",
+                "latitude": "52.50833",
+                "postalCode": "8224",
+                "tlsVersion": "",
+                "tlsCipher": "",
+                "tlsClientRandom": "",
+                "tlsClientCiphersSha1": "",
+                "tlsClientExtensionsSha1": "",
+                "tlsClientExtensionsSha1Le": "",
+                "tlsClientHelloLength": "0",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 68936
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 0,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775327657437,
+    "event": {
+        "request": {
+            "url": "http://api.tamuu.id/wp2/wp-includes/wlwmanifest.xml",
+            "method": "GET",
+            "headers": {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "accept-encoding": "gzip",
+                "accept-language": "en-US,en;q=0.5",
+                "cf-connecting-ip": "45.94.31.119",
+                "cf-ipcountry": "NL",
+                "cf-ray": "9e726800aa34b660",
+                "cf-visitor": "{\"scheme\":\"http\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+                "x-forwarded-proto": "http",
+                "x-real-ip": "45.94.31.119"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 104,
+                "clientQuicRtt": 0,
+                "colo": "AMS",
+                "asn": 210558,
+                "asOrganization": "1337 Services GmbH",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Lelystad",
+                "continent": "EU",
+                "region": "Flevoland",
+                "regionCode": "FL",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "5.475",
+                "latitude": "52.50833",
+                "postalCode": "8224",
+                "tlsVersion": "",
+                "tlsCipher": "",
+                "tlsClientRandom": "",
+                "tlsClientCiphersSha1": "",
+                "tlsClientExtensionsSha1": "",
+                "tlsClientExtensionsSha1Le": "",
+                "tlsClientHelloLength": "0",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 68936
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 0,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775327657525,
+    "event": {
+        "request": {
+            "url": "http://api.tamuu.id/site/wp-includes/wlwmanifest.xml",
+            "method": "GET",
+            "headers": {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "accept-encoding": "gzip",
+                "accept-language": "en-US,en;q=0.5",
+                "cf-connecting-ip": "45.94.31.119",
+                "cf-ipcountry": "NL",
+                "cf-ray": "9e726802fb3bb660",
+                "cf-visitor": "{\"scheme\":\"http\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+                "x-forwarded-proto": "http",
+                "x-real-ip": "45.94.31.119"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 99,
+                "clientQuicRtt": 0,
+                "colo": "AMS",
+                "asn": 210558,
+                "asOrganization": "1337 Services GmbH",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Lelystad",
+                "continent": "EU",
+                "region": "Flevoland",
+                "regionCode": "FL",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "5.475",
+                "latitude": "52.50833",
+                "postalCode": "8224",
+                "tlsVersion": "",
+                "tlsCipher": "",
+                "tlsClientRandom": "",
+                "tlsClientCiphersSha1": "",
+                "tlsClientExtensionsSha1": "",
+                "tlsClientExtensionsSha1Le": "",
+                "tlsClientHelloLength": "0",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 68936
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 0,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775327657596,
+    "event": {
+        "request": {
+            "url": "http://api.tamuu.id/cms/wp-includes/wlwmanifest.xml",
+            "method": "GET",
+            "headers": {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "accept-encoding": "gzip",
+                "accept-language": "en-US,en;q=0.5",
+                "cf-connecting-ip": "45.94.31.119",
+                "cf-ipcountry": "NL",
+                "cf-ray": "9e7268038c06b660",
+                "cf-visitor": "{\"scheme\":\"http\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+                "x-forwarded-proto": "http",
+                "x-real-ip": "45.94.31.119"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 95,
+                "clientQuicRtt": 0,
+                "colo": "AMS",
+                "asn": 210558,
+                "asOrganization": "1337 Services GmbH",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Lelystad",
+                "continent": "EU",
+                "region": "Flevoland",
+                "regionCode": "FL",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "5.475",
+                "latitude": "52.50833",
+                "postalCode": "8224",
+                "tlsVersion": "",
+                "tlsCipher": "",
+                "tlsClientRandom": "",
+                "tlsClientCiphersSha1": "",
+                "tlsClientExtensionsSha1": "",
+                "tlsClientExtensionsSha1Le": "",
+                "tlsClientHelloLength": "0",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 68936
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 0,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775327657686,
+    "event": {
+        "request": {
+            "url": "http://api.tamuu.id/sito/wp-includes/wlwmanifest.xml",
+            "method": "GET",
+            "headers": {
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "accept-encoding": "gzip",
+                "accept-language": "en-US,en;q=0.5",
+                "cf-connecting-ip": "45.94.31.119",
+                "cf-ipcountry": "NL",
+                "cf-ray": "9e726803fd30b660",
+                "cf-visitor": "{\"scheme\":\"http\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+                "x-forwarded-proto": "http",
+                "x-real-ip": "45.94.31.119"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 93,
+                "clientQuicRtt": 0,
+                "colo": "AMS",
+                "asn": 210558,
+                "asOrganization": "1337 Services GmbH",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Lelystad",
+                "continent": "EU",
+                "region": "Flevoland",
+                "regionCode": "FL",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "5.475",
+                "latitude": "52.50833",
+                "postalCode": "8224",
+                "tlsVersion": "",
+                "tlsCipher": "",
+                "tlsClientRandom": "",
+                "tlsClientCiphersSha1": "",
+                "tlsClientExtensionsSha1": "",
+                "tlsClientExtensionsSha1Le": "",
+                "tlsClientHelloLength": "0",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 68936
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}
+{
+    "wallTime": 21,
+    "cpuTime": 21,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "ddc09e39-93d4-4307-9aec-09cbf1a70e18"
+    },
+    "scriptName": "tamuu-api-prod",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1775328183384,
+    "event": {
+        "request": {
+            "url": "https://api.tamuu.id/",
+            "method": "GET",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "cf-connecting-ip": "2a14:7c1:400::1",
+                "cf-ipcountry": "NL",
+                "cf-ray": "9e7274da1c16660d",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "host": "api.tamuu.id",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.3",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "2a14:7c1:400::1"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "clientAcceptEncoding": "identity",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": {},
+                "clientTcpRtt": 3,
+                "clientQuicRtt": 0,
+                "colo": "AMS",
+                "asn": 51396,
+                "asOrganization": "Pfcloud UG",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Hopel",
+                "continent": "EU",
+                "region": "Limburg",
+                "regionCode": "LI",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "6.05046",
+                "latitude": "50.89245",
+                "postalCode": "6469",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-AES256-GCM-SHA384",
+                "tlsClientRandom": "kXd1a2KIMrr6hTIXr0IZNB92sdGixn0UIqBbNrn1d1Q=",
+                "tlsClientCiphersSha1": "WUS9+h7TjVkF9aEouGuCEMjGQGA=",
+                "tlsClientExtensionsSha1": "HdaHFerAsSqtY6qq7ea5DIhgOWE=",
+                "tlsClientExtensionsSha1Le": "GxikJ5emWDEnHB7mxxbPQth8Dso=",
+                "tlsExportedAuthenticator": {
+                    "clientHandshake": "7be0eb9fbf38352da6646432264bfcc42a21edc0120294244995adb09333db5a9461ed94cdab84b90cc295317444ec38",
+                    "serverHandshake": "c051e2a3cf427d80f4e9b013acf99441ce410eb32d1587c1877750eeaa4f93f67e6253a7be9ded69793eeaa916532432",
+                    "clientFinished": "dca8f4237c67e6649788b7abf499bb4d9a8ee321eafd2a41bbaf3717893c5f889044cb135efe0ea287dfdbb515ec9d7b",
+                    "serverFinished": "e672de95c54a4fbce4c5e2ba8c082b88d2117683c8280a53005d79d6c6da81d4048cc606994af383b29861a51b591b04"
+                },
+                "tlsClientHelloLength": "244",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 1017358
+                }
+            }
+        },
+        "response": {
+            "status": 404
+        }
+    }
+}

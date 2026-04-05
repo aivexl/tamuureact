@@ -260,7 +260,16 @@ export const UserEditorPage: React.FC<UserEditorPageProps> = ({ mode = 'invitati
                 hydrateProject(data);
                 setSections(data.sections || []);
                 if (data.orbit_layers) setOrbitLayers(data.orbit_layers);
-                setInvitation({ id: data.id, title: data.name, slug: data.slug, is_published: !!data.is_published, status: data.is_published ? "Published" : "Draft", thumbnailUrl: data.thumbnail_url, category: data.category });
+                setInvitation({ 
+                    id: data.id, 
+                    title: data.name, 
+                    slug: data.slug, 
+                    custom_domain: data.custom_domain,
+                    is_published: !!data.is_published, 
+                    status: data.is_published ? "Published" : "Draft", 
+                    thumbnailUrl: data.thumbnail_url, 
+                    category: data.category 
+                });
                 if (data.sections?.length > 0 && !activeSectionId) setActiveSection(data.sections[0].id);
                 
                 // Show tutorial for first-time users

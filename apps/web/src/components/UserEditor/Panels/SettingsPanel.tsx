@@ -21,6 +21,9 @@ import {
     AlertTriangle,
     Link2,
     Type,
+    Crown,
+    ExternalLink,
+    Info
 } from 'lucide-react';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { invitations as invitationsApi } from '@/lib/api';
@@ -33,6 +36,7 @@ interface SettingsPanelProps {
         title?: string;
         slug?: string;
         is_published?: boolean;
+        custom_domain?: string;
     };
     onClose: () => void;
     onUpdated?: (updates: any) => void;
@@ -45,13 +49,15 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     onUpdated,
 }) => {
     const navigate = useNavigate();
-    const { showModal } = useStore();
+    const { showModal, user } = useStore();
     const setIsPublished = useStore(s => s.setIsPublished);
 
     const effectiveId = invitationId || invitation?.id;
+    const isElite = user?.tier === 'elite';
 
     const [name, setName] = useState(invitation?.title || '');
     const [slug, setSlug] = useState(invitation?.slug || '');
+    const [customDomain, setCustomDomain] = useState(invitation?.custom_domain || '');
     const [isPublished, setLocalPublished] = useState(invitation?.is_published ?? false);
     const [loading, setLoading] = useState(!invitation);
     const [saving, setSaving] = useState(false);
@@ -70,6 +76,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 if (data) {
                     setName(data.name || '');
                     setSlug(data.slug || '');
+                    setCustomDomain(data.custom_domain || '');
                     setLocalPublished(!!data.is_published);
                 }
             } catch (err) {
@@ -105,6 +112,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 name,
                 slug,
                 is_published: isPublished,
+                custom_domain: isElite ? customDomain : undefined
             });
 
             // Sync published state to global store
@@ -114,6 +122,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             onUpdated?.({
                 title: name,
                 slug,
+                custom_domain: customDomain,
                 is_published: isPublished,
                 status: isPublished ? 'Published' : 'Draft',
             });
@@ -273,6 +282,64 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     </div>
                 </button>
             </div>
+
+            {/* Custom Domain (Elite Only) */}
+            {isElite && (
+                <m.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-gradient-to-br from-amber-50/50 to-orange-50/50 rounded-[2rem] p-6 space-y-4 border border-amber-100"
+                >
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-amber-100 rounded-xl flex items-center justify-center">
+                                <Crown className="w-4 h-4 text-amber-600" />
+                            </div>
+                            <h4 className="text-[10px] font-black text-amber-700 uppercase tracking-widest">
+                                Domain Pribadi (Elite)
+                            </h4>
+                        </div>
+                        <div className="px-3 py-1 bg-amber-100 rounded-full">
+                            <span className="text-[9px] font-black text-amber-700 uppercase tracking-tighter">Maintenance: Rp 249rb/thn</span>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2 ml-1">
+                            <Globe className="w-4 h-4 text-amber-600" />
+                            <label className="text-[10px] font-black uppercase tracking-widest text-amber-600">
+                                Domain Kamu
+                            </label>
+                        </div>
+                        <div className="relative">
+                            <input
+                                type="text"
+                                value={customDomain}
+                                onChange={(e) => setCustomDomain(e.target.value.toLowerCase())}
+                                placeholder="undangan.namakamu.com"
+                                className="w-full px-6 py-4 bg-white border border-amber-100 rounded-2xl focus:ring-4 focus:ring-amber-500/10 outline-none font-bold text-slate-700 pr-12"
+                            />
+                            {customDomain && (
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-amber-500">
+                                    <ExternalLink className="w-4 h-4" />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="p-4 bg-amber-50/50 rounded-2xl border border-amber-100/50 flex gap-3">
+                        <Info className="w-5 h-5 text-amber-600 shrink-0" />
+                        <div className="space-y-1">
+                            <p className="text-[11px] font-bold text-amber-800 leading-tight">
+                                Instruksi Setup CNAME:
+                            </p>
+                            <p className="text-[10px] text-amber-700/80 font-medium leading-relaxed">
+                                Silakan buka dashboard provider domain Anda (seperti Niagahoster, Domainesia, dsb) dan arahkan record <strong className="text-amber-900 font-black">CNAME</strong> Anda ke <code className="bg-amber-100 px-1.5 py-0.5 rounded text-amber-900 font-black">connect.tamuu.id</code>
+                            </p>
+                        </div>
+                    </div>
+                </m.div>
+            )}
 
             {/* Save Button */}
             <div className="flex items-center gap-4">

@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { m } from 'framer-motion';
-import { Calendar, Clock, Upload, ExternalLink, Check, Share2, Settings, CreditCard, FileText, Send } from 'lucide-react';
+import { Calendar, Clock, Upload, ExternalLink, Check, Share2, Settings, CreditCard, FileText, Send, Crown, Globe } from 'lucide-react';
 import { getPublicDomain } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { SubscriptionStatusWidget } from '../ui/SubscriptionStatusWidget';
@@ -15,6 +15,7 @@ interface InvitationInfoCardProps {
         status: string;
         activeUntil: string;
         thumbnailUrl?: string;
+        custom_domain?: string;
     };
     onShare?: () => void;
     onSettings?: () => void;
@@ -31,6 +32,9 @@ export const InvitationInfoCard: React.FC<InvitationInfoCardProps> = ({ invitati
     };
 
     const publicDomain = getPublicDomain();
+    const isElite = user?.tier === 'elite';
+    const displayLink = (isElite && invitation.custom_domain) ? invitation.custom_domain : `${publicDomain}/${invitation.slug}`;
+    const fullLink = (isElite && invitation.custom_domain) ? `https://${invitation.custom_domain}` : `https://${publicDomain}/${invitation.slug}`;
 
     return (
         <m.div
@@ -81,6 +85,12 @@ export const InvitationInfoCard: React.FC<InvitationInfoCardProps> = ({ invitati
                         <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-outfit tracking-tight leading-tight">
                             {invitation.title}
                         </h2>
+                        {isElite && invitation.custom_domain && (
+                            <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-700 rounded-full border border-amber-100 animate-in fade-in zoom-in duration-500">
+                                <Crown className="w-3 h-3" />
+                                <span className="text-[10px] font-black uppercase tracking-widest">Custom Domain</span>
+                            </div>
+                        )}
                     </div>
 
                     {/* Link Section (Input Style) */}
@@ -88,24 +98,24 @@ export const InvitationInfoCard: React.FC<InvitationInfoCardProps> = ({ invitati
                         <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
                             <div className="flex-1 min-w-[200px] flex items-center gap-0 bg-slate-50 rounded-xl border border-slate-200 p-1.5 focus-within:ring-2 focus-within:ring-teal-500/20 focus-within:border-teal-400 transition-all">
                                 <a 
-                                    href={`https://${publicDomain}/${invitation.slug}`}
+                                    href={fullLink}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex items-center flex-1 min-w-0 hover:bg-slate-100/50 rounded-lg transition-all group/link"
                                 >
                                     <div className="pl-3 pr-2 text-slate-400 hidden sm:block group-hover/link:text-teal-500 transition-colors">
-                                        <ExternalLink className="w-4 h-4" />
+                                        {(isElite && invitation.custom_domain) ? <Globe className="w-4 h-4" /> : <ExternalLink className="w-4 h-4" />}
                                     </div>
                                     <div className="flex-1 min-w-0 py-1 sm:py-1.5 px-2 sm:px-0">
                                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Link Undangan</p>
                                         <p className="text-sm font-bold text-slate-800 truncate font-mono group-hover/link:text-teal-600 transition-colors">
-                                            {publicDomain}/{invitation.slug}
+                                            {displayLink}
                                         </p>
                                     </div>
                                 </a>
                                 <div className="p-1">
                                     <AnimatedCopyIcon 
-                                        text={`https://${publicDomain}/${invitation.slug}`} 
+                                        text={fullLink} 
                                         size={18} 
                                         className="p-2.5 rounded-lg bg-white text-slate-500 hover:text-teal-600 border border-slate-200 hover:border-teal-200 transition-all"
                                         successMessage="Link disalin!"

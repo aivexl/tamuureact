@@ -344,15 +344,19 @@ export default {
                         } else {
                             // Standard Subscription
                             const userId = transaction.user_id;
-                            const tier = transaction.tier;
+                            let tier = transaction.tier;
                             let maxInvitations = 1; 
                             
-                            let durationDays = 30; 
-                            if (tier === 'pro' || tier === 'vip') durationDays = 90;
-                            else if (tier === 'ultimate' || tier === 'platinum') durationDays = 180;
-                            else if (tier === 'elite' || tier === 'vvip') durationDays = 365;
-
-                            const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
+                            let expiresAt;
+                            if (tier === 'elite') {
+                                expiresAt = '2099-12-31T23:59:59Z';
+                            } else {
+                                let durationDays = 30; // BASIC
+                                if (tier === 'pro') durationDays = 90;
+                                else if (tier === 'ultimate') durationDays = 365;
+                                
+                                expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
+                            }
 
                             await env.DB.prepare('UPDATE users SET tier = ?, max_invitations = ?, expires_at = ?, updated_at = datetime("now") WHERE id = ?').bind(tier, maxInvitations, expiresAt, userId).run();
                             await env.DB.prepare('UPDATE invitations SET expires_at = ?, updated_at = datetime("now") WHERE user_id = ?').bind(expiresAt, userId).run();
@@ -1002,15 +1006,25 @@ export default {
                         } else {
                             // Standard Subscription Provisioning
                             const userId = transaction.user_id;
-                            const tier = transaction.tier;
+                            let tier = transaction.tier;
                             let maxInvitations = 1; 
 
-                            let durationDays = 30;
-                            if (tier === 'pro' || tier === 'vip') durationDays = 90;
-                            else if (tier === 'ultimate' || tier === 'platinum') durationDays = 180;
-                            else if (tier === 'elite' || tier === 'vvip') durationDays = 365;
+                            // Legacy Mapping
+                            if (tier === 'vip') tier = 'pro';
+                            if (tier === 'platinum') tier = 'ultimate';
+                            if (tier === 'vvip') tier = 'elite';
+                            if (tier === 'free') tier = 'basic';
 
-                            const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
+                            let expiresAt;
+                            if (tier === 'elite') {
+                                expiresAt = '2099-12-31T23:59:59Z';
+                            } else {
+                                let durationDays = 30; // BASIC
+                                if (tier === 'pro') durationDays = 90;
+                                else if (tier === 'ultimate') durationDays = 365;
+                                
+                                expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
+                            }
 
                             await env.DB.batch([
                                 env.DB.prepare('UPDATE billing_transactions SET status = "PAID", paid_at = datetime("now"), payment_channel = ? WHERE external_id = ?').bind(payment_type || 'midtrans', order_id),
