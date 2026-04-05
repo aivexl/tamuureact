@@ -72,35 +72,33 @@ const TierCard: React.FC<TierCardProps> = ({
         {/* Step 2: Visual Urgency Bar (Apple-style) */}
         {slotsLeft !== undefined && (
             <div className="mb-6 mt-4">
-                <div className="flex justify-between items-center mb-1.5 px-0.5">
-                    <span className="text-[9px] font-black text-[#EF4444] uppercase tracking-[0.15em] flex items-center gap-1 animate-pulse">
+                <div className="flex justify-between items-center mb-2 px-1">
+                    <span className="text-[8px] sm:text-[9px] font-black text-[#EF4444] uppercase tracking-[0.2em] flex items-center gap-1.5 animate-pulse">
                         <span className="w-1 h-1 rounded-full bg-[#EF4444]" />
                         Hampir Habis
                     </span>
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">Tersisa {slotsLeft} Slot Promo</span>
+                    <span className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-[0.1em]">Tersisa {slotsLeft} Slot Promo</span>
                 </div>
-                <div className="h-1 w-full bg-emerald-500 rounded-full overflow-hidden flex shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)]">
+                <div className="h-1.5 w-full bg-emerald-500 rounded-full overflow-hidden flex shadow-[inset_0_1px_3px_rgba(0,0,0,0.15)] border border-slate-100/50">
                     {/* Red Area (The Pressure) */}
                     <motion.div
                         initial={{ width: "0%" }}
-                        animate={{ width: `${99 - ((slotsLeft - (slotsLeft > 10 ? 12 : slotsLeft > 5 ? 8 : slotsLeft > 2 ? 5 : 2)) / 6) * 4}%` }}
+                        animate={{ width: `${98 - ((slotsLeft - (slotsLeft > 10 ? 12 : slotsLeft > 5 ? 8 : slotsLeft > 2 ? 5 : 2)) / 6) * 5}%` }}
                         transition={{ duration: 1.5, ease: "easeOut" }}
-                        className="h-full bg-[#EF4444] relative"
+                        className="h-full bg-[#EF4444] relative overflow-hidden"
                     >
-                        {/* Pulsing Pressure Effect */}
+                        {/* Directional Pressure Wave (Left to Right) */}
                         <motion.div 
-                            animate={{ 
-                                opacity: [0.6, 1, 0.6],
-                                scaleX: [1, 1.01, 1]
-                            }}
-                            transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
-                            className="absolute inset-0 bg-[#EF4444] origin-left"
+                            animate={{ x: ["-100%", "100%"] }}
+                            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent w-full skew-x-[-20deg]"
                         />
-                        {/* Glossy Sweep */}
+                        
+                        {/* Pulsing Base Layer */}
                         <motion.div 
-                            animate={{ x: ["-100%", "200%"] }}
-                            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent w-1/2"
+                            animate={{ opacity: [0.8, 1, 0.8] }}
+                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            className="absolute inset-0 bg-[#EF4444]"
                         />
                     </motion.div>
                 </div>
