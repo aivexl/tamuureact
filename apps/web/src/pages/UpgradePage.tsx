@@ -73,11 +73,11 @@ const TierCard: React.FC<TierCardProps> = ({
         {slotsLeft !== undefined && (
             <div className="mb-6 mt-4">
                 <div className="flex justify-between items-center mb-2 px-1">
-                    <span className="text-[8px] sm:text-[9px] font-black text-[#EF4444] uppercase tracking-[0.2em] flex items-center gap-1.5 animate-pulse">
+                    <span className="text-[7px] font-black text-[#EF4444] uppercase tracking-[0.2em] flex items-center gap-1.5 animate-pulse">
                         <span className="w-1 h-1 rounded-full bg-[#EF4444]" />
                         Hampir Habis
                     </span>
-                    <span className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-[0.1em]">Tersisa {slotsLeft} Slot Promo</span>
+                    <span className="text-[7px] font-black text-slate-400 uppercase tracking-[0.1em]">Tersisa {slotsLeft} Slot Promo</span>
                 </div>
                 <div className="h-1.5 w-full bg-emerald-500 rounded-full overflow-hidden flex shadow-[inset_0_1px_3px_rgba(0,0,0,0.2)] border border-slate-100/30">
                     {/* Red Area (The Pressure Container) */}
