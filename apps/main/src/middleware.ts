@@ -18,18 +18,17 @@ export async function middleware(request: NextRequest) {
   const xForwardedHost = request.headers.get('x-forwarded-host');
   const hostname = (xForwardedHost || host || request.nextUrl.hostname).toLowerCase().split(':')[0];
 
-  // 2. STATIC & INTERNAL BYPASS (Check BEFORE session for speed)
+  // 2. STATIC & INTERNAL BYPASS (Only Next.js internals - NOT Vite assets!)
+  // ⚠️ IMPORTANT: Do NOT bypass /assets/ or files with dots - those are Vite assets!
   if (
       pathname.startsWith('/_next') || 
       pathname.startsWith('/api') || 
       pathname === '/favicon.ico' || 
       pathname === '/sw.js' ||
-      pathname.includes('.') ||
-      pathname.startsWith('/assets/') ||
       pathname.startsWith('/robots.txt') ||
       pathname.startsWith('/sitemap.xml')
   ) {
-    // Return simple response for static assets - no session overhead
+    // Return simple response for Next.js static assets - no session overhead
     return NextResponse.next();
   }
 
@@ -37,7 +36,7 @@ export async function middleware(request: NextRequest) {
   const { user, response: baseResponse } = await updateSession(request);
   
   // Inject Tracking Headers
-  baseResponse.headers.set('x-tamuu-version', '4.8.0-instant-redirect');
+  baseResponse.headers.set('x-tamuu-version', '4.8.1-asset-fix');
   baseResponse.headers.set('x-tamuu-host', hostname);
 
   // 4. CLASSIFICATION
@@ -61,7 +60,7 @@ export async function middleware(request: NextRequest) {
           const redirectRes = NextResponse.redirect(redirectUrl, 308);
           redirectRes.headers.set('x-tamuu-policy', 'edge-public-to-app');
           redirectRes.headers.set('x-tamuu-redirect-reason', 'public-domain-accessing-app-route');
-          redirectRes.headers.set('x-tamuu-middleware-version', '4.8.0');
+          redirectRes.headers.set('x-tamuu-middleware-version', '4.8.1-asset-fix');
           return redirectRes;
       }
 
@@ -74,7 +73,7 @@ export async function middleware(request: NextRequest) {
           const redirectRes = NextResponse.redirect(redirectUrl, 308);
           redirectRes.headers.set('x-tamuu-policy', 'edge-app-to-public');
           redirectRes.headers.set('x-tamuu-redirect-reason', 'app-domain-accessing-public-route');
-          redirectRes.headers.set('x-tamuu-middleware-version', '4.8.0');
+          redirectRes.headers.set('x-tamuu-middleware-version', '4.8.1-asset-fix');
           return redirectRes;
       }
   }
@@ -83,8 +82,8 @@ export async function middleware(request: NextRequest) {
   // 6. PROXY DELEGATION (Vite vs Next.js)
   // ============================================
   
-  // A. App content on App Domain -> PROXY to Vite
-  if (isAppDomain && isAppRoute) {
+  // A. App content on App Domain -> PROXY to Vite (INCLUDING ASSETS!)
+  if (isAppDomain && (isAppRoute || pathname.startsWith('/assets/') || pathname.startsWith('/images/') || pathname.startsWith('/vite/'))) {
       const targetUrl = new URL(pathname + search, 'https://tamuu-app.pages.dev');
       const proxyRes = NextResponse.rewrite(targetUrl);
       
@@ -93,7 +92,7 @@ export async function middleware(request: NextRequest) {
       baseResponse.cookies.getAll().forEach(c => proxyRes.cookies.set(c.name, c.value, c));
       
       proxyRes.headers.set('x-tamuu-policy', 'proxy-to-vite-app');
-      proxyRes.headers.set('x-tamuu-middleware-version', '4.8.0');
+      proxyRes.headers.set('x-tamuu-middleware-version', '4.8.1-asset-fix');
       return proxyRes;
   }
 
@@ -107,7 +106,17 @@ export async function middleware(request: NextRequest) {
       baseResponse.cookies.getAll().forEach(c => proxyRes.cookies.set(c.name, c.value, c));
       
       proxyRes.headers.set('x-tamuu-policy', 'proxy-to-vite-public');
-      proxyRes.headers.set('x-tamuu-middleware-version', '4.8.0');
+      proxyRes.headers.set('x-tamuu-middleware-version', '4.8.1-asset-fix');
+      return proxyRes;
+  }
+
+  // C. Asset files on ANY domain -> PROXY to Vite (catches /assets/, /images/, etc.)
+  if (pathname.startsWith('/assets/') || pathname.startsWith('/images/') || pathname.match(/\.(js|css|webp|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/)) {
+      const targetUrl = new URL(pathname + search, 'https://tamuu-app.pages.dev');
+      const proxyRes = NextResponse.rewrite(targetUrl);
+      
+      proxyRes.headers.set('x-tamuu-policy', 'proxy-to-vite-assets');
+      proxyRes.headers.set('x-tamuu-middleware-version', '4.8.1-asset-fix');
       return proxyRes;
   }
 
@@ -115,7 +124,7 @@ export async function middleware(request: NextRequest) {
   // 7. FALLBACK: Serve via Next.js (tamuu.id Public Routes)
   // ============================================
   baseResponse.headers.set('x-tamuu-policy', 'native-nextjs');
-  baseResponse.headers.set('x-tamuu-middleware-version', '4.8.0');
+  baseResponse.headers.set('x-tamuu-middleware-version', '4.8.1-asset-fix');
   return baseResponse;
 }
 
