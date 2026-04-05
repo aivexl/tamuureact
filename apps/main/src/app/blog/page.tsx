@@ -3,6 +3,8 @@ import { Metadata } from 'next';
 import { getBlogPosts, getBlogCategories, getBlogCarousel } from '@/lib/api';
 import BlogContent from './BlogContent';
 
+import { enforceDomain } from '@/lib/domain-enforcer';
+
 export async function generateMetadata(): Promise<Metadata> {
     const currentMonth = new Intl.DateTimeFormat('id-ID', { month: 'long' }).format(new Date());
     const currentYear = new Date().getFullYear().toString();
@@ -23,6 +25,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function BlogLandingPage() {
+    await enforceDomain('public');
+    
     // Fetch initial data server-side
     const [initialPosts, catsData, carouselData] = await Promise.all([
         getBlogPosts({ limit: 9, offset: 0 }),

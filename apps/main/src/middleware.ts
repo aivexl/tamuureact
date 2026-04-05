@@ -13,7 +13,7 @@ const APP_PATHS = [
     '/login', '/signup', '/forgot-password', '/auth',
     '/dashboard', '/editor', '/profile', '/billing',
     '/upgrade', '/guests', '/wishes', '/admin',
-    '/vendor', '/onboarding', '/invitations'
+    '/vendor', '/onboarding'
 ];
 
 const isAppPath = (path: string) => APP_PATHS.some(p => path.startsWith(p));
@@ -80,9 +80,12 @@ export async function middleware(request: NextRequest) {
   // ============================================
   // 6. PROXY DELEGATION (Vite vs Next.js)
   // ============================================
+  const VITE_PUBLIC_PATHS = ['/invitations', '/preview', '/v/', '/c/'];
+  const isVitePublicRoute = VITE_PUBLIC_PATHS.some(p => pathname.startsWith(p));
   
-  // Any App Path reaching here on app.tamuu.id MUST be served by Vite
-  if (isAppDomain || isAppRoute) {
+  // A. App content on App Domain -> PROXY to Vite
+  // B. Public Vite content on any domain (already redirected if needed) -> PROXY to Vite
+  if ((isAppDomain && isAppRoute) || isVitePublicRoute) {
       const targetUrl = new URL(pathname + search, 'https://tamuu-app.pages.dev');
       const proxyRes = NextResponse.rewrite(targetUrl);
       

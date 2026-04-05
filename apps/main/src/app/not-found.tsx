@@ -24,7 +24,7 @@ export default function NotFound() {
       '/login', '/signup', '/forgot-password', '/auth',
       '/dashboard', '/editor', '/profile', '/billing',
       '/upgrade', '/guests', '/wishes', '/admin',
-      '/vendor', '/onboarding', '/invitations'
+      '/vendor', '/onboarding'
     ];
 
     const isAppPath = APP_PATHS.some(p => pathname.startsWith(p));

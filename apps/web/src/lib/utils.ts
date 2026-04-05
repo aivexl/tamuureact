@@ -64,8 +64,7 @@ export const isAppPath = (pathname: string): boolean => {
            pathname.startsWith('/wishes') ||
            pathname.startsWith('/admin') ||
            pathname.startsWith('/vendor') ||
-           pathname.startsWith('/onboarding') ||
-           pathname.startsWith('/invitations');
+           pathname.startsWith('/onboarding');
 };
 
 /**

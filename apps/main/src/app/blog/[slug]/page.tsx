@@ -1,6 +1,7 @@
 import React from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { enforceDomain } from '@/lib/domain-enforcer';
 import { getBlogPost, getRelatedPosts } from '@/lib/api';
 import { BlogPostLayout } from '@/components/blog/BlogPostLayout';
 import BlogAnalytics from './BlogAnalytics';
@@ -8,6 +9,8 @@ import BlogAnalytics from './BlogAnalytics';
 interface Props {
     params: Promise<{ slug: string }>;
 }
+
+import { enforceDomain } from '@/lib/domain-enforcer';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
@@ -36,6 +39,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function BlogPostPage({ params }: Props) {
+    await enforceDomain('public');
+    
     const { slug } = await params;
     const post = await getBlogPost(slug);
 

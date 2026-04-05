@@ -3,6 +3,8 @@ import { Metadata } from 'next';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import FeaturesSection from '@/components/undangan-digital/FeaturesSection';
 
+import { enforceDomain } from '@/lib/domain-enforcer';
+
 // Metadata for SEO (Server Side)
 export const metadata: Metadata = {
     title: 'Platform Undangan Digital Premium & Eksklusif',
@@ -29,7 +31,9 @@ const SectionLoader = () => (
     </div>
 );
 
-export default function UndanganDigitalPage() {
+export default async function UndanganDigitalPage() {
+    await enforceDomain('public');
+    
     return (
         <div className="bg-white text-gray-900 overflow-visible font-sans">
             {/* Hero Section - Restored from legacy structure */}
