@@ -114,25 +114,32 @@ const TierCard: React.FC<TierCardProps> = ({
     </motion.div>
 );
 
+const urgencyRange: Record<string, [number, number]> = {
+    basic: [12, 18],
+    pro: [8, 12],
+    ultimate: [5, 9],
+    elite: [2, 4]
+};
+
 export const UpgradePage: React.FC = () => {
     const { user } = useStore();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const { initiatePayment, processingTier } = usePayment();
 
-    // Step 2: Randomized slots for Visual Urgency (Apple-style)
+    // Randomized urgency data
     const urgencyData = React.useMemo(() => ({
-        basic: { left: Math.floor(Math.random() * (18 - 12 + 1)) + 12, total: 20 },
-        pro: { left: Math.floor(Math.random() * (12 - 8 + 1)) + 8, total: 15 },
-        ultimate: { left: Math.floor(Math.random() * (9 - 5 + 1)) + 5, total: 10 },
-        elite: { left: Math.floor(Math.random() * (4 - 2 + 1)) + 2, total: 5 }
+        basic: { left: Math.floor(Math.random() * (urgencyRange.basic[1] - urgencyRange.basic[0] + 1)) + urgencyRange.basic[0], total: 20 },
+        pro: { left: Math.floor(Math.random() * (urgencyRange.pro[1] - urgencyRange.pro[0] + 1)) + urgencyRange.pro[0], total: 15 },
+        ultimate: { left: Math.floor(Math.random() * (urgencyRange.ultimate[1] - urgencyRange.ultimate[0] + 1)) + urgencyRange.ultimate[0], total: 10 },
+        elite: { left: Math.floor(Math.random() * (urgencyRange.elite[1] - urgencyRange.elite[0] + 1)) + urgencyRange.elite[0], total: 5 }
     }), []);
 
     // Auto-trigger payment if tier is specified in query params
     useEffect(() => {
         const tier = searchParams.get('tier');
         if (tier && user && !processingTier) {
-            const validTiers = ['pro', 'ultimate', 'elite'];
+            const validTiers = ['basic', 'pro', 'ultimate', 'elite'];
             if (validTiers.includes(tier)) {
                 setTimeout(() => {
                     initiatePayment(tier);
@@ -177,20 +184,20 @@ export const UpgradePage: React.FC = () => {
                         duration="30 hari"
                         icon={Zap}
                         color="bg-slate-400"
-                        isCurrent={user?.tier === 'free'}
+                        isCurrent={user?.tier === 'basic'}
                         slotsLeft={urgencyData.basic.left}
                         totalSlots={urgencyData.basic.total}
                         features={[
                             "1 Undangan Aktif",
                             "Masa Aktif 30 Hari",
+                            "Link Undangan Custom",
                             "Template Dasar",
                             "Buku Tamu Digital",
                             "RSVP Dasar",
-                            "Watermark Tamuu",
                         ]}
-                        buttonText={user?.tier === 'free' ? "Current Plan" : "Get Started"}
-                        onSelect={() => navigate('/dashboard')}
-                        isLoading={processingTier === 'free'}
+                        buttonText={user?.tier === 'basic' ? "Active" : "Get Started"}
+                        onSelect={() => initiatePayment('basic')}
+                        isLoading={processingTier === 'basic'}
                     />
 
                     {/* Pro Tier */}
@@ -207,11 +214,10 @@ export const UpgradePage: React.FC = () => {
                         features={[
                             "1 Undangan Aktif",
                             "Masa Aktif 90 Hari",
+                            "Link Undangan Custom",
                             "Semua Template Premium",
                             "Orbit Dynamic Animations",
-                            "Premium Music Library",
                             "Digital Gift & Angpao",
-                            "Smart WhatsApp Sharing",
                         ]}
                         buttonText={user?.tier === 'pro' ? "Active" : "Go Pro"}
                         onSelect={() => initiatePayment('pro')}
@@ -236,9 +242,7 @@ export const UpgradePage: React.FC = () => {
                             "Semua Fitur Pro",
                             "Sistem Check-in & Out",
                             "QR Code per Tamu",
-                            "Lucky Draw / Undian",
-                            "Dashboard Analytics",
-                            "Social Media Management",
+                            "Smart Welcome Display",
                         ]}
                         buttonText={user?.tier === 'ultimate' ? "Active" : "Go Ultimate"}
                         onSelect={() => initiatePayment('ultimate')}

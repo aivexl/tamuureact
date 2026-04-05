@@ -44,72 +44,96 @@ interface MidtransResponse {
 
 const pricingPlans = [
     {
-        tier: "free",
-        name: "FREE",
-        price: "Rp 0",
-        duration: "selamanya",
+        tier: "basic",
+        name: "BASIC",
+        price: "Rp 49k",
+        originalPrice: "Rp 99k",
+        duration: "30 hari",
         icon: Zap,
         features: [
             "1 Undangan Aktif",
             "Masa Aktif 30 Hari",
+            "Link Undangan Custom",
             "Template Dasar",
             "Buku Tamu Digital",
             "RSVP Dasar",
-            "Watermark Tamuu",
         ],
+        urgency: { left: 14, total: 20 }
     },
     {
         tier: "pro",
         name: "PRO",
-        price: "Rp 99k",
-        originalPrice: "Rp 149k",
+        price: "Rp 149k",
+        originalPrice: "Rp 199k",
         duration: "90 hari",
         icon: Crown,
         features: [
             "1 Undangan Aktif",
             "Masa Aktif 90 Hari",
+            "Link Undangan Custom",
             "Semua Template Premium",
             "Orbit Dynamic Animations",
-            "Premium Music Library",
             "Digital Gift & Angpao",
-            "Smart WhatsApp Sharing",
         ],
+        urgency: { left: 9, total: 15 }
     },
     {
         tier: "ultimate",
         name: "ULTIMATE",
-        price: "Rp 149k",
-        originalPrice: "Rp 249k",
-        duration: "180 hari",
+        price: "Rp 199k",
+        originalPrice: "Rp 399k",
+        duration: "365 hari",
         icon: Star,
         popular: true,
         features: [
             "1 Undangan Aktif",
-            "Masa Aktif 180 Hari",
+            "Masa Aktif 365 Hari",
             "Semua Fitur Pro",
             "Sistem Check-in & Out",
             "QR Code per Tamu",
-            "Lucky Draw / Undian",
-            "Dashboard Analytics",
-            "Social Media Management",
+            "Smart Welcome Display",
         ],
+        urgency: { left: 6, total: 10 }
     },
     {
         tier: "elite",
         name: "ELITE",
-        price: "Rp 199k",
-        originalPrice: "Rp 299k",
-        duration: "per tahun",
+        price: "Rp 999k",
+        originalPrice: "Rp 1.499rb",
+        duration: "selamanya",
         icon: Crown,
         features: [
             "1 Undangan Aktif",
-            "Masa Aktif 365 Hari",
+            "Masa Aktif Selamanya",
             "Semua Fitur Ultimate",
+            "Custom Domain Pribadi",
             "Advanced Import/Export",
             "Eksklusivitas Layanan",
         ],
+        urgency: { left: 3, total: 5 }
     },
 ];
+
+const UrgencyBar = ({ count, max }: { count: number, max: number }) => (
+    <div className="mt-6 mb-2">
+        <div className="flex justify-between items-center mb-1.5">
+            <span className="text-[10px] font-black text-[#EF4444] uppercase tracking-widest flex items-center gap-1">
+                <span className="w-1 h-1 rounded-full bg-[#EF4444] animate-pulse" />
+                Hampir Habis
+            </span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{count}/{max} Slot Promo</span>
+        </div>
+        <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
+            <m.div
+                initial={{ width: "100%" }}
+                whileInView={{ width: `${(count / max) * 100}%` }}
+                viewport={{ once: true }}
+                transition={{ duration: 1.5, ease: "easeOut" }}
+                className="h-full bg-[#EF4444]"
+            />
+        </div>
+    </div>
+);
 
 const PricingSection: React.FC = () => {
     const router = useRouter();
@@ -117,12 +141,19 @@ const PricingSection: React.FC = () => {
     const [processingTier, setProcessingTier] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const handleAction = async (tier: string) => {
-        if (tier === 'free') {
-            router.push('/onboarding');
-            return;
-        }
+    // Randomized urgency data
+    const [urgencyData, setUrgencyData] = useState<Record<string, { left: number, total: number }>>({});
 
+    useEffect(() => {
+        setUrgencyData({
+            basic: { left: Math.floor(Math.random() * (18 - 12 + 1)) + 12, total: 20 },
+            pro: { left: Math.floor(Math.random() * (12 - 8 + 1)) + 8, total: 15 },
+            ultimate: { left: Math.floor(Math.random() * (9 - 5 + 1)) + 5, total: 10 },
+            elite: { left: Math.floor(Math.random() * (4 - 2 + 1)) + 2, total: 5 }
+        });
+    }, []);
+
+    const handleAction = async (tier: string) => {
         if (!isAuthenticated || !user) {
             router.push(`/login?tier=${tier}`);
             return;
@@ -138,11 +169,12 @@ const PricingSection: React.FC = () => {
 
             // Step 2: Get Midtrans token from API
             const pricing: Record<string, number> = {
-                'pro': 99000,
-                'ultimate': 149000,
-                'elite': 199000
+                'basic': 49000,
+                'pro': 149000,
+                'ultimate': 199000,
+                'elite': 999000
             };
-            const amount = pricing[tier] || 99000;
+            const amount = pricing[tier] || 49000;
 
             const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.tamuu.id';
             const response = await fetch(`${API_BASE}/api/billing/midtrans/token`, {
@@ -229,11 +261,9 @@ const PricingSection: React.FC = () => {
                     const isProcessing = processingTier === plan.tier;
                     
                     // Normalize tiers for comparison (handling legacy names if any)
-                    const normalizedUserTier = (user?.tier || 'free').toLowerCase();
-                    const isCurrent = normalizedUserTier === plan.tier.toLowerCase() || 
-                                     (normalizedUserTier === 'vip' && plan.tier === 'pro') ||
-                                     (normalizedUserTier === 'platinum' && plan.tier === 'ultimate') ||
-                                     (normalizedUserTier === 'vvip' && plan.tier === 'elite');
+                    const normalizedUserTier = (user?.tier || 'basic').toLowerCase();
+                    const isCurrent = normalizedUserTier === plan.tier.toLowerCase();
+                    const urgency = urgencyData[plan.tier];
 
                     return (
                         <m.div
@@ -271,7 +301,7 @@ const PricingSection: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="mb-8">
+                            <div className="mb-4">
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-3xl font-black text-[#0A1128] tracking-tighter">{plan.price}</span>
                                     {plan.originalPrice && (
@@ -280,7 +310,12 @@ const PricingSection: React.FC = () => {
                                 </div>
                             </div>
 
-                            <ul className="space-y-4 mb-10">
+                            {/* Apple-style Urgency Bar */}
+                            {urgency && (
+                                <UrgencyBar count={urgency.left} max={urgency.total} />
+                            )}
+
+                            <ul className="space-y-4 mb-10 mt-8">
                                 {plan.features.map((feature, i) => (
                                     <li key={i} className="flex items-start gap-3">
                                         <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 border ${isCurrent ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}>
