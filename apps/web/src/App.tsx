@@ -119,7 +119,8 @@ const DomainEnforcer: React.FC = () => {
                    path.startsWith('/wishes') ||
                    path.startsWith('/admin') ||
                    path.startsWith('/vendor') ||
-                   path.startsWith('/onboarding');
+                   path.startsWith('/onboarding') ||
+                   path.startsWith('/invitations');
         };
 
         const isAppRoute = isAppPath(pathname);

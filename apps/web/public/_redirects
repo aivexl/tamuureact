@@ -2,7 +2,8 @@
 /admin/*  /admin/:splat  200
 
 # Explicit Handle for SPA routes
-/upgrade  /index.html    200
+/upgrade      /index.html    200
+/invitations  /index.html    200
 
 # Proxy Catch-all Slug routes to Legacy Vite (Preview pages)
 # This will be handled as fallback if Next.js doesn't match
