@@ -26,34 +26,47 @@ const isAppPath = (pathname: string): boolean => {
 
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
-  const host = request.headers.get('host') || '';
+  const hostname = url.hostname;
   const pathname = url.pathname;
 
   // 1. Session Refresh (Essential for SSR Auth)
   const { user, response } = await updateSession(request)
   
-  response.headers.set('x-tamuu-version', '4.1.0-strict-synergy');
+  response.headers.set('x-tamuu-version', '4.2.0-smart-synergy');
 
-  const isAppDomain = host.includes('app.tamuu.id');
-  const isPublicDomain = !isAppDomain && !host.includes('tamuu-app.pages.dev');
+  // ============================================
+  // 0. SMART DOMAIN ENFORCER (CTO Level Strictness)
+  // ============================================
+  const isAppHost = hostname === 'app.tamuu.id';
+  const isPublicHost = hostname === 'tamuu.id' || hostname === 'www.tamuu.id';
+  const isDev = hostname === 'localhost' || hostname === '127.0.0.1';
+  
+  const isAppRoute = isAppPath(pathname);
+  const isPublicRoute = !isAppRoute && !pathname.includes('.') && !pathname.startsWith('/_next') && !pathname.startsWith('/api');
+
+  if (!isDev) {
+      // Enforcement A: App content MUST be on app.tamuu.id
+      if (isPublicHost && isAppRoute) {
+          const redirectUrl = new URL(`https://app.tamuu.id${pathname}${url.search}`, request.url);
+          const redirectResponse = NextResponse.redirect(redirectUrl, 308);
+          response.headers.forEach((v, k) => redirectResponse.headers.set(k, v));
+          response.cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie.name, cookie.value, cookie));
+          return redirectResponse;
+      }
+
+      // Enforcement B: Public content MUST be on tamuu.id
+      if (isAppHost && isPublicRoute) {
+          const redirectUrl = new URL(`https://tamuu.id${pathname}${url.search}`, request.url);
+          const redirectResponse = NextResponse.redirect(redirectUrl, 308);
+          response.headers.forEach((v, k) => redirectResponse.headers.set(k, v));
+          response.cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie.name, cookie.value, cookie));
+          return redirectResponse;
+      }
+  }
 
   // ============================================
   // 1. BYPASS LOGIC (Assets & Internals)
   // ============================================
-  
-  // A. Next.js Internal Resources (Bypass to Next.js)
-  if (pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname === '/favicon.ico' || pathname === '/sw.js') {
-    return response;
-  }
-
-  // B. CRITICAL: Force Redirect for /upgrade (Ensures no 404 on tamuu.id/upgrade)
-  if (isPublicDomain && pathname.startsWith('/upgrade')) {
-      const redirectUrl = new URL(`https://app.tamuu.id${pathname}${url.search}`, request.url);
-      const redirectResponse = NextResponse.redirect(redirectUrl, 308);
-      response.headers.forEach((v, k) => redirectResponse.headers.set(k, v));
-      response.cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie.name, cookie.value, cookie));
-      return redirectResponse;
-  }
 
   // B. Vite Static Assets Proxy (Explicit delegate to Vite backend)
   if (pathname.startsWith('/assets/') || pathname.endsWith('.css') || pathname.endsWith('.js') || pathname.endsWith('.woff2')) {

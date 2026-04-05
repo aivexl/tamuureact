@@ -90,11 +90,62 @@ const AuthSync: React.FC = () => {
     return null;
 };
 
+// ============================================
+// DOMAIN ENFORCER (CTO Level Strictness)
+// ============================================
+const DomainEnforcer: React.FC = () => {
+    const { pathname, search } = useLocation();
+    
+    useEffect(() => {
+        const hostname = window.location.hostname;
+        const isDev = hostname === 'localhost' || hostname === '127.0.0.1';
+        if (isDev) return;
+
+        const isAppHost = hostname === 'app.tamuu.id';
+        const isPublicHost = hostname === 'tamuu.id' || hostname === 'www.tamuu.id';
+        
+        // Define app paths (Same as middleware)
+        const isAppPath = (path: string): boolean => {
+            return path.startsWith('/login') || 
+                   path.startsWith('/signup') || 
+                   path.startsWith('/forgot-password') || 
+                   path.startsWith('/auth') ||
+                   path.startsWith('/dashboard') || 
+                   path.startsWith('/editor') ||
+                   path.startsWith('/profile') ||
+                   path.startsWith('/billing') ||
+                   path.startsWith('/upgrade') ||
+                   path.startsWith('/guests') ||
+                   path.startsWith('/wishes') ||
+                   path.startsWith('/admin') ||
+                   path.startsWith('/vendor') ||
+                   path.startsWith('/onboarding');
+        };
+
+        const isAppRoute = isAppPath(pathname);
+        const isPublicRoute = !isAppRoute && !pathname.includes('.') && !pathname.startsWith('/api');
+
+        // A. If on Public domain but accessing App route -> MOVE TO APP DOMAIN
+        if (isPublicHost && isAppRoute) {
+            console.log('[Domain Enforcer] Redirecting Public -> App');
+            window.location.href = `https://app.tamuu.id${pathname}${search}`;
+        }
+
+        // B. If on App domain but accessing Public route -> MOVE TO PUBLIC DOMAIN
+        if (isAppHost && isPublicRoute) {
+            console.log('[Domain Enforcer] Redirecting App -> Public');
+            window.location.href = `https://tamuu.id${pathname}${search}`;
+        }
+    }, [pathname, search]);
+
+    return null;
+};
+
 const App: React.FC = () => {
     const { subscribe, permission } = usePushNotifications();
 
     useEffect(() => {
-        console.log("Tamuu v2.0.4-passive");
+        console.log("Tamuu v2.0.5-smart");
         if (permission === 'default') {
             const timer = setTimeout(() => { subscribe(); }, 2000);
             return () => clearTimeout(timer);
@@ -103,6 +154,7 @@ const App: React.FC = () => {
 
     return (
         <BrowserRouter>
+            <DomainEnforcer />
             <AuthSync />
             <LazyMotion features={domMax} strict>
                 <Suspense fallback={<PremiumLoader />}>
