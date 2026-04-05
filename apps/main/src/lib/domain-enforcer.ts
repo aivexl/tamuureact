@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
+import { isAppPath } from './routing-policy';
 
 /**
  * TAMUU DOMAIN ENFORCER (CTO Level Strictness)

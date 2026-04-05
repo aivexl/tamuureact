@@ -1,22 +1,13 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
+import { isAppPath, isVitePublicPath } from './lib/routing-policy'
 
 /**
- * TAMUU SMART ROUTING ENGINE v4.5.0 (Universal Controller)
+ * TAMUU SMART ROUTING ENGINE v4.7.0 (Auto-Pilot)
  * ═══════════════════════════════════════════════════════════════════════════════
  * Strict Bi-directional Domain Consistency Enforcement.
  * ═══════════════════════════════════════════════════════════════════════════════
  */
-
-// CENTRAL ROUTE POLICY
-const APP_PATHS = [
-    '/login', '/signup', '/forgot-password', '/auth',
-    '/dashboard', '/editor', '/profile', '/billing',
-    '/upgrade', '/guests', '/wishes', '/admin',
-    '/vendor', '/onboarding'
-];
-
-const isAppPath = (path: string) => APP_PATHS.some(p => path.startsWith(p));
 
 export async function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
@@ -80,8 +71,7 @@ export async function middleware(request: NextRequest) {
   // ============================================
   // 6. PROXY DELEGATION (Vite vs Next.js)
   // ============================================
-  const VITE_PUBLIC_PATHS = ['/invitations', '/preview', '/v/', '/c/'];
-  const isVitePublicRoute = VITE_PUBLIC_PATHS.some(p => pathname.startsWith(p));
+  const isVitePublicRoute = isVitePublicPath(pathname);
   
   // A. App content on App Domain -> PROXY to Vite
   // B. Public Vite content on any domain (already redirected if needed) -> PROXY to Vite
