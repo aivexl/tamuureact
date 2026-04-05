@@ -1,5 +1,5 @@
 import React, { useEffect, Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ProtectedRoute } from './components/Auth/ProtectedRoute';
 import { MainLayout } from './components/Layout/MainLayout';
 import { LazyMotion, domMax } from 'framer-motion';
