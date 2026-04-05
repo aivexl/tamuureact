@@ -290,7 +290,7 @@ const PricingSection: React.FC = () => {
                     const isProcessing = processingTier === plan.tier;
                     
                     // Normalize tiers for comparison (handling legacy names if any)
-                    const normalizedUserTier = (user?.tier || 'basic').toLowerCase();
+                    const normalizedUserTier = (isAuthenticated && user?.tier) ? user.tier.toLowerCase() : null;
                     const isCurrent = normalizedUserTier === plan.tier.toLowerCase();
                     const urgency = urgencyData[plan.tier];
 
@@ -359,7 +359,7 @@ const PricingSection: React.FC = () => {
                                 onClick={() => handleAction(plan.tier)}
                                 disabled={!!processingTier || isCurrent}
                                 className={`w-full py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 ${isCurrent
-                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                    ? 'bg-[#FFBF00] text-[#0A1128] cursor-default'
                                     : 'bg-[#0A1128] text-white hover:bg-slate-800 shadow-lg shadow-indigo-950/20 hover:scale-[1.02]'
                                     } ${isProcessing ? 'opacity-70 cursor-wait' : ''}`}
                             >
