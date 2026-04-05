@@ -70,19 +70,28 @@ const TierCard: React.FC<TierCardProps> = ({
         )}
 
         {/* Step 2: Visual Urgency Bar (Apple-style) */}
-        {slotsLeft !== undefined && totalSlots !== undefined && (
+        {slotsLeft !== undefined && (
             <div className="mb-6 mt-4">
                 <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-[10px] font-black text-[#EF4444] uppercase tracking-widest">Hampir Habis</span>
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{slotsLeft}/{totalSlots} Slot</span>
+                    <span className="text-[10px] font-black text-[#EF4444] uppercase tracking-widest flex items-center gap-1.5 animate-pulse">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#EF4444]" />
+                        Hampir Habis
+                    </span>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Tersisa {slotsLeft} Slot Promo</span>
                 </div>
                 <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                     <motion.div
                         initial={{ width: "100%" }}
-                        animate={{ width: `${(slotsLeft / totalSlots) * 100}%` }}
-                        transition={{ duration: 1, ease: "easeOut" }}
-                        className="h-full bg-[#EF4444]"
-                    />
+                        animate={{ width: `${(slotsLeft / 20) * 100}%` }}
+                        transition={{ duration: 1.5, ease: "easeOut" }}
+                        className="h-full bg-[#EF4444] relative overflow-hidden"
+                    >
+                        <motion.div 
+                            animate={{ x: ["-100%", "100%"] }}
+                            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                        />
+                    </motion.div>
                 </div>
             </div>
         )}

@@ -114,23 +114,29 @@ const pricingPlans = [
     },
 ];
 
-const UrgencyBar = ({ count, max }: { count: number, max: number }) => (
+const UrgencyBar = ({ count }: { count: number, max: number }) => (
     <div className="mt-6 mb-2">
         <div className="flex justify-between items-center mb-1.5">
-            <span className="text-[10px] font-black text-[#EF4444] uppercase tracking-widest flex items-center gap-1">
-                <span className="w-1 h-1 rounded-full bg-[#EF4444] animate-pulse" />
+            <span className="text-[10px] font-black text-[#EF4444] uppercase tracking-widest flex items-center gap-1.5 animate-pulse">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#EF4444]" />
                 Hampir Habis
             </span>
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{count}/{max} Slot Promo</span>
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Tersisa {count} Slot Promo</span>
         </div>
-        <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
+        <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
             <m.div
                 initial={{ width: "100%" }}
-                whileInView={{ width: `${(count / max) * 100}%` }}
+                whileInView={{ width: `${(count / 20) * 100}%` }}
                 viewport={{ once: true }}
                 transition={{ duration: 1.5, ease: "easeOut" }}
-                className="h-full bg-[#EF4444]"
-            />
+                className="h-full bg-[#EF4444] relative overflow-hidden"
+            >
+                <m.div 
+                    animate={{ x: ["-100%", "100%"] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                />
+            </m.div>
         </div>
     </div>
 );
