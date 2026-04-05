@@ -643,19 +643,30 @@ class TamuuAIEngine {
         const packages = [];
 
         // Extract from user knowledge base
-        const proMatch = userKb.match(/\*\*PRO \(Rp 99rb\)\*\*:\s*([^\n]+)/);
-        const ultimateMatch = userKb.match(/\*\*ULTIMATE \(Rp 149rb\)\*\*:\s*([^\n]+)/);
-        const eliteMatch = userKb.match(/\*\*ELITE \(VVIP - Rp 199rb\)\*\*:\s*([^\n]+)/);
+        const basicMatch = userKb.match(/\*\*BASIC \(Rp 49rb\)\*\*:\s*([^\n]+)/);
+        const proMatch = userKb.match(/\*\*PRO \(Rp 149rb\)\*\*:\s*([^\n]+)/);
+        const ultimateMatch = userKb.match(/\*\*ULTIMATE \(Rp 199rb\)\*\*:\s*([^\n]+)/);
+        const eliteMatch = userKb.match(/\*\*ELITE \(Rp 999rb\)\*\*:\s*([^\n]+)/);
 
         // Extract from tamuu knowledge base
-        const tamuuProMatch = tamuuKb.match(/\*\*PRO\*\*\s*\|\s*`pro`\s*\|\s*Rp 99\.000\s*\|\s*([^\|]+)/);
-        const tamuuUltimateMatch = tamuuKb.match(/\*\*ULTIMATE\*\*\s*\|\s*`ultimate`\s*\|\s*Rp 149\.000\s*\|\s*([^\|]+)/);
-        const tamuuEliteMatch = tamuuKb.match(/\*\*ELITE \(VVIP\)\*\*\s*\|\s*`elite`\s*\|\s*Rp 199\.000\s*\|\s*([^\|]+)/);
+        const tamuuBasicMatch = tamuuKb.match(/\*\*BASIC\*\*\s*\|\s*`basic`\s*\|\s*Rp 49\.000\s*\|\s*([^\|]+)/);
+        const tamuuProMatch = tamuuKb.match(/\*\*PRO\*\*\s*\|\s*`pro`\s*\|\s*Rp 149\.000\s*\|\s*([^\|]+)/);
+        const tamuuUltimateMatch = tamuuKb.match(/\*\*ULTIMATE\*\*\s*\|\s*`ultimate`\s*\|\s*Rp 199\.000\s*\|\s*([^\|]+)/);
+        const tamuuEliteMatch = tamuuKb.match(/\*\*ELITE\*\*\s*\|\s*`elite`\s*\|\s*Rp 999\.000\s*\|\s*([^\|]+)/);
+
+        if (basicMatch || tamuuBasicMatch) {
+            packages.push({
+                name: 'BASIC',
+                price: 'Rp 49.000',
+                features: (basicMatch ? basicMatch[1].trim() : '') + ' ' + (tamuuBasicMatch ? tamuuBasicMatch[1].trim() : ''),
+                description: 'Paket awal esensial untuk mencoba Tamuu'
+            });
+        }
 
         if (proMatch || tamuuProMatch) {
             packages.push({
                 name: 'PRO',
-                price: 'Rp 99.000',
+                price: 'Rp 149.000',
                 features: (proMatch ? proMatch[1].trim() : '') + ' ' + (tamuuProMatch ? tamuuProMatch[1].trim() : ''),
                 description: 'Paket terpopuler untuk undangan premium tanpa iklan'
             });
@@ -664,7 +675,7 @@ class TamuuAIEngine {
         if (ultimateMatch || tamuuUltimateMatch) {
             packages.push({
                 name: 'ULTIMATE',
-                price: 'Rp 149.000',
+                price: 'Rp 199.000',
                 features: (ultimateMatch ? ultimateMatch[1].trim() : '') + ' ' + (tamuuUltimateMatch ? tamuuUltimateMatch[1].trim() : ''),
                 description: 'Paket lengkap dengan Welcome Display untuk venue'
             });
@@ -672,10 +683,10 @@ class TamuuAIEngine {
 
         if (eliteMatch || tamuuEliteMatch) {
             packages.push({
-                name: 'ELITE (VVIP)',
-                price: 'Rp 199.000',
+                name: 'ELITE',
+                price: 'Rp 999.000',
                 features: (eliteMatch ? eliteMatch[1].trim() : '') + ' ' + (tamuuEliteMatch ? tamuuEliteMatch[1].trim() : ''),
-                description: 'Paket premium dengan support prioritas dan unlimited fitur'
+                description: 'Paket prestisius selamanya dengan opsi domain kustom'
             });
         }
 
@@ -688,16 +699,31 @@ class TamuuAIEngine {
     getDefaultPackageInfo() {
         return [
             {
+                name: 'BASIC',
+                price: 'Rp 49.000',
+                features: '1 Undangan Aktif, Link Undangan Custom, Masa Aktif 30 Hari',
+                description: 'Paket awal'
+            },
+            {
                 name: 'PRO',
-                price: 'Rp 99.000',
-                features: 'Undangan tanpa iklan, bebas ganti musik, masa aktif panjang',
-                description: 'Paket terpopuler untuk undangan premium'
+                price: 'Rp 149.000',
+                features: 'Undangan tanpa iklan, bebas ganti musik, masa aktif 90 hari',
+                description: 'Paket terpopuler'
             },
             {
                 name: 'ULTIMATE',
-                price: 'Rp 149.000',
-                features: 'Welcome Display, RSVP tak terbatas, check-in system',
-                description: 'Paket lengkap dengan fitur venue'
+                price: 'Rp 199.000',
+                features: 'Welcome Display, RSVP tak terbatas, masa aktif 365 hari',
+                description: 'Paket lengkap'
+            },
+            {
+                name: 'ELITE',
+                price: 'Rp 999.000',
+                features: 'Selamanya, Custom Domain, Support Prioritas',
+                description: 'Paket prestisius'
+            }
+        ];
+    }
             },
             {
                 name: 'ELITE (VVIP)',

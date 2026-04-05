@@ -65,11 +65,22 @@ export const TermsPage: React.FC = () => {
                     <section>
                         <h2 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-3 mb-6 uppercase tracking-tight">
                             <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-500" />
-                            5. Fees
+                            5. Fees & Subscription
                         </h2>
-                        <p>
-                            In consideration for the license granted, you shall pay to Tamuu the license fee as set out in the fee schedule on the Pricing page of the Site. The License Fee is exclusive of VAT and shall be invoiced and billed to the Licensee's preferred payment method.
-                        </p>
+                        <div className="space-y-4">
+                            <p>
+                                In consideration for the license granted, you shall pay to Tamuu the license fee as set out in the fee schedule on the Pricing page of the Site.
+                            </p>
+                            <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                                <h3 className="text-base font-black text-slate-900 mb-2 uppercase tracking-tight">Elite Lifetime Tier</h3>
+                                <p className="text-sm leading-relaxed">
+                                    Terminologi <strong>"Selamanya"</strong> atau <strong>"Lifetime"</strong> pada paket ELITE merujuk pada durasi akses selama platform <strong>tamuu.id</strong> masih beroperasi secara komersial. Tamuu tidak memberikan jaminan durasi spesifik jika di masa depan terjadi penghentian operasional platform karena alasan hukum, teknologi, atau bisnis.
+                                </p>
+                            </div>
+                            <p className="text-sm font-bold text-slate-900">
+                                Kebijakan Pengembalian (Refund): Seluruh transaksi yang telah berhasil dilakukan bersifat final. Tamuu tidak menyediakan pengembalian dana (refund) untuk alasan apapun karena alokasi sumber daya infrastruktur dilakukan secara instan.
+                            </p>
+                        </div>
                     </section>
 
                     <section>

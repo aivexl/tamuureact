@@ -597,26 +597,26 @@ export default {
                         const birthDate = url.searchParams.get('birthDate') || null;
 
                         // SUPER ULTRA: Business Rules for Trial/Subscription
-                        // - Free tier: 30 days (1 month) from signup
+                        // - Basic tier: 30 days (1 month) from signup
                         // - Special test accounts: Unlimited (no expiry)
                         const isSpecialAccount = email === 'user@tamuu.id' || email === 'admin@tamuu.id';
                         let expiresAtString = null;
 
                         if (!isSpecialAccount) {
                             const trialEndDate = new Date();
-                            trialEndDate.setDate(trialEndDate.getDate() + 30); // 1 month trial
+                            trialEndDate.setDate(trialEndDate.getDate() + 30); // 1 month initial access
                             expiresAtString = trialEndDate.toISOString();
                         }
 
                         // CTO POLICY: Self-Healing Permissions for Core Accounts
                         let role = 'user';
                         let permissions = '[]';
-                        let initialTier = 'free';
+                        let initialTier = 'basic';
 
                         if (email === 'admin@tamuu.id') {
                             role = 'admin';
                             permissions = '["all"]';
-                            initialTier = 'vvip';
+                            initialTier = 'elite';
                         }
 
                         await env.DB.prepare(
@@ -649,7 +649,7 @@ export default {
                         id: user.id || user.uid, // Handle both naming conventions
                         maxInvitations: user.max_invitations || 1,
                         invitationCount: user.invitation_count || 0,
-                        tier: user.tier || 'free',
+                        tier: user.tier || 'basic',
                         tamuuId: user.tamuu_id || `TAMUU-USER-${user.id.substring(0, 8)}`,
                         expires_at: user.expires_at,
                         birthDate: user.birth_date,
@@ -730,9 +730,6 @@ export default {
                     let { userId, tier, amount, email, name } = body;
 
                     // Legacy Mapping
-                    if (tier === 'vip') tier = 'pro';
-                    if (tier === 'platinum') tier = 'ultimate';
-                    if (tier === 'vvip') tier = 'elite';
 
                     if (!userId || !tier || !amount) {
                         return json({ error: 'Missing required fields' }, { ...corsHeaders, status: 400 });
@@ -1010,10 +1007,6 @@ export default {
                             let maxInvitations = 1; 
 
                             // Legacy Mapping
-                            if (tier === 'vip') tier = 'pro';
-                            if (tier === 'platinum') tier = 'ultimate';
-                            if (tier === 'vvip') tier = 'elite';
-                            if (tier === 'free') tier = 'basic';
 
                             let expiresAt;
                             if (tier === 'elite') {
@@ -1070,9 +1063,9 @@ export default {
                     let maxInvitations = 1; 
 
                     let durationDays = 30;
-                    if (tier === 'pro' || tier === 'vip') durationDays = 90;
-                    else if (tier === 'ultimate' || tier === 'platinum') durationDays = 180;
-                    else if (tier === 'elite' || tier === 'vvip') durationDays = 365;
+                    if (tier === 'pro') durationDays = 90;
+                    else if (tier === 'ultimate') durationDays = 180;
+                    else if (tier === 'elite') durationDays = 365;
 
                     const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
 
@@ -1231,7 +1224,7 @@ export default {
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`
                 ).bind(
                     id, email, tamuuId, name || '', gender || null, birthDate || null,
-                    role || 'user', tier || 'free',
+                    role || 'user', tier || 'basic',
                     JSON.stringify(permissions || []),
                     expires_at || null,
                     max_invitations || 1
@@ -3568,10 +3561,10 @@ export default {
             // --- TAMUU EXPERT SYSTEM v7.0 (MODULAR-KAP) ---
             const KNOWLEDGE = {
                 PRODUCT: `
-            - FREE: 1 Undangan, Trial 30 Hari.
+            - BASIC: 1 Undangan, Trial 30 Hari.
             - PRO (Rp 99k): 1 Undangan, Aktif 90 Hari, Premium Theme, Custom Music.
             - ULTIMATE (Rp 149k): 1 Undangan, Aktif 180 Hari, Welcome Display, RSVP Unlimited.
-            - ELITE (Rp 199k): 1 Undangan, Aktif 365 Hari, VVIP Support.
+            - ELITE (Rp 199k): 1 Undangan, Aktif 365 Hari, ELITE Support.
             - Masa aktif di atas dihitung sejak pembayaran (settlement). Semua paket dibatasi 1 slot undangan aktif.`,
                 PLATFORM: `
             - Editor: Dapat diakses di Dashboard untuk mengubah Ornamen, Musik, dan Detail Acara.
@@ -3586,7 +3579,7 @@ export default {
                 // PRE-GROUNDING: Fetch User Context immediately
                 let userContext = "No specific account context.";
                 if (user) {
-                    const status = user.tier?.toUpperCase() || "FREE";
+                    const status = user.tier?.toUpperCase() || "BASIC";
                     const expiry = user.expires_at ? new Date(user.expires_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : "Selamanya";
                     const { results: recentInvs } = await env.DB.prepare('SELECT slug, name FROM invitations WHERE user_id = ? LIMIT 3').bind(canonicalId).all();
                     const invList = recentInvs.map(i => `${i.name} (tamuu.id/${i.slug})`).join(', ') || "Belum ada";
@@ -4679,10 +4672,10 @@ name = COALESCE(?, name),
                     return json({ error: 'User ID and File Name required' }, { ...corsHeaders, status: 400 });
                 }
 
-                // Verify VVIP tier (Enterprise Security)
+                // Verify ELITE tier (Enterprise Security)
                 const user = await env.DB.prepare('SELECT tier FROM users WHERE id = ?').bind(userId).first();
-                if (!user || user.tier !== 'vvip') {
-                    return json({ error: 'VVIP tier required for custom music' }, { ...corsHeaders, status: 403 });
+                if (!user || user.tier !== 'elite') {
+                    return json({ error: 'ELITE tier required for custom music' }, { ...corsHeaders, status: 403 });
                 }
 
                 const fileId = crypto.randomUUID();
@@ -6372,7 +6365,7 @@ async function verifyAdmin(request, env) {
             }
 
             const permissions = typeof user.permissions === 'string' ? JSON.parse(user.permissions || '[]') : (user.permissions || []);
-            const userTier = (user.tier || 'free').toLowerCase();
+            const userTier = (user.tier || 'basic').toLowerCase();
             const userRole = (user.role || 'user').toLowerCase();
 
             console.log(`[Auth] Identity Resolved: ${user.email} (Role: ${userRole}, Tier: ${userTier})`);
@@ -6380,7 +6373,7 @@ async function verifyAdmin(request, env) {
             // Layer 3: Privilege Escalation Logic
             const isExplicitAdmin = userRole === 'admin' || user.email === 'admin@tamuu.id';
             const hasGlobalPerms = permissions.includes('all') || permissions.includes('management:stores');
-            const isPremiumPartner = ['elite', 'vvip', 'platinum'].includes(userTier);
+            const isPremiumPartner = ['elite', 'elite', 'ultimate'].includes(userTier);
 
             // CTO POLICY: Premium Tier users are granted Registry Observability
             if (isExplicitAdmin || hasGlobalPerms || isPremiumPartner) {
@@ -6396,7 +6389,7 @@ async function verifyAdmin(request, env) {
         
         if (isEmergencyEmail || isEmergencyId) {
              console.log('[Auth] Emergency Administrator Bypass Triggered');
-             return { isAdmin: true, user: { email: 'admin@tamuu.id', role: 'admin', tier: 'vvip' } };
+             return { isAdmin: true, user: { email: 'admin@tamuu.id', role: 'admin', tier: 'elite' } };
         }
         
         console.warn(`[Auth] Denied: Identity not found in D1 for ${token.substring(0, 10)}...`);

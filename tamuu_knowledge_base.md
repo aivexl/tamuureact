@@ -30,12 +30,12 @@ Tamuu adalah platform ekosistem event digital terpadu yang menyediakan **Undanga
 ## 2. Paket & Pembayaran (Exclusive Tiers)
 
 ### Daftar Paket:
-| Nama Paket | Harga | Target Pengguna | Benefit Unggulan |
+| Nama Paket | Harga | Masa Aktif | Benefit Unggulan |
 | :--- | :--- | :--- | :--- |
-| **FREE** | Rp 0 | Trial / Personal | Eksplorasi fitur dasar, 1 slot undangan aktif. |
-| **PRO** | Rp 99.000 | Pernikahan / Acara Intim | Bebas Iklan, Custom Music, Akses semua tema premium. |
-| **ULTIMATE** | Rp 149.000 | Acara Skala Besar | **Smart Welcome Display**, RSVP Unlimited, Export Data Tamu. |
-| **ELITE (VVIP)** | Rp 199.000 | Exclusive / VIP Event | Prioritas Dukungan Utama, Penyimpanan Media Berkualitas Tinggi. |
+| **BASIC** | Rp 49.000 | 30 Hari | Link Undangan Custom, Fitur Esensial. |
+| **PRO** | Rp 149.000 | 90 Hari | Bebas Iklan, Custom Music, Akses semua tema premium. |
+| **ULTIMATE** | Rp 199.000 | 365 Hari | **Smart Welcome Display**, RSVP Unlimited, Export Data Tamu. |
+| **ELITE** | Rp 999.000 | Selamanya | **Lifetime Access**, Custom Domain (Opsional), Support Prioritas. |
 
 ### Ekosistem Pembayaran:
 Tamuu terintegrasi dengan gateway pembayaran terpercaya untuk memastikan keamanan dana Anda:
@@ -47,8 +47,11 @@ Tamuu terintegrasi dengan gateway pembayaran terpercaya untuk memastikan keamana
 
 ## 3. Kebijakan & Troubleshooting
 
-### Filosofi "Silent Healing":
-Tamuu memiliki sistem pemantauan audit otomatis yang mendeteksi kendala teknis (seperti keterlambatan verifikasi bank) dan memperbaikinya secara mandiri di latar belakang tanpa mengganggu kenyamanan pengguna.
+### Upgrade Paket:
+User dapat melakukan upgrade kapan saja. Sisa nilai paket lama akan dikonversi menjadi potongan harga otomatis untuk paket baru (Prorata).
+
+### Kebijakan Pengembalian (Refund):
+Semua transaksi bersifat final dan tidak dapat dibatalkan atau dikembalikan karena alokasi resource infrastruktur dilakukan secara instan.
 
 ### Masalah Umum:
 - **Status Transaksi**: Jika Anda merasa sudah membayar namun status di sistem belum berubah, cukup tunggu beberapa detik atau muat ulang halaman Billing. Sistem otomasi kami sedang bekerja memvalidasi data Anda.
