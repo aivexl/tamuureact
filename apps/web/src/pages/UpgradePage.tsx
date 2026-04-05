@@ -162,6 +162,14 @@ export const UpgradePage: React.FC = () => {
 
     // Auto-trigger payment if tier is specified in query params
     useEffect(() => {
+        // SMART REDIRECT (CTO ENFORCEMENT)
+        // If the user lands here on a public domain, move them to the app domain immediately.
+        if (typeof window !== 'undefined' && 
+            (window.location.hostname === 'tamuu.id' || window.location.hostname === 'www.tamuu.id')) {
+            window.location.href = `https://app.tamuu.id/upgrade${window.location.search}`;
+            return;
+        }
+
         const tier = searchParams.get('tier');
         if (tier && user && !processingTier) {
             const validTiers = ['basic', 'pro', 'ultimate', 'elite'];

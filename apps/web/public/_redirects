@@ -1,6 +1,9 @@
 # Proxy Admin routes to Legacy Vite
 /admin/*  /admin/:splat  200
 
+# Explicit Handle for SPA routes
+/upgrade  /index.html    200
+
 # Proxy Catch-all Slug routes to Legacy Vite (Preview pages)
 # This will be handled as fallback if Next.js doesn't match
 # However, Next.js Worker has higher priority in Cloudflare than Pages Custom Domain

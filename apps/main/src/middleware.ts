@@ -34,9 +34,8 @@ export async function middleware(request: NextRequest) {
   
   response.headers.set('x-tamuu-version', '4.1.0-strict-synergy');
 
-  const isAppDomain = host.startsWith('app.tamuu.id');
-  const isPublicDomain = (host === 'tamuu.id' || host === 'www.tamuu.id') || 
-                        (host.endsWith('pages.dev') && !host.includes('tamuu-app'));
+  const isAppDomain = host.includes('app.tamuu.id');
+  const isPublicDomain = !isAppDomain && !host.includes('tamuu-app.pages.dev');
 
   // ============================================
   // 1. BYPASS LOGIC (Assets & Internals)
@@ -45,6 +44,15 @@ export async function middleware(request: NextRequest) {
   // A. Next.js Internal Resources (Bypass to Next.js)
   if (pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname === '/favicon.ico' || pathname === '/sw.js') {
     return response;
+  }
+
+  // B. CRITICAL: Force Redirect for /upgrade (Ensures no 404 on tamuu.id/upgrade)
+  if (isPublicDomain && pathname.startsWith('/upgrade')) {
+      const redirectUrl = new URL(`https://app.tamuu.id${pathname}${url.search}`, request.url);
+      const redirectResponse = NextResponse.redirect(redirectUrl, 308);
+      response.headers.forEach((v, k) => redirectResponse.headers.set(k, v));
+      response.cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie.name, cookie.value, cookie));
+      return redirectResponse;
   }
 
   // B. Vite Static Assets Proxy (Explicit delegate to Vite backend)
