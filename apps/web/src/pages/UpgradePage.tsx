@@ -79,25 +79,32 @@ const TierCard: React.FC<TierCardProps> = ({
                     </span>
                     <span className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-[0.1em]">Tersisa {slotsLeft} Slot Promo</span>
                 </div>
-                <div className="h-1.5 w-full bg-emerald-500 rounded-full overflow-hidden flex shadow-[inset_0_1px_3px_rgba(0,0,0,0.15)] border border-slate-100/50">
-                    {/* Red Area (The Pressure) */}
+                <div className="h-1.5 w-full bg-emerald-500 rounded-full overflow-hidden flex shadow-[inset_0_1px_3px_rgba(0,0,0,0.2)] border border-slate-100/30">
+                    {/* Red Area (The Pressure Container) */}
                     <motion.div
                         initial={{ width: "0%" }}
                         animate={{ width: `${98 - ((slotsLeft - (slotsLeft > 10 ? 12 : slotsLeft > 5 ? 8 : slotsLeft > 2 ? 5 : 2)) / 6) * 5}%` }}
                         transition={{ duration: 1.5, ease: "easeOut" }}
                         className="h-full bg-[#EF4444] relative overflow-hidden"
                     >
-                        {/* Directional Pressure Wave (Left to Right) */}
+                        {/* Layer 1: Left to Right Pressure Wave (The "Push") */}
                         <motion.div 
                             animate={{ x: ["-100%", "100%"] }}
-                            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent w-full skew-x-[-20deg]"
+                            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.5 }}
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent w-full skew-x-[-20deg] z-10"
+                        />
+
+                        {/* Layer 2: Right to Left Flash (The "Reflection") */}
+                        <motion.div 
+                            animate={{ x: ["100%", "-100%"] }}
+                            transition={{ duration: 3, repeat: Infinity, ease: "linear", delay: 1 }}
+                            className="absolute inset-0 bg-gradient-to-l from-transparent via-white/20 to-transparent w-full z-20"
                         />
                         
-                        {/* Pulsing Base Layer */}
+                        {/* Layer 3: Pulsing Base Glow */}
                         <motion.div 
-                            animate={{ opacity: [0.8, 1, 0.8] }}
-                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            animate={{ opacity: [0.85, 1, 0.85] }}
+                            transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
                             className="absolute inset-0 bg-[#EF4444]"
                         />
                     </motion.div>
