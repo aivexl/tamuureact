@@ -2,131 +2,110 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
 /**
- * TAMUU SMART ROUTING ENGINE v4.3.0 (Absolute Consistency)
+ * TAMUU SMART ROUTING ENGINE v4.4.0 (Enterprise Standard)
  * ═══════════════════════════════════════════════════════════════════════════════
- * This engine enforces a strict policy:
- * - App Routes (Private/Mgmt): MUST live on app.tamuu.id
- * - Public Routes (Marketing/Shop): MUST live on tamuu.id
+ * High-performance, bi-directional routing enforcer for multi-domain ecosystems.
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
-const isAppPath = (pathname: string): boolean => {
-    return pathname.startsWith('/login') || 
-           pathname.startsWith('/signup') || 
-           pathname.startsWith('/forgot-password') || 
-           pathname.startsWith('/auth') ||
-           pathname.startsWith('/dashboard') || 
-           pathname.startsWith('/editor') ||
-           pathname.startsWith('/profile') ||
-           pathname.startsWith('/billing') ||
-           pathname.startsWith('/upgrade') ||
-           pathname.startsWith('/guests') ||
-           pathname.startsWith('/wishes') ||
-           pathname.startsWith('/admin') ||
-           pathname.startsWith('/vendor') ||
-           pathname.startsWith('/onboarding') ||
-           pathname.startsWith('/invitations'); // Invitations MGMT/Store is part of the app
-};
+// CENTRAL ROUTE POLICY (App Paths must live on app.tamuu.id)
+const APP_PATHS = [
+    '/login', '/signup', '/forgot-password', '/auth',
+    '/dashboard', '/editor', '/profile', '/billing',
+    '/upgrade', '/guests', '/wishes', '/admin',
+    '/vendor', '/onboarding', '/invitations'
+];
+
+const isAppPath = (path: string) => APP_PATHS.some(p => path.startsWith(p));
 
 export async function middleware(request: NextRequest) {
-  const url = request.nextUrl.clone();
-  const host = (request.headers.get('host') || '').toLowerCase().split(':')[0];
-  const pathname = url.pathname;
-
-  // 1. Session Refresh (Essential for SSR Auth)
-  const { user, response } = await updateSession(request)
+  const { pathname, search } = request.nextUrl;
   
-  response.headers.set('x-tamuu-version', '4.3.0-absolute');
-  response.headers.set('x-tamuu-host', host);
+  // 1. Hostname Detection (Cloudflare Edge Optimized)
+  const hostHeader = request.headers.get('host') || '';
+  const xForwardedHost = request.headers.get('x-forwarded-host');
+  const hostname = (xForwardedHost || hostHeader).toLowerCase().split(':')[0];
 
-  // ============================================
-  // 1. BYPASS LOGIC (Assets & Internals)
-  // ============================================
+  // 2. Session Integrity (Root domain cookie sync)
+  const { user, response } = await updateSession(request);
   
-  // A. Internal Next.js & API
-  if (pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname === '/favicon.ico' || pathname === '/sw.js') {
+  // Diagnostic Headers
+  response.headers.set('x-tamuu-version', '4.4.0-enterprise');
+  response.headers.set('x-tamuu-host', hostname);
+
+  // 3. Early Bypass (Assets & Internal)
+  if (
+      pathname.startsWith('/_next') || 
+      pathname.startsWith('/api') || 
+      pathname === '/favicon.ico' || 
+      pathname === '/sw.js' ||
+      pathname.includes('.') // Static files (.js, .css, .png, etc.)
+  ) {
     return response;
   }
 
-  // B. Vite Static Assets Proxy
-  if (pathname.startsWith('/assets/') || pathname.endsWith('.css') || pathname.endsWith('.js') || pathname.endsWith('.woff2') || pathname.endsWith('.png') || pathname.endsWith('.jpg') || pathname.endsWith('.svg')) {
-    const assetUrl = new URL(pathname + url.search, 'https://tamuu-app.pages.dev');
-    const proxyResponse = NextResponse.rewrite(assetUrl);
-    response.headers.forEach((v, k) => proxyResponse.headers.set(k, v));
-    response.cookies.getAll().forEach((cookie) => proxyResponse.cookies.set(cookie.name, cookie.value, cookie));
-    return proxyResponse;
-  }
-
-  // ============================================
-  // 2. DOMAIN ENFORCEMENT (CTO Level Strictness)
-  // ============================================
-  const isAppHost = host === 'app.tamuu.id';
-  const isPublicHost = host === 'tamuu.id' || host === 'www.tamuu.id';
-  const isDev = host === 'localhost' || host === '127.0.0.1';
-  
+  // 4. Domain & Path Classification
+  const isAppHost = hostname.includes('app.tamuu.id');
+  const isPublicHost = hostname === 'tamuu.id' || hostname === 'www.tamuu.id';
+  const isDev = hostname === 'localhost' || hostname === '127.0.0.1';
   const isAppRoute = isAppPath(pathname);
-  const isPublicRoute = !isAppRoute && !pathname.includes('.');
 
+  // ============================================
+  // 5. SMART REDIRECT ENFORCER (Bi-directional)
+  // ============================================
   if (!isDev) {
-      // Enforcement A: App content MUST be on app.tamuu.id
+      // Case A: App path on Public Domain -> REDIRECT to App Domain
       if (isPublicHost && isAppRoute) {
-          const redirectUrl = new URL(`https://app.tamuu.id${pathname}${url.search}`, request.url);
-          const redirectResponse = NextResponse.redirect(redirectUrl, 308);
-          // Sync cookies/headers to redirect
-          response.headers.forEach((v, k) => redirectResponse.headers.set(k, v));
-          response.cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie.name, cookie.value, cookie));
-          return redirectResponse;
+          const redirectUrl = new URL(`https://app.tamuu.id${pathname}${search}`, request.url);
+          const redirectRes = NextResponse.redirect(redirectUrl, 308);
+          response.headers.forEach((v, k) => redirectRes.headers.set(k, v));
+          response.cookies.getAll().forEach(c => redirectRes.cookies.set(c.name, c.value, c));
+          redirectRes.headers.set('x-tamuu-policy', 'public-to-app-redirect');
+          return redirectRes;
       }
 
-      // Enforcement B: Public content MUST be on tamuu.id
-      if (isAppHost && isPublicRoute) {
-          const redirectUrl = new URL(`https://tamuu.id${pathname}${url.search}`, request.url);
-          const redirectResponse = NextResponse.redirect(redirectUrl, 308);
-          response.headers.forEach((v, k) => redirectResponse.headers.set(k, v));
-          response.cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie.name, cookie.value, cookie));
-          return redirectResponse;
+      // Case B: Public path on App Domain -> REDIRECT to Public Domain
+      if (isAppHost && !isAppRoute) {
+          const redirectUrl = new URL(`https://tamuu.id${pathname}${search}`, request.url);
+          const redirectRes = NextResponse.redirect(redirectUrl, 308);
+          response.headers.forEach((v, k) => redirectRes.headers.set(k, v));
+          response.cookies.getAll().forEach(c => redirectRes.cookies.set(c.name, c.value, c));
+          redirectRes.headers.set('x-tamuu-policy', 'app-to-public-redirect');
+          return redirectRes;
       }
   }
 
   // ============================================
-  // 3. FRAMEWORK DELEGATION (Next.js vs Vite)
+  // 6. FRAMEWORK DELEGATION (Next.js vs Vite SPA)
   // ============================================
   
-  // Routes served by the Vite SPA (apps/web)
-  const isViteRoute = 
-    pathname.startsWith('/invitations') ||
-    pathname.startsWith('/preview') ||
-    pathname.startsWith('/v/') ||
-    pathname.startsWith('/c/') ||
-    pathname.startsWith('/dashboard') || 
-    pathname.startsWith('/editor') ||
-    pathname.startsWith('/profile') ||
-    pathname.startsWith('/billing') ||
-    pathname.startsWith('/upgrade') ||
-    pathname.startsWith('/guests') ||
-    pathname.startsWith('/wishes') ||
-    pathname.startsWith('/admin') ||
-    pathname.startsWith('/vendor') ||
-    pathname.startsWith('/login') ||
-    pathname.startsWith('/signup') ||
-    pathname.startsWith('/forgot-password') ||
-    pathname.startsWith('/onboarding');
-
-  if (isViteRoute) {
-    const legacyUrl = new URL(pathname + url.search, 'https://tamuu-app.pages.dev');
-    const proxyResponse = NextResponse.rewrite(legacyUrl);
-    // Sync cookies/headers to proxy
-    response.headers.forEach((v, k) => proxyResponse.headers.set(k, v));
-    response.cookies.getAll().forEach((cookie) => proxyResponse.cookies.set(cookie.name, cookie.value, cookie));
-    return proxyResponse;
+  // All App paths on app.tamuu.id are handled by the Vite SPA
+  if (isAppHost && isAppRoute) {
+      const targetUrl = new URL(pathname + search, 'https://tamuu-app.pages.dev');
+      const proxyRes = NextResponse.rewrite(targetUrl);
+      
+      // Sync auth state to the proxy response
+      response.headers.forEach((v, k) => proxyRes.headers.set(k, v));
+      response.cookies.getAll().forEach(c => proxyRes.cookies.set(c.name, c.value, c));
+      
+      proxyRes.headers.set('x-tamuu-policy', 'vite-spa-proxy');
+      return proxyRes;
   }
 
-  // All other routes (Homepage, /shop, /blog, etc.) served by Next.js
-  return response
+  // Fallback to Next.js (Home, Shop, Blog, etc. on tamuu.id)
+  response.headers.set('x-tamuu-policy', 'nextjs-native');
+  return response;
 }
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 }

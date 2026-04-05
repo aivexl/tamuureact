@@ -1,16 +1,11 @@
-# Proxy Admin routes to Legacy Vite
-/admin/*  /admin/:splat  200
+# SPA Routing Rules for Tamuu
+# This file ensures that Cloudflare Pages serves the index.html for all sub-paths.
 
-# Explicit Handle for SPA routes
-/upgrade      /index.html    200
-/invitations  /index.html    200
+# 1. CATCH-ALL SPA RULE (MUST BE FIRST)
+/*  /index.html  200
 
-# Proxy Catch-all Slug routes to Legacy Vite (Preview pages)
-# This will be handled as fallback if Next.js doesn't match
-# However, Next.js Worker has higher priority in Cloudflare than Pages Custom Domain
-# unless Pages is configured as origin for the Worker.
-/:slug    /:slug         200
-/:slug/*  /:slug/:splat  200
-
-# Catch-all for SPA (Ensures all sub-paths load the index.html)
-/*        /index.html    200
+# 2. PROXIED ROUTES (Explicit for clarity)
+/invitations  /index.html  200
+/dashboard    /index.html  200
+/upgrade      /index.html  200
+/admin/*      /admin/:splat 200
