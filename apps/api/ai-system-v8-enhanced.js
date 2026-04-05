@@ -724,15 +724,6 @@ class TamuuAIEngine {
             }
         ];
     }
-            },
-            {
-                name: 'ELITE (VVIP)',
-                price: 'Rp 199.000',
-                features: 'Full support, aset R2 premium, tanpa limit',
-                description: 'Paket premium dengan support prioritas'
-            }
-        ];
-    }
 
     /**
      * Generate Indonesian System Prompt with Product Knowledge
