@@ -176,7 +176,7 @@ export const UpgradePage: React.FC = () => {
     }, [searchParams, user, processingTier, initiatePayment, navigate]);
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC] py-20 px-4">
+        <div className="min-h-screen bg-[#F8FAFC] pt-40 pb-24 px-4 relative z-0">
             <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-16">
                     <motion.h1

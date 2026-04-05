@@ -7,3 +7,6 @@
 # unless Pages is configured as origin for the Worker.
 /:slug    /:slug         200
 /:slug/*  /:slug/:splat  200
+
+# Catch-all for SPA (Ensures all sub-paths load the index.html)
+/*        /index.html    200
