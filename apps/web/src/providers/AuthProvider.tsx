@@ -103,6 +103,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Set initial state atomically with token
         setAuthSession({ user: initialUser, token });
 
+        // Persist to localStorage for refresh recovery
+        localStorage.setItem('tamuu_user', JSON.stringify(initialUser));
+        localStorage.setItem('tamuu_token', token);
+
         try {
             // Fetch real tier and quotas from D1 via our API
             const { users: usersApi } = await import('../lib/api');
@@ -136,12 +140,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     email: updatedUser.email
                 });
                 setAuthSession({ user: updatedUser, token });
+
+                // Update localStorage with D1-enriched user data
+                localStorage.setItem('tamuu_user', JSON.stringify(updatedUser));
             }
         } catch (error) {
             console.error('[Auth Sync] Failed to sync profile with D1:', error);
             setLoading(false);
         }
     };
+
+    // Cleanup localStorage on unmount (for logout handled elsewhere)
+    useEffect(() => {
+        return () => {
+            // Don't clear here - logout is handled by signOut function
+        };
+    }, []);
 
     return (
         <AuthContext.Provider value={{}}>

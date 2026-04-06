@@ -74,7 +74,11 @@ export const createAuthSlice: StateCreator<AuthState> = (set) => ({
             console.error('[Auth logout] Sign out error:', err);
         });
 
-        // 2. Clear Zustand State
+        // 2. Clear localStorage
+        localStorage.removeItem('tamuu_user');
+        localStorage.removeItem('tamuu_token');
+
+        // 3. Clear Zustand State
         set({ user: null, isAuthenticated: false, token: null, error: null });
     },
 });

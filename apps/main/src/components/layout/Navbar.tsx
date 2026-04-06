@@ -285,6 +285,12 @@ export const Navbar = () => {
                                                                 <LayoutDashboard className="w-4 h-4" />
                                                                 <span>Dashboard</span>
                                                             </SmartLink>
+                                                            {user?.role === 'admin' && (
+                                                                <SmartLink href="/admin/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+                                                                    <ShieldAlert className="w-4 h-4" />
+                                                                    <span>Admin Dashboard</span>
+                                                                </SmartLink>
+                                                            )}
                                                             <SmartLink href="/billing" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
                                                                 <CreditCard className="w-4 h-4" />
                                                                 <span>Billing</span>
