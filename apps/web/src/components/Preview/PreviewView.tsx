@@ -224,9 +224,15 @@ export const PreviewView: React.FC<PreviewViewProps> = ({ isOpen, onClose, id: p
             if (!API_BASE) return; // Prevent fetching if API_BASE is empty/invalid
 
             try {
+                // FIX: Use correct endpoint based on type
+                // - Templates should use /api/templates/ or /api/preview/
+                // - Invitations use /api/invitations/
+                // - "testtemplate" and similar are templates, not invitations!
                 const endpoint = templateType === 'display'
                     ? `/api/user-display-designs/${propId}`
-                    : `/api/invitations/${propId}`;
+                    : propIsTemplate 
+                        ? `/api/templates/${propId}`
+                        : `/api/invitations/${propId}`;
 
                 const url = `${API_BASE}${endpoint}`;
                 

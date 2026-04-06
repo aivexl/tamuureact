@@ -115,7 +115,15 @@ export const invitations = {
     },
 
     async get(id: string) {
-        const res = await safeFetch(`${API_BASE}/api/invitations/${id}`);
+        // SMART FIX: Determine if this is a template slug or invitation UUID
+        // Templates have slugs like "testtemplate", invitations have UUIDs
+        // If it's not a UUID format, use /api/preview/ which handles both templates and invitations
+        const isUuid = id.includes('-') && id.length > 20;
+        const endpoint = isUuid 
+            ? `/api/invitations/${id}`
+            : `/api/preview/${id}`; // Smart resolver: tries templates first, then invitations
+            
+        const res = await safeFetch(`${API_BASE}${endpoint}`);
         if (!res.ok) throw new Error('Invitation not found');
         const data = await res.json();
         return sanitizeValue(data);
