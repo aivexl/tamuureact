@@ -26,6 +26,16 @@ export const Navbar: React.FC = () => {
     const { isAuthenticated, user, logout } = useStore();
     const isLoggedIn = isAuthenticated;
 
+    // DEBUG: Log user role to console
+    useEffect(() => {
+        console.log('[Navbar] User from store:', {
+            email: user?.email,
+            role: user?.role,
+            isAuthenticated,
+            hasUser: !!user
+        });
+    }, [user?.role, user?.email, isAuthenticated]);
+
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);

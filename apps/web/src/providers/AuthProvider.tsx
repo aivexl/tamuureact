@@ -128,7 +128,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     permissions: d1User.permissions || []
                 };
 
-                console.log('[Auth Sync] Updating session with:', updatedUser.tier);
+                console.log('[Auth Sync] Updating session with:', {
+                    tier: updatedUser.tier,
+                    role: updatedUser.role,
+                    roleFromD1: d1User.role,
+                    roleFromSupabase: initialUser.role,
+                    email: updatedUser.email
+                });
                 setAuthSession({ user: updatedUser, token });
             }
         } catch (error) {

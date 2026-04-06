@@ -67,7 +67,7 @@ import { useStore } from './store/useStore';
 // AUTH SYNC COMPONENT (Next.js -> Vite)
 // ============================================
 const AuthSync: React.FC = () => {
-    const { setAuthSession, isAuthenticated, isLoading } = useStore();
+    const { setAuthSession, isAuthenticated, isLoading, user: existingUser } = useStore();
 
     useEffect(() => {
         // Only sync if not already authenticated and not loading
@@ -78,14 +78,26 @@ const AuthSync: React.FC = () => {
 
                 if (userData && token) {
                     const user = JSON.parse(userData);
-                    console.log('[Auth Sync] Found Next.js session in localStorage, syncing to Vite store:', user.email);
+                    console.log('[Auth Sync] Found Next.js session in localStorage, syncing to Vite store:', {
+                        email: user.email,
+                        role: user.role,
+                        hasRole: !!user.role
+                    });
+                    
+                    // IMPORTANT: Merge with existing user data to preserve role from D1 sync
+                    // This prevents localStorage from overriding the role with undefined
+                    if (existingUser && existingUser.role && !user.role) {
+                        console.log('[Auth Sync] Preserving D1 role:', existingUser.role);
+                        user.role = existingUser.role;
+                    }
+                    
                     setAuthSession({ user, token });
                 }
             } catch (err) {
                 console.error('[Auth Sync] Failed to parse Next.js session:', err);
             }
         }
-    }, [isAuthenticated, setAuthSession]);
+    }, [isAuthenticated, setAuthSession, existingUser]);
 
     return null;
 };
