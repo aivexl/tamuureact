@@ -207,13 +207,25 @@ const App: React.FC = () => {
                         <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="admin"><AdminDashboardPage /></ProtectedRoute>} />
                         <Route path="/admin/music" element={<ProtectedRoute requiredRole="admin"><AdminMusicPage /></ProtectedRoute>} />
                         <Route path="/admin/admins" element={<ProtectedRoute requiredRole="admin"><AdminUsersPage role="admin" /></ProtectedRoute>} />
+                        <Route path="/admin/resellers" element={<ProtectedRoute requiredRole="admin"><AdminUsersPage role="reseller" /></ProtectedRoute>} />
                         <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsersPage role="user" /></ProtectedRoute>} />
+                        <Route path="/admin/chat-monitoring" element={<ProtectedRoute requiredRole="admin"><AdminChatMonitoringPage /></ProtectedRoute>} />
                         <Route path="/admin/transactions" element={<ProtectedRoute requiredRole="admin"><AdminTransactionsPage /></ProtectedRoute>} />
                         <Route path="/admin/activity" element={<ProtectedRoute requiredRole="admin"><AdminActivityPage /></ProtectedRoute>} />
+                        <Route path="/admin/feedback" element={<ProtectedRoute requiredRole="admin"><AdminFeedbackPage /></ProtectedRoute>} />
+                        <Route path="/admin/push-notifications" element={<ProtectedRoute requiredRole="admin"><AdminPushNotificationPage /></ProtectedRoute>} />
                         <Route path="/admin/templates" element={<ProtectedRoute requiredRole="admin"><AdminTemplatesPage /></ProtectedRoute>} />
+                        <Route path="/admin/templates/shop" element={<ProtectedRoute requiredRole="admin"><AdminShopSettingsPage /></ProtectedRoute>} />
+                        <Route path="/admin/templates/:type" element={<ProtectedRoute requiredRole="admin"><AdminTemplatesPage /></ProtectedRoute>} />
                         <Route path="/admin/stores" element={<ProtectedRoute requiredRole="admin"><AdminStoreManagementPage /></ProtectedRoute>} />
+                        <Route path="/admin/product-listing" element={<ProtectedRoute requiredRole="admin"><AdminProductListingPage /></ProtectedRoute>} />
                         <Route path="/admin/products" element={<ProtectedRoute requiredRole="admin"><AdminProductsPage /></ProtectedRoute>} />
+                        <Route path="/admin/reports" element={<ProtectedRoute requiredRole="admin"><AdminReportsPage /></ProtectedRoute>} />
+                        <Route path="/admin/ads" element={<ProtectedRoute requiredRole="admin"><AdminAdsPage /></ProtectedRoute>} />
                         <Route path="/admin/blog" element={<ProtectedRoute requiredRole="admin"><AdminBlogListPage /></ProtectedRoute>} />
+                        <Route path="/admin/blog/new" element={<ProtectedRoute requiredRole="admin"><AdminBlogEditor /></ProtectedRoute>} />
+                        <Route path="/admin/blog/:id" element={<ProtectedRoute requiredRole="admin"><AdminBlogEditor /></ProtectedRoute>} />
+                        <Route path="/admin/editor/:slug" element={<ProtectedRoute requiredRole="admin"><EditorPage /></ProtectedRoute>} />
 
                         {/* Editor Routes */}
                         <Route path="/editor" element={<ProtectedRoute><EditorPage /></ProtectedRoute>} />
