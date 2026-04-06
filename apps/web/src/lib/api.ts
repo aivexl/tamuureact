@@ -125,7 +125,14 @@ export const invitations = {
             
         const res = await safeFetch(`${API_BASE}${endpoint}`);
         if (!res.ok) throw new Error('Invitation not found');
-        const data = await res.json();
+        let data = await res.json();
+        
+        // IMPORTANT: /api/preview/ returns { data: {...}, source: "templates"|"invitations" }
+        // We need to unwrap it to get the actual invitation/template object
+        if (endpoint.startsWith('/api/preview/') && data.data) {
+            data = data.data;
+        }
+        
         return sanitizeValue(data);
     },
 
