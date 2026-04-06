@@ -47,8 +47,27 @@ export async function middleware(request: NextRequest) {
   const isVitePublicRoute = isVitePublicPath(pathname);
 
   // ============================================
-  // 5. EDGE REDIRECT ENFORCER (INSTANT - Priority #1)
-  // This runs BEFORE any page rendering - NO 404 will be shown!
+  // 5. ASSET PROXY (Priority #1 - Before Redirects!)
+  // Assets must be proxied BEFORE domain enforcement
+  // ============================================
+  
+  // A. Proxy all asset files to Vite app (regardless of domain)
+  if (pathname.startsWith('/assets/') || pathname.startsWith('/images/') || pathname.match(/\.(js|css|webp|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/)) {
+      const targetUrl = new URL(pathname + search, 'https://tamuu-app.pages.dev');
+      const proxyRes = NextResponse.rewrite(targetUrl);
+      
+      // Transfer session and headers
+      baseResponse.headers.forEach((v, k) => proxyRes.headers.set(k, v));
+      baseResponse.cookies.getAll().forEach(c => proxyRes.cookies.set(c.name, c.value, c));
+      
+      proxyRes.headers.set('x-tamuu-policy', 'proxy-to-vite-assets');
+      proxyRes.headers.set('x-tamuu-middleware-version', '4.8.2-asset-priority');
+      return proxyRes;
+  }
+
+  // ============================================
+  // 6. EDGE REDIRECT ENFORCER (INSTANT - Priority #2)
+  // This runs AFTER asset proxy - NO 404 will be shown!
   // ============================================
   if (!isDev) {
       // A. Public Domain -> App Domain (Instant 308 Redirect)
@@ -60,7 +79,7 @@ export async function middleware(request: NextRequest) {
           const redirectRes = NextResponse.redirect(redirectUrl, 308);
           redirectRes.headers.set('x-tamuu-policy', 'edge-public-to-app');
           redirectRes.headers.set('x-tamuu-redirect-reason', 'public-domain-accessing-app-route');
-          redirectRes.headers.set('x-tamuu-middleware-version', '4.8.1-asset-fix');
+          redirectRes.headers.set('x-tamuu-middleware-version', '4.8.2-asset-priority');
           return redirectRes;
       }
 
@@ -73,17 +92,17 @@ export async function middleware(request: NextRequest) {
           const redirectRes = NextResponse.redirect(redirectUrl, 308);
           redirectRes.headers.set('x-tamuu-policy', 'edge-app-to-public');
           redirectRes.headers.set('x-tamuu-redirect-reason', 'app-domain-accessing-public-route');
-          redirectRes.headers.set('x-tamuu-middleware-version', '4.8.1-asset-fix');
+          redirectRes.headers.set('x-tamuu-middleware-version', '4.8.2-asset-priority');
           return redirectRes;
       }
   }
 
   // ============================================
-  // 6. PROXY DELEGATION (Vite vs Next.js)
+  // 7. PROXY DELEGATION (Vite vs Next.js)
   // ============================================
   
-  // A. App content on App Domain -> PROXY to Vite (INCLUDING ASSETS!)
-  if (isAppDomain && (isAppRoute || pathname.startsWith('/assets/') || pathname.startsWith('/images/') || pathname.startsWith('/vite/'))) {
+  // A. App content on App Domain -> PROXY to Vite
+  if (isAppDomain && isAppRoute) {
       const targetUrl = new URL(pathname + search, 'https://tamuu-app.pages.dev');
       const proxyRes = NextResponse.rewrite(targetUrl);
       
@@ -92,7 +111,7 @@ export async function middleware(request: NextRequest) {
       baseResponse.cookies.getAll().forEach(c => proxyRes.cookies.set(c.name, c.value, c));
       
       proxyRes.headers.set('x-tamuu-policy', 'proxy-to-vite-app');
-      proxyRes.headers.set('x-tamuu-middleware-version', '4.8.1-asset-fix');
+      proxyRes.headers.set('x-tamuu-middleware-version', '4.8.2-asset-priority');
       return proxyRes;
   }
 
@@ -106,25 +125,15 @@ export async function middleware(request: NextRequest) {
       baseResponse.cookies.getAll().forEach(c => proxyRes.cookies.set(c.name, c.value, c));
       
       proxyRes.headers.set('x-tamuu-policy', 'proxy-to-vite-public');
-      proxyRes.headers.set('x-tamuu-middleware-version', '4.8.1-asset-fix');
-      return proxyRes;
-  }
-
-  // C. Asset files on ANY domain -> PROXY to Vite (catches /assets/, /images/, etc.)
-  if (pathname.startsWith('/assets/') || pathname.startsWith('/images/') || pathname.match(/\.(js|css|webp|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/)) {
-      const targetUrl = new URL(pathname + search, 'https://tamuu-app.pages.dev');
-      const proxyRes = NextResponse.rewrite(targetUrl);
-      
-      proxyRes.headers.set('x-tamuu-policy', 'proxy-to-vite-assets');
-      proxyRes.headers.set('x-tamuu-middleware-version', '4.8.1-asset-fix');
+      proxyRes.headers.set('x-tamuu-middleware-version', '4.8.2-asset-priority');
       return proxyRes;
   }
 
   // ============================================
-  // 7. FALLBACK: Serve via Next.js (tamuu.id Public Routes)
+  // 8. FALLBACK: Serve via Next.js (tamuu.id Public Routes)
   // ============================================
   baseResponse.headers.set('x-tamuu-policy', 'native-nextjs');
-  baseResponse.headers.set('x-tamuu-middleware-version', '4.8.1-asset-fix');
+  baseResponse.headers.set('x-tamuu-middleware-version', '4.8.2-asset-priority');
   return baseResponse;
 }
 
