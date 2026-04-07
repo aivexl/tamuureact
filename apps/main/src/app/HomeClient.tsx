@@ -230,7 +230,7 @@ export default function HomeContent() {
                                 {data.blog.map((post: any) => {
                                     const isLogo = !post.featured_image || post.featured_image.includes('logo-tamuu');
                                     return (
-                                        <Link key={post.id} href={`/blog/${post.slug}`} prefetch={false} className="group cursor-pointer min-w-[280px] md:min-w-[320px] snap-start">
+                                        <Link key={post.id} href={`/blog/${post.slug}`} prefetch={false} className="group cursor-pointer w-[280px] md:w-[320px] flex-shrink-0 snap-start">
                                             <div className="aspect-[4/3] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden mb-4 bg-slate-50 border border-[#F1F5F9] relative shadow-sm">
                                                 <img 
                                                     src={post.featured_image || '/images/logo-tamuu-vfinal-v1.webp'} 
