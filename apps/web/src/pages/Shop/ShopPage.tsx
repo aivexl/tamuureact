@@ -306,22 +306,50 @@ export const ShopPage: React.FC = () => {
                         </Tabs>
 
                         {/* Category Filter using shadcn/ui Buttons */}
-                        <div className="flex overflow-x-auto gap-3 pb-2 no-scrollbar">
-                            {categoryConfig.map((cat) => {
-                                const Icon = cat.icon;
-                                const isActive = selectedCategory === cat.name;
-                                return (
-                                    <Button
-                                        key={cat.name}
-                                        variant={isActive ? "filterActive" : "filter"}
-                                        size="filter"
-                                        onClick={() => handleCategoryClick(cat)}
-                                    >
-                                        <Icon className={cn("w-3.5 h-3.5", isActive ? "text-[#FFBF00]" : "text-slate-300")} />
-                                        {cat.name}
-                                    </Button>
-                                );
-                            })}
+                        <div className="relative group">
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10 -ml-4 opacity-0 group-hover:opacity-100 transition-opacity hidden md:block">
+                                <Button 
+                                    variant="outline" 
+                                    size="icon"
+                                    onClick={() => handleScroll('category-scroll', -200)}
+                                    className="w-8 h-8 rounded-full bg-white shadow-lg border border-slate-100 hover:bg-[#FFBF00] transition-all"
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                </Button>
+                            </div>
+                            
+                            <div 
+                                id="category-scroll"
+                                className="flex overflow-x-auto gap-3 pb-2 no-scrollbar scroll-smooth px-4 -mx-4 snap-x"
+                            >
+                                {categoryConfig.map((cat) => {
+                                    const Icon = cat.icon;
+                                    const isActive = selectedCategory === cat.name;
+                                    return (
+                                        <Button
+                                            key={cat.name}
+                                            variant={isActive ? "filterActive" : "filter"}
+                                            size="filter"
+                                            onClick={() => handleCategoryClick(cat)}
+                                            className="snap-start"
+                                        >
+                                            <Icon className={cn("w-3.5 h-3.5", isActive ? "text-[#FFBF00]" : "text-slate-300")} />
+                                            {cat.name}
+                                        </Button>
+                                    );
+                                })}
+                            </div>
+
+                            <div className="absolute right-0 top-1/2 -translate-y-1/2 z-10 -mr-4 opacity-0 group-hover:opacity-100 transition-opacity hidden md:block">
+                                <Button 
+                                    variant="outline" 
+                                    size="icon"
+                                    onClick={() => handleScroll('category-scroll', 200)}
+                                    className="w-8 h-8 rounded-full bg-white shadow-lg border border-slate-100 hover:bg-[#FFBF00] transition-all"
+                                >
+                                    <ChevronRight className="w-4 h-4" />
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </section>

@@ -133,24 +133,47 @@ export default function HomeContent() {
                         </button>
                     </div>
 
-                    <div className="flex overflow-x-auto gap-3 pb-4 no-scrollbar justify-center">
-                        {categoryConfig.map((cat) => {
-                            const isActive = currentCategory === cat.slug;
-                            return (
-                                <button
-                                    key={cat.slug}
-                                    onClick={() => handleCategoryClick(cat.slug)}
-                                    className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all whitespace-nowrap ${
-                                        isActive 
-                                        ? 'bg-white border-[#FFBF00] text-[#0A1128] shadow-lg shadow-[#FFBF00]/10' 
-                                        : 'bg-white border-[#F1F5F9] text-slate-400 hover:border-slate-200'
-                                    }`}
-                                >
-                                    <cat.icon className={`w-4 h-4 ${isActive ? 'text-[#FFBF00]' : 'text-slate-300'}`} />
-                                    {cat.name}
-                                </button>
-                            );
-                        })}
+                    <div className="relative group">
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10 -ml-4 opacity-0 group-hover:opacity-100 transition-opacity hidden md:block">
+                            <button 
+                                onClick={() => handleScroll('category-scroll', -200)}
+                                className="p-2 rounded-full bg-white shadow-lg border border-slate-100 hover:bg-[#FFBF00] transition-all"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                            </button>
+                        </div>
+                        
+                        <div 
+                            id="category-scroll"
+                            className="flex overflow-x-auto gap-3 pb-4 no-scrollbar scroll-smooth px-4 -mx-4 snap-x"
+                        >
+                            {categoryConfig.map((cat) => {
+                                const isActive = currentCategory === cat.slug;
+                                return (
+                                    <button
+                                        key={cat.slug}
+                                        onClick={() => handleCategoryClick(cat.slug)}
+                                        className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all whitespace-nowrap snap-start ${
+                                            isActive 
+                                            ? 'bg-white border-[#FFBF00] text-[#0A1128] shadow-lg shadow-[#FFBF00]/10' 
+                                            : 'bg-white border-[#F1F5F9] text-slate-400 hover:border-slate-200'
+                                        }`}
+                                    >
+                                        <cat.icon className={`w-4 h-4 ${isActive ? 'text-[#FFBF00]' : 'text-slate-300'}`} />
+                                        {cat.name}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 z-10 -mr-4 opacity-0 group-hover:opacity-100 transition-opacity hidden md:block">
+                            <button 
+                                onClick={() => handleScroll('category-scroll', 200)}
+                                className="p-2 rounded-full bg-white shadow-lg border border-slate-100 hover:bg-[#FFBF00] transition-all"
+                            >
+                                <ChevronRight className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
                 </section>
 
