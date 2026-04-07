@@ -110,6 +110,7 @@ export default function HomeContent() {
     return (
         <div className="bg-white min-h-screen text-[#0A1128] font-sans overflow-x-hidden">
             <Container className="pt-32 pb-20">
+                <h1 className="sr-only">Tamuu - Platform Undangan Digital & Vendor Pernikahan Premium</h1>
                 <Breadcrumbs />
                 
                 <section className="mb-12">

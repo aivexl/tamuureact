@@ -4,7 +4,8 @@ import {
     Plus, Trash2, GripVertical, Save, Image, Link as LinkIcon, 
     AlertCircle, Megaphone, Check, X, LayoutTemplate, 
     UploadCloud, Search, Star, Sparkles, ShoppingBag, Store,
-    Filter, ArrowRight, ExternalLink, ShieldCheck, Phone, MessageSquare
+    Filter, ArrowRight, ExternalLink, ShieldCheck, Phone, MessageSquare,
+    Globe
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { PremiumLoader } from '../ui/PremiumLoader';
@@ -33,7 +34,7 @@ export const AdminShopSettings: React.FC = () => {
     const [isFetchingCarousel, setIsFetchingCarousel] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const carouselFileInputRef = useRef<HTMLInputElement>(null);
-    const [newSlide, setNewSlide] = useState({ image_url: '', link_url: '', is_active: 1, order_index: 0 });
+    const [newSlide, setNewSlide] = useState({ image_url: '', link_url: '', alt_text: '', is_active: 1, order_index: 0 });
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'carousel' | 'ad', onAdUpdate?: (url: string) => void) => {
         const file = e.target.files?.[0];
@@ -155,6 +156,7 @@ export const AdminShopSettings: React.FC = () => {
             image_url: '',
             link_url: '',
             title: 'New Sponsor',
+            alt_text: '',
             position: 'PRODUCT_DETAIL_SIDEBAR',
             is_active: 1
         };
@@ -315,6 +317,18 @@ export const AdminShopSettings: React.FC = () => {
                                             />
                                         </div>
                                         <div>
+                                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 block flex items-center gap-2">
+                                                <Globe className="w-3 h-3" /> Alt Text (SEO)
+                                            </label>
+                                            <input 
+                                                type="text" 
+                                                value={newSlide.alt_text}
+                                                onChange={e => setNewSlide({ ...newSlide, alt_text: e.target.value })}
+                                                className="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-white text-xs"
+                                                placeholder="Contoh: Vendor Catering Pernikahan Jakarta"
+                                            />
+                                        </div>
+                                        <div>
                                             <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Link URL</label>
                                             <input 
                                                 type="text" 
@@ -338,7 +352,7 @@ export const AdminShopSettings: React.FC = () => {
                                             onClick={() => {
                                                 if (!newSlide.image_url) return toast.error('Image URL wajib diisi');
                                                 handleSaveCarouselAction(newSlide, 'create');
-                                                setNewSlide({ image_url: '', link_url: '', is_active: 1, order_index: slides.length + 1 });
+                                                setNewSlide({ image_url: '', link_url: '', alt_text: '', is_active: 1, order_index: slides.length + 1 });
                                             }} 
                                             className="w-full py-3.5 bg-[#FFBF00] text-[#0A1128] rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-amber-400 transition-colors mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
@@ -361,37 +375,14 @@ export const AdminShopSettings: React.FC = () => {
                                         </div>
                                     ) : (
                                         slides.map((slide, idx) => (
-                                            <div key={slide.id || idx} className="bg-white/5 border border-white/10 rounded-3xl p-4 flex flex-col sm:flex-row items-center gap-6 group">
-                                                <div className="w-full sm:w-48 aspect-video rounded-2xl overflow-hidden bg-black/50 shrink-0 border border-white/10 group-hover:border-[#FFBF00]/30 transition-colors">
-                                                    <img src={slide.image_url} alt="Slide" className="w-full h-full object-cover" />
-                                                </div>
-                                                <div className="flex-1 w-full space-y-2">
-                                                    <div className="flex flex-col gap-1.5 text-xs text-slate-400 font-mono">
-                                                        <span><strong className="text-slate-500 uppercase tracking-widest text-[9px] font-black mr-2">Link:</strong> {slide.link_url || '-'}</span>
-                                                        <span><strong className="text-slate-500 uppercase tracking-widest text-[9px] font-black mr-2">Urutan:</strong> {slide.order_index}</span>
-                                                        <span><strong className="text-slate-500 uppercase tracking-widest text-[9px] font-black mr-2">Status:</strong> 
-                                                            <span className={slide.is_active ? 'text-emerald-400' : 'text-rose-400'}>{slide.is_active ? ' Aktif' : ' Nonaktif'}</span>
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className="flex sm:flex-col gap-2 shrink-0 w-full sm:w-auto mt-4 sm:mt-0 border-t sm:border-t-0 sm:border-l border-white/5 pt-4 sm:pt-0 sm:pl-4">
-                                                    <button 
-                                                        onClick={() => handleSaveCarouselAction({ ...slide, is_active: slide.is_active ? 0 : 1 }, 'update')}
-                                                        className="flex-1 sm:flex-none px-4 py-2.5 bg-white/5 text-white hover:bg-white/10 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all"
-                                                    >
-                                                        {slide.is_active ? 'Nonaktifkan' : 'Aktifkan'}
-                                                    </button>
-                                                    <button 
-                                                        onClick={() => {
-                                                            if (window.confirm('Hapus slide ini secara permanen?')) handleSaveCarouselAction(slide, 'delete');
-                                                        }}
-                                                        className="flex-1 sm:flex-none px-4 py-2.5 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex justify-center"
-                                                        title="Delete Slide"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            </div>
+                                            <CarouselRow 
+                                                key={slide.id || idx} 
+                                                slide={slide} 
+                                                onSave={(item) => handleSaveCarouselAction(item, 'update')}
+                                                onDelete={(item) => {
+                                                    if (window.confirm('Hapus slide ini secara permanen?')) handleSaveCarouselAction(item, 'delete');
+                                                }}
+                                            />
                                         ))
                                     )}
                                 </div>
@@ -760,6 +751,86 @@ export const AdminShopSettings: React.FC = () => {
     );
 };
 
+const CarouselRow: React.FC<{ slide: any, onSave: (slide: any) => void, onDelete: (slide: any) => void }> = ({ slide, onSave, onDelete }) => {
+    const [localSlide, setLocalSlide] = useState(slide);
+    const [hasChanges, setHasChanges] = useState(false);
+
+    const updateField = (field: string, value: any) => {
+        setLocalSlide({ ...localSlide, [field]: value });
+        setHasChanges(true);
+    };
+
+    return (
+        <div className="bg-white/5 border border-white/10 rounded-3xl p-4 flex flex-col sm:flex-row items-center gap-6 group">
+            <div className="w-full sm:w-48 aspect-video rounded-2xl overflow-hidden bg-black/50 shrink-0 border border-white/10 group-hover:border-[#FFBF00]/30 transition-colors">
+                <img src={localSlide.image_url} alt="Slide" className="w-full h-full object-cover" />
+            </div>
+            <div className="flex-1 w-full space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label className="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1 block">Alt Text (SEO)</label>
+                        <input 
+                            type="text" 
+                            value={localSlide.alt_text || ''}
+                            onChange={e => updateField('alt_text', e.target.value)}
+                            className="w-full bg-black/30 border border-white/5 rounded-lg px-3 py-2 text-white text-[10px]"
+                            placeholder="Alt text..."
+                        />
+                    </div>
+                    <div>
+                        <label className="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1 block">Link URL</label>
+                        <input 
+                            type="text" 
+                            value={localSlide.link_url || ''}
+                            onChange={e => updateField('link_url', e.target.value)}
+                            className="w-full bg-black/30 border border-white/5 rounded-lg px-3 py-2 text-slate-400 text-[10px]"
+                            placeholder="Link..."
+                        />
+                    </div>
+                </div>
+                <div className="flex items-center gap-4 text-[10px] text-slate-500 font-mono">
+                    <div className="flex items-center gap-2">
+                        <span className="uppercase tracking-widest text-[8px] font-black text-slate-600">Order:</span>
+                        <input 
+                            type="number" 
+                            value={localSlide.order_index}
+                            onChange={e => updateField('order_index', parseInt(e.target.value) || 0)}
+                            className="w-12 bg-transparent border-b border-white/10 text-white text-center"
+                        />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="uppercase tracking-widest text-[8px] font-black text-slate-600">Status:</span>
+                        <button 
+                            onClick={() => updateField('is_active', localSlide.is_active ? 0 : 1)}
+                            className={localSlide.is_active ? 'text-emerald-400 font-black' : 'text-rose-400 font-black'}
+                        >
+                            {localSlide.is_active ? 'AKTIF' : 'NONAKTIF'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div className="flex sm:flex-col gap-2 shrink-0 w-full sm:w-auto mt-4 sm:mt-0 border-t sm:border-t-0 sm:border-l border-white/5 pt-4 sm:pt-0 sm:pl-4">
+                <button 
+                    onClick={() => {
+                        onSave(localSlide);
+                        setHasChanges(false);
+                    }}
+                    disabled={!hasChanges}
+                    className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${hasChanges ? 'bg-[#FFBF00] text-[#0A1128]' : 'bg-white/5 text-slate-600 opacity-50 cursor-not-allowed'}`}
+                >
+                    Simpan
+                </button>
+                <button 
+                    onClick={() => onDelete(localSlide)}
+                    className="flex-1 sm:flex-none px-4 py-2.5 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex justify-center"
+                >
+                    <Trash2 className="w-4 h-4" />
+                </button>
+            </div>
+        </div>
+    );
+};
+
 const PlacementItem: React.FC<{ item: any, onRemove: () => void }> = ({ item, onRemove }) => (
     <div className="p-3 bg-white/5 border border-white/5 rounded-2xl flex items-center gap-4 group hover:border-white/10 transition-all">
         <div className="w-10 h-10 rounded-xl overflow-hidden bg-black border border-white/10">
@@ -826,6 +897,18 @@ const AdEditorRow: React.FC<{
                             value={localAd.title}
                             onChange={(e) => updateField('title', e.target.value)}
                             className="w-full bg-[#0A0A0A] border border-white/5 rounded-xl px-4 py-3 text-xs text-white font-bold focus:outline-none focus:ring-1 focus:ring-[#FFBF00]/50"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 block flex items-center gap-2">
+                            <Globe className="w-3 h-3" /> Alt Text (SEO)
+                        </label>
+                        <input
+                            type="text"
+                            value={localAd.alt_text || ''}
+                            onChange={(e) => updateField('alt_text', e.target.value)}
+                            className="w-full bg-[#0A0A0A] border border-white/5 rounded-xl px-4 py-3 text-xs text-white font-bold focus:outline-none focus:ring-1 focus:ring-[#FFBF00]/50"
+                            placeholder="Deskripsi gambar untuk Google..."
                         />
                     </div>
                     <div>

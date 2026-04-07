@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 
 interface MultiCarouselProps {
-    items: { id: string; image_url: string; link_url?: string }[];
+    items: { id: string; image_url: string; link_url?: string; alt_text?: string }[];
 }
 
 export const MultiCarousel = ({ items }: MultiCarouselProps) => {
@@ -33,7 +33,7 @@ export const MultiCarousel = ({ items }: MultiCarouselProps) => {
         return () => observer.disconnect();
     }, []);
 
-    const carouselItems = items && items.length > 0 ? items : [{ id: 'dummy-1', image_url: '/images/logo-tamuu-vfinal-v1.webp', link_url: '#' }];
+    const carouselItems = items && items.length > 0 ? items : [{ id: 'dummy-1', image_url: '/images/logo-tamuu-vfinal-v1.webp', link_url: '#', alt_text: 'Tamuu Logo Placeholder' }];
     const maxIndex = carouselItems.length - 1;
 
     useEffect(() => {
@@ -94,7 +94,7 @@ export const MultiCarousel = ({ items }: MultiCarouselProps) => {
                             >
                                 <Image 
                                     src={displayImage} 
-                                    alt={`Banner ${idx}`} 
+                                    alt={item.alt_text || `Layanan Pernikahan Premium Tamuu - Slide ${idx + 1}`} 
                                     fill
                                     priority={idx === 0}
                                     sizes="100vw"

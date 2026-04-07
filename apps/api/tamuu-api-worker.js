@@ -2547,13 +2547,13 @@ export default {
                         if (action === 'create') {
                             const newId = crypto.randomUUID();
                             await env.DB.prepare(
-                                'INSERT INTO shop_carousel (id, image_url, link_url, order_index, is_active) VALUES (?, ?, ?, ?, ?)'
-                            ).bind(newId, item.image_url, item.link_url, item.order_index || 0, item.is_active !== undefined ? item.is_active : 1).run();
+                                'INSERT INTO shop_carousel (id, image_url, link_url, order_index, is_active, alt_text) VALUES (?, ?, ?, ?, ?, ?)'
+                            ).bind(newId, item.image_url, item.link_url, item.order_index || 0, item.is_active !== undefined ? item.is_active : 1, item.alt_text || null).run();
                             return json({ success: true, id: newId }, corsHeaders);
                         } else if (action === 'update') {
                             await env.DB.prepare(
-                                'UPDATE shop_carousel SET image_url = ?, link_url = ?, order_index = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
-                            ).bind(item.image_url, item.link_url, item.order_index, item.is_active, item.id).run();
+                                'UPDATE shop_carousel SET image_url = ?, link_url = ?, order_index = ?, is_active = ?, alt_text = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+                            ).bind(item.image_url, item.link_url, item.order_index, item.is_active, item.alt_text || null, item.id).run();
                             return json({ success: true }, corsHeaders);
                         } else if (action === 'delete') {
                             await env.DB.prepare('DELETE FROM shop_carousel WHERE id = ?').bind(item.id).run();
@@ -2562,10 +2562,10 @@ export default {
                         return error('Invalid action', 400);
                     } else {
                         // Legacy support
-                        const { image_url, link_url, order_index } = payload;
+                        const { image_url, link_url, order_index, alt_text } = payload;
                         const id = crypto.randomUUID();
-                        await env.DB.prepare('INSERT INTO shop_carousel (id, image_url, link_url, order_index) VALUES (?, ?, ?, ?)')
-                            .bind(id, image_url, link_url || null, order_index || 0).run();
+                        await env.DB.prepare('INSERT INTO shop_carousel (id, image_url, link_url, order_index, alt_text) VALUES (?, ?, ?, ?, ?)')
+                            .bind(id, image_url, link_url || null, order_index || 0, alt_text || null).run();
                         return json({ success: true, id }, corsHeaders);
                     }
                 }
@@ -2591,13 +2591,13 @@ export default {
                     if (action === 'create') {
                         const newId = crypto.randomUUID();
                         await env.DB.prepare(
-                            'INSERT INTO invitations_carousel (id, image_url, link_url, order_index, is_active) VALUES (?, ?, ?, ?, ?)'
-                        ).bind(newId, item.image_url, item.link_url || null, item.order_index || 0, item.is_active !== undefined ? item.is_active : 1).run();
+                            'INSERT INTO invitations_carousel (id, image_url, link_url, order_index, is_active, alt_text) VALUES (?, ?, ?, ?, ?, ?)'
+                        ).bind(newId, item.image_url, item.link_url || null, item.order_index || 0, item.is_active !== undefined ? item.is_active : 1, item.alt_text || null).run();
                         return json({ success: true, id: newId }, corsHeaders);
                     } else if (action === 'update') {
                         await env.DB.prepare(
-                            'UPDATE invitations_carousel SET image_url = ?, link_url = ?, order_index = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
-                        ).bind(item.image_url, item.link_url, item.order_index, item.is_active, item.id).run();
+                            'UPDATE invitations_carousel SET image_url = ?, link_url = ?, order_index = ?, is_active = ?, alt_text = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+                        ).bind(item.image_url, item.link_url, item.order_index, item.is_active, item.alt_text || null, item.id).run();
                         return json({ success: true }, corsHeaders);
                     } else if (action === 'delete') {
                         await env.DB.prepare('DELETE FROM invitations_carousel WHERE id = ?').bind(item.id).run();

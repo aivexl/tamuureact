@@ -41,7 +41,8 @@ const TrackableAdCard = ({ ad, onAdClick }: { ad: any, onAdClick: (id: string) =
                     ...ad,
                     productId: ad.target_id,
                     isAd: true,
-                    images: [{ image_url: ad.image_url }]
+                    images: [{ image_url: ad.image_url }],
+                    alt_text: ad.alt_text
                 }} 
                 onAdClick={onAdClick}
             />
@@ -116,7 +117,7 @@ export const SpecialAdsScroller = ({
                                 className="w-[160px] md:w-[195px] h-[300px] md:h-[380px] rounded-[1.5rem] md:rounded-[2rem] bg-white flex-shrink-0 relative overflow-hidden snap-start cursor-pointer group border border-slate-100"
                             >
                                 {specialBanner?.image_url ? (
-                                    <img src={specialBanner.image_url} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Promo Banner" />
+                                    <img src={specialBanner.image_url} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt={specialBanner.alt_text || "Promo Banner Spesial Tamuu"} />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center p-8 md:p-12">
                                         <img 
