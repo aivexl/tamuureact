@@ -620,18 +620,16 @@ export const ShopPage: React.FC = () => {
                                 className="flex md:grid md:grid-cols-4 gap-6 overflow-x-auto no-scrollbar pb-6 md:pb-0 snap-x"
                             >
                                 {latestBlogs.map((post: any) => (
-                                    <div key={post.id} onClick={() => navigate(`/blog/${post.slug}`)} className="group cursor-pointer min-w-[280px] md:min-w-0 snap-start flex flex-col">
-                                        <div className="aspect-[4/3] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden mb-4 bg-slate-50 border border-slate-100 relative shrink-0">
+                                    <div key={post.id} onClick={() => navigate(`/blog/${post.slug}`)} className="group cursor-pointer min-w-[280px] md:min-w-0 snap-start">
+                                        <div className="aspect-[4/3] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden mb-4 bg-slate-50 border border-slate-100 relative">
                                             <img src={post.featured_image || 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={post.title} />
                                             <div className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-lg text-[8px] font-black text-[#0A1128] uppercase tracking-widest">
                                                 {post.category || post.category?.name || 'Inspirasi'}
                                             </div>
                                         </div>
-                                        <div className="px-2 flex flex-col flex-1">
-                                            <div className="h-10 md:h-12 mb-2">
-                                                <h3 className="text-sm md:text-base font-black text-[#0A1128] line-clamp-2 leading-tight group-hover:text-[#FFBF00] transition-colors">{post.title}</h3>
-                                            </div>
-                                            <p className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-auto">
+                                        <div className="px-2">
+                                            <h3 className="text-sm md:text-base font-black text-[#0A1128] line-clamp-2 leading-tight group-hover:text-[#FFBF00] transition-colors">{post.title}</h3>
+                                            <p className="text-[9px] md:text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">
                                                 {parseUTCDate(post.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                                             </p>
                                         </div>
