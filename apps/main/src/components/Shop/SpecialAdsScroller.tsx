@@ -43,7 +43,6 @@ const TrackableAdCard = ({ ad, onAdClick }: { ad: any, onAdClick: (id: string) =
                     isAd: true,
                     images: [{ image_url: ad.image_url }]
                 }} 
-                isSmall={true}
                 onAdClick={onAdClick}
             />
         </div>
@@ -136,7 +135,7 @@ export const SpecialAdsScroller = ({
                                 <TrackableAdCard key={item.id} ad={item} onAdClick={handleAdClick} />
                             ) : (
                                 <div key={item.id} className="snap-start flex-shrink-0">
-                                    <ProductCard product={item} isSmall={true} />
+                                    <ProductCard product={item} />
                                 </div>
                             )
                         ))}

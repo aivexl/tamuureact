@@ -199,7 +199,7 @@ export default function HomeContent() {
                         >
                             {data.featured.map((p: any) => (
                                 <div key={p.id} className="snap-start flex-shrink-0">
-                                    <ProductCard key={p.id} product={p} isSmall={true} />
+                                    <ProductCard key={p.id} product={p} />
                                 </div>
                             ))}
                         </div>
