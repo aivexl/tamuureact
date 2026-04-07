@@ -230,8 +230,8 @@ export default function HomeContent() {
                                 {data.blog.map((post: any) => {
                                     const isLogo = !post.featured_image || post.featured_image.includes('logo-tamuu');
                                     return (
-                                        <Link key={post.id} href={`/blog/${post.slug}`} prefetch={false} className="group cursor-pointer min-w-[280px] md:min-w-[320px] snap-start">
-                                            <div className="aspect-[4/3] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden mb-4 bg-slate-50 border border-[#F1F5F9] relative shadow-sm">
+                                        <Link key={post.id} href={`/blog/${post.slug}`} prefetch={false} className="group cursor-pointer min-w-[280px] md:min-w-[320px] snap-start flex flex-col">
+                                            <div className="aspect-[4/3] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden mb-4 bg-slate-50 border border-[#F1F5F9] relative shadow-sm shrink-0">
                                                 <img 
                                                     src={post.featured_image || '/images/logo-tamuu-vfinal-v1.webp'} 
                                                     className={`w-full h-full transition-transform duration-700 ${isLogo ? 'object-contain p-12 opacity-20' : 'object-cover group-hover:scale-105'}`} 
@@ -241,9 +241,11 @@ export default function HomeContent() {
                                                     Inspirasi
                                                 </div>
                                             </div>
-                                            <div className="px-2">
-                                                <h3 className="text-sm md:text-base font-black leading-tight uppercase tracking-tight text-[#0A1128] group-hover:text-[#FFBF00] transition-colors line-clamp-2">{post.title}</h3>
-                                                <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Read Article</p>
+                                            <div className="px-2 flex flex-col flex-1">
+                                                <div className="h-10 md:h-12 mb-2">
+                                                    <h3 className="text-sm md:text-base font-black leading-tight uppercase tracking-tight text-[#0A1128] group-hover:text-[#FFBF00] transition-colors line-clamp-2">{post.title}</h3>
+                                                </div>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-auto">Read Article</p>
                                             </div>
                                         </Link>
                                     );
