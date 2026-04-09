@@ -362,6 +362,23 @@ export const Navbar = () => {
                                 </SmartLink>
                             ))}
                         </div>
+
+                        {!isLoggedIn && (
+                            <div className="mt-12 pt-8 border-t border-slate-200 flex flex-col gap-4">
+                                <a
+                                    href={getAbsoluteUrl('/login')}
+                                    className="w-full py-4 text-center font-bold text-slate-700 bg-slate-100 rounded-2xl"
+                                >
+                                    Masuk
+                                </a>
+                                <a
+                                    href={getAbsoluteUrl('/signup')}
+                                    className="w-full py-4 text-center font-bold text-white bg-[#0A1128] rounded-2xl"
+                                >
+                                    Buat Undangan
+                                </a>
+                            </div>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>

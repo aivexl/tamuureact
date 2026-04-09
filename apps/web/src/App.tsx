@@ -27,6 +27,7 @@ const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage').then(m => ({ 
 const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })));
 const AdminTransactionsPage = lazy(() => import('./pages/AdminTransactionsPage').then(m => ({ default: m.AdminTransactionsPage })));
 const AdminActivityPage = lazy(() => import('./pages/AdminActivityPage').then(m => ({ default: m.AdminActivityPage })));
+const AdminSecurityPage = lazy(() => import('./pages/Admin/AdminSecurityPage').then(m => ({ default: m.AdminSecurityPage })));
 const AdminMusicPage = lazy(() => import('./pages/AdminMusicPage').then(m => ({ default: m.AdminMusicPage })));
 const RemoteTriggerPage = lazy(() => import('./pages/RemoteTriggerPage').then(m => ({ default: m.RemoteTriggerPage })));
 const GuestScannerPage = lazy(() => import('./pages/GuestScannerPage').then(m => ({ default: m.GuestScannerPage })));
@@ -224,6 +225,7 @@ const App: React.FC = () => {
                         <Route path="/admin/chat-monitoring" element={<ProtectedRoute requiredRole="admin"><AdminChatMonitoringPage /></ProtectedRoute>} />
                         <Route path="/admin/transactions" element={<ProtectedRoute requiredRole="admin"><AdminTransactionsPage /></ProtectedRoute>} />
                         <Route path="/admin/activity" element={<ProtectedRoute requiredRole="admin"><AdminActivityPage /></ProtectedRoute>} />
+                        <Route path="/admin/security" element={<ProtectedRoute requiredRole="admin"><AdminSecurityPage /></ProtectedRoute>} />
                         <Route path="/admin/feedback" element={<ProtectedRoute requiredRole="admin"><AdminFeedbackPage /></ProtectedRoute>} />
                         <Route path="/admin/push-notifications" element={<ProtectedRoute requiredRole="admin"><AdminPushNotificationPage /></ProtectedRoute>} />
                         <Route path="/admin/templates" element={<ProtectedRoute requiredRole="admin"><AdminTemplatesPage /></ProtectedRoute>} />

@@ -4,13 +4,29 @@
  */
 
 import { TamuuAIEngine } from './ai-system-v8-enhanced.js';
+import { InputSanitizer } from './input-sanitizer.js';
+import { addRateLimitHeaders } from './rate-limiter.js';
 
-export async function handleEnhancedChat(request, env, ctx, corsHeaders) {
+export async function handleEnhancedChat(request, env, ctx, corsHeaders, rateLimitMetadata = null) {
     const startTime = Date.now();
     const aiEngine = new TamuuAIEngine(env);
 
     try {
-        const { messages, userId } = await request.json();
+        const body = await request.json();
+        const { messages, userId } = body;
+
+        // 1. CTO SECURITY: Input Sanitization
+        const sanitizationResult = InputSanitizer.validateChatRequest(body);
+        if (!sanitizationResult.valid) {
+            console.warn('[Enhanced AI] Sanitization violations:', sanitizationResult.violations);
+            return json({
+                error: 'Permintaan tidak valid atau mengandung konten terlarang.',
+                violations: sanitizationResult.violations,
+                code: 'INVALID_INPUT'
+            }, { ...corsHeaders, status: 400 });
+        }
+
+        const sanitizedMessages = sanitizationResult.messages;
 
         if (!env.GEMINI_API_KEY) {
             console.error('[Enhanced AI] GEMINI_API_KEY is MISSING in environment.');
@@ -20,9 +36,7 @@ export async function handleEnhancedChat(request, env, ctx, corsHeaders) {
             }, { ...corsHeaders, status: 503 });
         }
 
-        console.log(`[Enhanced AI] GEMINI_API_KEY present (Length: ${env.GEMINI_API_KEY.length})`);
-
-        // 1. Security & Profile Lookup
+        // 2. Security & Profile Lookup
         let userProfile = null;
         if (userId && userId !== 'test') {
             try {
@@ -34,31 +48,17 @@ export async function handleEnhancedChat(request, env, ctx, corsHeaders) {
             }
         }
 
-        // 2. Build Enhanced Context (Silent Background Audit)
-        // This runs even for passive initiation to prepare the engine
-        const context = await aiEngine.buildEnhancedContext(userProfile?.id, messages, env);
+        // 3. Build Enhanced Context
+        const context = await aiEngine.buildEnhancedContext(userProfile?.id, sanitizedMessages, env);
 
-        // 3. V9 PASSIVE INITIATION: If no messages, return sysmed primed status
-        if (!messages || messages.length === 0) {
-            return json({
-                status: 'ready',
-                message: 'System primed. Waiting for user to initiate.',
-                has_findings: context.userProfile?.healthScore < 80
-            }, corsHeaders);
-        }
-
-        // 4. Execution Workflow (Agentic Turn)
-        // V9 orchestration is now internal to engine.chat()
-        const aiResponse = await aiEngine.chat(messages, context, env);
-        console.log('[Enhanced AI] Chat response received:', {
-            hasContent: !!aiResponse.content,
-            error: aiResponse.error,
-            fallback: aiResponse.fallback
-        });
+        // 4. Agentic Turn
+        const aiResponse = await aiEngine.chat(sanitizedMessages, context, env);
 
         // 5. Track Performance
         const responseTime = Date.now() - startTime;
         aiEngine.trackPerformance('averageResponseTime', responseTime);
+
+        const headers = addRateLimitHeaders({ ...corsHeaders }, rateLimitMetadata);
 
         return json({
             content: aiResponse.content,
@@ -68,16 +68,14 @@ export async function handleEnhancedChat(request, env, ctx, corsHeaders) {
                 responseTime,
                 humanCentric: true
             }
-        }, corsHeaders);
+        }, headers);
 
     } catch (error) {
         console.error('[Enhanced AI] Error:', error);
-
-        // Intelligent error recovery
         const recoveryResponse = await aiEngine.handleAIError(error, env);
 
         return json({
-            content: `CRITICAL ERROR: ${error.message}. STACK: ${error.stack}`,
+            content: `Maaf, terjadi kendala teknis (v9). ${error.message.substring(0, 50)}...`,
             provider: 'tamuu-recovery-v9',
             error: error.message,
             fallback: true

@@ -272,6 +272,13 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                         sidebarOpen={sidebarOpen}
                     />
                     <SidebarItem
+                        href="/admin/security"
+                        icon={ShieldAlert}
+                        label="Security Logs"
+                        active={location.pathname.startsWith('/admin/security')}
+                        sidebarOpen={sidebarOpen}
+                    />
+                    <SidebarItem
                         href="/admin/feedback"
                         icon={MessageSquare}
                         label="User Feedback"

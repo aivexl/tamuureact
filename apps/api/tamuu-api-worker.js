@@ -9,6 +9,9 @@ import './init.js';
 import { TamuuAIEngine } from './ai-system-v8-enhanced.js';
 import { handleEnhancedChat } from './enhanced-chat-handler.js';
 import { createAdminChatHandler } from './admin-chat-integration.js';
+import { ChatRateLimiter, rateLimitMiddleware } from './rate-limiter.js';
+import { InputSanitizer } from './input-sanitizer.js';
+import { jwtVerify } from 'jose';
 import satori, { init as initSatori } from 'satori';
 import initYoga from 'yoga-wasm-web';
 import { initWasm as initResvg, Resvg } from '@resvg/resvg-wasm';
@@ -20,6 +23,9 @@ import yoga_wasm from './yoga.wasm';
 
 let resvgInitialized = false;
 let satoriInitialized = false;
+
+// Initialize Global Security Services
+const globalRateLimiter = new ChatRateLimiter();
 
 function weightedRandom(items, limit) {
     if (items.length <= limit) return items;
@@ -87,8 +93,10 @@ export default {
             // CTO SECURITY: Enterprise Hardening Headers
             'X-Frame-Options': 'DENY',
             'X-Content-Type-Options': 'nosniff',
+            'X-XSS-Protection': '1; mode=block',
+            'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
             'Referrer-Policy': 'strict-origin-when-cross-origin',
-            'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; object-src 'none';",
+            'Content-Security-Policy': "default-src 'self'; script-src 'self'; object-src 'none'; frame-ancestors 'none';",
             'Permissions-Policy': 'camera=(), microphone=(), geolocation=()'
         };
 
@@ -379,7 +387,11 @@ export default {
 
             // ENHANCED: AI Chat Support v8.0 - Enterprise Grade
             if ((path === '/api/chat' || path === '/api/enhanced-chat') && method === 'POST') {
-                return await handleEnhancedChat(request, env, ctx, corsHeaders);
+                // CTO SECURITY: Apply Rate Limiting before heavy AI processing
+                const rateLimitResult = await rateLimitMiddleware(request, env, ctx, globalRateLimiter);
+                if (!rateLimitResult.allowed) return rateLimitResult.response;
+
+                return await handleEnhancedChat(request, env, ctx, corsHeaders, rateLimitResult.metadata);
             }
 
             // ADMIN: AI Chat Support (Enterprise v8.0 - Enhanced)
@@ -412,6 +424,9 @@ export default {
 
             // ADMIN: Health Check for AI System v8.0
             if (path === '/api/admin/health' && method === 'GET') {
+                const adminCheck = await verifyAdmin(request, env, ctx);
+                if (!adminCheck.isAdmin) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 403 });
+
                 try {
                     const adminChatHandler = createAdminChatHandler(env);
                     const healthStatus = await adminChatHandler.healthCheck();
@@ -425,26 +440,30 @@ export default {
             // NOTIFICATIONS ENDPOINTS
             // ============================================
             if (path === '/api/notifications' && method === 'GET') {
-                const userId = url.searchParams.get('userId');
-                if (!userId) return json({ error: 'User ID required' }, { ...corsHeaders, status: 400 });
+                const authHeader = request.headers.get('Authorization');
+                const user = await verifyToken(authHeader?.replace('Bearer ', ''), env, ctx, request);
+                if (!user) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
 
                 const { results } = await env.DB.prepare(
                     'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50'
-                ).bind(userId).all();
+                ).bind(user.id).all();
 
                 return json(results, corsHeaders);
             }
 
             if (path === '/api/notifications/read' && method === 'PATCH') {
-                const { userId, notificationId } = await request.json();
-                if (!userId) return json({ error: 'User ID required' }, { ...corsHeaders, status: 400 });
+                const authHeader = request.headers.get('Authorization');
+                const user = await verifyToken(authHeader?.replace('Bearer ', ''), env, ctx, request);
+                if (!user) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
+
+                const { notificationId } = await request.json();
 
                 if (notificationId) {
                     await env.DB.prepare('UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?')
-                        .bind(notificationId, userId).run();
+                        .bind(notificationId, user.id).run();
                 } else {
                     await env.DB.prepare('UPDATE notifications SET is_read = 1 WHERE user_id = ?')
-                        .bind(userId).run();
+                        .bind(user.id).run();
                 }
 
                 return json({ success: true }, corsHeaders);
@@ -553,20 +572,36 @@ export default {
             // AUTH & USER ENDPOINTS
             // ============================================
             if (path === '/api/auth/me' && method === 'GET') {
-                // Extract query parameters
-                const email = url.searchParams.get('email');
-                const providedUid = url.searchParams.get('uid');
+                // CTO SECURITY HARDENING: Apply Rate Limiting
+                const rateLimitResult = await rateLimitMiddleware(request, env, ctx, globalRateLimiter);
+                if (!rateLimitResult.allowed) return rateLimitResult.response;
 
-                if (!email) {
-                    return json({ error: 'Email parameter required' }, { headers: corsHeaders, status: 400 });
+                // CTO SECURITY HARDENING: Use Bearer Token for identity, ignore query params
+                const authHeader = request.headers.get('Authorization');
+                const token = authHeader ? authHeader.replace('Bearer ', '').trim() : null;
+
+                if (!token) {
+                    return json({ error: 'Authorization header required' }, { headers: corsHeaders, status: 401 });
                 }
 
-                try {
-                    const { results } = await env.DB.prepare(
-                        'SELECT * FROM users WHERE email = ?'
-                    ).bind(email).all();
+                const verifiedUser = await verifyToken(token, env, ctx);
+                if (!verifiedUser) {
+                    return json({ error: 'Invalid or expired token' }, { headers: corsHeaders, status: 401 });
+                }
 
-                    let user = results[0];
+                // IDOR PROTECTION: Extract identity from verified token
+                const email = verifiedUser.email;
+                const userIdFromToken = verifiedUser.id;
+
+                try {
+                    // Re-fetch from DB to get full profile (including emoney, banks, etc)
+                    let user = null;
+                    if (!verifiedUser.isNew) {
+                        const { results } = await env.DB.prepare(
+                            'SELECT * FROM users WHERE email = ?'
+                        ).bind(email).all();
+                        user = results[0];
+                    }
 
                     // PROACTIVE SILENT HEALING: Check for pending transactions if user exists
                     if (user && env.MIDTRANS_SERVER_KEY) {
@@ -588,7 +623,7 @@ export default {
 
                     // Auto-create user if not found (for Supabase auth sync)
                     if (!user) {
-                        const userIdToUse = providedUid || crypto.randomUUID();
+                        const userIdToUse = userIdFromToken;
                         const tamuuId = `TAMUU-USER-${userIdToUse.substring(0, 8).toUpperCase()}`;
 
                         // Extract profile data from params (passed from AuthProvider during sync)
@@ -682,6 +717,14 @@ export default {
             }
 
             if (path === '/api/user/profile' && method === 'PATCH') {
+                // CTO SECURITY HARDENING: Apply Rate Limiting
+                const rateLimitResult = await rateLimitMiddleware(request, env, ctx, globalRateLimiter);
+                if (!rateLimitResult.allowed) return rateLimitResult.response;
+
+                const authHeader = request.headers.get('Authorization');
+                const user = await verifyToken(authHeader?.replace('Bearer ', ''), env, ctx, request);
+                if (!user) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
+
                 const body = await request.json();
                 const {
                     id, name, phone, gender, birthDate,
@@ -690,7 +733,17 @@ export default {
                     emoneyType, emoneyNumber, giftRecipient, giftAddress
                 } = body;
 
+                // IDOR PROTECTION: Only owner or admin can update profile
+                if (user.id !== id && user.role !== 'admin') {
+                    console.warn(`[Security] IDOR attempt on profile: ${user.id} tried to update ${id}`);
+                    return json({ error: 'Forbidden' }, { ...corsHeaders, status: 403 });
+                }
+
                 if (!id) return json({ error: 'User ID required' }, { ...corsHeaders, status: 400 });
+
+                // CTO POLICY: Sanitization of sensitive inputs (XSS Prevention)
+                const sanitizedName = name ? InputSanitizer.sanitizeChatMessage(name).sanitized : null;
+                const sanitizedAddress = giftAddress ? InputSanitizer.sanitizeChatMessage(giftAddress).sanitized : null;
 
                 await env.DB.prepare(`
                     UPDATE users SET 
@@ -711,10 +764,10 @@ export default {
                         updated_at = datetime('now')
                     WHERE id = ?
                 `).bind(
-                    name ?? null, phone ?? null, gender ?? null, birthDate ?? null,
+                    sanitizedName ?? name ?? null, phone ?? null, gender ?? null, birthDate ?? null,
                     bank1Name ?? null, bank1Number ?? null, bank1Holder ?? null,
                     bank2Name ?? null, bank2Number ?? null, bank2Holder ?? null,
-                    emoneyType ?? null, emoneyNumber ?? null, giftRecipient ?? null, giftAddress ?? null,
+                    emoneyType ?? null, emoneyNumber ?? null, giftRecipient ?? null, sanitizedAddress ?? giftAddress ?? null,
                     id
                 ).run();
 
@@ -729,7 +782,20 @@ export default {
                     const body = await request.json();
                     let { userId, tier, amount, email, name } = body;
 
-                    // Legacy Mapping
+                    // CTO SECURITY HARDENING: Verify identity before creating transaction
+                    const authHeader = request.headers.get('Authorization');
+                    const token = authHeader ? authHeader.replace('Bearer ', '').trim() : null;
+                    const verifiedUser = await verifyToken(token, env, ctx);
+
+                    if (!verifiedUser) {
+                        return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
+                    }
+
+                    // IDOR PROTECTION: Ensure users can only create billing for themselves
+                    if (verifiedUser.id !== userId) {
+                        console.warn(`[Security] IDOR attempt blocked: ${verifiedUser.id} tried to create billing for ${userId}`);
+                        return json({ error: 'Forbidden: Cannot create billing for other users' }, { ...corsHeaders, status: 403 });
+                    }
 
                     if (!userId || !tier || !amount) {
                         return json({ error: 'Missing required fields' }, { ...corsHeaders, status: 400 });
@@ -790,7 +856,7 @@ export default {
                     const ms = now.getMilliseconds().toString().padStart(3, '0');
                     const orderId = `A1${timestamp}${ms}${userId.substring(0, 5).toUpperCase()}`;
                     
-                    const authHeader = `Basic ${btoa(serverKey + ':')}`;
+                    const midtransAuthHeader = `Basic ${btoa(serverKey + ':')}`;
 
                     // Force Sandbox if not explicitly set to true in production
                     const isProdEnv = env.MIDTRANS_IS_PRODUCTION === 'true' || env.MIDTRANS_IS_PRODUCTION === true;
@@ -802,7 +868,7 @@ export default {
                     const midtransResponse = await fetch(midtransBaseUrl, {
                         method: 'POST',
                         headers: {
-                            'Authorization': authHeader,
+                            'Authorization': midtransAuthHeader,
                             'Content-Type': 'application/json',
                             'Accept': 'application/json'
                         },
@@ -1114,6 +1180,9 @@ export default {
             }
 
             if (path === '/api/admin/stats' && method === 'GET') {
+                const adminCheck = await verifyAdmin(request, env, ctx);
+                if (!adminCheck.isAdmin) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 403 });
+
                 const search = url.searchParams.get('search') || '';
                 const filter = url.searchParams.get('filter') || 'all';
 
@@ -1208,6 +1277,9 @@ export default {
 
             // ADMIN: Create New Account (Manual)
             if (path === '/api/admin/users' && method === 'POST') {
+                const adminCheck = await verifyAdmin(request, env, ctx);
+                if (!adminCheck.isAdmin) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 403 });
+
                 const { email, name, gender, birthDate, role, tier, permissions, expires_at, max_invitations, uid } = await request.json();
 
                 if (!email) return json({ error: 'Email required' }, { ...corsHeaders, status: 400 });
@@ -1286,7 +1358,7 @@ export default {
                     // CTO POLICY: Auto-verify if onboarding is done by Super Administrator
                     const authHeader = request.headers.get('Authorization');
                     const token = authHeader ? authHeader.replace('Bearer ', '').trim() : null;
-                    const user = await verifyToken(token, env);
+                    const user = await verifyToken(token, env, ctx);
 
                     // Only Super Admins get instant verification bypass
                     const isSuperAdmin = user && (user.email === 'admin@tamuu.id' || user.role === 'admin');
@@ -1512,7 +1584,7 @@ export default {
                         // CTO POLICY: Automatic Approval for Super Admins and Verified Merchants
                         const authHeader = request.headers.get('Authorization');
                         const token = authHeader ? authHeader.replace('Bearer ', '').trim() : null;
-                        const user = await verifyToken(token, env);
+                        const user = await verifyToken(token, env, ctx);
                         
                         // Fetch vendor verification status
                         const vendor = await env.DB.prepare('SELECT is_verified FROM shop_vendors WHERE id = ?').bind(vendor_id).first();
@@ -1666,7 +1738,7 @@ export default {
                             // Identify caller to determine approval bypass
                             const authHeader = request.headers.get('Authorization');
                             const token = authHeader ? authHeader.replace('Bearer ', '').trim() : null;
-                            const user = await verifyToken(token, env);
+                            const user = await verifyToken(token, env, ctx);
                             
                             // Fetch product's vendor to check verification
                             const product = await env.DB.prepare('SELECT vendor_id, is_approved FROM shop_products WHERE id = ?').bind(productId).first();
@@ -1784,7 +1856,7 @@ export default {
                     try {
                         const authHeader = request.headers.get('Authorization');
                         if (!authHeader) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
-                        const user = await verifyToken(authHeader.replace('Bearer ', '').trim(), env);
+                        const user = await verifyToken(authHeader.replace('Bearer ', '').trim(), env, ctx, request);
                         if (!user) return json({ error: 'Invalid token' }, { ...corsHeaders, status: 401 });
 
                         const { rating, comment } = await request.json();
@@ -2117,7 +2189,7 @@ export default {
             // ADMIN: SHOP MANAGEMENT
             // ============================================
             if (path.startsWith('/api/admin/shop/')) {
-                const adminCheck = await verifyAdmin(request, env);
+                const adminCheck = await verifyAdmin(request, env, ctx);
                 if (!adminCheck.isAdmin) {
                     const authHeader = request.headers.get('Authorization') || '';
                     const token = authHeader.replace('Bearer ', '').trim();
@@ -2510,13 +2582,10 @@ export default {
                         return json({ success: true, id: productId }, corsHeaders);
                     } catch (error) {
                         console.error('[Admin] PUT EXCEPTION:', error.message);
-                        return json({ 
-                            error: 'Failed to update product', 
-                            details: error.message,
-                            stack: error.stack
+                        return json({
+                            error: 'Failed to update product'
                         }, { ...corsHeaders, status: 500 });
-                    }
-                }
+                    }                }
                 // Delete Any Product (Administrative Overrule)
                 if (path === '/api/admin/shop/products' && method === 'DELETE') {
                     const productId = url.searchParams.get('id');
@@ -2695,7 +2764,7 @@ export default {
             if (path.startsWith('/api/shop/chat/')) {
                 const authHeader = request.headers.get('Authorization');
                 if (!authHeader) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
-                const user = await verifyToken(authHeader.replace('Bearer ', '').trim(), env);
+                const user = await verifyToken(authHeader.replace('Bearer ', '').trim(), env, ctx, request);
                 if (!user) return json({ error: 'Invalid token' }, { ...corsHeaders, status: 401 });
 
                 // Identify if user is also a vendor
@@ -2828,7 +2897,7 @@ export default {
 
             // 13. ADMIN SYSTEM SETTINGS
             if (path === '/api/admin/system/settings' && method === 'GET') {
-                const adminCheck = await verifyAdmin(request, env);
+                const adminCheck = await verifyAdmin(request, env, ctx);
                 if (!adminCheck.isAdmin) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 403 });
 
                 try {
@@ -2842,7 +2911,7 @@ export default {
             }
 
             if (path === '/api/admin/system/settings' && method === 'PATCH') {
-                const adminCheck = await verifyAdmin(request, env);
+                const adminCheck = await verifyAdmin(request, env, ctx);
                 if (!adminCheck.isAdmin) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 403 });
 
                 try {
@@ -2863,7 +2932,7 @@ export default {
 
             // 12. ADMIN SHOP CHAT MONITORING (Stealth Mode)
             if (path.startsWith('/api/admin/shop/chats')) {
-                const adminCheck = await verifyAdmin(request, env);
+                const adminCheck = await verifyAdmin(request, env, ctx);
                 if (!adminCheck.isAdmin) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 403 });
 
                 if (path === '/api/admin/shop/chats' && method === 'GET') {
@@ -3428,36 +3497,54 @@ export default {
             // 11. VENDOR: Update Profile (REBUILT FOR PERSISTENCE)
             // 11. VENDOR: Update Profile (ULTRA-ROBUST PERSISTENCE)
             if (path === '/api/shop/vendor/profile' && method === 'PATCH') {
+                const authHeader = request.headers.get('Authorization');
+                const user = await verifyToken(authHeader?.replace('Bearer ', ''), env, ctx, request);
+                if (!user) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
+
                 const body = await request.json();
                 const { 
-                    vendor_id, user_id, nama_toko, deskripsi, logo_url, banner_url, 
+                    vendor_id, nama_toko, deskripsi, logo_url, banner_url, 
                     category_id, kota, whatsapp, phone, instagram, facebook, tiktok, 
                     website, email, alamat, google_maps_url, kontak_utama,
                     x_url, shopee_url, tokopedia_url, youtube
                 } = body;
 
-                if (!vendor_id || !user_id) return json({ error: 'Missing required IDs' }, { ...corsHeaders, status: 400 });
+                // IDOR PROTECTION: Use verified user.id instead of user_id from body
+                const verifiedUserId = user.id;
+
+                if (!vendor_id) return json({ error: 'Missing vendor ID' }, { ...corsHeaders, status: 400 });
 
                 try {
-                    // 1. Verify Ownership
+                    // 1. Verify Ownership (Strict)
                     const owner = await env.DB.prepare('SELECT user_id FROM shop_vendors WHERE id = ?').bind(vendor_id).first();
-                    if (!owner) return json({ error: 'Vendor not found in D1' }, { ...corsHeaders, status: 404 });
-                    if (owner.user_id !== user_id) return json({ error: 'Unauthorized ownership' }, { ...corsHeaders, status: 403 });
+                    if (!owner) return json({ error: 'Vendor not found' }, { ...corsHeaders, status: 404 });
+                    if (owner.user_id !== verifiedUserId && user.role !== 'admin') {
+                        console.warn(`[Security] IDOR attempt on vendor profile: ${verifiedUserId} tried to update vendor ${vendor_id}`);
+                        ctx.waitUntil(logSecurityEvent(env, {
+                            eventType: 'IDOR_ATTEMPT',
+                            userId: verifiedUserId,
+                            ipAddress: request.headers.get('CF-Connecting-IP'),
+                            endpoint: path,
+                            method: 'PATCH',
+                            details: `Tried to update vendor ${vendor_id} owned by ${owner.user_id}`,
+                            severity: 'HIGH'
+                        }));
+                        return json({ error: 'Unauthorized ownership' }, { ...corsHeaders, status: 403 });
+                    }
 
                     // 2. ATOMIC EXECUTION (Forced Persistence with Hard Change Verification)
                                         const updateOp = await env.DB.prepare(`
                                             UPDATE shop_vendors
                                             SET nama_toko = ?, deskripsi = ?, logo_url = ?, banner_url = ?, category_id = COALESCE(NULLIF(?, ''), category_id), kontak_utama = ?, updated_at = CURRENT_TIMESTAMP
-                                            WHERE (id = ? OR slug = ?) AND user_id = ?
+                                            WHERE (id = ? OR slug = ?) AND (user_id = ? OR 'admin' = ?)
                                         `).bind(
                                             nama_toko || '', deskripsi || '', logo_url || null,
                                             banner_url || null, category_id || '', kontak_utama,
-                                            vendor_id, vendor_id, user_id
+                                            vendor_id, vendor_id, verifiedUserId, user.role
                                         ).run();
                     if (updateOp.meta.changes === 0) {
                         return json({ 
-                            error: 'Persistence Refused: Unauthorized or Identity Mismatch', 
-                            debug: { vendor_id, user_id } 
+                            error: 'Persistence Refused: Unauthorized or Identity Mismatch'
                         }, { ...corsHeaders, status: 403 });
                     }
 
@@ -3488,9 +3575,7 @@ export default {
                 } catch (error) {
                     console.error('[FATAL] D1 Persistence Blocked:', error.message);
                     return json({ 
-                        error: 'Cloudflare D1 Write Lock', 
-                        details: error.message,
-                        stack: error.stack?.substring(0, 100)
+                        error: 'Cloudflare D1 Write Lock'
                     }, { ...corsHeaders, status: 500 });
                 }
             }
@@ -4053,190 +4138,209 @@ CONTEXT:
             }
 
             // ADMIN: List Posts
-            // ADMIN: Get Categories
-            if (path === '/api/admin/blog/categories' && method === 'GET') {
-                const { results } = await env.DB.prepare(
-                    'SELECT * FROM blog_categories ORDER BY name ASC'
-                ).all();
-                return json(results, corsHeaders);
-            }
+            // ============================================
+            // BLOG ADMIN ENDPOINTS
+            // ============================================
+            if (path.startsWith('/api/admin/blog/')) {
+                const adminCheck = await verifyAdmin(request, env, ctx);
+                if (!adminCheck.isAdmin) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 403 });
 
-            // ADMIN: Get Posts
-            if (path === '/api/admin/blog/posts' && method === 'GET') {
-                const { results } = await env.DB.prepare(
-                    'SELECT * FROM blog_posts ORDER BY created_at DESC'
-                ).all();
-                return json(results, corsHeaders);
-            }
-
-            // ADMIN: Get Single Post
-            if (path.match(/^\/api\/admin\/blog\/posts\/[^/]+$/) && method === 'GET') {
-                const id = path.split('/').pop();
-                const { results } = await env.DB.prepare(
-                    'SELECT * FROM blog_posts WHERE id = ?'
-                ).bind(id).all();
-
-                if (results && results.length > 0) {
-                    return json(results[0], corsHeaders);
-                }
-                return notFound(corsHeaders);
-            }
-
-            // ADMIN: Create Post
-            if (path === '/api/admin/blog/posts' && method === 'POST') {
-                const body = await request.json();
-                const { slug, title, content, excerpt, featured_image, category, tags, is_featured, author_id, author_email, status, seo_title, seo_description, seo_keywords, image_meta, image_alt } = body;
-
-                let finalStatus = status || 'draft';
-                // Enforcement: Only admin can publish directly
-                if (finalStatus === 'published' && author_email !== 'admin@tamuu.id') {
-                    finalStatus = 'pending';
+                // ADMIN: Get Categories
+                if (path === '/api/admin/blog/categories' && method === 'GET') {
+                    const { results } = await env.DB.prepare(
+                        'SELECT * FROM blog_categories ORDER BY name ASC'
+                    ).all();
+                    return json(results, corsHeaders);
                 }
 
-                const id = crypto.randomUUID ? crypto.randomUUID() : `alt-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-                let finalAuthorId = author_id;
+                // ADMIN: Get Posts
+                if (path === '/api/admin/blog/posts' && method === 'GET') {
+                    const { results } = await env.DB.prepare(
+                        'SELECT * FROM blog_posts ORDER BY created_at DESC'
+                    ).all();
+                    return json(results, corsHeaders);
+                }
 
-                if ((!finalAuthorId || finalAuthorId === 'placeholder') && author_email) {
-                    const user = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(author_email).first();
-                    if (user) {
-                        finalAuthorId = user.id;
-                    } else {
-                        finalAuthorId = null;
+                // ADMIN: Get Single Post
+                if (path.match(/^\/api\/admin\/blog\/posts\/[^/]+$/) && method === 'GET') {
+                    const id = path.split('/').pop();
+                    const { results } = await env.DB.prepare(
+                        'SELECT * FROM blog_posts WHERE id = ?'
+                    ).bind(id).all();
+
+                    if (results && results.length > 0) {
+                        return json(results[0], corsHeaders);
                     }
+                    return notFound(corsHeaders);
                 }
 
-                if (!finalAuthorId || finalAuthorId === 'placeholder') {
-                    finalAuthorId = null;
-                }
+                // ADMIN: Create Post
+                if (path === '/api/admin/blog/posts' && method === 'POST') {
+                    const body = await request.json();
+                    const { slug, title, content, excerpt, featured_image, category, tags, is_featured, author_id, author_email, status, seo_title, seo_description, seo_keywords, image_meta, image_alt } = body;
 
-                if (!id || !slug) {
-                    return json({ success: false, error: 'Missing ID or Slug' }, corsHeaders);
-                }
-
-                try {
-                    // 1. Upsert Category if provided
-                    if (category) {
-                        const catSlug = category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-                        const catId = `cat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-                        // Insert or Ignore (name/slug unique)
-                        await env.DB.prepare(`
-                            INSERT INTO blog_categories (id, name, slug) VALUES (?, ?, ?)
-                            ON CONFLICT(name) DO NOTHING
-                        `).bind(catId, category, catSlug).run();
+                    let finalStatus = status || 'draft';
+                    // Enforcement: Only admin can publish directly
+                    if (finalStatus === 'published' && author_email !== 'admin@tamuu.id') {
+                        finalStatus = 'pending';
                     }
 
-                    // 2. Insert Post
-                    await env.DB.prepare(`
-                        INSERT INTO blog_posts (
-                            id, slug, title, content, excerpt, featured_image, category, tags, is_featured, author_id, status, is_published,
-                            published_at, seo_title, seo_description, seo_keywords, image_meta, image_alt
-                        )
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    `).bind(
-                        id,
-                        slug || '',
-                        title || '',
-                        content || '',
-                        excerpt || '',
-                        featured_image || '',
-                        category || '',
-                        typeof tags === 'object' ? JSON.stringify(tags) : (tags || '[]'),
-                        is_featured ? 1 : 0,
-                        finalAuthorId,
-                        finalStatus || 'draft',
-                        finalStatus === 'published' ? 1 : 0,
-                        finalStatus === 'published' ? new Date().toISOString() : null,
-                        seo_title || '',
-                        seo_description || '',
-                        seo_keywords || '',
-                        typeof image_meta === 'object' ? JSON.stringify(image_meta) : (image_meta || ''),
-                        image_alt || ''
-                    ).run();
+                    const id = crypto.randomUUID ? crypto.randomUUID() : `alt-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+                    let finalAuthorId = author_id;
 
-                } catch (dbError) {
-                    console.error('D1 Insert Error:', dbError.message);
-                    return json({ success: false, error: dbError.message }, corsHeaders);
-                }
-
-                return json({ success: true, id, status: finalStatus }, corsHeaders);
-            }
-
-            // ADMIN: Update Post
-            if (path.startsWith('/api/admin/blog/posts/') && method === 'PUT') {
-                const id = path.split('/').pop();
-                const body = await request.json();
-                const { author_email } = body;
-
-                // Upsert Category if provided in update
-                if (body.category) {
-                    const catSlug = body.category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-                    const catId = `cat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-                    try {
-                        await env.DB.prepare(`
-                             INSERT INTO blog_categories (id, name, slug) VALUES (?, ?, ?)
-                             ON CONFLICT(name) DO NOTHING
-                        `).bind(catId, body.category, catSlug).run();
-                    } catch (e) { console.error('Category upsert error:', e); }
-                }
-
-                const updates = [];
-                const values = [];
-
-                const fields = ['slug', 'title', 'content', 'excerpt', 'featured_image', 'category', 'tags', 'is_featured', 'seo_title', 'seo_description', 'seo_keywords', 'image_meta', 'image_alt'];
-                fields.forEach(f => {
-                    if (body[f] !== undefined) {
-                        updates.push(`${f} = ?`);
-                        // Special handling for JSON fields if needed, but client sends string or obj
-                        if (f === 'image_meta' && typeof body[f] === 'object') {
-                            values.push(JSON.stringify(body[f]));
-                        } else if (f === 'tags' && typeof body[f] === 'object') {
-                            values.push(JSON.stringify(body[f]));
-                        } else if (f === 'is_featured') {
-                            values.push(body[f] ? 1 : 0);
+                    if ((!finalAuthorId || finalAuthorId === 'placeholder') && author_email) {
+                        const user = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(author_email).first();
+                        if (user) {
+                            finalAuthorId = user.id;
                         } else {
-                            values.push(body[f]);
+                            finalAuthorId = null;
                         }
                     }
-                });
 
-                if (body.status !== undefined) {
-                    let newStatus = body.status;
-                    // Enforcement: Only admin can publish
-                    if (newStatus === 'published' && author_email !== 'admin@tamuu.id') {
-                        newStatus = 'pending';
+                    if (!finalAuthorId || finalAuthorId === 'placeholder') {
+                        finalAuthorId = null;
                     }
 
-                    updates.push('status = ?');
-                    values.push(newStatus);
-
-                    updates.push('is_published = ?');
-                    values.push(newStatus === 'published' ? 1 : 0);
-
-                    if (newStatus === 'published') {
-                        updates.push("published_at = COALESCE(published_at, datetime('now'))");
+                    if (!id || !slug) {
+                        return json({ success: false, error: 'Missing ID or Slug' }, corsHeaders);
                     }
+
+                    try {
+                        // 1. Upsert Category if provided
+                        if (category) {
+                            const catSlug = category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                            const catId = `cat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+                            // Insert or Ignore (name/slug unique)
+                            await env.DB.prepare(`
+                                INSERT INTO blog_categories (id, name, slug) VALUES (?, ?, ?)
+                                ON CONFLICT(name) DO NOTHING
+                            `).bind(catId, category, catSlug).run();
+                        }
+
+                        // 2. Insert Post
+                        await env.DB.prepare(`
+                            INSERT INTO blog_posts (
+                                id, slug, title, content, excerpt, featured_image, category, tags, is_featured, author_id, status, is_published,
+                                published_at, seo_title, seo_description, seo_keywords, image_meta, image_alt
+                            )
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        `).bind(
+                            id,
+                            slug || '',
+                            title || '',
+                            content || '',
+                            excerpt || '',
+                            featured_image || '',
+                            category || '',
+                            typeof tags === 'object' ? JSON.stringify(tags) : (tags || '[]'),
+                            is_featured ? 1 : 0,
+                            finalAuthorId,
+                            finalStatus || 'draft',
+                            finalStatus === 'published' ? 1 : 0,
+                            finalStatus === 'published' ? new Date().toISOString() : null,
+                            seo_title || '',
+                            seo_description || '',
+                            seo_keywords || '',
+                            typeof image_meta === 'object' ? JSON.stringify(image_meta) : (image_meta || ''),
+                            image_alt || ''
+                        ).run();
+
+                    } catch (dbError) {
+                        console.error('D1 Insert Error:', dbError.message);
+                        return json({ success: false, error: 'Database error' }, corsHeaders);
+                    }
+
+                    return json({ success: true, id, status: finalStatus }, corsHeaders);
                 }
 
-                if (updates.length > 0) {
-                    updates.push("updated_at = datetime('now')");
-                    values.push(id);
-                    await env.DB.prepare(`UPDATE blog_posts SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
+                // ADMIN: Update Post
+                if (path.startsWith('/api/admin/blog/posts/') && method === 'PUT') {
+                    const id = path.split('/').pop();
+                    const body = await request.json();
+                    const { author_email } = body;
+
+                    // Upsert Category if provided in update
+                    if (body.category) {
+                        const catSlug = body.category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                        const catId = `cat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+                        try {
+                            await env.DB.prepare(`
+                                 INSERT INTO blog_categories (id, name, slug) VALUES (?, ?, ?)
+                                 ON CONFLICT(name) DO NOTHING
+                            `).bind(catId, body.category, catSlug).run();
+                        } catch (e) { console.error('Category upsert error:', e); }
+                    }
+
+                    const updates = [];
+                    const values = [];
+
+                    const fields = ['slug', 'title', 'content', 'excerpt', 'featured_image', 'category', 'tags', 'is_featured', 'seo_title', 'seo_description', 'seo_keywords', 'image_meta', 'image_alt'];
+                    fields.forEach(f => {
+                        if (body[f] !== undefined) {
+                            updates.push(`${f} = ?`);
+                            // Special handling for JSON fields if needed, but client sends string or obj
+                            if (f === 'image_meta' && typeof body[f] === 'object') {
+                                values.push(JSON.stringify(body[f]));
+                            } else if (f === 'tags' && typeof body[f] === 'object') {
+                                values.push(JSON.stringify(body[f]));
+                            } else if (f === 'is_featured') {
+                                values.push(body[f] ? 1 : 0);
+                            } else {
+                                values.push(body[f]);
+                            }
+                        }
+                    });
+
+                    if (body.status !== undefined) {
+                        let newStatus = body.status;
+                        // Enforcement: Only admin can publish
+                        if (newStatus === 'published' && author_email !== 'admin@tamuu.id') {
+                            newStatus = 'pending';
+                        }
+
+                        updates.push('status = ?');
+                        values.push(newStatus);
+
+                        updates.push('is_published = ?');
+                        values.push(newStatus === 'published' ? 1 : 0);
+
+                        if (newStatus === 'published') {
+                            updates.push("published_at = COALESCE(published_at, datetime('now'))");
+                        }
+                    }
+
+                    if (updates.length > 0) {
+                        updates.push("updated_at = datetime('now')");
+                        values.push(id);
+                        await env.DB.prepare(`UPDATE blog_posts SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
+                    }
+
+                    return json({ success: true }, corsHeaders);
                 }
 
-                return json({ success: true }, corsHeaders);
+                if (path.startsWith('/api/admin/blog/posts/') && method === 'DELETE') {
+                    const id = path.split('/').pop();
+                    await env.DB.prepare('DELETE FROM blog_posts WHERE id = ?').bind(id).run();
+                    return json({ success: true }, corsHeaders);
+                }
             }
 
-            if (path.startsWith('/api/admin/blog/posts/') && method === 'DELETE') {
-                const id = path.split('/').pop();
-                await env.DB.prepare('DELETE FROM blog_posts WHERE id = ?').bind(id).run();
-                return json({ success: true }, corsHeaders);
+            if (path === '/api/admin/security/logs' && method === 'GET') {
+                const adminCheck = await verifyAdmin(request, env, ctx);
+                if (!adminCheck.isAdmin) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 403 });
+
+                const { results } = await env.DB.prepare(
+                    'SELECT * FROM security_logs ORDER BY created_at DESC LIMIT 100'
+                ).all();
+
+                return json(results, corsHeaders);
             }
 
             // ============================================
             // ADMIN: SYSTEM MANAGEMENT
             // ============================================
             if (path === '/api/admin/system/cleanup' && method === 'POST') {
-                const adminCheck = await verifyAdmin(request, env);
+                const adminCheck = await verifyAdmin(request, env, ctx);
                 if (!adminCheck.isAdmin) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
 
                 try {
@@ -4389,6 +4493,9 @@ t.*,
 
             // ADMIN: List All Users
             if (path === '/api/admin/users' && method === 'GET') {
+                const adminCheck = await verifyAdmin(request, env, ctx);
+                if (!adminCheck.isAdmin) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 403 });
+
                 const roleFilter = url.searchParams.get('role');
                 let query = 'SELECT id, email, name, role, permissions, tier, expires_at, max_invitations, invitation_count, created_at, status FROM users';
                 let params = [];
@@ -4449,12 +4556,31 @@ t.*,
             // GUESTS ENDPOINTS
             // ============================================
             if (path === '/api/guests' && method === 'GET') {
+                const authHeader = request.headers.get('Authorization');
+                const user = await verifyToken(authHeader?.replace('Bearer ', ''), env, ctx, request);
+                if (!user) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
+
                 const reqUrl = new URL(request.url);
                 const invitationId = reqUrl.searchParams.get('invitationId') || reqUrl.searchParams.get('invitation_id');
                 
                 if (!invitationId) {
-                    logger.error('[API] GET /api/guests - Missing invitationId');
                     return json({ error: 'Invitation ID required' }, { ...corsHeaders, status: 400 });
+                }
+
+                // IDOR PROTECTION: Verify caller owns the invitation or is admin
+                const inv = await env.DB.prepare('SELECT user_id FROM invitations WHERE id = ?').bind(invitationId).first();
+                if (!inv) return json({ error: 'Invitation not found' }, { ...corsHeaders, status: 404 });
+                if (inv.user_id !== user.id && user.role !== 'admin') {
+                    ctx.waitUntil(logSecurityEvent(env, {
+                        eventType: 'IDOR_ATTEMPT',
+                        userId: user.id,
+                        ipAddress: request.headers.get('CF-Connecting-IP'),
+                        endpoint: path,
+                        method: 'GET',
+                        details: `Unauthorized guest list access for invitation ${invitationId}`,
+                        severity: 'HIGH'
+                    }));
+                    return json({ error: 'Forbidden' }, { ...corsHeaders, status: 403 });
                 }
 
                 const { results } = await env.DB.prepare(
@@ -4489,7 +4615,31 @@ t.*,
             }
 
             if (path === '/api/guests' && method === 'POST') {
+                const authHeader = request.headers.get('Authorization');
+                const user = await verifyToken(authHeader?.replace('Bearer ', ''), env, ctx, request);
+                if (!user) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
+
                 const body = await request.json();
+                const invitationId = body.invitation_id || body.invitationId;
+
+                if (!invitationId) return json({ error: 'Invitation ID required' }, { ...corsHeaders, status: 400 });
+
+                // IDOR PROTECTION: Verify caller owns the invitation or is admin
+                const inv = await env.DB.prepare('SELECT user_id FROM invitations WHERE id = ?').bind(invitationId).first();
+                if (!inv) return json({ error: 'Invitation not found' }, { ...corsHeaders, status: 404 });
+                if (inv.user_id !== user.id && user.role !== 'admin') {
+                    ctx.waitUntil(logSecurityEvent(env, {
+                        eventType: 'IDOR_ATTEMPT',
+                        userId: user.id,
+                        ipAddress: request.headers.get('CF-Connecting-IP'),
+                        endpoint: path,
+                        method: 'POST',
+                        details: `Unauthorized guest addition for invitation ${invitationId}`,
+                        severity: 'HIGH'
+                    }));
+                    return json({ error: 'Forbidden' }, { ...corsHeaders, status: 403 });
+                }
+
                 const id = body.id || crypto.randomUUID();
                 const token = body.check_in_code || generateToken(6);
                 const slug = body.slug || `${generateSlug(body.name || 'guest')}-${token}`;
@@ -4499,7 +4649,7 @@ t.*,
                      VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
                 ).bind(
                     id,
-                    body.invitation_id,
+                    invitationId,
                     body.name,
                     slug,
                     body.phone || null,
@@ -4514,8 +4664,28 @@ t.*,
 
             // [NEW] Bulk Create Guests (Enterprise Import)
             if (path === '/api/guests/bulk' && method === 'POST') {
+                const authHeader = request.headers.get('Authorization');
+                const user = await verifyToken(authHeader?.replace('Bearer ', ''), env, ctx, request);
+                if (!user) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
+
                 const { invitation_id, guests } = await request.json();
                 if (!invitation_id || !Array.isArray(guests)) return json({ error: 'Invalid payload' }, { ...corsHeaders, status: 400 });
+
+                // IDOR PROTECTION: Verify caller owns the invitation or is admin
+                const inv = await env.DB.prepare('SELECT user_id FROM invitations WHERE id = ?').bind(invitation_id).first();
+                if (!inv) return json({ error: 'Invitation not found' }, { ...corsHeaders, status: 404 });
+                if (inv.user_id !== user.id && user.role !== 'admin') {
+                    ctx.waitUntil(logSecurityEvent(env, {
+                        eventType: 'IDOR_ATTEMPT',
+                        userId: user.id,
+                        ipAddress: request.headers.get('CF-Connecting-IP'),
+                        endpoint: path,
+                        method: 'POST',
+                        details: `Unauthorized bulk guest addition for invitation ${invitation_id}`,
+                        severity: 'HIGH'
+                    }));
+                    return json({ error: 'Forbidden' }, { ...corsHeaders, status: 403 });
+                }
 
                 // Process in batches of 50 to avoid D1 limits
                 const BATCH_SIZE = 50;
@@ -4768,77 +4938,31 @@ name = COALESCE(?, name),
 
             // Get user's wishlist
             if (path === '/api/wishlist' && method === 'GET') {
-                const userId = url.searchParams.get('user_id');
-                const email = url.searchParams.get('email'); // Optional for resolution
-                
-                if (!userId) return json({ error: 'User ID required' }, { ...corsHeaders, status: 400 });
-
-                let finalUserId = userId;
-                const user = await env.DB.prepare('SELECT id FROM users WHERE id = ?').bind(userId).first();
-                if (!user && email) {
-                    const userByEmail = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
-                    if (userByEmail) finalUserId = userByEmail.id;
-                }
+                const authHeader = request.headers.get('Authorization');
+                const user = await verifyToken(authHeader?.replace('Bearer ', ''), env, ctx, request);
+                if (!user) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
 
                 const { results } = await env.DB.prepare(
                     'SELECT template_id FROM user_wishlist WHERE user_id = ? ORDER BY created_at DESC'
-                ).bind(finalUserId).all();
+                ).bind(user.id).all();
 
                 return json(results.map(r => r.template_id), corsHeaders);
             }
-
             // Add to wishlist
             if (path === '/api/wishlist' && method === 'POST') {
-                const body = await request.json();
-                const { user_id, template_id, email } = body;
+                const authHeader = request.headers.get('Authorization');
+                const user = await verifyToken(authHeader?.replace('Bearer ', ''), env, ctx, request);
+                if (!user) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
 
-                if (!user_id || !template_id) {
-                    return json({ error: 'user_id and template_id required' }, { ...corsHeaders, status: 400 });
+                const body = await request.json();
+                const { template_id } = body;
+
+                if (!template_id) {
+                    return json({ error: 'template_id required' }, { ...corsHeaders, status: 400 });
                 }
 
                 try {
-                    // SILENT SELF-HEALING: Ensure user exists in D1 before insertion
-                    let user = await env.DB.prepare('SELECT id FROM users WHERE id = ?').bind(user_id).first();
-                    let finalUserId = user_id;
-                    
-                    if (!user && email) {
-                        // Fallback: Check if user exists by email (handles ID mismatches between Auth and D1)
-                        user = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
-                        if (user) {
-                            console.log(`[Wishlist/Heal] User found by email but ID mismatched. Using D1 ID: ${user.id}`);
-                            finalUserId = user.id;
-                        }
-                    }
-
-                    if (!user) {
-                        console.log(`[Wishlist/Heal] User ${user_id} not found in D1. Creating skeleton record...`);
-                        
-                        // CEO/CTO ROBUSTNESS: Ensure tamuu_id is truly unique by adding random suffix
-                        const shortId = user_id.substring(0, 4).toUpperCase();
-                        const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
-                        const tamuuId = `TAMUU-USER-${shortId}-${randomSuffix}`;
-                        
-                        const trialEndDate = new Date();
-                        trialEndDate.setDate(trialEndDate.getDate() + 30); // 1 month trial default
-
-                        try {
-                            await env.DB.prepare(
-                                `INSERT INTO users (id, email, tamuu_id, tier, role, permissions, max_invitations, invitation_count, expires_at) 
-                                 VALUES (?, ?, ?, ?, ?, ?, 1, 0, ?)`
-                            ).bind(
-                                user_id, 
-                                email || `user-${user_id.substring(0, 8)}@tamuu.id`, 
-                                tamuuId, 
-                                'free', 
-                                'user', 
-                                '[]', 
-                                trialEndDate.toISOString()
-                            ).run();
-                        } catch (insertErr) {
-                            console.error('[Wishlist/Heal] Failed to create skeleton user:', insertErr.message);
-                            throw insertErr;
-                        }
-                    }
+                    const finalUserId = user.id;
 
                     // Proceed with Wishlist logic using the resolved ID
                     const existing = await env.DB.prepare(
@@ -4850,35 +4974,31 @@ name = COALESCE(?, name),
                             'INSERT INTO user_wishlist (id, user_id, template_id, created_at) VALUES (?, ?, ?, datetime("now"))'
                         ).bind(crypto.randomUUID(), finalUserId, template_id).run();
                     }
-                    
-                    return json({ success: true, added: true }, corsHeaders);
-                } catch (err) {
-                    console.error('[Wishlist] POST Error:', err);
-                    return json({ success: false, error: err.message }, { ...corsHeaders, status: 500 });
+
+                    return json({ success: true }, corsHeaders);
+                } catch (error) {
+                    console.error('[Wishlist] DB Error:', error.message);
+                    return json({ error: 'Database error' }, { ...corsHeaders, status: 500 });
                 }
             }
-
             // Remove from wishlist
             if (path === '/api/wishlist' && method === 'DELETE') {
+                const authHeader = request.headers.get('Authorization');
+                const user = await verifyToken(authHeader?.replace('Bearer ', ''), env, ctx, request);
+                if (!user) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
+
                 const body = await request.json();
-                const { user_id, template_id, email } = body;
+                const { template_id } = body;
 
-                if (!user_id || !template_id) {
-                    return json({ error: 'user_id and template_id required' }, { ...corsHeaders, status: 400 });
-                }
-
-                let finalUserId = user_id;
-                const user = await env.DB.prepare('SELECT id FROM users WHERE id = ?').bind(user_id).first();
-                if (!user && email) {
-                    const userByEmail = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
-                    if (userByEmail) finalUserId = userByEmail.id;
+                if (!template_id) {
+                    return json({ error: 'template_id required' }, { ...corsHeaders, status: 400 });
                 }
 
                 await env.DB.prepare(
                     'DELETE FROM user_wishlist WHERE user_id = ? AND template_id = ?'
-                ).bind(finalUserId, template_id).run();
+                ).bind(user.id, template_id).run();
 
-                return json({ success: true, removed: true }, corsHeaders);
+                return json({ success: true }, corsHeaders);
             }
 
             // ============================================
@@ -4898,6 +5018,9 @@ name = COALESCE(?, name),
 
             // Create category (Admin only)
             if (path === '/api/categories' && method === 'POST') {
+                const adminCheck = await verifyAdmin(request, env, ctx);
+                if (!adminCheck.isAdmin) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 403 });
+
                 const body = await request.json();
                 const { name, icon, color } = body;
 
@@ -5273,25 +5396,31 @@ name = COALESCE(?, name),
             // INVITATIONS ENDPOINTS
             // ============================================
             if (path === '/api/invitations' && method === 'GET') {
+                const authHeader = request.headers.get('Authorization');
+                const user = await verifyToken(authHeader?.replace('Bearer ', ''), env, ctx, request);
+                if (!user) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 401 });
+
                 const urlObj = new URL(request.url);
-                const userId = urlObj.searchParams.get('user_id');
+                const requestedUserId = urlObj.searchParams.get('user_id');
+                
+                // IDOR PROTECTION: Normal users can only see their own invitations
+                // Admins can see specific users' invitations or all if requestedUserId is null
+                const effectiveUserId = (user.role === 'admin' && requestedUserId) ? requestedUserId : user.id;
 
-                let query = 'SELECT * FROM invitations ORDER BY updated_at DESC LIMIT 100';
-                let params = [];
+                let query = 'SELECT * FROM invitations WHERE user_id = ? ORDER BY updated_at DESC LIMIT 100';
+                let params = [effectiveUserId];
 
-                // Filter by user_id if provided (for dashboard)
-                if (userId) {
-                    query = 'SELECT * FROM invitations WHERE user_id = ? ORDER BY updated_at DESC LIMIT 100';
-                    params = [userId];
+                if (user.role === 'admin' && !requestedUserId) {
+                    query = 'SELECT * FROM invitations ORDER BY updated_at DESC LIMIT 100';
+                    params = [];
                 }
 
                 try {
                     const { results } = await env.DB.prepare(query).bind(...params).all();
-                    console.log(`[Invitations] Found ${results?.length || 0} invitations for user ${userId || 'all'}`);
                     return json(results?.map(parseJsonFields) || [], corsHeaders);
                 } catch (dbError) {
-                    console.error(`[Invitations] Database error for user ${userId}:`, dbError);
-                    return json({ error: 'Database error', details: dbError.message }, { ...corsHeaders, status: 500 });
+                    console.error(`[Invitations] Database error:`, dbError.message);
+                    return json({ error: 'Database error' }, { ...corsHeaders, status: 500 });
                 }
             }
 
@@ -5476,14 +5605,10 @@ name = COALESCE(?, name),
                     }, corsHeaders);
                 } catch (error) {
                     console.error('Create invitation error:', error);
-                    return json({
-                        error: 'Failed to create invitation',
-                        details: error.message,
-                        stack: error.stack,
-                        context: 'POST /api/invitations'
+                    return json({ 
+                        error: 'Failed to create invitation'
                     }, { headers: corsHeaders, status: 500 });
-                }
-            }
+                }            }
 
 
             if (path.startsWith('/api/invitations/check-slug/') && method === 'GET') {
@@ -6320,80 +6445,84 @@ async function getFontData() {
  * Enterprise Authorization Engine v2.0
  * Multi-layered validation: JWT Claims -> D1 Registry -> Tier-Based Access
  */
-async function verifyAdmin(request, env) {
+async function verifyAdmin(request, env, ctx) {
     const authHeader = request.headers.get('Authorization');
+    const ipAddress = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const endpoint = new URL(request.url).pathname;
+
     if (!authHeader) {
         console.warn('[Auth] Denied: No Authorization header');
+        ctx.waitUntil(logSecurityEvent(env, {
+            eventType: 'ADMIN_ACCESS_DENIED',
+            ipAddress,
+            endpoint,
+            method: request.method,
+            details: 'Missing Authorization Header',
+            severity: 'MEDIUM'
+        }));
         return { isAdmin: false, reason: 'Missing Authorization Header' };
     }
 
     try {
-        let token = authHeader.replace('Bearer ', '').trim();
-        let extractedEmail = null;
-        let jwtDetected = false;
-
-        // 1. JWT Forensic Extraction
-        if (token.split('.').length === 3) {
-            try {
-                const payloadPart = token.split('.')[1];
-                let base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
-                while (base64.length % 4) base64 += '=';
-                const payload = JSON.parse(atob(base64));
-                
-                if (payload.sub) {
-                    console.log(`[Auth] JWT Detected. UUID: ${payload.sub.substring(0, 8)}...`);
-                    extractedEmail = payload.email;
-                    token = payload.sub; // Prefer UUID for DB lookup
-                    jwtDetected = true;
-                }
-            } catch (jwtError) {
-                console.warn('[Auth] JWT Payload corruption:', jwtError.message);
-            }
-        }
+        const token = authHeader.replace('Bearer ', '').trim();
         
-        // 2. Database Lookup (Primary Identity Source)
-        // We check by ID (UUID) or Email to catch all session types
-        const user = await env.DB.prepare('SELECT id, role, email, permissions, tier, status FROM users WHERE id = ? OR email = ?')
-            .bind(token, extractedEmail || token)
-            .first();
-
-        if (user) {
-            // CTO POLICY: Banned or Suspended accounts lose all administrative privileges immediately
-            if (user.status && user.status !== 'active') {
-                console.warn(`[Auth] Denied: Administrative user ${user.email} is ${user.status}`);
-                return { isAdmin: false, reason: `Account Status: ${user.status.toUpperCase()}` };
-            }
-
-            const permissions = typeof user.permissions === 'string' ? JSON.parse(user.permissions || '[]') : (user.permissions || []);
-            const userTier = (user.tier || 'basic').toLowerCase();
-            const userRole = (user.role || 'user').toLowerCase();
-
-            console.log(`[Auth] Identity Resolved: ${user.email} (Role: ${userRole}, Tier: ${userTier})`);
-
-            // Layer 3: Privilege Escalation Logic
-            const isExplicitAdmin = userRole === 'admin' || user.email === 'admin@tamuu.id';
-            const hasGlobalPerms = permissions.includes('all') || permissions.includes('management:stores');
-            const isPremiumPartner = ['elite', 'elite', 'ultimate'].includes(userTier);
-
-            // CTO POLICY: Premium Tier users are granted Registry Observability
-            if (isExplicitAdmin || hasGlobalPerms || isPremiumPartner) {
-                return { isAdmin: true, user };
-            }
-            
-            return { isAdmin: false, reason: `Insufficient Privileges (Role: ${userRole}, Tier: ${userTier})` };
+        // 1. Identity Verification (Cryptographically Secured)
+        const user = await verifyToken(token, env, ctx, request);
+        
+        if (!user) {
+            console.warn('[Auth] Denied: Invalid token or user not found');
+            ctx.waitUntil(logSecurityEvent(env, {
+                eventType: 'ADMIN_ACCESS_DENIED',
+                ipAddress,
+                endpoint,
+                method: request.method,
+                details: 'Invalid or Unauthorized Identity',
+                severity: 'HIGH'
+            }));
+            return { isAdmin: false, reason: 'Invalid or Unauthorized Identity' };
         }
 
-        // 4. Emergency Bypass / Bootstrap Logic
-        const isEmergencyEmail = token === 'admin@tamuu.id' || extractedEmail === 'admin@tamuu.id';
-        const isEmergencyId = token === 'ea41d086-156b-418c-bc62-92c12cf7c7ff';
-        
-        if (isEmergencyEmail || isEmergencyId) {
-             console.log('[Auth] Emergency Administrator Bypass Triggered');
-             return { isAdmin: true, user: { email: 'admin@tamuu.id', role: 'admin', tier: 'elite' } };
+        // 2. Status Check
+        if (user.status && user.status !== 'active') {
+            console.warn(`[Auth] Denied: Administrative user ${user.email} is ${user.status}`);
+            ctx.waitUntil(logSecurityEvent(env, {
+                eventType: 'ADMIN_ACCESS_DENIED',
+                userId: user.id,
+                ipAddress,
+                endpoint,
+                method: request.method,
+                details: `Account Status: ${user.status.toUpperCase()}`,
+                severity: 'HIGH'
+            }));
+            return { isAdmin: false, reason: `Account Status: ${user.status.toUpperCase()}` };
+        }
+
+        // 3. Role & Permission Check
+        const permissions = typeof user.permissions === 'string' ? JSON.parse(user.permissions || '[]') : (user.permissions || []);
+        const userTier = (user.tier || 'basic').toLowerCase();
+        const userRole = (user.role || 'user').toLowerCase();
+
+        console.log(`[Auth] Identity Resolved: ${user.email} (Role: ${userRole}, Tier: ${userTier})`);
+
+        const isExplicitAdmin = userRole === 'admin' || user.email === 'admin@tamuu.id';
+        const hasGlobalPerms = permissions.includes('all') || permissions.includes('management:stores');
+        const isPremiumPartner = ['elite', 'ultimate'].includes(userTier);
+
+        // CTO POLICY: Premium Tier users or Admins are granted Registry Observability
+        if (isExplicitAdmin || hasGlobalPerms || isPremiumPartner) {
+            return { isAdmin: true, user };
         }
         
-        console.warn(`[Auth] Denied: Identity not found in D1 for ${token.substring(0, 10)}...`);
-        return { isAdmin: false, reason: 'Identity not recognized in registry' };
+        ctx.waitUntil(logSecurityEvent(env, {
+            eventType: 'ADMIN_ACCESS_DENIED',
+            userId: user.id,
+            ipAddress,
+            endpoint,
+            method: request.method,
+            details: `Insufficient Privileges (Role: ${userRole}, Tier: ${userTier})`,
+            severity: 'MEDIUM'
+        }));
+        return { isAdmin: false, reason: `Insufficient Privileges (Role: ${userRole}, Tier: ${userTier})` };
     } catch (e) {
         console.error('[Auth] Internal Security Error:', e.message);
         return { isAdmin: false, reason: 'Internal Authorization Failure' };
@@ -6402,32 +6531,47 @@ async function verifyAdmin(request, env) {
 
 /**
  * Enterprise Token Verification
- * Supports both Raw UUIDs and standard JWTs
+ * Supports both Raw UUIDs (for legacy/testing) and standard JWTs with HS256 signature validation
  */
-async function verifyToken(token, env) {
+async function verifyToken(token, env, ctx, request = null) {
     if (!token) return null;
 
     try {
         let userId = token;
         let email = null;
 
-        // 1. JWT Detection & Extraction
+        // 1. JWT Detection & Secure Verification
         if (token.split('.').length === 3) {
-            try {
-                const payloadPart = token.split('.')[1];
-                let base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
-                while (base64.length % 4) base64 += '=';
-                const payload = JSON.parse(atob(base64));
-                if (payload.sub) {
-                    userId = payload.sub;
-                    email = payload.email;
+            const secret = env.JWT_SECRET || env.SUPABASE_JWT_SECRET;
+            
+            if (!secret) {
+                console.error('[CRITICAL] JWT_SECRET missing. All token verifications will fail (Fail-Closed).');
+                return null;
+            }
+
+            const payload = await verifyJWTSignature(token, secret);
+            if (!payload) {
+                console.warn('[verifyToken] JWT Signature mismatch, invalid, or expired');
+                if (request) {
+                    ctx.waitUntil(logSecurityEvent(env, {
+                        eventType: 'JWT_VERIFY_FAIL',
+                        ipAddress: request.headers.get('CF-Connecting-IP') || 'unknown',
+                        endpoint: new URL(request.url).pathname,
+                        method: request.method,
+                        details: 'Signature mismatch, invalid, or expired',
+                        severity: 'HIGH'
+                    }));
                 }
-            } catch (jwtError) {
-                console.warn('[verifyToken] JWT Parse Failed:', jwtError.message);
+                return null;
+            }
+
+            if (payload && payload.sub) {
+                userId = payload.sub;
+                email = payload.email;
             }
         }
 
-        // 2. Resolve User from D1
+        // 2. Resolve User from D1 (Primary Registry)
         const user = await env.DB.prepare('SELECT id, email, name, role, status FROM users WHERE id = ? OR email = ?')
             .bind(userId, email || userId)
             .first();
@@ -6441,5 +6585,49 @@ async function verifyToken(token, env) {
     } catch (error) {
         console.error('[verifyToken] Critical Failure:', error.message);
         return null;
+    }
+}
+
+/**
+ * Secure JWT Signature Validation using 'jose' library
+ */
+async function verifyJWTSignature(token, secret) {
+    if (!token || !secret) return null;
+    try {
+        const secretKey = new TextEncoder().encode(secret);
+        const { payload } = await jwtVerify(token, secretKey);
+        return payload;
+    } catch (e) {
+        console.error('[JWT] Verification failed:', e.message);
+        return null;
+    }
+}
+
+/**
+ * Enterprise Security Audit Logger
+ * Persists security events to D1 for forensic analysis and compliance.
+ */
+async function logSecurityEvent(env, { eventType, userId, ipAddress, endpoint, method, details, severity = 'INFO' }) {
+    if (!env || !env.DB) {
+        console.error('[CRITICAL] Security Logger: DB binding missing');
+        return;
+    }
+    
+    try {
+        const id = crypto.randomUUID();
+        await env.DB.prepare(
+            'INSERT INTO security_logs (id, event_type, user_id, ip_address, endpoint, method, details, severity) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+        ).bind(
+            id, 
+            eventType, 
+            userId || null, 
+            ipAddress || 'unknown', 
+            endpoint || '', 
+            method || '', 
+            typeof details === 'string' ? details : JSON.stringify(details || {}), 
+            severity
+        ).run();
+    } catch (e) {
+        console.error('[CRITICAL] Security logging persistence failed:', e.message);
     }
 }

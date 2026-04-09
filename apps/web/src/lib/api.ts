@@ -708,6 +708,12 @@ export const admin = {
         return res.json();
     },
 
+    async getSecurityLogs() {
+        const res = await safeFetch(`${API_BASE}/api/admin/security/logs`);
+        if (!res.ok) throw new Error('Failed to fetch security logs');
+        return res.json();
+    },
+
     async syncTransaction(transactionId: string) {
         const res = await safeFetch(`${API_BASE}/api/admin/transactions/${transactionId}/sync`);
         if (!res.ok) throw new Error('Failed to sync transaction');
