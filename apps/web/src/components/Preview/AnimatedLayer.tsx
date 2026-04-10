@@ -759,7 +759,7 @@ const AnimatedLayerComponent: React.FC<AnimatedLayerProps> = ({
         return {};
     }, [elegantSpinAnimation, pathAnimation, loopingConfig, isEditor]);
 
-    const is3DLayer = !['text', 'quote', 'rsvp_wishes', 'digital_gift', 'gift_address', 'social_mockup', 'profile'].includes(layer.type);
+    const is3DLayer = !['text', 'quote', 'rsvp_wishes', 'digital_gift', 'gift_address', 'social_mockup', 'profile', 'calendar_sync'].includes(layer.type);
 
     return (
         <m.div

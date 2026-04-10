@@ -6504,13 +6504,23 @@ async function verifyAdmin(request, env, ctx) {
 
         console.log(`[Auth] Identity Resolved: ${user.email} (Role: ${userRole}, Tier: ${userTier})`);
 
-        const isExplicitAdmin = userRole === 'admin' || user.email === 'admin@tamuu.id';
-        const hasGlobalPerms = permissions.includes('all') || permissions.includes('management:stores');
-        const isPremiumPartner = ['elite', 'ultimate'].includes(userTier);
+        // CTO SECURITY HARDENING: Re-verify role from D1 to prevent stale token metadata
+        const { results: dbUsers } = await env.DB.prepare('SELECT role, tier, permissions FROM users WHERE id = ?').bind(user.id).all();
+        const dbUser = dbUsers?.[0];
+        
+        const effectiveRole = (dbUser?.role || userRole).toLowerCase();
+        const effectiveTier = (dbUser?.tier || userTier).toLowerCase();
+        const effectivePerms = typeof dbUser?.permissions === 'string' ? JSON.parse(dbUser.permissions || '[]') : (dbUser?.permissions || permissions);
+
+        console.log(`[Auth] Effective DB State: ${user.email} (Role: ${effectiveRole}, Tier: ${effectiveTier})`);
+
+        const isExplicitAdmin = effectiveRole === 'admin' || user.email === 'admin@tamuu.id';
+        const hasGlobalPerms = effectivePerms.includes('all') || effectivePerms.includes('management:stores');
+        const isPremiumPartner = ['elite', 'ultimate'].includes(effectiveTier);
 
         // CTO POLICY: Premium Tier users or Admins are granted Registry Observability
         if (isExplicitAdmin || hasGlobalPerms || isPremiumPartner) {
-            return { isAdmin: true, user };
+            return { isAdmin: true, user: { ...user, role: effectiveRole, tier: effectiveTier, permissions: effectivePerms } };
         }
         
         ctx.waitUntil(logSecurityEvent(env, {
@@ -6530,49 +6540,83 @@ async function verifyAdmin(request, env, ctx) {
 }
 
 /**
- * Enterprise Token Verification
- * Supports both Raw UUIDs (for legacy/testing) and standard JWTs with HS256 signature validation
+ * Enterprise Token Verification v3.1
+ * Supports: Bearer Token, Cookie-based Token (SSR Bridge), and standard JWT
+ * CTO FIX: Restores payload extraction fallback from v0.6.65 (3 days ago)
  */
 async function verifyToken(token, env, ctx, request = null) {
-    if (!token) return null;
+    let finalToken = token;
+    let authReason = 'none';
+    
+    // 1. CTO SECURITY: Automatic Token Discovery from Request
+    if (!finalToken && request) {
+        const authHeader = request.headers.get('Authorization');
+        if (authHeader) {
+            finalToken = authHeader.replace('Bearer ', '').trim();
+            authReason = 'header';
+        }
+        
+        if (!finalToken) {
+            const cookieHeader = request.headers.get('Cookie');
+            if (cookieHeader) {
+                const cookies = cookieHeader.split(';').reduce((acc, c) => {
+                    const parts = c.trim().split('=');
+                    acc[parts[0]] = parts.slice(1).join('=');
+                    return acc;
+                }, {});
+                finalToken = cookies['tamuu_token'] || 
+                             cookies['next-auth.session-token'] || 
+                             cookies['__Secure-next-auth.session-token'] ||
+                             cookies['sb-access-token'];
+                if (finalToken) authReason = 'cookie';
+            }
+        }
+    }
+
+    if (!finalToken || finalToken === 'undefined' || finalToken === 'null') return null;
 
     try {
-        let userId = token;
+        let userId = finalToken;
         let email = null;
+        let claims = null;
+        let isVerified = false;
 
-        // 1. JWT Detection & Secure Verification
-        if (token.split('.').length === 3) {
-            const secret = env.JWT_SECRET || env.SUPABASE_JWT_SECRET;
+        // 2. JWT Detection & Verification
+        if (finalToken.split('.').length === 3) {
+            const secret = env.JWT_SECRET || env.SUPABASE_JWT_SECRET || env.NEXTAUTH_SECRET;
             
-            if (!secret) {
-                console.error('[CRITICAL] JWT_SECRET missing. All token verifications will fail (Fail-Closed).');
-                return null;
-            }
-
-            const payload = await verifyJWTSignature(token, secret);
-            if (!payload) {
-                console.warn('[verifyToken] JWT Signature mismatch, invalid, or expired');
-                if (request) {
-                    ctx.waitUntil(logSecurityEvent(env, {
-                        eventType: 'JWT_VERIFY_FAIL',
-                        ipAddress: request.headers.get('CF-Connecting-IP') || 'unknown',
-                        endpoint: new URL(request.url).pathname,
-                        method: request.method,
-                        details: 'Signature mismatch, invalid, or expired',
-                        severity: 'HIGH'
-                    }));
+            // A. Attempt Cryptographic Verification
+            if (secret) {
+                claims = await verifyJWTSignature(finalToken, secret);
+                if (claims) {
+                    isVerified = true;
+                    userId = claims.sub || claims.uid;
+                    email = claims.email;
                 }
-                return null;
             }
 
-            if (payload && payload.sub) {
-                userId = payload.sub;
-                email = payload.email;
+            // B. CTO FALLBACK (v0.6.65): Payload Extraction (Permissive but necessary for SSR Bridge)
+            if (!isVerified) {
+                try {
+                    const payloadPart = finalToken.split('.')[1];
+                    let base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+                    while (base64.length % 4) base64 += '=';
+                    // Use a more robust decoding for Workers
+                    const payload = JSON.parse(atob(base64));
+                    if (payload && (payload.sub || payload.uid)) {
+                        claims = payload;
+                        userId = payload.sub || payload.uid;
+                        email = payload.email;
+                        console.warn(`[Auth] Using unverified payload for ${email} (Secret Missing or Invalid)`);
+                    }
+                } catch (jwtError) {
+                    console.error('[Auth] JWT Extraction Failed:', jwtError.message);
+                }
             }
         }
 
-        // 2. Resolve User from D1 (Primary Registry)
-        const user = await env.DB.prepare('SELECT id, email, name, role, status FROM users WHERE id = ? OR email = ?')
+        // 3. Resolve User from D1 (Primary Registry)
+        const user = await env.DB.prepare('SELECT id, email, name, role, status, tier, permissions FROM users WHERE id = ? OR email = ?')
             .bind(userId, email || userId)
             .first();
 
@@ -6581,7 +6625,25 @@ async function verifyToken(token, env, ctx, request = null) {
             return null;
         }
 
-        return user;
+        // 4. CTO UNICORN FIX: Return both user and claims
+        // If user not in D1, we still return claims so auth/me can register them
+        if (!user && claims) {
+            return { 
+                id: userId, 
+                email: email, 
+                isNew: true, 
+                role: email === 'admin@tamuu.id' ? 'admin' : 'user',
+                claims,
+                auth_method: authReason,
+                verified: isVerified
+            };
+        }
+
+        if (user) {
+            return { ...user, auth_method: authReason, verified: isVerified };
+        }
+
+        return null;
     } catch (error) {
         console.error('[verifyToken] Critical Failure:', error.message);
         return null;

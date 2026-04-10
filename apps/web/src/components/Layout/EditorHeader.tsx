@@ -123,11 +123,16 @@ export const EditorHeader: React.FC<EditorHeaderProps> = ({
         await handleSave();
     }, [setIsPublished, handleSave]);
 
-    const handlePreview = useCallback(() => {
+    const handlePreview = useCallback((e?: React.MouseEvent) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
         if (onPreview) {
             onPreview();
         } else {
-            // Priority: Slug > ID > draft
+            // Only fallback if onPreview is strictly not provided
             const target = slug || templateId || 'draft';
             window.open(`/preview/${target}`, '_blank');
         }

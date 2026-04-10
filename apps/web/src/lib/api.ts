@@ -8,16 +8,61 @@ import { supabase } from './supabase';
 export const API_BASE = 'https://api.tamuu.id';
 
 /**
+ * CTO SECURITY: Get Token from Cookie (SSR Bridge)
+ */
+const getTokenFromCookie = () => {
+    if (typeof document === 'undefined') return null;
+    const name = "tamuu_token=";
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const ca = decodedCookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) === 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    // Fallback for Next-Auth standard cookies
+    const nextAuthSession = decodedCookie.split(';').find(c => c.trim().startsWith('next-auth.session-token=') || c.trim().startsWith('__Secure-next-auth.session-token='));
+    if (nextAuthSession) return nextAuthSession.split('=')[1];
+    
+    return null;
+};
+
+/**
  * Enhanced Fetch Wrapper with timeout and error handling
+ * Enterprise Hardening: Bridge Next.js SSR Auth with Vite
  */
 export const safeFetch = async (url: string, options: RequestInit = {}) => {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), 15000); // 15s timeout
 
+    // CTO SECURITY: Multi-source Token Discovery
+    // 1. Try LocalStorage (Vite native)
+    // 2. Try Cookie (Next.js SSR Bridge)
+    let token = typeof window !== 'undefined' ? localStorage.getItem('tamuu_token') : null;
+    if (!token) {
+        token = getTokenFromCookie();
+        // Self-heal: If found in cookie, sync back to localStorage for performance
+        if (token && typeof window !== 'undefined') {
+            localStorage.setItem('tamuu_token', token);
+        }
+    }
+    
+    const headers = {
+        ...options.headers,
+        ...(token && { 'Authorization': `Bearer ${token.trim()}` })
+    };
+
     try {
         const response = await fetch(url, {
             ...options,
-            signal: controller.signal
+            headers,
+            signal: controller.signal,
+            // CTO CRITICAL: Include credentials (cookies) for SSR Auth Bridge
+            credentials: 'include'
         });
         clearTimeout(id);
         return response;

@@ -803,38 +803,49 @@ export const CalendarSyncElement: React.FC<{ layer: Layer, onContentLoad?: () =>
     };
 
     const generateCalendarLinks = () => {
-        const invitationDate = (window as any).invitationData?.event_date;
-        const startDate = config.useInvitationDate && invitationDate ? new Date(invitationDate) : (config.startDate ? new Date(config.startDate) : new Date());
-        const endDate = config.useInvitationDate && invitationDate ? new Date(new Date(invitationDate).getTime() + 2 * 60 * 60 * 1000) : (config.endDate ? new Date(config.endDate) : new Date(startDate.getTime() + 2 * 60 * 60 * 1000));
+        // CTO FIX: Use multiple fallback sources for robustness in Preview/Editor
+        const invitationData = (window as any).invitationData || {};
+        const invitationDate = invitationData.event_date;
+        
+        const startDate = config.useInvitationDate && invitationDate 
+            ? new Date(invitationDate) 
+            : (config.startDate ? new Date(config.startDate) : new Date());
+            
+        const endDate = config.useInvitationDate && invitationDate 
+            ? new Date(new Date(invitationDate).getTime() + 2 * 60 * 60 * 1000) 
+            : (config.endDate ? new Date(config.endDate) : new Date(startDate.getTime() + 2 * 60 * 60 * 1000));
 
-        const title = config.eventTitle || (window as any).invitationData?.title || 'Special Event';
+        const title = config.eventTitle || invitationData.title || 'Special Event';
         const description = config.eventDescription || 'Save the date for our special day!';
         const location = config.location || '';
 
-        const formatUTC = (date: Date) => date.toISOString().replace(/-|:|\.\d+/g, '');
+        const formatUTC = (date: Date) => {
+            if (isNaN(date.getTime())) return '';
+            return date.toISOString().replace(/-|:|\.\d+/g, '');
+        };
 
         const links: Record<string, string> = {};
+        const startUTC = formatUTC(startDate);
+        const endUTC = formatUTC(endDate);
 
-        if (config.googleCalendar !== false) {
-            links.google = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${formatUTC(startDate)}/${formatUTC(endDate)}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(location)}`;
+        if (config.googleCalendar !== false && startUTC && endUTC) {
+            links.google = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startUTC}/${endUTC}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(location)}`;
         }
 
-        if (config.yahooCalendar !== false) {
-            links.yahoo = `https://calendar.yahoo.com/?v=60&view=d&type=20&title=${encodeURIComponent(title)}&st=${formatUTC(startDate)}&et=${formatUTC(endDate)}&desc=${encodeURIComponent(description)}&in_loc=${encodeURIComponent(location)}`;
+        if (config.yahooCalendar !== false && startUTC && endUTC) {
+            links.yahoo = `https://calendar.yahoo.com/?v=60&view=d&type=20&title=${encodeURIComponent(title)}&st=${startUTC}&et=${endUTC}&desc=${encodeURIComponent(description)}&in_loc=${encodeURIComponent(location)}`;
         }
 
-        if (config.outlookCalendar !== false) {
+        if (config.outlookCalendar !== false && !isNaN(startDate.getTime())) {
             links.outlook = `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(title)}&startdt=${startDate.toISOString()}&enddt=${endDate.toISOString()}&body=${encodeURIComponent(description)}&location=${encodeURIComponent(location)}`;
         }
 
-        // For Apple/iCal, we usually generate an .ics file or use a web service.
-        // A simple data URI can work for some, but a full web link is more reliable.
         const icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
 BEGIN:VEVENT
 URL:${window.location.href}
-DTSTART:${formatUTC(startDate)}
-DTEND:${formatUTC(endDate)}
+DTSTART:${startUTC}
+DTEND:${endUTC}
 SUMMARY:${title}
 DESCRIPTION:${description}
 LOCATION:${location}

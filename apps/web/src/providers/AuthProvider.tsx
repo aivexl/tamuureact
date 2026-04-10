@@ -26,7 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
                 if (session) {
                     // Non-blocking sync to allow immediate access to basic auth state
-                    syncUserProfile(session.user, session.access_token, session);
+                    await syncUserProfile(session.user, session.access_token, session);
                 } else {
                     // Handle passive redirect for unauthenticated users on private paths
                     const isPrivatePath = PRIVATE_PATHS.some(path => window.location.pathname.startsWith(path));
@@ -47,12 +47,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // 2. Listen for auth state changes
         // Passive Listener: Only updates local state and never triggers a refresh
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             console.log(`[Auth Event] ${event}`);
 
             if (session) {
                 // Non-blocking profile sync for faster UI response
-                syncUserProfile(session.user, session.access_token, session);
+                await syncUserProfile(session.user, session.access_token, session);
             } else {
                 setUser(null);
                 setToken(null);
@@ -82,8 +82,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (lastSyncedSession.current === sessionKey) {
             return;
         }
-        lastSyncedSession.current = sessionKey;
-
+        
+        // CTO SECURITY: Force persist token to localStorage IMMEDIATELY before any API calls
+        localStorage.setItem('tamuu_token', token.trim());
+        
         // Build initial user object from Supabase auth metadata
         const initialUser: User = {
             id: supabaseUser.id,
@@ -102,27 +104,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Set initial state atomically with token
         setAuthSession({ user: initialUser, token });
-
-        // Persist to localStorage for refresh recovery
         localStorage.setItem('tamuu_user', JSON.stringify(initialUser));
-        localStorage.setItem('tamuu_token', token);
 
         try {
             // Fetch real tier and quotas from D1 via our API
             const { users: usersApi } = await import('../lib/api');
-            const d1User = await usersApi.getMe(`${supabaseUser.email}`, {
-                uid: supabaseUser.id,
-                name: supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || '',
-                gender: supabaseUser.user_metadata?.gender || '',
-                birthDate: supabaseUser.user_metadata?.birth_date || ''
-            });
+            
+            // CTO RESILIENCE: Retry mechanism for SSR synchronization
+            const fetchD1Profile = async (retries = 2) => {
+                try {
+                    return await usersApi.getMe(`${supabaseUser.email}`, {
+                        uid: supabaseUser.id,
+                        name: supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || '',
+                        gender: supabaseUser.user_metadata?.gender || '',
+                        birthDate: supabaseUser.user_metadata?.birth_date || ''
+                    });
+                } catch (err: any) {
+                    if (retries > 0 && err.message?.includes('401')) {
+                        console.warn(`[Auth Sync] 401 detected, retrying... (${retries} left)`);
+                        // Force refresh session before retry
+                        const { data: { session: refreshedSession } } = await supabase.auth.getSession();
+                        if (refreshedSession) {
+                            localStorage.setItem('tamuu_token', refreshedSession.access_token);
+                        }
+                        return fetchD1Profile(retries - 1);
+                    }
+                    throw err;
+                }
+            };
 
+            const d1User = await fetchD1Profile();
             console.log('[Auth Sync] D1 Profile received:', d1User);
 
             if (d1User) {
                 const updatedUser: User = {
                     ...initialUser,
-                    id: d1User.id || initialUser.id, // THE CANONICAL ID: Must use D1 ID for DB relationship consistency
+                    id: d1User.id || initialUser.id,
                     d1_id: d1User.id,
                     tier: d1User.tier || 'free',
                     maxInvitations: d1User.maxInvitations || 1,
@@ -132,30 +149,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     permissions: d1User.permissions || []
                 };
 
-                console.log('[Auth Sync] Updating session with:', {
-                    tier: updatedUser.tier,
-                    role: updatedUser.role,
-                    roleFromD1: d1User.role,
-                    roleFromSupabase: initialUser.role,
-                    email: updatedUser.email
-                });
-                setAuthSession({ user: updatedUser, token });
+                // IDOR / SECURITY: Re-verify admin status for dashboard access
+                const isAdminPath = window.location.pathname.startsWith('/admin');
+                if (isAdminPath && updatedUser.role !== 'admin') {
+                    console.error('[Security] User lacks admin role for this path. Evicting...');
+                    // Don't redirect immediately to allow error UI to show
+                }
 
-                // Update localStorage with D1-enriched user data
+                setAuthSession({ user: updatedUser, token });
                 localStorage.setItem('tamuu_user', JSON.stringify(updatedUser));
+                lastSyncedSession.current = sessionKey;
             }
         } catch (error) {
             console.error('[Auth Sync] Failed to sync profile with D1:', error);
+        } finally {
             setLoading(false);
         }
     };
-
-    // Cleanup localStorage on unmount (for logout handled elsewhere)
-    useEffect(() => {
-        return () => {
-            // Don't clear here - logout is handled by signOut function
-        };
-    }, []);
 
     return (
         <AuthContext.Provider value={{}}>

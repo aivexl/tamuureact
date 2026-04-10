@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
-import { Layer, AnimationType, TextStyle, CountdownConfig, ButtonConfig, QuoteConfig, ShapeConfig, IconStyle, RSVPWishesConfig, RSVPVariantId, LayerPermissions } from '@/store/layersSlice';
+import { Layer, AnimationType, TextStyle, CountdownConfig, DEFAULT_COUNTDOWN_CONFIG, ButtonConfig, QuoteConfig, ShapeConfig, IconStyle, RSVPWishesConfig, RSVPVariantId, LayerPermissions } from '@/store/layersSlice';
 import { generateId } from '@/lib/utils';
 import { RSVP_VARIANTS, DEFAULT_RSVP_WISHES_CONFIG } from '@/lib/rsvp-variants';
 import { SUPPORTED_FONTS } from '@/lib/fonts';
@@ -1728,8 +1728,8 @@ export const PropertyPanel: React.FC = () => {
                                                 type="text"
                                                 placeholder="DD/MM/YYYY"
                                                 value={(() => {
-                                                    if (!layer.countdownConfig?.targetDate) return '';
-                                                    const d = new Date(layer.countdownConfig.targetDate);
+                                                    const dateStr = layer.countdownConfig?.targetDate || DEFAULT_COUNTDOWN_CONFIG.targetDate;
+                                                    const d = new Date(dateStr);
                                                     const pad = (n: number) => String(n).padStart(2, '0');
                                                     return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
                                                 })()}
@@ -1737,10 +1737,16 @@ export const PropertyPanel: React.FC = () => {
                                                     const val = e.target.value;
                                                     if (/^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
                                                         const [d, m, y] = val.split('/').map(Number);
-                                                        const current = layer.countdownConfig?.targetDate ? new Date(layer.countdownConfig.targetDate) : new Date();
+                                                        const currentStr = layer.countdownConfig?.targetDate || DEFAULT_COUNTDOWN_CONFIG.targetDate;
+                                                        const current = new Date(currentStr);
                                                         const newDate = new Date(y, m - 1, d, current.getHours(), current.getMinutes());
                                                         if (!isNaN(newDate.getTime())) {
-                                                            handleUpdate({ countdownConfig: { ...layer.countdownConfig!, targetDate: newDate.toISOString() } });
+                                                            handleUpdate({ 
+                                                                countdownConfig: { 
+                                                                    ...(layer.countdownConfig || DEFAULT_COUNTDOWN_CONFIG), 
+                                                                    targetDate: newDate.toISOString() 
+                                                                } 
+                                                            });
                                                         }
                                                     }
                                                 }}
@@ -1750,11 +1756,18 @@ export const PropertyPanel: React.FC = () => {
                                                 type="date" 
                                                 className="absolute inset-0 opacity-0 cursor-pointer"
                                                 onChange={(e) => {
+                                                    if (!e.target.value) return;
                                                     const [y, m, d] = e.target.value.split('-').map(Number);
-                                                    const current = layer.countdownConfig?.targetDate ? new Date(layer.countdownConfig.targetDate) : new Date();
+                                                    const currentStr = layer.countdownConfig?.targetDate || DEFAULT_COUNTDOWN_CONFIG.targetDate;
+                                                    const current = new Date(currentStr);
                                                     const newDate = new Date(y, m - 1, d, current.getHours(), current.getMinutes());
                                                     if (!isNaN(newDate.getTime())) {
-                                                        handleUpdate({ countdownConfig: { ...layer.countdownConfig!, targetDate: newDate.toISOString() } });
+                                                        handleUpdate({ 
+                                                            countdownConfig: { 
+                                                                ...(layer.countdownConfig || DEFAULT_COUNTDOWN_CONFIG), 
+                                                                targetDate: newDate.toISOString() 
+                                                            } 
+                                                        });
                                                     }
                                                 }}
                                             />
@@ -1766,16 +1779,23 @@ export const PropertyPanel: React.FC = () => {
                                             type="time"
                                             step="60"
                                             value={(() => {
-                                                if (!layer.countdownConfig?.targetDate) return '00:00';
-                                                const d = new Date(layer.countdownConfig.targetDate);
+                                                const dateStr = layer.countdownConfig?.targetDate || DEFAULT_COUNTDOWN_CONFIG.targetDate;
+                                                const d = new Date(dateStr);
                                                 return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
                                             })()}
                                             onChange={(e) => {
-                                                const current = layer.countdownConfig?.targetDate ? new Date(layer.countdownConfig.targetDate) : new Date();
+                                                if (!e.target.value) return;
+                                                const currentStr = layer.countdownConfig?.targetDate || DEFAULT_COUNTDOWN_CONFIG.targetDate;
+                                                const current = new Date(currentStr);
                                                 const [hours, minutes] = e.target.value.split(':').map(Number);
                                                 const newDate = new Date(current.getFullYear(), current.getMonth(), current.getDate(), hours, minutes);
                                                 if (!isNaN(newDate.getTime())) {
-                                                    handleUpdate({ countdownConfig: { ...layer.countdownConfig!, targetDate: newDate.toISOString() } });
+                                                    handleUpdate({ 
+                                                        countdownConfig: { 
+                                                            ...(layer.countdownConfig || DEFAULT_COUNTDOWN_CONFIG), 
+                                                            targetDate: newDate.toISOString() 
+                                                        } 
+                                                    });
                                                 }
                                             }}
                                             className="w-full bg-white/5 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-white focus:border-premium-accent/50 focus:outline-none"
