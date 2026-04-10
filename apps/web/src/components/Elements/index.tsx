@@ -9,7 +9,7 @@ import {
     MessageSquare, Users, Circle, Triangle, Diamond, Star, Zap, Wind, Layout,
     Gift, Music, QrCode, Waves, Layers, Monitor, Share2, Sun, Hash, PlaySquare,
     Component, Palette, Eye, Shield, CreditCard, ExternalLink, Instagram, Twitter,
-    Play, Pause, ChevronRight, Copy, Download, ShieldCheck, CheckCircle2
+    Play, Pause, ChevronRight, Copy, Download, ShieldCheck, CheckCircle2, Calendar
 } from 'lucide-react';
 import { useAudioController } from '@/hooks/useAudioController';
 import { AnimatedCopyIcon } from '@/components/ui/AnimatedCopyIcon';
@@ -790,15 +790,99 @@ export const TiltCardElement: React.FC<{ layer: Layer, onContentLoad?: () => voi
 // ============================================
 export const CalendarSyncElement: React.FC<{ layer: Layer, onContentLoad?: () => void }> = ({ layer, onContentLoad }) => {
     useEffect(() => { onContentLoad?.(); }, []);
+    const config = layer.calendarSyncConfig || {
+        buttonText: 'SAVE THE DATE',
+        variant: 'elegant',
+        iconName: 'calendar',
+        useInvitationDate: true,
+        googleCalendar: true,
+        appleCalendar: true,
+        outlookCalendar: true,
+        yahooCalendar: true,
+        iCal: true
+    };
+
+    const generateCalendarLinks = () => {
+        const invitationDate = (window as any).invitationData?.event_date;
+        const startDate = config.useInvitationDate && invitationDate ? new Date(invitationDate) : (config.startDate ? new Date(config.startDate) : new Date());
+        const endDate = config.useInvitationDate && invitationDate ? new Date(new Date(invitationDate).getTime() + 2 * 60 * 60 * 1000) : (config.endDate ? new Date(config.endDate) : new Date(startDate.getTime() + 2 * 60 * 60 * 1000));
+
+        const title = config.eventTitle || (window as any).invitationData?.title || 'Special Event';
+        const description = config.eventDescription || 'Save the date for our special day!';
+        const location = config.location || '';
+
+        const formatUTC = (date: Date) => date.toISOString().replace(/-|:|\.\d+/g, '');
+
+        const links: Record<string, string> = {};
+
+        if (config.googleCalendar !== false) {
+            links.google = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${formatUTC(startDate)}/${formatUTC(endDate)}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(location)}`;
+        }
+
+        if (config.yahooCalendar !== false) {
+            links.yahoo = `https://calendar.yahoo.com/?v=60&view=d&type=20&title=${encodeURIComponent(title)}&st=${formatUTC(startDate)}&et=${formatUTC(endDate)}&desc=${encodeURIComponent(description)}&in_loc=${encodeURIComponent(location)}`;
+        }
+
+        if (config.outlookCalendar !== false) {
+            links.outlook = `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(title)}&startdt=${startDate.toISOString()}&enddt=${endDate.toISOString()}&body=${encodeURIComponent(description)}&location=${encodeURIComponent(location)}`;
+        }
+
+        // For Apple/iCal, we usually generate an .ics file or use a web service.
+        // A simple data URI can work for some, but a full web link is more reliable.
+        const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+URL:${window.location.href}
+DTSTART:${formatUTC(startDate)}
+DTEND:${formatUTC(endDate)}
+SUMMARY:${title}
+DESCRIPTION:${description}
+LOCATION:${location}
+END:VEVENT
+END:VCALENDAR`;
+        links.ical = `data:text/calendar;charset=utf-8,${encodeURIComponent(icsContent)}`;
+
+        return links;
+    };
+
+    const handleAdd = () => {
+        const links = generateCalendarLinks();
+        if (links.google) {
+            window.open(links.google, '_blank');
+        } else if (links.ical) {
+            const link = document.createElement('a');
+            link.href = links.ical;
+            link.download = 'event.ics';
+            link.click();
+        }
+    };
+
+    const getStyles = () => {
+        switch (config.variant) {
+            case 'minimal':
+                return "bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 font-medium tracking-wider";
+            case 'glass':
+                return "bg-white/10 backdrop-blur-xl border border-white/20 text-white font-bold shadow-xl";
+            case 'outline':
+                return "bg-transparent hover:bg-premium-accent/10 border-2 border-premium-accent text-premium-accent font-black tracking-widest";
+            case 'luxury':
+                return "bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-[#d4af37]/30 text-[#d4af37] font-black tracking-[0.2em] shadow-[0_10px_30px_rgba(0,0,0,0.5)]";
+            case 'elegant':
+            default:
+                return "bg-premium-accent/20 hover:bg-premium-accent/30 backdrop-blur-lg border border-premium-accent/40 text-premium-accent font-black tracking-[0.15em] shadow-lg shadow-premium-accent/10";
+        }
+    };
+
     return (
         <m.button
-            whileHover={{ scale: 1.05, backgroundColor: 'rgba(59, 130, 246, 0.3)' }}
-            whileTap={{ scale: 0.95 }}
-            className="w-full h-full bg-blue-600/20 backdrop-blur-xl border border-blue-400/30 flex items-center justify-center gap-3 text-white font-black text-[12px] uppercase tracking-[0.2em] shadow-lg shadow-blue-500/10"
-            style={{ borderRadius: 16 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleAdd}
+            className={`w-full h-full flex items-center justify-center gap-3 text-[11px] uppercase transition-all duration-300 ${getStyles()}`}
+            style={{ borderRadius: layer.borderRadius ?? 16 }}
         >
-            <Clock className="w-5 h-5 text-blue-400" />
-            SAVE THE DATE
+            <Calendar className="w-4 h-4" />
+            {config.buttonText || 'ADD TO CALENDAR'}
         </m.button>
     );
 };

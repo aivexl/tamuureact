@@ -516,6 +516,38 @@ export interface OpenInvitationConfig {
     position: 'bottom-center' | 'center';
 }
 
+export interface CalendarSyncConfig {
+    eventTitle: string;
+    eventDescription: string;
+    location: string;
+    buttonText: string;
+    variant: 'elegant' | 'minimal' | 'glass' | 'outline' | 'luxury';
+    iconName: string;
+    useInvitationDate: boolean; // If true, use the event_date from the invitation
+    startDate?: string;
+    endDate?: string;
+    googleCalendar?: boolean;
+    appleCalendar?: boolean;
+    outlookCalendar?: boolean;
+    yahooCalendar?: boolean;
+    iCal?: boolean;
+}
+
+export const DEFAULT_CALENDAR_SYNC_CONFIG: CalendarSyncConfig = {
+    eventTitle: 'Our Wedding Day',
+    eventDescription: 'Save the date for our special day! We can\'t wait to see you there.',
+    location: '',
+    buttonText: 'ADD TO CALENDAR',
+    variant: 'elegant',
+    iconName: 'calendar',
+    useInvitationDate: true,
+    googleCalendar: true,
+    appleCalendar: true,
+    outlookCalendar: true,
+    yahooCalendar: true,
+    iCal: true
+};
+
 // ============================================
 // LAYER INTERFACE
 // ============================================

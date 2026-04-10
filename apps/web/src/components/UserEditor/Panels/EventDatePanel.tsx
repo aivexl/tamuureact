@@ -56,18 +56,30 @@ export const EventDatePanel: React.FC<EventDatePanelProps> = ({ invitationId, on
                 event_date: eventDateTime
             });
 
-            // UNICORN SYNC: Update all countdown elements in the canvas
+            // UNICORN SYNC: Update all countdown and calendar_sync elements in the canvas
             if (eventDateTime) {
                 const updatedSections = sections.map(section => ({
                     ...section,
                     elements: section.elements.map(el => {
                         const isCountdown = el.type === 'countdown' || el.name?.toLowerCase().includes('countdown');
+                        const isCalendarSync = el.type === 'calendar_sync';
+
                         if (isCountdown && el.countdownConfig) {
                             return {
                                 ...el,
                                 countdownConfig: {
                                     ...el.countdownConfig,
                                     targetDate: eventDateTime
+                                }
+                            };
+                        }
+
+                        if (isCalendarSync && el.calendarSyncConfig) {
+                            return {
+                                ...el,
+                                calendarSyncConfig: {
+                                    ...el.calendarSyncConfig,
+                                    startDate: eventDateTime
                                 }
                             };
                         }

@@ -10,6 +10,8 @@ import {
     Component, Palette, Eye, Shield, CreditCard
 } from 'lucide-react';
 
+import { DEFAULT_CALENDAR_SYNC_CONFIG } from '@/store/layersSlice';
+
 const CANVAS_WIDTH = 414;
 
 interface ElementConfig {
@@ -483,7 +485,8 @@ const elementConfigs: ElementConfig[] = [
         color: 'hover:bg-blue-500/10 hover:border-blue-500/30',
         createDefault: () => ({
             width: 200,
-            height: 50
+            height: 50,
+            calendarSyncConfig: DEFAULT_CALENDAR_SYNC_CONFIG
         })
     },
     {
@@ -871,7 +874,7 @@ export const ElementToolbar: React.FC<ElementToolbarProps> = ({ embedded = false
 
     const isAdmin = user?.role === 'admin';
     const allTools = elementConfigs.filter(c => {
-        if (c.type === 'live_streaming' || c.type === 'quote' || c.type === 'social_mockup' || c.type === 'profile_photo') return isAdmin;
+        if (c.type === 'live_streaming' || c.type === 'quote' || c.type === 'social_mockup' || c.type === 'profile_photo' || c.type === 'calendar_sync') return isAdmin;
         return true;
     });
 

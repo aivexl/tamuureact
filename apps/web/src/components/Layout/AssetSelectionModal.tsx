@@ -8,7 +8,7 @@ import {
     Music, Camera, Gift, Flower2, Bell, Check, Cloud, Home,
     Sun, Moon, Smile, ThumbsUp, Upload, Monitor,
     Waves, Zap, Component, Share2, Layers, Youtube, Instagram,
-    Layout, Shield, ChevronRight, ExternalLink
+    Layout, Shield, ChevronRight, ExternalLink, Calendar
 } from 'lucide-react';
 import { PremiumLoader } from '../ui/PremiumLoader';
 import { LayerType } from '@/store/useStore';
@@ -1354,7 +1354,44 @@ export const AssetSelectionModal: React.FC<AssetSelectionModalProps> = ({ type, 
                 )}
 
                 {/* UTILITY BUTTONS (Calendar, Directions, Share) */}
-                {(type === 'calendar_sync' || type === 'directions_hub' || type === 'share_context') && (
+                {type === 'calendar_sync' && (
+                    <div className="space-y-4">
+                        <div className="p-4 rounded-xl bg-premium-accent/10 border border-premium-accent/20 text-center">
+                            <Calendar className="w-8 h-8 text-premium-accent mx-auto mb-2" />
+                            <h4 className="text-xs font-black text-white uppercase tracking-widest mb-1">Calendar Sync</h4>
+                            <p className="text-[10px] text-white/40 mb-3">Add smart Apple-style calendar integration.</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                            {[
+                                { id: 'elegant', label: 'Elegant Gold', icon: <Sparkles className="w-4 h-4" /> },
+                                { id: 'minimal', label: 'Minimal Clean', icon: <Circle className="w-4 h-4" /> },
+                                { id: 'glass', label: 'Modern Glass', icon: <Layers className="w-4 h-4" /> },
+                                { id: 'luxury', label: 'Dark Luxury', icon: <Shield className="w-4 h-4" /> },
+                                { id: 'outline', label: 'Outline Style', icon: <Square className="w-4 h-4" /> }
+                            ].map((preset) => (
+                                <button
+                                    key={preset.id}
+                                    onClick={() => onSelect({
+                                        calendarSyncConfig: {
+                                            variant: preset.id,
+                                            buttonText: 'SAVE THE DATE',
+                                            useInvitationDate: true
+                                        }
+                                    })}
+                                    className="flex flex-col items-center gap-2 p-3 rounded-xl bg-white/5 hover:bg-premium-accent/20 border border-white/5 hover:border-premium-accent/40 transition-all group"
+                                >
+                                    <div className="text-premium-accent group-hover:scale-110 transition-transform">
+                                        {preset.icon}
+                                    </div>
+                                    <span className="text-[9px] font-bold text-white/70 group-hover:text-white uppercase tracking-wider">{preset.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {(type === 'directions_hub' || type === 'share_context') && (
                     <div className="p-4 rounded-xl bg-premium-accent/10 border border-premium-accent/20 text-center">
                         <Sparkles className="w-8 h-8 text-premium-accent mx-auto mb-2" />
                         <h4 className="text-xs font-black text-white uppercase tracking-widest mb-1">Standard Preset</h4>

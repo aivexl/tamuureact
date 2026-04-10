@@ -2079,6 +2079,106 @@ export const PropertyPanel: React.FC = () => {
                     )
                 }
 
+                {/* Calendar Sync Settings */}
+                {
+                    layer.type === 'calendar_sync' && (
+                        <SectionComponent title="Calendar Sync" icon={<Calendar className="w-4 h-4" />}>
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="text-[9px] text-white/30 uppercase font-bold">Button Text</label>
+                                    <input
+                                        type="text"
+                                        value={layer.calendarSyncConfig?.buttonText || 'ADD TO CALENDAR'}
+                                        onChange={(e) => handleUpdate({ calendarSyncConfig: { ...layer.calendarSyncConfig!, buttonText: e.target.value } })}
+                                        className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-xs focus:border-[#0D99FF]/50 focus:outline-none"
+                                    />
+                                </div>
+
+                                <SelectInput
+                                    label="Variant"
+                                    value={layer.calendarSyncConfig?.variant || 'elegant'}
+                                    options={[
+                                        { value: 'elegant', label: 'Elegant' },
+                                        { value: 'minimal', label: 'Minimal' },
+                                        { value: 'glass', label: 'Glass' },
+                                        { value: 'outline', label: 'Outline' },
+                                        { value: 'luxury', label: 'Luxury' }
+                                    ]}
+                                    onChange={(v) => handleUpdate({ calendarSyncConfig: { ...layer.calendarSyncConfig!, variant: v as any } })}
+                                />
+
+                                <div className="p-3 bg-white/5 rounded-xl border border-white/5 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[10px] text-white/70 font-medium">Use Invitation Date</span>
+                                        <motion.button
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => handleUpdate({ calendarSyncConfig: { ...layer.calendarSyncConfig!, useInvitationDate: !layer.calendarSyncConfig?.useInvitationDate } })}
+                                            className={`w-8 h-4 rounded-full transition-colors ${layer.calendarSyncConfig?.useInvitationDate ? 'bg-premium-accent' : 'bg-white/10'}`}
+                                        >
+                                            <motion.div
+                                                className="w-3 h-3 bg-white rounded-full shadow-sm"
+                                                animate={{ x: layer.calendarSyncConfig?.useInvitationDate ? 16 : 2 }}
+                                            />
+                                        </motion.button>
+                                    </div>
+                                    <p className="text-[8px] text-white/30 italic">Automatically syncs with the event date set by the user.</p>
+                                </div>
+
+                                {!layer.calendarSyncConfig?.useInvitationDate && (
+                                    <div className="space-y-4 pt-2 border-t border-white/5 animate-in fade-in slide-in-from-top-2 duration-300">
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] text-white/30 uppercase font-bold">Event Title</label>
+                                            <input
+                                                type="text"
+                                                value={layer.calendarSyncConfig?.eventTitle || ''}
+                                                onChange={(e) => handleUpdate({ calendarSyncConfig: { ...layer.calendarSyncConfig!, eventTitle: e.target.value } })}
+                                                className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-xs focus:border-[#0D99FF]/50 focus:outline-none"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] text-white/30 uppercase font-bold">Location</label>
+                                            <input
+                                                type="text"
+                                                value={layer.calendarSyncConfig?.location || ''}
+                                                onChange={(e) => handleUpdate({ calendarSyncConfig: { ...layer.calendarSyncConfig!, location: e.target.value } })}
+                                                className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-xs focus:border-[#0D99FF]/50 focus:outline-none"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                <SectionComponent title="Enabled Calendars" icon={<Sliders className="w-3 h-3" />}>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {[
+                                            { key: 'googleCalendar', label: 'Google' },
+                                            { key: 'appleCalendar', label: 'Apple' },
+                                            { key: 'outlookCalendar', label: 'Outlook' },
+                                            { key: 'yahooCalendar', label: 'Yahoo' },
+                                            { key: 'iCal', label: 'iCal' }
+                                        ].map(({ key, label }) => (
+                                            <button
+                                                key={key}
+                                                onClick={() => handleUpdate({
+                                                    calendarSyncConfig: {
+                                                        ...layer.calendarSyncConfig!,
+                                                        [key]: !layer.calendarSyncConfig?.[key as keyof typeof layer.calendarSyncConfig]
+                                                    }
+                                                })}
+                                                className={`py-2 rounded-lg text-[10px] font-bold transition-all border ${layer.calendarSyncConfig?.[key as keyof typeof layer.calendarSyncConfig] !== false
+                                                    ? 'bg-premium-accent/10 border-premium-accent/30 text-premium-accent'
+                                                    : 'bg-white/5 border-white/5 text-white/40'
+                                                    }`}
+                                            >
+                                                {label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </SectionComponent>
+                            </div>
+                        </SectionComponent>
+                    )
+                }
+
                 {/* Button Config - Only for button elements */}
                 {
                     layer.type === 'button' && (
