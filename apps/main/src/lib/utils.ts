@@ -198,3 +198,111 @@ export const formatAbbreviatedNumber = (num: number): string => {
     if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
     return num.toString();
 };
+
+/**
+ * Generates a high-entropy unique identifier.
+ */
+export const generateId = (prefix?: string): string => {
+    let id: string;
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        id = crypto.randomUUID();
+    } else {
+        id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    }
+    return prefix ? `${prefix}-${id}` : id;
+};
+
+/**
+ * Recursively sanitizes an object or array.
+ */
+export const sanitizeValue = (value: any): any => {
+    if (value === null || value === undefined) return value;
+    const type = typeof value;
+    if (type !== 'object') {
+        if (type === 'string') {
+            if (value.startsWith('blob:') || value.startsWith('data:')) return '';
+            return patchLegacyUrl(value);
+        }
+        return value;
+    }
+    if (Array.isArray(value)) {
+        return value.map(item => sanitizeValue(item));
+    }
+    const sanitized: any = {};
+    for (const key in value) {
+        if (Object.prototype.hasOwnProperty.call(value, key)) {
+            sanitized[key] = sanitizeValue(value[key]);
+        }
+    }
+    return sanitized;
+};
+
+export const patchLegacyUrl = (url: string | null | undefined): string => {
+    if (!url || typeof url !== 'string' || url.length < 5) return url || '';
+    let result = url;
+    if (result.includes('tamuu-assets.r2.cloudflarestorage.com')) {
+        result = result.replace(/https?:\/\/.*?\.r2\.cloudflarestorage\.com/, 'https://api.tamuu.id/assets');
+    }
+    if (result.includes('tamuu-api.shafania57.workers.dev')) {
+        result = result.replace('tamuu-api.shafania57.workers.dev', 'api.tamuu.id');
+    }
+    return result;
+};
+
+export const parseUTCDate = (dateStr: string | null | undefined): Date => {
+    if (!dateStr) return new Date();
+    if (dateStr.includes('Z') || dateStr.includes('+')) return new Date(dateStr);
+    const isoStr = dateStr.replace(' ', 'T') + 'Z';
+    const date = new Date(isoStr);
+    return isNaN(date.getTime()) ? new Date(dateStr) : date;
+};
+
+export const formatDateFull = (dateStr: string) => {
+    try {
+        const d = parseUTCDate(dateStr);
+        return d.toLocaleString("id-ID", {
+            timeZone: "Asia/Jakarta",
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false,
+        }).replace(/\./g, ":");
+    } catch (e) {
+        return dateStr;
+    }
+};
+
+export const formatCurrency = (amount: number | string) => {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(Number(amount));
+};
+
+export const formatAbbreviatedNumber = (num: number): string => {
+    if (!num) return '0';
+    if (num >= 1000000000) return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + ' milyar';
+    if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'juta';
+    if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    return num.toString();
+};
+
+/**
+ * Converts a Data URL to a Blob object.
+ */
+export const dataURLtoBlob = (dataurl: string): Blob => {
+    const arr = dataurl.split(',');
+    const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: mime });
+};

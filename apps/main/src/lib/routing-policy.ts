@@ -45,7 +45,6 @@ export const VITE_PUBLIC_PATHS = [
     '/preview',
     '/v/',
     '/c/',
-    '/product',
     '/templates',
     '/preview-invitation'
 ];
@@ -57,6 +56,7 @@ export const NEXTJS_PUBLIC_PATHS = [
     '/undangan-digital',
     '/blog',
     '/shop',
+    '/product',
     '/support',
     '/about',
     '/terms',

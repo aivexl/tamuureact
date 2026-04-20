@@ -4,6 +4,8 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Suspense } from "react";
 import { AuthProvider } from "@/providers/AuthProvider";
+import { QueryProvider } from "@/providers/QueryProvider";
+import { Toaster } from "react-hot-toast";
 import { SmartDomainRedirect } from "@/components/layout/SmartDomainRedirect";
 
 export const metadata: Metadata = {
@@ -64,16 +66,19 @@ export default function RootLayout({
             `,
           }}
         />
-        <AuthProvider>
-          <SmartDomainRedirect />
-          <Suspense fallback={<div className="h-16 bg-white border-b border-slate-100" />}>
-            <Navbar />
-          </Suspense>
-          <div className="flex-1">
-            {children}
-          </div>
-          <Footer />
-        </AuthProvider>
+        <QueryProvider>
+          <Toaster position="top-center" />
+          <AuthProvider>
+            <SmartDomainRedirect />
+            <Suspense fallback={<div className="h-16 bg-white border-b border-slate-100" />}>
+              <Navbar />
+            </Suspense>
+            <div className="flex-1">
+              {children}
+            </div>
+            <Footer />
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );

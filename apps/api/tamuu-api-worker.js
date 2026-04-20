@@ -3334,44 +3334,22 @@ export default {
                 if (!idOrSlug) return json({ error: 'Product identifier required' }, { ...corsHeaders, status: 400 });
 
                 try {
-                    // Try by ID first if it looks like UUID
-                    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
-                    
-                    let product;
-                    if (isUUID) {
-                        product = await env.DB.prepare(`
-                            SELECT p.*, m.nama_toko, m.slug as vendor_slug, m.logo_url, m.kontak_utama as m_kontak_utama,
-                            c.whatsapp as m_whatsapp, c.phone as m_phone, c.instagram as m_instagram,
-                            c.facebook as m_facebook, c.x_url as m_x_url, c.website as m_website,
-                            c.shopee_url as m_shopee_url, c.tokopedia_url as m_tokopedia_url, c.tiktokshop_url as m_tiktokshop_url,
-                            c.youtube as m_youtube,
-                            p.is_admin_listing, p.custom_store_name,
-                            (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count,
-                            (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,
-                            (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
-                            FROM shop_products p 
-                            LEFT JOIN shop_vendors m ON p.vendor_id = m.id 
-                            LEFT JOIN shop_contacts c ON p.vendor_id = c.vendor_id
-                            WHERE p.id = ?
-                        `).bind(idOrSlug).first();
-                    } else {
-                        // Try by slug
-                        product = await env.DB.prepare(`
-                            SELECT p.*, m.nama_toko, m.slug as vendor_slug, m.logo_url, m.kontak_utama as m_kontak_utama,
-                            c.whatsapp as m_whatsapp, c.phone as m_phone, c.instagram as m_instagram,
-                            c.facebook as m_facebook, c.x_url as m_x_url, c.website as m_website,
-                            c.shopee_url as m_shopee_url, c.tokopedia_url as m_tokopedia_url, c.tiktokshop_url as m_tiktokshop_url,
-                            c.youtube as m_youtube,
-                            p.is_admin_listing, p.custom_store_name,
-                            (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count,
-                            (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,
-                            (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
-                            FROM shop_products p 
-                            LEFT JOIN shop_vendors m ON p.vendor_id = m.id 
-                            LEFT JOIN shop_contacts c ON p.vendor_id = c.vendor_id
-                            WHERE p.slug = ?
-                        `).bind(idOrSlug).first();
-                    }
+                    // ROBUST LOOKUP: Check both ID and Slug in one query
+                    const product = await env.DB.prepare(`
+                        SELECT p.*, m.nama_toko, m.slug as vendor_slug, m.logo_url, m.kontak_utama as m_kontak_utama,
+                        c.whatsapp as m_whatsapp, c.phone as m_phone, c.instagram as m_instagram,
+                        c.facebook as m_facebook, c.x_url as m_x_url, c.website as m_website,
+                        c.shopee_url as m_shopee_url, c.tokopedia_url as m_tokopedia_url, c.tiktokshop_url as m_tiktokshop_url,
+                        c.youtube as m_youtube,
+                        p.is_admin_listing, p.custom_store_name,
+                        (SELECT COUNT(*) FROM shop_wishlist WHERE product_id = p.id) as wishlist_count,
+                        (SELECT AVG(rating) FROM shop_product_reviews WHERE product_id = p.id) as avg_rating,
+                        (SELECT COUNT(*) FROM shop_product_reviews WHERE product_id = p.id) as review_count
+                        FROM shop_products p 
+                        LEFT JOIN shop_vendors m ON p.vendor_id = m.id 
+                        LEFT JOIN shop_contacts c ON p.vendor_id = c.vendor_id
+                        WHERE p.id = ? OR p.slug = ?
+                    `).bind(idOrSlug, idOrSlug).first();
 
                     if (!product) return json({ error: 'Product not found' }, { ...corsHeaders, status: 404 });
 
